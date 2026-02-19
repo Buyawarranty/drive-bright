@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer, Download, X } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PolicyDetails {
@@ -34,6 +34,18 @@ interface PolicyDetails {
   policyEndDate: string;
   claimLimit?: number;
   voluntaryExcess?: number;
+  labourRate?: number;
+  breakdownRecovery?: boolean;
+  wearTear?: boolean;
+  europeCover?: boolean;
+  motFee?: boolean;
+  motRepair?: boolean;
+  tyreCover?: boolean;
+  lostKey?: boolean;
+  vehicleRental?: boolean;
+  transferCover?: boolean;
+  consequential?: boolean;
+  seasonalBonusMonths?: number;
 }
 
 interface PrintableWarrantyLetterProps {
@@ -48,6 +60,39 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
   policy,
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
+  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('colour');
+
+  const isBW = printMode === 'bw';
+
+  const c = {
+    accent: isBW ? '#333' : '#eb4b00',
+    accentGrad: isBW ? '#333' : 'linear-gradient(135deg, #eb4b00 0%, #ff6b2b 100%)',
+    accentText: 'white',
+    heading: isBW ? '#000' : '#1e3a5f',
+    border: isBW ? '#999' : '#e2e8f0',
+    borderAccent: isBW ? '#333' : '#eb4b00',
+    glanceBg: isBW ? '#f5f5f5' : '#f8fafc',
+    glanceBorder: isBW ? '#ccc' : '#e2e8f0',
+    benefitsBg: isBW ? '#f5f5f5' : '#f0fdf4',
+    benefitsBorder: isBW ? '#aaa' : '#86efac',
+    benefitsHeading: isBW ? '#000' : '#166534',
+    benefitsText: isBW ? '#333' : '#15803d',
+    addonsBg: isBW ? '#f5f5f5' : '#eff6ff',
+    addonsBorder: isBW ? '#aaa' : '#93c5fd',
+    addonsHeading: isBW ? '#000' : '#1e40af',
+    addonsText: isBW ? '#333' : '#1d4ed8',
+    claimsBg: isBW ? '#f5f5f5' : '#fef3c7',
+    claimsBorder: isBW ? '#aaa' : '#fbbf24',
+    claimsHeading: isBW ? '#000' : '#92400e',
+    claimsText: isBW ? '#333' : '#78350f',
+    accountBg: isBW ? '#f5f5f5' : '#f8fafc',
+    accountBorder: isBW ? '#ccc' : '#e2e8f0',
+    accountHeading: isBW ? '#000' : '#1e3a5f',
+    contactValue: isBW ? '#000' : '#eb4b00',
+    muted: isBW ? '#555' : '#64748b',
+    legal: isBW ? '#777' : '#94a3b8',
+    divider: isBW ? '#ccc' : '#f0f0f0',
+  };
 
   const handlePrint = () => {
     const printContent = printRef.current;
@@ -63,182 +108,13 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Warranty Confirmation - ${policy.warrantyNumber}</title>
+          <title>Policy Documents - ${policy.warrantyNumber || policy.policyNumber}</title>
           <style>
-            @page { 
-              size: A4; 
-              margin: 20mm; 
-            }
-            body { 
-              font-family: 'Segoe UI', Arial, sans-serif; 
-              color: #1a1a1a;
-              line-height: 1.6;
-              margin: 0;
-              padding: 0;
-              background: white;
-            }
-            .letter-container {
-              max-width: 210mm;
-              margin: 0 auto;
-              padding: 0;
-            }
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 40px;
-              padding-bottom: 20px;
-              border-bottom: 3px solid #eb4b00;
-            }
-            .logo {
-              height: 50px;
-            }
-            .company-info {
-              text-align: right;
-              font-size: 11px;
-              color: #666;
-            }
-            .company-info p {
-              margin: 2px 0;
-            }
-            .date-section {
-              text-align: right;
-              margin-bottom: 30px;
-              font-size: 12px;
-              color: #666;
-            }
-            .customer-address {
-              margin-bottom: 30px;
-              font-size: 13px;
-            }
-            .title {
-              font-size: 24px;
-              font-weight: 700;
-              color: #1e3a5f;
-              margin-bottom: 25px;
-            }
-            .warranty-badge {
-              background: linear-gradient(135deg, #eb4b00 0%, #ff6b2b 100%);
-              color: white;
-              padding: 15px 25px;
-              border-radius: 8px;
-              display: inline-block;
-              margin-bottom: 30px;
-            }
-            .warranty-badge .label {
-              font-size: 11px;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-              opacity: 0.9;
-            }
-            .warranty-badge .number {
-              font-size: 20px;
-              font-weight: 700;
-              margin-top: 5px;
-            }
-            .greeting {
-              font-size: 14px;
-              margin-bottom: 20px;
-            }
-            .details-section {
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 8px;
-              padding: 25px;
-              margin: 25px 0;
-            }
-            .details-title {
-              font-size: 14px;
-              font-weight: 700;
-              color: #1e3a5f;
-              margin-bottom: 15px;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            }
-            .details-grid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 15px 30px;
-            }
-            .detail-item {
-              font-size: 13px;
-            }
-            .detail-label {
-              color: #64748b;
-              font-weight: 500;
-            }
-            .detail-value {
-              color: #1a1a1a;
-              font-weight: 600;
-            }
-            .body-text {
-              font-size: 13px;
-              margin: 20px 0;
-              color: #333;
-            }
-            .coverage-highlights {
-              background: #f0fdf4;
-              border: 1px solid #86efac;
-              border-radius: 8px;
-              padding: 20px;
-              margin: 25px 0;
-            }
-            .coverage-highlights h4 {
-              color: #166534;
-              font-size: 14px;
-              margin: 0 0 15px 0;
-            }
-            .coverage-highlights ul {
-              margin: 0;
-              padding-left: 20px;
-              font-size: 12px;
-              color: #15803d;
-            }
-            .coverage-highlights li {
-              margin-bottom: 8px;
-            }
-            .signature-section {
-              margin-top: 40px;
-            }
-            .signature-section p {
-              margin: 3px 0;
-              font-size: 13px;
-            }
-            .contact-footer {
-              margin-top: 50px;
-              padding-top: 20px;
-              border-top: 2px solid #e2e8f0;
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 20px;
-              font-size: 12px;
-            }
-            .contact-item {
-              text-align: center;
-            }
-            .contact-item .label {
-              color: #64748b;
-              font-size: 11px;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            }
-            .contact-item .value {
-              color: #eb4b00;
-              font-weight: 600;
-              font-size: 14px;
-              margin-top: 5px;
-            }
-            .legal-footer {
-              margin-top: 40px;
-              padding-top: 15px;
-              border-top: 1px solid #e2e8f0;
-              font-size: 10px;
-              color: #94a3b8;
-              text-align: center;
-            }
-            @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            }
+            @page { size: A4; margin: 15mm 18mm; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; color: #1a1a1a; line-height: 1.5; background: white; font-size: 11px; }
+            .page { max-width: 210mm; margin: 0 auto; }
+            ${isBW ? '' : '@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }'}
           </style>
         </head>
         <body>
@@ -249,7 +125,6 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
 
     printWindow.document.close();
     printWindow.focus();
-    
     setTimeout(() => {
       printWindow.print();
     }, 250);
@@ -257,8 +132,7 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
 
   const formatAddress = () => {
     const addr = policy.customerAddress;
-    if (!addr) return null;
-    
+    if (!addr) return [];
     const parts = [
       addr.flatNumber && `Flat ${addr.flatNumber}`,
       addr.buildingName,
@@ -267,11 +141,37 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
       addr.county,
       addr.postcode,
     ].filter(Boolean);
-    
-    return parts.length > 0 ? parts : null;
+    return parts;
   };
 
-  const customerAddress = formatAddress();
+  const getAddonsList = () => {
+    const addons: string[] = [];
+    if (policy.wearTear) addons.push('Wear & Tear Cover');
+    if (policy.europeCover) addons.push('European Cover');
+    if (policy.motFee) addons.push('MOT Test Fee Cover');
+    if (policy.motRepair) addons.push('MOT Repair Cover');
+    if (policy.tyreCover) addons.push('Tyre Cover');
+    if (policy.lostKey) addons.push('Lost Key Cover');
+    if (policy.vehicleRental) addons.push('Vehicle Rental Cover');
+    if (policy.transferCover) addons.push('Transfer Cover');
+    if (policy.consequential) addons.push('Consequential Loss Cover');
+    return addons;
+  };
+
+  const getDuration = () => {
+    if (!policy.policyStartDate || !policy.policyEndDate) return 'N/A';
+    const start = new Date(policy.policyStartDate);
+    const end = new Date(policy.policyEndDate);
+    const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    if (months >= 36) return '3 Years';
+    if (months >= 24) return '2 Years';
+    if (months >= 12) return '1 Year';
+    return `${months} Months`;
+  };
+
+  const address = formatAddress();
+  const addons = getAddonsList();
+  const warrantyRef = policy.warrantyNumber || policy.policyNumber || 'N/A';
   const todayDate = format(new Date(), 'd MMMM yyyy');
 
   return (
@@ -280,7 +180,21 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Warranty Confirmation Letter</span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setPrintMode('bw')}
+                  className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                >
+                  B&W
+                </button>
+                <button
+                  onClick={() => setPrintMode('colour')}
+                  className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                >
+                  Colour
+                </button>
+              </div>
               <Button onClick={handlePrint} className="gap-2">
                 <Printer className="h-4 w-4" />
                 Print Letter
@@ -292,175 +206,157 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
         {/* Preview */}
         <div className="border rounded-lg bg-white p-8 shadow-inner">
           <div ref={printRef} className="letter-container">
-            {/* Header with Logo */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', paddingBottom: '20px', borderBottom: '3px solid #eb4b00' }}>
-              <img 
-                src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" 
-                alt="Buy A Warranty" 
-                style={{ height: '50px' }}
-              />
-              <div style={{ textAlign: 'right', fontSize: '11px', color: '#666' }}>
-                <p style={{ margin: '2px 0', fontWeight: '600' }}>Buy A Warranty Ltd</p>
-                <p style={{ margin: '2px 0' }}>Warranty House</p>
-                <p style={{ margin: '2px 0' }}>62 Berkhamsted Ave</p>
-                <p style={{ margin: '2px 0' }}>Wembley, HA9 6DT</p>
-                <p style={{ margin: '2px 0' }}>Company No: 10314863</p>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: `3px solid ${c.borderAccent}`, marginBottom: '14px' }}>
+              <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style={{ height: '40px', filter: isBW ? 'grayscale(100%)' : 'none' }} />
+              <div style={{ textAlign: 'right', fontSize: '9px', color: '#666', lineHeight: '1.4' }}>
+                <p style={{ fontWeight: '600' }}>Buy A Warranty Ltd</p>
+                <p>Warranty House, 62 Berkhamsted Ave</p>
+                <p>Wembley, HA9 6DT</p>
+                <p>Company No: 10314863</p>
               </div>
             </div>
 
-            {/* Date */}
-            <div style={{ textAlign: 'right', marginBottom: '30px', fontSize: '12px', color: '#666' }}>
-              {todayDate}
-            </div>
+            <div style={{ textAlign: 'right', fontSize: '10px', color: '#666', marginBottom: '12px' }}>{todayDate}</div>
 
-            {/* Customer Address */}
-            <div style={{ marginBottom: '30px', fontSize: '13px' }}>
-              <p style={{ margin: '2px 0', fontWeight: '600' }}>{policy.customerName}</p>
-              {customerAddress && customerAddress.map((line, idx) => (
-                <p key={idx} style={{ margin: '2px 0' }}>{line}</p>
+            <div style={{ marginBottom: '14px', fontSize: '11px' }}>
+              <p style={{ fontWeight: '700', fontSize: '12px', margin: '1px 0' }}>{policy.customerName}</p>
+              {address.map((line, i) => (
+                <p key={i} style={{ margin: '1px 0' }}>{line}</p>
               ))}
               {policy.customerEmail && (
-                <p style={{ margin: '8px 0 0 0', color: '#666' }}>{policy.customerEmail}</p>
+                <p style={{ margin: '4px 0 0', color: '#666' }}>{policy.customerEmail}</p>
               )}
             </div>
 
-            {/* Title */}
-            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1e3a5f', marginBottom: '25px' }}>
-              Warranty Order Confirmation
+            <h1 style={{ fontSize: '18px', fontWeight: '700', color: c.heading, marginBottom: '10px' }}>
+              Your Warranty Cover Document
             </h1>
 
             {/* Warranty Badge */}
-            <div style={{ background: 'linear-gradient(135deg, #eb4b00 0%, #ff6b2b 100%)', color: 'white', padding: '15px 25px', borderRadius: '8px', display: 'inline-block', marginBottom: '30px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: '0.9' }}>
-                Warranty Reference Number
-              </div>
-              <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '5px' }}>
-                {policy.warrantyNumber || 'Pending'}
-              </div>
+            <div style={{ background: isBW ? '#333' : c.accentGrad, color: c.accentText, padding: '8px 16px', borderRadius: '6px', display: 'inline-block', marginBottom: '14px' }}>
+              <div style={{ fontSize: '8px', textTransform: 'uppercase', letterSpacing: '1px', opacity: '0.9' }}>Warranty Reference</div>
+              <div style={{ fontSize: '15px', fontWeight: '700', marginTop: '2px' }}>{warrantyRef}</div>
             </div>
 
-            {/* Greeting */}
-            <p style={{ fontSize: '14px', marginBottom: '20px' }}>
-              Dear {policy.customerName.split(' ')[0]},
+            <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {policy.customerName.split(' ')[0]},</p>
+            <p style={{ marginBottom: '12px', color: '#333', fontSize: '11px' }}>
+              Thank you for choosing Buyawarranty to protect your vehicle. Please find below a summary of your warranty cover. Your policy provides protection against the cost of unexpected mechanical or electrical breakdowns, helping you stay on the road with peace of mind.
             </p>
 
-            <p style={{ fontSize: '13px', margin: '20px 0', color: '#333' }}>
-              We are pleased to confirm that your vehicle warranty has been successfully processed and is now active. 
-              Please keep this letter for your records as confirmation of your warranty coverage.
-            </p>
-
-            {/* Vehicle Details Box */}
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '25px', margin: '25px 0' }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1e3a5f', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Vehicle Details
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px 30px' }}>
-                <div style={{ fontSize: '13px' }}>
-                  <span style={{ color: '#64748b', fontWeight: '500' }}>Registration: </span>
-                  <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{policy.vehicleReg}</span>
-                </div>
-                <div style={{ fontSize: '13px' }}>
-                  <span style={{ color: '#64748b', fontWeight: '500' }}>Make & Model: </span>
-                  <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{policy.vehicleMake} {policy.vehicleModel}</span>
-                </div>
-                {policy.vehicleYear && (
-                  <div style={{ fontSize: '13px' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Year: </span>
-                    <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{policy.vehicleYear}</span>
+            {/* Cover at a Glance */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>Your Cover at a Glance</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 20px', background: c.glanceBg, border: `1px solid ${c.glanceBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
+                {[
+                  ['Vehicle', policy.vehicleReg || '-'],
+                  ['Plan Type', policy.planType || 'N/A'],
+                  ['Duration', getDuration()],
+                  ['Mileage', policy.mileage ? `${parseInt(policy.mileage).toLocaleString()} miles` : 'N/A'],
+                  ['Start Date', policy.policyStartDate ? format(new Date(policy.policyStartDate), 'd MMM yyyy') : 'N/A'],
+                  ['End Date', policy.policyEndDate ? format(new Date(policy.policyEndDate), 'd MMM yyyy') : 'N/A'],
+                  ['Warranty Ref', warrantyRef],
+                  ['Policy No.', policy.policyNumber || 'N/A'],
+                ].map(([label, value], i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: `1px solid ${c.divider}` }}>
+                    <span style={{ color: c.muted, fontWeight: '500' }}>{label}</span>
+                    <span style={{ fontWeight: '600' }}>{value}</span>
                   </div>
-                )}
-                {policy.mileage && (
-                  <div style={{ fontSize: '13px' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Mileage: </span>
-                    <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{parseInt(policy.mileage).toLocaleString()} miles</span>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
 
-            {/* Policy Details Box */}
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '25px', margin: '25px 0' }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1e3a5f', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Warranty Details
+            {/* Benefits */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>What Your Warranty Includes</div>
+              <div style={{ background: c.benefitsBg, border: `1px solid ${c.benefitsBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '8px' }}>
+                <h4 style={{ color: c.benefitsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Key Benefits of Your Cover</h4>
+                <ul style={{ margin: '0', paddingLeft: '16px', color: c.benefitsText, fontSize: '10.5px' }}>
+                  <li style={{ marginBottom: '3px' }}>Protection for major mechanical and electrical components</li>
+                  {policy.claimLimit && <li style={{ marginBottom: '3px' }}>Claims limit of £{policy.claimLimit.toLocaleString()} per claim</li>}
+                  {policy.labourRate && <li style={{ marginBottom: '3px' }}>Labour rate covered up to £{policy.labourRate}/hour</li>}
+                  {policy.voluntaryExcess !== undefined && policy.voluntaryExcess !== null && <li style={{ marginBottom: '3px' }}>Voluntary excess of £{policy.voluntaryExcess} per claim</li>}
+                  <li style={{ marginBottom: '3px' }}>Access to trusted UK-wide VAT registered repair garages</li>
+                  <li style={{ marginBottom: '3px' }}>Choose your own VAT registered garage option</li>
+                  <li style={{ marginBottom: '3px' }}>Fast, simple claims process via our dedicated claims team</li>
+                  {policy.breakdownRecovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery claimback</li>}
+                </ul>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px 30px' }}>
-                <div style={{ fontSize: '13px' }}>
-                  <span style={{ color: '#64748b', fontWeight: '500' }}>Policy Number: </span>
-                  <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{policy.policyNumber}</span>
+
+              {addons.length > 0 && (
+                <div style={{ background: c.addonsBg, border: `1px solid ${c.addonsBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
+                  <h4 style={{ color: c.addonsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Additional Included Services</h4>
+                  <ul style={{ margin: '0', paddingLeft: '16px', color: c.addonsText, fontSize: '10.5px' }}>
+                    {addons.map((addon, i) => (
+                      <li key={i} style={{ marginBottom: '3px' }}>✓ {addon}</li>
+                    ))}
+                    {policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0 && (
+                      <li style={{ marginBottom: '3px' }}>✓ Free extended cover: {policy.seasonalBonusMonths} bonus month{policy.seasonalBonusMonths > 1 ? 's' : ''}</li>
+                    )}
+                  </ul>
                 </div>
-                <div style={{ fontSize: '13px' }}>
-                  <span style={{ color: '#64748b', fontWeight: '500' }}>Plan Type: </span>
-                  <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{policy.planType}</span>
-                </div>
-                <div style={{ fontSize: '13px' }}>
-                  <span style={{ color: '#64748b', fontWeight: '500' }}>Start Date: </span>
-                  <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{format(new Date(policy.policyStartDate), 'd MMMM yyyy')}</span>
-                </div>
-                <div style={{ fontSize: '13px' }}>
-                  <span style={{ color: '#64748b', fontWeight: '500' }}>End Date: </span>
-                  <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{format(new Date(policy.policyEndDate), 'd MMMM yyyy')}</span>
-                </div>
-                {policy.claimLimit && (
-                  <div style={{ fontSize: '13px' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Claim Limit: </span>
-                    <span style={{ color: '#1a1a1a', fontWeight: '600' }}>£{policy.claimLimit.toLocaleString()}</span>
-                  </div>
-                )}
-                {policy.voluntaryExcess !== undefined && (
-                  <div style={{ fontSize: '13px' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Voluntary Excess: </span>
-                    <span style={{ color: '#1a1a1a', fontWeight: '600' }}>£{policy.voluntaryExcess}</span>
-                  </div>
-                )}
-              </div>
+              )}
+
+              <p style={{ fontSize: '10px', color: '#666', marginTop: '6px' }}>
+                Your full policy booklet (attached) includes a detailed breakdown of inclusions, exclusions, claim procedures, and general conditions. Please keep it somewhere safe for future reference.
+              </p>
             </div>
 
-            {/* What's Covered */}
-            <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '20px', margin: '25px 0' }}>
-              <h4 style={{ color: '#166534', fontSize: '14px', margin: '0 0 15px 0' }}>Your Coverage Includes:</h4>
-              <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '12px', color: '#15803d' }}>
-                <li style={{ marginBottom: '8px' }}>Mechanical and electrical breakdown protection</li>
-                <li style={{ marginBottom: '8px' }}>UK-wide approved repairer network</li>
-                <li style={{ marginBottom: '8px' }}>24/7 claims support helpline</li>
-                <li style={{ marginBottom: '8px' }}>Online customer dashboard access</li>
+            {/* Claims */}
+            <div style={{ background: c.claimsBg, border: `1px solid ${c.claimsBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
+              <h4 style={{ color: c.claimsHeading, fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>How to Make a Claim</h4>
+              <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '2px 0' }}>If your vehicle experiences a fault, simply contact our Claims Team <strong>before</strong> any repairs are carried out so we can authorise the work.</p>
+              <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '4px 0', fontWeight: '700' }}>Claims Hotline: 0330 229 5045</p>
+              <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '2px 0' }}>Opening Hours: Monday to Friday, 9am to 5pm</p>
+              <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '4px 0 0' }}>We aim to make claims as smooth and stress-free as possible. Our team will guide you through each step and liaise with the repairer on your behalf.</p>
+            </div>
+
+            {/* Account */}
+            <div style={{ background: c.accountBg, border: `1px solid ${c.accountBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
+              <h4 style={{ color: c.accountHeading, fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>Your Account &amp; Policy Documents</h4>
+              <p style={{ fontSize: '10.5px', color: '#333', margin: '2px 0' }}>Your warranty policy documents are also available online. You can access them at any time by visiting:</p>
+              <p style={{ fontSize: '11px', color: c.contactValue, margin: '6px 0', fontWeight: '700' }}>https://buyawarranty.co.uk/customer-dashboard/</p>
+              <p style={{ fontSize: '10.5px', color: '#333', margin: '4px 0' }}>Simply click the <strong>Login</strong> option at the top of the homepage, or go directly to the link above. Use your registered email to sign in:</p>
+              {policy.customerEmail && (
+                <p style={{ fontSize: '10.5px', color: '#333', margin: '4px 0' }}><strong>Email:</strong> {policy.customerEmail}</p>
+              )}
+              <p style={{ fontSize: '10px', color: '#555', margin: '6px 0 0' }}>Once logged in, you can:</p>
+              <ul style={{ margin: '4px 0 0', paddingLeft: '16px', fontSize: '10px', color: '#555' }}>
+                <li style={{ marginBottom: '2px' }}>View and download your full warranty policy</li>
+                <li style={{ marginBottom: '2px' }}>Download your Terms &amp; Conditions</li>
+                <li style={{ marginBottom: '2px' }}>Check your vehicle and cover details</li>
+                <li style={{ marginBottom: '2px' }}>Manage your contact information</li>
+                <li style={{ marginBottom: '2px' }}>Renew or upgrade your plan when the time comes</li>
               </ul>
             </div>
 
-            <p style={{ fontSize: '13px', margin: '20px 0', color: '#333' }}>
-              Your full policy documents and terms & conditions have been sent to your email address. 
-              You can also access these at any time through your online customer dashboard at <strong>buyawarranty.co.uk/customer-dashboard</strong>.
+            <p style={{ fontSize: '10.5px', color: '#333', marginBottom: '6px' }}>
+              If there's anything you're unsure about, or if you simply want to understand your cover better, we're here for you.
             </p>
 
-            <p style={{ fontSize: '13px', margin: '20px 0', color: '#333' }}>
-              If you have any questions or require further assistance, please do not hesitate to contact our customer support team using the details below.
-            </p>
-
-            {/* Signature */}
-            <div style={{ marginTop: '40px' }}>
-              <p style={{ margin: '3px 0', fontSize: '13px' }}>Kind regards,</p>
-              <p style={{ margin: '15px 0 3px 0', fontSize: '13px', fontWeight: '600' }}>Customer Support Team</p>
-              <p style={{ margin: '3px 0', fontSize: '13px' }}>Buy A Warranty</p>
+            <div style={{ marginTop: '16px', fontSize: '11px' }}>
+              <p style={{ margin: '1px 0' }}>Warm regards,</p>
+              <p style={{ margin: '10px 0 1px', fontWeight: '600' }}>The Buyawarranty Team</p>
             </div>
 
             {/* Contact Footer */}
-            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '2px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', fontSize: '12px' }}>
+            <div style={{ marginTop: '18px', paddingTop: '10px', borderTop: `2px solid ${c.border}`, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '10px' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sales Enquiries</div>
-                <div style={{ color: '#eb4b00', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}>0330 229 5040</div>
+                <div style={{ color: c.muted, fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sales Enquiries</div>
+                <div style={{ color: c.contactValue, fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>0330 229 5040</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Claims Hotline</div>
-                <div style={{ color: '#eb4b00', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}>0330 229 5045</div>
+                <div style={{ color: c.muted, fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Claims Hotline</div>
+                <div style={{ color: c.contactValue, fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>0330 229 5045</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Support</div>
-                <div style={{ color: '#eb4b00', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}>support@buyawarranty.co.uk</div>
+                <div style={{ color: c.muted, fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customer Support</div>
+                <div style={{ color: c.contactValue, fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>support@buyawarranty.co.uk</div>
               </div>
             </div>
 
-            {/* Legal Footer */}
-            <div style={{ marginTop: '40px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', fontSize: '10px', color: '#94a3b8', textAlign: 'center' }}>
-              Buy A Warranty Ltd is registered in England & Wales. Company No: 10314863. 
+            <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: `1px solid ${c.border}`, fontSize: '8px', color: c.legal, textAlign: 'center' }}>
+              Buy A Warranty Ltd is registered in England &amp; Wales. Company No: 10314863.
               Registered Address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT.
             </div>
           </div>
