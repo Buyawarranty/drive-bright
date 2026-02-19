@@ -1262,7 +1262,7 @@ const EVWarrantyLanding: React.FC = () => {
         <BrandPageFAQ />
 
         {/* Final CTA section */}
-        <section className="py-12 md:py-20 bg-brand-orange">
+        <section className="py-12 md:py-20 bg-[#1a2e5a]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6">
               Protect your electric vehicle today
@@ -1273,7 +1273,7 @@ const EVWarrantyLanding: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 onClick={scrollToQuoteForm}
-                className="bg-white text-brand-orange hover:bg-gray-100 font-bold px-8 md:px-12 py-4 md:py-6 text-base md:text-xl rounded-xl shadow-lg"
+                className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 md:px-12 py-4 md:py-6 text-base md:text-xl rounded-xl shadow-lg"
               >
                 Get your free quote now
                 <ArrowRight className="ml-2 w-5 h-5 md:w-6 md:h-6" />
