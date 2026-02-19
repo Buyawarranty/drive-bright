@@ -83,10 +83,10 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
     {
       key: 'tyre',
       name: 'Tyre Cover',
-      monthlyPrice: 8,
+      monthlyPrice: 7,
       description: 'Protection for tyre damage and punctures',
       isAutoIncluded: autoIncluded.includes('tyre'),
-      displayPrice: autoIncluded.includes('tyre') ? 'FREE' : `£${(8 * durationMonths)}`
+      displayPrice: autoIncluded.includes('tyre') ? 'FREE' : `£${(7 * durationMonths)}`
     },
     {
       key: 'wearAndTear',
@@ -162,7 +162,7 @@ export const calculateAddOnPrice = (
   // Monthly recurring add-ons
   if (selectedAddOns.breakdown && !autoIncluded.includes('breakdown')) total += 4 * durationMonths;
   if (selectedAddOns.rental && !autoIncluded.includes('rental')) total += 7 * durationMonths;
-  if (selectedAddOns.tyre && !autoIncluded.includes('tyre')) total += 8 * durationMonths;
+  if (selectedAddOns.tyre && !autoIncluded.includes('tyre')) total += 7 * durationMonths;
   if (selectedAddOns.wearAndTear && !autoIncluded.includes('wearAndTear')) total += 20 * durationMonths;
   if (selectedAddOns.european && !autoIncluded.includes('european')) total += 5 * durationMonths;
   if (selectedAddOns.motRepair && !autoIncluded.includes('motRepair')) total += 4 * durationMonths;
