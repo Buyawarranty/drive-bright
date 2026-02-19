@@ -461,6 +461,50 @@ serve(async (req) => {
     }
     
     if (!vehicleData) {
+      // DVSA failed completely - try DVLA VES fallback before giving up
+      console.log(`DVSA API failed after ${maxRetries} attempts - attempting DVLA VES fallback`);
+      const regUpper = registrationNumber.toUpperCase();
+      const dvlaFallback = await fetchDVLAFallback(registrationNumber);
+      
+      if (dvlaFallback?.make) {
+        console.log('DVLA VES fallback succeeded:', { make: dvlaFallback.make, model: dvlaFallback.model });
+        const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: dvlaFallback.model || '', regNumber: registrationNumber });
+        const blocked = !validation.isValid;
+        
+        // Check vehicle age
+        if (dvlaFallback.yearOfManufacture) {
+          const currentYear = new Date().getFullYear();
+          const vehicleAge = currentYear - dvlaFallback.yearOfManufacture;
+          if (vehicleAge > 15) {
+            return new Response(JSON.stringify({
+              found: false,
+              error: "We cannot offer warranties for vehicles over 15 years of age"
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+        }
+        
+        return new Response(JSON.stringify({
+          found: true,
+          blocked,
+          blockReason: blocked ? validation.errorMessage : undefined,
+          registrationNumber: regUpper,
+          make: dvlaFallback.make,
+          model: dvlaFallback.model || null,
+          fuelType: dvlaFallback.fuelType || null,
+          colour: dvlaFallback.colour || null,
+          yearOfManufacture: dvlaFallback.yearOfManufacture || null,
+          manufactureDate: null,
+          vehicleType: 'car',
+          source: 'dvla_fallback'
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      
       const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
       throw new Error(`DVSA API failed after ${maxRetries} attempts: ${errorMessage}`);
     }
