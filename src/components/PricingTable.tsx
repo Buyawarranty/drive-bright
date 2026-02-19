@@ -2473,13 +2473,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             £{(tier.displayValue ?? tier.value).toLocaleString()} <span className="text-base">per claim</span>
                           </div>
                           {tier.value === 5000 && (
-                            <div className="text-sm text-primary font-medium mt-1">
-                              +£{PREMIUM_CLAIM_MONTHLY[paymentType as string]}/mo
+                            <div className="text-sm text-[#0BA360] font-medium mt-1">
+                              Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType as string] * 12) / 365 * 100)}p/day more
                             </div>
                           )}
                           {tier.value === 3000 && (
-                            <div className="text-sm text-primary font-medium mt-1">
-                              +£5/mo
+                            <div className="text-sm text-[#0BA360] font-medium mt-1">
+                              Just {Math.round((5 * 12) / 365 * 100)}p/day more
                             </div>
                           )}
                         </div>
