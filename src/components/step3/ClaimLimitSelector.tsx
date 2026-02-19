@@ -36,28 +36,13 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];
 
-  // Handle selection - £3000 uses boost internally, £5000 is direct
+  // Handle selection - £3000 and £5000 both use premium surcharge
   const handleSelect = (limit: number) => {
-    if (limit === 3000) {
-      // £3000 = £2000 base + boost addon
-      onClaimLimitChange(2000);
-      onBoostChange(true);
-    } else if (limit === 5000) {
-      onClaimLimitChange(5000);
-      onBoostChange(false);
-    } else {
-      onClaimLimitChange(limit);
-      onBoostChange(false);
-    }
+    onClaimLimitChange(limit === 3000 ? 3000 : limit === 5000 ? 5000 : limit);
+    onBoostChange(false);
   };
 
-  // Determine which tier to highlight
-  const getDisplayedLimit = () => {
-    if (boostAddon && selectedClaimLimit === 2000) return 3000;
-    return selectedClaimLimit;
-  };
-
-  const displayedLimit = getDisplayedLimit();
+  const displayedLimit = selectedClaimLimit;
 
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-border">
@@ -113,14 +98,9 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     </div>
                     <div className="text-xs text-muted-foreground">per claim</div>
                     {/* Show monthly cost indicator for premium tiers */}
-                    {tier.value === 5000 && (
+                    {(tier.value === 5000 || tier.value === 3000) && (
                       <div className="text-[11px] sm:text-xs text-[#0BA360] font-semibold mt-1">
                         Just {Math.round((PREMIUM_CLAIM_MONTHLY[effectivePaymentType] * 12) / 365 * 100)}p/day more
-                      </div>
-                    )}
-                    {tier.value === 3000 && (
-                      <div className="text-[11px] sm:text-xs text-[#0BA360] font-semibold mt-1">
-                        Just {Math.round((boostPrice * 12) / 365 * 100)}p/day more
                       </div>
                     )}
                   </button>

@@ -849,25 +849,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return addOnPrice - oneTimeAddOnPrice;
   }, [addOnPrice, oneTimeAddOnPrice]);
   
-  // Calculate boost addon cost using centralized function (£5/month × duration)
-  const boostAddonCost = useMemo(() => {
-    return calculateBoostAdjustment(boostAddon, paymentType as PaymentPeriod);
-  }, [boostAddon, paymentType]);
-
   // Calculate labour rate total adjustment using centralized function
   const labourRateTotalAdjustment = useMemo(() => {
     return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod);
   }, [selectedLabourRate, paymentType]);
 
-  // £5000 claim limit surcharge
+  // £3000 and £5000 claim limit surcharge (£8/£9/£10 per month for 1yr/2yr/3yr)
   const premiumClaimSurcharge = useMemo(() => {
-    return selectedClaimLimit === 5000 ? getPremiumClaimSurcharge(paymentType as string) : 0;
+    return selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(paymentType as string) : 0;
   }, [selectedClaimLimit, paymentType]);
 
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + boostAddonCost + addOnPrice + premiumClaimSurcharge;
-  }, [basePlanPrice, labourRateTotalAdjustment, boostAddonCost, addOnPrice, premiumClaimSurcharge]);
+    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge;
+  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge]);
 
   // Marketing savings (display only - NOT applied to actual price)
   const marketingSavings = useMemo(() => {
@@ -885,10 +880,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
   }, [selectedLabourRate]);
 
-  // Memoized boost display adjustment (£5/month)
+  // Memoized boost display adjustment (no longer used - surcharge replaces boost)
   const boostDisplayAdjustment = useMemo(() => {
-    return boostAddon ? 5 : 0;
-  }, [boostAddon]);
+    return 0;
+  }, []);
 
   // Memoized display monthly price - ALWAYS floor(total / 12)
   const displayMonthlyPrice = useMemo(() => {
@@ -1144,10 +1139,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
         
         const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
         const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
-        const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
         const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
+        const premSurcharge = selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(emailQuoteDuration) : 0;
         
-        const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
+        const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
         displayedMonthlyPrice = Math.floor(total / 12);
       }
 
@@ -2952,14 +2947,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
                       const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
                       
-                      // Calculate boost addon cost
-                      const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
+                      // Calculate premium surcharge for £3k/£5k
+                      const premSurcharge = selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(emailQuoteDuration) : 0;
                       
                       // Calculate add-on price including transfer cover
                       const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                       
                       // Total price for this duration
-                      const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
+                      const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
                       
                       // Monthly = floor(total / 12)
                       return Math.floor(total / 12);
@@ -2985,10 +2980,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
                     const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
-                    const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
+                    const premSurcharge = selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(emailQuoteDuration) : 0;
                     const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                     
-                    const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
+                    const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
                     
                     // Total = floor(total / 12) * 12
                     return Math.floor(total / 12) * 12;
