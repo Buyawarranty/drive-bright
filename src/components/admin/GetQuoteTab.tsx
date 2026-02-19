@@ -2217,7 +2217,8 @@ Questions? Call 0330 229 5040`;
                       .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair'].includes(addon.key))
                       .map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
-                      const isSelected = selectedAddOns[addon.key] || isAutoIncluded;
+                      const isUnavailable = ['wearAndTear', 'tyre'].includes(addon.key);
+                      const isSelected = !isUnavailable && (selectedAddOns[addon.key] || isAutoIncluded);
                       // Display monthly price like Step 3
                       const monthlyPriceDisplay = addon.oneTimePrice 
                         ? `£${addon.oneTimePrice} one-off` 
@@ -2226,20 +2227,24 @@ Questions? Call 0330 229 5040`;
                       return (
                         <button
                           key={addon.key}
-                          onClick={() => !isAutoIncluded && handleToggleAddOn(addon.key)}
-                          disabled={isAutoIncluded}
+                          onClick={() => !isAutoIncluded && !isUnavailable && handleToggleAddOn(addon.key)}
+                          disabled={isAutoIncluded || isUnavailable}
                           className={cn(
-                            "p-3 rounded-lg border-2 text-left transition-all",
-                            isAutoIncluded 
-                              ? "border-green-300 bg-green-50 cursor-default" 
-                              : isSelected
-                                ? "border-primary bg-primary/10"
-                                : "border-border hover:border-primary/50"
+                            "p-3 rounded-lg border-2 text-left transition-all relative",
+                            isUnavailable
+                              ? "border-border bg-muted opacity-50 cursor-not-allowed"
+                              : isAutoIncluded 
+                                ? "border-green-300 bg-green-50 cursor-default" 
+                                : isSelected
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50"
                           )}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium text-sm">{addon.name}</span>
-                            {isAutoIncluded ? (
+                            <span className={cn("font-medium text-sm", isUnavailable && "line-through text-muted-foreground")}>{addon.name}</span>
+                            {isUnavailable ? (
+                              <Badge variant="outline" className="text-[10px] bg-muted border-border text-muted-foreground">UNAVAILABLE</Badge>
+                            ) : isAutoIncluded ? (
                               <Badge variant="outline" className="text-[10px] bg-green-100 border-green-300 text-green-700">FREE</Badge>
                             ) : (
                               <span className="text-xs font-medium text-primary">{monthlyPriceDisplay}</span>
