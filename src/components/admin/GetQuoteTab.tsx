@@ -365,10 +365,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       addOnPrice: addOnPrice + premiumSurcharge
     });
     
-    // Calculate pay-in-full - only apply 10% discount if toggle is ON
+    // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)
+    const contractTotal = result.monthlyPrice * 12;
     const payInFullPrice = includePayInFullDiscount 
-      ? Math.floor(result.totalPrice * 0.90)
-      : result.totalPrice;
+      ? Math.floor(contractTotal * 0.90)
+      : contractTotal;
     
     return { 
       totalPrice: result.totalPrice, 
@@ -385,10 +386,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     if (isPriceOverridden) {
       if (customFullPrice && parseFloat(customFullPrice) > 0) {
         const fullPrice = parseFloat(customFullPrice);
+        const monthly = Math.floor(fullPrice / 12);
+        const contractTotal = monthly * 12; // Consistent with what customer actually pays monthly
         return { 
           totalPrice: fullPrice, 
-          monthlyPrice: Math.floor(fullPrice / 12),
-          payInFullPrice: includePayInFullDiscount ? Math.floor(fullPrice * 0.90) : fullPrice,
+          monthlyPrice: monthly,
+          payInFullPrice: includePayInFullDiscount ? Math.floor(contractTotal * 0.90) : contractTotal,
           wasPrice: 0,
           savings: 0
         };
@@ -1151,7 +1154,8 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     
     const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
-    const payInFullPrice = currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.90);
+    const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
+    const payInFullPrice = currentPrice.payInFullPrice || Math.floor(contractTotal * 0.90);
     
     try {
       const { data, error } = await supabase.functions.invoke('create-live-quote', {
