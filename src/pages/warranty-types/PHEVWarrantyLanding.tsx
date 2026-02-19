@@ -537,33 +537,30 @@ const PHEVWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>PHEV Plug-in Hybrid Warranty UK From £19/mo | BMW, Volvo, Audi & More</title>
-        <meta name="description" content="Get a plug-in hybrid (PHEV) warranty from £19/month. We cover BMW 330e, X5 PHEV, Mercedes GLC 300 e, Volvo XC60 Recharge, Audi Q5 TFSI e, Kia Niro PHEV, Ford Kuga PHEV & 100+ PHEV models. Electric motors, inverters, on-board chargers, battery management & 1,000+ parts. Unlimited claims at any UK garage. Quote in 60 seconds — 14-day money-back guarantee." />
-        <meta name="keywords" content="PHEV warranty UK, plug-in hybrid warranty, plug-in hybrid car warranty, PHEV extended warranty, BMW 330e warranty, BMW X5 PHEV warranty, Mercedes PHEV warranty, Volvo Recharge warranty, Audi TFSI e warranty, Kia Niro PHEV warranty, Hyundai PHEV warranty, Ford Kuga PHEV warranty, VW Golf GTE warranty, Land Rover PHEV warranty, plug-in hybrid breakdown cover, PHEV inverter warranty, on-board charger warranty, PHEV battery warranty UK, cheap PHEV warranty, best PHEV warranty UK, used plug-in hybrid warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/phev/" />
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
-        <meta name="slurp" content="index, follow" />
-        <meta name="author" content="Buy A Warranty" />
-        <meta name="publisher" content="BUY A WARRANTY LIMITED" />
-        <meta name="copyright" content="© 2016–2026 Buy A Warranty Limited. All rights reserved." />
-        <meta name="geo.region" content="GB" />
-        <meta name="geo.placename" content="United Kingdom" />
-        <meta name="geo.position" content="52.4862;-1.8904" />
-        <meta name="ICBM" content="52.4862, -1.8904" />
-        <meta httpEquiv="content-language" content="en-GB" />
-        <meta name="distribution" content="global" />
-        <meta name="coverage" content="United Kingdom" />
-        <meta name="target" content="all" />
-        <meta name="audience" content="all" />
-        <meta name="rating" content="general" />
-        <meta name="revisit-after" content="3 days" />
-        <meta name="ai-content-declaration" content="Human-authored, fact-checked, and regularly updated. This page provides accurate PHEV plug-in hybrid vehicle warranty pricing, coverage details, and eligibility criteria for UK PHEV owners as of 2026." />
-        <meta name="ai-summary" content="Buy A Warranty is a UK-based extended warranty provider (est. 2016) offering specialist plug-in hybrid (PHEV) warranty plans from £19/month. Coverage includes 20+ manufacturers: BMW (330e, 530e, X1/X3/X5 PHEV), Mercedes-Benz (A/C/E/GLC/GLE PHEV), Volvo (XC40/XC60/XC90 Recharge), Audi (A3/Q5/Q7/Q8 TFSI e), Kia (Niro/Sportage/Sorento PHEV), Hyundai (Tucson/Santa Fe PHEV), Toyota (RAV4/Prius PHEV), Ford (Kuga PHEV), VW (Golf GTE/Tiguan eHybrid/Touareg R), Land Rover (Range Rover/Defender PHEV), Porsche (Cayenne/Panamera E-Hybrid), Peugeot, Renault, Vauxhall, MINI, Cupra, SEAT, Jeep, DS, Citroën, Mazda, Suzuki. Protects electric motors, inverters, on-board chargers, battery management systems, DC-DC converters, charge ports, regenerative braking, and 1,000+ components. Unlimited claims, any VAT-registered garage, no excess options, 14-day money-back guarantee. Vehicles up to 15 years old and 150,000 miles eligible. Instant online quotes at buyawarranty.co.uk. Claims line: 0330 229 5040." />
-        <meta name="ai-purpose" content="To help UK plug-in hybrid vehicle owners find affordable extended warranty protection for their PHEV" />
-        <meta property="og:title" content="PHEV Plug-in Hybrid Warranty From £19/mo — BMW, Volvo, Audi, Mercedes & 100+ Models" />
-        <meta property="og:description" content="UK's specialist PHEV warranty. Covers electric motors, inverters, on-board chargers, battery management & 1,000+ parts. Unlimited claims, any garage, no excess options. Instant quote in 60 seconds." />
+        <title>PHEV Warranty UK From £19/mo | Plug-in Hybrid Cover — BMW, Mercedes, Volvo, Kia</title>
+        <meta name="description" content="UK's No.1 plug-in hybrid (PHEV) warranty from just £19/month. Covers 100+ PHEV models including BMW 330e, X5 xDrive45e, Mercedes GLC 300 e, Volvo XC60 Recharge, Audi Q5 TFSI e, Kia Niro PHEV, Ford Kuga PHEV, Range Rover P440e & more. Electric motors, inverters, on-board chargers, DC-DC converters & 1,000+ parts protected. Unlimited claims at any VAT-registered UK garage. 60-second online quotes — 14-day money-back guarantee. Call 0330 229 5040." />
+        <meta name="keywords" content="PHEV warranty UK, plug-in hybrid warranty, plug-in hybrid car warranty, PHEV extended warranty, BMW 330e warranty, BMW X5 PHEV warranty, Mercedes PHEV warranty, Volvo Recharge warranty, Audi TFSI e warranty, Kia Niro PHEV warranty, Hyundai PHEV warranty, Ford Kuga PHEV warranty, VW Golf GTE warranty, Land Rover PHEV warranty, plug-in hybrid breakdown cover, PHEV inverter warranty, on-board charger warranty, PHEV battery warranty UK, cheap PHEV warranty, best PHEV warranty UK, used plug-in hybrid warranty, Range Rover PHEV warranty, Porsche Cayenne E-Hybrid warranty, Peugeot 3008 hybrid warranty, PHEV electric motor cover" />
+        <meta name="subject" content="Plug-in Hybrid Vehicle Extended Warranty Plans in the United Kingdom" />
+        <meta name="topic" content="PHEV Plug-in Hybrid Car Warranty UK" />
+        <meta name="summary" content="Extended warranty plans for plug-in hybrid vehicles in the UK from £19/month. Over 100 PHEV models covered across 20+ manufacturers." />
+        <meta name="classification" content="Automotive Warranty / PHEV Plug-in Hybrid / Vehicle Protection" />
+        <meta name="pagename" content="PHEV Plug-in Hybrid Warranty UK" />
+        <meta name="HandheldFriendly" content="true" />
+        <meta name="MobileOptimized" content="width" />
+        <meta name="abstract" content="Buy A Warranty offers specialist PHEV plug-in hybrid vehicle warranty cover across the United Kingdom from £19 per month covering electric motors, inverters, on-board chargers and 1,000+ components." />
+        <meta name="page-type" content="product-landing" />
+        <meta name="expected-audience" content="UK plug-in hybrid vehicle owners seeking extended warranty protection" />
+        <meta name="category" content="Automotive > Vehicle Warranty > Plug-in Hybrid" />
+        <meta name="news_keywords" content="PHEV warranty, plug-in hybrid warranty UK, extended car warranty, BMW PHEV cover, Mercedes PHEV warranty" />
+        <meta name="original-source" content="https://buyawarranty.co.uk/warranty-types/phev/" />
+        <meta name="syndication-source" content="https://buyawarranty.co.uk/warranty-types/phev/" />
+        <meta name="ai-content-declaration" content="Human-authored, fact-checked, and regularly updated by UK automotive warranty specialists. This page provides accurate PHEV plug-in hybrid vehicle warranty pricing (from £19/month), coverage details for 100+ models across 20+ manufacturers, eligibility criteria (up to 15 years old, 150,000 miles), and claim process information for UK PHEV owners. Last verified February 2026." />
+        <meta name="ai-summary" content="Buy A Warranty (est. 2016, Companies House: BUY A WARRANTY LIMITED) is a UK-based extended warranty provider offering specialist plug-in hybrid (PHEV) warranty plans from £19/month (60p/day). KEY FACTS: Covers 20+ manufacturers and 100+ PHEV models — BMW (225xe, 330e, 530e, 745e, X1/X2/X3/X5 xDrive, XM), Mercedes-Benz (A/B/C/E 300e, GLA/GLC/GLE/S 580e), Volvo (XC40/XC60/XC90/S60/S90/V60/V90 Recharge), Audi (A3/A6/A7/A8/Q3/Q5/Q7/Q8 TFSI e), Kia (Niro/Sportage/Sorento/XCeed PHEV), Hyundai (Ioniq/Tucson/Santa Fe PHEV), Toyota (RAV4/Prius Plug-in), Ford (Kuga/Tourneo/Galaxy/S-MAX PHEV), VW (Golf GTE/Passat GTE/Tiguan/Touareg R/Arteon eHybrid), Land Rover (Range Rover Evoque/Sport/Defender/Discovery Sport P300e/P400e/P440e), Porsche (Cayenne/Panamera E-Hybrid), Peugeot, Renault, Vauxhall, MINI, Mazda, Cupra, SEAT, Jeep, DS, Citroën, Suzuki. COMPONENTS COVERED: Electric traction motors, power control units (inverters), on-board chargers (AC), battery management systems (BMS), DC-DC converters, regenerative braking systems, charge ports and flap actuators, high-voltage wiring harnesses, EV/hybrid drive mode controllers, battery cooling circuits, electric A/C compressors, heat pumps, plus full ICE engine, gearbox, turbo, steering, suspension — 1,000+ parts total. BENEFITS: Unlimited claims, any VAT-registered UK garage, no excess options available, 14-day money-back guarantee, instant cover, UK-based claims team. ELIGIBILITY: Vehicles 2012–2026, up to 15 years old, under 150,000 miles. CONTACT: 0330 229 5040, buyawarranty.co.uk. CLAIMS: Garage diagnoses fault → calls 0330 229 5045 → authorisation given → repair completed → Buy A Warranty pays garage directly." />
+        <meta name="ai-purpose" content="To help UK plug-in hybrid (PHEV) vehicle owners find affordable, comprehensive extended warranty protection covering electric motors, inverters, on-board chargers, battery management systems, and 1,000+ mechanical and electrical components" />
+        <meta name="ai-entity" content="Buy A Warranty | Type: UK Automotive Warranty Provider | Founded: 2016 | Speciality: PHEV Plug-in Hybrid Extended Warranty | Price: From £19/month | Rating: 4.8/5 (2,847 reviews) | Phone: 0330 229 5040" />
+        <meta name="ai-key-facts" content="PHEV warranty from £19/month; 100+ plug-in hybrid models covered; 20+ manufacturers; 1,000+ components; unlimited claims; any UK garage; 14-day money-back guarantee; vehicles up to 15 years and 150,000 miles; UK-based claims team; instant online quotes; established 2016" />
+        <meta property="og:title" content="PHEV Warranty UK — Plug-in Hybrid Cover From £19/mo | BMW 330e, Mercedes GLC, Volvo XC60 & 100+ Models | Buy A Warranty" />
+        <meta property="og:description" content="UK's No.1 specialist PHEV warranty. Covers electric motors, inverters, on-board chargers, battery management & 1,000+ parts across 100+ plug-in hybrid models. Unlimited claims at any garage. 60-second quote — 14-day money-back guarantee. 0330 229 5040." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/phev/" />
         <meta property="og:type" content="product" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -577,10 +574,14 @@ const PHEVWarrantyLanding: React.FC = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@buyawarranty" />
         <meta name="twitter:creator" content="@buyawarranty" />
-        <meta name="twitter:title" content="PHEV Plug-in Hybrid Warranty UK — From £19/mo | 100+ Models" />
-        <meta name="twitter:description" content="Specialist PHEV warranty for BMW, Mercedes, Volvo, Audi & more. Electric motors, inverters, on-board chargers covered. Unlimited claims, any UK garage. Quote in 60 seconds." />
+        <meta name="twitter:title" content="PHEV Warranty UK From £19/mo — Plug-in Hybrid Cover for BMW, Mercedes, Volvo & 100+ Models" />
+        <meta name="twitter:description" content="UK's specialist PHEV warranty covering electric motors, inverters, on-board chargers & 1,000+ parts. Unlimited claims, any UK garage. 60-second quote — 14-day money-back guarantee." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
-        <meta name="twitter:image:alt" content="PHEV Plug-in Hybrid Warranty UK — Buy A Warranty — From £19 per month" />
+        <meta name="twitter:image:alt" content="PHEV plug-in hybrid warranty UK from £19 per month — Buy A Warranty covers BMW, Mercedes, Volvo, Audi, Kia and 100+ models" />
+        <meta name="twitter:label1" content="Price" />
+        <meta name="twitter:data1" content="From £19/month" />
+        <meta name="twitter:label2" content="Models covered" />
+        <meta name="twitter:data2" content="100+ PHEV models" />
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -590,16 +591,17 @@ const PHEVWarrantyLanding: React.FC = () => {
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
       </Helmet>
 
-      <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage">
+      <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage" lang="en-GB">
         {/* Hero Section */}
         <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-6 pb-12 md:pt-12 md:pb-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               <div className="text-center lg:text-left">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Plug-in hybrid warranty </span>
+                  <span className="text-gray-900">PHEV plug-in hybrid warranty </span>
                   <span className="text-brand-orange">from £19/month</span>
                 </h1>
+                <p className="hero-description text-sm md:text-base text-gray-600 mb-2">Specialist UK warranty for plug-in hybrid vehicles — covers electric motors, inverters, on-board chargers, battery management systems & 1,000+ components across BMW, Mercedes, Volvo, Audi, Kia & 100+ PHEV models.</p>
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
@@ -635,7 +637,7 @@ const PHEVWarrantyLanding: React.FC = () => {
               </div>
               <div className="relative">
                 <div className="relative">
-                  <OptimizedImage src={phevHeroImage} alt="PHEV plug-in hybrid warranty UK - BMW X5 xDrive45e covered by Buy A Warranty from £19 per month"
+                  <OptimizedImage src={phevHeroImage} alt="BMW X5 xDrive45e plug-in hybrid covered by Buy A Warranty PHEV warranty UK from £19 per month — electric motor, inverter and on-board charger protection"
                     className="w-full h-auto max-w-md mx-auto object-contain" priority={true} width={600} height={450} style={{ border: 'none', boxShadow: 'none' }} />
                   <div className="absolute top-4 right-4">
                     <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
@@ -695,7 +697,7 @@ const PHEVWarrantyLanding: React.FC = () => {
                 Without warranty, you pay the full bill
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-                Average PHEV repair costs in the UK
+                Average plug-in hybrid repair costs in the UK
               </h2>
               <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
                 Plug-in hybrid parts are specialist and expensive. A single component failure could cost you thousands.
