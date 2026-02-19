@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Loader2, Trophy, Phone, Mail, ChevronRight, ArrowRight } from 'lucide-react';
+import { X, Check, Loader2, Trophy, Phone, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,7 +33,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const { toast } = useToast();
   const [isAnimating, setIsAnimating] = useState(false);
   const [requestPhone, setRequestPhone] = useState('');
-  const [requestEmail, setRequestEmail] = useState('');
   const [competitorPrice, setCompetitorPrice] = useState('');
   const [requestMessage, setRequestMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,20 +40,17 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [isPhoneValid, setIsPhoneValid] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
       setRequestPhone('');
-      setRequestEmail('');
       setCompetitorPrice('');
       setRequestMessage('');
       setRequestSuccess(false);
       setShowDetails(false);
       setPhoneError('');
       setIsPhoneValid(false);
-      setIsEmailValid(false);
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
     } else {
@@ -68,10 +64,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     return /^(07\d{9}|(\+44|0044)7\d{9}|0[1-9]\d{8,9})$/.test(cleaned);
   };
 
-  const validateEmail = (email: string): boolean => {
-    if (!email.trim()) return false;
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  };
+
+
 
   const getRequestedOptionsString = () => {
     const parts: string[] = [];
@@ -88,10 +82,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     setIsPhoneValid(validatePhone(value));
   };
 
-  const handleEmailChange = (value: string) => {
-    setRequestEmail(value);
-    setIsEmailValid(validateEmail(value));
-  };
+
+
 
   const handlePhoneBlur = () => {
     if (requestPhone.trim() && !validatePhone(requestPhone)) {
@@ -114,7 +106,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       const requestedOptions = getRequestedOptionsString();
 
       const { error } = await supabase.from('abandoned_carts').insert({
-        email: requestEmail.trim() || `callback-${Date.now()}@price-match.temp`,
+        email: `callback-${Date.now()}@price-match.temp`,
         phone: requestPhone.trim(),
         step_abandoned: 3,
         contact_status: 'new',
@@ -155,24 +147,27 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     <form onSubmit={handleSubmit} className={cn("space-y-5", mobile ? "p-5 pt-10 pb-8" : "p-6 pt-12 pb-8")}>
       <div>
         <h2 className={cn("font-bold text-gray-900 leading-tight", mobile ? "text-xl" : "text-2xl")}>
-          Not the right price? We'll beat any like‑for‑like quote.
+          🏆 We'll beat any like‑for‑like quote
         </h2>
-        <p className="text-sm text-gray-500 mt-1.5">Share the price you were quoted.</p>
+        <p className="text-sm text-gray-500 mt-1.5">Tell us what you were quoted and we'll do better — guaranteed.</p>
       </div>
 
+      {/* Price field */}
       <div>
         <Label className="text-sm font-bold text-gray-900 mb-1.5 block">What price were you quoted?</Label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-lg">£</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-bold text-lg">£</span>
           <Input
             type="text"
             inputMode="numeric"
             value={competitorPrice}
             onChange={(e) => setCompetitorPrice(e.target.value.replace(/[^0-9.]/g, ''))}
-            placeholder="Enter quoted price"
+            placeholder="e.g. 350"
             className={cn(
-              "h-13 pl-9 pr-12 rounded-xl bg-gray-50 text-base border-2 focus:bg-white focus:border-brand-orange focus:ring-0",
-              competitorPrice ? "border-emerald-500" : "border-gray-200"
+              "h-14 pl-9 pr-12 rounded-xl text-base font-semibold border-2 focus:ring-0 transition-colors",
+              competitorPrice
+                ? "border-emerald-500 bg-white focus:border-emerald-500"
+                : "border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange"
             )}
             disabled={isSubmitting}
           />
@@ -184,64 +179,43 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             </div>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-1">We'll beat any like‑for‑like quote</p>
       </div>
 
+      {/* Phone field */}
       <div>
-        <Label className="text-sm font-bold text-gray-900 mb-3 block">Your contact details</Label>
-        <div className="space-y-3">
-          <div className="relative">
-            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              type="tel"
-              value={requestPhone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
-              onBlur={handlePhoneBlur}
-              placeholder="Phone number (required)"
-              className={cn(
-                "h-13 pl-10 pr-12 rounded-xl bg-gray-50 text-base border-2 focus:bg-white focus:ring-0",
-                phoneError ? "border-red-500 focus:border-red-500"
-                  : isPhoneValid ? "border-emerald-500 focus:border-emerald-500"
-                  : "border-gray-200 focus:border-brand-orange"
-              )}
-              disabled={isSubmitting}
-              autoComplete="tel"
-            />
-            {isPhoneValid && !phoneError && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-6 h-6 rounded-full border-2 border-emerald-500 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-emerald-500" strokeWidth={3} />
-                </div>
-              </div>
+        <Label className="text-sm font-bold text-gray-900 mb-1.5 block">Your mobile number</Label>
+        <div className="relative">
+          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-black/50" />
+          <Input
+            type="tel"
+            value={requestPhone}
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            onBlur={handlePhoneBlur}
+            placeholder="07900 000000"
+            className={cn(
+              "h-14 pl-11 pr-12 rounded-xl text-base font-semibold border-2 focus:ring-0 transition-colors",
+              phoneError
+                ? "border-red-500 bg-white focus:border-red-500"
+                : isPhoneValid
+                  ? "border-emerald-500 bg-white focus:border-emerald-500"
+                  : "border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange"
             )}
-          </div>
-          {phoneError && <p className="text-xs text-red-500 -mt-1.5">{phoneError}</p>}
-
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              type="email"
-              value={requestEmail}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              placeholder="Email (optional)"
-              className={cn(
-                "h-13 pl-10 pr-12 rounded-xl bg-gray-50 text-base border-2 focus:bg-white focus:ring-0",
-                isEmailValid ? "border-emerald-500 focus:border-emerald-500" : "border-gray-200 focus:border-brand-orange"
-              )}
-              disabled={isSubmitting}
-              autoComplete="email"
-            />
-            {isEmailValid && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-6 h-6 rounded-full border-2 border-emerald-500 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-emerald-500" strokeWidth={3} />
-                </div>
+            disabled={isSubmitting}
+            autoComplete="tel"
+          />
+          {isPhoneValid && !phoneError && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="w-6 h-6 rounded-full border-2 border-emerald-500 flex items-center justify-center">
+                <Check className="w-4 h-4 text-emerald-500" strokeWidth={3} />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+        {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
+        <p className="text-xs text-gray-500 mt-1">We'll call you back with a better price</p>
       </div>
 
+      {/* Optional details toggle */}
       <button
         type="button"
         onClick={() => setShowDetails(!showDetails)}
@@ -254,8 +228,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         <Textarea
           value={requestMessage}
           onChange={(e) => setRequestMessage(e.target.value)}
-          placeholder="Tell us what the quote includes"
-          className="rounded-xl resize-none border-2 border-gray-200 bg-gray-50 focus:bg-white focus:border-brand-orange text-sm"
+          placeholder="Tell us what the quote includes (provider, cover level, etc.)"
+          className="rounded-xl resize-none border-2 border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange text-sm font-medium"
           rows={3}
           disabled={isSubmitting}
         />
@@ -269,11 +243,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         {isSubmitting ? (
           <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Submitting...</>
         ) : (
-          'Beat this quote'
+          <>Beat this quote <ArrowRight className="w-5 h-5 ml-2" /></>
         )}
       </Button>
 
-      <p className="text-xs text-gray-400 text-center">Your request will be prioritised.</p>
+      <p className="text-xs text-gray-500 text-center font-medium">⚡ Priority request — we'll call you back ASAP</p>
 
       <div className="border-t border-gray-100 pt-4">
         <p className="text-sm text-gray-600 text-center mb-2">Don't want to wait? Ring us now</p>
