@@ -2178,10 +2178,21 @@ Questions? Call 0330 229 5040`;
                     {getVisibleClaimLimits(vehicleData?.make).map((option) => (
                       <button
                         key={option.value}
-                        onClick={() => setClaimLimit(option.value)}
+                        onClick={() => {
+                          if (option.value === 3000) {
+                            setClaimLimit(2000);
+                            setBoostAddon(true);
+                          } else if (option.value === 5000) {
+                            setClaimLimit(5000);
+                            setBoostAddon(false);
+                          } else {
+                            setClaimLimit(option.value);
+                            setBoostAddon(false);
+                          }
+                        }}
                         className={cn(
                           "py-3 px-2 rounded-lg border-2 text-center transition-all relative",
-                          claimLimit === option.value
+                          (option.value === 3000 ? (claimLimit === 2000 && boostAddon) : claimLimit === option.value && (option.value !== 2000 || !boostAddon))
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         )}
@@ -2193,12 +2204,12 @@ Questions? Call 0330 229 5040`;
                         <div className="text-xs text-muted-foreground">{option.description}</div>
                         {option.value === 5000 && (
                           <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
-                            Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType] * 12) / 365 * 100)}p/day more
+                            +£{PREMIUM_CLAIM_MONTHLY[paymentType]}/mo
                           </div>
                         )}
                         {option.value === 3000 && (
                           <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
-                            Just {Math.round((5 * 12) / 365 * 100)}p/day more
+                            +£5/mo
                           </div>
                         )}
                       </button>
