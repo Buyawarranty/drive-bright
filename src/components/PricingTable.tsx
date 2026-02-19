@@ -2470,7 +2470,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <div>
                           <h4 className="text-base font-semibold text-gray-500 mb-1">{tier.name}</h4>
                           <div className="text-3xl font-bold text-black">
-                            £{tier.value.toLocaleString()} <span className="text-base">per claim</span>
+                            £{(tier.displayValue ?? tier.value).toLocaleString()} <span className="text-base">per claim</span>
                           </div>
                           {tier.value === 5000 && (
                             <div className="text-sm text-primary font-medium mt-1">
