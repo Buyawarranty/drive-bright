@@ -127,7 +127,7 @@ export const PolicyDocumentsTab: React.FC = () => {
     const { data: policies } = await supabase
       .from('customer_policies')
       .select('*')
-      .eq('email', customer.email)
+      .ilike('email', customer.email)
       .or('is_deleted.is.null,is_deleted.eq.false')
       .order('created_at', { ascending: false });
 
