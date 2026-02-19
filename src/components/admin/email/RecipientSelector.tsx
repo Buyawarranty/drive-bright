@@ -10,6 +10,30 @@ import { Users, X, Search, Loader2, UserPlus, Download, ArrowUpDown, ShieldCheck
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// Strict email validation to filter fake/invalid emails
+const isValidEmail = (email: string): boolean => {
+  const trimmed = email.trim().toLowerCase();
+  // Basic format check
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(trimmed)) return false;
+  // Block disposable/temporary email domains
+  const disposableDomains = [
+    'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwaway.email',
+    'yopmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
+    'dispostable.com', 'trashmail.com', 'fakeinbox.com', 'tempail.com',
+    'maildrop.cc', 'mailnesia.com', 'mintemail.com', 'temp-mail.org',
+    'mohmal.com', 'getnada.com', '10minutemail.com', 'mailcatch.com',
+    'mailsac.com', 'burnermail.io', 'inboxbear.com', 'spamgourmet.com',
+    'jetable.org', 'trash-mail.com', 'getairmail.com', 'discard.email',
+  ];
+  const domain = trimmed.split('@')[1];
+  if (disposableDomains.includes(domain)) return false;
+  // Block obviously fake patterns
+  if (/^(test|fake|asdf|qwer|abc|xxx|noreply|no-reply|spam)@/i.test(trimmed)) return false;
+  if (/(.)\1{4,}/.test(trimmed.split('@')[0])) return false; // repeated chars like aaaaa@
+  return true;
+};
+
 interface Recipient {
   email: string;
   name: string;
@@ -128,9 +152,12 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
   };
 
   const handleManualAdd = () => {
-    if (manualEmail && manualEmail.includes('@')) {
-      addRecipient({ email: manualEmail, name: '' });
+    if (!manualEmail) return;
+    if (!isValidEmail(manualEmail)) {
+      toast.error('Invalid email address. Please enter a valid email.');
+      return;
     }
+    addRecipient({ email: manualEmail, name: '' });
   };
 
   const importFromAudience = async (filter: string) => {
@@ -170,10 +197,13 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
         if (error) throw error;
         if (!data || data.length === 0) break;
 
+        let skippedInvalid = 0;
         for (const c of data) {
           if (!c.email) continue;
           const email = c.email.toLowerCase().trim();
           
+          // Skip invalid/fake emails
+          if (!isValidEmail(email)) { skippedInvalid++; continue; }
           // Skip if already in current recipients
           if (existing.has(email)) continue;
           // Skip if previously emailed
@@ -194,8 +224,8 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
 
       onChange([...recipients, ...newRecipients]);
       
-      const skippedCount = excludePreviouslySent ? ` (${previouslySent.size} previously emailed skipped)` : '';
-      toast.success(`Imported ${newRecipients.length} contacts${skippedCount}`);
+      const skippedCount = excludePreviouslySent ? `, ${previouslySent.size} previously emailed skipped` : '';
+      toast.success(`Imported ${newRecipients.length} contacts${skippedCount}, invalid emails filtered out`);
     } catch {
       toast.error('Failed to import contacts');
     } finally {
