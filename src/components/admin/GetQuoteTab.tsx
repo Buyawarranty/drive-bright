@@ -2188,6 +2188,9 @@ Questions? Call 0330 229 5040`;
                       </button>
                     ))}
                   </div>
+                  <p className="text-xs text-amber-600 font-medium mt-1">
+                    ⚠️ £5,000 AutoCare Premium is not available for Porsche, Range Rover, Jaguar, and Tesla vehicles.
+                  </p>
                 </div>
 
                 {/* Optional Add-ons Section */}
