@@ -32,7 +32,7 @@ import {
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface VehicleData {
   regNumber: string;
@@ -352,8 +352,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       adjustmentType: vehicleAdjustmentResult.adjustmentType
     });
     
-    const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
-    const premiumSurcharge = claimLimit === 5000 ? getPremiumClaimSurcharge(paymentType) : 0;
+     const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
+    const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
     
     const result = calculateTotalWarrantyPrice({
       paymentPeriod: paymentType,
@@ -2202,14 +2202,9 @@ Questions? Call 0330 229 5040`;
                         )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
-                        {option.value === 5000 && (
+                         {(option.value === 5000 || option.value === 3000) && (
                           <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
-                            +£{PREMIUM_CLAIM_MONTHLY[paymentType]}/mo
-                          </div>
-                        )}
-                        {option.value === 3000 && (
-                          <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
-                            +£5/mo
+                            +£{getClaimLimitSurchargeMonthly(option.value, paymentType, excessAmount)}/mo
                           </div>
                         )}
                       </button>

@@ -31,7 +31,7 @@ import {
   getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
-import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import pandaSavingsMascot from "@/assets/panda-savings-mascot.webp";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
@@ -854,10 +854,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod);
   }, [selectedLabourRate, paymentType]);
 
-  // £3000 and £5000 claim limit surcharge (£8/£9/£10 per month for 1yr/2yr/3yr)
+   // £3000 and £5000 claim limit surcharge
   const premiumClaimSurcharge = useMemo(() => {
-    return selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(paymentType as string) : 0;
-  }, [selectedClaimLimit, paymentType]);
+    return getClaimLimitSurcharge(selectedClaimLimit, paymentType as string, voluntaryExcess || 100);
+  }, [selectedClaimLimit, paymentType, voluntaryExcess]);
 
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   const totalPrice = useMemo(() => {
@@ -1140,7 +1140,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
         const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
         const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
-        const premSurcharge = selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(emailQuoteDuration) : 0;
+        const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
         
         const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
         displayedMonthlyPrice = Math.floor(total / 12);
@@ -1569,7 +1569,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const durationAddOnPrice = calculateAddOnPrice(cardAddOns, durationId, durationMonths);
               
                // Add £3000/£5000 claim limit surcharge if applicable for this card
-               const cardPremiumSurcharge = (cardClaimLimit >= 3000) ? getPremiumClaimSurcharge(durationId) : 0;
+               const cardPremiumSurcharge = getClaimLimitSurcharge(cardClaimLimit, durationId, voluntaryExcess || 100);
               
               // Calculate total price with all adjustments including add-ons
               const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
@@ -2940,8 +2940,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
                       const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
                       
-                      // Calculate premium surcharge for £3k/£5k
-                      const premSurcharge = selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(emailQuoteDuration) : 0;
+                       // Calculate premium surcharge for £3k/£5k
+                       const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
                       
                       // Calculate add-on price including transfer cover
                       const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
@@ -2973,7 +2973,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
                     const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
-                    const premSurcharge = selectedClaimLimit >= 3000 ? getPremiumClaimSurcharge(emailQuoteDuration) : 0;
+                    const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
                     const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                     
                     const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
