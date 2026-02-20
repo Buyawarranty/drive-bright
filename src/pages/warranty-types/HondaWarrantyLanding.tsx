@@ -405,7 +405,7 @@ const HondaWarrantyLanding: React.FC = () => {
       "price": "24",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/honda/",
+      "url": "https://buyawarranty.co.uk/warranty-types/honda-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
@@ -477,7 +477,7 @@ const HondaWarrantyLanding: React.FC = () => {
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
       { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
-      { "@type": "ListItem", "position": 3, "name": "Honda Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/honda/" }
+      { "@type": "ListItem", "position": 3, "name": "Honda Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/honda-warranty/" }
     ]
   };
 
@@ -528,7 +528,7 @@ const HondaWarrantyLanding: React.FC = () => {
     "@type": "WebPage",
     "name": "Honda Extended Warranty UK - Civic, CR-V, Jazz, HR-V, ZR-V Cover",
     "description": "Protect your Honda with comprehensive extended warranty cover. All models from Civic to CR-V and Honda e. Nationwide UK coverage, approved garages, unlimited claims.",
-    "url": "https://buyawarranty.co.uk/warranty-types/honda/",
+    "url": "https://buyawarranty.co.uk/warranty-types/honda-warranty/",
     "isPartOf": { "@type": "WebSite", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
     "about": { "@type": "Thing", "name": "Honda Extended Warranty" },
     "mentions": [
@@ -559,7 +559,7 @@ const HondaWarrantyLanding: React.FC = () => {
         <title>Honda Extended Warranty UK | Civic, CR-V, Jazz, HR-V Cover from £24/mo</title>
         <meta name="description" content="Protect your Honda Civic, CR-V, Jazz, HR-V, ZR-V, Accord or Honda e with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Honda extended warranty, Honda used car warranty, Honda warranty UK, Honda warranty cost, Honda warranty quote, Honda Civic warranty, Honda CR-V warranty, Honda Jazz warranty, Honda HR-V warranty, Honda e warranty, Honda hybrid warranty, used Honda warranty, second hand Honda warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/honda/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/honda-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
@@ -572,7 +572,7 @@ const HondaWarrantyLanding: React.FC = () => {
         
         <meta property="og:title" content="Honda Warranty UK | Civic, CR-V, Jazz, HR-V, ZR-V from £24/mo" />
         <meta property="og:description" content="Comprehensive Honda warranty coverage for Civic, CR-V, Jazz, HR-V, ZR-V, Accord and e:HEV hybrids. Engine, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/honda/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/honda-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />

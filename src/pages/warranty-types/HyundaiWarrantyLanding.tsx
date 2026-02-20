@@ -412,7 +412,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
       "price": "24",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/hyundai/",
+      "url": "https://buyawarranty.co.uk/warranty-types/hyundai-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
@@ -484,7 +484,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
       { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
-      { "@type": "ListItem", "position": 3, "name": "Hyundai Warranty", "item": "https://buyawarranty.co.uk/warranty-types/hyundai/" }
+      { "@type": "ListItem", "position": 3, "name": "Hyundai Warranty", "item": "https://buyawarranty.co.uk/warranty-types/hyundai-warranty/" }
     ]
   };
 
@@ -575,13 +575,13 @@ const HyundaiWarrantyLanding: React.FC = () => {
         <title>Hyundai Extended Warranty UK | Tucson, i30, Kona, IONIQ 5 Cover from £24/mo</title>
         <meta name="description" content="Hyundai extended warranty from £24/month. Cover Tucson, i30, Kona, Santa Fe, IONIQ 5, IONIQ 6 & all models 2012-2026. Use any UK garage. 8,000+ components covered. Instant quote in 60 seconds." />
         <meta name="keywords" content="Hyundai extended warranty, Hyundai warranty UK, Hyundai Tucson warranty, Hyundai i30 warranty, Hyundai Kona warranty, Hyundai IONIQ 5 warranty, Hyundai IONIQ 6 warranty, Hyundai Santa Fe warranty, used Hyundai warranty, Hyundai car warranty, extended warranty Hyundai, Hyundai warranty after 5 years" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/hyundai/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/hyundai-warranty/" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Hyundai Extended Warranty UK | #1 Rated Hyundai Cover from £24/mo" />
         <meta property="og:description" content="Protect your Hyundai with the UK's top-rated extended warranty. Cover Tucson, i30, Kona, IONIQ 5, IONIQ 6 & all models. 8,000+ components. Any UK garage. Instant quote." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/hyundai/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/hyundai-warranty/" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />

@@ -417,7 +417,7 @@ const BMWWarrantyLanding: React.FC = () => {
       "price": "29",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/bmw/",
+      "url": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
       "seller": {
         "@type": "Organization",
         "name": "Buy A Warranty"
@@ -543,7 +543,7 @@ const BMWWarrantyLanding: React.FC = () => {
         "@type": "ListItem",
         "position": 3,
         "name": "BMW Extended Warranty",
-        "item": "https://buyawarranty.co.uk/warranty-types/bmw/"
+        "item": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/"
       }
     ]
   };
@@ -575,7 +575,7 @@ const BMWWarrantyLanding: React.FC = () => {
     "@type": "WebPage",
     "name": "BMW Extended Warranty UK - Get Instant Quote",
     "description": "Protect your BMW with comprehensive extended warranty cover. All models from 1 Series to X7 and i Series. Nationwide UK coverage, approved garages, unlimited claims. Get your instant quote in 60 seconds.",
-    "url": "https://buyawarranty.co.uk/warranty-types/bmw/",
+    "url": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Buy A Warranty",
@@ -635,7 +635,7 @@ const BMWWarrantyLanding: React.FC = () => {
         <title>BMW Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
         <meta name="description" content="Protect your BMW with comprehensive extended warranty cover. All models from 1 Series to X7 and i Series covered. Engine, gearbox, electrics & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £29/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="BMW extended warranty, BMW used car warranty, BMW warranty UK, BMW warranty cost, BMW warranty quote, BMW 3 Series warranty, BMW X5 warranty, BMW i4 warranty, BMW X3 warranty, BMW 5 Series warranty, BMW electric warranty, BMW hybrid warranty, used BMW warranty, second hand BMW warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/bmw/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/bmw-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
@@ -650,7 +650,7 @@ const BMWWarrantyLanding: React.FC = () => {
         {/* Open Graph */}
         <meta property="og:title" content="BMW Extended Warranty UK | Instant Quotes from £29/month" />
         <meta property="og:description" content="Comprehensive BMW warranty coverage. Engine, gearbox, electrics & more. All models covered including hybrid and electric. Nationwide UK coverage with any garage. Get your instant quote now." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/bmw/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/bmw-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />

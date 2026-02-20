@@ -228,44 +228,44 @@ const App = () => {
                     <Route path="/car-extended-warranty/bmw/" element={<BMWWarranty />} />
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
                     <Route path="/warranty-types/" element={<WarrantyTypes />} />
-                    <Route path="/warranty-types/bmw" element={<BMWWarrantyLanding />} />
-                    <Route path="/warranty-types/bmw/" element={<BMWWarrantyLanding />} />
-                    <Route path="/warranty-types/mercedes" element={<MercedesWarrantyLanding />} />
-                    <Route path="/warranty-types/mercedes/" element={<MercedesWarrantyLanding />} />
-                    <Route path="/warranty-types/vans" element={<VanWarrantyLanding />} />
-                    <Route path="/warranty-types/vans/" element={<VanWarrantyLanding />} />
+                    <Route path="/warranty-types/bmw-warranty" element={<BMWWarrantyLanding />} />
+                    <Route path="/warranty-types/bmw-warranty/" element={<BMWWarrantyLanding />} />
+                    <Route path="/warranty-types/mercedes-warranty" element={<MercedesWarrantyLanding />} />
+                    <Route path="/warranty-types/mercedes-warranty/" element={<MercedesWarrantyLanding />} />
+                    <Route path="/warranty-types/vans-warranty" element={<VanWarrantyLanding />} />
+                    <Route path="/warranty-types/vans-warranty/" element={<VanWarrantyLanding />} />
                     <Route path="/warranty-types/motorbike-motorcycle-warranty" element={<MotorbikeWarrantyLanding />} />
                     <Route path="/warranty-types/motorbike-motorcycle-warranty/" element={<MotorbikeWarrantyLanding />} />
-                    <Route path="/warranty-types/honda" element={<HondaWarrantyLanding />} />
-                    <Route path="/warranty-types/honda/" element={<HondaWarrantyLanding />} />
-                    <Route path="/warranty-types/toyota" element={<ToyotaWarrantyLanding />} />
-                    <Route path="/warranty-types/toyota/" element={<ToyotaWarrantyLanding />} />
-                    <Route path="/warranty-types/ford" element={<FordWarrantyLanding />} />
-                    <Route path="/warranty-types/ford/" element={<FordWarrantyLanding />} />
-                    <Route path="/warranty-types/kia" element={<KiaWarrantyLanding />} />
-                    <Route path="/warranty-types/kia/" element={<KiaWarrantyLanding />} />
-                    <Route path="/warranty-types/hyundai" element={<HyundaiWarrantyLanding />} />
-                    <Route path="/warranty-types/hyundai/" element={<HyundaiWarrantyLanding />} />
-                    <Route path="/warranty-types/mg" element={<MGWarrantyLanding />} />
-                    <Route path="/warranty-types/mg/" element={<MGWarrantyLanding />} />
-                    <Route path="/warranty-types/skoda" element={<SkodaWarrantyLanding />} />
-                    <Route path="/warranty-types/skoda/" element={<SkodaWarrantyLanding />} />
-                    <Route path="/warranty-types/audi" element={<AudiWarrantyLanding />} />
-                    <Route path="/warranty-types/audi/" element={<AudiWarrantyLanding />} />
-                    <Route path="/warranty-types/nissan" element={<NissanWarrantyLanding />} />
-                    <Route path="/warranty-types/nissan/" element={<NissanWarrantyLanding />} />
-                    <Route path="/warranty-types/peugeot" element={<PeugeotWarrantyLanding />} />
-                    <Route path="/warranty-types/peugeot/" element={<PeugeotWarrantyLanding />} />
-                    <Route path="/warranty-types/vauxhall" element={<VauxhallWarrantyLanding />} />
-                    <Route path="/warranty-types/vauxhall/" element={<VauxhallWarrantyLanding />} />
-                    <Route path="/warranty-types/volvo" element={<VolvoWarrantyLanding />} />
-                    <Route path="/warranty-types/volvo/" element={<VolvoWarrantyLanding />} />
-                    <Route path="/warranty-types/ev" element={<EVWarrantyLanding />} />
-                    <Route path="/warranty-types/ev/" element={<EVWarrantyLanding />} />
-                    <Route path="/warranty-types/hybrid" element={<HybridWarrantyLanding />} />
-                    <Route path="/warranty-types/hybrid/" element={<HybridWarrantyLanding />} />
-                    <Route path="/warranty-types/phev" element={<PHEVWarrantyLanding />} />
-                    <Route path="/warranty-types/phev/" element={<PHEVWarrantyLanding />} />
+                    <Route path="/warranty-types/honda-warranty" element={<HondaWarrantyLanding />} />
+                    <Route path="/warranty-types/honda-warranty/" element={<HondaWarrantyLanding />} />
+                    <Route path="/warranty-types/toyota-warranty" element={<ToyotaWarrantyLanding />} />
+                    <Route path="/warranty-types/toyota-warranty/" element={<ToyotaWarrantyLanding />} />
+                    <Route path="/warranty-types/ford-warranty" element={<FordWarrantyLanding />} />
+                    <Route path="/warranty-types/ford-warranty/" element={<FordWarrantyLanding />} />
+                    <Route path="/warranty-types/kia-warranty" element={<KiaWarrantyLanding />} />
+                    <Route path="/warranty-types/kia-warranty/" element={<KiaWarrantyLanding />} />
+                    <Route path="/warranty-types/hyundai-warranty" element={<HyundaiWarrantyLanding />} />
+                    <Route path="/warranty-types/hyundai-warranty/" element={<HyundaiWarrantyLanding />} />
+                    <Route path="/warranty-types/mg-warranty" element={<MGWarrantyLanding />} />
+                    <Route path="/warranty-types/mg-warranty/" element={<MGWarrantyLanding />} />
+                    <Route path="/warranty-types/skoda-warranty" element={<SkodaWarrantyLanding />} />
+                    <Route path="/warranty-types/skoda-warranty/" element={<SkodaWarrantyLanding />} />
+                    <Route path="/warranty-types/audi-warranty" element={<AudiWarrantyLanding />} />
+                    <Route path="/warranty-types/audi-warranty/" element={<AudiWarrantyLanding />} />
+                    <Route path="/warranty-types/nissan-warranty" element={<NissanWarrantyLanding />} />
+                    <Route path="/warranty-types/nissan-warranty/" element={<NissanWarrantyLanding />} />
+                    <Route path="/warranty-types/peugeot-warranty" element={<PeugeotWarrantyLanding />} />
+                    <Route path="/warranty-types/peugeot-warranty/" element={<PeugeotWarrantyLanding />} />
+                    <Route path="/warranty-types/vauxhall-warranty" element={<VauxhallWarrantyLanding />} />
+                    <Route path="/warranty-types/vauxhall-warranty/" element={<VauxhallWarrantyLanding />} />
+                    <Route path="/warranty-types/volvo-warranty" element={<VolvoWarrantyLanding />} />
+                    <Route path="/warranty-types/volvo-warranty/" element={<VolvoWarrantyLanding />} />
+                    <Route path="/warranty-types/ev-warranty" element={<EVWarrantyLanding />} />
+                    <Route path="/warranty-types/ev-warranty/" element={<EVWarrantyLanding />} />
+                    <Route path="/warranty-types/hybrid-warranty" element={<HybridWarrantyLanding />} />
+                    <Route path="/warranty-types/hybrid-warranty/" element={<HybridWarrantyLanding />} />
+                    <Route path="/warranty-types/phev-warranty" element={<PHEVWarrantyLanding />} />
+                    <Route path="/warranty-types/phev-warranty/" element={<PHEVWarrantyLanding />} />
                     
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
