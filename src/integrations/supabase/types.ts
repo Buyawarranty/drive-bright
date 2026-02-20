@@ -105,6 +105,7 @@ export type Database = {
       }
       abandoned_carts: {
         Row: {
+          boost_addon: boolean | null
           call_count: number | null
           cart_metadata: Json | null
           contact_notes: string | null
@@ -131,6 +132,7 @@ export type Database = {
           vehicle_year: string | null
         }
         Insert: {
+          boost_addon?: boolean | null
           call_count?: number | null
           cart_metadata?: Json | null
           contact_notes?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           vehicle_year?: string | null
         }
         Update: {
+          boost_addon?: boolean | null
           call_count?: number | null
           cart_metadata?: Json | null
           contact_notes?: string | null
