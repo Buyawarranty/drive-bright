@@ -25,7 +25,7 @@ import {
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
 
 interface VehicleData {
   regNumber: string;
@@ -188,7 +188,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
   // Calculate price
   const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
-  const premiumSurcharge = claimLimit === 5000 ? getPremiumClaimSurcharge(paymentType) : 0;
+  const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
   const currentPrice = vehicleData ? calculateTotalWarrantyPrice({
     paymentPeriod: paymentType,
     voluntaryExcess: excessAmount,

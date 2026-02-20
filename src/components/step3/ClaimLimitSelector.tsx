@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
 import ClaimLimitDetails from './ClaimLimitDetails';
 
 interface ClaimLimitSelectorProps {
@@ -14,6 +14,7 @@ interface ClaimLimitSelectorProps {
   boostPrice: number;
   paymentType?: '12months' | '24months' | '36months' | null;
   vehicleMake?: string;
+  voluntaryExcess?: number;
 }
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
@@ -24,7 +25,8 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   onBoostChange,
   boostPrice,
   paymentType,
-  vehicleMake
+  vehicleMake,
+  voluntaryExcess = 100
 }) => {
   // Ensure paymentType is never null for calculations
   const effectivePaymentType = paymentType || '12months';
@@ -98,9 +100,9 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     </div>
                     <div className="text-xs text-muted-foreground">per claim</div>
                     {/* Show monthly cost indicator for premium tiers */}
-                    {(tier.value === 5000 || tier.value === 3000) && (
+                     {(tier.value === 5000 || tier.value === 3000) && (
                       <div className="text-[11px] sm:text-xs text-[#0BA360] font-semibold mt-1">
-                        Just {Math.round((PREMIUM_CLAIM_MONTHLY[effectivePaymentType] * 12) / 365 * 100)}p/day more
+                        Just {Math.round(getClaimLimitSurcharge(tier.value, effectivePaymentType, voluntaryExcess) / 365 * 100)}p/day more
                       </div>
                     )}
                   </button>
