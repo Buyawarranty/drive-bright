@@ -2360,40 +2360,70 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <span className="text-sm font-medium text-green-600">Details</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" hideCloseButton>
-                <DialogClose className="absolute right-4 top-4 rounded-full p-4 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
-                  <X className="h-8 w-8 text-white" strokeWidth={3} />
+              <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-5" hideCloseButton>
+                <DialogClose className="absolute right-3 top-3 rounded-full p-2 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
+                  <X className="h-5 w-5 text-white" strokeWidth={3} />
                   <span className="sr-only">Close</span>
                 </DialogClose>
                 
-                <DialogHeader className="pr-12">
-                  <DialogTitle className="flex items-center gap-2 text-xl">
-                    <ShieldCheck className="w-6 h-6 text-green-600" />
-                    Your claim limit
+                <DialogHeader className="pr-10">
+                  <DialogTitle className="flex items-center gap-2 text-base">
+                    <ShieldCheck className="w-5 h-5 text-green-600" />
+                    Claim limit – what you are covered for
                   </DialogTitle>
                 </DialogHeader>
                 
-                <div className="space-y-5 py-4">
-                  <p className="text-gray-700 leading-relaxed">
-                    Your claim limit is the maximum we pay per repair. It covers parts and your chosen labour rate. Any excess you selected is paid once per claim.
+                <div className="space-y-3 pt-2 text-sm">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Your claim limit is the maximum amount we pay towards each repair, including <span className="font-semibold text-foreground">parts and labour</span>.
                   </p>
-                  
-                  <p className="text-gray-700 leading-relaxed">
-                    Most repair claims average between <span className="font-semibold">£700 and £1,100</span>, so most customers are fully covered.
+                  <p className="text-muted-foreground leading-relaxed">
+                    Most repairs cost between <span className="font-semibold text-foreground">£700 and £1,100</span>, so many customers are fully covered with our standard limits.
                   </p>
-                  
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Example
-                    </h4>
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      With a £1,250 claim limit: if your repair costs £1,400, we pay £1,250 and you pay the remaining £150 (plus your excess).
-                    </p>
+
+                  {/* Tier descriptions */}
+                  <div className="space-y-1.5">
+                    {[
+                      { val: '£1,000', label: 'Essential Cover', desc: 'Good for smaller repairs and everyday mechanical faults.' },
+                      { val: '£2,000', label: 'Most Popular', desc: 'Great all round cover for common repairs and many higher value jobs.', highlight: true },
+                      { val: '£3,000', label: 'Strong Protection', desc: 'Ideal for customers who want extra reassurance for higher cost repairs.' },
+                      { val: '£5,000', label: 'Maximum Protection', desc: 'Perfect for hybrid, luxury or specialist vehicles where repair costs can be higher.' },
+                    ].map((t) => (
+                      <div key={t.val} className={`rounded-lg border p-2.5 ${t.highlight ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-bold text-foreground text-sm">{t.val}</span>
+                          <span className={`text-[11px] font-semibold ${t.highlight ? 'text-success' : 'text-muted-foreground'}`}>({t.label})</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    Your excess and claim limit are set when you buy your cover. There are no hidden fees.
+
+                  <p className="text-xs text-muted-foreground">
+                    Higher limits offer added peace of mind for larger repairs such as <span className="font-medium text-foreground">engines, gearboxes and hybrid systems</span>.
                   </p>
+
+                  {/* Example */}
+                  <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-2">
+                    <h5 className="font-semibold text-foreground text-sm">How your claim is paid</h5>
+                    <p className="text-xs text-muted-foreground">If you choose a <span className="font-bold text-foreground">£2,000</span> claim limit:</p>
+                    <div className="space-y-1.5 text-xs">
+                      <div>
+                        <p className="font-medium text-foreground">Under your limit (e.g. £1,800):</p>
+                        <p className="text-muted-foreground">We pay the full <span className="font-semibold text-success">£1,800</span>, you only pay your excess.</p>
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">Over your limit (e.g. £2,400):</p>
+                        <p className="text-muted-foreground">We pay <span className="font-semibold text-success">£2,000</span> inc. parts & labour. You pay <span className="font-semibold text-foreground">£400</span> + excess.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 text-[11px] text-muted-foreground font-medium pt-1">
+                    <span>✓ No hidden fees</span>
+                    <span>✓ Includes parts & labour</span>
+                    <span>✓ Protect from day one</span>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
