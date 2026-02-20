@@ -64,7 +64,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({ onHelpMeChoose 
         {/* Quick example */}
         <div className="bg-muted/50 border border-border rounded-xl p-4 mb-6">
           <p className="text-sm text-muted-foreground text-center">
-            <span className="font-semibold text-foreground">Quick example:</span> A £2,300 repair with a £3,000 limit ={' '}
+            <span className="font-semibold text-foreground">Quick example:</span> A £1,300 repair with a £2,000 limit ={' '}
             <span className="font-semibold text-green-600">fully covered</span>.
           </p>
         </div>
