@@ -105,9 +105,11 @@ export type Database = {
       }
       abandoned_carts: {
         Row: {
+          address: Json | null
           boost_addon: boolean | null
           call_count: number | null
           cart_metadata: Json | null
+          claim_limit: number | null
           contact_notes: string | null
           contact_status: string | null
           contacted_by: string | null
@@ -117,24 +119,30 @@ export type Database = {
           full_name: string | null
           id: string
           is_converted: boolean | null
+          labour_rate: number | null
           last_contacted_at: string | null
           mileage: string | null
           payment_type: string | null
           phone: string | null
           plan_id: string | null
           plan_name: string | null
+          protection_addons: Json | null
           step_abandoned: number
+          total_price: number | null
           updated_at: string
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_reg: string | null
           vehicle_type: string | null
           vehicle_year: string | null
+          voluntary_excess: number | null
         }
         Insert: {
+          address?: Json | null
           boost_addon?: boolean | null
           call_count?: number | null
           cart_metadata?: Json | null
+          claim_limit?: number | null
           contact_notes?: string | null
           contact_status?: string | null
           contacted_by?: string | null
@@ -144,24 +152,30 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_converted?: boolean | null
+          labour_rate?: number | null
           last_contacted_at?: string | null
           mileage?: string | null
           payment_type?: string | null
           phone?: string | null
           plan_id?: string | null
           plan_name?: string | null
+          protection_addons?: Json | null
           step_abandoned: number
+          total_price?: number | null
           updated_at?: string
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_reg?: string | null
           vehicle_type?: string | null
           vehicle_year?: string | null
+          voluntary_excess?: number | null
         }
         Update: {
+          address?: Json | null
           boost_addon?: boolean | null
           call_count?: number | null
           cart_metadata?: Json | null
+          claim_limit?: number | null
           contact_notes?: string | null
           contact_status?: string | null
           contacted_by?: string | null
@@ -171,19 +185,23 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_converted?: boolean | null
+          labour_rate?: number | null
           last_contacted_at?: string | null
           mileage?: string | null
           payment_type?: string | null
           phone?: string | null
           plan_id?: string | null
           plan_name?: string | null
+          protection_addons?: Json | null
           step_abandoned?: number
+          total_price?: number | null
           updated_at?: string
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_reg?: string | null
           vehicle_type?: string | null
           vehicle_year?: string | null
+          voluntary_excess?: number | null
         }
         Relationships: []
       }
