@@ -2360,7 +2360,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <span className="text-sm font-medium text-green-600">Details</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-5" hideCloseButton>
+              <DialogContent className="max-w-sm sm:max-w-md max-h-[80vh] overflow-y-auto p-4 sm:p-5 rounded-xl" hideCloseButton>
                 <DialogClose className="absolute right-3 top-3 rounded-full p-2 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
                   <X className="h-5 w-5 text-white" strokeWidth={3} />
                   <span className="sr-only">Close</span>
