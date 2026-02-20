@@ -1522,12 +1522,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
               const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
               
-              // CRITICAL: Each card uses its OWN appropriate claim limit, not the globally selected one
-              // For the currently selected plan, use the user's selection
-              // For non-selected plans, default to £2000
-              const cardClaimLimit = durationId === paymentType 
-                ? selectedClaimLimit 
-                : 2000;
+              // All cards must use the user's selected claim limit for consistent pricing
+              // Previously defaulting non-selected cards to £2000 caused price jumps when switching durations
+              const cardClaimLimit = selectedClaimLimit;
               
               // Map £5000 to £2000 for base price lookup (already handled in getPricingData)
               const basePrice = getPricingData(voluntaryExcess, cardClaimLimit, durationId);
