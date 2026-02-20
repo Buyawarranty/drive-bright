@@ -3,8 +3,9 @@ import { Info } from 'lucide-react';
 
 const limits = [
   { value: 1000, label: '£1,000', tag: null },
-  { value: 2000, label: '£2,000', tag: null },
-  { value: 3000, label: '£3,000', tag: 'Recommended' },
+  { value: 2000, label: '£2,000', tag: 'Recommended' },
+  { value: 3000, label: '£3,000', tag: null },
+  { value: 5000, label: '£5,000', tag: null },
 ];
 
 interface ClaimLimitSelectorProps {
@@ -12,7 +13,7 @@ interface ClaimLimitSelectorProps {
 }
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({ onHelpMeChoose }) => {
-  const [selected, setSelected] = useState(3000);
+  const [selected, setSelected] = useState(2000);
 
   return (
     <section className="py-16 md:py-20 bg-white">
@@ -27,7 +28,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({ onHelpMeChoose 
         </div>
 
         {/* Limit buttons */}
-        <div className="grid grid-cols-3 gap-3 my-8">
+        <div className="grid grid-cols-4 gap-3 my-8">
           {limits.map((l) => (
             <button
               key={l.value}
