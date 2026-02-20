@@ -2460,16 +2460,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           <div className="text-3xl font-bold text-black">
                             £{(tier.displayValue ?? tier.value).toLocaleString()} <span className="text-base">per claim</span>
                           </div>
-                          {tier.value === 5000 && (
-                            <div className="text-sm text-[#0BA360] font-medium mt-1">
-                              Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType as string] * 12) / 365 * 100)}p/day more
-                            </div>
-                          )}
-                          {tier.value === 3000 && (
-                            <div className="text-sm text-[#0BA360] font-medium mt-1">
-                              Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType as string] * 12) / 365 * 100)}p/day more
-                            </div>
-                          )}
                         </div>
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                           isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
