@@ -340,6 +340,7 @@ const CustomerAssignmentsTable: React.FC<{
   onReassign: (customerId: string, newUserId: string) => void;
 }> = ({ customers, adminUsers, onReassign }) => {
   const getUserName = (userId: string) => {
+    if (userId === 'website') return 'Website';
     const user = adminUsers.find(u => u.id === userId);
     return user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unassigned';
   };
@@ -376,6 +377,7 @@ const CustomerAssignmentsTable: React.FC<{
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="website">Website</SelectItem>
                   {adminUsers.map(user => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.first_name} {user.last_name}
