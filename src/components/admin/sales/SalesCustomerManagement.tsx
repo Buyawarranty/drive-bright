@@ -783,6 +783,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="unassigned">Unassigned</SelectItem>
+                          <SelectItem value="website">Website</SelectItem>
                           {salesUsers.map(u => (
                             <SelectItem key={u.id} value={u.id}>
                               {u.first_name || ''} {u.last_name || u.email}
