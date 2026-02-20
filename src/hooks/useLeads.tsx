@@ -201,7 +201,7 @@ export const useLeads = () => {
       }
       
       // Use Promise.all to fetch all data sources in parallel for better performance
-      const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
+      const [salesLeadsResult, abandonedCartsResult, dedupResult] = await Promise.all([
         // Fetch sales_leads with optimized column selection
         (async () => {
         let query = supabase
@@ -243,7 +243,13 @@ export const useLeads = () => {
           `)
           .eq('is_converted', false)
           .order('created_at', { ascending: false })
-          .limit(5000) // Increased limit to fetch all carts
+          .limit(5000), // Increased limit to fetch all carts
+        // Separate UNFILTERED query for dedup: get ALL sales_lead emails and abandoned_cart_ids
+        // This prevents leads filtered out by status (e.g. "lost") from causing cart duplicates
+        supabase
+          .from('sales_leads')
+          .select('email, abandoned_cart_id')
+          .limit(10000)
       ]);
 
       const { data: salesLeadsData, error: salesError } = salesLeadsResult;
@@ -251,6 +257,8 @@ export const useLeads = () => {
 
       const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
       if (cartsError) throw cartsError;
+
+      const { data: dedupData } = dedupResult;
 
       // Build a map of auth.user_id -> admin_user for abandoned cart assignments
       // contacted_by stores auth.users.id, we need to map to admin_users
@@ -273,16 +281,17 @@ export const useLeads = () => {
         });
       }
 
-      // Get IDs of abandoned carts already linked to sales_leads
+      // Use UNFILTERED dedup data to prevent carts from reappearing when
+      // their matching sales_lead is excluded by status filter (e.g. "lost")
       const linkedCartIds = new Set(
-        (salesLeadsData || [])
+        (dedupData || [])
           .filter((lead: any) => lead.abandoned_cart_id)
           .map((lead: any) => lead.abandoned_cart_id)
       );
 
-      // Get emails already in sales_leads to avoid duplicates
+      // Get emails from ALL sales_leads (unfiltered) to avoid duplicates
       const existingEmails = new Set(
-        (salesLeadsData || []).map((lead: any) => lead.email?.toLowerCase())
+        (dedupData || []).map((lead: any) => lead.email?.toLowerCase())
       );
 
       // Helper function to map contact_status to LeadStatus
