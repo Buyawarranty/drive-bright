@@ -2360,68 +2360,60 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <span className="text-sm font-medium text-green-600">Details</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 rounded-xl" hideCloseButton>
-                <DialogClose className="absolute right-3 top-3 rounded-full p-2 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
-                  <X className="h-5 w-5 text-white" strokeWidth={3} />
+              <DialogContent className="w-[90vw] max-w-[520px] p-5 rounded-xl" hideCloseButton>
+                <DialogClose className="absolute right-3 top-3 rounded-full p-1.5 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
+                  <X className="h-4 w-4 text-white" strokeWidth={3} />
                   <span className="sr-only">Close</span>
                 </DialogClose>
                 
-                <DialogHeader className="pr-10">
-                  <DialogTitle className="flex items-center gap-2 text-base">
-                    <ShieldCheck className="w-5 h-5 text-green-600" />
+                <DialogHeader className="pr-8">
+                  <DialogTitle className="flex items-center gap-2 text-sm font-bold">
+                    <ShieldCheck className="w-4 h-4 text-green-600" />
                     Claim limit – what you are covered for
                   </DialogTitle>
                 </DialogHeader>
                 
-                <div className="space-y-3 pt-2 text-sm">
+                <div className="space-y-2 pt-1 text-xs">
                   <p className="text-muted-foreground leading-relaxed">
                     Your claim limit is the maximum amount we pay towards each repair, including <span className="font-semibold text-foreground">parts and labour</span>.
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Most repairs cost between <span className="font-semibold text-foreground">£700 and £1,100</span>, so many customers are fully covered with our standard limits.
+                    Most repairs cost between <span className="font-semibold text-foreground">£700 and £1,100</span>, so many customers are fully covered.
                   </p>
 
-                  {/* Tier descriptions */}
-                  <div className="space-y-1.5">
+                  <div className="grid grid-cols-2 gap-1.5">
                     {[
-                      { val: '£1,000', label: 'Essential Cover', desc: 'Good for smaller repairs and everyday mechanical faults.' },
-                      { val: '£2,000', label: 'Most Popular', desc: 'Great all round cover for common repairs and many higher value jobs.', highlight: true },
-                      { val: '£3,000', label: 'Strong Protection', desc: 'Ideal for customers who want extra reassurance for higher cost repairs.' },
-                      { val: '£5,000', label: 'Maximum Protection', desc: 'Perfect for hybrid, luxury or specialist vehicles where repair costs can be higher.' },
+                      { val: '£1,000', label: 'Essential Cover', desc: 'Smaller repairs & everyday faults.' },
+                      { val: '£2,000', label: 'Most Popular', desc: 'Common repairs & higher value jobs.', highlight: true },
+                      { val: '£3,000', label: 'Strong Protection', desc: 'Extra reassurance for costlier repairs.' },
+                      { val: '£5,000', label: 'Maximum Protection', desc: 'Hybrid, luxury or specialist vehicles.' },
                     ].map((t) => (
-                      <div key={t.val} className={`rounded-lg border p-2.5 ${t.highlight ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="font-bold text-foreground text-sm">{t.val}</span>
-                          <span className={`text-[11px] font-semibold ${t.highlight ? 'text-success' : 'text-muted-foreground'}`}>({t.label})</span>
+                      <div key={t.val} className={`rounded-lg border p-2 ${t.highlight ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-bold text-foreground text-xs">{t.val}</span>
+                          <span className={`text-[10px] font-semibold ${t.highlight ? 'text-success' : 'text-muted-foreground'}`}>({t.label})</span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{t.desc}</p>
                       </div>
                     ))}
                   </div>
 
-                  <p className="text-xs text-muted-foreground">
-                    Higher limits offer added peace of mind for larger repairs such as <span className="font-medium text-foreground">engines, gearboxes and hybrid systems</span>.
+                  <p className="text-[11px] text-muted-foreground">
+                    Higher limits cover larger repairs like <span className="font-medium text-foreground">engines, gearboxes & hybrid systems</span>.
                   </p>
 
-                  {/* Example */}
-                  <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-2">
-                    <h5 className="font-semibold text-foreground text-sm">How your claim is paid</h5>
-                    <p className="text-xs text-muted-foreground">If you choose a <span className="font-bold text-foreground">£2,000</span> claim limit:</p>
-                    <div className="space-y-1.5 text-xs">
-                      <div>
-                        <p className="font-medium text-foreground">Under your limit (e.g. £1,800):</p>
-                        <p className="text-muted-foreground">We pay the full <span className="font-semibold text-success">£1,800</span>, you only pay your excess.</p>
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">Over your limit (e.g. £2,400):</p>
-                        <p className="text-muted-foreground">We pay <span className="font-semibold text-success">£2,000</span> inc. parts & labour. You pay <span className="font-semibold text-foreground">£400</span> + excess.</p>
-                      </div>
+                  <div className="bg-muted/50 border border-border rounded-lg p-2.5 space-y-1">
+                    <h5 className="font-semibold text-foreground text-xs">How your claim is paid</h5>
+                    <p className="text-[11px] text-muted-foreground">With a <span className="font-bold text-foreground">£2,000</span> limit:</p>
+                    <div className="text-[11px] space-y-0.5">
+                      <p className="text-muted-foreground"><span className="font-medium text-foreground">Under limit (£1,800):</span> We pay <span className="font-semibold text-success">£1,800</span>, you pay excess only.</p>
+                      <p className="text-muted-foreground"><span className="font-medium text-foreground">Over limit (£2,400):</span> We pay <span className="font-semibold text-success">£2,000</span>, you pay <span className="font-semibold text-foreground">£400</span> + excess.</p>
                     </div>
                   </div>
 
-                  <div className="flex gap-3 text-[11px] text-muted-foreground font-medium pt-1">
+                  <div className="flex gap-3 text-[10px] text-muted-foreground font-medium">
                     <span>✓ No hidden fees</span>
-                    <span>✓ Includes parts & labour</span>
+                    <span>✓ Parts & labour included</span>
                     <span>✓ Protect from day one</span>
                   </div>
                 </div>
