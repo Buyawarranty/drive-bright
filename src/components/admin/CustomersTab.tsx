@@ -521,6 +521,10 @@ export const CustomersTab = () => {
       filtered = filtered.filter(customer => {
         if (filterBySource === 'website') {
           return customer.purchase_source === 'website' || 
+                 customer.purchase_source === 'stripe' ||
+                 customer.purchase_source === 'bumper_portal' ||
+                 customer.purchase_source === 'bumper' ||
+                 customer.purchase_source === 'payment_assist' ||
                  customer.warranty_reference_number?.startsWith('BAW') ||
                  (!customer.is_manual_entry && !customer.purchase_source);
         } else if (filterBySource === 'quote_order') {
