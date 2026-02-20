@@ -1241,20 +1241,13 @@ export const CustomersTab = () => {
     }
   };
 
-  const assignCustomerToMe = async (customerId: string) => {
-    if (!currentAdminUser) {
-      toast.error('Unable to assign customer - admin user not found');
-      return;
-    }
-
+  const assignCustomerToAgent = async (customerId: string, agentId: string | null) => {
     setAssignmentLoading(prev => ({ ...prev, [customerId]: true }));
 
     try {
-      console.log('Assigning customer', customerId, 'to admin user', currentAdminUser.id);
-      
       const { error } = await supabase
         .from('customers')
-        .update({ assigned_to: currentAdminUser.id })
+        .update({ assigned_to: agentId })
         .eq('id', customerId);
 
       if (error) {
@@ -1262,8 +1255,14 @@ export const CustomersTab = () => {
         throw error;
       }
 
-      toast.success('Customer assigned to you successfully');
-      fetchCustomers(); // Refresh the list
+      if (agentId) {
+        const agent = adminUsers.find(u => u.id === agentId);
+        const agentName = agent ? `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email : 'agent';
+        toast.success(`Customer assigned to ${agentName}`);
+      } else {
+        toast.success('Customer unassigned successfully');
+      }
+      fetchCustomers();
     } catch (error) {
       console.error('Error assigning customer:', error);
       toast.error('Failed to assign customer');
@@ -1272,25 +1271,16 @@ export const CustomersTab = () => {
     }
   };
 
-  const unassignCustomer = async (customerId: string) => {
-    setAssignmentLoading(prev => ({ ...prev, [customerId]: true }));
-
-    try {
-      const { error } = await supabase
-        .from('customers')
-        .update({ assigned_to: null })
-        .eq('id', customerId);
-
-      if (error) throw error;
-
-      toast.success('Customer unassigned successfully');
-      fetchCustomers(); // Refresh the list
-    } catch (error) {
-      console.error('Error unassigning customer:', error);
-      toast.error('Failed to unassign customer');
-    } finally {
-      setAssignmentLoading(prev => ({ ...prev, [customerId]: false }));
+  const assignCustomerToMe = async (customerId: string) => {
+    if (!currentAdminUser) {
+      toast.error('Unable to assign customer - admin user not found');
+      return;
     }
+    await assignCustomerToAgent(customerId, currentAdminUser.id);
+  };
+
+  const unassignCustomer = async (customerId: string) => {
+    await assignCustomerToAgent(customerId, null);
   };
 
   const addNote = async () => {
@@ -4237,45 +4227,23 @@ Please log in and change your password after first login.`;
                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col space-y-1">
-                        {customer.assigned_to ? (
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-500">Assigned to</span>
-                              <span className="text-sm font-medium text-gray-900">
-                                {customer.admin_users ? 
-                                  `${customer.admin_users.first_name || ''} ${customer.admin_users.last_name || ''}`.trim() || customer.admin_users.email :
-                                  'Unknown User'
-                                }
-                              </span>
-                            </div>
-                            {currentAdminUser?.id === customer.assigned_to && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => unassignCustomer(customer.id)}
-                                disabled={assignmentLoading[customer.id]}
-                                className="p-1 h-6 w-6 text-gray-400 hover:text-red-600"
-                                title="Unassign from me"
-                              >
-                                <UserX className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </div>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => assignCustomerToMe(customer.id)}
-                            disabled={assignmentLoading[customer.id]}
-                            className="text-xs py-1 h-6"
-                          >
-                            {assignmentLoading[customer.id] ? (
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-400"></div>
-                            ) : (
-                              'Assign to me'
-                            )}
-                          </Button>
-                        )}
+                        <Select
+                          value={customer.assigned_to || 'unassigned'}
+                          onValueChange={(val) => assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val)}
+                          disabled={assignmentLoading[customer.id]}
+                        >
+                          <SelectTrigger className="w-[160px] h-8 text-xs">
+                            <SelectValue placeholder="Assign agent" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                            {adminUsers.filter(u => u.role === 'sales' || u.role === 'admin' || u.role === 'super_admin').map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </TableCell>
                     <TableCell>
