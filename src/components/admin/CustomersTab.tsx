@@ -3595,7 +3595,39 @@ Please log in and change your password after first login.`;
                                           <div className="grid grid-cols-2 gap-4">
                                             <div>
                                               <Label className="text-sm font-medium text-gray-500">Warranty Number</Label>
-                                              <p className="text-sm font-semibold">{policy.warranty_number || 'N/A'}</p>
+                                              <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold">{policy.warranty_number || 'N/A'}</p>
+                                                {policy.warranty_number && (
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-6 px-2 text-xs"
+                                                    onClick={async () => {
+                                                      const currentNum = policy.warranty_number || '';
+                                                      let newNum = currentNum;
+                                                      if (currentNum.startsWith('BAW-')) {
+                                                        newNum = currentNum.replace('BAW-', 'ADM-');
+                                                      } else if (currentNum.startsWith('ADM-')) {
+                                                        newNum = currentNum.replace('ADM-', 'BAW-');
+                                                      }
+                                                      if (newNum !== currentNum) {
+                                                        const { error } = await supabase
+                                                          .from('customer_policies')
+                                                          .update({ warranty_number: newNum })
+                                                          .eq('id', policy.id);
+                                                        if (error) {
+                                                          toast.error('Failed to update warranty number');
+                                                        } else {
+                                                          toast.success(`Warranty number changed to ${newNum}`);
+                                                          fetchCustomers();
+                                                        }
+                                                      }
+                                                    }}
+                                                  >
+                                                    {policy.warranty_number?.startsWith('BAW-') ? 'Switch to ADM-' : policy.warranty_number?.startsWith('ADM-') ? 'Switch to BAW-' : ''}
+                                                  </Button>
+                                                )}
+                                              </div>
                                             </div>
                                             <div>
                                               <Label className="text-sm font-medium text-gray-500">Policy Number</Label>

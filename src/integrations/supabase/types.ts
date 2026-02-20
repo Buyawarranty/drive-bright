@@ -5363,6 +5363,7 @@ export type Database = {
         Returns: undefined
       }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
+      generate_admin_warranty_number: { Args: never; Returns: string }
       generate_policy_number: { Args: never; Returns: string }
       generate_random_password: { Args: never; Returns: string }
       generate_warranty_audit_checksum: {
