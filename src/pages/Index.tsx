@@ -1117,19 +1117,39 @@ const Index = () => {
       boostAddon?: boolean
     }
   ) => {
-    setSelectedPlan({ id: planId, paymentType, name: planName, pricingData });
+    const newSelectedPlan = { id: planId, paymentType, name: planName, pricingData };
+    setSelectedPlan(newSelectedPlan);
+    
+    // CRITICAL: Save the NEW selectedPlan directly to localStorage to avoid stale closure issue
+    // saveStateToLocalStorage() captures the OLD selectedPlan from its closure,
+    // so we must manually save the fresh plan data immediately
+    const saveNewPlanToLocalStorage = (step: number) => {
+      const state = {
+        step,
+        vehicleData,
+        selectedPlan: newSelectedPlan,
+        formData
+      };
+      saveWithTimestamp('warrantyJourneyState', JSON.stringify(state));
+      saveWithTimestamp('buyawarranty_selectedPlan', JSON.stringify(newSelectedPlan));
+      saveWithTimestamp('buyawarranty_currentStep', String(step));
+      if (vehicleData) {
+        saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+      }
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(formData));
+    };
     
     // Check if S17DRW registration - redirect to /steptest for Payment Assist testing
     const normalizedReg = (vehicleData?.regNumber || '').replace(/\s/g, '').toUpperCase();
     if (normalizedReg === 'S17DRW') {
-      saveStateToLocalStorage(4);
+      saveNewPlanToLocalStorage(4);
       window.location.href = '/steptest';
       return;
     }
     
     setCurrentStep(4); // Go to step 4 for customer details/checkout
     updateStepInUrl(4);
-    saveStateToLocalStorage(4);
+    saveNewPlanToLocalStorage(4);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     // Send instant email when customer reaches step 4 (they already provided email in step 2)
