@@ -516,22 +516,21 @@ export const CustomersTab = () => {
       }
     }
 
-    // Apply source filter (Website = BAW, Quote/Order = ADM, all_view = show all)
+    // Apply source filter based on warranty number prefix as single source of truth
+    // BAW- = website/self-service, ADM- = manual/sales-team confirmed
     if (filterBySource !== 'all_view') {
       filtered = filtered.filter(customer => {
+        // Get the definitive warranty number (from policy first, then customer record)
+        const warrantyNum = customer.customer_policies?.[0]?.warranty_number || 
+                           customer.warranty_reference_number || 
+                           customer.warranty_number || '';
+        
         if (filterBySource === 'website') {
-          return customer.purchase_source === 'website' || 
-                 customer.purchase_source === 'stripe' ||
-                 customer.purchase_source === 'bumper_portal' ||
-                 customer.purchase_source === 'bumper' ||
-                 customer.purchase_source === 'payment_assist' ||
-                 customer.warranty_reference_number?.startsWith('BAW') ||
-                 (!customer.is_manual_entry && !customer.purchase_source);
+          // BAW- prefix = website sale
+          return warrantyNum.startsWith('BAW');
         } else if (filterBySource === 'quote_order') {
-          return customer.purchase_source === 'quote_link' || 
-                 customer.purchase_source === 'external' ||
-                 customer.warranty_reference_number?.startsWith('ADM') ||
-                 customer.is_manual_entry;
+          // ADM- prefix = sales team confirmed / manual entry
+          return warrantyNum.startsWith('ADM');
         }
         return true;
       });
