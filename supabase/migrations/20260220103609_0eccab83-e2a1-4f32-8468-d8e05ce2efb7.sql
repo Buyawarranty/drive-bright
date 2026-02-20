@@ -1,0 +1,1 @@
+ALTER TABLE public.abandoned_carts ADD COLUMN IF NOT EXISTS boost_addon boolean DEFAULT false;
