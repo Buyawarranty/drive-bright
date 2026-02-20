@@ -126,7 +126,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   const [plans, setPlans] = useState<Plan[]>([]);
   // Initialize payment type from previous selection, defaulting to 24 months
-  const initialPaymentType = previousPaymentType || '24months';
+  const initialPaymentType = previousPaymentType || '12months';
   console.log('🎯 PricingTable mount - previousPaymentType:', previousPaymentType, 'initialPaymentType:', initialPaymentType);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(initialPaymentType);
   // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise default to £100
@@ -156,7 +156,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Track if payment type was changed by user action vs restoration/auto-change
   const isUserPaymentTypeChange = React.useRef(false);
   // Store the initial payment type to detect changes
-  const initialPaymentTypeRef = React.useRef(previousPaymentType || '24months');
+  const initialPaymentTypeRef = React.useRef(previousPaymentType || '12months');
   
   // Vehicle validation
   const vehicleValidation = useMemo(() => {

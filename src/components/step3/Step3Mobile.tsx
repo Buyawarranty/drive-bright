@@ -79,7 +79,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 }) => {
   // State
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(
-    previousPaymentType || '24months'
+    previousPaymentType || '12months'
   );
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
