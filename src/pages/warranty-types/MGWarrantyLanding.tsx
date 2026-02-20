@@ -403,7 +403,7 @@ const MGWarrantyLanding: React.FC = () => {
       "price": "24",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/mg/",
+      "url": "https://buyawarranty.co.uk/warranty-types/mg-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
@@ -475,7 +475,7 @@ const MGWarrantyLanding: React.FC = () => {
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
       { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
-      { "@type": "ListItem", "position": 3, "name": "MG Warranty", "item": "https://buyawarranty.co.uk/warranty-types/mg/" }
+      { "@type": "ListItem", "position": 3, "name": "MG Warranty", "item": "https://buyawarranty.co.uk/warranty-types/mg-warranty/" }
     ]
   };
 
@@ -566,13 +566,13 @@ const MGWarrantyLanding: React.FC = () => {
         <title>MG Extended Warranty UK | ZS, HS, MG 4, MG 5 EV Cover from £24/mo</title>
         <meta name="description" content="MG extended warranty from £24/month. Cover ZS, HS, MG 4, MG 5 EV, ZS EV, MG3, Cyberster & all models 2012-2026. Use any UK garage. 8,000+ components covered. Instant quote in 60 seconds." />
         <meta name="keywords" content="MG extended warranty, MG warranty UK, MG ZS warranty, MG HS warranty, MG 4 warranty, MG 5 EV warranty, MG ZS EV warranty, MG3 warranty, MG Cyberster warranty, used MG warranty, MG car warranty, MG electric car warranty, MG PHEV warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/mg/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/mg-warranty/" />
         
         {/* Open Graph */}
         <meta property="og:title" content="MG Extended Warranty UK | Best-Rated MG Cover from £24/mo – ZS, HS, MG 4 & EV Models" />
         <meta property="og:description" content="Protect your MG with the UK's top-rated extended warranty. Cover ZS, HS, MG 4, MG 5 EV, ZS EV & all models. 8,000+ components. Any UK garage. Instant quote." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/mg/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/mg-warranty/" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />

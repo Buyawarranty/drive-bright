@@ -415,7 +415,7 @@ const KiaWarrantyLanding: React.FC = () => {
       "price": "24",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/kia/",
+      "url": "https://buyawarranty.co.uk/warranty-types/kia-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
@@ -487,7 +487,7 @@ const KiaWarrantyLanding: React.FC = () => {
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
       { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
-      { "@type": "ListItem", "position": 3, "name": "Kia Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/kia/" }
+      { "@type": "ListItem", "position": 3, "name": "Kia Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/kia-warranty/" }
     ]
   };
 
@@ -538,7 +538,7 @@ const KiaWarrantyLanding: React.FC = () => {
     "@type": "WebPage",
     "name": "Kia Extended Warranty UK - Sportage, Ceed, Niro, Sorento, EV6 Cover",
     "description": "Protect your Kia with comprehensive extended warranty cover. All models from Picanto to EV9. Nationwide UK coverage, approved garages, unlimited claims.",
-    "url": "https://buyawarranty.co.uk/warranty-types/kia/",
+    "url": "https://buyawarranty.co.uk/warranty-types/kia-warranty/",
     "isPartOf": { "@type": "WebSite", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
     "about": { "@type": "Thing", "name": "Kia Extended Warranty" },
     "mentions": [
@@ -569,7 +569,7 @@ const KiaWarrantyLanding: React.FC = () => {
         <title>Kia Extended Warranty UK | Sportage, Ceed, Niro, Sorento, EV6 from £24/mo</title>
         <meta name="description" content="Protect your Kia Sportage, Ceed, Niro, Sorento, Picanto, Rio, EV6 or EV9 with comprehensive extended warranty cover. GDi engines, DCT gearboxes, electrics and hybrid/EV components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Kia extended warranty, Kia used car warranty, Kia warranty UK, Kia warranty cost, Kia warranty quote, Kia Sportage warranty, Kia Ceed warranty, Kia Niro warranty, Kia Sorento warranty, Kia EV6 warranty, Kia EV9 warranty, Kia Picanto warranty, used Kia warranty, second hand Kia warranty, Kia hybrid warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/kia/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/kia-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
@@ -582,7 +582,7 @@ const KiaWarrantyLanding: React.FC = () => {
         
         <meta property="og:title" content="Kia Warranty UK | Sportage, Ceed, Niro, Sorento, EV6 from £24/mo" />
         <meta property="og:description" content="Comprehensive Kia warranty coverage for Sportage, Ceed, Niro, Sorento, Picanto, Rio, EV6 and EV9. GDi engines, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/kia/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/kia-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />

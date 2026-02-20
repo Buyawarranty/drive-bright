@@ -414,7 +414,7 @@ const FordWarrantyLanding: React.FC = () => {
       "price": "24",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/ford/",
+      "url": "https://buyawarranty.co.uk/warranty-types/ford-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
@@ -486,7 +486,7 @@ const FordWarrantyLanding: React.FC = () => {
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
       { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
-      { "@type": "ListItem", "position": 3, "name": "Ford Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/ford/" }
+      { "@type": "ListItem", "position": 3, "name": "Ford Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/ford-warranty/" }
     ]
   };
 
@@ -537,7 +537,7 @@ const FordWarrantyLanding: React.FC = () => {
     "@type": "WebPage",
     "name": "Ford Extended Warranty UK - Fiesta, Focus, Kuga, Puma, Ranger Cover",
     "description": "Protect your Ford with comprehensive extended warranty cover. All models from Fiesta to Mustang Mach-E. Nationwide UK coverage, approved garages, unlimited claims.",
-    "url": "https://buyawarranty.co.uk/warranty-types/ford/",
+    "url": "https://buyawarranty.co.uk/warranty-types/ford-warranty/",
     "isPartOf": { "@type": "WebSite", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
     "about": { "@type": "Thing", "name": "Ford Extended Warranty" },
     "mentions": [
@@ -568,7 +568,7 @@ const FordWarrantyLanding: React.FC = () => {
         <title>Ford Extended Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £24/mo</title>
         <meta name="description" content="Protect your Ford Fiesta, Focus, Kuga, Puma, Ranger, Transit or Mustang Mach-E with comprehensive extended warranty cover. EcoBoost engines, PowerShift gearboxes, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Ford extended warranty, Ford used car warranty, Ford warranty UK, Ford warranty cost, Ford warranty quote, Ford Fiesta warranty, Ford Focus warranty, Ford Kuga warranty, Ford Puma warranty, Ford Ranger warranty, Ford Transit warranty, Ford EcoBoost warranty, used Ford warranty, second hand Ford warranty, Ford Mustang Mach-E warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/ford/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/ford-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
@@ -581,7 +581,7 @@ const FordWarrantyLanding: React.FC = () => {
         
         <meta property="og:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger, Mach-E from £24/mo" />
         <meta property="og:description" content="Comprehensive Ford warranty coverage for Fiesta, Focus, Kuga, Puma, Ranger, Transit and Mustang Mach-E. EcoBoost engines, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/ford/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/ford-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />

@@ -417,7 +417,7 @@ const MercedesWarrantyLanding: React.FC = () => {
       "price": "29",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/mercedes/",
+      "url": "https://buyawarranty.co.uk/warranty-types/mercedes-warranty/",
       "seller": {
         "@type": "Organization",
         "name": "Buy A Warranty"
@@ -543,7 +543,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         "@type": "ListItem",
         "position": 3,
         "name": "Mercedes-Benz Extended Warranty",
-        "item": "https://buyawarranty.co.uk/warranty-types/mercedes/"
+        "item": "https://buyawarranty.co.uk/warranty-types/mercedes-warranty/"
       }
     ]
   };
@@ -575,7 +575,7 @@ const MercedesWarrantyLanding: React.FC = () => {
     "@type": "WebPage",
     "name": "Mercedes-Benz Extended Warranty UK - Get Instant Quote",
     "description": "Protect your Mercedes-Benz with comprehensive extended warranty cover. All models from A-Class to S-Class and EQ Series. Nationwide UK coverage, approved garages, unlimited claims. Get your instant quote in 60 seconds.",
-    "url": "https://buyawarranty.co.uk/warranty-types/mercedes/",
+    "url": "https://buyawarranty.co.uk/warranty-types/mercedes-warranty/",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Buy A Warranty",
@@ -635,7 +635,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         <title>Mercedes-Benz Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
         <meta name="description" content="Protect your Mercedes-Benz with comprehensive extended warranty cover. All models from A-Class to S-Class and EQ Series covered. Engine, gearbox, electrics & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £29/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Mercedes extended warranty, Mercedes-Benz used car warranty, Mercedes warranty UK, Mercedes warranty cost, Mercedes warranty quote, Mercedes C-Class warranty, Mercedes GLC warranty, Mercedes EQC warranty, Mercedes E-Class warranty, Mercedes S-Class warranty, Mercedes electric warranty, Mercedes hybrid warranty, used Mercedes warranty, second hand Mercedes warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/mercedes/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/mercedes-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
@@ -650,7 +650,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Mercedes-Benz Extended Warranty UK | Instant Quotes from £29/month" />
         <meta property="og:description" content="Comprehensive Mercedes-Benz warranty coverage. Engine, gearbox, electrics & more. All models covered including hybrid and electric. Nationwide UK coverage with any garage. Get your instant quote now." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/mercedes/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/mercedes-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />

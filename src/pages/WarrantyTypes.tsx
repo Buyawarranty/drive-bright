@@ -40,7 +40,7 @@ const defaultCategories = [
   },
   {
     id: 'van-warranty',
-    slug: 'warranty-types/vans',
+    slug: 'warranty-types/vans-warranty',
     brand_name: 'Van Warranty',
     icon: Truck,
     image: vanImg,
@@ -48,7 +48,7 @@ const defaultCategories = [
   },
   {
     id: 'electric-warranty',
-    slug: 'warranty-types/ev',
+    slug: 'warranty-types/ev-warranty',
     brand_name: 'Electric Vehicle Warranty',
     icon: Battery,
     image: evImg,
@@ -56,7 +56,7 @@ const defaultCategories = [
   },
   {
     id: 'hybrid-warranty',
-    slug: 'warranty-types/hybrid',
+    slug: 'warranty-types/hybrid-warranty',
     brand_name: 'Hybrid Vehicle Warranty',
     icon: Battery,
     image: hybridImg,
@@ -64,7 +64,7 @@ const defaultCategories = [
   },
   {
     id: 'phev-warranty',
-    slug: 'warranty-types/phev',
+    slug: 'warranty-types/phev-warranty',
     brand_name: 'PHEV Plug-in Hybrid Warranty',
     icon: Plug,
     image: phevImg,
@@ -378,7 +378,7 @@ const WarrantyTypes: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {/* BMW Brand Card */}
               <Link 
-                to="/warranty-types/bmw"
+                to="/warranty-types/bmw-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -397,7 +397,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Mercedes Brand Card */}
               <Link 
-                to="/warranty-types/mercedes"
+                to="/warranty-types/mercedes-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -416,7 +416,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Vans Brand Card */}
               <Link 
-                to="/warranty-types/vans"
+                to="/warranty-types/vans-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-orange-100">
@@ -430,7 +430,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Honda Brand Card */}
               <Link 
-                to="/warranty-types/honda"
+                to="/warranty-types/honda-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -449,7 +449,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Toyota Brand Card */}
               <Link 
-                to="/warranty-types/toyota"
+                to="/warranty-types/toyota-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -468,7 +468,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Ford Brand Card */}
               <Link 
-                to="/warranty-types/ford"
+                to="/warranty-types/ford-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -487,7 +487,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Kia Brand Card */}
               <Link 
-                to="/warranty-types/kia"
+                to="/warranty-types/kia-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -506,7 +506,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Hyundai Brand Card */}
               <Link 
-                to="/warranty-types/hyundai"
+                to="/warranty-types/hyundai-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -525,7 +525,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* MG Brand Card */}
               <Link 
-                to="/warranty-types/mg"
+                to="/warranty-types/mg-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -544,7 +544,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Škoda Brand Card */}
               <Link 
-                to="/warranty-types/skoda"
+                to="/warranty-types/skoda-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -563,7 +563,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Audi Brand Card */}
               <Link 
-                to="/warranty-types/audi"
+                to="/warranty-types/audi-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -582,7 +582,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Nissan Brand Card */}
               <Link 
-                to="/warranty-types/nissan"
+                to="/warranty-types/nissan-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -601,7 +601,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Peugeot Brand Card */}
               <Link 
-                to="/warranty-types/peugeot"
+                to="/warranty-types/peugeot-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -620,7 +620,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Vauxhall Brand Card */}
               <Link 
-                to="/warranty-types/vauxhall"
+                to="/warranty-types/vauxhall-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -639,7 +639,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Volvo Brand Card */}
               <Link 
-                to="/warranty-types/volvo"
+                to="/warranty-types/volvo-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
@@ -658,7 +658,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* EV Brand Card */}
               <Link 
-                to="/warranty-types/ev"
+                to="/warranty-types/ev-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-green-100">

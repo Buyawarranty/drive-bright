@@ -484,7 +484,7 @@ const VanWarrantyLanding: React.FC = () => {
       "price": "19",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/vans/",
+      "url": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
       "seller": {
         "@type": "Organization",
         "name": "Buy A Warranty"
@@ -610,7 +610,7 @@ const VanWarrantyLanding: React.FC = () => {
         "@type": "ListItem",
         "position": 3,
         "name": "Van Extended Warranty",
-        "item": "https://buyawarranty.co.uk/warranty-types/vans/"
+        "item": "https://buyawarranty.co.uk/warranty-types/vans-warranty/"
       }
     ]
   };
@@ -640,7 +640,7 @@ const VanWarrantyLanding: React.FC = () => {
     "@type": "WebPage",
     "name": "Van Extended Warranty UK - Get Instant Quote",
     "description": "Protect your commercial van with comprehensive extended warranty cover. All major makes covered including Ford Transit, Mercedes Sprinter, VW Transporter. Nationwide UK coverage, approved garages, unlimited claims.",
-    "url": "https://buyawarranty.co.uk/warranty-types/vans/",
+    "url": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Buy A Warranty",
@@ -709,7 +709,7 @@ const VanWarrantyLanding: React.FC = () => {
         <title>Van Warranty UK | Instant Van Cover Quotes | Buy A Warranty</title>
         <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, Vauxhall Vivaro & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="van extended warranty, commercial van warranty, van warranty UK, Ford Transit warranty, Ford Transit Custom warranty, Mercedes Sprinter warranty, VW Transporter warranty, VW Crafter warranty, Renault Master warranty, Renault Trafic warranty, Vauxhall Movano warranty, Vauxhall Vivaro warranty, Peugeot Boxer warranty, Citroen Relay warranty, Fiat Ducato warranty, Nissan NV400 warranty, Toyota Proace warranty, Iveco Daily warranty, MAN TGE warranty, used van warranty, second hand van warranty, van breakdown cover, commercial vehicle warranty, panel van warranty, transit van warranty, work van warranty, delivery van warranty UK" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
@@ -724,7 +724,7 @@ const VanWarrantyLanding: React.FC = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Van Warranty UK | Protect Your Commercial Van from £19/mo | Buy A Warranty" />
         <meta property="og:description" content="Comprehensive van warranty coverage. Engine, gearbox, electrics & more. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master & all major makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />

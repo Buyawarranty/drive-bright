@@ -316,7 +316,7 @@ const AudiWarrantyLanding: React.FC = () => {
     "name": "Audi Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all Audi models including A3, A4, A5, A6, Q3, Q5, Q7, Q8, e-tron, e-tron GT, TT. Covers TFSI/TDI engines, S tronic gearbox, quattro drivetrain, MMI systems, EV components. Nationwide UK coverage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
-    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "25", "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/audi/", "priceValidUntil": new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0] },
+    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "25", "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/audi-warranty/", "priceValidUntil": new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0] },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5" },
     "category": "Vehicle Extended Warranty"
   };
@@ -325,7 +325,7 @@ const AudiWarrantyLanding: React.FC = () => {
     "@context": "https://schema.org", "@type": "WebPage",
     "name": "Audi Extended Warranty UK | Buy A Warranty",
     "description": "Comprehensive Audi extended warranty from £25/month covering A3, A4, Q5, e-tron and all models. S tronic, quattro and 8,000+ components covered. Any UK garage.",
-    "url": "https://buyawarranty.co.uk/warranty-types/audi/",
+    "url": "https://buyawarranty.co.uk/warranty-types/audi-warranty/",
     "lastReviewed": new Date().toISOString().split('T')[0],
     "reviewedBy": { "@type": "Organization", "name": "Buy A Warranty" },
     "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".faq-question"] },
@@ -345,7 +345,7 @@ const AudiWarrantyLanding: React.FC = () => {
   };
 
   const faqSchema = { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": audiFAQs.map(faq => ({ "@type": "Question", "name": faq.question, "acceptedAnswer": { "@type": "Answer", "text": faq.answer } })) };
-  const breadcrumbSchema = { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" }, { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" }, { "@type": "ListItem", "position": 3, "name": "Audi Warranty", "item": "https://buyawarranty.co.uk/warranty-types/audi/" }] };
+  const breadcrumbSchema = { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" }, { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" }, { "@type": "ListItem", "position": 3, "name": "Audi Warranty", "item": "https://buyawarranty.co.uk/warranty-types/audi-warranty/" }] };
 
   const renderTestimonialText = (text: string) => {
     const parts = text.split(/\*\*(.*?)\*\*/);
@@ -358,11 +358,11 @@ const AudiWarrantyLanding: React.FC = () => {
         <title>Audi Extended Warranty UK | A3, A4, Q5, e-tron Cover from £25/mo</title>
         <meta name="description" content="Audi extended warranty from £25/month. Cover A3, A4, A5, A6, Q3, Q5, Q7, Q8, e-tron, TT & all models 2012-2026. S tronic gearbox & quattro covered. Any UK garage. 8,000+ components. Instant quote in 60 seconds." />
         <meta name="keywords" content="audi extended warranty, audi warranty UK, audi a4 warranty, audi q5 warranty, audi a3 warranty, audi e-tron warranty, audi s tronic warranty, used audi warranty, audi car warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/audi/" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta property="og:title" content="Audi Extended Warranty UK | #1 Rated Audi Cover from £25/mo — A4, Q5, e-tron & S tronic Protection" />
         <meta property="og:description" content="Protect your Audi with the UK's top-rated extended warranty. All models covered. S tronic & quattro included. 8,000+ components. Any UK garage." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/audi/" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
