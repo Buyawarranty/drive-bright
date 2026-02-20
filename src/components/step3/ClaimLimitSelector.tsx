@@ -99,12 +99,6 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                       £{(tier.displayValue ?? tier.value).toLocaleString()}
                     </div>
                     <div className="text-xs text-muted-foreground">per claim</div>
-                    {/* Show monthly cost indicator for premium tiers */}
-                     {(tier.value === 5000 || tier.value === 3000) && (
-                      <div className="text-[11px] sm:text-xs text-[#0BA360] font-semibold mt-1">
-                        Just {Math.round(getClaimLimitSurcharge(tier.value, effectivePaymentType, voluntaryExcess) / 365 * 100)}p/day more
-                      </div>
-                    )}
                   </button>
                   
                   {/* Divider */}
