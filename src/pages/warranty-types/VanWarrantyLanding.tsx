@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Search } from 'lucide-react';
+import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Search, AlertTriangle, Info, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -17,19 +17,15 @@ import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallb
 import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
 
 // Lazy load heavy components
-const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
+const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
 const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
-const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
 
 // Assets
-import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
-import pandaMascot from '@/assets/warranty-panda-mascot.png';
+import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
-import pandaMechanic from '@/assets/panda-mechanic.png';
 import vanHeroImage from '@/assets/uk-extended-used-van-warranty.png';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
 import vanIcon from '@/assets/van-icon.png';
@@ -99,134 +95,118 @@ const vanModelCategories = {
 
 type ManufacturerCategory = keyof typeof vanModelCategories;
 
-// Coverage components data for vans
-const coverageCategories = [
+// Popular van anchors for SEO long-tail
+const popularVans = [
+  { name: 'Ford Transit', id: 'ford-transit' },
+  { name: 'Mercedes Sprinter', id: 'mercedes-sprinter' },
+  { name: 'Vauxhall Vivaro', id: 'vauxhall-vivaro' },
+  { name: 'VW Transporter', id: 'vw-transporter' },
+];
+
+// Van-specific coverage components
+const vanCoverageItems = [
   {
-    title: 'Engine & Powertrain',
+    title: 'Engine & turbo',
     icon: Truck,
     items: [
       'Engine block and cylinder head',
+      'Turbocharger and wastegate',
       'Diesel injectors and fuel pump',
-      'Turbocharger/supercharger',
-      'Timing belts and chains',
+      'Timing belt/chain and tensioners',
       'Oil pump and oil cooler',
-      'EGR valve and cooler',
-      'DPF and emissions systems',
     ]
   },
   {
-    title: 'Transmission & Drivetrain',
+    title: 'Gearbox & drivetrain',
     icon: Wrench,
     items: [
       'Manual and automatic gearbox',
-      'Clutch (if not wear item)',
+      'Clutch assembly (if not wear item)',
       'Differential (front & rear)',
-      'Transfer case (4WD vans)',
       'Drive shafts and CV joints',
-      'Prop shaft and bearings',
       'Torque converter',
     ]
   },
   {
-    title: 'Electrical & Electronics',
+    title: 'Emissions & diesel systems',
+    icon: Shield,
+    tooltip: 'DPF and EGR are covered when they fail mechanically — not due to soot build-up from short journeys.',
+    items: [
+      'DPF (diesel particulate filter)',
+      'EGR valve and cooler',
+      'AdBlue / SCR system',
+      'High-pressure fuel rail',
+      'Intercooler',
+    ]
+  },
+  {
+    title: 'Electrical & electronics',
     icon: Zap,
     items: [
       'ECU and control modules',
       'Starter motor and alternator',
-      'Central locking system',
-      'Electric window motors',
+      'Central locking and immobiliser',
       'Instrument cluster',
       'Sensors and actuators',
-      'Wiring looms',
-    ]
-  },
-  {
-    title: 'Cooling & Fuel Systems',
-    icon: Shield,
-    items: [
-      'Water pump and thermostat',
-      'Radiator and expansion tank',
-      'Fuel pump and injectors',
-      'High-pressure fuel pump',
-      'Fuel rail and regulator',
-      'Intercooler',
-      'Oil cooler',
-    ]
-  },
-  {
-    title: 'Suspension & Steering',
-    icon: Truck,
-    items: [
-      'Power steering pump/rack',
-      'Shock absorbers and struts',
-      'Heavy-duty leaf springs',
-      'Control arms and bushings',
-      'Wheel bearings and hubs',
-      'Anti-roll bar links',
-      'Ball joints',
-    ]
-  },
-  {
-    title: 'Commercial Features',
-    icon: Wrench,
-    items: [
-      'Sliding door mechanisms',
-      'Rear door locking systems',
-      'Load area lighting',
-      'Tachograph systems',
-      'Reversing camera/sensors',
-      'Payload systems',
-      'Tailgate mechanisms',
     ]
   },
 ];
 
-// FAQs for schema
+// What's NOT covered - transparency block
+const notCoveredItems = [
+  'Routine servicing and MOT items',
+  'Bodywork, paint, and glass',
+  'Tyres, brake pads, and wiper blades',
+  'Pre-existing faults known at purchase',
+  'Cosmetic interior trim damage',
+];
+
+// Van-specific FAQs
 const vanFAQs = [
   {
+    question: "Can I use my van for courier, trade, or commercial work?",
+    answer: "Absolutely. Our warranty covers commercial use including courier, delivery, trade, and fleet vehicles. Your van is covered whether you're a sole trader or part of a larger fleet."
+  },
+  {
     question: "Is my van too old or too many miles?",
-    answer: "We cover many older and higher mileage vehicles up to 15 years old and 150,000 miles. Check your instant price to confirm."
+    answer: "We cover vans up to 15 years old and 150,000 miles at the start of your policy. Once covered, there are no mileage restrictions during your warranty period."
   },
   {
-    question: "Can I use my own garage?",
-    answer: "Yes. Any VAT registered garage is acceptable or we can recommend an approved garage."
-  },
-  {
-    question: "What's covered in my warranty?",
-    answer: "At Buy-a-Warranty, we like to keep things simple. One solid plan that works for cars, vans, and motorbikes, whether you're driving electric, hybrid, petrol, or diesel. We keep things simple with no confusing packages, you won't encounter any unexpected rejections, and we offer straightforward cover without the hassle."
-  },
-  {
-    question: "How do I make a claim?",
-    answer: "Arrange for your vehicle to be inspected by a local independent repair garage to diagnose any issues. Once diagnosed, before any repairs are conducted, the repairer must directly contact our Claims Team at 0330 229 5045. It's important to note that failure to do so will not allow us to process your claim."
-  },
-  {
-    question: "What should I do if my van has an issue?",
-    answer: "If your van experiences a problem, please contact our Claims Team at 0330 229 5045. They are available Monday to Friday from 09:00 to 17:30 and can help start and process your warranty claim. If the issue arises outside of these hours, please fill out our online contact form."
-  },
-  {
-    question: "How much does it cost?",
-    answer: "Warranty costs start from just £19 per month for vans, depending on your vehicle and the level of cover you choose. Get an instant quote by entering your registration number above."
-  },
-  {
-    question: "What about modified vehicles?",
-    answer: "Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar."
-  },
-  {
-    question: "Do I need a full service history?",
-    answer: "A reasonable service history is fine. Many vehicles are accepted even if servicing has been missed."
-  },
-  {
-    question: "What claim limit is right for me?",
-    answer: "It depends on your vehicle and how much protection you want.\n\n£1,000 is ideal for smaller or lower‑cost repairs.\n£2,000 offers broader cover for most mid‑range repairs.\n£3,000 is our most popular option and covers the majority of common faults in full.\n£5,000 provides our highest level of protection and is best suited to newer, higher‑value or more complex vehicles where repair costs can be significantly higher.\n\nEvery plan includes unlimited claims, and you're covered up to the value of your vehicle, whichever limit you choose."
+    question: "Can I use my own garage for repairs?",
+    answer: "Yes — any VAT-registered garage in the UK is fine. You don't have to use a main dealer or approved repairer. Just make sure the garage calls us before starting work."
   },
   {
     question: "Are diagnostics covered?",
-    answer: "Diagnostics are usually covered when the fault is approved."
+    answer: "Diagnostics are usually covered when the fault is approved under your warranty. The garage just needs to contact our claims team first."
   },
   {
-    question: "What is the most expensive repair you have covered?",
-    answer: "We regularly cover repairs over £1,500 for engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration."
-  }
+    question: "What about modified vans?",
+    answer: "Most body modifications are accepted — racking, ply-lining, sign-writing, and similar fitments are fine. Give us a ring on 0330 229 5040 if you're unsure about a specific modification."
+  },
+  {
+    question: "Do I need a full service history?",
+    answer: "A reasonable service history is fine. We understand that commercial vehicles don't always have a perfect dealer history. Many vans are accepted even if some services were missed."
+  },
+  {
+    question: "What claim limits are available?",
+    answer: "We offer claim limits of £1,000, £2,000, £3,000, and £5,000 per claim. Every plan includes unlimited claims, and you can choose a zero-excess option. Most van owners go for £3,000 — it covers the majority of common repairs in full."
+  },
+  {
+    question: "Is breakdown recovery included?",
+    answer: "Breakdown recovery is included as standard on all 2-year and 3-year plans at no extra cost. For 1-year plans, it's available as an optional add-on."
+  },
+  {
+    question: "How quickly does cover start?",
+    answer: "Cover starts the same day you purchase — there's no waiting period and no inspection required. You're protected from the moment you buy."
+  },
+  {
+    question: "How do I make a claim?",
+    answer: "Take your van to any VAT-registered garage for diagnosis. Before any repairs begin, the garage must call our claims team on 0330 229 5045. We'll authorise the work and pay the garage directly. It's that simple."
+  },
+  {
+    question: "What's the most expensive repair you've covered?",
+    answer: "We regularly cover repairs over £1,500 for engines, gearboxes, and ECUs. With our £5,000 claim limit, even major work like a full gearbox rebuild or engine replacement is covered."
+  },
 ];
 
 // Testimonials
@@ -290,19 +270,21 @@ const VanWarrantyLanding: React.FC = () => {
   const [mileageSelection, setMileageSelection] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleAgeError, setVehicleAgeError] = useState('');
-  const [openFaqId, setOpenFaqId] = useState<number | null>(null);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
   const [callbackVisible, setCallbackVisible] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setCallbackVisible(window.scrollY > 300);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-  const [expandedCoverage, setExpandedCoverage] = useState(false);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
   const [activeManufacturer, setActiveManufacturer] = useState<ManufacturerCategory | 'All'>('All');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+
+  useEffect(() => {
+    const onScroll = () => {
+      setCallbackVisible(window.scrollY > 300);
+      setShowStickyCTA(window.scrollY > 600);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Filter models based on search query
   const filteredModels = useMemo(() => {
@@ -357,7 +339,7 @@ const VanWarrantyLanding: React.FC = () => {
     
     if (!regNumber.trim()) {
       toast({
-        title: "Registration Required",
+        title: "Registration required",
         description: "Please enter your vehicle registration number.",
         variant: "destructive",
       });
@@ -366,7 +348,7 @@ const VanWarrantyLanding: React.FC = () => {
     
     if (!mileage.trim()) {
       toast({
-        title: "Mileage Required",
+        title: "Mileage required",
         description: "Please select your vehicle's mileage to continue.",
         variant: "destructive",
       });
@@ -393,7 +375,7 @@ const VanWarrantyLanding: React.FC = () => {
           if (vehicleAgePrecise > 15) {
             setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
             toast({
-              title: "Vehicle Not Eligible",
+              title: "Vehicle not eligible",
               description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.",
               variant: "destructive",
             });
@@ -459,12 +441,9 @@ const VanWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": "Van Extended Warranty UK",
-    "description": "Comprehensive extended warranty coverage for all commercial vans including Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, and more. Covers engine, gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
-    "brand": {
-      "@type": "Brand",
-      "name": "Buy A Warranty"
-    },
+    "name": "UK van warranty — platinum complete cover",
+    "description": "Comprehensive extended warranty for UK commercial vans. Covers engine, turbo, gearbox, DPF, EGR, electrics and more. Ford Transit, Mercedes Sprinter, VW Transporter, Vauxhall Vivaro and all major makes. Claim limits from £1,000 to £5,000. Zero excess available. From £19/month.",
+    "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": {
       "@type": "Organization",
       "name": "Buy A Warranty",
@@ -485,10 +464,7 @@ const VanWarrantyLanding: React.FC = () => {
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
-      "seller": {
-        "@type": "Organization",
-        "name": "Buy A Warranty"
-      },
+      "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
@@ -507,74 +483,13 @@ const VanWarrantyLanding: React.FC = () => {
     },
     "review": testimonials.map((t, i) => ({
       "@type": "Review",
-      "author": {
-        "@type": "Person",
-        "name": t.name
-      },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": t.rating,
-        "bestRating": "5"
-      },
+      "author": { "@type": "Person", "name": t.name },
+      "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" },
       "reviewBody": t.text,
       "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     })),
     "category": "Vehicle Extended Warranty",
-    "audience": {
-      "@type": "Audience",
-      "audienceType": "Commercial van owners in the United Kingdom"
-    }
-  };
-
-  const serviceSchema = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "Van Extended Warranty Service",
-    "alternateName": "Commercial Van Warranty",
-    "provider": {
-      "@type": "LocalBusiness",
-      "name": "Buy A Warranty",
-      "url": "https://buyawarranty.co.uk",
-      "telephone": "+44-800-917-9270",
-      "priceRange": "£19-£95/month",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "GB"
-      }
-    },
-    "areaServed": {
-      "@type": "Country",
-      "name": "United Kingdom"
-    },
-    "description": "Extended warranty coverage for all commercial vans including Ford Transit, Ford Transit Custom, Mercedes Sprinter, VW Transporter, VW Crafter, Renault Master, Renault Trafic, Vauxhall Movano, Vauxhall Vivaro, Peugeot Boxer, Citroen Relay, Fiat Ducato, Nissan NV400, Toyota Proace, Iveco Daily, and MAN TGE. Covers engine, transmission, electrical systems, turbocharger, diesel systems and more. Nationwide UK coverage with any VAT-registered garage. 24/7 roadside assistance included.",
-    "serviceType": "Vehicle Extended Warranty",
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Van Warranty Plans",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "1 Year Van Warranty"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "2 Year Van Warranty"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "3 Year Van Warranty"
-          }
-        }
-      ]
-    }
+    "audience": { "@type": "Audience", "audienceType": "Commercial van owners in the United Kingdom" }
   };
 
   const faqSchema = {
@@ -583,10 +498,7 @@ const VanWarrantyLanding: React.FC = () => {
     "mainEntity": vanFAQs.map(faq => ({
       "@type": "Question",
       "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
+      "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
     }))
   };
 
@@ -594,25 +506,27 @@ const VanWarrantyLanding: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://buyawarranty.co.uk/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Warranty Types",
-        "item": "https://buyawarranty.co.uk/warranty-types/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "Van Extended Warranty",
-        "item": "https://buyawarranty.co.uk/warranty-types/vans-warranty/"
-      }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
+      { "@type": "ListItem", "position": 2, "name": "Warranty types", "item": "https://buyawarranty.co.uk/warranty-types/" },
+      { "@type": "ListItem", "position": 3, "name": "Van warranty", "item": "https://buyawarranty.co.uk/warranty-types/vans-warranty/" }
     ]
+  };
+
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Van extended warranty service",
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Buy A Warranty",
+      "url": "https://buyawarranty.co.uk",
+      "telephone": "+44-800-917-9270",
+      "priceRange": "£19-£95/month",
+      "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+    },
+    "areaServed": { "@type": "Country", "name": "United Kingdom" },
+    "description": "Extended warranty for all UK commercial vans. Ford Transit, Mercedes Sprinter, VW Transporter, Vauxhall Vivaro, Renault Master and more.",
+    "serviceType": "Vehicle Extended Warranty"
   };
 
   const organizationSchema = {
@@ -621,137 +535,83 @@ const VanWarrantyLanding: React.FC = () => {
     "name": "Buy A Warranty",
     "url": "https://buyawarranty.co.uk",
     "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
-    "description": "UK's trusted extended vehicle warranty provider. Protecting cars, vans, and commercial vehicles since 2016.",
+    "description": "UK's trusted extended vehicle warranty provider.",
     "foundingDate": "2016",
-    "sameAs": [
-      "https://uk.trustpilot.com/review/buyawarranty.co.uk"
-    ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+44-800-917-9270",
-      "contactType": "customer service",
-      "areaServed": "GB",
-      "availableLanguage": "English"
-    }
+    "sameAs": ["https://uk.trustpilot.com/review/buyawarranty.co.uk"],
+    "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", "areaServed": "GB", "availableLanguage": "English" }
   };
 
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Van Extended Warranty UK - Get Instant Quote",
-    "description": "Protect your commercial van with comprehensive extended warranty cover. All major makes covered including Ford Transit, Mercedes Sprinter, VW Transporter. Nationwide UK coverage, approved garages, unlimited claims.",
+    "name": "Van warranty UK — instant quote",
+    "description": "Protect your commercial van with comprehensive extended warranty cover. All major makes covered. From £19/month.",
     "url": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "Buy A Warranty",
-      "url": "https://buyawarranty.co.uk"
-    },
-    "about": {
-      "@type": "Thing",
-      "name": "Van Extended Warranty"
-    },
+    "isPartOf": { "@type": "WebSite", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
+    "about": { "@type": "Thing", "name": "Van Extended Warranty" },
     "mentions": [
       { "@type": "Brand", "name": "Ford" },
       { "@type": "Brand", "name": "Mercedes-Benz" },
       { "@type": "Brand", "name": "Volkswagen" },
+      { "@type": "Brand", "name": "Vauxhall" },
       { "@type": "Brand", "name": "Renault" },
       { "@type": "Brand", "name": "Citroën" },
       { "@type": "Brand", "name": "Peugeot" },
-      { "@type": "Brand", "name": "Vauxhall" },
       { "@type": "Brand", "name": "Fiat" },
       { "@type": "Brand", "name": "Nissan" },
       { "@type": "Brand", "name": "Toyota" },
       { "@type": "Brand", "name": "Iveco" },
       { "@type": "Brand", "name": "MAN" },
-      { "@type": "Thing", "name": "Commercial Van Warranty" }
     ],
-    "speakable": {
-      "@type": "SpeakableSpecification",
-      "cssSelector": ["h1", "h2", ".hero-description"]
-    },
-    "mainContentOfPage": {
-      "@type": "WebPageElement",
-      "cssSelector": "main"
-    }
+    "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".hero-description"] },
   };
 
   const howToSchema = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    "name": "How to Get a Van Extended Warranty Quote",
-    "description": "Get an instant van extended warranty quote in 60 seconds",
-    "totalTime": "PT1M",
+    "name": "How to get a van warranty quote",
+    "description": "Get an instant van warranty quote in 30 seconds",
+    "totalTime": "PT30S",
     "step": [
-      {
-        "@type": "HowToStep",
-        "position": 1,
-        "name": "Enter Registration",
-        "text": "Enter your van registration number to look up your vehicle details automatically"
-      },
-      {
-        "@type": "HowToStep",
-        "position": 2,
-        "name": "Select Mileage",
-        "text": "Choose your current mileage range (under or over 120,000 miles)"
-      },
-      {
-        "@type": "HowToStep",
-        "position": 3,
-        "name": "Get Instant Quote",
-        "text": "Receive your personalised warranty quote instantly with pricing for different coverage levels"
-      }
+      { "@type": "HowToStep", "position": 1, "name": "Enter your reg", "text": "Pop in your van registration number and we'll look it up automatically" },
+      { "@type": "HowToStep", "position": 2, "name": "Choose your mileage", "text": "Tell us whether your van is under or over 120,000 miles" },
+      { "@type": "HowToStep", "position": 3, "name": "See your price", "text": "Get your personalised quote instantly — no phone call needed" }
     ]
   };
 
   return (
     <>
       <Helmet>
-        <title>Van Warranty UK | Instant Van Cover Quotes | Buy A Warranty</title>
-        <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, Vauxhall Vivaro & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £19/month. Get your instant quote in 60 seconds." />
-        <meta name="keywords" content="van extended warranty, commercial van warranty, van warranty UK, Ford Transit warranty, Ford Transit Custom warranty, Mercedes Sprinter warranty, VW Transporter warranty, VW Crafter warranty, Renault Master warranty, Renault Trafic warranty, Vauxhall Movano warranty, Vauxhall Vivaro warranty, Peugeot Boxer warranty, Citroen Relay warranty, Fiat Ducato warranty, Nissan NV400 warranty, Toyota Proace warranty, Iveco Daily warranty, MAN TGE warranty, used van warranty, second hand van warranty, van breakdown cover, commercial vehicle warranty, panel van warranty, transit van warranty, work van warranty, delivery van warranty UK" />
+        <title>Van warranty UK | From £19/mo | Buy A Warranty</title>
+        <meta name="description" content="Keep your business moving with comprehensive van warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter & all major makes. Engine, turbo, gearbox, DPF covered. Claim limits up to £5,000. Zero excess available. Same-day cover. Free 30-second quote." />
+        <meta name="keywords" content="van warranty UK, commercial van warranty, Ford Transit warranty, Mercedes Sprinter warranty, VW Transporter warranty, Vauxhall Vivaro warranty, van extended warranty, used van warranty, van breakdown cover, courier van warranty, trade van warranty, high mileage van warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
         
-        {/* Geographic targeting */}
         <meta name="geo.region" content="GB" />
         <meta name="geo.placename" content="United Kingdom" />
         <meta name="geo.position" content="51.5074;-0.1278" />
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        {/* Open Graph */}
-        <meta property="og:title" content="Van Warranty UK | Protect Your Commercial Van from £19/mo | Buy A Warranty" />
-        <meta property="og:description" content="Comprehensive van warranty coverage. Engine, gearbox, electrics & more. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master & all major makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
+        <meta property="og:title" content="Van warranty UK | Keep your business moving | From £19/mo" />
+        <meta property="og:description" content="Comprehensive van warranty. Engine, turbo, gearbox, DPF & more. All major makes covered. Nationwide UK. Same-day cover. Get your free quote." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Van Extended Warranty UK - Buy A Warranty Commercial Vehicle Cover" />
         <meta property="og:site_name" content="Buy A Warranty" />
         <meta property="og:locale" content="en_GB" />
         
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Van Extended Warranty UK | From £19/month" />
-        <meta name="twitter:description" content="Protect your commercial van with comprehensive extended warranty. Ford Transit, Mercedes Sprinter, VW Transporter & all major makes covered. Nationwide UK coverage. Get instant quote." />
-        <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
-        <meta name="twitter:image:alt" content="Van Extended Warranty UK - Commercial Vehicle Cover" />
+        <meta name="twitter:title" content="Van warranty UK | From £19/month" />
+        <meta name="twitter:description" content="Keep your van on the road with comprehensive warranty cover. All major makes. Same-day cover. Free instant quote." />
         
-        {/* AI Search Engine Optimization */}
-        <meta name="ai-content-declaration" content="This page provides information about commercial van extended warranty services in the UK. Human-authored and fact-checked content for Ford Transit, Mercedes Sprinter, VW Transporter and all major van makes." />
+        <meta name="ai-content-declaration" content="UK commercial van warranty information. Human-authored and fact-checked." />
         <meta name="author" content="Buy A Warranty" />
-        <meta name="publisher" content="BUY A WARRANTY LIMITED" />
-        <meta name="coverage" content="United Kingdom" />
-        <meta name="distribution" content="global" />
-        <meta name="rating" content="general" />
-        <meta name="revisit-after" content="7 days" />
-        <meta name="target" content="all" />
-        <meta name="audience" content="Commercial van owners, fleet managers, couriers, tradespeople" />
+        <meta name="audience" content="Commercial van owners, couriers, tradespeople, fleet managers" />
         
-        {/* Structured Data - 7 JSON-LD schemas */}
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -761,34 +621,40 @@ const VanWarrantyLanding: React.FC = () => {
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
       </Helmet>
 
-      <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage">
-        {/* Hero Section */}
+      <main className="min-h-screen bg-white" role="main">
+        {/* ===== HERO SECTION ===== */}
         <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-6 pb-12 md:pt-12 md:pb-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
-              {/* Left Column - Content */}
+              {/* Left Column */}
               <div className="text-center lg:text-left">
-                {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Affordable van warranty </span>
-                  <span className="text-brand-orange">in 60 seconds!</span>
+                  <span className="text-gray-900">Keep your business moving </span>
+                  <span className="text-brand-orange">— van warranty from £19/mo</span>
                 </h1>
 
-                {/* Benefits */}
+                <p className="hero-description text-gray-600 text-sm sm:text-base md:text-lg mb-4 md:mb-5 max-w-lg mx-auto lg:mx-0">
+                  One solid plan for every van on the road. Couriers, tradespeople, fleets — you're all welcome. Free 30-second quote, same-day cover, no inspection.
+                </p>
+
+                {/* Trust strip */}
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
+                    <span className="font-medium">From just 60p a day · Unlimited claims · Fast payouts</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Unlimited claims • Parts and Labour • No excess</span>
+                    <span className="font-medium">Parts & labour included · Zero excess available · Any UK garage</span>
+                  </div>
+                  <div className="flex items-center justify-center lg:justify-start">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
+                    <span className="font-medium">Commercial use accepted · Same-day activation · 14-day refund</span>
                   </div>
                 </div>
 
                 {/* Quote Form */}
                 <div className="max-w-md mx-auto lg:mx-0 space-y-4">
-                  {/* Registration Input */}
                   <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black">
                     <div className="bg-blue-600 text-white font-bold px-3 sm:px-4 py-3 flex items-center justify-center min-w-[60px] sm:min-w-[80px]">
                       <div className="flex flex-col items-center">
@@ -803,10 +669,10 @@ const VanWarrantyLanding: React.FC = () => {
                       placeholder="ENTER REG"
                       className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-3 sm:px-4 py-3 uppercase tracking-wider min-w-0"
                       maxLength={8}
+                      aria-label="Vehicle registration number"
                     />
                   </div>
 
-                  {/* Mileage Quick Select */}
                   <MileageQuickSelect
                     value={mileageSelection}
                     onChange={handleMileageSelection}
@@ -816,7 +682,7 @@ const VanWarrantyLanding: React.FC = () => {
                     isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                   />
 
-                  {/* Trust Contact Panel */}
+                  {/* Micro-trust panel */}
                   <div className="mt-5 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
                     <p className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
                       Fair price. Fast quote. No surprises.
@@ -826,7 +692,17 @@ const VanWarrantyLanding: React.FC = () => {
                       <a href="tel:03302295040" className="font-semibold text-gray-900 hover:underline">
                         0330 229 5040
                       </a>
-                      <span className="text-gray-400">or</span>
+                      <span className="text-gray-400">·</span>
+                      <a
+                        href="https://wa.me/443302295040"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline font-medium inline-flex items-center gap-1"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        WhatsApp
+                      </a>
+                      <span className="text-gray-400">·</span>
                       <button
                         onClick={() => setShowCallbackModal(true)}
                         className="text-brand-orange hover:underline font-medium"
@@ -838,20 +714,18 @@ const VanWarrantyLanding: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Column - Hero Image with Mascot */}
+              {/* Right Column - Hero Image */}
               <div className="relative">
-                {/* Hero Image */}
                 <div className="relative">
                   <OptimizedImage
                     src={vanHeroImage}
-                    alt="UK extended used van warranty - Miles the Buy A Warranty panda mascot with Ford Transit Custom and Volkswagen Transporter commercial vans"
+                    alt="UK van warranty — Miles the Buy A Warranty panda mascot with Ford Transit Custom and Volkswagen Transporter"
                     className="w-full h-auto max-w-md mx-auto object-contain"
                     priority={true}
                     width={600}
                     height={450}
                     style={{ border: 'none', boxShadow: 'none' }}
                   />
-                  {/* Trustpilot Badge */}
                   <div className="absolute top-4 right-4">
                     <a 
                       href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
@@ -861,7 +735,7 @@ const VanWarrantyLanding: React.FC = () => {
                     >
                       <OptimizedImage 
                         src={trustpilotExcellent} 
-                        alt="Trustpilot Excellent Rating" 
+                        alt="Trustpilot rated excellent" 
                         className="h-auto w-28 sm:w-36 object-contain"
                         width={144}
                         height={61}
@@ -870,37 +744,43 @@ const VanWarrantyLanding: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Vehicle Type Tags */}
+                {/* Popular van anchors */}
                 <div className="flex flex-col items-center gap-4 mt-6">
                   <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap">
-                    <div className="flex items-center space-x-1.5">
-                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Panel Vans</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5">
-                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Crew Vans</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5">
-                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Pickups</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5">
-                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base"><span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Luton Vans</span></span>
-                    </div>
+                    {popularVans.map((van) => (
+                      <a
+                        key={van.id}
+                        href={`#${van.id}`}
+                        className="flex items-center space-x-1.5 hover:text-brand-orange transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const target = document.getElementById('van-models');
+                          if (target) {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                            const make = van.name.split(' ')[0];
+                            if (make === 'VW') {
+                              setActiveManufacturer('Volkswagen');
+                            } else {
+                              setActiveManufacturer(Object.keys(vanModelCategories).find(k => van.name.toLowerCase().includes(k.toLowerCase())) as ManufacturerCategory || 'All');
+                            }
+                          }
+                        }}
+                      >
+                        <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                        <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">{van.name}</span>
+                      </a>
+                    ))}
                   </div>
                   
-                  {/* Instant Activation Badge */}
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
-                          <span className="text-sm font-semibold text-green-700">⚡ Instant cover</span>
+                          <span className="text-sm font-semibold text-green-700">⚡ Same-day cover</span>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>⚡ Cover starts immediately after purchase</p>
+                        <p>⚡ Cover starts immediately after purchase — no waiting period</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -910,53 +790,33 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Warranty Benefits Section */}
-        <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
-          <WarrantyBenefitsSection headline="The Ultimate Van Warranty." />
-        </Suspense>
-
-        {/* Vehicle Coverage Accordion Section */}
-        <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
-          <VehicleCoverageSection headingPrefix="Van" />
-        </Suspense>
-
-        {/* Cover Clarity Section */}
-        <Suspense fallback={<div className="py-8 md:py-12 bg-gray-50 min-h-[200px]" />}>
-          <CoverClaritySection />
-        </Suspense>
-
-        {/* Video Section */}
-        <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
-          <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
-        </Suspense>
-
-        {/* Average Van Repair Costs Section */}
+        {/* ===== VALUE FRAMING — KEEP YOUR BUSINESS MOVING ===== */}
         <section className="py-12 md:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-semibold text-sm px-4 py-2 rounded-full mb-4">
-                <Wrench className="w-4 h-4" />
-                Without warranty, you pay the full bill
+                <AlertTriangle className="w-4 h-4" />
+                One breakdown could cost more than a year of cover
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
                 What van repairs actually cost
               </h2>
               <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-                One breakdown could cost more than years of warranty cover. Here's what van owners pay without protection.
+                When your van's off the road, you're not just paying for parts — you're losing income. Here's what unprotected van owners face.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
               {[
-                { part: 'Turbocharger Replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high' },
-                { part: 'DPF Filter Replacement', cost: '£1,200 – £2,800', icon: Shield, severity: 'high' },
-                { part: 'Gearbox Rebuild', cost: '£2,000 – £4,500', icon: Wrench, severity: 'critical' },
-                { part: 'Engine Rebuild', cost: '£3,000 – £5,000', icon: Truck, severity: 'critical' },
-                { part: 'Fuel Injector Set', cost: '£800 – £2,200', icon: Zap, severity: 'medium' },
-                { part: 'Clutch & Flywheel', cost: '£900 – £1,800', icon: Wrench, severity: 'medium' },
-                { part: 'ECU Replacement', cost: '£700 – £1,500', icon: Zap, severity: 'medium' },
-                { part: 'Power Steering Rack', cost: '£600 – £1,400', icon: Wrench, severity: 'medium' },
-                { part: 'Timing Chain Kit', cost: '£800 – £2,000', icon: Clock, severity: 'high' },
+                { part: 'Turbocharger replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high', downtime: '3-5 days off road' },
+                { part: 'DPF filter replacement', cost: '£1,200 – £2,800', icon: Shield, severity: 'high', downtime: '2-4 days off road' },
+                { part: 'Gearbox rebuild', cost: '£2,000 – £4,500', icon: Wrench, severity: 'critical', downtime: '5-10 days off road' },
+                { part: 'Engine rebuild', cost: '£3,000 – £5,000', icon: Truck, severity: 'critical', downtime: '7-14 days off road' },
+                { part: 'Fuel injector set', cost: '£800 – £2,200', icon: Zap, severity: 'medium', downtime: '1-3 days off road' },
+                { part: 'Clutch & flywheel', cost: '£900 – £1,800', icon: Wrench, severity: 'medium', downtime: '2-3 days off road' },
+                { part: 'ECU replacement', cost: '£700 – £1,500', icon: Zap, severity: 'medium', downtime: '1-2 days off road' },
+                { part: 'EGR valve failure', cost: '£400 – £900', icon: Shield, severity: 'medium', downtime: '1-2 days off road' },
+                { part: 'Timing chain kit', cost: '£800 – £2,000', icon: Clock, severity: 'high', downtime: '3-5 days off road' },
               ].map((repair, index) => {
                 const severityColor = repair.severity === 'critical' 
                   ? 'border-red-200 bg-red-50/50' 
@@ -970,10 +830,7 @@ const VanWarrantyLanding: React.FC = () => {
                   : 'text-slate-900';
                 
                 return (
-                  <div 
-                    key={index} 
-                    className={`relative rounded-xl border-2 ${severityColor} p-4 md:p-5 transition-all hover:shadow-md`}
-                  >
+                  <div key={index} className={`relative rounded-xl border-2 ${severityColor} p-4 md:p-5 transition-all hover:shadow-md`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 flex-1">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -986,6 +843,7 @@ const VanWarrantyLanding: React.FC = () => {
                         <div>
                           <h3 className="font-bold text-slate-900 text-sm md:text-base">{repair.part}</h3>
                           <p className={`text-lg md:text-xl font-bold ${costColor} mt-0.5`}>{repair.cost}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">⏱ {repair.downtime}</p>
                         </div>
                       </div>
                     </div>
@@ -994,12 +852,20 @@ const VanWarrantyLanding: React.FC = () => {
               })}
             </div>
 
-            {/* Bottom CTA */}
+            {/* Comparison CTA — repair cost vs plan */}
             <div className="mt-8 md:mt-12 text-center">
               <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Warranty cover from just £19/month
-                </h3>
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-6">
+                  <div className="text-center">
+                    <p className="text-white/60 text-sm uppercase tracking-wide mb-1">Typical repair</p>
+                    <p className="text-3xl md:text-4xl font-black text-red-400 line-through decoration-2">£2,200</p>
+                  </div>
+                  <div className="text-white text-2xl font-bold">vs</div>
+                  <div className="text-center">
+                    <p className="text-white/60 text-sm uppercase tracking-wide mb-1">Platinum plan</p>
+                    <p className="text-3xl md:text-4xl font-black text-green-400">from £19/mo</p>
+                  </div>
+                </div>
                 <p className="text-white/70 text-sm md:text-base mb-6">
                   That's less than a single diagnostic fee — and it covers all of the above.
                 </p>
@@ -1007,7 +873,7 @@ const VanWarrantyLanding: React.FC = () => {
                   onClick={scrollToQuoteForm}
                   className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
                 >
-                  Get Your Instant Quote
+                  Get my instant quote
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </div>
@@ -1015,24 +881,113 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Van Models Section */}
-        <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
+        {/* ===== WARRANTY BENEFITS ===== */}
+        <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
+          <WarrantyBenefitsSection headline="The ultimate van warranty." />
+        </Suspense>
+
+        {/* ===== VAN-SPECIFIC COVERAGE ===== */}
+        <section className="py-12 md:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Section Header */}
             <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-medium mb-4">
-                <Shield className="w-3.5 h-3.5" />
-                Full Coverage Details
+              <div className="inline-flex items-center gap-2 bg-green-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
+                <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+                <span className="text-xs md:text-sm font-semibold text-green-700">What's covered</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-                All UK Van Models Covered
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+                Van-specific components we cover
               </h2>
-              <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-                We cover vans from all major manufacturers registered between 2012 and 2026. Select your make to see models.
+              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                Built for how vans actually break down — turbo, DPF, injectors, gearbox and more.
               </p>
             </div>
 
-            {/* Search Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-8">
+              {vanCoverageItems.map((category, idx) => (
+                <div key={idx} className="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-brand-orange/10 rounded-lg flex items-center justify-center">
+                      <category.icon className="w-5 h-5 text-brand-orange" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">{category.title}</h3>
+                    {category.tooltip && (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-sm">{category.tooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                  <ul className="space-y-2">
+                    {category.items.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {/* What's NOT covered */}
+            <div className="bg-gray-50 rounded-xl p-5 md:p-6 border border-gray-200 max-w-2xl mx-auto">
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <X className="w-5 h-5 text-red-500" />
+                What's not covered
+              </h3>
+              <ul className="space-y-2">
+                {notCoveredItems.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                    <X className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-gray-500 mt-3">
+                Full terms available in your policy document. No hidden exclusions — just honest cover.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== VEHICLE COVERAGE ACCORDION ===== */}
+        <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
+          <VehicleCoverageSection headingPrefix="Van" />
+        </Suspense>
+
+        {/* ===== COVER CLARITY ===== */}
+        <Suspense fallback={<div className="py-8 md:py-12 bg-gray-50 min-h-[200px]" />}>
+          <CoverClaritySection />
+        </Suspense>
+
+        {/* ===== VIDEO ===== */}
+        <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
+          <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+        </Suspense>
+
+        {/* ===== VAN MODELS SECTION ===== */}
+        <section id="van-models" className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-medium mb-4">
+                <Shield className="w-3.5 h-3.5" />
+                All makes covered
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
+                Every UK van make and model
+              </h2>
+              <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+                We cover vans registered between 2012 and 2026 from all major manufacturers. Find yours below.
+              </p>
+            </div>
+
+            {/* Search */}
             <div className="max-w-lg mx-auto mb-6 md:mb-8">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -1042,11 +997,12 @@ const VanWarrantyLanding: React.FC = () => {
                   onChange={(e) => setModelSearchQuery(e.target.value)}
                   placeholder="Search van makes or models..."
                   className="w-full pl-12 pr-4 py-3 md:py-4 rounded-xl border-2 border-slate-200 focus:border-brand-orange focus:ring-0 outline-none text-base md:text-lg transition-colors"
+                  aria-label="Search van models"
                 />
               </div>
             </div>
 
-            {/* Manufacturer Filter Tabs */}
+            {/* Manufacturer tabs */}
             <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6 md:mb-8">
               <button
                 onClick={() => setActiveManufacturer('All')}
@@ -1056,7 +1012,7 @@ const VanWarrantyLanding: React.FC = () => {
                     : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                 }`}
               >
-                All Makes
+                All makes
               </button>
               {(Object.keys(vanModelCategories) as ManufacturerCategory[]).map((manufacturer) => (
                 <button
@@ -1073,7 +1029,7 @@ const VanWarrantyLanding: React.FC = () => {
               ))}
             </div>
 
-            {/* Models Grid */}
+            {/* Models grid */}
             {filteredModels.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
                 {filteredModels.map(({ model, manufacturer, variants }) => (
@@ -1086,20 +1042,9 @@ const VanWarrantyLanding: React.FC = () => {
                         : 'border-slate-200 hover:border-slate-300 hover:shadow-sm focus:ring-slate-400'
                     }`}
                   >
-                    {/* Van Icon - compact */}
                     <img src={vanIcon} alt="" className="w-7 h-7 mx-auto mb-1.5 opacity-60 group-hover:opacity-80 transition-opacity" />
-                    
-                    {/* Model Name */}
-                    <h3 className="text-[11px] md:text-xs font-bold text-slate-900 leading-tight mb-0.5 truncate">
-                      {model}
-                    </h3>
-                    
-                    {/* Manufacturer */}
-                    <p className="text-[9px] md:text-[10px] text-slate-500 font-medium leading-tight">
-                      {manufacturer}
-                    </p>
-
-                    {/* Selected check */}
+                    <h3 className="text-[11px] md:text-xs font-bold text-slate-900 leading-tight mb-0.5 truncate">{model}</h3>
+                    <p className="text-[9px] md:text-[10px] text-slate-500 font-medium leading-tight">{manufacturer}</p>
                     {selectedModel === model && (
                       <div className="absolute top-1 right-1 w-4 h-4 bg-brand-orange rounded-full flex items-center justify-center">
                         <Check className="w-2.5 h-2.5 text-white" />
@@ -1110,31 +1055,26 @@ const VanWarrantyLanding: React.FC = () => {
               </div>
             )}
 
-            {/* No Results */}
             {filteredModels.length === 0 && modelSearchQuery && (
               <div className="text-center py-12">
                 <Truck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <p className="text-slate-600 text-lg">No vans found matching "{modelSearchQuery}"</p>
-                <button
-                  onClick={() => setModelSearchQuery('')}
-                  className="mt-3 text-blue-600 font-medium hover:underline"
-                >
+                <button onClick={() => setModelSearchQuery('')} className="mt-3 text-blue-600 font-medium hover:underline">
                   Clear search
                 </button>
               </div>
             )}
 
-            {/* Bottom Info */}
             <div className="mt-8 md:mt-10 text-center">
               <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 text-xs md:text-sm text-slate-600">
                 <Check className="w-4 h-4 text-green-600" />
-                <span><strong>Also covered:</strong> LWB, SWB, High Roof, and all body configurations</span>
+                <span><strong>Also covered:</strong> LWB, SWB, high roof, and all body configurations</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Sticky CTA - Shows after model selection */}
+        {/* Sticky CTA after model selection */}
         {selectedModel && (
           <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-3 md:py-4 px-4 z-50 animate-in slide-in-from-bottom duration-300 shadow-2xl">
             <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -1144,7 +1084,7 @@ const VanWarrantyLanding: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-bold text-slate-900">{selectedModel} selected</p>
-                  <p className="text-slate-500 text-xs md:text-sm">Step 1 of 2: Choose coverage →</p>
+                  <p className="text-slate-500 text-xs md:text-sm">Get your personalised quote →</p>
                 </div>
               </div>
               <Button
@@ -1158,14 +1098,13 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         )}
 
-        {/* Why Van Owners Choose Us Section */}
+        {/* ===== WHY VAN OWNERS CHOOSE US ===== */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Why commercial van owners choose us
+                Why van owners choose us
               </h2>
-              {/* Trustpilot Badge */}
               <a
                 href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
                 target="_blank"
@@ -1173,28 +1112,19 @@ const VanWarrantyLanding: React.FC = () => {
                 className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl px-5 py-3 hover:border-green-400 transition-colors shadow-sm mt-4 mb-4"
               >
                 <img src={trustpilotLogo} alt="Trustpilot" className="h-7 object-contain" />
-                <img src={trustpilotExcellent} alt="Rated Excellent" className="h-7 object-contain" />
+                <img src={trustpilotExcellent} alt="Rated excellent" className="h-7 object-contain" />
                 <span className="text-sm font-semibold text-gray-700">See our reviews</span>
               </a>
-              <div className="mt-4">
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="inline-flex items-center gap-2 bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg animate-breathing"
-                >
-                  Get Van Warranty
-                  <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
-              </div>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8 items-start">
               <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6">
                 {[
-                  { icon: Wrench, title: 'Minimise downtime with fast claims', desc: 'We understand time is money. Quick authorisation gets you back on the road.' },
-                  { icon: ThumbsUp, title: 'Transparent limits and zero hidden fees', desc: 'The price you see is the price you pay. No surprises.' },
-                  { icon: Users, title: 'UK support team that understands vans', desc: 'Our friendly UK-based team handles claims quickly and fairly.' },
-                  { icon: Truck, title: 'High mileage commercial vans covered', desc: 'Cover vehicles up to 150,000 miles with no restrictions during cover.' },
-                  { icon: Clock, title: 'Flexible monthly payments with no lock-in', desc: 'Cancel anytime and get a pro-rata refund. No long contracts.' },
+                  { icon: Wrench, title: 'Minimise downtime with fast claims', desc: 'We know time is money. Quick authorisation gets you back on the road.' },
+                  { icon: ThumbsUp, title: 'Transparent limits, zero hidden fees', desc: 'The price you see is the price you pay. No surprises, no small print.' },
+                  { icon: Users, title: 'Friendly UK team that understands vans', desc: 'Our team handles claims quickly and fairly — real people, not robots.' },
+                  { icon: Truck, title: 'High mileage commercial vans welcome', desc: 'We cover vans up to 150,000 miles with no restrictions during cover.' },
+                  { icon: Clock, title: 'Flexible payments, cancel anytime', desc: 'Monthly payments with no lock-in. Cancel and get a pro-rata refund.' },
                 ].map((benefit, index) => (
                   <div key={index} className="flex gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -1208,11 +1138,10 @@ const VanWarrantyLanding: React.FC = () => {
                 ))}
               </div>
               
-              {/* Mascot */}
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
                   src={fordTransitVan}
-                  alt="UK van warranty - Vauxhall Combo with buyawarranty branding"
+                  alt="UK van warranty — Vauxhall Combo with Buy A Warranty branding"
                   className="w-[400px] h-auto object-contain"
                   width={400}
                   height={300}
@@ -1222,114 +1151,117 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* How Claims Work Section */}
+        {/* ===== HOW CLAIMS WORK — 3 STEPS ===== */}
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                How Claims Work
+                How claims work
               </h2>
+              <p className="text-base md:text-lg text-gray-600 max-w-xl mx-auto">
+                Three simple steps. We pay the garage directly — you don't have to chase invoices.
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto">
               {[
-                { step: 1, title: 'Diagnose', desc: 'Diagnose at any VAT-registered garage' },
-                { step: 2, title: 'Authorise', desc: 'We authorise eligible repairs quickly' },
-                { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your van' },
-                { step: 4, title: 'We Pay', desc: 'We pay the garage directly for covered items' },
+                { step: 1, title: 'Take it to any garage', desc: 'Drop your van at any VAT-registered garage in the UK for diagnosis.' },
+                { step: 2, title: 'Garage calls us', desc: 'Before repairs start, the garage rings our claims team. We authorise eligible work quickly.' },
+                { step: 3, title: 'We pay, you drive', desc: 'We pay the garage directly for covered repairs. You collect your van and get back to work.' },
               ].map((item, index) => (
                 <div key={index} className="text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
                     {item.step}
                   </div>
-                  <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
-                  <p className="text-xs md:text-base text-gray-600">{item.desc}</p>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600">{item.desc}</p>
                 </div>
               ))}
+            </div>
+
+            {/* UK support promise */}
+            <div className="mt-8 md:mt-10 text-center">
+              <div className="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-5 py-3 shadow-sm">
+                <Phone className="w-5 h-5 text-brand-orange" />
+                <span className="text-sm font-medium text-gray-700">
+                  UK claims team: <a href="tel:03302295045" className="font-bold text-gray-900 hover:underline">0330 229 5045</a>
+                  <span className="text-gray-400 mx-2">·</span>
+                  Mon-Fri 9am-5:30pm
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Your Van Cover Made Crystal Clear Section */}
+        {/* ===== CRYSTAL CLEAR COVER ===== */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 bg-green-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
-                <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
-                <span className="text-xs md:text-sm font-semibold text-green-700">Transparent Coverage</span>
-              </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 Your van cover, made <span className="text-brand-orange">crystal clear</span>
               </h2>
-              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-                See what's included - clear terms, no jargon, no surprises.
-              </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
                 <div className="text-3xl md:text-4xl mb-3 md:mb-4">✅</div>
                 <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">No hidden catches</h3>
-                <p className="text-gray-600 text-xs md:text-sm">What you see is what you get</p>
+                <p className="text-gray-600 text-xs md:text-sm">What you see is what you get — plain English, no jargon</p>
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
                 <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
                 <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
-                <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
+                <p className="text-gray-600 text-xs md:text-sm">Try risk-free — full refund if it's not right for you</p>
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
                 <div className="text-3xl md:text-4xl mb-3 md:mb-4">⭐</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved fast</h3>
-                <p className="text-gray-600 text-xs md:text-sm">We pay when you need us</p>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved</h3>
+                <p className="text-gray-600 text-xs md:text-sm">We pay when you need us — fast and fair</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* High Mileage Van Section */}
+        {/* ===== HIGH MILEAGE SECTION ===== */}
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              {/* Image on LEFT side */}
               <div className="flex justify-center">
                 <OptimizedImage 
                   src={pandaThumbsUp}
-                  alt="High mileage van warranty coverage - Miles the Panda"
+                  alt="High mileage van warranty — Miles the Panda"
                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
                   width={448}
                   height={300}
                 />
               </div>
-              {/* Text on RIGHT side */}
               <div className="text-center lg:text-left">
                 <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
-                  High Mileage Van, No Problem!
+                  High mileage? No problem
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
-                  Keep Your Business Moving<br />
-                  <span className="text-brand-orange">You're Covered</span>
+                  Keep your business moving<br />
+                  <span className="text-brand-orange">— you're covered</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">
-                  Commercial vans work hard. We understand that high mileage is normal for business vehicles.
-                  That's why we cover vans up to 150,000 miles with no restrictions during your cover period.
+                  Commercial vans work hard — we get it. High mileage is normal for a working vehicle. That's why we cover vans up to 150,000 miles with no restrictions during your policy.
                 </p>
                 <div className="space-y-2 md:space-y-3 text-left max-w-md mx-auto lg:mx-0">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-gray-700">Cover vehicles up to 150,000 miles</span>
-                  </div>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-gray-700">No mileage restrictions during cover</span>
-                  </div>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-gray-700">Unlimited claims value</span>
-                  </div>
+                  {[
+                    'Cover vehicles up to 150,000 miles',
+                    'No mileage restrictions during cover',
+                    'Unlimited claims throughout your policy',
+                    'Claim limits: £1,000, £2,000, £3,000 or £5,000',
+                    'Zero excess option available',
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 md:gap-3">
+                      <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+                      <span className="text-sm md:text-base text-gray-700">{item}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
             
-            {/* CTA Button */}
             <div className="mt-6 md:mt-10 max-w-xl mx-auto">
               <Button
                 onClick={scrollToQuoteForm}
@@ -1344,15 +1276,15 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Additional Van Cover Options Section */}
+        {/* ===== ADDITIONAL COVER OPTIONS ===== */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Additional Van Cover Options
+                Optional extras
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-                Enhance your van warranty with these optional extras
+                Boost your cover with these add-ons. Breakdown recovery is included free on 2-year and 3-year plans.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
@@ -1360,29 +1292,31 @@ const VanWarrantyLanding: React.FC = () => {
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
                   <Truck className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Hire Van Cover</h3>
-                <p className="text-sm md:text-base text-gray-600">Keep working while your van is being repaired</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Hire van cover</h3>
+                <p className="text-sm md:text-base text-gray-600">Keep working while your van is being repaired with a temporary replacement</p>
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
                   <MapPin className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European Cover</h3>
-                <p className="text-sm md:text-base text-gray-600">Extended protection when driving abroad</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European cover</h3>
+                <p className="text-sm md:text-base text-gray-600">Extended protection when you're driving abroad — ideal for couriers doing EU runs</p>
               </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 relative">
+                <div className="absolute -top-2 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  FREE on 2yr & 3yr
+                </div>
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
                   <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Wear & Tear</h3>
-                <p className="text-sm md:text-base text-gray-600">Cover for gradual component deterioration</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Breakdown recovery</h3>
+                <p className="text-sm md:text-base text-gray-600">24/7 roadside assistance and recovery — included free on 2-year and 3-year plans</p>
               </div>
             </div>
           </div>
         </section>
 
-
-        {/* Testimonials Section */}
+        {/* ===== TESTIMONIALS ===== */}
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
@@ -1392,14 +1326,13 @@ const VanWarrantyLanding: React.FC = () => {
                 ))}
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Real Reviews from UK Van Owners
+                What van owners are saying
               </h2>
               <p className="text-base md:text-lg text-gray-600">
-                Trusted by thousands of tradespeople and fleet operators
+                Trusted by thousands of tradespeople and fleet operators across the UK
               </p>
             </div>
 
-            {/* Mobile: single column, Desktop: 2-column grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {testimonials.map((testimonial, index) => (
                 <div key={index} className="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-100 flex flex-col">
@@ -1415,14 +1348,14 @@ const VanWarrantyLanding: React.FC = () => {
                   <hr className="border-gray-100 mb-3" />
                   <div>
                     <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>
-                    <p className="text-gray-400 text-xs">{testimonial.model} • {testimonial.location}</p>
+                    <p className="text-gray-400 text-xs">{testimonial.model} · {testimonial.location}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Read all reviews link */}
-            <div className="text-center mt-8">
+            {/* Trustpilot link + CTA */}
+            <div className="text-center mt-8 space-y-4">
               <a
                 href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
                 target="_blank"
@@ -1431,42 +1364,115 @@ const VanWarrantyLanding: React.FC = () => {
               >
                 Read more reviews on Trustpilot →
               </a>
+              <div>
+                <Button
+                  onClick={scrollToQuoteForm}
+                  className="bg-brand-orange text-white font-bold px-8 py-4 text-base md:text-lg rounded-xl animate-breathing"
+                >
+                  Get my instant quote
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </section>
 
-        <BrandPageFAQ />
+        {/* ===== VAN-SPECIFIC FAQs ===== */}
+        <section className="py-10 md:py-16 bg-white">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+                Van warranty questions
+              </h2>
+              <p className="text-base md:text-lg text-gray-600">
+                Straight answers to the things van owners ask most
+              </p>
+            </div>
 
-        {/* Final CTA Section */}
+            <div className="space-y-3">
+              {vanFAQs.map((faq, index) => (
+                <div key={index} className="border border-gray-200 rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById(`van-faq-${index}`);
+                      if (el) {
+                        el.classList.toggle('hidden');
+                      }
+                    }}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="font-semibold text-gray-900 text-sm md:text-base pr-4">{faq.question}</span>
+                    <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  </button>
+                  <div id={`van-faq-${index}`} className="hidden px-5 pb-4">
+                    <p className="text-sm md:text-base text-gray-600 leading-relaxed whitespace-pre-line">{faq.answer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ===== FINAL CTA ===== */}
         <section className="py-12 md:py-20 bg-brand-orange">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6">
-              Avoid costly repairs
+              Don't wait for the breakdown
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto">
-              Get an instant quote in 60 seconds. Comprehensive cover from just £19/month.
+              Get your free quote in 30 seconds. Platinum complete cover from just £19/month. Same-day activation, cancel anytime.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 onClick={scrollToQuoteForm}
                 className="bg-white text-brand-orange hover:bg-gray-100 font-bold px-8 md:px-12 py-4 md:py-6 text-base md:text-xl rounded-xl shadow-lg"
               >
-                Get Your Free Quote Now
+                Get my free quote now
                 <ArrowRight className="ml-2 w-5 h-5 md:w-6 md:h-6" />
               </Button>
-              <a
-                href="tel:03302295040"
-                className="inline-flex items-center gap-2 text-white font-bold text-base md:text-xl hover:text-white/80 transition-colors"
-              >
-                <Phone className="w-5 h-5 md:w-6 md:h-6" />
-                0330 229 5040
-              </a>
+              <div className="flex items-center gap-3">
+                <a
+                  href="tel:03302295040"
+                  className="inline-flex items-center gap-2 text-white font-bold text-base md:text-xl hover:text-white/80 transition-colors"
+                >
+                  <Phone className="w-5 h-5 md:w-6 md:h-6" />
+                  0330 229 5040
+                </a>
+                <span className="text-white/50">·</span>
+                <a
+                  href="https://wa.me/443302295040"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-white font-bold text-base md:text-xl hover:text-white/80 transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+                  WhatsApp
+                </a>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* ===== MOBILE STICKY CTA ===== */}
+        {showStickyCTA && !selectedModel && isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 bg-brand-orange py-3 px-4 z-50 shadow-2xl safe-area-bottom">
+            <Button
+              onClick={scrollToQuoteForm}
+              className="w-full bg-white text-brand-orange hover:bg-gray-100 font-bold py-4 text-base rounded-xl shadow-lg"
+            >
+              Get my instant quote
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+        )}
       </main>
+
       <MinimalLandingFooter />
       <BluePersistentCallback />
+      <RequestCallbackModal
+        isOpen={showCallbackModal}
+        onClose={() => setShowCallbackModal(false)}
+      />
     </>
   );
 };
