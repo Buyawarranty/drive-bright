@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { getWarrantyDurationDisplay } from '@/lib/warrantyUtils';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface PrintablePolicySummaryProps {
   open: boolean;
@@ -264,7 +265,7 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
               <h4 style={{ color: '#166534', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>What Your Warranty Includes</h4>
               <ul style={{ paddingLeft: '18px', color: '#15803d', fontSize: '11px', margin: 0 }}>
                 <li style={{ marginBottom: '4px' }}>Protection for major mechanical and electrical components</li>
-                <li style={{ marginBottom: '4px' }}>Claims limit of £{(policy.claim_limit || 1250).toLocaleString()} per claim</li>
+                <li style={{ marginBottom: '4px' }}>Claims limit of £{getDisplayClaimLimitValue(policy.claim_limit || 1250).toLocaleString()} per claim</li>
                 <li style={{ marginBottom: '4px' }}>Labour rate covered up to £{policy.labour_rate || 70}/hour</li>
                 <li style={{ marginBottom: '4px' }}>Access to trusted UK-wide VAT registered repair garages</li>
                 <li style={{ marginBottom: '4px' }}>Choose your own VAT registered garage option</li>

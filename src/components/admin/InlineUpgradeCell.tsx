@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Sparkles, Send, Check, X, ChevronDown } from 'lucide-react';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface InlineUpgradeCellProps {
   customerId: string;
@@ -117,7 +118,7 @@ export function InlineUpgradeCell({
   const getChangeSummary = () => {
     const changes: string[] = [];
     if (newClaimLimit !== currentClaimLimit) {
-      changes.push(`Claim Limit: £${currentClaimLimit.toLocaleString()} → £${newClaimLimit.toLocaleString()}`);
+      changes.push(`Claim Limit: £${getDisplayClaimLimitValue(currentClaimLimit).toLocaleString()} → £${getDisplayClaimLimitValue(newClaimLimit).toLocaleString()}`);
     }
     if (newLabourRate !== currentLabourRate) {
       changes.push(`Labour Rate: £${currentLabourRate}/hr → £${newLabourRate}/hr`);

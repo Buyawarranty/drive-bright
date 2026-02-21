@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { FollowUpEmailDialog } from './FollowUpEmailDialog';
 import { 
   ShoppingCart, 
@@ -428,7 +429,7 @@ export const AbandonedCartsTab: React.FC = () => {
                           )}
                           {cart.cart_metadata.claim_limit && (
                             <p className="text-xs text-gray-600">
-                              Claim Limit: £{cart.cart_metadata.claim_limit.toLocaleString()}
+                              Claim Limit: £{getDisplayClaimLimitValue(cart.cart_metadata.claim_limit).toLocaleString()}
                             </p>
                           )}
                         </div>

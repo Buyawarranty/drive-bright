@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle } from 'lucide-react';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface CoverageDetailsProps {
   mot_fee?: boolean;
@@ -83,7 +84,7 @@ const CoverageDetailsDisplay: React.FC<CoverageDetailsProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-orange-800">Claim Limit</span>
             <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-              £{claim_limit.toLocaleString()}
+              £{getDisplayClaimLimitValue(claim_limit).toLocaleString()}
             </Badge>
           </div>
         </div>

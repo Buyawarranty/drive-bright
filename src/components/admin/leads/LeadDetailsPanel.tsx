@@ -12,6 +12,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { RemindMePopover } from './RemindMePopover';
 import { MarkAsPaidDialog } from './MarkAsPaidDialog';
@@ -294,7 +295,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                       <Badge variant="secondary">{lead.payment_type === '12months' ? '12 Month' : lead.payment_type === '24months' ? '24 Month' : lead.payment_type}</Badge>
                     )}
                     {lead.cart_metadata?.claim_limit && (
-                      <Badge variant="outline">Claim: £{lead.cart_metadata.claim_limit.toLocaleString()}</Badge>
+                      <Badge variant="outline">Claim: £{getDisplayClaimLimitValue(lead.cart_metadata.claim_limit).toLocaleString()}</Badge>
                     )}
                     {lead.cart_metadata?.voluntary_excess !== undefined && (
                       <Badge variant="outline">Excess: £{lead.cart_metadata.voluntary_excess}</Badge>
