@@ -9,7 +9,7 @@ import { FAQSchema } from '@/components/schema/FAQSchema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import pandaSavingsFaq from '@/assets/panda-savings-faq.png';
 import { OptimizedImage } from '@/components/OptimizedImage';
-import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import trustpilotBadge from '@/assets/trustpilot-badge.png';
 
 const FAQ = () => {
   const navigate = useNavigate();
@@ -717,7 +717,7 @@ const FAQ = () => {
                           setShowSuggestions(false);
                         }
                       }}
-                      className="pl-12 pr-4 py-3 text-lg border-2 border-gray-200 focus:border-primary"
+                      className="pl-12 pr-4 py-3 text-lg border-2 border-gray-800 focus:border-black rounded-lg"
                       role="combobox"
                       aria-expanded={showSuggestions}
                       aria-haspopup="listbox"
@@ -794,7 +794,7 @@ const FAQ = () => {
                   <button
                     key={category.id}
                     onClick={() => scrollToCategory(category.id)}
-                    className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:border-brand-orange hover:text-brand-orange transition-colors"
+                    className="px-[18px] py-[10px] bg-white border border-black rounded-[20px] text-[15px] text-[#6f6f6f] cursor-pointer transition-all duration-150 hover:bg-[#f5f5f5] hover:text-black"
                   >
                     {category.category}
                   </button>
@@ -919,13 +919,10 @@ const FAQ = () => {
                         rel="noopener noreferrer"
                         className="inline-block hover:opacity-80 transition-opacity"
                       >
-                        <OptimizedImage 
-                          src={trustpilotLogo} 
+                        <img 
+                          src={trustpilotBadge} 
                           alt="Trustpilot Excellent Rating - 5 Stars"
-                          className="h-12 w-auto"
-                          priority={false}
-                          width={160}
-                          height={50}
+                          className="h-12 w-auto object-contain"
                         />
                       </a>
                     )}
