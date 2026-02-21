@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getWarrantyDurationDisplay, getPaymentTypeDisplay } from '@/lib/warrantyUtils';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
@@ -1608,7 +1609,7 @@ const CustomerDashboard = () => {
                               <div>
                                 <Label className="text-xs sm:text-sm font-medium text-gray-700">Claim Limit</Label>
                                 <p className="font-bold text-lg text-blue-900">
-                                  £{(selectedPolicy?.claim_limit || customerData?.claim_limit || 1250).toLocaleString()} per claim
+                                  £{getDisplayClaimLimitValue(selectedPolicy?.claim_limit || customerData?.claim_limit || 1250).toLocaleString()} per claim
                                 </p>
                               </div>
                               <div>

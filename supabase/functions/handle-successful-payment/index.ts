@@ -827,7 +827,7 @@ serve(async (req) => {
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan Type:</strong></td><td style="padding: 8px;">${planName}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentTypeDisplay}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">£${customerRecord.voluntary_excess || 0}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">£${customerRecord.claim_limit || 1250}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">£${customerRecord.claim_limit === 750 ? 1000 : (customerRecord.claim_limit || 1250)}</td></tr>
             </table>
 
             <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>

@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Search, Printer, FileText, User, Car, Mail, Phone } from 'lucide-react';
 import { format } from 'date-fns';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface CustomerData {
   id: string;
@@ -526,7 +527,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                   <h4 style={{ color: c.benefitsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Key Benefits of Your Cover</h4>
                   <ul style={{ margin: '0', paddingLeft: '16px', color: c.benefitsText, fontSize: '10.5px' }}>
                     <li style={{ marginBottom: '3px' }}>Protection for major mechanical and electrical components</li>
-                    {claimLimit && <li style={{ marginBottom: '3px' }}>Claims limit of £{claimLimit.toLocaleString()} per claim</li>}
+                    {claimLimit && <li style={{ marginBottom: '3px' }}>Claims limit of £{getDisplayClaimLimitValue(claimLimit).toLocaleString()} per claim</li>}
                     {labourRate && <li style={{ marginBottom: '3px' }}>Labour rate covered up to £{labourRate}/hour</li>}
                     {excess !== undefined && excess !== null && <li style={{ marginBottom: '3px' }}>Voluntary excess of £{excess} per claim</li>}
                     <li style={{ marginBottom: '3px' }}>Access to trusted UK-wide VAT registered repair garages</li>

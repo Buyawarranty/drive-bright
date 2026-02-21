@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Check, X, Sparkles, Pencil } from 'lucide-react';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface InlineWarrantyUpgradeProps {
   customerId: string;
@@ -65,7 +66,11 @@ export function InlineWarrantyUpgrade({
     if (field === 'labour_rate') {
       return `£${currentValue || 70}/hr`;
     }
-    return `£${currentValue || (field === 'claim_limit' ? 1250 : 100)}`;
+    const val = currentValue || (field === 'claim_limit' ? 1250 : 100);
+    if (field === 'claim_limit') {
+      return `£${getDisplayClaimLimitValue(val).toLocaleString()}`;
+    }
+    return `£${val}`;
   };
 
   const getBadgeStyle = () => {
