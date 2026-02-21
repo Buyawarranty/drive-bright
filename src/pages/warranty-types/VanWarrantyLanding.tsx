@@ -629,9 +629,9 @@ const VanWarrantyLanding: React.FC = () => {
               {/* Left Column */}
               <div className="text-center lg:text-left">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Protect your van. Protect your livelihood.</span>
-                  <br />
-                  <span className="text-brand-orange">Van warranty from £19 per month</span>
+                  <span className="text-gray-900">Avoid costly repairs. Protect your van in</span>
+                  {' '}
+                  <span className="text-brand-orange">60 seconds.</span>
                 </h1>
 
                 {/* Trust strip */}
