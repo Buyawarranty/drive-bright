@@ -126,12 +126,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   const [plans, setPlans] = useState<Plan[]>([]);
   // Initialize payment type from previous selection, defaulting to 24 months
-  const initialPaymentType = previousPaymentType || '12months';
+  const initialPaymentType = previousPaymentType || '36months';
   console.log('🎯 PricingTable mount - previousPaymentType:', previousPaymentType, 'initialPaymentType:', initialPaymentType);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(initialPaymentType);
   // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise default to £100
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
-    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
+    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 150
   );
   const [selectedAddOns, setSelectedAddOns] = useState<{[planId: string]: {[addon: string]: boolean}}>(
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
@@ -156,7 +156,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Track if payment type was changed by user action vs restoration/auto-change
   const isUserPaymentTypeChange = React.useRef(false);
   // Store the initial payment type to detect changes
-  const initialPaymentTypeRef = React.useRef(previousPaymentType || '12months');
+  const initialPaymentTypeRef = React.useRef(previousPaymentType || '36months');
   
   // Vehicle validation
   const vehicleValidation = useMemo(() => {
@@ -200,8 +200,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       const possibleBaseLimit = previousClaimLimit - 1000;
       if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
     }
-    // Default to £2000 for all durations (£1250 removed from UI)
-    return 2000;
+    // Default to £750 (AutoCare Basic / £1,000 display) for lowest monthly price
+    return 750;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
@@ -254,7 +254,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   );
   
   // New state for labour rate selection - restore from previous if available
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 70);
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 50);
   
   // NOTE: Add-on auto-inclusion on payment type change is handled by a single useEffect below (around line 490)
   // to avoid duplicate state updates that cause pricing inconsistencies when navigating between steps
