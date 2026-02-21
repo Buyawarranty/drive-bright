@@ -631,8 +631,9 @@ const VanWarrantyLanding: React.FC = () => {
               {/* Left Column */}
               <div className="text-center lg:text-left">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Avoid costly repairs. Protect your van in</span>
-                  <br />
+                  <span className="text-gray-900">Avoid costly repairs.</span>
+                  <br className="hidden sm:block" />
+                  <span className="text-gray-900"> Protect your van in </span>
                   <span className="text-brand-orange">60 seconds.</span>
                 </h1>
 
@@ -644,7 +645,7 @@ const VanWarrantyLanding: React.FC = () => {
                   </div>
                   <div className="flex items-start justify-center lg:justify-start gap-2">
                     <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
-                    <span className="font-medium">Unlimited claims&nbsp; •&nbsp; Parts and Labour&nbsp; •&nbsp; Commercial use accepted</span>
+                    <span className="font-medium">Unlimited claims&nbsp; •&nbsp; Parts and Labour&nbsp; •&nbsp; Work use</span>
                   </div>
                 </div>
 
