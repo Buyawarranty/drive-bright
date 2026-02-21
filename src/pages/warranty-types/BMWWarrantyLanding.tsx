@@ -728,7 +728,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 </div>
 
                 {/* Quote Form */}
-                <div className="max-w-md mx-auto lg:mx-0 space-y-4">
+                <div className="mx-auto lg:mx-0 space-y-4">
                   {/* Registration Input */}
                   <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black">
                     <div className="bg-blue-600 text-white font-bold px-3 sm:px-4 py-3 flex items-center justify-center min-w-[60px] sm:min-w-[80px]">
