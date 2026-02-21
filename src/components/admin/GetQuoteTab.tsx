@@ -98,6 +98,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
+  const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
+  const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
+  const [pendingAgeOverrideAction, setPendingAgeOverrideAction] = useState<'lookup' | 'quickConfirm' | null>(null);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
@@ -532,7 +535,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
         if (!isNaN(vehicleYear) && vehicleYear > 0) {
           const vehicleAge = currentYear - vehicleYear;
-          if (vehicleAge > 15) {
+          if (vehicleAge > 15 && !ageOverrideEnabled) {
             toast({
               title: "Vehicle Too Old",
               description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
@@ -622,7 +625,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
         if (!isNaN(vehicleYear) && vehicleYear > 0) {
           const vehicleAge = currentYear - vehicleYear;
-          if (vehicleAge > 15) {
+          if (vehicleAge > 15 && !ageOverrideEnabled) {
             toast({
               title: "Vehicle Too Old",
               description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
@@ -1921,6 +1924,32 @@ Questions? Call 0330 229 5040`;
                   />
                 </div>
 
+                {/* Age Override Option */}
+                <div className="flex items-center space-x-2 pt-2 pb-1">
+                  <Checkbox
+                    id="ageOverride"
+                    checked={ageOverrideEnabled}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setShowAgeOverrideConfirm(true);
+                      } else {
+                        setAgeOverrideEnabled(false);
+                      }
+                    }}
+                  />
+                  <Label htmlFor="ageOverride" className="text-sm font-medium text-orange-700 cursor-pointer">
+                    Override 15-year age limit (authorised personnel only)
+                  </Label>
+                </div>
+                {ageOverrideEnabled && (
+                  <Alert className="border-orange-300 bg-orange-50">
+                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                    <AlertDescription className="text-orange-800 text-sm">
+                      Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Two Primary Actions Side by Side */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <Button 
@@ -2320,7 +2349,6 @@ Questions? Call 0330 229 5040`;
                     })}
                   </div>
                 </div>
-
 
 
                 {/* Free Extended Cover Option - PROMINENT */}
@@ -4013,6 +4041,42 @@ Questions? Call 0330 229 5040`;
                     Done - Close
                   </Button>
                 )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Age Override Confirmation Dialog */}
+          <Dialog open={showAgeOverrideConfirm} onOpenChange={setShowAgeOverrideConfirm}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-orange-600">
+                  <AlertCircle className="h-5 w-5" />
+                  Override Age Limit
+                </DialogTitle>
+                <DialogDescription>
+                  You are about to allow a vehicle older than 15 years to be quoted/ordered. This vehicle will be priced using the same pricing as vehicles between 12 years 1 day and 15 years old.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-2">
+                <p className="text-sm font-semibold text-gray-900">Are you sure you are authorised to do this?</p>
+              </div>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" onClick={() => setShowAgeOverrideConfirm(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={() => {
+                    setAgeOverrideEnabled(true);
+                    setShowAgeOverrideConfirm(false);
+                    toast({
+                      title: "Age Override Enabled",
+                      description: "You can now proceed with vehicles older than 15 years.",
+                    });
+                  }}
+                >
+                  Yes, I'm Authorised
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
