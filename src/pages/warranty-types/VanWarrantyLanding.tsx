@@ -26,6 +26,7 @@ const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
+import trustpilotBadge from '@/assets/trustpilot-badge.png';
 import vanHeroImage from '@/assets/uk-extended-used-van-warranty.png';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
 import vanIcon from '@/assets/van-icon.png';
@@ -1070,8 +1071,7 @@ const VanWarrantyLanding: React.FC = () => {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl px-5 py-3 hover:border-green-400 transition-colors shadow-sm mt-4 mb-4"
               >
-                <img src={trustpilotLogo} alt="Trustpilot" className="h-7 object-contain" />
-                <img src={trustpilotExcellent} alt="Rated excellent" className="h-7 object-contain" />
+                <img src={trustpilotBadge} alt="Trustpilot rated excellent" className="h-10 object-contain" />
                 <span className="text-sm font-semibold text-gray-700">See our reviews</span>
               </a>
             </div>
