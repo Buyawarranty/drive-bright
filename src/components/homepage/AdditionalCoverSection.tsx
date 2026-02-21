@@ -77,8 +77,8 @@ const AdditionalCoverSection: React.FC = () => {
                   <ShieldPlus className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-brand-dark-text">Extra Cover on Request</h3>
-                  <p className="text-brand-dark-text">Additional protection available upon request.</p>
+                  <h3 className="text-lg font-bold text-brand-dark-text">Tyre Cover</h3>
+                  <p className="text-brand-dark-text">Protection against unexpected punctures.</p>
                 </div>
               </div>
             </div>
