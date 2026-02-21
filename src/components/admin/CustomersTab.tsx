@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -42,6 +42,7 @@ import { BulkEmailDialog } from './BulkEmailDialog';
 import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
 import { ArchiveCustomerDialog } from './ArchiveCustomerDialog';
+import { MergeDuplicateDialog } from './MergeDuplicateDialog';
 import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
@@ -365,6 +366,59 @@ export const CustomersTab = () => {
     user_id?: string;
     customer_id?: string;
   }>>([]);
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+  const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
+
+  // Detect duplicate registrations (same reg, non-deleted, active customers)
+  const duplicateRegMap = useMemo(() => {
+    const regCounts = new Map<string, string[]>();
+    customers.forEach(c => {
+      if (c.registration_plate && !c.is_deleted) {
+        const reg = c.registration_plate.toUpperCase().replace(/\s/g, '');
+        const ids = regCounts.get(reg) || [];
+        ids.push(c.id);
+        regCounts.set(reg, ids);
+      }
+    });
+    // Only keep entries with 2+ records
+    const dupes = new Map<string, string[]>();
+    regCounts.forEach((ids, reg) => {
+      if (ids.length >= 2) dupes.set(reg, ids);
+    });
+    return dupes;
+  }, [customers]);
+
+  const isDuplicate = (regPlate: string) => {
+    if (!regPlate) return false;
+    return duplicateRegMap.has(regPlate.toUpperCase().replace(/\s/g, ''));
+  };
+
+  const openMergeForReg = (regPlate: string) => {
+    const reg = regPlate.toUpperCase().replace(/\s/g, '');
+    const ids = duplicateRegMap.get(reg);
+    if (!ids) return;
+    const dupes = customers.filter(c => ids.includes(c.id)).map(c => ({
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      registration_plate: c.registration_plate,
+      plan_type: c.plan_type,
+      payment_type: c.payment_type,
+      final_amount: c.final_amount,
+      signup_date: c.signup_date,
+      status: c.status,
+      warranty_reference_number: c.warranty_reference_number,
+      warranty_number: c.warranty_number,
+      vehicle_make: c.vehicle_make,
+      vehicle_model: c.vehicle_model,
+      vehicle_year: c.vehicle_year,
+      policy_id: c.customer_policies?.[0]?.id,
+      policy_number: c.customer_policies?.[0]?.policy_number,
+      user_id: c.customer_policies?.[0]?.user_id,
+    }));
+    setMergeDuplicates(dupes);
+    setMergeDialogOpen(true);
+  };
 
   // Pagination for customers table - only paginate filtered results
   const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
@@ -3871,7 +3925,20 @@ Please log in and change your password after first login.`;
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>{customer.phone || 'N/A'}</TableCell>
                   <TableCell>
-                    <NumberPlate plateNumber={customer.registration_plate} />
+                    <div className="flex items-center gap-1.5">
+                      <NumberPlate plateNumber={customer.registration_plate} />
+                      {isDuplicate(customer.registration_plate) && (
+                        <button
+                          onClick={() => openMergeForReg(customer.registration_plate)}
+                          title="Duplicate registration detected — click to merge"
+                        >
+                          <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-[10px] cursor-pointer hover:bg-orange-200 transition-colors">
+                            <GitMerge className="h-3 w-3 mr-0.5" />
+                            DUP
+                          </Badge>
+                        </button>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
@@ -4389,6 +4456,15 @@ Please log in and change your password after first login.`;
                                 <Copy className="h-4 w-4 mr-2" />
                                 Mark as Duplicate
                               </DropdownMenuItem>
+                              {isDuplicate(customer.registration_plate) && (
+                                <DropdownMenuItem
+                                  onClick={() => openMergeForReg(customer.registration_plate)}
+                                  className="text-blue-600 font-medium"
+                                >
+                                  <GitMerge className="h-4 w-4 mr-2" />
+                                  Merge Duplicate
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
@@ -4579,6 +4655,20 @@ Please log in and change your password after first login.`;
           fetchCustomers();
           fetchDeletedCustomers();
           setSelectedCustomers(new Set());
+        }}
+      />
+
+      {/* Merge Duplicate Dialog */}
+      <MergeDuplicateDialog
+        isOpen={mergeDialogOpen}
+        onClose={() => {
+          setMergeDialogOpen(false);
+          setMergeDuplicates([]);
+        }}
+        duplicates={mergeDuplicates}
+        onSuccess={() => {
+          fetchCustomers();
+          fetchDeletedCustomers();
         }}
       />
 
