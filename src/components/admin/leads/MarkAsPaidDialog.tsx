@@ -26,6 +26,7 @@ import {
   AlertTriangle, FileText, History, ChevronRight 
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { DuplicateWarrantyDialog } from '../DuplicateWarrantyDialog';
 
 interface CustomerApplication {
   id: string;
@@ -53,6 +54,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
   onNavigateToQuote
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ show: boolean; record?: any }>({ show: false });
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
   const [applications, setApplications] = useState<CustomerApplication[]>([]);
   const [existingCustomer, setExistingCustomer] = useState<any>(null);
@@ -164,6 +166,15 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
   const handleMarkAsPaid = async () => {
     if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
       toast.error('Please enter a valid payment amount');
+      return;
+    }
+
+    // Check for duplicate warranty before proceeding
+    const { checkDuplicateWarranty } = await import('@/lib/duplicateWarrantyCheck');
+    const regPlate = lead.vehicle_reg?.toUpperCase() || '';
+    const duplicateCheck = await checkDuplicateWarranty(regPlate, lead.email);
+    if (duplicateCheck.isDuplicate) {
+      setDuplicateWarning({ show: true, record: duplicateCheck.existingRecord });
       return;
     }
 
@@ -426,6 +437,12 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
   };
 
   return (
+    <>
+    <DuplicateWarrantyDialog
+      isOpen={duplicateWarning.show}
+      onClose={() => setDuplicateWarning({ show: false })}
+      record={duplicateWarning.record}
+    />
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
@@ -704,5 +721,6 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
