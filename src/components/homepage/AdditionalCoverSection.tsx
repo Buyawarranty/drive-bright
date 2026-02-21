@@ -78,7 +78,7 @@ const AdditionalCoverSection: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-brand-dark-text">Tyre Cover</h3>
-                  <p className="text-brand-dark-text">Protection against unexpected punctures.</p>
+                  <p className="text-brand-dark-text">Protection against unexpected tyre damage.</p>
                 </div>
               </div>
             </div>
