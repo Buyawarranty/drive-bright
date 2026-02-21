@@ -338,7 +338,7 @@ serve(async (req) => {
   }
 
   try {
-    const { registrationNumber } = await req.json();
+    const { registrationNumber, skipAgeCheck } = await req.json();
     
     if (!registrationNumber) {
       throw new Error("Registration number is required");
@@ -475,7 +475,7 @@ serve(async (req) => {
         if (dvlaFallback.yearOfManufacture) {
           const currentYear = new Date().getFullYear();
           const vehicleAge = currentYear - dvlaFallback.yearOfManufacture;
-          if (vehicleAge > 15) {
+          if (vehicleAge > 15 && !skipAgeCheck) {
             return new Response(JSON.stringify({
               found: false,
               error: "We cannot offer warranties for vehicles over 15 years of age"
@@ -663,7 +663,7 @@ serve(async (req) => {
     const currentYear = new Date().getFullYear();
     const vehicleAge = yearOfManufacture ? currentYear - yearOfManufacture : 0;
     
-    if (yearOfManufacture && vehicleAge > 15) {
+    if (yearOfManufacture && vehicleAge > 15 && !skipAgeCheck) {
       console.log(`Vehicle ${registrationNumber} is ${vehicleAge} years old - too old for warranty`);
       return new Response(JSON.stringify({
         found: false,

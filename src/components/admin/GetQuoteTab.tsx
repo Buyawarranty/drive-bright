@@ -504,7 +504,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: regNumber }
+        body: { registrationNumber: regNumber, skipAgeCheck: ageOverrideEnabled }
       });
       
       clearTimeout(timeoutId);
@@ -594,7 +594,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: regNumber }
+        body: { registrationNumber: regNumber, skipAgeCheck: ageOverrideEnabled }
       });
       
       clearTimeout(timeoutId);
