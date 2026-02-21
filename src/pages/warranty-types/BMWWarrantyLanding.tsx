@@ -712,7 +712,7 @@ const BMWWarrantyLanding: React.FC = () => {
 
                 {/* Subheadline */}
                 <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6">
-                  Dealer-level repairs. Fixed price. No surprise bills.
+                  Dealer-level warranty. Fixed price. No surprise bills.
                 </p>
 
                 {/* Benefits */}
