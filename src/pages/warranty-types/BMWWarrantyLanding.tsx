@@ -705,13 +705,14 @@ const BMWWarrantyLanding: React.FC = () => {
 
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">BMW Extended Warranty </span>
-                  <span className="text-brand-orange">in 60 Seconds!</span>
+                  <span className="text-gray-900">Protect your BMW</span>
+                  {' '}
+                  <span className="text-brand-orange">in 60 seconds.</span>
                 </h1>
 
                 {/* Subheadline */}
                 <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6">
-                  Protect your BMW with dealer-level repairs, UK-wide cover and no-surprise costs. Get a fixed-price with instant cover.
+                  Dealer-level repairs. Fixed price. No surprise bills.
                 </p>
 
                 {/* Benefits */}
