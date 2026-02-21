@@ -277,6 +277,7 @@ const VanWarrantyLanding: React.FC = () => {
   const [activeManufacturer, setActiveManufacturer] = useState<ManufacturerCategory | 'All'>('All');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -1348,25 +1349,35 @@ const VanWarrantyLanding: React.FC = () => {
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {vanFAQs.map((faq, index) => (
-                <div key={index} className="border border-gray-200 rounded-xl overflow-hidden">
+                <article key={index} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-lg overflow-hidden">
                   <button
                     onClick={() => {
-                      const el = document.getElementById(`van-faq-${index}`);
-                      if (el) {
-                        el.classList.toggle('hidden');
-                      }
+                      setOpenFaqIndex(prev => prev === index ? null : index);
                     }}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+                    className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-orange-600/20 transition-colors"
                   >
-                    <span className="font-semibold text-gray-900 text-sm md:text-base pr-4">{faq.question}</span>
-                    <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    <h3 className="font-semibold text-lg text-white pr-4">{faq.question}</h3>
+                    <ChevronDown 
+                      className={`w-6 h-6 flex-shrink-0 text-white transition-transform duration-300 ${
+                        openFaqIndex === index ? 'rotate-180' : ''
+                      }`}
+                    />
                   </button>
-                  <div id={`van-faq-${index}`} className="hidden px-5 pb-4">
-                    <p className="text-sm md:text-base text-gray-600 leading-relaxed whitespace-pre-line">{faq.answer}</p>
+                  
+                  <div className={`overflow-hidden transition-all duration-200 ease-out ${
+                    openFaqIndex === index 
+                      ? 'max-h-screen opacity-100' 
+                      : 'max-h-0 opacity-0'
+                  }`}>
+                    <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                      <div className="pt-4">
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-line text-sm md:text-base">{faq.answer}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </div>
