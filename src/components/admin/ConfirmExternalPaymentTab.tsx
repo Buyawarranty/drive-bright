@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { format, isToday, addMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import { 
   calculateTotalWarrantyPrice, 
@@ -116,6 +117,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // Payment confirmation state
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ show: boolean; record?: any }>({ show: false });
   const [paymentSource, setPaymentSource] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
@@ -394,6 +396,14 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   };
 
   const handleConfirmPayment = async () => {
+    // Check for duplicate warranty before proceeding
+    const { checkDuplicateWarranty } = await import('@/lib/duplicateWarrantyCheck');
+    const duplicateCheck = await checkDuplicateWarranty(editableRegNumber, editableCustomerEmail);
+    if (duplicateCheck.isDuplicate) {
+      setDuplicateWarning({ show: true, record: duplicateCheck.existingRecord });
+      return;
+    }
+
     setIsConfirming(true);
     setCompletionStatus({});
     
@@ -501,6 +511,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   };
 
   return (
+    <>
+    <DuplicateWarrantyDialog
+      isOpen={duplicateWarning.show}
+      onClose={() => setDuplicateWarning({ show: false })}
+      record={duplicateWarning.record}
+    />
     <div className="space-y-6">
       {/* Step 1: Vehicle & Customer Lookup */}
       <Card className="border-border">
@@ -1252,5 +1268,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 };

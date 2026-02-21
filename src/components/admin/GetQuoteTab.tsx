@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy } from 'lucide-react';
+import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
 import CustomerPolicyUpdateTab from './CustomerPolicyUpdateTab';
@@ -132,6 +133,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   
   // Confirm External Payment state
   const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ show: boolean; record?: any }>({ show: false });
   const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
   const [paymentSource, setPaymentSource] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -1398,6 +1400,15 @@ Questions? Call 0330 229 5040`;
       return;
     }
 
+    // Check for duplicate warranty before proceeding
+    const { checkDuplicateWarranty } = await import('@/lib/duplicateWarrantyCheck');
+    const finalEmail = editableCustomerEmail || customerEmail;
+    const duplicateCheck = await checkDuplicateWarranty(regNumber, finalEmail);
+    if (duplicateCheck.isDuplicate) {
+      setDuplicateWarning({ show: true, record: duplicateCheck.existingRecord });
+      return;
+    }
+
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
     const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.totalPrice) > 1;
@@ -1787,6 +1798,12 @@ Questions? Call 0330 229 5040`;
   };
 
   return (
+    <>
+    <DuplicateWarrantyDialog
+      isOpen={duplicateWarning.show}
+      onClose={() => setDuplicateWarning({ show: false })}
+      record={duplicateWarning.record}
+    />
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Quotes & Orders</h1>
@@ -4415,5 +4432,6 @@ Questions? Call 0330 229 5040`;
         </TabsContent>
       </Tabs>
     </div>
+    </>
   );
 };
