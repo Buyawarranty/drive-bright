@@ -38,8 +38,8 @@ export const DuplicateWarrantyDialog: React.FC<DuplicateWarrantyDialogProps> = (
             Warranty Already Exists
           </DialogTitle>
           <DialogDescription>
-            A customer record already exists for this registration plate and email address. 
-            You cannot confirm payment again — the customer has already paid.
+            This customer has already paid for a warranty on this vehicle. 
+            You are not allowed to complete external payment confirmation for this order.
           </DialogDescription>
         </DialogHeader>
 
@@ -83,7 +83,8 @@ export const DuplicateWarrantyDialog: React.FC<DuplicateWarrantyDialogProps> = (
         </div>
 
         <p className="text-sm text-muted-foreground">
-          If you need to update this warranty, find it in the Customers tab instead.
+          Please check the <strong>Customers</strong> tab to view this order. 
+          If you cannot find it, ask your admin for assistance.
         </p>
 
         <DialogFooter>
