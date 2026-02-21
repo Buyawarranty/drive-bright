@@ -478,6 +478,7 @@ const CustomerDashboard = () => {
           .from('customer_policies')
           .select('*')
           .ilike('email', effectiveEmail)
+          .or('is_deleted.is.null,is_deleted.eq.false')
           .order('created_at', { ascending: false });
         
         console.log("Email query result:", result);
@@ -492,6 +493,7 @@ const CustomerDashboard = () => {
           .from('customer_policies')
           .select('*')
           .eq('user_id', user.id)
+          .or('is_deleted.is.null,is_deleted.eq.false')
           .order('created_at', { ascending: false });
         
         console.log("User ID query result:", result);
