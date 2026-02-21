@@ -33,13 +33,14 @@ export const DuplicateWarrantyDialog: React.FC<DuplicateWarrantyDialogProps> = (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
+          <DialogTitle className="flex items-center gap-2 text-amber-600">
             <AlertTriangle className="h-5 w-5" />
-            Warranty Already Exists
+            Possible Duplicate Order
           </DialogTitle>
           <DialogDescription>
-            This customer has already paid for a warranty on this vehicle. 
-            You are not allowed to complete external payment confirmation for this order.
+            It's possible the customer may have already placed a similar order online, so there might be a duplicate. 
+            Let's double‑check just to be sure. Please check the <strong>Customers</strong> tab to view it, 
+            or contact your administrator if you're unable to locate it.
           </DialogDescription>
         </DialogHeader>
 
@@ -81,11 +82,6 @@ export const DuplicateWarrantyDialog: React.FC<DuplicateWarrantyDialogProps> = (
             </div>
           </div>
         </div>
-
-        <p className="text-sm text-muted-foreground">
-          Please check the <strong>Customers</strong> tab to view this order. 
-          If you cannot find it, ask your admin for assistance.
-        </p>
 
         <DialogFooter>
           <Button onClick={onClose}>
