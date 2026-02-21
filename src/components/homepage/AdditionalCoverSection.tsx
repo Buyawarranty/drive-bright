@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Car, Globe, Key, ArrowRightLeft, Settings } from 'lucide-react';
+import { Truck, Globe, Key, ArrowRightLeft, SlidersHorizontal, ShieldPlus } from 'lucide-react';
 
 const AdditionalCoverSection: React.FC = () => {
   return (
@@ -14,23 +14,11 @@ const AdditionalCoverSection: React.FC = () => {
             <div className="space-y-4 text-left">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-6 h-6 text-white" />
+                  <Truck className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-brand-dark-text">24/7 Vehicle Recovery</h3>
                   <p className="text-brand-dark-text">Help whenever you need it.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 text-left">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
-                  <Car className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-brand-dark-text">Tyre Cover</h3>
-                  <p className="text-brand-dark-text">Protection against unexpected punctures.</p>
                 </div>
               </div>
             </div>
@@ -74,11 +62,23 @@ const AdditionalCoverSection: React.FC = () => {
             <div className="space-y-4 text-left">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
-                  <Settings className="w-6 h-6 text-white" />
+                  <SlidersHorizontal className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-brand-dark-text">Wear and Tear</h3>
-                  <p className="text-brand-dark-text">Extra peace of mind for ageing parts.</p>
+                  <h3 className="text-lg font-bold text-brand-dark-text">Bespoke Warranty</h3>
+                  <p className="text-brand-dark-text">Tailored cover for your specific needs.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-left">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
+                  <ShieldPlus className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-brand-dark-text">Extra Cover on Request</h3>
+                  <p className="text-brand-dark-text">Additional protection available upon request.</p>
                 </div>
               </div>
             </div>
