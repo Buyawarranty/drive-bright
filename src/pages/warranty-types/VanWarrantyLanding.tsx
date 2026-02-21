@@ -737,46 +737,11 @@ const VanWarrantyLanding: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Popular van anchors */}
+                {/* Value proposition line */}
                 <div className="flex flex-col items-center gap-4 mt-6">
-                  <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap">
-                    {popularVans.map((van) => (
-                      <a
-                        key={van.id}
-                        href={`#${van.id}`}
-                        className="flex items-center space-x-1.5 hover:text-brand-orange transition-colors"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const target = document.getElementById('van-models');
-                          if (target) {
-                            target.scrollIntoView({ behavior: 'smooth' });
-                            const make = van.name.split(' ')[0];
-                            if (make === 'VW') {
-                              setActiveManufacturer('Volkswagen');
-                            } else {
-                              setActiveManufacturer(Object.keys(vanModelCategories).find(k => van.name.toLowerCase().includes(k.toLowerCase())) as ManufacturerCategory || 'All');
-                            }
-                          }
-                        }}
-                      >
-                        <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                        <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">{van.name}</span>
-                      </a>
-                    ))}
-                  </div>
-                  
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
-                          <span className="text-sm font-semibold text-green-700">⚡ Same-day cover</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>⚡ Cover starts immediately after purchase — no waiting period</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <p className="text-base sm:text-lg font-medium text-gray-700">
+                    Keep your van on the road and your income protected — <span className="text-brand-orange font-semibold">Instant cover</span>
+                  </p>
                 </div>
               </div>
             </div>
