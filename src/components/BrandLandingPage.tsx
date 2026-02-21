@@ -536,7 +536,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
                 <div className="mb-3 sm:mb-8 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
                   <div className="flex items-center">
                     <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="font-medium">From just 80p a day • Easy claims • Fast payouts</span>
+                    <span className="font-medium">From just £19/month • Easy claims • Fast payouts</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
@@ -865,7 +865,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
                   <div className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
                     <span className="text-base md:text-lg text-brand-dark-text">
-                      <strong>From Just 80p a Day</strong> – Affordable peace of mind.
+                      <strong>From Just £19/Month</strong> – Affordable peace of mind.
                     </span>
                   </div>
                 </div>
