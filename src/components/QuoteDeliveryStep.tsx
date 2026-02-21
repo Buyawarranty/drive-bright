@@ -227,6 +227,16 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           .eq('id', existingLead.id);
       }
 
+      // Mark the corresponding abandoned_cart as converted so it doesn't show as a duplicate lead
+      try {
+        await supabase
+          .from('abandoned_carts')
+          .update({ is_converted: true, updated_at: new Date().toISOString() })
+          .eq('email', email.trim().toLowerCase());
+      } catch (cartLinkError) {
+        console.error('Error marking abandoned cart as converted:', cartLinkError);
+      }
+
       // Schedule SMS to be sent 10 minutes after quote submission
       try {
         console.log('Scheduling delayed SMS for:', phone);
