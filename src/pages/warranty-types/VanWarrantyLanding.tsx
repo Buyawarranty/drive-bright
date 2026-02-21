@@ -629,27 +629,28 @@ const VanWarrantyLanding: React.FC = () => {
               {/* Left Column */}
               <div className="text-center lg:text-left">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Keep your business moving </span>
-                  <span className="text-brand-orange">— van warranty from £19/mo</span>
+                  <span className="text-gray-900">Protect your van. Protect your livelihood.</span>
+                  <br />
+                  <span className="text-brand-orange">Van warranty from £19 per month</span>
                 </h1>
-
-                <p className="hero-description text-gray-600 text-sm sm:text-base md:text-lg mb-4 md:mb-5 max-w-lg mx-auto lg:mx-0">
-                  One solid plan for every van on the road. Couriers, tradespeople, fleets — you're all welcome. Free 30-second quote, same-day cover, no inspection.
-                </p>
 
                 {/* Trust strip */}
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">From just 60p a day · Unlimited claims · Fast payouts</span>
+                    <span className="font-medium">From £19/month • Easy claims • Fast payouts</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Parts & labour included · Zero excess available · Any UK garage</span>
+                    <span className="font-medium">Unlimited claims</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Commercial use accepted · Same-day activation · 14-day refund</span>
+                    <span className="font-medium">Parts and labour</span>
+                  </div>
+                  <div className="flex items-center justify-center lg:justify-start">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
+                    <span className="font-medium">Commercial use accepted</span>
                   </div>
                 </div>
 
