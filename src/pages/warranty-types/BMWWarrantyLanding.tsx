@@ -706,7 +706,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
                   <span className="text-gray-900">Protect your BMW</span>
-                  {' '}
+                  <br />
                   <span className="text-brand-orange">in 60 seconds.</span>
                 </h1>
 
