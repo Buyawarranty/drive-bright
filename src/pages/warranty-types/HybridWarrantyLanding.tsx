@@ -973,18 +973,25 @@ const HybridWarrantyLanding: React.FC = () => {
             {/* Bottom CTA */}
             <div className="mt-8 md:mt-12 text-center">
               <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Warranty cover from just £19/month
-                </h3>
-                <p className="text-white/70 text-sm md:text-base mb-6">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-4">
+                  <div className="text-center">
+                    <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Typical repair</p>
+                    <p className="text-2xl md:text-4xl font-bold text-red-400 line-through decoration-2">£2,200</p>
+                  </div>
+                  <span className="text-lg md:text-xl font-bold text-white/50">vs</span>
+                  <div className="text-center">
+                    <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Platinum plan</p>
+                    <p className="text-2xl md:text-4xl font-bold text-emerald-400">from £19/mo</p>
+                  </div>
+                </div>
+                <p className="text-white/70 mb-6 text-sm md:text-base">
                   That's less than a single diagnostic fee — and it covers all of the above.
                 </p>
                 <Button
                   onClick={scrollToQuoteForm}
                   className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
                 >
-                  Get your instant quote
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  Get my instant quote <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </div>
             </div>

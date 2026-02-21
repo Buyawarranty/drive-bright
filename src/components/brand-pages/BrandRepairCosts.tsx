@@ -12,6 +12,7 @@ type RepairItem = {
 interface BrandRepairCostsProps {
   brandName: string;
   monthlyPrice: string;
+  typicalRepairCost?: string;
   repairs: RepairItem[];
   onGetQuote: () => void;
 }
@@ -24,7 +25,7 @@ const severityColors = {
   critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
 };
 
-const BrandRepairCosts: React.FC<BrandRepairCostsProps> = ({ brandName, monthlyPrice, repairs, onGetQuote }) => {
+const BrandRepairCosts: React.FC<BrandRepairCostsProps> = ({ brandName, monthlyPrice, typicalRepairCost = '£2,200', repairs, onGetQuote }) => {
   return (
     <section className="py-10 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,10 +62,18 @@ const BrandRepairCosts: React.FC<BrandRepairCostsProps> = ({ brandName, monthlyP
 
         <div className="mt-8 md:mt-12 text-center">
           <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-              Warranty cover from just {monthlyPrice}/month
-            </h3>
-            <p className="text-white/80 mb-6 text-sm md:text-base">
+            <div className="flex items-center justify-center gap-4 md:gap-8 mb-4">
+              <div className="text-center">
+                <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Typical repair</p>
+                <p className="text-2xl md:text-4xl font-bold text-red-400 line-through decoration-2">{typicalRepairCost}</p>
+              </div>
+              <span className="text-lg md:text-xl font-bold text-white/50">vs</span>
+              <div className="text-center">
+                <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Platinum plan</p>
+                <p className="text-2xl md:text-4xl font-bold text-emerald-400">from {monthlyPrice}/mo</p>
+              </div>
+            </div>
+            <p className="text-white/70 mb-6 text-sm md:text-base">
               That's less than a single diagnostic fee — and it covers all of the above.
             </p>
             <Button
@@ -72,7 +81,7 @@ const BrandRepairCosts: React.FC<BrandRepairCostsProps> = ({ brandName, monthlyP
               className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 md:py-5 px-6 md:px-8 text-base md:text-lg rounded-xl shadow-lg animate-breathing"
             >
               <span className="flex items-center gap-2">
-                Get Your Instant Quote
+                Get my instant quote
                 <ArrowRight className="w-5 h-5" />
               </span>
             </Button>
