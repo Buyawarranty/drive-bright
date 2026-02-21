@@ -1741,7 +1741,7 @@ export const CustomersTab = () => {
     }
   };
   // Quick archive for test/fake leads - no dialog needed
-  const quickArchiveAsTestOrFake = async (customerIds: Set<string> | string[], action: 'test' | 'fake') => {
+  const quickArchiveAsTestOrFake = async (customerIds: Set<string> | string[], action: 'test' | 'fake' | 'duplicate') => {
     const ids = Array.from(customerIds);
     if (ids.length === 0) return;
 
@@ -1751,8 +1751,8 @@ export const CustomersTab = () => {
       if (!adminId) { toast.error('Unable to identify admin user'); return; }
 
       let successCount = 0;
-      const statusLabel = action === 'test' ? 'Test Purchase' : 'Fake Lead';
-      const reason = action === 'test' ? 'Test record cleanup' : 'Fake/Spam lead';
+      const statusLabel = action === 'test' ? 'Test Purchase' : action === 'fake' ? 'Fake Lead' : 'Duplicate';
+      const reason = action === 'test' ? 'Test record cleanup' : action === 'fake' ? 'Fake/Spam lead' : 'Duplicate record';
 
       for (const id of ids) {
         const { error } = await supabase.rpc('soft_delete_customer', {
@@ -1781,7 +1781,7 @@ export const CustomersTab = () => {
             is_deleted: true,
             deleted_at: new Date().toISOString(),
             deleted_by: adminId,
-            status: action === 'test' ? 'test' : 'fake_lead'
+            status: action === 'test' ? 'test' : action === 'fake' ? 'fake_lead' : 'duplicate'
           }).eq('id', policyId);
         }
 
@@ -2623,6 +2623,13 @@ export const CustomersTab = () => {
                           >
                             <UserMinus className="h-4 w-4 mr-2" />
                             Mark as Fake Lead
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => quickArchiveAsTestOrFake(selectedCustomers, 'duplicate')}
+                            className="text-blue-600"
+                          >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Mark as Duplicate
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -4374,6 +4381,13 @@ Please log in and change your password after first login.`;
                               >
                                 <UserMinus className="h-4 w-4 mr-2" />
                                 Mark as Fake Lead
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => quickArchiveAsTestOrFake(new Set([customer.id]), 'duplicate')}
+                                className="text-blue-600"
+                              >
+                                <Copy className="h-4 w-4 mr-2" />
+                                Mark as Duplicate
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
