@@ -748,96 +748,6 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* ===== VALUE FRAMING — KEEP YOUR BUSINESS MOVING ===== */}
-        <section className="py-12 md:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-semibold text-sm px-4 py-2 rounded-full mb-4">
-                <AlertTriangle className="w-4 h-4" />
-                One breakdown could cost more than a year of cover
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-                What van repairs actually cost
-              </h2>
-              <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-                When your van's off the road, you're not just paying for parts — you're losing income. Here's what unprotected van owners face.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-              {[
-                { part: 'Turbocharger replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high', downtime: '3-5 days off road' },
-                { part: 'DPF filter replacement', cost: '£1,200 – £2,800', icon: Shield, severity: 'high', downtime: '2-4 days off road' },
-                { part: 'Gearbox rebuild', cost: '£2,000 – £4,500', icon: Wrench, severity: 'critical', downtime: '5-10 days off road' },
-                { part: 'Engine rebuild', cost: '£3,000 – £5,000', icon: Truck, severity: 'critical', downtime: '7-14 days off road' },
-                { part: 'Fuel injector set', cost: '£800 – £2,200', icon: Zap, severity: 'medium', downtime: '1-3 days off road' },
-                { part: 'Clutch & flywheel', cost: '£900 – £1,800', icon: Wrench, severity: 'medium', downtime: '2-3 days off road' },
-                { part: 'ECU replacement', cost: '£700 – £1,500', icon: Zap, severity: 'medium', downtime: '1-2 days off road' },
-                { part: 'EGR valve failure', cost: '£400 – £900', icon: Shield, severity: 'medium', downtime: '1-2 days off road' },
-                { part: 'Timing chain kit', cost: '£800 – £2,000', icon: Clock, severity: 'high', downtime: '3-5 days off road' },
-              ].map((repair, index) => {
-                const severityColor = repair.severity === 'critical' 
-                  ? 'border-red-200 bg-red-50/50' 
-                  : repair.severity === 'high' 
-                  ? 'border-orange-200 bg-orange-50/30' 
-                  : 'border-slate-200 bg-white';
-                const costColor = repair.severity === 'critical' 
-                  ? 'text-red-600' 
-                  : repair.severity === 'high' 
-                  ? 'text-orange-600' 
-                  : 'text-slate-900';
-                
-                return (
-                  <div key={index} className={`relative rounded-xl border-2 ${severityColor} p-4 md:p-5 transition-all hover:shadow-md`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          repair.severity === 'critical' ? 'bg-red-100' : repair.severity === 'high' ? 'bg-orange-100' : 'bg-slate-100'
-                        }`}>
-                          <repair.icon className={`w-5 h-5 ${
-                            repair.severity === 'critical' ? 'text-red-600' : repair.severity === 'high' ? 'text-orange-600' : 'text-slate-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-900 text-sm md:text-base">{repair.part}</h3>
-                          <p className={`text-lg md:text-xl font-bold ${costColor} mt-0.5`}>{repair.cost}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">⏱ {repair.downtime}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Comparison CTA — repair cost vs plan */}
-            <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-6">
-                  <div className="text-center">
-                    <p className="text-white/60 text-sm uppercase tracking-wide mb-1">Typical repair</p>
-                    <p className="text-3xl md:text-4xl font-black text-red-400 line-through decoration-2">£2,200</p>
-                  </div>
-                  <div className="text-white text-2xl font-bold">vs</div>
-                  <div className="text-center">
-                    <p className="text-white/60 text-sm uppercase tracking-wide mb-1">Platinum plan</p>
-                    <p className="text-3xl md:text-4xl font-black text-green-400">from £19/mo</p>
-                  </div>
-                </div>
-                <p className="text-white/70 text-sm md:text-base mb-6">
-                  That's less than a single diagnostic fee — and it covers all of the above.
-                </p>
-                <Button
-                  onClick={scrollToQuoteForm}
-                  className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
-                >
-                  Get my instant quote
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ===== WARRANTY BENEFITS ===== */}
         <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
@@ -928,6 +838,97 @@ const VanWarrantyLanding: React.FC = () => {
         <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
+
+        {/* ===== VALUE FRAMING — KEEP YOUR BUSINESS MOVING ===== */}
+        <section className="py-12 md:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-semibold text-sm px-4 py-2 rounded-full mb-4">
+                <AlertTriangle className="w-4 h-4" />
+                One breakdown could cost more than a year of cover
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
+                What van repairs actually cost
+              </h2>
+              <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+                When your van's off the road, you're not just paying for parts — you're losing income. Here's what unprotected van owners face.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+              {[
+                { part: 'Turbocharger replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high', downtime: '3-5 days off road' },
+                { part: 'DPF filter replacement', cost: '£1,200 – £2,800', icon: Shield, severity: 'high', downtime: '2-4 days off road' },
+                { part: 'Gearbox rebuild', cost: '£2,000 – £4,500', icon: Wrench, severity: 'critical', downtime: '5-10 days off road' },
+                { part: 'Engine rebuild', cost: '£3,000 – £5,000', icon: Truck, severity: 'critical', downtime: '7-14 days off road' },
+                { part: 'Fuel injector set', cost: '£800 – £2,200', icon: Zap, severity: 'medium', downtime: '1-3 days off road' },
+                { part: 'Clutch & flywheel', cost: '£900 – £1,800', icon: Wrench, severity: 'medium', downtime: '2-3 days off road' },
+                { part: 'ECU replacement', cost: '£700 – £1,500', icon: Zap, severity: 'medium', downtime: '1-2 days off road' },
+                { part: 'EGR valve failure', cost: '£400 – £900', icon: Shield, severity: 'medium', downtime: '1-2 days off road' },
+                { part: 'Timing chain kit', cost: '£800 – £2,000', icon: Clock, severity: 'high', downtime: '3-5 days off road' },
+              ].map((repair, index) => {
+                const severityColor = repair.severity === 'critical' 
+                  ? 'border-red-200 bg-red-50/50' 
+                  : repair.severity === 'high' 
+                  ? 'border-orange-200 bg-orange-50/30' 
+                  : 'border-slate-200 bg-white';
+                const costColor = repair.severity === 'critical' 
+                  ? 'text-red-600' 
+                  : repair.severity === 'high' 
+                  ? 'text-orange-600' 
+                  : 'text-slate-900';
+                
+                return (
+                  <div key={index} className={`relative rounded-xl border-2 ${severityColor} p-4 md:p-5 transition-all hover:shadow-md`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          repair.severity === 'critical' ? 'bg-red-100' : repair.severity === 'high' ? 'bg-orange-100' : 'bg-slate-100'
+                        }`}>
+                          <repair.icon className={`w-5 h-5 ${
+                            repair.severity === 'critical' ? 'text-red-600' : repair.severity === 'high' ? 'text-orange-600' : 'text-slate-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm md:text-base">{repair.part}</h3>
+                          <p className={`text-lg md:text-xl font-bold ${costColor} mt-0.5`}>{repair.cost}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">⏱ {repair.downtime}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Comparison CTA — repair cost vs plan */}
+            <div className="mt-8 md:mt-12 text-center">
+              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-6">
+                  <div className="text-center">
+                    <p className="text-white/60 text-sm uppercase tracking-wide mb-1">Typical repair</p>
+                    <p className="text-3xl md:text-4xl font-black text-red-400 line-through decoration-2">£2,200</p>
+                  </div>
+                  <div className="text-white text-2xl font-bold">vs</div>
+                  <div className="text-center">
+                    <p className="text-white/60 text-sm uppercase tracking-wide mb-1">Platinum plan</p>
+                    <p className="text-3xl md:text-4xl font-black text-green-400">from £19/mo</p>
+                  </div>
+                </div>
+                <p className="text-white/70 text-sm md:text-base mb-6">
+                  That's less than a single diagnostic fee — and it covers all of the above.
+                </p>
+                <Button
+                  onClick={scrollToQuoteForm}
+                  className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
+                >
+                  Get my instant quote
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ===== VAN MODELS SECTION ===== */}
         <section id="van-models" className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
