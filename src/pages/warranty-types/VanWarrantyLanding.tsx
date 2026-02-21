@@ -635,22 +635,14 @@ const VanWarrantyLanding: React.FC = () => {
                 </h1>
 
                 {/* Trust strip */}
-                <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
-                  <div className="flex items-center justify-center lg:justify-start">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">From £19/month • Easy claims • Fast payouts</span>
+                <div className="mb-4 md:mb-6 text-gray-600 text-sm md:text-base space-y-2">
+                  <div className="flex items-start justify-center lg:justify-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                    <span className="font-medium">From just £19/month&nbsp; •&nbsp; Easy claims&nbsp; •&nbsp; Fast payouts</span>
                   </div>
-                  <div className="flex items-center justify-center lg:justify-start">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Unlimited claims</span>
-                  </div>
-                  <div className="flex items-center justify-center lg:justify-start">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Parts and labour</span>
-                  </div>
-                  <div className="flex items-center justify-center lg:justify-start">
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Commercial use accepted</span>
+                  <div className="flex items-start justify-center lg:justify-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                    <span className="font-medium">Unlimited claims&nbsp; •&nbsp; Parts and Labour&nbsp; •&nbsp; Commercial use accepted</span>
                   </div>
                 </div>
 
