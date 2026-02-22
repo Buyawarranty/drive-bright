@@ -692,12 +692,19 @@ export const useLeads = () => {
       if (isAbandonedCart) {
         const contactStatus = status;
         
+        // When marking as lost or fake_lead, also set is_converted = true
+        // so the cart won't reappear as a duplicate lead on next refetch
+        const updatePayload: any = {
+          contact_status: contactStatus,
+          updated_at: now
+        };
+        if (status === 'lost' || status === 'fake_lead' || status === 'converted') {
+          updatePayload.is_converted = true;
+        }
+        
         const { data, error } = await supabase
           .from('abandoned_carts')
-          .update({
-            contact_status: contactStatus,
-            updated_at: now
-          })
+          .update(updatePayload)
           .eq('id', actualId)
           .select('id');
 
@@ -705,6 +712,12 @@ export const useLeads = () => {
         
         if (!data || data.length === 0) {
           throw new Error('Status update was blocked by permissions. Please refresh and try again.');
+        }
+        
+        // If marked as converted/lost/fake, remove from local state immediately
+        // since the cart won't be fetched on next refetch (is_converted = true)
+        if (status === 'lost' || status === 'fake_lead' || status === 'converted') {
+          setLeads(prev => prev.filter(lead => lead.id !== leadId));
         }
       } else {
         const { data, error } = await supabase
