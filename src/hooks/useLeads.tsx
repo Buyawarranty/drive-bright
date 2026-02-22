@@ -188,16 +188,19 @@ export const useLeads = () => {
 
   const fetchLeads = useCallback(async () => {
     try {
-      // Only show loading spinner on the very first load attempt
-      if (!initialLoadDoneRef.current && !initialLoadStartedRef.current) {
-        initialLoadStartedRef.current = true;
-        setLoading(true);
-        // Safety timeout: force loading off after 12s to prevent infinite loading
+      // Only show loading spinner on the very first successful load
+      if (!initialLoadDoneRef.current) {
+        if (!initialLoadStartedRef.current) {
+          initialLoadStartedRef.current = true;
+          setLoading(true);
+        }
+        // Safety timeout: force loading off after 8s to prevent infinite loading
+        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
         loadingTimeoutRef.current = setTimeout(() => {
+          console.warn('[Leads] Loading safety timeout triggered after 8s');
           setLoading(false);
           initialLoadDoneRef.current = true;
-          console.warn('[Leads] Loading safety timeout triggered after 12s');
-        }, 12000);
+        }, 8000);
       }
       
       // Use Promise.all to fetch all data sources in parallel for better performance
@@ -451,42 +454,44 @@ export const useLeads = () => {
         application_count: emailCounts[lead.email?.toLowerCase()] || 1
       }));
 
-      // Fetch all tag assignments in a single query (instead of N+1 queries)
+      // Fetch tag assignments — wrapped in try-catch so tag fetch failure doesn't block leads loading
       const salesLeadIds = leadsWithCounts
         .filter((lead: any) => !lead.is_from_abandoned_cart)
         .map((lead: any) => lead.id);
 
       let tagsByLeadId: Record<string, any[]> = {};
       
-      if (salesLeadIds.length > 0) {
-        // Batch the .in() query to avoid URL-too-long errors — run batches in PARALLEL
-        const BATCH_SIZE = 300;
-        const allTagData: any[] = [];
-        
-        const batchPromises = [];
-        for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
-          const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
-          batchPromises.push(
-            supabase
-              .from('lead_tag_assignments')
-              .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-              .in('lead_id', batch)
-          );
-        }
-        const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach(({ data: batchData }) => {
-          if (batchData) allTagData.push(...batchData);
-        });
+      try {
+        if (salesLeadIds.length > 0) {
+          const BATCH_SIZE = 300;
+          const allTagData: any[] = [];
+          
+          const batchPromises = [];
+          for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
+            const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
+            batchPromises.push(
+              supabase
+                .from('lead_tag_assignments')
+                .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+                .in('lead_id', batch)
+            );
+          }
+          const batchResults = await Promise.all(batchPromises);
+          batchResults.forEach(({ data: batchData }) => {
+            if (batchData) allTagData.push(...batchData);
+          });
 
-        // Group tags by lead_id
-        allTagData.forEach((assignment: any) => {
-          if (!tagsByLeadId[assignment.lead_id]) {
-            tagsByLeadId[assignment.lead_id] = [];
-          }
-          if (assignment.lead_tags) {
-            tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
-          }
-        });
+          allTagData.forEach((assignment: any) => {
+            if (!tagsByLeadId[assignment.lead_id]) {
+              tagsByLeadId[assignment.lead_id] = [];
+            }
+            if (assignment.lead_tags) {
+              tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
+            }
+          });
+        }
+      } catch (tagError) {
+        console.warn('[Leads] Tag fetch failed, continuing without tags:', tagError);
       }
 
       // Assign tags to leads without additional queries

@@ -51,18 +51,8 @@ export const useLeadQuickNotes = (leadId: string) => {
     updateNotes([]);
   }, [leadId, updateNotes]);
 
-  const ensureSession = async (): Promise<boolean> => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) return true;
-      
-      const { data: refreshData } = await supabase.auth.refreshSession();
-      if (refreshData.session) return true;
-    } catch {
-      // Silently fail - let RLS handle auth
-    }
-    return false;
-  };
+  // Session validation removed — RLS policies handle authorization, and
+  // getAuthenticatedAdmin() validates auth before write operations.
 
   const fetchNotes = useCallback(async (isRefetch = false) => {
     if (!leadId) {
@@ -72,7 +62,6 @@ export const useLeadQuickNotes = (leadId: string) => {
     }
     
     // CRITICAL: Only show loading spinner on initial load, NOT on refetch
-    // This prevents "No notes yet" flash when collapsing/expanding
     if (!isRefetch) {
       setLoading(true);
     }
@@ -82,12 +71,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     }, 5000);
     
     try {
-      // Try to ensure session, but don't block note fetching entirely if it fails
-      try {
-        await ensureSession();
-      } catch (sessionErr) {
-        // Session check failed - RLS will gate access
-      }
+      // Skip session check on refetch to avoid latency — RLS will gate access
       if (isAbandonedCart) {
         const { data: cartData, error: cartError } = await supabase
           .from('abandoned_carts')
@@ -202,20 +186,19 @@ export const useLeadQuickNotes = (leadId: string) => {
       return cachedAdminUser;
     }
 
-    // Single getUser() call — validates server-side, works on all browsers
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Single getUser() call — validates server-side
+    const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
+      // Try refresh once
       const { data: refreshData } = await supabase.auth.refreshSession();
-      
       if (!refreshData.session?.user) {
         toast.error('Session expired — please log in again.');
         throw new Error('Session expired');
       }
     }
 
-    // Get current user ID (from the successful call above or the refresh)
-    const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
+    const userId = user?.id || (await supabase.auth.getSession()).data.session?.user?.id;
     if (!userId) {
       toast.error('Session expired — please log in again.');
       throw new Error('Session expired');
@@ -232,7 +215,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     }
 
     cachedAdminUser = adminData;
-    cacheExpiry = now + 5 * 60 * 1000;
+    cacheExpiry = now + 10 * 60 * 1000; // Cache for 10 minutes instead of 5
     return adminData;
   };
 
