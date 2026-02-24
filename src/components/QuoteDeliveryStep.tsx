@@ -164,11 +164,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       }
 
       // Create lead in sales_leads table - DO NOT auto-assign, leave for manual assignment
-      const { data: existingLead } = await supabase
+      const { data: existingLeads } = await supabase
         .from('sales_leads')
         .select('id, first_name, phone')
         .eq('email', email.trim().toLowerCase())
-        .maybeSingle();
+        .limit(1);
+      
+      const existingLead = existingLeads && existingLeads.length > 0 ? existingLeads[0] : null;
       
       if (!existingLead) {
         await supabase
