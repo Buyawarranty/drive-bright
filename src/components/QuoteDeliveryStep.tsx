@@ -227,12 +227,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           .eq('id', existingLead.id);
       }
 
-      // Mark the corresponding abandoned_cart as converted so it doesn't show as a duplicate lead
+      // Mark ALL corresponding abandoned_carts as converted so they don't show as duplicate leads
+      // Use case-insensitive match to handle any legacy mixed-case emails
       try {
+        const normalizedEmail = email.trim().toLowerCase();
         await supabase
           .from('abandoned_carts')
           .update({ is_converted: true, updated_at: new Date().toISOString() })
-          .eq('email', email.trim().toLowerCase());
+          .ilike('email', normalizedEmail);
       } catch (cartLinkError) {
         console.error('Error marking abandoned cart as converted:', cartLinkError);
       }

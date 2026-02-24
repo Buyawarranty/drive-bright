@@ -247,11 +247,11 @@ export const useLeads = () => {
           .eq('is_converted', false)
           .order('created_at', { ascending: false })
           .limit(5000), // Increased limit to fetch all carts
-        // Separate UNFILTERED query for dedup: get ALL sales_lead emails and abandoned_cart_ids
+        // Separate UNFILTERED query for dedup: get ALL sales_lead emails, phones, and abandoned_cart_ids
         // This prevents leads filtered out by status (e.g. "lost") from causing cart duplicates
         supabase
           .from('sales_leads')
-          .select('email, abandoned_cart_id')
+          .select('email, phone, abandoned_cart_id')
           .limit(10000)
       ]);
 
@@ -292,9 +292,14 @@ export const useLeads = () => {
           .map((lead: any) => lead.abandoned_cart_id)
       );
 
-      // Get emails from ALL sales_leads (unfiltered) to avoid duplicates
+      // Get emails AND phones from ALL sales_leads (unfiltered) to avoid duplicates
       const existingEmails = new Set(
-        (dedupData || []).map((lead: any) => lead.email?.toLowerCase())
+        (dedupData || []).map((lead: any) => lead.email?.toLowerCase()).filter(Boolean)
+      );
+      const existingPhones = new Set(
+        (dedupData || [])
+          .map((lead: any) => lead.phone?.replace(/\s/g, ''))
+          .filter(Boolean)
       );
 
       // Helper function to map contact_status to LeadStatus
@@ -314,11 +319,12 @@ export const useLeads = () => {
         }
       };
 
-      // Convert abandoned carts to lead format (only those not already linked)
+      // Convert abandoned carts to lead format (only those not already linked by id, email, or phone)
       const cartsAsLeads = (abandonedCartsData || [])
         .filter((cart: any) => 
           !linkedCartIds.has(cart.id) && 
-          !existingEmails.has(cart.email?.toLowerCase())
+          !existingEmails.has(cart.email?.toLowerCase()) &&
+          !(cart.phone && existingPhones.has(cart.phone.replace(/\s/g, '')))
         )
         .map((cart: any) => {
           const fullName = cart.full_name || '';
