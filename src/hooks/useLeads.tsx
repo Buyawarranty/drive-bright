@@ -324,7 +324,10 @@ export const useLeads = () => {
         .filter((cart: any) => 
           !linkedCartIds.has(cart.id) && 
           !existingEmails.has(cart.email?.toLowerCase()) &&
-          !(cart.phone && existingPhones.has(cart.phone.replace(/\s/g, '')))
+          !(cart.phone && existingPhones.has(cart.phone.replace(/\s/g, ''))) &&
+          // Only include step 2 carts as leads - step 3 carts are duplicates
+          // of existing sales_leads created during quote delivery
+          cart.step_abandoned !== 3
         )
         .map((cart: any) => {
           const fullName = cart.full_name || '';
