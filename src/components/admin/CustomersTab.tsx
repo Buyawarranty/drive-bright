@@ -580,8 +580,11 @@ export const CustomersTab = () => {
                            customer.warranty_number || '';
         
         if (filterBySource === 'website') {
-          // BAW- prefix = website sale
-          return warrantyNum.startsWith('BAW');
+          // BAW- prefix (but NOT BAW-S-) = website sale
+          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+        } else if (filterBySource === 'staff_purchase') {
+          // BAW-S- prefix = staff assigned purchase
+          return warrantyNum.startsWith('BAW-S-');
         } else if (filterBySource === 'quote_order') {
           // ADM- prefix = sales team confirmed / manual entry
           return warrantyNum.startsWith('ADM');
@@ -1312,7 +1315,21 @@ export const CustomersTab = () => {
         throw error;
       }
 
+      // When assigning from unassigned to an agent, change BAW- prefix to BAW-S- (staff purchase)
       if (agentId) {
+        const customer = customers.find(c => c.id === customerId);
+        const policyWarrantyNum = customer?.customer_policies?.[0]?.warranty_number || '';
+        const policyId = customer?.customer_policies?.[0]?.id;
+        
+        if (policyWarrantyNum.startsWith('BAW-') && !policyWarrantyNum.startsWith('BAW-S-') && policyId) {
+          const newWarrantyNum = policyWarrantyNum.replace('BAW-', 'BAW-S-');
+          await supabase
+            .from('customer_policies')
+            .update({ warranty_number: newWarrantyNum })
+            .eq('id', policyId);
+          console.log(`Warranty number updated: ${policyWarrantyNum} → ${newWarrantyNum} (staff purchase)`);
+        }
+
         const agent = adminUsers.find(u => u.id === agentId);
         const agentName = agent ? `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email : 'agent';
         toast.success(`Customer assigned to ${agentName}`);
@@ -2534,6 +2551,12 @@ export const CustomersTab = () => {
                         Website (BAW)
                       </div>
                     </SelectItem>
+                    <SelectItem value="staff_purchase">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        Staff Purchase (BAW-S)
+                      </div>
+                    </SelectItem>
                     <SelectItem value="quote_order">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-purple-500" />
@@ -2564,6 +2587,7 @@ export const CustomersTab = () => {
                     {filterByStatus !== 'all' && ` • ${filterByStatus} status`}
                     {filterByTag !== 'all' && ` • filtered by tag`}
                     {filterBySource === 'website' && ` • Website (BAW)`}
+                    {filterBySource === 'staff_purchase' && ` • Staff Purchase (BAW-S)`}
                     {filterBySource === 'quote_order' && ` • Quote & Orders (ADM)`}
                     {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
                   </span>

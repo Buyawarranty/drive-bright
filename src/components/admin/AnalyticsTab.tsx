@@ -219,11 +219,16 @@ export const AnalyticsTab = () => {
       if (sourceFilter !== 'all') {
         const source = customer.purchase_source?.toLowerCase() || '';
         const isManual = customer.is_manual_entry === true;
+        const warrantyNum = customer.warranty_reference_number || '';
         
         if (sourceFilter === 'website') {
-          // Website sales: not manual AND purchase_source is website/stripe/bumper/google_ads or empty (legacy online)
-          const isWebsite = !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
+          // Website sales: BAW- prefix (not BAW-S-) OR legacy: not manual AND purchase_source is website/stripe/bumper/google_ads or empty
+          const isBawS = warrantyNum.startsWith('BAW-S-');
+          const isWebsite = !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
           if (!isWebsite) return false;
+        } else if (sourceFilter === 'staff_purchase') {
+          // Staff purchase: BAW-S- prefix (assigned by staff from website purchase)
+          if (!warrantyNum.startsWith('BAW-S-')) return false;
         } else if (sourceFilter === 'sales_team') {
           // Sales team: manual entry OR purchase_source is quote_link/external/admin_external
           const isSalesTeam = isManual || source === 'quote_link' || source === 'external' || source === 'admin_external';
@@ -242,9 +247,11 @@ export const AnalyticsTab = () => {
 
 
   // Helper function to categorize customer by source - uses purchase_source and is_manual_entry
-  const getCustomerSource = (customer: Customer): 'website' | 'sales_team' | 'unknown' => {
+  const getCustomerSource = (customer: Customer): 'website' | 'staff_purchase' | 'sales_team' | 'unknown' => {
     const source = customer.purchase_source?.toLowerCase() || '';
     const isManual = customer.is_manual_entry === true;
+    const warrantyNum = customer.warranty_reference_number || '';
+    if (warrantyNum.startsWith('BAW-S-')) return 'staff_purchase';
     if (isManual || source === 'quote_link' || source === 'external' || source === 'admin_external') return 'sales_team';
     if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '') return 'website';
     return 'unknown';
@@ -511,6 +518,12 @@ export const AnalyticsTab = () => {
                   <span className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-blue-500" />
                     Website (BAW)
+                  </span>
+                </SelectItem>
+                <SelectItem value="staff_purchase">
+                  <span className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-green-500" />
+                    Staff Purchase (BAW-S)
                   </span>
                 </SelectItem>
                 <SelectItem value="sales_team">
