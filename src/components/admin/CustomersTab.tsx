@@ -2728,6 +2728,11 @@ export const CustomersTab = () => {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>RegNum</TableHead>
+              <TableHead>Ref</TableHead>
+              <TableHead>Email Status</TableHead>
+              <TableHead>Warranties Register</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Assigned To</TableHead>
               <TableHead>Make</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>RegDate</TableHead>
@@ -2749,11 +2754,6 @@ export const CustomersTab = () => {
               <TableHead>Labour Rate</TableHead>
               <TableHead>Mileage</TableHead>
               <TableHead>Tags</TableHead>
-              <TableHead>Ref</TableHead>
-              <TableHead>Email Status</TableHead>
-              <TableHead>Warranties Register</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Assigned To</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -3940,6 +3940,123 @@ Please log in and change your password after first login.`;
                       )}
                     </div>
                   </TableCell>
+                    <TableCell className="font-mono text-sm">
+                    {customer.warranty_reference_number || customer.warranty_number ? (
+                      <div className="bg-green-50 px-2 py-1 rounded border">
+                        {customer.warranty_reference_number || customer.warranty_number}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">No Reference</span>
+                    )}
+                  </TableCell>
+                   <TableCell>
+                     <div className="flex items-center gap-2">
+                       {customer.customer_policies?.[0]?.email_sent_status === 'sent' ? (
+                         <Badge variant="secondary" className="bg-green-100 text-green-800">
+                           <CheckCircle className="w-3 h-3 mr-1" />
+                           Sent
+                         </Badge>
+                       ) : customer.customer_policies?.[0]?.email_sent_status === 'failed' ? (
+                         <Badge variant="destructive" className="bg-red-100 text-red-800">
+                           <AlertCircle className="w-3 h-3 mr-1" />
+                           Failed
+                         </Badge>
+                       ) : (
+                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                           <Clock className="w-3 h-3 mr-1" />
+                           Not Sent
+                         </Badge>
+                       )}
+                       
+                       {customer.customer_policies?.[0]?.id && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleSendWelcomeEmail(customer.customer_policies[0].id, customer.id)}
+                           disabled={emailSendingLoading[customer.id]?.email}
+                           title="Send Welcome Email"
+                           className="hover:bg-blue-50 hover:text-blue-600"
+                         >
+                           {emailSendingLoading[customer.id]?.email ? (
+                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                           ) : (
+                             <Send className="h-3 w-3" />
+                           )}
+                         </Button>
+                       )}
+                     </div>
+                   </TableCell>
+                   <TableCell>
+                     <div className="flex items-center gap-2">
+                       {customer.customer_policies?.[0]?.warranties_2000_status === 'sent' ? (
+                         <Badge variant="secondary" className="bg-green-100 text-green-800">
+                           <CheckCircle className="w-3 h-3 mr-1" />
+                           Sent
+                         </Badge>
+                       ) : customer.customer_policies?.[0]?.warranties_2000_status === 'failed' ? (
+                         <Badge variant="destructive" className="bg-red-100 text-red-800">
+                           <AlertCircle className="w-3 h-3 mr-1" />
+                           Failed
+                         </Badge>
+                       ) : (
+                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                           <Clock className="w-3 h-3 mr-1" />
+                           Not Sent
+                         </Badge>
+                       )}
+                       
+                       {customer.customer_policies?.[0]?.id && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleSendToWarranties2000(customer.customer_policies[0].id, customer.id)}
+                           disabled={emailSendingLoading[customer.id]?.warranties2000}
+                           title="Send to Warranties Register"
+                           className="hover:bg-purple-50 hover:text-purple-600"
+                         >
+                           {emailSendingLoading[customer.id]?.warranties2000 ? (
+                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
+                           ) : (
+                             <Send className="h-3 w-3" />
+                           )}
+                         </Button>
+                       )}
+                     </div>
+                   </TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={customer.status === 'Active' ? 'default' : 'destructive'}
+                      className={cn(
+                        customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
+                        customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
+                      )}
+                    >
+                      {customer.status?.toLowerCase() === 'refunded' && '💰 '}
+                      {customer.status}
+                    </Badge>
+                   </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col space-y-1">
+                        <Select
+                          value={customer.assigned_to || 'unassigned'}
+                          onValueChange={(val) => assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val)}
+                          disabled={assignmentLoading[customer.id]}
+                        >
+                          <SelectTrigger className="w-[160px] h-8 text-xs">
+                            <SelectValue placeholder="Assign agent" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                            <SelectItem value="website">Website</SelectItem>
+                            {adminUsers.filter(u => u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin').map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
@@ -4232,123 +4349,6 @@ Please log in and change your password after first login.`;
                        <TableCell>
                          <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
                        </TableCell>
-                    <TableCell className="font-mono text-sm">
-                    {customer.warranty_reference_number || customer.warranty_number ? (
-                      <div className="bg-green-50 px-2 py-1 rounded border">
-                        {customer.warranty_reference_number || customer.warranty_number}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">No Reference</span>
-                    )}
-                  </TableCell>
-                   <TableCell>
-                     <div className="flex items-center gap-2">
-                       {customer.customer_policies?.[0]?.email_sent_status === 'sent' ? (
-                         <Badge variant="secondary" className="bg-green-100 text-green-800">
-                           <CheckCircle className="w-3 h-3 mr-1" />
-                           Sent
-                         </Badge>
-                       ) : customer.customer_policies?.[0]?.email_sent_status === 'failed' ? (
-                         <Badge variant="destructive" className="bg-red-100 text-red-800">
-                           <AlertCircle className="w-3 h-3 mr-1" />
-                           Failed
-                         </Badge>
-                       ) : (
-                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                           <Clock className="w-3 h-3 mr-1" />
-                           Not Sent
-                         </Badge>
-                       )}
-                       
-                       {customer.customer_policies?.[0]?.id && (
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleSendWelcomeEmail(customer.customer_policies[0].id, customer.id)}
-                           disabled={emailSendingLoading[customer.id]?.email}
-                           title="Send Welcome Email"
-                           className="hover:bg-blue-50 hover:text-blue-600"
-                         >
-                           {emailSendingLoading[customer.id]?.email ? (
-                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                           ) : (
-                             <Send className="h-3 w-3" />
-                           )}
-                         </Button>
-                       )}
-                     </div>
-                   </TableCell>
-                   <TableCell>
-                     <div className="flex items-center gap-2">
-                       {customer.customer_policies?.[0]?.warranties_2000_status === 'sent' ? (
-                         <Badge variant="secondary" className="bg-green-100 text-green-800">
-                           <CheckCircle className="w-3 h-3 mr-1" />
-                           Sent
-                         </Badge>
-                       ) : customer.customer_policies?.[0]?.warranties_2000_status === 'failed' ? (
-                         <Badge variant="destructive" className="bg-red-100 text-red-800">
-                           <AlertCircle className="w-3 h-3 mr-1" />
-                           Failed
-                         </Badge>
-                       ) : (
-                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                           <Clock className="w-3 h-3 mr-1" />
-                           Not Sent
-                         </Badge>
-                       )}
-                       
-                       {customer.customer_policies?.[0]?.id && (
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleSendToWarranties2000(customer.customer_policies[0].id, customer.id)}
-                           disabled={emailSendingLoading[customer.id]?.warranties2000}
-                           title="Send to Warranties Register"
-                           className="hover:bg-purple-50 hover:text-purple-600"
-                         >
-                           {emailSendingLoading[customer.id]?.warranties2000 ? (
-                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
-                           ) : (
-                             <Send className="h-3 w-3" />
-                           )}
-                         </Button>
-                       )}
-                     </div>
-                   </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={customer.status === 'Active' ? 'default' : 'destructive'}
-                      className={cn(
-                        customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
-                        customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
-                      )}
-                    >
-                      {customer.status?.toLowerCase() === 'refunded' && '💰 '}
-                      {customer.status}
-                    </Badge>
-                   </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col space-y-1">
-                        <Select
-                          value={customer.assigned_to || 'unassigned'}
-                          onValueChange={(val) => assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val)}
-                          disabled={assignmentLoading[customer.id]}
-                        >
-                          <SelectTrigger className="w-[160px] h-8 text-xs">
-                            <SelectValue placeholder="Assign agent" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unassigned">Unassigned</SelectItem>
-                            <SelectItem value="website">Website</SelectItem>
-                            {adminUsers.filter(u => u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin').map(user => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
