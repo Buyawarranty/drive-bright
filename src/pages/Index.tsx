@@ -1098,8 +1098,8 @@ const Index = () => {
     saveStateToLocalStorage(3);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Track pricing page view for abandoned cart emails
-    trackAbandonedCart(updatedData as VehicleData, 3);
+    // NOTE: Do NOT call trackAbandonedCart here - a sales_lead was already
+    // created in QuoteDeliveryStep, so this would cause duplicate entries.
   };
 
   const handlePlanSelected = (
