@@ -144,21 +144,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       if (emailError) {
         console.error('Error sending quote email:', emailError);
       }
-
-      // Track abandoned cart
-      await supabase.functions.invoke('track-abandoned-cart', {
-        body: {
-          full_name: firstName.trim() || email.trim(),
-          email: email.trim(),
-          phone: phone || '',
-          vehicle_reg: vehicleData?.regNumber,
-          vehicle_make: vehicleData?.make,
-          vehicle_model: vehicleData?.model,
-          vehicle_year: vehicleData?.year,
-          mileage: vehicleData?.mileage,
-          step_abandoned: 2
-        }
-      });
+      // NOTE: We intentionally do NOT call track-abandoned-cart here.
+      // A sales_lead entry is created below, so creating an abandoned_cart
+      // would cause duplicate entries in the leads dashboard.
 
       // Save customer data to localStorage for Step 4 pre-population
       try {
