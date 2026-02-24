@@ -143,9 +143,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const cartData: AbandonedCartData = await req.json();
 
+    // Normalize email to lowercase to prevent case-mismatch dedup issues
+    if (cartData.email) {
+      cartData.email = cartData.email.trim().toLowerCase();
+    }
+
     // Track if we have at least an email or vehicle registration
     // For abandoned cart tracking, we accept any identifier including vehicle reg
-    if (!cartData.email || cartData.email.trim() === '') {
+    if (!cartData.email || cartData.email === '') {
       return new Response(
         JSON.stringify({ error: "Email or identifier is required for abandoned cart tracking" }),
         {
