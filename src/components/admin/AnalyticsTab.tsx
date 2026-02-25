@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
 import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
@@ -30,6 +30,14 @@ interface Customer {
   vehicle_fuel_type: string | null;
   vehicle_year: string | null;
   mileage: string | null;
+  assigned_to: string | null;
+}
+
+interface AdminUser {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
 }
 
 // Test names to exclude from analytics (matching CustomersTab filtering)
@@ -58,6 +66,7 @@ export const AnalyticsTab = () => {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -80,7 +89,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -98,6 +107,13 @@ export const AnalyticsTab = () => {
       console.log('Real customers (matching Customer Dashboard):', realCustomers.length);
       
       setCustomers(realCustomers);
+
+      // Fetch admin users for agent analytics
+      const { data: usersData } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .eq('is_active', true);
+      setAdminUsers(usersData || []);
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
@@ -449,7 +465,56 @@ export const AnalyticsTab = () => {
     return months;
   }, [customers, selectedMonth]);
 
-  const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+  const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+  // Agent performance analytics
+  const agentPerformance = useMemo(() => {
+    const agentMap = new Map<string, { sales: number; revenue: number; cancelled: number; refunded: number }>();
+
+    filteredCustomers.forEach(c => {
+      const agentId = c.assigned_to;
+      if (!agentId) return; // skip unassigned
+      if (!agentMap.has(agentId)) agentMap.set(agentId, { sales: 0, revenue: 0, cancelled: 0, refunded: 0 });
+      const entry = agentMap.get(agentId)!;
+      entry.sales++;
+      if (isRevenueLost(c.status)) {
+        if (isRefunded(c.status)) entry.refunded++;
+        else entry.cancelled++;
+      } else {
+        entry.revenue += Number(c.final_amount) || 0;
+      }
+    });
+
+    return Array.from(agentMap.entries())
+      .map(([agentId, stats]) => {
+        const user = adminUsers.find(u => u.id === agentId);
+        const name = user
+          ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email
+          : 'Unknown Agent';
+        const activeSales = stats.sales - stats.cancelled - stats.refunded;
+        return {
+          agentId,
+          name,
+          sales: stats.sales,
+          activeSales,
+          revenue: Math.round(stats.revenue * 100) / 100,
+          aov: activeSales > 0 ? Math.round(stats.revenue / activeSales) : 0,
+          cancelled: stats.cancelled,
+          refunded: stats.refunded,
+        };
+      })
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [filteredCustomers, adminUsers]);
+
+  // Chart data for agent performance
+  const agentChartData = useMemo(() =>
+    agentPerformance.map(a => ({
+      name: a.name.split(' ')[0] || a.name, // first name for chart
+      fullName: a.name,
+      sales: a.activeSales,
+      revenue: a.revenue,
+    })),
+  [agentPerformance]);
 
   if (loading) {
     return (
@@ -825,6 +890,93 @@ export const AnalyticsTab = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Agent Performance */}
+      {agentPerformance.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Agent Sales Performance
+            </CardTitle>
+            <CardDescription>Sales breakdown by agent {effectiveDateRange?.from ? '(filtered period)' : '(all time)'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Agent revenue bar chart */}
+              <ResponsiveContainer width="100%" height={Math.max(250, agentChartData.length * 40)}>
+                <BarChart data={agentChartData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tickFormatter={(v) => `£${v.toLocaleString()}`} tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    formatter={(value: number, name: string) =>
+                      name === 'revenue' ? [`£${value.toLocaleString('en-GB')}`, 'Revenue'] : [value, 'Sales']
+                    }
+                    labelFormatter={(label) => {
+                      const agent = agentChartData.find(a => a.name === label);
+                      return agent?.fullName || label;
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="#10b981" name="Revenue (£)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="sales" fill="#3b82f6" name="Sales" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Agent details table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2 font-medium">Agent</th>
+                      <th className="text-right py-2 px-2 font-medium">Sales</th>
+                      <th className="text-right py-2 px-2 font-medium">Revenue</th>
+                      <th className="text-right py-2 px-2 font-medium">AOV</th>
+                      <th className="text-right py-2 px-2 font-medium">Cancelled</th>
+                      <th className="text-right py-2 px-2 font-medium">Refunded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agentPerformance.map((agent, i) => (
+                      <tr key={agent.agentId} className="border-b hover:bg-muted/50">
+                        <td className="py-2 px-2 font-medium">
+                          <div className="flex items-center gap-2">
+                            {i === 0 && <Badge className="text-[10px] bg-amber-100 text-amber-700 border-amber-200">🏆</Badge>}
+                            {agent.name}
+                          </div>
+                        </td>
+                        <td className="py-2 px-2 text-right">{agent.activeSales}</td>
+                        <td className="py-2 px-2 text-right font-semibold text-green-600">
+                          £{agent.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="py-2 px-2 text-right">£{agent.aov}</td>
+                        <td className="py-2 px-2 text-right text-muted-foreground">{agent.cancelled || '-'}</td>
+                        <td className="py-2 px-2 text-right">
+                          {agent.refunded > 0 ? (
+                            <Badge variant="destructive" className="text-xs">{agent.refunded}</Badge>
+                          ) : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Totals row */}
+                    <tr className="border-t-2 font-semibold">
+                      <td className="py-2 px-2">Total (Assigned)</td>
+                      <td className="py-2 px-2 text-right">{agentPerformance.reduce((s, a) => s + a.activeSales, 0)}</td>
+                      <td className="py-2 px-2 text-right text-green-600">
+                        £{agentPerformance.reduce((s, a) => s + a.revenue, 0).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </td>
+                      <td className="py-2 px-2 text-right">-</td>
+                      <td className="py-2 px-2 text-right text-muted-foreground">{agentPerformance.reduce((s, a) => s + a.cancelled, 0)}</td>
+                      <td className="py-2 px-2 text-right">{agentPerformance.reduce((s, a) => s + a.refunded, 0)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Activity */}
       <Card>
