@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
-export type TimePeriod = 'today' | 'week' | 'month' | 'all';
+export type TimePeriod = 'today' | 'week' | 'month' | 'all' | 'custom';
 
 export interface AgentScore {
   id: string;
@@ -26,6 +27,8 @@ export interface ScoreboardData {
   loading: boolean;
   period: TimePeriod;
   setPeriod: (p: TimePeriod) => void;
+  dateRange: DateRange | undefined;
+  setDateRange: (r: DateRange | undefined) => void;
   refresh: () => void;
   currentUserId: string | null;
   currentAdminUserId: string | null;
@@ -35,12 +38,35 @@ export interface ScoreboardData {
 export const useScoreboardData = (): ScoreboardData => {
   const [agents, setAgents] = useState<AgentScore[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<TimePeriod>('month');
+  const [period, setPeriodInternal] = useState<TimePeriod>('month');
+  const [dateRange, setDateRangeInternal] = useState<DateRange | undefined>(undefined);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
-  const getDateRange = useCallback((p: TimePeriod) => {
+  // When a preset period is selected, clear custom date range
+  const setPeriod = useCallback((p: TimePeriod) => {
+    setPeriodInternal(p);
+    if (p !== 'custom') setDateRangeInternal(undefined);
+  }, []);
+
+  // When a custom date range is selected, switch to custom period
+  const setDateRange = useCallback((r: DateRange | undefined) => {
+    setDateRangeInternal(r);
+    if (r?.from) {
+      setPeriodInternal('custom');
+    } else {
+      setPeriodInternal('month');
+    }
+  }, []);
+
+  const getDateRange = useCallback((p: TimePeriod, customRange?: DateRange) => {
+    if (p === 'custom' && customRange?.from) {
+      return {
+        start: startOfDay(customRange.from),
+        end: customRange.to ? endOfDay(customRange.to) : endOfDay(customRange.from),
+      };
+    }
     const now = new Date();
     switch (p) {
       case 'today':
@@ -50,6 +76,7 @@ export const useScoreboardData = (): ScoreboardData => {
       case 'month':
         return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'all':
+      default:
         return { start: new Date('2020-01-01'), end: now };
     }
   }, []);
@@ -60,7 +87,6 @@ export const useScoreboardData = (): ScoreboardData => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
 
-      // Get admin user ID and role for current user
       let myAdminId: string | null = null;
       if (user) {
         const { data: adminUser } = await supabase
@@ -73,7 +99,6 @@ export const useScoreboardData = (): ScoreboardData => {
         setCurrentUserRole(adminUser?.role || null);
       }
 
-      // Only fetch sales and sales_lead users — NOT admin/super_admin
       const { data: adminUsers } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role')
@@ -86,11 +111,9 @@ export const useScoreboardData = (): ScoreboardData => {
         return;
       }
 
-      const { start, end } = getDateRange(period);
+      const { start, end } = getDateRange(period, dateRange);
       const agentIds = adminUsers.map(u => u.id);
 
-      // Fetch customers assigned to these agents within the period
-      // Using created_at as the sale date, filtering by status = 'active' (paid)
       let customerQuery = supabase
         .from('customers')
         .select('id, assigned_to, final_amount, created_at, status')
@@ -106,7 +129,6 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: customers } = await customerQuery;
 
-      // Fetch leads assigned in period for conversion rate
       let leadsQuery = supabase
         .from('sales_leads')
         .select('id, assigned_to, is_paid, status, created_at')
@@ -120,7 +142,7 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: leads } = await leadsQuery;
 
-      // Fetch monthly targets for current month
+      // Fetch monthly targets
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());
       const { data: targets } = await supabase
@@ -136,7 +158,6 @@ export const useScoreboardData = (): ScoreboardData => {
         targetMap.set(t.admin_user_id, t.target_amount);
       });
 
-      // Build agent scores
       const scores: AgentScore[] = adminUsers.map(u => {
         const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
@@ -167,7 +188,6 @@ export const useScoreboardData = (): ScoreboardData => {
         };
       });
 
-      // Sort by revenue, then by sales count
       scores.sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount);
       scores.forEach((s, i) => { s.rank = i + 1; });
 
@@ -177,11 +197,10 @@ export const useScoreboardData = (): ScoreboardData => {
     } finally {
       setLoading(false);
     }
-  }, [period, getDateRange]);
+  }, [period, dateRange, getDateRange]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('scoreboard-realtime')
@@ -192,5 +211,5 @@ export const useScoreboardData = (): ScoreboardData => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
 
-  return { agents, loading, period, setPeriod, refresh: fetchData, currentUserId, currentAdminUserId, currentUserRole };
+  return { agents, loading, period, setPeriod, dateRange, setDateRange, refresh: fetchData, currentUserId, currentAdminUserId, currentUserRole };
 };
