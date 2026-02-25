@@ -95,7 +95,7 @@ export const useScoreboardData = (): ScoreboardData => {
         .from('customers')
         .select('id, assigned_to, final_amount, created_at, status')
         .eq('is_deleted', false)
-        .eq('status', 'active')
+        .ilike('status', 'active')
         .in('assigned_to', agentIds);
 
       if (period !== 'all') {
