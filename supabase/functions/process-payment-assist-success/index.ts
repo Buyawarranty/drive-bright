@@ -122,7 +122,7 @@ serve(async (req) => {
       discount_code: transaction.discount_code || null,
       claim_limit: transaction.claim_limit || 1250,
       voluntary_excess: protectionAddOns.voluntaryExcess || 0,
-      labour_rate: protectionAddOns.labourRate || 50,
+      labour_rate: protectionAddOns.labourRate || 70,
       // Protection add-ons
       tyre_cover: protectionAddOns.tyre || false,
       wear_tear: protectionAddOns.wearAndTear || protectionAddOns.wearTear || false,

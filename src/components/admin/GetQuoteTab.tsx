@@ -780,6 +780,35 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
       const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
 
+      // CRITICAL: Sync the live_quotes record with current form values
+      // This ensures the quote link and the email always show the same details
+      const accessToken = quoteLink.split('/quote/')[1];
+      if (accessToken) {
+        console.log('🔄 Syncing live_quotes with current form values...');
+        const durationMap: Record<string, number> = { '12months': 12, '24months': 24, '36months': 36 };
+        const { error: syncError } = await supabase
+          .from('live_quotes')
+          .update({
+            excess_amount: excessAmount,
+            claim_limit: claimLimit,
+            labour_rate: labourRate,
+            boost_addon: boostAddon,
+            duration_months: durationMap[paymentType] || 12,
+            bonus_months: bonusMonths,
+            monthly_price: currentPrice.monthlyPrice,
+            upfront_price: currentPrice.payInFullPrice || Math.floor(currentPrice.monthlyPrice * 12 * 0.90),
+            customer_name: customerName,
+            customer_email: customerEmail,
+          })
+          .eq('access_token', accessToken);
+        
+        if (syncError) {
+          console.error('⚠️ Failed to sync live_quotes:', syncError);
+        } else {
+          console.log('✅ live_quotes synced with current form values');
+        }
+      }
+
       // Build recipients - customer + admin copy + additional emails
       const allCcEmails = [
         ...(adminEmail && adminEmail !== customerEmail ? [adminEmail] : []),

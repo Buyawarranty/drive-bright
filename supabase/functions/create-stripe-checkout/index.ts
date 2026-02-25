@@ -27,7 +27,7 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { planId, vehicleData, paymentType, voluntaryExcess = 0, customerData, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths = 0, labourRate = 50, startDate, trackingData } = body;
+    const { planId, vehicleData, paymentType, voluntaryExcess = 0, customerData, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths = 0, labourRate = 70, startDate, trackingData } = body;
     logStep("Request data", { planId, vehicleData, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths, labourRate, startDate, trackingData });
 
     // Validate vehicle age (must be 15 years or newer)
@@ -293,7 +293,7 @@ serve(async (req) => {
       vehicle_reg: vehicleData?.regNumber || customerData?.vehicle_reg || '',
       mileage: vehicleData?.mileage || customerData?.vehicle_mileage || '',
       claim_limit: (claimLimit || 1250).toString(),
-      labour_rate: (labourRate || 50).toString(),
+      labour_rate: (labourRate || 70).toString(),
       excess: (voluntaryExcess || 100).toString(),
       duration: paymentType,
       monthly_price: (paymentType === 'monthly' || paymentType === '12months' ? totalAmount : totalAmount / 12).toFixed(2),
@@ -361,7 +361,7 @@ serve(async (req) => {
         addon_mot_repair: protectionAddOns?.motRepair ? 'true' : 'false',
         addon_lost_key: protectionAddOns?.lostKey ? 'true' : 'false',
         addon_consequential: protectionAddOns?.consequential ? 'true' : 'false',
-        labour_rate: (labourRate || 50).toString(),
+        labour_rate: (labourRate || 70).toString(),
         start_date: startDate || '',
         // Google Ads tracking data for server-side conversion
         gclid: trackingData?.gclid || '',

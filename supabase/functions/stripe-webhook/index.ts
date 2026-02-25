@@ -264,7 +264,7 @@ serve(async (req) => {
 
             const claimLimit = parseInt(fullSession.metadata?.claim_limit || '1250');
             const seasonalBonusMonths = parseInt(fullSession.metadata?.seasonal_bonus_months || '0');
-            const labourRate = parseInt(fullSession.metadata?.labour_rate || '50');
+            const labourRate = parseInt(fullSession.metadata?.labour_rate || '70');
             const startDate = fullSession.metadata?.start_date || null;
             
             logStep("Extracted add-ons, claim limit, seasonal bonus, labour rate, and start date", { 
@@ -414,7 +414,7 @@ serve(async (req) => {
         };
 
         const claimLimit = parseInt(metadata.claim_limit || '1250');
-        const labourRate = parseInt(metadata.labour_rate || '50');
+        const labourRate = parseInt(metadata.labour_rate || '70');
         const seasonalBonusMonths = parseInt(metadata.seasonal_bonus_months || '0');
         const startDate = metadata.start_date || null;
         
