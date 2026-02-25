@@ -40,7 +40,7 @@ const ADMIN_TABS = [
   { id: 'get-quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders' },
   { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', hasGranular: true },
   { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', hasGranular: true },
-  { id: 'selling-tips', label: 'Tips & Feedback', description: 'Selling tips and customer feedback' },
+  { id: 'selling-tips', label: 'Sales Script', description: 'Sales script, tips and customer feedback' },
   { id: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans' },
   { id: 'bulk-pricing', label: 'Bulk Pricing', description: 'Update pricing using CSV files' },
   { id: 'special-plans', label: 'Special Vehicle Plans', description: 'Manage EV, PHEV, and Motorbike plans' },

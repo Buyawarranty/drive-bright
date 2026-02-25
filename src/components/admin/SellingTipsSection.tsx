@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { SalesScriptCard } from './SalesScriptCard';
 
 interface SellingTip {
   id: string;
@@ -279,13 +280,16 @@ export const SellingTipsSection: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Sales Script - Always visible at the top */}
+      <SalesScriptCard />
+
       {/* Header with Quick Add */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Lightbulb className="h-6 w-6 text-yellow-500" />
-            Tips & Feedback
+            Tips & feedback
           </h2>
           <p className="text-muted-foreground text-sm">
             Sales techniques that work and customer suggestions to improve our service
