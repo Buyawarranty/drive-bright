@@ -316,6 +316,7 @@ export const CustomersTab = () => {
   const [filterByTag, setFilterByTag] = useState('all');
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
+  const [filterByAgent, setFilterByAgent] = useState('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -482,7 +483,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, dateRange, tagAssignmentsCache, refundedCustomerIds]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -593,6 +594,15 @@ export const CustomersTab = () => {
       });
     }
 
+    // Apply agent filter
+    if (filterByAgent !== 'all') {
+      if (filterByAgent === 'unassigned') {
+        filtered = filtered.filter(customer => !customer.assigned_to);
+      } else {
+        filtered = filtered.filter(customer => customer.assigned_to === filterByAgent);
+      }
+    }
+
     // Apply warranty period filter
     if (filterByWarrantyPeriod !== 'all') {
       const targetMonths = parseInt(filterByWarrantyPeriod, 10);
@@ -640,7 +650,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, dateRange, tagAssignmentsCache, refundedCustomerIds]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds]);
 
   const getCurrentUser = async () => {
     try {
@@ -2565,7 +2575,30 @@ export const CustomersTab = () => {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+               </div>
+
+              {/* Filter by Agent - only for admin, super_admin, sales_lead */}
+              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead') && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Sales by Agent</Label>
+                  <Select value={filterByAgent} onValueChange={setFilterByAgent}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Agents</SelectItem>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {adminUsers
+                        .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
+                        .map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             {/* Results Summary and Bulk Actions */}
