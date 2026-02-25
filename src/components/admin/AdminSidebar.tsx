@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -242,6 +242,12 @@ const defaultTabs: Tab[] = [
     description: 'Track work hours, deals and commissions'
   },
   {
+    id: 'sales-scoreboard',
+    label: 'Sales Scoreboard',
+    icon: Trophy,
+    description: 'Leaderboard, awards and sales competition'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
@@ -280,7 +286,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     
     if (userRole === 'sales_lead') {
       // Sales leads: manage team, assign leads, view customers, quotes, tips, account
-      const salesLeadTabIds = ['new-leads', 'get-quote', 'customers', 'selling-tips', 'account'];
+      const salesLeadTabIds = ['new-leads', 'get-quote', 'customers', 'selling-tips', 'sales-scoreboard', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
@@ -303,7 +309,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       
       // Fallback: restricted view for sales without custom permissions
       // Only their dashboard, quotes, and tips
-      const salesTabIds = ['new-leads', 'get-quote', 'selling-tips', 'account'];
+      const salesTabIds = ['new-leads', 'get-quote', 'selling-tips', 'sales-scoreboard', 'account'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
     
