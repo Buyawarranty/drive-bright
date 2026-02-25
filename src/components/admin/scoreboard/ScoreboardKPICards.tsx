@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, PoundSterling, Target, TrendingUp, Users, Zap, Flame } from 'lucide-react';
+import { Trophy, PoundSterling, Target, TrendingUp, Flame, CheckCircle2, Clock } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
 
 interface Props {
@@ -10,30 +10,25 @@ interface Props {
   currentAdminUserId: string | null;
 }
 
-const PERIOD_LABELS: Record<TimePeriod, string> = {
-  today: 'Today',
-  week: 'This Week',
-  month: 'This Month',
-  all: 'All Time',
-};
-
 export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdminUserId }) => {
-  const totalSales = agents.reduce((s, a) => s + a.salesCount, 0);
   const totalRevenue = agents.reduce((s, a) => s + a.revenue, 0);
   const topAgent = agents[0];
   const myAgent = agents.find(a => a.id === currentAdminUserId);
-  const avgConversion = agents.length > 0
-    ? agents.reduce((s, a) => s + a.conversionRate, 0) / agents.length
-    : 0;
 
-  // My target progress
+  // My target progress (deals converted from leads)
   const myTarget = myAgent?.monthlyTarget || null;
-  const myProgress = myTarget ? Math.min((myAgent!.salesCount / myTarget) * 100, 100) : null;
-  const remaining = myTarget ? Math.max(myTarget - (myAgent?.salesCount || 0), 0) : null;
+  const myConverted = myAgent?.leadsConverted || 0;
+  const myRemaining = myTarget ? Math.max(myTarget - myConverted, 0) : null;
+  const myProgress = myTarget ? Math.min((myConverted / myTarget) * 100, 100) : null;
+
+  // My conversion rate: leads converted / leads assigned
+  const myConversionRate = myAgent
+    ? (myAgent.leadsAssigned > 0 ? (myAgent.leadsConverted / myAgent.leadsAssigned) * 100 : 0)
+    : 0;
 
   return (
     <div className="space-y-3">
-      {/* Target progress banner for the agent (month view only) */}
+      {/* Target progress banner (month view, when target exists) */}
       {period === 'month' && myAgent && myTarget && (
         <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
           <CardContent className="p-4">
@@ -43,12 +38,12 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
                   <Target className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Your monthly target</p>
+                  <p className="text-sm font-medium text-muted-foreground">Your Monthly Lead Conversion Target</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">{myAgent.salesCount}</span>
+                    <span className="text-2xl font-bold">{myConverted}</span>
                     <span className="text-muted-foreground text-lg">/</span>
                     <span className="text-2xl font-bold text-muted-foreground">{myTarget}</span>
-                    <span className="text-sm text-muted-foreground">deals</span>
+                    <span className="text-sm text-muted-foreground">leads converted</span>
                   </div>
                 </div>
               </div>
@@ -60,7 +55,7 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
                     ) : (
                       <span className="flex items-center gap-1">
                         <Flame className="h-3 w-3 text-orange-500" />
-                        {remaining} more to go
+                        {myRemaining} more to go
                       </span>
                     )}
                   </span>
@@ -73,68 +68,73 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
         </Card>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      {/* KPI Cards — focused on what matters */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+        {/* 1. Target (Goal) */}
         <Card className="border bg-blue-50 border-blue-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-blue-600">
               <Target className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">Total Sales ({PERIOD_LABELS[period]})</span>
+              <span className="text-xs font-medium truncate">My Target</span>
             </div>
-            <div className="text-xl font-bold">{totalSales}</div>
+            <div className="text-xl font-bold">{myTarget ?? '—'}</div>
+            <div className="text-xs text-muted-foreground mt-1">leads to convert</div>
           </CardContent>
         </Card>
 
+        {/* 2. Converted (Progress) */}
         <Card className="border bg-emerald-50 border-emerald-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-emerald-600">
+              <CheckCircle2 className="h-5 w-5" />
+              <span className="text-xs font-medium truncate">Converted</span>
+            </div>
+            <div className="text-xl font-bold">{myConverted}</div>
+            <div className="text-xs text-muted-foreground mt-1">leads closed</div>
+          </CardContent>
+        </Card>
+
+        {/* 3. Remaining (Gap) */}
+        <Card className="border bg-orange-50 border-orange-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2 text-orange-600">
+              <Clock className="h-5 w-5" />
+              <span className="text-xs font-medium truncate">Remaining</span>
+            </div>
+            <div className="text-xl font-bold">{myRemaining !== null ? myRemaining : '—'}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {myRemaining !== null && myRemaining === 0 ? '🎉 All done!' : 'to hit target'}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 4. Team Revenue */}
+        <Card className="border bg-yellow-50 border-yellow-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2 text-yellow-600">
               <PoundSterling className="h-5 w-5" />
               <span className="text-xs font-medium truncate">Team Revenue</span>
             </div>
             <div className="text-xl font-bold">£{totalRevenue.toLocaleString()}</div>
+            {topAgent && (
+              <div className="text-xs text-muted-foreground mt-1 truncate">
+                🏆 {topAgent.name} · £{topAgent.revenue.toLocaleString()}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="border bg-yellow-50 border-yellow-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2 text-yellow-600">
-              <Trophy className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">Top Performer</span>
-            </div>
-            <div className="text-xl font-bold truncate">{topAgent?.name || '—'}</div>
-            {topAgent && <div className="text-xs text-muted-foreground mt-1 truncate">£{topAgent.revenue.toLocaleString()} · {topAgent.salesCount} sales</div>}
-          </CardContent>
-        </Card>
-
-        <Card className="border bg-purple-50 border-purple-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2 text-purple-600">
-              <Zap className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">My Rank</span>
-            </div>
-            <div className="text-xl font-bold">{myAgent ? `#${myAgent.rank}` : '—'}</div>
-            {myAgent && <div className="text-xs text-muted-foreground mt-1 truncate">{myAgent.salesCount} sales · £{myAgent.revenue.toLocaleString()}</div>}
-          </CardContent>
-        </Card>
-
-        <Card className="border bg-orange-50 border-orange-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2 text-orange-600">
-              <Users className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">Active Agents</span>
-            </div>
-            <div className="text-xl font-bold">{agents.filter(a => a.salesCount > 0).length}</div>
-            <div className="text-xs text-muted-foreground mt-1">of {agents.length} total</div>
-          </CardContent>
-        </Card>
-
+        {/* 5. Conversion Rate */}
         <Card className="border bg-teal-50 border-teal-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-teal-600">
               <TrendingUp className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">Avg Conversion</span>
+              <span className="text-xs font-medium truncate">My Conversion</span>
             </div>
-            <div className="text-xl font-bold">{avgConversion.toFixed(1)}%</div>
+            <div className="text-xl font-bold">{myConversionRate.toFixed(1)}%</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {myAgent ? `${myAgent.leadsConverted} of ${myAgent.leadsAssigned} leads` : '—'}
+            </div>
           </CardContent>
         </Card>
       </div>
