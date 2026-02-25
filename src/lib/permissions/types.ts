@@ -80,6 +80,7 @@ export const ADMIN_TAB_DEFINITIONS = [
   { id: 'document-mapping', key: 'document_mapping', label: 'Document Mapping', description: 'Manage plan to document mappings', category: 'Settings' },
   { id: 'blog-writing', key: 'blog_writing', label: 'Blog Writing', description: 'Create and manage blog content with AI tools', category: 'Content' },
   { id: 'landing-pages', key: 'landing_pages', label: 'Landing Pages', description: 'Create SEO-optimised landing pages', category: 'Content' },
+  { id: 'sales-scoreboard', key: 'sales_scoreboard', label: 'Sales Scoreboard', description: 'View sales performance, rankings and competitions', category: 'Sales' },
   { id: 'testing', key: 'testing', label: 'Testing', description: 'Test APIs and create test data', category: 'Development' },
   { id: 'account', key: 'account', label: 'Account Settings', description: 'Manage your account and password', category: 'Settings' },
 ] as const;
