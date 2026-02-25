@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Award, BarChart3 } from 'lucide-react';
+import { RefreshCw, Trophy, User, Award, BarChart3, FileText } from 'lucide-react';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
 import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
+import { CommissionTimesheetForm } from './CommissionTimesheetForm';
+import { supabase } from '@/integrations/supabase/client';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 const PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: '📅 Today' },
@@ -19,12 +22,35 @@ const PERIODS: { value: TimePeriod; label: string }[] = [
 export const SalesScoreboardTab: React.FC = () => {
   const { agents, loading, period, setPeriod, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [myDeals, setMyDeals] = useState<{ name: string; registration_plate: string | null; final_amount: number; created_at: string }[]>([]);
 
   const selectedAgent = selectedAgentId
     ? agents.find(a => a.id === selectedAgentId) || null
     : agents.find(a => a.id === currentAdminUserId) || null;
 
   const canManageTargets = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_lead';
+
+  // Fetch current user's deals for commission form
+  useEffect(() => {
+    const myAgent = agents.find(a => a.id === currentAdminUserId);
+    if (!myAgent) return;
+    const monthStart = startOfMonth(new Date());
+    const monthEnd = endOfMonth(new Date());
+    
+    const fetchDeals = async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('name, registration_plate, final_amount, created_at')
+        .eq('is_deleted', false)
+        .ilike('status', 'active')
+        .eq('assigned_to', myAgent.id)
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', monthEnd.toISOString())
+        .order('created_at', { ascending: false });
+      setMyDeals((data || []) as any);
+    };
+    fetchDeals();
+  }, [agents, currentAdminUserId]);
 
   if (loading) {
     return (
@@ -86,6 +112,10 @@ export const SalesScoreboardTab: React.FC = () => {
             <Award className="h-4 w-4" />
             Awards
           </TabsTrigger>
+          <TabsTrigger value="commission" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Commission
+          </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2">
               🎯 Set Targets
@@ -118,6 +148,13 @@ export const SalesScoreboardTab: React.FC = () => {
 
         <TabsContent value="awards">
           <ScoreboardAwards agents={agents} currentAdminUserId={currentAdminUserId} />
+        </TabsContent>
+
+        <TabsContent value="commission">
+          <CommissionTimesheetForm
+            agent={agents.find(a => a.id === currentAdminUserId) || null}
+            customerDeals={myDeals}
+          />
         </TabsContent>
 
         {canManageTargets && (

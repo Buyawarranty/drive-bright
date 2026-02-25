@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, TrendingUp, Target, Flame, Star, BarChart3, Calendar } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Trophy, TrendingUp, Target, Flame, Star, BarChart3, Calendar, PoundSterling, XCircle, Car, ChevronDown, ChevronUp } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
 import { supabase } from '@/integrations/supabase/client';
-import { subDays, format } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
@@ -21,18 +22,35 @@ interface DailySales {
   revenue: number;
 }
 
+interface CustomerDeal {
+  id: string;
+  name: string;
+  registration_plate: string | null;
+  final_amount: number;
+  created_at: string;
+  status: string;
+}
+
 export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
+  const [customerDeals, setCustomerDeals] = useState<CustomerDeal[]>([]);
+  const [cancelledCount, setCancelledCount] = useState(0);
+  const [cancelledRevenue, setCancelledRevenue] = useState(0);
+  const [regPlatesOpen, setRegPlatesOpen] = useState(false);
 
   useEffect(() => {
     if (!agent) return;
+
+    const monthStart = startOfMonth(new Date());
+    const monthEnd = endOfMonth(new Date());
+
     const fetchDailyTrend = async () => {
       const startDate = subDays(new Date(), 13);
       const { data: customers } = await supabase
         .from('customers')
         .select('created_at, final_amount')
         .eq('is_deleted', false)
-        .eq('status', 'active')
+        .ilike('status', 'active')
         .eq('assigned_to', agent.id)
         .gte('created_at', startDate.toISOString());
 
@@ -57,10 +75,42 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
         label: format(new Date(date), 'dd MMM'),
         ...data,
       }));
-
       setDailySales(result);
     };
+
+    // Fetch customer deals for this month (reg plates + details)
+    const fetchCustomerDeals = async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('id, name, registration_plate, final_amount, created_at, status')
+        .eq('is_deleted', false)
+        .ilike('status', 'active')
+        .eq('assigned_to', agent.id)
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', monthEnd.toISOString())
+        .order('created_at', { ascending: false });
+
+      setCustomerDeals((data || []) as CustomerDeal[]);
+    };
+
+    // Fetch cancelled / refunded warranties this month
+    const fetchCancelled = async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('id, final_amount')
+        .eq('is_deleted', false)
+        .eq('assigned_to', agent.id)
+        .or('status.ilike.cancelled,status.ilike.refunded,status.ilike.Cancelled,status.ilike.Refunded')
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', monthEnd.toISOString());
+
+      setCancelledCount((data || []).length);
+      setCancelledRevenue((data || []).reduce((s, c) => s + (c.final_amount || 0), 0));
+    };
+
     fetchDailyTrend();
+    fetchCustomerDeals();
+    fetchCancelled();
   }, [agent]);
 
   if (!agent) {
@@ -107,15 +157,17 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Stats Grid — 6 cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Sales', value: agent.salesCount, icon: <Target className="h-4 w-4" />, color: 'text-blue-600' },
-          { label: 'Revenue', value: `£${agent.revenue.toLocaleString()}`, icon: <TrendingUp className="h-4 w-4" />, color: 'text-emerald-600' },
-          { label: 'Conversion', value: `${agent.conversionRate.toFixed(1)}%`, icon: <BarChart3 className="h-4 w-4" />, color: 'text-purple-600' },
-          { label: 'AOV', value: `£${agent.avgOrderValue.toFixed(0)}`, icon: <Star className="h-4 w-4" />, color: 'text-amber-600' },
+          { label: 'Sales', value: agent.salesCount, icon: <Target className="h-4 w-4" />, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
+          { label: 'Revenue', value: `£${agent.revenue.toLocaleString()}`, icon: <PoundSterling className="h-4 w-4" />, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
+          { label: 'Avg Sale', value: `£${agent.avgOrderValue.toFixed(0)}`, icon: <BarChart3 className="h-4 w-4" />, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-200' },
+          { label: 'Conversion', value: `${agent.conversionRate.toFixed(1)}%`, icon: <TrendingUp className="h-4 w-4" />, color: 'text-purple-600', bg: 'bg-purple-50 border-purple-200' },
+          { label: 'AOV', value: `£${agent.avgOrderValue.toFixed(0)}`, icon: <Star className="h-4 w-4" />, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
+          { label: 'Cancelled', value: cancelledCount, icon: <XCircle className="h-4 w-4" />, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
         ].map(s => (
-          <Card key={s.label}>
+          <Card key={s.label} className={`border ${s.bg}`}>
             <CardContent className="p-3 text-center">
               <div className={`flex items-center justify-center gap-1 mb-1 ${s.color}`}>{s.icon}<span className="text-xs">{s.label}</span></div>
               <div className="text-lg font-bold">{s.value}</div>
@@ -123,6 +175,23 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
           </Card>
         ))}
       </div>
+
+      {/* Cancelled / Refunded Summary */}
+      {cancelledCount > 0 && (
+        <Card className="border border-red-200 bg-red-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <XCircle className="h-5 w-5 text-red-500" />
+              <div>
+                <p className="text-sm font-medium text-red-700">
+                  {cancelledCount} cancelled/refunded {cancelledCount === 1 ? 'warranty' : 'warranties'} this month
+                </p>
+                <p className="text-xs text-red-500">Lost revenue: £{cancelledRevenue.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Monthly Target Progress */}
       {period === 'month' && monthlyTarget > 0 && (
@@ -158,6 +227,49 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Customer Reg Plates — Collapsible */}
+      <Collapsible open={regPlatesOpen} onOpenChange={setRegPlatesOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors pb-2">
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Car className="h-4 w-4" />
+                  My Customers &amp; Reg Plates ({customerDeals.length})
+                </span>
+                {regPlatesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              {customerDeals.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No deals this month yet.</p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto divide-y">
+                  {customerDeals.map(deal => (
+                    <div key={deal.id} className="flex items-center justify-between py-2 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{deal.name}</p>
+                        <p className="text-xs text-muted-foreground">{format(new Date(deal.created_at), 'dd MMM yyyy')}</p>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        {deal.registration_plate && (
+                          <Badge variant="outline" className="font-mono text-xs bg-yellow-50 border-yellow-300 text-yellow-800">
+                            {deal.registration_plate}
+                          </Badge>
+                        )}
+                        <span className="font-semibold text-emerald-600">£{(deal.final_amount || 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Sales Trend Chart */}
       <Card>
