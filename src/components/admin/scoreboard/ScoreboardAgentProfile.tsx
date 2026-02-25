@@ -1,13 +1,13 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, TrendingUp, Target, Flame, Star, BarChart3, Calendar } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, format } from 'date-fns';
+import { subDays, format } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface Props {
   agent: AgentScore | null;
@@ -27,15 +27,14 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
   useEffect(() => {
     if (!agent) return;
     const fetchDailyTrend = async () => {
-      // Last 14 days of sales for this agent
       const startDate = subDays(new Date(), 13);
       const { data: customers } = await supabase
         .from('customers')
-        .select('signup_date, final_amount')
+        .select('created_at, final_amount')
         .eq('is_deleted', false)
         .eq('status', 'active')
         .eq('assigned_to', agent.id)
-        .gte('signup_date', startDate.toISOString());
+        .gte('created_at', startDate.toISOString());
 
       const dayMap = new Map<string, { count: number; revenue: number }>();
       for (let i = 0; i < 14; i++) {
@@ -45,7 +44,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
       }
 
       (customers || []).forEach(c => {
-        const key = format(new Date(c.signup_date), 'yyyy-MM-dd');
+        const key = format(new Date(c.created_at), 'yyyy-MM-dd');
         const existing = dayMap.get(key);
         if (existing) {
           existing.count++;
@@ -75,8 +74,9 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
     );
   }
 
-  const monthlyTarget = 40;
-  const targetProgress = Math.min((agent.salesCount / monthlyTarget) * 100, 100);
+  const monthlyTarget = agent.monthlyTarget || 0;
+  const targetProgress = monthlyTarget > 0 ? Math.min((agent.salesCount / monthlyTarget) * 100, 100) : 0;
+  const remaining = monthlyTarget > 0 ? Math.max(monthlyTarget - agent.salesCount, 0) : 0;
 
   const chartConfig = {
     count: { label: 'Sales', color: 'hsl(var(--primary))' },
@@ -125,20 +125,36 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
       </div>
 
       {/* Monthly Target Progress */}
-      {period === 'month' && (
-        <Card>
+      {period === 'month' && monthlyTarget > 0 && (
+        <Card className="border-2 border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-500" />
-                Monthly Target Progress
+                Monthly target
               </span>
-              <span className="text-sm font-bold">{agent.salesCount}/{monthlyTarget}</span>
+              <span className="text-sm font-bold">{agent.salesCount} / {monthlyTarget}</span>
             </div>
             <Progress value={targetProgress} className="h-3" />
-            {targetProgress >= 100 && (
-              <Badge className="mt-2 bg-green-500 text-white">🎯 Target Reached!</Badge>
-            )}
+            <div className="mt-2 text-xs text-muted-foreground">
+              {targetProgress >= 100 ? (
+                <Badge className="bg-green-500 text-white">🎯 Target smashed!</Badge>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Flame className="h-3 w-3 text-orange-500" />
+                  {remaining} more to go — you've got this!
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {period === 'month' && monthlyTarget === 0 && (
+        <Card className="border border-dashed">
+          <CardContent className="p-4 text-center text-sm text-muted-foreground">
+            <Target className="h-5 w-5 mx-auto mb-1 opacity-40" />
+            No monthly target set yet — ask your manager to set one
           </CardContent>
         </Card>
       )}
@@ -148,7 +164,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Last 14 Days Sales
+            Last 14 days sales
           </CardTitle>
         </CardHeader>
         <CardContent>

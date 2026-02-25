@@ -7,6 +7,7 @@ import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
 import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
+import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 
 const PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: '📅 Today' },
@@ -16,12 +17,14 @@ const PERIODS: { value: TimePeriod; label: string }[] = [
 ];
 
 export const SalesScoreboardTab: React.FC = () => {
-  const { agents, loading, period, setPeriod, refresh, currentAdminUserId } = useScoreboardData();
+  const { agents, loading, period, setPeriod, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
   const selectedAgent = selectedAgentId
     ? agents.find(a => a.id === selectedAgentId) || null
     : agents.find(a => a.id === currentAdminUserId) || null;
+
+  const canManageTargets = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_lead';
 
   if (loading) {
     return (
@@ -83,6 +86,11 @@ export const SalesScoreboardTab: React.FC = () => {
             <Award className="h-4 w-4" />
             Awards
           </TabsTrigger>
+          {canManageTargets && (
+            <TabsTrigger value="targets" className="gap-2">
+              🎯 Set Targets
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="leaderboard">
@@ -90,7 +98,6 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="profile">
-          {/* Agent selector for admins */}
           {agents.length > 1 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {agents.map(a => (
@@ -112,6 +119,12 @@ export const SalesScoreboardTab: React.FC = () => {
         <TabsContent value="awards">
           <ScoreboardAwards agents={agents} currentAdminUserId={currentAdminUserId} />
         </TabsContent>
+
+        {canManageTargets && (
+          <TabsContent value="targets">
+            <ScoreboardTargetManager agents={agents} onTargetSaved={refresh} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
