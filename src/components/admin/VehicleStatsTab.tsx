@@ -4,8 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { Car, TrendingUp, TrendingDown, Filter, Fuel, Calendar, Hash, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Car, TrendingUp, TrendingDown, Filter, Fuel, Calendar, Hash, AlertTriangle, ChevronDown, ChevronUp, Truck } from 'lucide-react';
 import { normaliseMake, normaliseModelFamily } from './claims/vehicleNormalisation';
+import { classifyVehicleType, VehicleBodyType } from './claims/vehicleTypeClassification';
 import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ export const VehicleStatsTab: React.FC = () => {
   const [vehicleMap, setVehicleMap] = useState<Map<string, VehicleLookup>>(new Map());
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [showOthers, setShowOthers] = useState(false);
   const [expandedMakes, setExpandedMakes] = useState<Set<string>>(new Set());
@@ -86,11 +88,17 @@ export const VehicleStatsTab: React.FC = () => {
     return () => clearTimeout(timeout);
   }, []);
 
-  // Filter by status + date range
+  // Filter by status + date range + vehicle type
   const filtered = useMemo(() => {
     let result = data;
     if (statusFilter !== 'all') {
       result = result.filter(d => d.status?.toLowerCase() === statusFilter.toLowerCase());
+    }
+    if (vehicleTypeFilter !== 'all') {
+      result = result.filter(d => {
+        const vType = classifyVehicleType(d.vehicle_make, d.vehicle_model, d.vehicle_fuel_type);
+        return vType === vehicleTypeFilter;
+      });
     }
     if (dateRange?.from) {
       const from = startOfDay(dateRange.from);
@@ -101,7 +109,7 @@ export const VehicleStatsTab: React.FC = () => {
       });
     }
     return result;
-  }, [data, statusFilter, dateRange]);
+  }, [data, statusFilter, vehicleTypeFilter, dateRange]);
 
   // Claims by make for reliability cross-reference
   const claimsByMake = useMemo(() => {
@@ -215,7 +223,31 @@ export const VehicleStatsTab: React.FC = () => {
       .sort((a, b) => a.year.localeCompare(b.year));
   }, [filtered]);
 
-  // Pie data — top 7 makes, "Others" expanded on demand
+  // Vehicle type stats
+  const vehicleTypeStats = useMemo(() => {
+    const map = new Map<string, { count: number; revenue: number }>();
+    filtered.forEach(c => {
+      const vType = classifyVehicleType(c.vehicle_make, c.vehicle_model, c.vehicle_fuel_type);
+      if (!map.has(vType)) map.set(vType, { count: 0, revenue: 0 });
+      const e = map.get(vType)!;
+      e.count++;
+      if (c.final_amount) e.revenue += c.final_amount;
+    });
+    return Array.from(map.entries())
+      .map(([type, d]) => ({ name: type, value: d.count, revenue: Math.round(d.revenue * 100) / 100 }))
+      .sort((a, b) => b.value - a.value);
+  }, [filtered]);
+
+  // All unique vehicle types for filter dropdown
+  const allVehicleTypes = useMemo(() => {
+    const types = new Set<string>();
+    data.forEach(c => {
+      types.add(classifyVehicleType(c.vehicle_make, c.vehicle_model, c.vehicle_fuel_type));
+    });
+    return Array.from(types).sort();
+  }, [data]);
+
+
   const topMakes = makeStats.slice(0, 7);
   const otherMakes = makeStats.slice(7);
   const pieData = useMemo(() => {
@@ -266,6 +298,20 @@ export const VehicleStatsTab: React.FC = () => {
                 <SelectItem value="cancelled">Cancelled</SelectItem>
                 <SelectItem value="expired">Expired</SelectItem>
                 <SelectItem value="refunded">Refunded</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Truck className="h-4 w-4 text-muted-foreground" />
+            <Select value={vehicleTypeFilter} onValueChange={setVehicleTypeFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Vehicle type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {allVehicleTypes.map(t => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -453,6 +499,42 @@ export const VehicleStatsTab: React.FC = () => {
               <Bar dataKey="revenue" fill="#3b82f6" name="Revenue (£)" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Vehicle Type Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2"><Truck className="h-4 w-4" /> Vehicle Type Breakdown</CardTitle>
+          <CardDescription>SUV, Van, Hatchback, Saloon, etc.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={vehicleTypeStats} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {vehicleTypeStats.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-1.5">
+              {vehicleTypeStats.map((t, i) => (
+                <div key={t.name} className="flex justify-between items-center text-sm px-2 py-1 hover:bg-muted/50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                    <span className="font-medium">{t.name}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Badge variant="secondary" className="text-xs">{t.value} warranties</Badge>
+                    <span className="text-muted-foreground text-xs">£{t.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
