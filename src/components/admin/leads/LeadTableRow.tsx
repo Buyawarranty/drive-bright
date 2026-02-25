@@ -677,14 +677,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 size="icon"
                 className="h-6 w-6 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 onClick={() => {
-                  window.open(`mailto:${lead.email}`);
+                  if (onSendQuote) {
+                    onSendQuote();
+                  } else {
+                    window.open(`mailto:${lead.email}`);
+                  }
                   if (!lead.is_from_abandoned_cart) onLogActivity('email', 'Sent email');
                 }}
               >
                 <Send className="h-3 w-3" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Send email</TooltipContent>
+            <TooltipContent side="top" className="text-xs">{onSendQuote ? 'Send quote' : 'Send email'}</TooltipContent>
           </Tooltip>
         </div>
       </TableCell>
