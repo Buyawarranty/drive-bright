@@ -112,9 +112,13 @@ export const VehicleStatsTab: React.FC = () => {
   }, [data, statusFilter, vehicleTypeFilter, dateRange]);
 
   // Claims by make for reliability cross-reference
+  // Only count claims that have been actioned (not raw/unprocessed submissions)
+  const ACTIONABLE_CLAIM_STATUSES = new Set(['approved', 'in_progress', 'awaiting_info', 'paid', 'settled', 'under_review']);
+
   const claimsByMake = useMemo(() => {
     const map = new Map<string, { count: number; totalCost: number }>();
     claims.forEach(c => {
+      if (!ACTIONABLE_CLAIM_STATUSES.has(c.status?.toLowerCase())) return;
       const reg = c.vehicle_registration?.toUpperCase();
       const info = reg ? vehicleMap.get(reg) : null;
       const make = normaliseMake(info?.vehicle_make || '');
