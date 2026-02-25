@@ -191,7 +191,7 @@ serve(async (req) => {
         mileage: quote.vehicle_mileage || '',
         claim_limit: (quote.claim_limit || 1250).toString(),
         excess: (quote.excess_amount || 75).toString(),
-        labour_rate: (quote.labour_rate || 50).toString(),
+        labour_rate: (quote.labour_rate || 70).toString(),
         session_id: '{CHECKOUT_SESSION_ID}'
       });
 
@@ -231,7 +231,7 @@ serve(async (req) => {
           vehicle_mileage: quote.vehicle_mileage || '',
           claim_limit: (quote.claim_limit || 1250).toString(),
           excess_amount: (quote.excess_amount || 75).toString(),
-          labour_rate: (quote.labour_rate || 50).toString()
+          labour_rate: (quote.labour_rate || 70).toString()
         }
       });
 

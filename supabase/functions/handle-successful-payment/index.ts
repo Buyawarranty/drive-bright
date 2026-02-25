@@ -333,7 +333,7 @@ serve(async (req) => {
       claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
       warranty_reference_number: warrantyReference,
       seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
-      labour_rate: labourRate || parseInt(metadata?.labour_rate) || 50, // Store selected labour rate (default to £50/hr)
+      labour_rate: labourRate || parseInt(metadata?.labour_rate) || 70, // Store selected labour rate (default to £70/hr)
       // Payment verification flags
       is_manual_entry: false, // Automated payment flow
       payment_verified: isPaymentVerified,

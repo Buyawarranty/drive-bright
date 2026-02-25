@@ -165,7 +165,7 @@ serve(async (req) => {
         protectionAddOns,
         source: 'bumper',
         bumperOrderId,
-        labourRate: quote.labour_rate || 50,
+        labourRate: quote.labour_rate || 70,
         claimLimit: quote.claim_limit || 1250,
         voluntaryExcess: quote.excess_amount || 75
       }
@@ -296,7 +296,7 @@ function buildThankYouUrl(
   // Cover details
   params.set('claim_limit', quote.claim_limit?.toString() || '1250');
   params.set('excess', quote.excess_amount?.toString() || '75');
-  params.set('labour_rate', quote.labour_rate?.toString() || '50');
+  params.set('labour_rate', quote.labour_rate?.toString() || '70');
   
   // Add-ons
   const addons = [];

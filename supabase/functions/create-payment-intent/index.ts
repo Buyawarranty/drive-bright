@@ -184,7 +184,7 @@ serve(async (req) => {
         voluntary_excess: voluntaryExcess?.toString() ?? '0',
         final_amount: finalAmount?.toString() || totalAmount?.toString(),
         claim_limit: claimLimit?.toString() || '1250',
-        labour_rate: labourRate?.toString() || '50',
+        labour_rate: labourRate?.toString() || '70',
         seasonal_bonus_months: seasonalBonusMonths?.toString() || '0',
         start_date: startDate || '',
         
