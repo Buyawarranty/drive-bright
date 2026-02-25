@@ -9,10 +9,11 @@ import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { CommissionTimesheetForm } from './CommissionTimesheetForm';
+import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
-const PERIODS: { value: TimePeriod; label: string }[] = [
+const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: '📅 Today' },
   { value: 'week', label: '📆 This Week' },
   { value: 'month', label: '🗓️ This Month' },
@@ -20,7 +21,7 @@ const PERIODS: { value: TimePeriod; label: string }[] = [
 ];
 
 export const SalesScoreboardTab: React.FC = () => {
-  const { agents, loading, period, setPeriod, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
+  const { agents, loading, period, setPeriod, dateRange, setDateRange, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [myDeals, setMyDeals] = useState<{ name: string; registration_plate: string | null; final_amount: number; created_at: string }[]>([]);
 
@@ -79,19 +80,25 @@ export const SalesScoreboardTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Period Selector */}
-      <div className="flex flex-wrap gap-2">
-        {PERIODS.map(p => (
-          <Button
-            key={p.value}
-            variant={period === p.value ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setPeriod(p.value)}
-            className={period === p.value ? 'shadow-md' : ''}
-          >
-            {p.label}
-          </Button>
-        ))}
+      {/* Quick Period Buttons + Date Range Filter */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2">
+          {QUICK_PERIODS.map(p => (
+            <Button
+              key={p.value}
+              variant={period === p.value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPeriod(p.value)}
+              className={period === p.value ? 'shadow-md' : ''}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+        <DateRangeFilter
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+        />
       </div>
 
       {/* KPI Cards */}
