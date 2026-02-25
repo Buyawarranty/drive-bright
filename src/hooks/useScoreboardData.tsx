@@ -18,6 +18,7 @@ export interface AgentScore {
   rank: number;
   previousRank: number | null;
   trend: 'up' | 'down' | 'same' | 'new';
+  monthlyTarget: number | null;
 }
 
 export interface ScoreboardData {
@@ -28,6 +29,7 @@ export interface ScoreboardData {
   refresh: () => void;
   currentUserId: string | null;
   currentAdminUserId: string | null;
+  currentUserRole: string | null;
 }
 
 export const useScoreboardData = (): ScoreboardData => {
@@ -36,6 +38,7 @@ export const useScoreboardData = (): ScoreboardData => {
   const [period, setPeriod] = useState<TimePeriod>('month');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   const getDateRange = useCallback((p: TimePeriod) => {
     const now = new Date();
@@ -57,19 +60,20 @@ export const useScoreboardData = (): ScoreboardData => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
 
-      // Get admin user ID for current user
+      // Get admin user ID and role for current user
       let myAdminId: string | null = null;
       if (user) {
         const { data: adminUser } = await supabase
           .from('admin_users')
-          .select('id')
+          .select('id, role')
           .eq('user_id', user.id)
           .maybeSingle();
         myAdminId = adminUser?.id || null;
         setCurrentAdminUserId(myAdminId);
+        setCurrentUserRole(adminUser?.role || null);
       }
 
-      // Fetch all sales-related admin users
+      // Only fetch sales and sales_lead users — NOT admin/super_admin
       const { data: adminUsers } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role')
@@ -83,31 +87,60 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
       const { start, end } = getDateRange(period);
+      const agentIds = adminUsers.map(u => u.id);
 
-      // Fetch customers (actual paid sales) with date filtering
-      const { data: customers } = await supabase
+      // Fetch customers assigned to these agents within the period
+      // Using created_at as the sale date, filtering by status = 'active' (paid)
+      let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, signup_date, status')
+        .select('id, assigned_to, final_amount, created_at, status')
         .eq('is_deleted', false)
         .eq('status', 'active')
-        .gte('signup_date', start.toISOString())
-        .lte('signup_date', end.toISOString());
+        .in('assigned_to', agentIds);
 
-      // Fetch leads assigned in period
-      const { data: leads } = await supabase
+      if (period !== 'all') {
+        customerQuery = customerQuery
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+      }
+
+      const { data: customers } = await customerQuery;
+
+      // Fetch leads assigned in period for conversion rate
+      let leadsQuery = supabase
         .from('sales_leads')
-        .select('id, assigned_to, is_paid, status, created_at, payment_amount, cart_value, quote_amount');
+        .select('id, assigned_to, is_paid, status, created_at')
+        .in('assigned_to', agentIds);
 
-      const leadsInPeriod = (leads || []).filter(l => {
-        const d = new Date(l.created_at);
-        return d >= start && d <= end;
+      if (period !== 'all') {
+        leadsQuery = leadsQuery
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+      }
+
+      const { data: leads } = await leadsQuery;
+
+      // Fetch monthly targets for current month
+      const monthStart = startOfMonth(new Date());
+      const monthEnd = endOfMonth(new Date());
+      const { data: targets } = await supabase
+        .from('sales_targets')
+        .select('admin_user_id, target_amount, target_period')
+        .in('admin_user_id', agentIds)
+        .eq('target_period', 'monthly')
+        .gte('start_date', monthStart.toISOString().split('T')[0])
+        .lte('start_date', monthEnd.toISOString().split('T')[0]);
+
+      const targetMap = new Map<string, number>();
+      (targets || []).forEach(t => {
+        targetMap.set(t.admin_user_id, t.target_amount);
       });
 
       // Build agent scores
-      const scores: AgentScore[] = adminUsers.map(user => {
-        const userCustomers = (customers || []).filter(c => c.assigned_to === user.id);
-        const userLeads = leadsInPeriod.filter(l => l.assigned_to === user.id);
-        const userConvertedLeads = (leads || []).filter(l => l.assigned_to === user.id && l.is_paid === true);
+      const scores: AgentScore[] = adminUsers.map(u => {
+        const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
+        const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
+        const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
 
         const salesCount = userCustomers.length;
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
@@ -117,10 +150,10 @@ export const useScoreboardData = (): ScoreboardData => {
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
 
         return {
-          id: user.id,
-          name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
-          email: user.email,
-          role: user.role,
+          id: u.id,
+          name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email.split('@')[0],
+          email: u.email,
+          role: u.role,
           salesCount,
           revenue,
           leadsAssigned,
@@ -130,6 +163,7 @@ export const useScoreboardData = (): ScoreboardData => {
           rank: 0,
           previousRank: null,
           trend: 'same' as const,
+          monthlyTarget: targetMap.get(u.id) || null,
         };
       });
 
@@ -158,5 +192,5 @@ export const useScoreboardData = (): ScoreboardData => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
 
-  return { agents, loading, period, setPeriod, refresh: fetchData, currentUserId, currentAdminUserId };
+  return { agents, loading, period, setPeriod, refresh: fetchData, currentUserId, currentAdminUserId, currentUserRole };
 };
