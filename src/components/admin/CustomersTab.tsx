@@ -470,6 +470,13 @@ export const CustomersTab = () => {
     }
   }, [availableTags, customers.length]);
 
+  // Auto-select own agent filter for sales agents
+  useEffect(() => {
+    if (currentAdminUser && currentAdminUser.role === 'sales') {
+      setFilterByAgent(currentAdminUser.id);
+    }
+  }, [currentAdminUser]);
+
   // Listen for URL search parameter changes
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -2577,8 +2584,8 @@ export const CustomersTab = () => {
                 </Select>
                </div>
 
-              {/* Filter by Agent - only for admin, super_admin, sales_lead */}
-              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead') && (
+              {/* Filter by Agent - visible to sales, sales_lead, sales_manager, admin, super_admin */}
+              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
                 <div className="space-y-1">
                   <Label className="text-sm font-medium">Sales by Agent</Label>
                   <Select value={filterByAgent} onValueChange={setFilterByAgent}>
@@ -2586,8 +2593,13 @@ export const CustomersTab = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Agents</SelectItem>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {/* Only admin/super_admin/sales_lead can see All Agents & Unassigned */}
+                      {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead') && (
+                        <>
+                          <SelectItem value="all">All Agents</SelectItem>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                        </>
+                      )}
                       {adminUsers
                         .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
                         .map(user => (
