@@ -99,9 +99,9 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'selling-tips',
-    label: 'Tips & Feedback',
+    label: 'Sales Script',
     icon: Lightbulb,
-    description: 'Selling tips and customer feedback'
+    description: 'Sales script, tips and customer feedback'
   },
   {
     id: 'customers',
