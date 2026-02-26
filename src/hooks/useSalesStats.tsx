@@ -116,58 +116,65 @@ export const useSalesStats = (userId?: string) => {
 
   const fetchTeamStats = useCallback(async () => {
     try {
-      // Get all leads
+      // Get all leads (for lead counts, status breakdowns, tags)
       const { data: leads } = await supabase
         .from('sales_leads')
         .select('*');
 
       const leadsData = leads || [];
 
-      // Get only sales-role users (sales agents and sales leads)
+      // Get only sales-role users (sales agents and sales leads) — same as scoreboard
       const { data: users } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role')
         .eq('is_active', true)
         .in('role', ['sales', 'sales_lead']);
 
-      // Calculate leaderboard
-      const leaderboard: SalespersonStats[] = await Promise.all(
-        (users || []).map(async (user) => {
-          const userLeads = leadsData.filter(l => l.assigned_to === user.id);
-          // Use is_paid for converted/revenue calculations
-          const converted = userLeads.filter(l => l.is_paid === true).length;
-          const revenue = userLeads
-            .filter(l => l.is_paid === true)
-            .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
+      const userIds = (users || []).map(u => u.id);
 
-          return {
-            userId: user.id,
-            userName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
-            userEmail: user.email,
-            totalLeads: userLeads.length,
-            newLeads: userLeads.filter(l => l.status === 'new').length,
-            contactedLeads: userLeads.filter(l => l.status === 'contacted').length,
-            convertedLeads: converted,
-            lostLeads: userLeads.filter(l => l.status === 'lost').length,
-            totalRevenue: revenue,
-            conversionRate: userLeads.length > 0 ? (converted / userLeads.length) * 100 : 0,
-            avgResponseTimeHours: null,
-            followUpsDue: 0,
-            followUpsOverdue: 0
-          };
-        })
-      );
+      // Fetch customers data (same source as scoreboard for revenue/deals)
+      const { data: customers } = await supabase
+        .from('customers')
+        .select('id, assigned_to, final_amount, created_at, status')
+        .eq('is_deleted', false)
+        .ilike('status', 'active')
+        .in('assigned_to', userIds);
 
-      // Sort by revenue
+      const customersData = customers || [];
+
+      // Calculate leaderboard using customers for revenue/deals (matches scoreboard)
+      const leaderboard: SalespersonStats[] = (users || []).map((user) => {
+        const userLeads = leadsData.filter(l => l.assigned_to === user.id);
+        const userCustomers = customersData.filter(c => c.assigned_to === user.id);
+        
+        // Revenue and converted from customers table (like scoreboard)
+        const converted = userCustomers.length;
+        const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+
+        return {
+          userId: user.id,
+          userName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+          userEmail: user.email,
+          totalLeads: userLeads.length,
+          newLeads: userLeads.filter(l => l.status === 'new').length,
+          contactedLeads: userLeads.filter(l => l.status === 'contacted').length,
+          convertedLeads: converted,
+          lostLeads: userLeads.filter(l => l.status === 'lost').length,
+          totalRevenue: revenue,
+          conversionRate: userLeads.length > 0 ? (converted / userLeads.length) * 100 : 0,
+          avgResponseTimeHours: null,
+          followUpsDue: 0,
+          followUpsOverdue: 0
+        };
+      });
+
+      // Sort by revenue (same as scoreboard)
       leaderboard.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
-      // Calculate totals
-      // Use is_paid for converted/revenue calculations
-      const totalConverted = leadsData.filter(l => l.is_paid === true).length;
+      // Calculate totals using customers table (matches scoreboard)
+      const totalConverted = customersData.length;
       const totalLost = leadsData.filter(l => l.status === 'lost').length;
-      const totalRevenue = leadsData
-        .filter(l => l.is_paid === true)
-        .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
+      const totalRevenue = customersData.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
       // Leads by source
       const sourceMap = new Map<string, number>();
