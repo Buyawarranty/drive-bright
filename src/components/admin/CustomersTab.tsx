@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -2911,6 +2911,18 @@ export const CustomersTab = () => {
                   break;
               }
 
+              // Helper to get sales total for a date range
+              const getSalesForRange = (from: Date, to: Date) => {
+                return customers
+                  .filter(c => {
+                    if (!c.final_amount || c.final_amount <= 0) return false;
+                    if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                    const d = new Date(c.signup_date || c.created_at || '');
+                    return d >= from && d <= to;
+                  })
+                  .reduce((sum, c) => sum + (c.final_amount || 0), 0);
+              };
+
               const salesInRange = customers.filter(c => {
                 if (!c.final_amount || c.final_amount <= 0) return false;
                 if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
@@ -2920,9 +2932,81 @@ export const CustomersTab = () => {
               });
               const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
               const count = salesInRange.length;
+
+              // Check if current period is a record
+              let isRecord = false;
+              let recordLabel = '';
+              
+              if (totalSalesDateFilter === 'today' || totalSalesDateFilter === 'yesterday') {
+                // Compare against every day in available data
+                const earliest = customers.reduce((min, c) => {
+                  const d = new Date(c.signup_date || c.created_at || '');
+                  return d < min ? d : min;
+                }, new Date());
+                let maxDaySales = 0;
+                const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), earliest.getDate());
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                while (cursor < todayStart) {
+                  const dayEnd = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), 23, 59, 59, 999);
+                  const daySales = getSalesForRange(new Date(cursor), dayEnd);
+                  if (daySales > maxDaySales) maxDaySales = daySales;
+                  cursor.setDate(cursor.getDate() + 1);
+                }
+                if (totalValue > maxDaySales && totalValue > 0) {
+                  isRecord = true;
+                  recordLabel = '🏆 Highest Day Ever!';
+                }
+              } else if (totalSalesDateFilter === '7days') {
+                // Compare against previous weeks
+                let maxWeekSales = 0;
+                for (let w = 1; w <= 52; w++) {
+                  const wEnd = new Date(now);
+                  wEnd.setDate(wEnd.getDate() - (w * 7));
+                  const wStart = new Date(wEnd);
+                  wStart.setDate(wStart.getDate() - 7);
+                  const ws = getSalesForRange(wStart, wEnd);
+                  if (ws > maxWeekSales) maxWeekSales = ws;
+                }
+                if (totalValue > maxWeekSales && totalValue > 0) {
+                  isRecord = true;
+                  recordLabel = '🏆 Highest Week Ever!';
+                }
+              } else if (totalSalesDateFilter === 'this_month' || totalSalesDateFilter === '30days') {
+                // Compare against previous months
+                let maxMonthSales = 0;
+                const earliest = customers.reduce((min, c) => {
+                  const d = new Date(c.signup_date || c.created_at || '');
+                  return d < min ? d : min;
+                }, new Date());
+                const startYear = earliest.getFullYear();
+                const startMonth = earliest.getMonth();
+                const curYear = now.getFullYear();
+                const curMonth = now.getMonth();
+                for (let y = startYear; y <= curYear; y++) {
+                  const mStart = y === startYear ? startMonth : 0;
+                  const mEnd = y === curYear ? curMonth - 1 : 11;
+                  for (let m = mStart; m <= mEnd; m++) {
+                    const ms = getSalesForRange(
+                      new Date(y, m, 1),
+                      new Date(y, m + 1, 0, 23, 59, 59, 999)
+                    );
+                    if (ms > maxMonthSales) maxMonthSales = ms;
+                  }
+                }
+                if (totalValue > maxMonthSales && totalValue > 0) {
+                  isRecord = true;
+                  recordLabel = '🏆 Highest Month Ever!';
+                }
+              }
               
               return (
                 <div className="flex items-center gap-4">
+                  {isRecord && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-full animate-pulse">
+                      <Trophy className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-bold text-amber-700">{recordLabel}</span>
+                    </div>
+                  )}
                   <div className="text-right">
                     <div className="text-2xl font-bold text-green-700">
                       £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
