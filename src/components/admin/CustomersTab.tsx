@@ -2528,7 +2528,7 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-            {/* Second row for tag filter and date range */}
+            {/* Second row for tag filter, date range, warranty period, source */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Filter by Tag */}
               <div className="space-y-1">
@@ -2639,10 +2639,12 @@ export const CustomersTab = () => {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-               </div>
+              </div>
+            </div>
 
-              {/* Filter by Agent - visible to sales, sales_lead, sales_manager, admin, super_admin */}
-              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
+            {/* Third row for agent filter */}
+            {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1">
                   <Label className="text-sm font-medium">Sales by Agent</Label>
                   <Select value={filterByAgent} onValueChange={setFilterByAgent}>
@@ -2650,7 +2652,6 @@ export const CustomersTab = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Only admin/super_admin/sales_lead can see All Agents & Unassigned */}
                       {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead') && (
                         <>
                           <SelectItem value="all">All Agents</SelectItem>
@@ -2667,8 +2668,8 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Results Summary and Bulk Actions */}
             <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t">
