@@ -658,11 +658,11 @@ function getCoverageInMonths(paymentType: string): number {
   return getWarrantyDurationInMonths(paymentType);
 }
 
-// Helper function to calculate policy end date - updated to use centralized logic
-function calculatePolicyEndDate(paymentType: string): string {
-  const startDate = new Date();
+// Helper function to calculate policy end date - uses provided start date or defaults to now
+function calculatePolicyEndDate(paymentType: string, startDate?: Date | string): string {
+  const start = startDate ? new Date(startDate) : new Date();
   const months = getWarrantyDurationInMonths(paymentType);
-  const endDate = new Date(startDate);
+  const endDate = new Date(start);
   endDate.setMonth(endDate.getMonth() + months);
   return endDate.toISOString();
 }

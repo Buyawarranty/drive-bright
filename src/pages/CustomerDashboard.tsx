@@ -1396,9 +1396,25 @@ const CustomerDashboard = () => {
                                 <Label className="text-xs font-medium text-blue-700 uppercase tracking-wide">Status</Label>
                                 {(() => {
                                   // Resolve display status: scheduled policies past their start date should show as active
+                                  const isFutureActivation = selectedPolicy.status === 'scheduled' && new Date(selectedPolicy.policy_start_date) > new Date();
                                   const displayStatus = (selectedPolicy.status === 'scheduled' && new Date(selectedPolicy.policy_start_date) <= new Date()) 
                                     ? 'active' 
                                     : selectedPolicy.status;
+                                  
+                                  if (isFutureActivation) {
+                                    return (
+                                      <div className="mt-1">
+                                        <p className="text-lg font-bold text-blue-600 flex items-center justify-center sm:justify-end gap-2">
+                                          <AlertCircle className="h-5 w-5" />
+                                          FUTURE ACTIVATION
+                                        </p>
+                                        <p className="text-xs text-blue-500 text-center sm:text-right mt-1">
+                                          Activates on {new Date(selectedPolicy.policy_start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </p>
+                                      </div>
+                                    );
+                                  }
+                                  
                                   return (
                                     <p className={`text-lg font-bold mt-1 flex items-center justify-center sm:justify-end gap-2 ${
                                       displayStatus === 'active' ? 'text-green-600' : 
@@ -1485,11 +1501,15 @@ const CustomerDashboard = () => {
                                 </p>
                               </div>
                              <div>
-                               <Label className="text-xs sm:text-sm font-medium text-gray-500">Policy Start Date</Label>
+                               <Label className="text-xs sm:text-sm font-medium text-gray-500">
+                                 {selectedPolicy?.status === 'scheduled' && new Date(selectedPolicy.policy_start_date) > new Date() 
+                                   ? 'Activation Date' 
+                                   : 'Policy Start Date'}
+                               </Label>
                                <p className="font-semibold text-sm sm:text-base">
                                  {selectedPolicy?.policy_start_date ? new Date(selectedPolicy.policy_start_date).toLocaleDateString('en-GB') : 'N/A'}
                                </p>
-                             </div>
+                              </div>
                               <div>
                                 <Label className="text-xs sm:text-sm font-medium text-gray-500">Policy End Date</Label>
                                 <p className="font-semibold text-sm sm:text-base">
