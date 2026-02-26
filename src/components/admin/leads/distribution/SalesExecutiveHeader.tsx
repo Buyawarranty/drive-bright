@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Zap, PauseCircle, Lock, User } from 'lucide-react';
+import { Zap, PauseCircle, Lock, User, Ban } from 'lucide-react';
 import { PresenceBadge } from './PresenceBadge';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SalesExecutiveHeaderProps {
@@ -20,6 +21,8 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
     claimNextLead,
     loading
   } = useLeadDistribution();
+
+  const { value: allowSelfAssign } = useAdminConfig('allow_agent_self_assign');
 
   const { status, isActive, lastInteractionAt } = useEnhancedPresence();
 
@@ -57,8 +60,9 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
   // Use the paused status from agent_distribution_caps (set by admins)
   // This is the authoritative source that the RPC function checks
   const isPausedByAdmin = currentAgentCap?.paused ?? false;
+  const isSelfAssignBlocked = allowSelfAssign === false;
 
-  const canClaim = isActive && !capReached && !isPausedByAdmin;
+  const canClaim = isActive && !capReached && !isPausedByAdmin && !isSelfAssignBlocked;
 
   const handleClaimLead = async () => {
     if (!canClaim) return;
@@ -73,6 +77,7 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
   };
 
   const getClaimButtonText = () => {
+    if (isSelfAssignBlocked) return 'Self-assign disabled';
     if (capReached) return 'Daily cap reached';
     if (!isActive) return 'Become active to claim';
     if (isPausedByAdmin) return 'Paused by admin';
@@ -142,8 +147,15 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-3 ml-auto">
+        {/* Self-assign blocked warning */}
+        {isSelfAssignBlocked && (
+          <Badge variant="secondary" className="gap-1 text-xs">
+            <Ban className="h-3 w-3" />
+            Self-assign disabled
+          </Badge>
+        )}
         {/* Paused by admin warning */}
-        {isPausedByAdmin && (
+        {isPausedByAdmin && !isSelfAssignBlocked && (
           <Badge variant="destructive" className="gap-1 text-xs">
             <PauseCircle className="h-3 w-3" />
             Paused by Admin
