@@ -370,6 +370,28 @@ export const CustomersTab = () => {
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
 
+  // Detect customers with future activations due today
+  const dueTodayCustomers = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    
+    return customers.filter(c => {
+      const scheduledFor = c.warranties_2000_scheduled_for || c.policy_start_date;
+      const policyStatus = c.customer_policies?.[0]?.status || c.policy_status;
+      const w2kStatus = c.customer_policies?.[0]?.warranties_2000_status;
+      if (!scheduledFor || (policyStatus !== 'scheduled' && w2kStatus !== 'scheduled')) return false;
+      const scheduledDate = new Date(scheduledFor);
+      return scheduledDate >= today && scheduledDate <= endOfToday;
+    });
+  }, [customers]);
+
+  // Helper to check if a customer is due today
+  const isDueToday = useCallback((customer: Customer) => {
+    return dueTodayCustomers.some(c => c.id === customer.id);
+  }, [dueTodayCustomers]);
+
   // Detect duplicate registrations (same reg, non-deleted, active customers)
   const duplicateRegMap = useMemo(() => {
     const regCounts = new Map<string, string[]>();
@@ -635,8 +657,14 @@ export const CustomersTab = () => {
       });
     }
 
-    // Apply sorting
+    // Apply sorting - due today activations always come first
     filtered.sort((a, b) => {
+      // Due today customers always at the top
+      const aDueToday = isDueToday(a);
+      const bDueToday = isDueToday(b);
+      if (aDueToday && !bDueToday) return -1;
+      if (!aDueToday && bDueToday) return 1;
+
       const dateA = new Date(a.signup_date).getTime();
       const dateB = new Date(b.signup_date).getTime();
       
@@ -2398,6 +2426,32 @@ export const CustomersTab = () => {
         </div>
 
         <TabsContent value="complete" className="space-y-4">
+          {/* Due Today Activations Banner */}
+          {dueTodayCustomers.length > 0 && (
+            <div className="bg-orange-50 border-2 border-orange-400 rounded-lg p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-500 text-white rounded-full p-2">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-orange-900 text-base flex items-center gap-2">
+                    🔔 {dueTodayCustomers.length} Activation{dueTodayCustomers.length !== 1 ? 's' : ''} Due Today
+                  </h3>
+                  <p className="text-orange-700 text-sm mt-0.5">
+                    The following warranties are scheduled for activation today. They have been moved to the top of the list.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {dueTodayCustomers.map(c => (
+                    <div key={c.id} className="bg-white border border-orange-300 rounded-md px-3 py-1.5 text-xs">
+                      <span className="font-bold text-orange-900">{c.name}</span>
+                      <span className="text-orange-600 ml-1.5">({c.registration_plate})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           {/* Enhanced Search and Filter Controls */}
           <div className="bg-white p-4 rounded-lg border space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -2847,7 +2901,7 @@ export const CustomersTab = () => {
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
+                <TableRow key={customer.id} className={isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}>
                   <TableCell>
                     <Checkbox
                       checked={selectedCustomers.has(customer.id)}
@@ -3969,6 +4023,11 @@ Please log in and change your password after first login.`;
                       <div className="flex items-center justify-between gap-2 w-full">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{customer.name}</span>
+                          {isDueToday(customer) && (
+                            <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
+                              🔔 DUE TODAY
+                            </Badge>
+                          )}
                           <PaymentDueDatePicker
                             customerId={customer.id}
                             paymentDueDate={(customer as any).payment_due_date}

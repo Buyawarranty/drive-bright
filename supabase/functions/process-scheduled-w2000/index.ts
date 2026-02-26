@@ -95,6 +95,27 @@ serve(async (req) => {
             .update({ status: 'active' })
             .eq('id', policy.id);
           logStep(`Activated scheduled policy ${policy.id}`);
+
+          // Send the welcome/activation email now that the warranty is live
+          try {
+            logStep(`Sending activation welcome email for policy ${policy.id}`);
+            const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-welcome-email-manual', {
+              body: {
+                policyId: policy.id,
+                customerId: policy.customer_id,
+                forceResend: true
+              }
+            });
+
+            if (emailError) {
+              logStep(`Warning: Failed to send activation email for policy ${policy.id}`, { error: emailError });
+            } else {
+              logStep(`Activation email sent for policy ${policy.id}`, emailResult);
+            }
+          } catch (emailErr) {
+            // Don't fail the whole activation if email fails
+            logStep(`Warning: Email send error for policy ${policy.id}`, { error: emailErr instanceof Error ? emailErr.message : String(emailErr) });
+          }
         }
 
         logStep(`Successfully sent policy ${policy.id} to W2000`, w2kResult);
