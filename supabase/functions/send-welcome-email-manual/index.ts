@@ -609,6 +609,15 @@ const handler = async (req: Request): Promise<Response> => {
                 <strong>End Date:</strong> ${formatDate(policyEndDate)}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
+                <strong>Claim Limit:</strong> £${(() => { const cl = policy.claim_limit || customerDetails?.claim_limit || 1250; return cl === 750 ? '1,000' : cl.toLocaleString(); })()} per claim
+              </li>
+              <li style="margin-bottom: 8px; color: #333;">
+                <strong>Voluntary Excess:</strong> £${policy.voluntary_excess ?? customerDetails?.voluntary_excess ?? 0}
+              </li>
+              <li style="margin-bottom: 8px; color: #333;">
+                <strong>Labour Rate:</strong> £${customerDetails?.labour_rate || 70}/hour
+              </li>
+              <li style="margin-bottom: 8px; color: #333;">
                 <strong>Payment Method:</strong> ${paymentMethod}
               </li>
             </ul>
