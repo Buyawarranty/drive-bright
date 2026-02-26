@@ -563,10 +563,22 @@ const handler = async (req: Request): Promise<Response> => {
       return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
     };
 
+    // Determine if this is a future activation
+    const isFutureActivation = policy.warranties_2000_status === 'scheduled' && 
+      new Date(policy.policy_start_date) > new Date();
+    
+    const emailSubject = isFutureActivation 
+      ? `Your Buy A Warranty Policy – Future Activation Confirmed 🚗`
+      : `Your Buy A Warranty Policy Is Now Active 🚗`;
+    
+    const introText = isFutureActivation
+      ? `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to confirm your warranty has been set up and will activate on <strong>${formatDate(policy.policy_start_date)}</strong>.`
+      : `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to let you know that your warranty is now active!`;
+
     const emailPayload = {
       from: resendFrom,
       to: [customer.email],
-      subject: `Your Buy A Warranty Policy Is Now Active 🚗`,
+      subject: emailSubject,
       ...(attachments.length > 0 && { attachments }),
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; line-height: 1.6;">
@@ -580,7 +592,7 @@ const handler = async (req: Request): Promise<Response> => {
             <h1 style="color: #333; font-size: 24px; margin-bottom: 20px;">Hi ${customer.first_name || customerName},</h1>
             
             <p style="color: #333; font-size: 16px; margin-bottom: 15px;">
-              Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to let you know that your warranty is now active!
+              ${introText}
             </p>
             
             <p style="color: #333; font-size: 16px; margin-bottom: 15px;">
@@ -603,10 +615,10 @@ const handler = async (req: Request): Promise<Response> => {
                 <strong>Coverage Period:</strong> ${coveragePeriod}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
-                <strong>Start Date:</strong> ${formatDate(policy.policy_start_date)}
+                <strong>${isFutureActivation ? 'Activation Date' : 'Start Date'}:</strong> ${formatDate(policy.policy_start_date)}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
-                <strong>End Date:</strong> ${formatDate(policyEndDate)}
+                <strong>Expiry Date:</strong> ${formatDate(policyEndDate)}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
                 <strong>Claim Limit:</strong> £${(() => { const cl = policy.claim_limit || customerDetails?.claim_limit || 1250; return cl === 750 ? '1,000' : cl.toLocaleString(); })()} per claim
