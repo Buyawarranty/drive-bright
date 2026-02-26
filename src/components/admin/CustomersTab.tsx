@@ -2410,19 +2410,19 @@ export const CustomersTab = () => {
       </div>
 
       <Tabs defaultValue="complete" className="w-full">
-        <div className="flex items-center gap-2">
-          <TabsList className="flex flex-1 bg-transparent gap-2">
+        <div className="flex items-center gap-1">
+          <TabsList className="flex flex-1 bg-transparent gap-1 h-8">
             <TabsTrigger 
               value="complete" 
-              className="flex-1 bg-blue-50 text-blue-700 border border-blue-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 data-[state=active]:border-blue-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
+              className="flex-1 h-7 text-xs bg-blue-50 text-blue-700 border border-blue-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 data-[state=active]:border-blue-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
             >
               Active Orders
             </TabsTrigger>
             <TabsTrigger 
               value="deleted"
-              className="h-9 px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-xs data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
+              className="h-7 px-2 text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-md data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
             >
-              <Archive className="h-3.5 w-3.5" />
+              <Archive className="h-3 w-3" />
               Archive
             </TabsTrigger>
           </TabsList>
@@ -2456,63 +2456,28 @@ export const CustomersTab = () => {
             </div>
           )}
           {/* Enhanced Search and Filter Controls */}
-          <div className="bg-white p-4 rounded-lg border space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white p-3 rounded-lg border space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Search */}
               <div className="space-y-1">
-                <Label htmlFor="search" className="text-sm font-medium">Search</Label>
+                <Label htmlFor="search" className="text-xs font-medium">Search</Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                   <Input
                     id="search"
-                    placeholder="Search by name, email, phone, reg plate, vehicle, address..."
+                    placeholder="Search by name, email, phone, reg plate..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-9 h-8 text-sm"
                   />
                 </div>
               </div>
 
-              {/* Sort By */}
-              <div className="space-y-1">
-                <Label htmlFor="sortBy" className="text-sm font-medium">Sort By</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="name">Name (A-Z)</SelectItem>
-                    <SelectItem value="email">Email (A-Z)</SelectItem>
-                    <SelectItem value="plan">Plan Type</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Filter by Plan */}
-              <div className="space-y-1">
-                <Label htmlFor="planFilter" className="text-sm font-medium">Plan Type</Label>
-                <Select value={filterByPlan} onValueChange={setFilterByPlan}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Plans</SelectItem>
-                    <SelectItem value="gold">Gold</SelectItem>
-                    <SelectItem value="electric">Electric</SelectItem>
-                    <SelectItem value="phev">PHEV</SelectItem>
-                    <SelectItem value="motorbike">Motorbike</SelectItem>
-                    <SelectItem value="van">Van</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Filter by Status */}
               <div className="space-y-1">
-                <Label htmlFor="statusFilter" className="text-sm font-medium">Status</Label>
+                <Label htmlFor="statusFilter" className="text-xs font-medium">Status</Label>
                 <Select value={filterByStatus} onValueChange={setFilterByStatus}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -2526,15 +2491,171 @@ export const CustomersTab = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Filter by Source */}
+              <div className="space-y-1">
+                <Label htmlFor="sourceFilter" className="text-xs font-medium">Purchase Source</Label>
+                <Select value={filterBySource} onValueChange={setFilterBySource}>
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all_view">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-400" />
+                        All View
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="website">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        Website (BAW)
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="staff_purchase">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        Staff Purchase (BAW-S)
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="quote_order">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        Quote & Orders (ADM)
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Total Sales inline - for super_admin with hide/reveal */}
+              {currentAdminUser?.role === 'super_admin' && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium">Total Sales</Label>
+                    <button
+                      onClick={() => setShowTotalSales(!showTotalSales)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {showTotalSales ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                    </button>
+                  </div>
+                  {showTotalSales ? (
+                    <div className="flex items-center gap-2 h-8">
+                      <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
+                        <SelectTrigger className="w-[110px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="today">Today</SelectItem>
+                          <SelectItem value="yesterday">Yesterday</SelectItem>
+                          <SelectItem value="7days">Last 7 Days</SelectItem>
+                          <SelectItem value="14days">Last 14 Days</SelectItem>
+                          <SelectItem value="30days">Last 30 Days</SelectItem>
+                          <SelectItem value="this_month">This Month</SelectItem>
+                          <SelectItem value="all">All Time</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {(() => {
+                        const now = new Date();
+                        let dateFrom: Date | null = null;
+                        let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                        switch (totalSalesDateFilter) {
+                          case 'today': dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate()); break;
+                          case 'yesterday': { const y = new Date(now); y.setDate(y.getDate()-1); dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate()); dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999); break; }
+                          case '7days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate()-7); break;
+                          case '14days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate()-14); break;
+                          case '30days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate()-30); break;
+                          case 'this_month': dateFrom = new Date(now.getFullYear(), now.getMonth(), 1); break;
+                          case 'all': dateFrom = null; break;
+                        }
+                        const salesInRange = customers.filter(c => {
+                          if (!c.final_amount || c.final_amount <= 0) return false;
+                          if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                          if (!dateFrom) return true;
+                          const d = new Date(c.signup_date || c.created_at || '');
+                          return d >= dateFrom && d <= dateTo;
+                        });
+                        const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                        const count = salesInRange.length;
+                        return (
+                          <div className="text-right">
+                            <span className="text-sm font-bold text-green-700">£{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="text-[10px] text-muted-foreground ml-1">({count})</span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="h-8 flex items-center text-xs text-muted-foreground">Hidden</div>
+                  )}
+                </div>
+              )}
+
+              {/* My Deals inline - for sales/sales_lead */}
+              {(currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium flex items-center gap-1">
+                    <Star className="h-3 w-3 text-amber-500" />
+                    My Deals
+                  </Label>
+                  <div className="flex items-center gap-2 h-8">
+                    <Select value={myDealsDateFilter} onValueChange={setMyDealsDateFilter}>
+                      <SelectTrigger className="w-[110px] h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="today">Today</SelectItem>
+                        <SelectItem value="yesterday">Yesterday</SelectItem>
+                        <SelectItem value="7days">Last 7 Days</SelectItem>
+                        <SelectItem value="14days">Last 14 Days</SelectItem>
+                        <SelectItem value="30days">Last 30 Days</SelectItem>
+                        <SelectItem value="this_month">This Month</SelectItem>
+                        <SelectItem value="all">All Time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(() => {
+                      const now = new Date();
+                      let dateFrom: Date | null = null;
+                      let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                      switch (myDealsDateFilter) {
+                        case 'today': dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate()); break;
+                        case 'yesterday': { const y = new Date(now); y.setDate(y.getDate()-1); dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate()); dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999); break; }
+                        case '7days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate()-7); break;
+                        case '14days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate()-14); break;
+                        case '30days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate()-30); break;
+                        case 'this_month': dateFrom = new Date(now.getFullYear(), now.getMonth(), 1); break;
+                        case 'all': dateFrom = null; break;
+                      }
+                      const myDeals = customers.filter(c => {
+                        if (c.assigned_to !== currentAdminUser?.id) return false;
+                        if (!c.final_amount || c.final_amount <= 0) return false;
+                        if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                        if (!dateFrom) return true;
+                        const d = new Date(c.signup_date || c.created_at || '');
+                        return d >= dateFrom && d <= dateTo;
+                      });
+                      const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                      const count = myDeals.length;
+                      return (
+                        <div className="text-right">
+                          <span className="text-sm font-bold text-primary">£{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className="text-[10px] text-muted-foreground ml-1">({count})</span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Second row for tag filter, date range, warranty period, source */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Second row for tag, date range, warranty period, agent */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Filter by Tag */}
               <div className="space-y-1">
-                <Label htmlFor="tagFilter" className="text-sm font-medium">Filter by Tag</Label>
+                <Label htmlFor="tagFilter" className="text-xs font-medium">Filter by Tag</Label>
                 <Select value={filterByTag} onValueChange={setFilterByTag}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue>
                       {filterByTag === 'all' ? (
                         'All Tags'
@@ -2589,9 +2710,9 @@ export const CustomersTab = () => {
 
               {/* Filter by Warranty Period */}
               <div className="space-y-1">
-                <Label htmlFor="warrantyPeriodFilter" className="text-sm font-medium">Warranty Period</Label>
+                <Label htmlFor="warrantyPeriodFilter" className="text-xs font-medium">Warranty Period</Label>
                 <Select value={filterByWarrantyPeriod} onValueChange={setFilterByWarrantyPeriod}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -2605,50 +2726,12 @@ export const CustomersTab = () => {
                 </Select>
               </div>
 
-              {/* Filter by Source */}
-              <div className="space-y-1">
-                <Label htmlFor="sourceFilter" className="text-sm font-medium">Purchase Source</Label>
-                <Select value={filterBySource} onValueChange={setFilterBySource}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all_view">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gray-400" />
-                        All View
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        Website (BAW)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="staff_purchase">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        Staff Purchase (BAW-S)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="quote_order">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-purple-500" />
-                        Quote & Orders (ADM)
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Third row for agent filter */}
-            {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Filter by Agent */}
+              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium">Sales by Agent</Label>
+                  <Label className="text-xs font-medium">Sales by Agent</Label>
                   <Select value={filterByAgent} onValueChange={setFilterByAgent}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -2668,8 +2751,10 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
+
 
             {/* Results Summary and Bulk Actions */}
             <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t">
@@ -2848,1926 +2933,6 @@ export const CustomersTab = () => {
             </div>
           </div>
 
-      {/* Super Admin Total Sales Card */}
-      {currentAdminUser?.role === 'super_admin' && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowTotalSales(!showTotalSales)}
-                className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
-              >
-                {showTotalSales ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                Total Sales
-              </button>
-              {showTotalSales && (
-                <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
-                  <SelectTrigger className="w-[160px] h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="yesterday">Yesterday</SelectItem>
-                    <SelectItem value="7days">Last 7 Days</SelectItem>
-                    <SelectItem value="14days">Last 14 Days</SelectItem>
-                    <SelectItem value="30days">Last 30 Days</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="all">All Time</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-            {showTotalSales && (() => {
-              const now = new Date();
-              let dateFrom: Date | null = null;
-              let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-              
-              switch (totalSalesDateFilter) {
-                case 'today':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                  break;
-                case 'yesterday': {
-                  const y = new Date(now);
-                  y.setDate(y.getDate() - 1);
-                  dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate());
-                  dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
-                  break;
-                }
-                case '7days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 7);
-                  break;
-                case '14days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 14);
-                  break;
-                case '30days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 30);
-                  break;
-                case 'this_month':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-                  break;
-                case 'all':
-                  dateFrom = null;
-                  break;
-              }
-
-              // Helper to get sales total for a date range
-              const getSalesForRange = (from: Date, to: Date) => {
-                return customers
-                  .filter(c => {
-                    if (!c.final_amount || c.final_amount <= 0) return false;
-                    if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
-                    const d = new Date(c.signup_date || c.created_at || '');
-                    return d >= from && d <= to;
-                  })
-                  .reduce((sum, c) => sum + (c.final_amount || 0), 0);
-              };
-
-              const salesInRange = customers.filter(c => {
-                if (!c.final_amount || c.final_amount <= 0) return false;
-                if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
-                if (!dateFrom) return true;
-                const signupDate = new Date(c.signup_date || c.created_at || '');
-                return signupDate >= dateFrom && signupDate <= dateTo;
-              });
-              const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
-              const count = salesInRange.length;
-
-              // Check if current period is a record
-              let isRecord = false;
-              let recordLabel = '';
-              
-              if (totalSalesDateFilter === 'today' || totalSalesDateFilter === 'yesterday') {
-                // Compare against every day in available data
-                const earliest = customers.reduce((min, c) => {
-                  const d = new Date(c.signup_date || c.created_at || '');
-                  return d < min ? d : min;
-                }, new Date());
-                let maxDaySales = 0;
-                const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), earliest.getDate());
-                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                while (cursor < todayStart) {
-                  const dayEnd = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), 23, 59, 59, 999);
-                  const daySales = getSalesForRange(new Date(cursor), dayEnd);
-                  if (daySales > maxDaySales) maxDaySales = daySales;
-                  cursor.setDate(cursor.getDate() + 1);
-                }
-                if (totalValue > maxDaySales && totalValue > 0) {
-                  isRecord = true;
-                  recordLabel = '🏆 Highest Day Ever!';
-                }
-              } else if (totalSalesDateFilter === '7days') {
-                // Compare against previous weeks
-                let maxWeekSales = 0;
-                for (let w = 1; w <= 52; w++) {
-                  const wEnd = new Date(now);
-                  wEnd.setDate(wEnd.getDate() - (w * 7));
-                  const wStart = new Date(wEnd);
-                  wStart.setDate(wStart.getDate() - 7);
-                  const ws = getSalesForRange(wStart, wEnd);
-                  if (ws > maxWeekSales) maxWeekSales = ws;
-                }
-                if (totalValue > maxWeekSales && totalValue > 0) {
-                  isRecord = true;
-                  recordLabel = '🏆 Highest Week Ever!';
-                }
-              } else if (totalSalesDateFilter === 'this_month' || totalSalesDateFilter === '30days') {
-                // Compare against previous months
-                let maxMonthSales = 0;
-                const earliest = customers.reduce((min, c) => {
-                  const d = new Date(c.signup_date || c.created_at || '');
-                  return d < min ? d : min;
-                }, new Date());
-                const startYear = earliest.getFullYear();
-                const startMonth = earliest.getMonth();
-                const curYear = now.getFullYear();
-                const curMonth = now.getMonth();
-                for (let y = startYear; y <= curYear; y++) {
-                  const mStart = y === startYear ? startMonth : 0;
-                  const mEnd = y === curYear ? curMonth - 1 : 11;
-                  for (let m = mStart; m <= mEnd; m++) {
-                    const ms = getSalesForRange(
-                      new Date(y, m, 1),
-                      new Date(y, m + 1, 0, 23, 59, 59, 999)
-                    );
-                    if (ms > maxMonthSales) maxMonthSales = ms;
-                  }
-                }
-                if (totalValue > maxMonthSales && totalValue > 0) {
-                  isRecord = true;
-                  recordLabel = '🏆 Highest Month Ever!';
-                }
-              }
-              
-              return (
-                <div className="flex items-center gap-4">
-                  {isRecord && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-full animate-pulse">
-                      <Trophy className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-bold text-amber-700">{recordLabel}</span>
-                    </div>
-                  )}
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-700">
-                      £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{count} sale{count !== 1 ? 's' : ''}</div>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* Sales / Sales Lead: My Deals Card */}
-      {(currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Star className="h-4 w-4 text-amber-500" />
-                My Deals
-              </div>
-              <Select value={myDealsDateFilter} onValueChange={setMyDealsDateFilter}>
-                <SelectTrigger className="w-[160px] h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="yesterday">Yesterday</SelectItem>
-                  <SelectItem value="7days">Last 7 Days</SelectItem>
-                  <SelectItem value="14days">Last 14 Days</SelectItem>
-                  <SelectItem value="30days">Last 30 Days</SelectItem>
-                  <SelectItem value="this_month">This Month</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {(() => {
-              const now = new Date();
-              let dateFrom: Date | null = null;
-              let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-
-              switch (myDealsDateFilter) {
-                case 'today':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                  break;
-                case 'yesterday': {
-                  const y = new Date(now);
-                  y.setDate(y.getDate() - 1);
-                  dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate());
-                  dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
-                  break;
-                }
-                case '7days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 7);
-                  break;
-                case '14days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 14);
-                  break;
-                case '30days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 30);
-                  break;
-                case 'this_month':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-                  break;
-                case 'all':
-                  dateFrom = null;
-                  break;
-              }
-
-              const myDeals = customers.filter(c => {
-                if (c.assigned_to !== currentAdminUser?.id) return false;
-                if (!c.final_amount || c.final_amount <= 0) return false;
-                if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
-                if (!dateFrom) return true;
-                const signupDate = new Date(c.signup_date || c.created_at || '');
-                return signupDate >= dateFrom && signupDate <= dateTo;
-              });
-              const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
-              const count = myDeals.length;
-
-              return (
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">
-                      £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{count} deal{count !== 1 ? 's' : ''}</div>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="min-w-[1800px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={selectedCustomers.size === filteredCustomers.length && filteredCustomers.length > 0}
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Select all customers"
-                />
-              </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Purchase Date</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>RegNum</TableHead>
-              <TableHead>Ref</TableHead>
-              <TableHead>Email Status</TableHead>
-              <TableHead>Warranties Register</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Assigned To</TableHead>
-              <TableHead>Make</TableHead>
-              <TableHead>Model</TableHead>
-              <TableHead>RegDate</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>WarType</TableHead>
-              <TableHead>Dur.</TableHead>
-              <TableHead>Start Date</TableHead>
-              
-              <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>
-              <TableHead>Expiry Date</TableHead>
-              <TableHead>Payment Method</TableHead>
-              <TableHead className="bg-purple-50">Source</TableHead>
-              <TableHead>Vol. Excess</TableHead>
-              <TableHead>Claim Limit</TableHead>
-              <TableHead>Claims Made</TableHead>
-              <TableHead>Claims Paid</TableHead>
-              <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
-              <TableHead className="text-center bg-blue-50">Google</TableHead>
-              <TableHead>Labour Rate</TableHead>
-              <TableHead>Mileage</TableHead>
-              <TableHead>Tags</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCustomers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={33} className="text-center py-8">
-                  <div className="space-y-4">
-                    <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
-                    <div>
-                      <p className="text-gray-500 text-lg">No customers found</p>
-                      <p className="text-gray-400 text-sm mt-2">
-                        This might be due to RLS policies or missing data
-                      </p>
-                    </div>
-                    <Button onClick={fetchCustomers} variant="outline" size="sm">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Try Again
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredCustomers.map((customer) => (
-                <TableRow key={customer.id} className={isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedCustomers.has(customer.id)}
-                      onCheckedChange={() => handleSelectCustomer(customer.id)}
-                      aria-label={`Select ${customer.name}`}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openCustomerDialog(customer)}
-                            title="Edit Customer"
-                            className="h-6 w-6 p-0"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <div className="flex items-center justify-between">
-                              <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
-                              {selectedCustomer && (
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setIsPrintLetterOpen(true)}
-                                  >
-                                    <Printer className="h-4 w-4 mr-1" />
-                                    Print Letter
-                                  </Button>
-                                  <SendNotificationDialog 
-                                    customerId={selectedCustomer.id}
-                                    customerName={selectedCustomer.name}
-                                    customerEmail={selectedCustomer.email}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </DialogHeader>
-                          
-                          {editingCustomer && (
-                            <>
-                              {/* Customer Login Credentials Section */}
-                              <Collapsible 
-                                open={credentialsExpanded} 
-                                onOpenChange={setCredentialsExpanded}
-                                className="mb-6"
-                              >
-                                <div className="p-4 bg-green-50 border-2 border-green-300 rounded-lg">
-                                  <CollapsibleTrigger asChild>
-                                    <button className="w-full flex items-center justify-between text-lg font-semibold text-green-900 hover:text-green-700 transition-colors">
-                                      <div className="flex items-center">
-                                        <Key className="h-5 w-5 mr-2" />
-                                        Customer Login Credentials
-                                      </div>
-                                      {credentialsExpanded ? (
-                                        <ChevronUp className="h-5 w-5" />
-                                      ) : (
-                                        <ChevronDown className="h-5 w-5" />
-                                      )}
-                                    </button>
-                                  </CollapsibleTrigger>
-                                  
-                                  <CollapsibleContent className="mt-4">
-                                    {credentialsLoading ? (
-                                      <div className="text-sm text-gray-600">Loading credentials...</div>
-                                    ) : customerCredentials ? (
-                                      <div className="space-y-3">
-                                        <div className="bg-white p-4 rounded border border-green-200">
-                                          <div className="space-y-3">
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-700">Customer Dashboard URL</Label>
-                                              <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded block mt-1">
-                                                https://buyawarranty.co.uk/customer-dashboard
-                                              </code>
-                                            </div>
-                                            
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-700">Username (Email)</Label>
-                                              <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded block mt-1">
-                                                {customerCredentials.email}
-                                              </code>
-                                            </div>
-                                            
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-700">Temporary Password</Label>
-                                              <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded block mt-1">
-                                                {customerCredentials.password}
-                                              </code>
-                                            </div>
-                                          </div>
-                                          
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="w-full mt-3"
-                                            onClick={() => {
-                                              const credentials = `Customer Dashboard Login Details
-
-Dashboard URL: https://buyawarranty.co.uk/customer-dashboard
-Username: ${customerCredentials.email}
-Password: ${customerCredentials.password}
-
-Please log in and change your password after first login.`;
-                                              navigator.clipboard.writeText(credentials);
-                                              toast.success('All credentials copied to clipboard');
-                                            }}
-                                          >
-                                            Copy All Credentials
-                                          </Button>
-                                        </div>
-                                        
-                                        <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-3">
-                                          <p className="text-xs text-yellow-800 flex items-center gap-1">
-                                            <AlertCircle className="h-3 w-3" />
-                                            Customer should change password after first login
-                                          </p>
-                                        </div>
-                                        
-                                        <div className="flex gap-2 mt-4">
-                                          <Button
-                                            onClick={() => sendCredentialsEmail(customerCredentials.email)}
-                                            disabled={sendingCredentials}
-                                            className="flex-1"
-                                          >
-                                            {sendingCredentials ? (
-                                              <>
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                Sending...
-                                              </>
-                                            ) : (
-                                              <>
-                                                <Send className="h-4 w-4 mr-2" />
-                                                Email Login Credentials to Customer
-                                              </>
-                                            )}
-                                          </Button>
-                                          
-                                          {/* View as Customer Info Box */}
-                                          <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mt-4">
-                                            <div className="flex items-start gap-3">
-                                              <Eye className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                              <div className="flex-1 space-y-2">
-                                                <h4 className="font-semibold text-blue-900">Safe Customer View</h4>
-                                                <p className="text-sm text-blue-800">
-                                                  Use the button below to view this customer's dashboard safely. Your admin session will remain active in other tabs - no need to log out!
-                                                </p>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          
-                                          <ViewAsCustomerButton
-                                            customerId={selectedCustomer.id}
-                                            customerEmail={customerCredentials.email}
-                                            customerName={selectedCustomer.name}
-                                          />
-                                        </div>
-                                        
-                                        {/* Last Login Information */}
-                                        {selectedCustomer.last_login && (
-                                          <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
-                                            <p className="text-xs text-blue-800 flex items-center gap-1">
-                                              <Clock className="h-3 w-3" />
-                                              Last Login: {new Date(selectedCustomer.last_login).toLocaleString('en-GB', {
-                                                dateStyle: 'medium',
-                                                timeStyle: 'short'
-                                              })}
-                                            </p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <div className="text-sm text-red-600">
-                                        Unable to load credentials. Please try again.
-                                      </div>
-                                    )}
-                                  </CollapsibleContent>
-                                </div>
-                              </Collapsible>
-
-                              <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="grid w-full grid-cols-8">
-                                  <TabsTrigger value="details">Customer Details</TabsTrigger>
-                                  <TabsTrigger value="warranty">Warranty Details</TabsTrigger>
-                                  <TabsTrigger value="claims">Claims</TabsTrigger>
-                                  <TabsTrigger value="tags">Tags</TabsTrigger>
-                                  <TabsTrigger value="notes">Notes</TabsTrigger>
-                                  <TabsTrigger value="actions">Warranty Actions</TabsTrigger>
-                                  <TabsTrigger value="mot">MOT History</TabsTrigger>
-                                  <TabsTrigger value="w2000">Warranties Register</TabsTrigger>
-                                </TabsList>
-
-                                <TabsContent value="details" className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label htmlFor="edit-first-name">First Name</Label>
-                                      <Input
-                                        id="edit-first-name"
-                                        value={editingCustomer.first_name || ''}
-                                        onChange={(e) => setEditingCustomer({ 
-                                          ...editingCustomer, 
-                                          first_name: e.target.value,
-                                          name: `${e.target.value} ${editingCustomer.last_name || ''}`.trim()
-                                        })}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="edit-last-name">Surname</Label>
-                                      <Input
-                                        id="edit-last-name"
-                                        value={editingCustomer.last_name || ''}
-                                        onChange={(e) => setEditingCustomer({ 
-                                          ...editingCustomer, 
-                                          last_name: e.target.value,
-                                          name: `${editingCustomer.first_name || ''} ${e.target.value}`.trim()
-                                        })}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="edit-email">Email</Label>
-                                      <Input
-                                        id="edit-email"
-                                        type="email"
-                                        value={editingCustomer.email}
-                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, email: e.target.value })}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="edit-phone">Phone</Label>
-                                      <Input
-                                        id="edit-phone"
-                                        value={editingCustomer.phone || ''}
-                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="edit-registration">Registration Plate</Label>
-                                      <Input
-                                        id="edit-registration"
-                                        value={editingCustomer.registration_plate}
-                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, registration_plate: e.target.value })}
-                                      />
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-4 pt-4 border-t">
-                                    <h3 className="text-lg font-semibold">Vehicle Details</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label htmlFor="edit-vehicle-make">Make</Label>
-                                        <Input
-                                          id="edit-vehicle-make"
-                                          value={editingCustomer.vehicle_make || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, vehicle_make: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-vehicle-model">Model</Label>
-                                        <Input
-                                          id="edit-vehicle-model"
-                                          value={editingCustomer.vehicle_model || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, vehicle_model: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-vehicle-year">Year</Label>
-                                        <Input
-                                          id="edit-vehicle-year"
-                                          value={editingCustomer.vehicle_year || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, vehicle_year: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-mileage">Mileage</Label>
-                                        <Input
-                                          id="edit-mileage"
-                                          value={editingCustomer.mileage || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, mileage: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-fuel-type">Fuel Type</Label>
-                                        <Input
-                                          id="edit-fuel-type"
-                                          value={editingCustomer.vehicle_fuel_type || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, vehicle_fuel_type: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-transmission">Transmission</Label>
-                                        <Input
-                                          id="edit-transmission"
-                                          value={editingCustomer.vehicle_transmission || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, vehicle_transmission: e.target.value })}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-4 pt-4 border-t">
-                                    <h3 className="text-lg font-semibold">Address Details</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label htmlFor="edit-flat-number">Flat Number</Label>
-                                        <Input
-                                          id="edit-flat-number"
-                                          value={editingCustomer.flat_number || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, flat_number: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-building-name">Building Name</Label>
-                                        <Input
-                                          id="edit-building-name"
-                                          value={editingCustomer.building_name || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, building_name: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-building-number">Building Number</Label>
-                                        <Input
-                                          id="edit-building-number"
-                                          value={editingCustomer.building_number || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, building_number: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-street">Street</Label>
-                                        <Input
-                                          id="edit-street"
-                                          value={editingCustomer.street || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, street: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-town">Town</Label>
-                                        <Input
-                                          id="edit-town"
-                                          value={editingCustomer.town || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, town: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-county">County</Label>
-                                        <Input
-                                          id="edit-county"
-                                          value={editingCustomer.county || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, county: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-postcode">Postcode</Label>
-                                        <Input
-                                          id="edit-postcode"
-                                          value={editingCustomer.postcode || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, postcode: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-country">Country</Label>
-                                        <Input
-                                          id="edit-country"
-                                          value={editingCustomer.country || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, country: e.target.value })}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-4 pt-4 border-t">
-                                    <h3 className="text-lg font-semibold">Warranty & Payment Details</h3>
-                                    <div className="space-y-4">
-                                      <div>
-                                        <Label className="mb-2 block">Plan Type</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.plan_type || 'Platinum'} 
-                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, plan_type: value })}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="Basic" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Basic</ToggleGroupItem>
-                                          <ToggleGroupItem value="Gold" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Gold</ToggleGroupItem>
-                                          <ToggleGroupItem value="Platinum" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Platinum</ToggleGroupItem>
-                                          <ToggleGroupItem value="Electric" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Electric</ToggleGroupItem>
-                                          <ToggleGroupItem value="PHEV" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">PHEV</ToggleGroupItem>
-                                          <ToggleGroupItem value="Motorbike" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Motorbike</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-
-                                      <div>
-                                        <Label className="mb-2 block">Duration</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.payment_type || '12months'} 
-                                          onValueChange={(value) => {
-                                            if (value) {
-                                              setEditingCustomer({ ...editingCustomer, payment_type: value });
-                                              
-                                              // Auto-calculate expiry date
-                                              if (editingCustomer.customer_policies?.[0]?.policy_start_date) {
-                                                const startDate = new Date(editingCustomer.customer_policies[0].policy_start_date);
-                                                const months = getWarrantyDurationInMonths(value);
-                                                const expiry = new Date(startDate);
-                                                expiry.setMonth(expiry.getMonth() + months);
-                                                
-                                                const updatedPolicies = [...(editingCustomer.customer_policies || [])];
-                                                updatedPolicies[0] = {
-                                                  ...updatedPolicies[0],
-                                                  policy_end_date: expiry.toISOString()
-                                                };
-                                                setEditingCustomer({ ...editingCustomer, payment_type: value, customer_policies: updatedPolicies });
-                                              }
-                                            }
-                                          }}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="3months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">3 Months</ToggleGroupItem>
-                                          <ToggleGroupItem value="6months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">6 Months</ToggleGroupItem>
-                                          <ToggleGroupItem value="12months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">1 Year</ToggleGroupItem>
-                                          <ToggleGroupItem value="24months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">2 Years</ToggleGroupItem>
-                                          <ToggleGroupItem value="36months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">3 Years</ToggleGroupItem>
-                                          <ToggleGroupItem value="48months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">4 Years</ToggleGroupItem>
-                                          <ToggleGroupItem value="60months" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">5 Years</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-
-                                      <div>
-                                        <Label className="mb-2 block">Voluntary Excess</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.voluntary_excess?.toString() || '0'} 
-                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, voluntary_excess: parseInt(value) })}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="0" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£0</ToggleGroupItem>
-                                          <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50</ToggleGroupItem>
-                                          <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100</ToggleGroupItem>
-                                          <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150</ToggleGroupItem>
-                                          <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-
-                                      <div>
-                                        <Label className="mb-2 block">Claim Limit</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.claim_limit?.toString() || '1250'} 
-                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, claim_limit: parseInt(value) })}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="750" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="1250" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,250</ToggleGroupItem>
-                                          <ToggleGroupItem value="2000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="2500" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,500</ToggleGroupItem>
-                                          <ToggleGroupItem value="3000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£3,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="4000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£4,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="5000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£5,000</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-
-                                      <div>
-                                        <Label className="mb-2 block">Labour Rate</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.labour_rate?.toString() || '70'} 
-                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, labour_rate: parseInt(value) })}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="70" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£70/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200/hr</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 pt-4">
-                                      <div>
-                                        <Label htmlFor="edit-original-amount">Original Amount (£)</Label>
-                                        <Input
-                                          id="edit-original-amount"
-                                          type="number"
-                                          step="0.01"
-                                          value={editingCustomer.original_amount || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, original_amount: Number(e.target.value) })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-discount-amount">Discount Amount (£)</Label>
-                                        <Input
-                                          id="edit-discount-amount"
-                                          type="number"
-                                          step="0.01"
-                                          value={editingCustomer.discount_amount || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, discount_amount: Number(e.target.value) })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-final-amount">Total Amount Paid (£)</Label>
-                                        <Input
-                                          id="edit-final-amount"
-                                          type="number"
-                                          step="0.01"
-                                          placeholder="e.g. 396 (full amount, not monthly)"
-                                          value={editingCustomer.final_amount || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, final_amount: Number(e.target.value) })}
-                                        />
-                                        <p className="text-xs text-muted-foreground mt-1">Enter the total amount paid, not the monthly price</p>
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-discount-code">Discount Code</Label>
-                                        <Input
-                                          id="edit-discount-code"
-                                          value={editingCustomer.discount_code || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, discount_code: e.target.value })}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-status">Status</Label>
-                                        <Select
-                                          value={editingCustomer.status}
-                                          onValueChange={(value) => setEditingCustomer({ ...editingCustomer, status: value })}
-                                        >
-                                          <SelectTrigger id="edit-status">
-                                            <SelectValue placeholder="Select status" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="Active">Active</SelectItem>
-                                            <SelectItem value="Inactive">Inactive</SelectItem>
-                                            <SelectItem value="Pending">Pending</SelectItem>
-                                            <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                            <SelectItem value="Refunded">Refunded</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-signup-date">Signup Date</Label>
-                                        <Popover>
-                                          <PopoverTrigger asChild>
-                                            <Button
-                                              id="edit-signup-date"
-                                              variant="outline"
-                                              className={cn(
-                                                "w-full justify-start text-left font-normal",
-                                                !editingCustomer.signup_date && "text-muted-foreground"
-                                              )}
-                                            >
-                                              <CalendarIcon className="mr-2 h-4 w-4" />
-                                              {editingCustomer.signup_date ? (
-                                                format(new Date(editingCustomer.signup_date), 'dd/MM/yyyy')
-                                              ) : (
-                                                <span>Pick a date</span>
-                                              )}
-                                            </Button>
-                                          </PopoverTrigger>
-                                          <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                              mode="single"
-                                              selected={editingCustomer.signup_date ? new Date(editingCustomer.signup_date) : undefined}
-                                              onSelect={(date) => date && setEditingCustomer({ ...editingCustomer, signup_date: date.toISOString() })}
-                                              initialFocus
-                                            />
-                                          </PopoverContent>
-                                        </Popover>
-                                      </div>
-                                       <div>
-                                        <Label>Purchase Date</Label>
-                                        <div className="w-full px-3 py-2 text-sm border rounded-md bg-gray-50">
-                                          {editingCustomer.customer_policies?.[0]?.created_at ? (
-                                            <>
-                                              {format(new Date(editingCustomer.customer_policies[0].created_at), 'dd/MM/yyyy')}
-                                              <span className="text-gray-500 ml-2">
-                                                {format(new Date(editingCustomer.customer_policies[0].created_at), 'HH:mm:ss')}
-                                              </span>
-                                            </>
-                                          ) : editingCustomer.created_at ? (
-                                            <>
-                                              {format(new Date(editingCustomer.created_at), 'dd/MM/yyyy')}
-                                              <span className="text-gray-500 ml-2">
-                                                {format(new Date(editingCustomer.created_at), 'HH:mm:ss')}
-                                              </span>
-                                            </>
-                                          ) : (
-                                            <span className="text-gray-400">N/A</span>
-                                          )}
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-start-date">Warranty Start Date</Label>
-                                        <Input
-                                          id="edit-start-date"
-                                          type="date"
-                                          value={editingCustomer.customer_policies?.[0]?.policy_start_date 
-                                            ? new Date(editingCustomer.customer_policies[0].policy_start_date).toISOString().split('T')[0]
-                                            : ''}
-                                          onChange={(e) => {
-                                            if (editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
-                                              const startDate = new Date(e.target.value);
-                                              const months = getWarrantyDurationInMonths(editingCustomer.payment_type || '12months');
-                                              const expiry = new Date(startDate);
-                                              expiry.setMonth(expiry.getMonth() + months);
-                                              
-                                              const updatedPolicies = [...editingCustomer.customer_policies];
-                                              updatedPolicies[0] = {
-                                                ...updatedPolicies[0],
-                                                policy_start_date: e.target.value,
-                                                policy_end_date: expiry.toISOString()
-                                              };
-                                              setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
-                                            }
-                                          }}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-expiry-date">Warranty Expiry Date</Label>
-                                        <Input
-                                          id="edit-expiry-date"
-                                          type="date"
-                                          value={editingCustomer.customer_policies?.[0]?.policy_end_date 
-                                            ? new Date(editingCustomer.customer_policies[0].policy_end_date).toISOString().split('T')[0]
-                                            : ''}
-                                          onChange={(e) => {
-                                            if (editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
-                                              const updatedPolicies = [...editingCustomer.customer_policies];
-                                              updatedPolicies[0] = {
-                                                ...updatedPolicies[0],
-                                                policy_end_date: e.target.value
-                                              };
-                                              setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
-                                            }
-                                          }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="space-y-4 pt-4 border-t">
-                                    <h3 className="text-lg font-semibold">Add-On Protections</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-mot-fee"
-                                          checked={editingCustomer.mot_fee || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, mot_fee: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-mot-fee" className="font-normal cursor-pointer">MOT Test Fee Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-breakdown-recovery"
-                                          checked={editingCustomer.breakdown_recovery || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, breakdown_recovery: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-breakdown-recovery" className="font-normal cursor-pointer">Breakdown Recovery</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-tyre-cover"
-                                          checked={editingCustomer.tyre_cover || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, tyre_cover: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-tyre-cover" className="font-normal cursor-pointer">Tyre Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-wear-tear"
-                                          checked={editingCustomer.wear_tear || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, wear_tear: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-wear-tear" className="font-normal cursor-pointer">Wear & Tear Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-europe-cover"
-                                          checked={editingCustomer.europe_cover || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, europe_cover: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-europe-cover" className="font-normal cursor-pointer">Europe Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-vehicle-rental"
-                                          checked={editingCustomer.vehicle_rental || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, vehicle_rental: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-vehicle-rental" className="font-normal cursor-pointer">Vehicle Rental</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-transfer-cover"
-                                          checked={editingCustomer.transfer_cover || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, transfer_cover: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-transfer-cover" className="font-normal cursor-pointer">Transfer Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-mot-repair"
-                                          checked={editingCustomer.mot_repair || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, mot_repair: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-mot-repair" className="font-normal cursor-pointer">MOT Repair</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-lost-key"
-                                          checked={editingCustomer.lost_key || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, lost_key: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-lost-key" className="font-normal cursor-pointer">Lost Key Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-consequential"
-                                          checked={editingCustomer.consequential || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, consequential: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-consequential" className="font-normal cursor-pointer">Consequential Loss</Label>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Additional Notes for Customer Dashboard */}
-                                  <div className="space-y-2 pt-4 border-t">
-                                    <Label htmlFor="edit-additional-notes" className="text-base font-semibold">Additional Notes (visible in Customer Dashboard)</Label>
-                                    <Textarea
-                                      id="edit-additional-notes"
-                                      value={editingCustomer.customer_policies?.[0]?.additional_notes || ''}
-                                      onChange={(e) => {
-                                        if (editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
-                                          const updatedPolicies = [...editingCustomer.customer_policies];
-                                          updatedPolicies[0] = {
-                                            ...updatedPolicies[0],
-                                            additional_notes: e.target.value
-                                          };
-                                          setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
-                                        }
-                                      }}
-                                      placeholder="e.g., Transfer cover included, Labour rate increased to £150/hr, 3 months FREE extended cover..."
-                                      rows={3}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                      These notes will appear in the customer's dashboard under "Additional Notes". Changes here do NOT resend to Warranties Register.
-                                    </p>
-                                  </div>
-
-                                  {/* Customer Dashboard Access */}
-                                  <div className="space-y-4 pt-6 border-t">
-                                    <div className="flex items-center gap-2 mb-4">
-                                      <User className="h-5 w-5" />
-                                      <h3 className="text-lg font-semibold">Customer Dashboard Access</h3>
-                                    </div>
-                                    
-                                    <div className="bg-muted/50 p-4 rounded-lg">
-                                      <p className="text-sm text-muted-foreground">
-                                        Set up dashboard credentials to test customer login before they receive their welcome email.
-                                      </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label htmlFor="edit-dashboard-email">Dashboard Email</Label>
-                                        <Input
-                                          id="edit-dashboard-email"
-                                          type="email"
-                                          value={editingCustomer.email || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, email: e.target.value })}
-                                          placeholder="customer@example.com"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="edit-temp-password">Temporary Password</Label>
-                                        <Input
-                                          id="edit-temp-password"
-                                          type="text"
-                                          value={editingCustomer.temporary_password || ''}
-                                          onChange={(e) => setEditingCustomer({ ...editingCustomer, temporary_password: e.target.value })}
-                                          placeholder="temp-password-123"
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="flex justify-end space-x-2 pt-4">
-                                    <Button onClick={updateCustomer}>
-                                      <Save className="h-4 w-4 mr-2" />
-                                      Save Changes
-                                    </Button>
-                                  </div>
-                                </TabsContent>
-
-                                <TabsContent value="warranty">
-                                  {editingCustomer.customer_policies && editingCustomer.customer_policies.length > 0 ? (
-                                    <div className="space-y-4">
-                                      {/* Last Sent Info & Action Buttons */}
-                                      <div className="space-y-3">
-                                        {editingCustomer.customer_policies[0]?.warranties_2000_sent_at && (
-                                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                            <div className="flex items-center gap-2 text-sm">
-                                              <Clock className="h-4 w-4 text-blue-600" />
-                                              <span className="font-medium text-blue-900">Last sent to Warranties Register:</span>
-                                              <span className="text-blue-700">
-                                                {new Date(editingCustomer.customer_policies[0].warranties_2000_sent_at).toLocaleString('en-GB', {
-                                                  day: '2-digit',
-                                                  month: 'short',
-                                                  year: 'numeric',
-                                                  hour: '2-digit',
-                                                  minute: '2-digit'
-                                                })}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        )}
-                                        
-                                        <div className="flex justify-between items-center gap-2">
-                                          <Button 
-                                            onClick={() => {
-                                              if (editingCustomer.customer_policies[0]?.id) {
-                                                if (confirm('⚠️ WARNING: Warranties Register should only receive ONE submission per warranty.\n\nOnly resend if you have updated critical information that must be corrected in their system.\n\nContinue with manual resend?')) {
-                                                  handleSendToWarranties2000(
-                                                    editingCustomer.customer_policies[0].id,
-                                                    editingCustomer.id,
-                                                    true // Force resend - overrides duplicate check
-                                                  );
-                                                }
-                                              }
-                                            }}
-                                            variant="outline"
-                                            className="flex items-center gap-2 border-orange-300 hover:bg-orange-50 hover:border-orange-400"
-                                            disabled={emailSendingLoading[editingCustomer.id]?.warranties2000}
-                                          >
-                                            {emailSendingLoading[editingCustomer.id]?.warranties2000 ? (
-                                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
-                                            ) : (
-                                              <Send className="h-4 w-4 text-orange-600" />
-                                            )}
-                                            <span className="text-orange-600">Manual Resend to Warranties Register</span>
-                                          </Button>
-                                          <EditOrderButton 
-                                            customer={editingCustomer}
-                                            policy={editingCustomer.customer_policies[0]}
-                                          />
-                                          <Button
-                                            onClick={() => {
-                                              setUpgradeCustomer(editingCustomer);
-                                              setUpgradeDialogOpen(true);
-                                            }}
-                                            variant="outline"
-                                            className="flex items-center gap-2 border-amber-300 hover:bg-amber-50 hover:border-amber-400"
-                                          >
-                                            <Sparkles className="h-4 w-4 text-amber-500" />
-                                            <span className="text-amber-600">Manual Upgrade</span>
-                                          </Button>
-                                        </div>
-                                        
-                                        {/* Show manual upgrade badge if upgraded */}
-                                        {editingCustomer.manual_upgrade_at && (
-                                          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
-                                            <Sparkles className="h-4 w-4 text-amber-500" />
-                                            <span className="text-sm text-amber-700">
-                                              <strong>Manually Upgraded</strong> on {format(new Date(editingCustomer.manual_upgrade_at), 'dd/MM/yyyy HH:mm')}
-                                              {editingCustomer.manual_upgrade_notes && (
-                                                <span className="block text-xs text-amber-600 mt-0.5">{editingCustomer.manual_upgrade_notes}</span>
-                                              )}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
-                                      
-                                      {editingCustomer.customer_policies.map((policy: any, index: number) => (
-                                        <Card key={index} className="p-4">
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Warranty Number</Label>
-                                              <div className="flex items-center gap-2">
-                                                <p className="text-sm font-semibold">{policy.warranty_number || 'N/A'}</p>
-                                                {policy.warranty_number && policy.warranty_number.startsWith('BAW-') && (currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin') && (
-                                                  <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-6 px-2 text-xs"
-                                                    onClick={async () => {
-                                                      const currentNum = policy.warranty_number || '';
-                                                      const newNum = currentNum.replace('BAW-', 'ADM-');
-                                                      const { error } = await supabase
-                                                        .from('customer_policies')
-                                                        .update({ warranty_number: newNum })
-                                                        .eq('id', policy.id);
-                                                      if (error) {
-                                                        toast.error('Failed to update warranty number');
-                                                      } else {
-                                                        toast.success(`Warranty number changed to ${newNum}`);
-                                                        fetchCustomers();
-                                                      }
-                                                    }}
-                                                  >
-                                                    Switch to ADM-
-                                                  </Button>
-                                                )}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Policy Number</Label>
-                                              <p className="text-sm">{policy.policy_number || 'N/A'}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Start Date</Label>
-                                              <p className="text-sm">{policy.start_date ? format(new Date(policy.start_date), 'dd/MM/yyyy') : 'N/A'}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Expiry Date</Label>
-                                              <p className="text-sm">{policy.expiry_date ? format(new Date(policy.expiry_date), 'dd/MM/yyyy') : 'N/A'}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Payment Type</Label>
-                                              <p className="text-sm">{policy.payment_type || 'N/A'}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Payment Status</Label>
-                                              <Badge variant={policy.payment_status === 'paid' ? 'default' : 'destructive'}>
-                                                {policy.payment_status}
-                                              </Badge>
-                                            </div>
-                                            <div>
-                                              <Label className="text-sm font-medium text-gray-500">Policy Status</Label>
-                                              <Badge variant={policy.status === 'active' ? 'default' : policy.status === 'cancelled' ? 'destructive' : 'secondary'}>
-                                                {policy.status || 'active'}
-                                              </Badge>
-                                            </div>
-                                            <div className="col-span-2">
-                                              <Label className="text-sm font-medium text-gray-500 mb-2 block">Coverage Details</Label>
-                                              <CoverageDetailsDisplay 
-                                                mot_fee={editingCustomer.mot_fee}
-                                                tyre_cover={editingCustomer.tyre_cover}
-                                                wear_tear={editingCustomer.wear_tear}
-                                                europe_cover={editingCustomer.europe_cover}
-                                                transfer_cover={editingCustomer.transfer_cover}
-                                                breakdown_recovery={editingCustomer.breakdown_recovery}
-                                                vehicle_rental={editingCustomer.vehicle_rental}
-                                                mot_repair={editingCustomer.mot_repair}
-                                                lost_key={editingCustomer.lost_key}
-                                                consequential={editingCustomer.consequential}
-                                              />
-                                            </div>
-                                            <div className="col-span-2">
-                                              <Label className="text-sm font-medium text-gray-500 mb-2 block">Add-On Protections</Label>
-                                              <AddOnProtectionDisplay 
-                                                mot_fee={policy.mot_fee}
-                                                tyre_cover={policy.tyre_cover}
-                                                wear_tear={policy.wear_tear}
-                                                europe_cover={policy.europe_cover}
-                                                transfer_cover={policy.transfer_cover}
-                                                breakdown_recovery={policy.breakdown_recovery}
-                                                vehicle_rental={policy.vehicle_rental}
-                                                mot_repair={policy.mot_repair}
-                                                lost_key={policy.lost_key}
-                                                consequential={policy.consequential}
-                                                payment_type={editingCustomer.payment_type || 'monthly'}
-                                              />
-                                            </div>
-                                            <div className="col-span-2 pt-4 border-t">
-                                              <div className="flex items-center justify-between">
-                                                <div>
-                                                  <Label className="text-sm font-medium text-gray-700">Warranty Management</Label>
-                                                  <p className="text-xs text-gray-500 mt-1">
-                                                    {policy.status === 'cancelled' 
-                                                      ? 'This warranty has been cancelled and is inactive'
-                                                      : 'Cancel this warranty if it needs to be voided or deactivated'}
-                                                  </p>
-                                                </div>
-                                                {policy.status !== 'cancelled' ? (
-                                                  <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                      setCancelWarrantyDialog({
-                                                        isOpen: true,
-                                                        policy: {
-                                                          id: policy.id,
-                                                          email: policy.email,
-                                                          policy_number: policy.policy_number,
-                                                          user_id: policy.user_id,
-                                                          customer_id: policy.customer_id
-                                                        },
-                                                        customerName: editingCustomer?.name
-                                                      });
-                                                    }}
-                                                  >
-                                                    Cancel Warranty
-                                                  </Button>
-                                                ) : (
-                                                  <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={async () => {
-                                                      if (!confirm('Are you sure you want to reactivate this warranty?')) return;
-                                                      
-                                                      try {
-                                                        const { error } = await supabase
-                                                          .from('customer_policies')
-                                                          .update({ status: 'active' })
-                                                          .eq('id', policy.id);
-
-                                                        if (error) throw error;
-
-                                                        toast.success('Warranty reactivated successfully');
-                                                        fetchCustomers(); // Refresh data
-                                                      } catch (error) {
-                                                        console.error('Error reactivating warranty:', error);
-                                                        toast.error('Failed to reactivate warranty');
-                                                      }
-                                                    }}
-                                                  >
-                                                    Reactivate Warranty
-                                                  </Button>
-                                                )}
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </Card>
-                                      ))}
-                                      
-                                      {/* Warranties Register Submission History */}
-                                      {editingCustomer.customer_policies[0]?.id && (
-                                        <W2KAuditLog policyId={editingCustomer.customer_policies[0].id} />
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center text-gray-500 py-8">
-                                      No warranty policies found for this customer
-                                    </div>
-                                  )}
-                                </TabsContent>
-
-                                <TabsContent value="claims">
-                                  {selectedCustomer && (
-                                    <CustomerClaimsSummary
-                                      customerId={selectedCustomer.id}
-                                      customerEmail={selectedCustomer.email}
-                                      customerName={selectedCustomer.name}
-                                      vehicleReg={selectedCustomer.registration_plate}
-                                      onClaimAdded={fetchCustomers}
-                                    />
-                                  )}
-                                </TabsContent>
-
-                                <TabsContent value="tags">
-                                  {selectedCustomer && (
-                                    <div className="space-y-4">
-                                      <div>
-                                        <h3 className="text-lg font-semibold mb-2">Customer Tags</h3>
-                                        <p className="text-sm text-muted-foreground mb-4">
-                                          Manage tags to organize and track customer status, payment info, and follow-ups.
-                                        </p>
-                                        <CustomerTagsManager 
-                                          customerId={selectedCustomer.id}
-                                          onTagsUpdate={fetchCustomers}
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-                                </TabsContent>
-
-                                <TabsContent value="notes" className="space-y-6">
-                                  {selectedCustomer && (
-                                    <>
-                                      <StructuredNotesSection 
-                                        customerId={selectedCustomer.id}
-                                        customerName={selectedCustomer.name}
-                                        policyNumber={selectedCustomer.customer_policies?.[0]?.policy_number}
-                                        vehicleReg={selectedCustomer.registration_plate}
-                                      />
-                                      <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
-                                    </>
-                                  )}
-                                </TabsContent>
-
-                                <TabsContent value="actions">
-                                  {selectedCustomer && (
-                                    <WarrantyActions 
-                                      customerId={selectedCustomer.id}
-                                      customerEmail={selectedCustomer.email}
-                                      policyId={selectedCustomer.customer_policies?.[0]?.id}
-                                      warrantyNumber={selectedCustomer.customer_policies?.[0]?.warranty_number}
-                                      emailStatus={selectedCustomer.customer_policies?.[0]?.email_sent_status}
-                                      warranties2000Status={selectedCustomer.customer_policies?.[0]?.warranties_2000_status}
-                                      onActionComplete={fetchCustomers}
-                                    />
-                                  )}
-                                </TabsContent>
-
-                                <TabsContent value="mot">
-                                  {selectedCustomer && (
-                                    <MOTHistorySection 
-                                      registrationNumber={selectedCustomer.registration_plate}
-                                      customerId={selectedCustomer.id}
-                                    />
-                                  )}
-                                </TabsContent>
-
-                                <TabsContent value="w2000">
-                                  {selectedCustomer && (
-                                    <W2000DataPreview 
-                                      customer={selectedCustomer}
-                                    />
-                                  )}
-                                </TabsContent>
-                              </Tabs>
-                            </>
-                          )}
-                        </DialogContent>
-                      </Dialog>
-                      <div className="flex items-center justify-between gap-2 w-full">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-medium">{customer.name}</span>
-                          {isDueToday(customer) && (
-                            <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
-                              🔔 DUE TODAY
-                            </Badge>
-                          )}
-                          <PaymentDueDatePicker
-                            customerId={customer.id}
-                            paymentDueDate={(customer as any).payment_due_date}
-                            onUpdate={fetchCustomers}
-                          />
-                        </div>
-                        <InlineFutureActivationEdit
-                          customerId={customer.id}
-                          policyId={(customer.customer_policies as any)?.[0]?.id}
-                          currentDate={(customer.customer_policies as any)?.[0]?.policy_start_date || customer.signup_date}
-                          scheduledFor={customer.warranties_2000_scheduled_for}
-                          w2000Status={(customer.customer_policies as any)?.[0]?.warranties_2000_status}
-                          onUpdate={fetchCustomers}
-                        />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {format(new Date(customer.signup_date), 'dd/MM/yyyy')}
-                    </div>
-                  </TableCell>
-                  <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.phone || 'N/A'}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <NumberPlate plateNumber={customer.registration_plate} />
-                      {isDuplicate(customer.registration_plate) && (
-                        <button
-                          onClick={() => openMergeForReg(customer.registration_plate)}
-                          title="Duplicate registration detected — click to merge"
-                        >
-                          <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-[10px] cursor-pointer hover:bg-orange-200 transition-colors">
-                            <GitMerge className="h-3 w-3 mr-0.5" />
-                            DUP
-                          </Badge>
-                        </button>
-                      )}
-                    </div>
-                  </TableCell>
-                    <TableCell className="font-mono text-sm">
-                    {customer.warranty_reference_number || customer.warranty_number ? (
-                      <div className="bg-green-50 px-2 py-1 rounded border">
-                        {customer.warranty_reference_number || customer.warranty_number}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">No Reference</span>
-                    )}
-                  </TableCell>
-                   <TableCell>
-                     <div className="flex items-center gap-2">
-                       {customer.customer_policies?.[0]?.email_sent_status === 'sent' ? (
-                         <Badge variant="secondary" className="bg-green-100 text-green-800">
-                           <CheckCircle className="w-3 h-3 mr-1" />
-                           Sent
-                         </Badge>
-                       ) : customer.customer_policies?.[0]?.email_sent_status === 'failed' ? (
-                         <Badge variant="destructive" className="bg-red-100 text-red-800">
-                           <AlertCircle className="w-3 h-3 mr-1" />
-                           Failed
-                         </Badge>
-                       ) : (
-                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                           <Clock className="w-3 h-3 mr-1" />
-                           Not Sent
-                         </Badge>
-                       )}
-                       
-                       {customer.customer_policies?.[0]?.id && (
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleSendWelcomeEmail(customer.customer_policies[0].id, customer.id)}
-                           disabled={emailSendingLoading[customer.id]?.email}
-                           title="Send Welcome Email"
-                           className="hover:bg-blue-50 hover:text-blue-600"
-                         >
-                           {emailSendingLoading[customer.id]?.email ? (
-                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                           ) : (
-                             <Send className="h-3 w-3" />
-                           )}
-                         </Button>
-                       )}
-                     </div>
-                   </TableCell>
-                   <TableCell>
-                     <div className="flex items-center gap-2">
-                       {customer.customer_policies?.[0]?.warranties_2000_status === 'sent' ? (
-                         <Badge variant="secondary" className="bg-green-100 text-green-800">
-                           <CheckCircle className="w-3 h-3 mr-1" />
-                           Sent
-                         </Badge>
-                       ) : customer.customer_policies?.[0]?.warranties_2000_status === 'failed' ? (
-                         <Badge variant="destructive" className="bg-red-100 text-red-800">
-                           <AlertCircle className="w-3 h-3 mr-1" />
-                           Failed
-                         </Badge>
-                       ) : (
-                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                           <Clock className="w-3 h-3 mr-1" />
-                           Not Sent
-                         </Badge>
-                       )}
-                       
-                       {customer.customer_policies?.[0]?.id && (
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleSendToWarranties2000(customer.customer_policies[0].id, customer.id)}
-                           disabled={emailSendingLoading[customer.id]?.warranties2000}
-                           title="Send to Warranties Register"
-                           className="hover:bg-purple-50 hover:text-purple-600"
-                         >
-                           {emailSendingLoading[customer.id]?.warranties2000 ? (
-                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
-                           ) : (
-                             <Send className="h-3 w-3" />
-                           )}
-                         </Button>
-                       )}
-                     </div>
-                   </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={customer.status === 'Active' ? 'default' : 'destructive'}
-                      className={cn(
-                        customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
-                        customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
-                      )}
-                    >
-                      {customer.status?.toLowerCase() === 'refunded' && '💰 '}
-                      {customer.status}
-                    </Badge>
-                   </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col space-y-1">
-                        <Select
-                          value={customer.assigned_to || 'unassigned'}
-                          onValueChange={(val) => assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val)}
-                          disabled={assignmentLoading[customer.id]}
-                        >
-                          <SelectTrigger className="w-[160px] h-8 text-xs">
-                            <SelectValue placeholder="Assign agent" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unassigned">Unassigned</SelectItem>
-                            <SelectItem value="website">Website</SelectItem>
-                            {adminUsers.filter(u => u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin').map(user => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
-                        {customer.vehicle_make || 'N/A'}
-                      </span>
-                      {!customer.vehicle_make && (
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                          Missing
-                        </Badge>
-                      )}
-                      {customer.vehicle_make && (
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                          DVLA
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <span className={customer.vehicle_model ? 'text-gray-900' : 'text-gray-400'}>
-                        {customer.vehicle_model || 'N/A'}
-                      </span>
-                      {!customer.vehicle_model && (
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                          Missing
-                        </Badge>
-                      )}
-                      {customer.vehicle_model && (
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                          DVLA
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className={customer.vehicle_year ? 'text-gray-900' : 'text-gray-400'}>
-                      {customer.vehicle_year || 'N/A'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {customer.street || customer.town || customer.postcode 
-                      ? `${customer.street || ''} ${customer.town || ''} ${customer.postcode || ''}`.trim()
-                      : 'N/A'
-                    }
-                  </TableCell>
-                   <TableCell>
-                     <Badge variant="secondary">{getWarrantyType(customer.plan_type)}</Badge>
-                   </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="font-mono">
-                        {getWarrantyDurationInMonths(customer.payment_type || '')} months
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {(() => {
-                        const startDate = customer.policy_start_date || customer.customer_policies?.[0]?.policy_start_date || customer.signup_date;
-                        const scheduledFor = customer.warranties_2000_scheduled_for;
-                        const w2000Status = customer.customer_policies?.[0]?.warranties_2000_status;
-                        const isFutureActivation = startDate && new Date(startDate) > new Date();
-                        const isScheduled = w2000Status === 'scheduled' && scheduledFor;
-                        
-                        if (startDate) {
-                          return (
-                            <div className={`text-sm px-2 py-1 rounded ${
-                              isFutureActivation || isScheduled
-                                ? 'bg-amber-100 text-amber-800 font-semibold border border-amber-300'
-                                : ''
-                            }`}>
-                              {format(new Date(startDate), 'dd/MM/yyyy')}
-                              {(isFutureActivation || isScheduled) && (
-                                <div className="text-xs text-amber-600 mt-0.5">
-                                  ⏳ Scheduled
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-                        return <span className="text-gray-400">N/A</span>;
-                      })()}
-                    </TableCell>
-                    {/* Future Activation Column - moved to name cell */}
-                    {/* Upgrade Column */}
-                    <TableCell className="text-center">
-                      <InlineUpgradeCell
-                        customerId={customer.id}
-                        customerEmail={customer.email}
-                        customerName={customer.name}
-                        registrationPlate={customer.registration_plate || ''}
-                        currentClaimLimit={customer.claim_limit || 1250}
-                        currentLabourRate={customer.labour_rate || 70}
-                        currentExcess={customer.voluntary_excess || 100}
-                        onUpdate={fetchCustomers}
-                        tyreCover={customer.tyre_cover}
-                        wearTear={customer.wear_tear}
-                        europeCover={customer.europe_cover}
-                        transferCover={customer.transfer_cover}
-                        breakdownRecovery={customer.breakdown_recovery}
-                        vehicleRental={customer.vehicle_rental}
-                        motFee={customer.mot_fee}
-                        motRepair={customer.mot_repair}
-                        lostKey={customer.lost_key}
-                        consequential={customer.consequential}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {customer.customer_policies?.[0]?.policy_start_date || customer.signup_date ? (
-                        <div className="text-sm">
-                          {format(
-                            calculateExpiryDate(
-                              customer.customer_policies?.[0]?.policy_start_date || customer.signup_date,
-                              customer.payment_type || ''
-                           ), 
-                           'dd/MM/yyyy'
-                         )}
-                       </div>
-                     ) : (
-                       <span className="text-gray-400">N/A</span>
-                     )}
-                   </TableCell>
-                     <TableCell>
-                       <div className="flex flex-col gap-1">
-                         <div className="flex items-center gap-1">
-                           <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
-                             {customer.is_manual_entry ? 'Manual' :
-                              customer.bumper_order_id ? 'Bumper' : 
-                              customer.stripe_session_id ? 'Stripe' : 'N/A'}
-                           </Badge>
-                           {customer.payment_verified ? (
-                             <span className="text-green-600" title="Payment verified">✓</span>
-                           ) : customer.is_manual_entry ? (
-                             <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
-                           ) : (
-                             <span className="text-red-500" title="Payment not verified">✗</span>
-                           )}
-                         </div>
-                         {customer.final_amount && customer.final_amount > 0 && (
-                           <span className="text-xs font-medium text-green-700">
-                             £{customer.final_amount.toFixed(2)}
-                           </span>
-                         )}
-                       </div>
-                     </TableCell>
-                     {/* Purchase Source */}
-                     <TableCell className="bg-purple-50/30">
-                       <PurchaseSourceBadge 
-                         source={customer.purchase_source} 
-                         bumperOrderId={customer.bumper_order_id}
-                         stripeSessionId={customer.stripe_session_id}
-                       />
-                     </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <InlineWarrantyUpgrade
-                            customerId={customer.id}
-                            customerEmail={customer.email}
-                            customerName={customer.name}
-                            registrationPlate={customer.registration_plate}
-                            field="excess"
-                            currentValue={customer.voluntary_excess || 100}
-                            onUpdate={fetchCustomers}
-                          />
-                          {customer.manual_upgrade_at && (
-                            <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                          )}
-                        </div>
-                      </TableCell>
-                       <TableCell>
-                         <div className="flex items-center gap-1">
-                           <InlineWarrantyUpgrade
-                             customerId={customer.id}
-                             customerEmail={customer.email}
-                             customerName={customer.name}
-                             registrationPlate={customer.registration_plate}
-                             field="claim_limit"
-                             currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
-                             onUpdate={fetchCustomers}
-                           />
-                           {customer.manual_upgrade_at && (
-                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                           )}
-                         </div>
-                       </TableCell>
-                       <TableCell>
-                         <CustomerClaimsSummary
-                           customerEmail={customer.email}
-                           customerName={customer.name}
-                           vehicleReg={customer.registration_plate}
-                           showOnly="claimsMade"
-                         />
-                       </TableCell>
-                       <TableCell>
-                         <CustomerClaimsSummary
-                           customerEmail={customer.email}
-                           vehicleReg={customer.registration_plate}
-                           showOnly="claimsPaid"
-                         />
-                       </TableCell>
-                       <TableCell className="text-center">
-                         <DropdownMenu>
-                           <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" size="sm" className="h-7 px-2">
-                               {customer.trustpilot_review_completed ? (
-                                 <Badge className="bg-green-500 hover:bg-green-600 cursor-pointer">
-                                   <CheckCircle className="h-3 w-3 mr-1" />Done
-                                 </Badge>
-                               ) : customer.trustpilot_review_requested ? (
-                                 <Badge variant="outline" className="border-yellow-500 text-yellow-600 cursor-pointer">
-                                   <Clock className="h-3 w-3 mr-1" />Sent
-                                 </Badge>
-                               ) : (
-                                 <span className="text-muted-foreground text-xs hover:text-foreground cursor-pointer">+ Add</span>
-                               )}
-                             </Button>
-                           </DropdownMenuTrigger>
-                           <DropdownMenuContent align="center">
-                             <DropdownMenuItem 
-                               onClick={() => setTrustpilotReviewCustomer(customer)}
-                               className="text-[#00b67a]"
-                             >
-                               <Star className="h-4 w-4 mr-2 fill-[#00b67a]" />
-                               Send Review Request
-                             </DropdownMenuItem>
-                             <DropdownMenuItem 
-                               onClick={() => updateReviewStatus(customer.id, 'trustpilot_review_requested', !customer.trustpilot_review_requested)}
-                             >
-                               <Clock className="h-4 w-4 mr-2" />
-                               {customer.trustpilot_review_requested ? 'Unmark Requested' : 'Mark as Requested'}
-                             </DropdownMenuItem>
-                             <DropdownMenuItem 
-                               onClick={() => updateReviewStatus(customer.id, 'trustpilot_review_completed', !customer.trustpilot_review_completed)}
-                             >
-                               <CheckCircle className="h-4 w-4 mr-2" />
-                               {customer.trustpilot_review_completed ? 'Unmark Completed' : 'Mark Review Received'}
-                             </DropdownMenuItem>
-                           </DropdownMenuContent>
-                         </DropdownMenu>
-                       </TableCell>
-                       <TableCell className="text-center">
-                         <DropdownMenu>
-                           <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" size="sm" className="h-7 px-2">
-                               {customer.google_review_completed ? (
-                                 <Badge className="bg-green-500 hover:bg-green-600 cursor-pointer">
-                                   <CheckCircle className="h-3 w-3 mr-1" />Done
-                                 </Badge>
-                               ) : customer.google_review_requested ? (
-                                 <Badge variant="outline" className="border-yellow-500 text-yellow-600 cursor-pointer">
-                                   <Clock className="h-3 w-3 mr-1" />Sent
-                                 </Badge>
-                               ) : (
-                                 <span className="text-muted-foreground text-xs hover:text-foreground cursor-pointer">+ Add</span>
-                               )}
-                             </Button>
-                           </DropdownMenuTrigger>
-                           <DropdownMenuContent align="center">
-                             <DropdownMenuItem 
-                               onClick={() => updateReviewStatus(customer.id, 'google_review_requested', !customer.google_review_requested)}
-                             >
-                               <Clock className="h-4 w-4 mr-2" />
-                               {customer.google_review_requested ? 'Unmark Requested' : 'Mark as Requested'}
-                             </DropdownMenuItem>
-                             <DropdownMenuItem 
-                               onClick={() => updateReviewStatus(customer.id, 'google_review_completed', !customer.google_review_completed)}
-                             >
-                               <CheckCircle className="h-4 w-4 mr-2" />
-                               {customer.google_review_completed ? 'Unmark Completed' : 'Mark Review Received'}
-                             </DropdownMenuItem>
-                           </DropdownMenuContent>
-                         </DropdownMenu>
-                       </TableCell>
-                       <TableCell>
-                         <div className="flex items-center gap-1">
-                           <InlineWarrantyUpgrade
-                             customerId={customer.id}
-                             customerEmail={customer.email}
-                             customerName={customer.name}
-                             registrationPlate={customer.registration_plate}
-                             field="labour_rate"
-                             currentValue={customer.labour_rate || 70}
-                             onUpdate={fetchCustomers}
-                           />
-                           {customer.manual_upgrade_at && (
-                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                           )}
-                          </div>
-                        </TableCell>
-                       <TableCell className="text-center">
-                         {customer.mileage || 'N/A'}
-                       </TableCell>
-                       <TableCell>
-                         <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
-                       </TableCell>
-                    <TableCell>
-                     <div className="flex space-x-2">
-                        {/* DVLA Vehicle Data Refresh */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => refreshVehicleDataFromDVLA(customer.id, customer.registration_plate)}
-                          disabled={dvlaLookupLoading[customer.id] || !customer.registration_plate}
-                          title="Refresh Vehicle Data from DVLA"
-                          className="hover:bg-green-50 hover:text-green-600"
-                        >
-                          {dvlaLookupLoading[customer.id] ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                          ) : (
-                            <RefreshCw className="h-4 w-4" />
-                          )}
-                        </Button>
 
 
                         {canDeleteCustomers() && (
