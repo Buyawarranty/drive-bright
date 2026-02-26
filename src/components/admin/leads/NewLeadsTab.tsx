@@ -99,6 +99,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
+  const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('newest');
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
@@ -139,6 +140,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = result.filter(lead => !!lead.assigned_to);
     }
     // 'all' and 'total' show all leads (total is same as all, just labeled differently)
+    
+    // Apply agent filter
+    if (agentFilter !== 'all') {
+      if (agentFilter === 'unassigned') {
+        result = result.filter(lead => !lead.assigned_to);
+      } else {
+        result = result.filter(lead => lead.assigned_to === agentFilter);
+      }
+    }
     
     // Apply date range filter
     if (dateRange.from || dateRange.to) {
@@ -204,7 +214,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
     
     return result;
-  }, [leads, debouncedSearchTerm, dateRange, assignmentFilter, sortOption]);
+  }, [leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption]);
 
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
@@ -228,6 +238,36 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     awaiting_contact: leads.filter(l => !l.assigned_to).length,
     assigned: leads.filter(l => !!l.assigned_to).length,
   }), [leads]);
+
+  // Agent lead counts - respects date range filter
+  const agentLeadCounts = useMemo(() => {
+    let dateFilteredLeads = leads;
+    if (dateRange.from || dateRange.to) {
+      dateFilteredLeads = leads.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        if (dateRange.from) {
+          const fromStart = new Date(dateRange.from);
+          fromStart.setHours(0, 0, 0, 0);
+          if (leadDate < fromStart) return false;
+        }
+        if (dateRange.to) {
+          const toEnd = new Date(dateRange.to);
+          toEnd.setHours(23, 59, 59, 999);
+          if (leadDate > toEnd) return false;
+        }
+        return true;
+      });
+    }
+    const counts: Record<string, number> = { unassigned: 0 };
+    dateFilteredLeads.forEach(lead => {
+      if (!lead.assigned_to) {
+        counts['unassigned'] = (counts['unassigned'] || 0) + 1;
+      } else {
+        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [leads, dateRange]);
 
   // Memoize handlers to prevent re-renders
   const handleSelectLead = useCallback((leadId: string) => {
@@ -573,6 +613,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             assignmentCounts={assignmentCounts}
             sortOption={sortOption}
             onSortChange={setSortOption}
+            salesUsers={salesUsers}
+            agentFilter={agentFilter}
+            onAgentFilterChange={setAgentFilter}
+            agentLeadCounts={agentLeadCounts}
           />
           
           <Card className="overflow-hidden">

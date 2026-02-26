@@ -6,13 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'contacted' | 'follow_up' | 'quote_sent';
+
+interface SalesUser {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role?: string;
+}
 
 interface LeadsFiltersProps {
   filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback';
@@ -45,6 +53,11 @@ interface LeadsFiltersProps {
   };
   sortOption?: SortOption;
   onSortChange?: (sort: SortOption) => void;
+  // Agent filter
+  salesUsers?: SalesUser[];
+  agentFilter?: string;
+  onAgentFilterChange?: (agentId: string) => void;
+  agentLeadCounts?: Record<string, number>;
 }
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
@@ -62,7 +75,11 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onAssignmentFilterChange,
   assignmentCounts,
   sortOption = 'newest',
-  onSortChange
+  onSortChange,
+  salesUsers,
+  agentFilter = 'all',
+  onAgentFilterChange,
+  agentLeadCounts,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -324,6 +341,41 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                     )}
                   </span>
                 </SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Agent / Sales Lead Filter */}
+          {onAgentFilterChange && salesUsers && salesUsers.length > 0 && (
+            <Select value={agentFilter} onValueChange={(v) => onAgentFilterChange(v)}>
+              <SelectTrigger className="w-[200px] h-9">
+                <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Filter by agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="flex items-center justify-between w-full">
+                    All Agents
+                  </span>
+                </SelectItem>
+                <SelectItem value="unassigned">
+                  <span className="flex items-center justify-between w-full">
+                    Unassigned
+                    {agentLeadCounts && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5">{agentLeadCounts['unassigned'] || 0}</Badge>
+                    )}
+                  </span>
+                </SelectItem>
+                {salesUsers.map(user => (
+                  <SelectItem key={user.id} value={user.id}>
+                    <span className="flex items-center justify-between w-full">
+                      {user.first_name} {user.last_name}
+                      {agentLeadCounts && (
+                        <Badge variant="secondary" className="ml-2 h-5 px-1.5">{agentLeadCounts[user.id] || 0}</Badge>
+                      )}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
