@@ -513,16 +513,6 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
               {/* Left Content */}
               <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
-                {/* Brand Logo if available */}
-                {brandLogo && (
-                  <div className="mb-2">
-                    <img 
-                      src={brandLogo} 
-                      alt={`${brandName} logo`}
-                      className="h-12 sm:h-16 w-auto object-contain"
-                    />
-                  </div>
-                )}
 
                 {/* Main Headline */}
                 <div className="space-y-2 mb-2 sm:mb-4">
