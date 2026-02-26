@@ -753,7 +753,7 @@ const handler = async (req: Request): Promise<Response> => {
             <hr style="border: none; border-top: 1px solid #dee2e6; margin: 20px 0;">
             
             <p style="color: #666; font-size: 12px; line-height: 1.4; margin: 0;">
-              Buyawarranty.co.uk is a trading name of One Warranty Limited. Registered in the UK under Company number: 10314863 since 2016.<br>
+              Buy A Warranty Limited. Registered in the UK under Company number: 10314863 since 2016.<br>
               Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.
             </p>
           </div>
