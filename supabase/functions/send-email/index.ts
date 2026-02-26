@@ -158,8 +158,19 @@ serve(async (req) => {
     let htmlContent = customHtml || "";
     
     if (templateId === 'policy_documents' || templateId === 'welcome_email') {
-      subject = customSubject || `Your Buy A Warranty Policy Is Now Active 🚗`;
       const firstName = variables?.customerName?.split(' ')[0] || variables?.firstName || 'Valued Customer';
+      const isFutureActivation = variables?.isFutureActivation === 'true' || variables?.isFutureActivation === true;
+      
+      subject = customSubject || (isFutureActivation 
+        ? `Your Buy A Warranty Policy – Future Activation Confirmed 🚗`
+        : `Your Buy A Warranty Policy Is Now Active 🚗`);
+      
+      const headerText = isFutureActivation ? 'Future Activation Confirmed!' : 'Your Policy Is Now Active!';
+      const introText = isFutureActivation
+        ? `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to confirm your warranty has been set up and will activate on <strong>${variables?.policyStartDate || 'N/A'}</strong>.`
+        : `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to let you know that your warranty is now active!`;
+      const startDateLabel = isFutureActivation ? 'Activation Date' : 'Start Date';
+      const endDateLabel = isFutureActivation ? 'Expiry Date' : 'End Date';
       
       htmlContent = `
         <!DOCTYPE html>
@@ -200,18 +211,18 @@ serve(async (req) => {
             <div class="logo-header">
               <img src="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/buy-a-warranty-logo.png" alt="Buy A Warranty" />
             </div>
-            <div class="header"><h1>Your Policy Is Now Active!</h1></div>
+            <div class="header"><h1>${headerText}</h1></div>
             <div class="content">
               <p class="greeting">Hi ${firstName},</p>
-              <p>Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to let you know that your warranty is now active!</p>
+              <p>${introText}</p>
               <div class="info-box">
                 <h3>Here are your policy details:</h3>
                 <div class="info-row"><span class="info-label">Policy Number:</span><span class="info-value">${variables?.policyNumber || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Plan Type:</span><span class="info-value">${variables?.planType || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Registration Plate:</span><span class="info-value">${variables?.registrationPlate || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Coverage Period:</span><span class="info-value">${variables?.coveragePeriod || (variables?.periodInMonths ? variables.periodInMonths + ' months' : 'N/A')}</span></div>
-                <div class="info-row"><span class="info-label">Start Date:</span><span class="info-value">${variables?.policyStartDate || 'N/A'}</span></div>
-                <div class="info-row"><span class="info-label">End Date:</span><span class="info-value">${variables?.policyEndDate || variables?.policyExpiryDate || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">${startDateLabel}:</span><span class="info-value">${variables?.policyStartDate || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">${endDateLabel}:</span><span class="info-value">${variables?.policyEndDate || variables?.policyExpiryDate || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Claim Limit:</span><span class="info-value">${variables?.claimLimitDisplay || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Voluntary Excess:</span><span class="info-value">${variables?.voluntaryExcessDisplay || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Labour Rate:</span><span class="info-value">${variables?.labourRateDisplay || 'N/A'}</span></div>
