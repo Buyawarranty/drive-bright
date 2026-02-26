@@ -76,6 +76,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
   const { value: showAssignmentsToAgents, updateConfig: updateShowAssignments } = useAdminConfig('show_assignments_to_agents');
   
+  // Admin-controlled toggle: whether sales agents can self-assign (claim) leads
+  const { value: allowAgentSelfAssign, updateConfig: updateAllowSelfAssign } = useAdminConfig('allow_agent_self_assign');
+  
   // Sales leads can see distribution settings only if admin has granted access
   // Default to true if config not set (backwards compatible)
   const canSeeDistributionSettings = isFullAdmin || (isSalesLead && salesLeadDistributionAccess !== false);
@@ -1142,6 +1145,31 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
           />
           <span className="text-xs text-muted-foreground">
             {showAssignmentsToAgents !== false ? 'Agents can see lead assignments' : 'Assignments hidden from agents'}
+          </span>
+        </div>
+      )}
+
+      {/* Admin/Sales Lead toggle: Allow agents to self-assign (claim) leads */}
+      {(isFullAdmin || isSalesLead) && (
+        <div className="flex items-center gap-3 p-3 bg-muted/30 border rounded-lg">
+          <Zap className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Agent Self-Assign (Claim Leads)</span>
+          <Switch
+            checked={allowAgentSelfAssign !== false}
+            onCheckedChange={async (checked) => {
+              const success = await updateAllowSelfAssign(checked);
+              if (success) {
+                toast({
+                  title: checked ? 'Self-assign enabled' : 'Self-assign disabled',
+                  description: checked
+                    ? 'Sales agents can now claim leads using the "Get Next Lead" button.'
+                    : 'Sales agents can no longer self-assign leads. Leads will only be distributed automatically.',
+                });
+              }
+            }}
+          />
+          <span className="text-xs text-muted-foreground">
+            {allowAgentSelfAssign !== false ? 'Agents can claim leads themselves' : 'Self-assign blocked — auto-distribution only'}
           </span>
         </div>
       )}
