@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -369,6 +369,8 @@ export const CustomersTab = () => {
   }>>([]);
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
+  const [showTotalSales, setShowTotalSales] = useState(true);
+  const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('today');
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
@@ -2691,11 +2693,21 @@ export const CustomersTab = () => {
                     {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
                   </span>
                 )}
-                {selectedCustomers.size > 0 && (
-                  <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                    {selectedCustomers.size} selected
-                  </Badge>
-                )}
+                {selectedCustomers.size > 0 && (() => {
+                  const selectedTotal = filteredCustomers
+                    .filter(c => selectedCustomers.has(c.id))
+                    .reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+                        {selectedCustomers.size} selected
+                      </Badge>
+                      <Badge variant="secondary" className="bg-green-50 text-green-700 font-semibold">
+                        Total: £{selectedTotal.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </Badge>
+                    </div>
+                  );
+                })()}
               </div>
               <div className="flex items-center gap-2">
                 {selectedCustomers.size > 0 && (
@@ -2833,6 +2845,96 @@ export const CustomersTab = () => {
               </div>
             </div>
           </div>
+
+      {/* Super Admin Total Sales Card */}
+      {currentAdminUser?.role === 'super_admin' && (
+        <div className="bg-white rounded-lg shadow p-4 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowTotalSales(!showTotalSales)}
+                className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+              >
+                {showTotalSales ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                Total Sales
+              </button>
+              {showTotalSales && (
+                <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
+                  <SelectTrigger className="w-[160px] h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="yesterday">Yesterday</SelectItem>
+                    <SelectItem value="7days">Last 7 Days</SelectItem>
+                    <SelectItem value="14days">Last 14 Days</SelectItem>
+                    <SelectItem value="30days">Last 30 Days</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="all">All Time</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            {showTotalSales && (() => {
+              const now = new Date();
+              let dateFrom: Date | null = null;
+              let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+              
+              switch (totalSalesDateFilter) {
+                case 'today':
+                  dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  break;
+                case 'yesterday': {
+                  const y = new Date(now);
+                  y.setDate(y.getDate() - 1);
+                  dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate());
+                  dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
+                  break;
+                }
+                case '7days':
+                  dateFrom = new Date(now);
+                  dateFrom.setDate(dateFrom.getDate() - 7);
+                  break;
+                case '14days':
+                  dateFrom = new Date(now);
+                  dateFrom.setDate(dateFrom.getDate() - 14);
+                  break;
+                case '30days':
+                  dateFrom = new Date(now);
+                  dateFrom.setDate(dateFrom.getDate() - 30);
+                  break;
+                case 'this_month':
+                  dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+                  break;
+                case 'all':
+                  dateFrom = null;
+                  break;
+              }
+
+              const salesInRange = customers.filter(c => {
+                if (!c.final_amount || c.final_amount <= 0) return false;
+                if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                if (!dateFrom) return true;
+                const signupDate = new Date(c.signup_date || c.created_at || '');
+                return signupDate >= dateFrom && signupDate <= dateTo;
+              });
+              const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+              const count = salesInRange.length;
+              
+              return (
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-700">
+                      £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{count} sale{count !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
