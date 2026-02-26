@@ -25,17 +25,17 @@ serve(async (req) => {
   try {
     logStep("Starting scheduled W2000 processing");
 
-    // Get today's date at midnight for comparison
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
+    // Get end of today for comparison (23:59:59.999) so we catch all policies scheduled for today
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const endOfTodayISO = endOfToday.toISOString();
 
     // Find all policies scheduled for W2000 submission on or before today
     const { data: scheduledPolicies, error: fetchError } = await supabaseClient
       .from('customer_policies')
       .select('id, customer_id, email, warranty_number, warranties_2000_scheduled_for, policy_start_date')
       .eq('warranties_2000_status', 'scheduled')
-      .lte('warranties_2000_scheduled_for', todayISO)
+      .lte('warranties_2000_scheduled_for', endOfTodayISO)
       .limit(50); // Process up to 50 at a time
 
     if (fetchError) {
