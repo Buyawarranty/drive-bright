@@ -364,32 +364,60 @@ serve(async (req) => {
       return planType.charAt(0).toUpperCase() + planType.slice(1).toLowerCase();
     };
 
+    // Fetch customer details for claim limit, excess, labour rate
+    const { data: customerRecord } = await supabaseClient
+      .from('customers')
+      .select('claim_limit, voluntary_excess, labour_rate')
+      .eq('email', recipientEmail)
+      .maybeSingle();
+    
+    // Also check customer_policies for these values
+    const { data: policyRecord } = policyNumber ? await supabaseClient
+      .from('customer_policies')
+      .select('claim_limit, voluntary_excess')
+      .eq('policy_number', policyNumber)
+      .maybeSingle() : { data: null };
+
+    const claimLimit = policyRecord?.claim_limit || customerRecord?.claim_limit || 1250;
+    const voluntaryExcess = policyRecord?.voluntary_excess ?? customerRecord?.voluntary_excess ?? 0;
+    const labourRate = customerRecord?.labour_rate || 70;
+    
+    // Map internal claim limit 750 → display £1,000
+    const getDisplayClaimLimit = (cl: number): string => {
+      if (cl === 750) return '£1,000';
+      return `£${cl.toLocaleString()}`;
+    };
+
+    logStep("Customer warranty details", { claimLimit, voluntaryExcess, labourRate });
+
     // Send policy documents email using the template
     const emailVariables = {
       customerName: customerName || recipientEmail.split('@')[0],
       planType: getDisplayPlanType(planType),
       policyNumber: policyNumber,
       registrationPlate: registrationPlate || 'N/A',
-      paymentMethod: getPaymentMethodDisplay(), // Correct payment method name (new field)
-      paymentType: getPaymentMethodDisplay(), // Keep for backward compatibility with existing template
+      paymentMethod: getPaymentMethodDisplay(),
+      paymentType: getPaymentMethodDisplay(),
       periodInMonths: periodInMonths,
-      coveragePeriod: `${periodInMonths} month${periodInMonths === 1 ? '' : 's'}`, // Correct coverage period
+      coveragePeriod: `${periodInMonths} month${periodInMonths === 1 ? '' : 's'}`,
+      claimLimitDisplay: `${getDisplayClaimLimit(claimLimit)} per claim`,
+      voluntaryExcessDisplay: `£${voluntaryExcess}`,
+      labourRateDisplay: `£${labourRate}/hour`,
       policyStartDate: startDate.toLocaleDateString('en-GB', { 
         day: '2-digit', 
         month: '2-digit', 
         year: 'numeric' 
       }),
-      policyEndDate: expiryDate.toLocaleDateString('en-GB', { // Policy End Date field (new field)
+      policyEndDate: expiryDate.toLocaleDateString('en-GB', {
         day: '2-digit', 
         month: '2-digit', 
         year: 'numeric' 
       }),
-      policyExpiryDate: expiryDate.toLocaleDateString('en-GB', { // Keep for backward compatibility
+      policyExpiryDate: expiryDate.toLocaleDateString('en-GB', {
         day: '2-digit', 
         month: '2-digit', 
         year: 'numeric' 
       }),
-      // Handle customer login credentials
       loginUrl: "https://buyawarranty.co.uk/customer-dashboard",
       loginEmail: recipientEmail,
       ...(await getCustomerCredentials(supabaseClient, recipientEmail, policyNumber))

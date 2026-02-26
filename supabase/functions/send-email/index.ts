@@ -212,6 +212,9 @@ serve(async (req) => {
                 <div class="info-row"><span class="info-label">Coverage Period:</span><span class="info-value">${variables?.coveragePeriod || (variables?.periodInMonths ? variables.periodInMonths + ' months' : 'N/A')}</span></div>
                 <div class="info-row"><span class="info-label">Start Date:</span><span class="info-value">${variables?.policyStartDate || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">End Date:</span><span class="info-value">${variables?.policyEndDate || variables?.policyExpiryDate || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">Claim Limit:</span><span class="info-value">${variables?.claimLimitDisplay || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">Voluntary Excess:</span><span class="info-value">${variables?.voluntaryExcessDisplay || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">Labour Rate:</span><span class="info-value">${variables?.labourRateDisplay || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Payment Method:</span><span class="info-value">${variables?.paymentMethod || variables?.paymentType || 'N/A'}</span></div>
               </div>
               ${variables?.temporaryPassword && !variables?.isExistingCustomer ? `
