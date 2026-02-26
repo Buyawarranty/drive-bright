@@ -42,11 +42,18 @@ export interface Badge {
   earned_at?: string;
 }
 
-export const useSalesStats = (userId?: string) => {
+interface TeamFilters {
+  dateFrom?: Date;
+  dateTo?: Date;
+  agentId?: string; // 'all' or specific agent id
+}
+
+export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
   const [personalStats, setPersonalStats] = useState<SalespersonStats | null>(null);
   const [teamStats, setTeamStats] = useState<TeamStats | null>(null);
   const [userBadges, setUserBadges] = useState<Badge[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
+  const [salesUsers, setSalesUsers] = useState<{ id: string; first_name: string | null; last_name: string | null; email: string; role: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPersonalStats = useCallback(async (adminUserId: string) => {
@@ -114,13 +121,32 @@ export const useSalesStats = (userId?: string) => {
     }
   }, []);
 
-  const fetchTeamStats = useCallback(async () => {
+  const fetchTeamStats = useCallback(async (filters?: TeamFilters) => {
     try {
       // Get all leads (for lead counts, status breakdowns, tags)
-      const { data: leads } = await supabase
-        .from('sales_leads')
-        .select('*');
+      let leadsQuery = supabase.from('sales_leads').select('*');
+      
+      // Apply date filter to leads
+      if (filters?.dateFrom) {
+        const fromISO = new Date(filters.dateFrom);
+        fromISO.setHours(0, 0, 0, 0);
+        leadsQuery = leadsQuery.gte('created_at', fromISO.toISOString());
+      }
+      if (filters?.dateTo) {
+        const toISO = new Date(filters.dateTo);
+        toISO.setHours(23, 59, 59, 999);
+        leadsQuery = leadsQuery.lte('created_at', toISO.toISOString());
+      }
+      // Apply agent filter to leads
+      if (filters?.agentId && filters.agentId !== 'all') {
+        if (filters.agentId === 'unassigned') {
+          leadsQuery = leadsQuery.is('assigned_to', null);
+        } else {
+          leadsQuery = leadsQuery.eq('assigned_to', filters.agentId);
+        }
+      }
 
+      const { data: leads } = await leadsQuery;
       const leadsData = leads || [];
 
       // Get only sales-role users (sales agents and sales leads) — same as scoreboard
@@ -130,24 +156,41 @@ export const useSalesStats = (userId?: string) => {
         .eq('is_active', true)
         .in('role', ['sales', 'sales_lead']);
 
+      setSalesUsers(users || []);
       const userIds = (users || []).map(u => u.id);
 
       // Fetch customers data (same source as scoreboard for revenue/deals)
-      const { data: customers } = await supabase
+      let customersQuery = supabase
         .from('customers')
         .select('id, assigned_to, final_amount, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .in('assigned_to', userIds);
 
-      const customersData = customers || [];
+      // Apply date filter to customers
+      if (filters?.dateFrom) {
+        const fromISO = new Date(filters.dateFrom);
+        fromISO.setHours(0, 0, 0, 0);
+        customersQuery = customersQuery.gte('created_at', fromISO.toISOString());
+      }
+      if (filters?.dateTo) {
+        const toISO = new Date(filters.dateTo);
+        toISO.setHours(23, 59, 59, 999);
+        customersQuery = customersQuery.lte('created_at', toISO.toISOString());
+      }
+      // Apply agent filter to customers
+      if (filters?.agentId && filters.agentId !== 'all' && filters.agentId !== 'unassigned') {
+        customersQuery = customersQuery.eq('assigned_to', filters.agentId);
+      }
+
+      const { data: customers } = await customersQuery;
+      const customersData = (filters?.agentId === 'unassigned') ? [] : (customers || []);
 
       // Calculate leaderboard using customers for revenue/deals (matches scoreboard)
       const leaderboard: SalespersonStats[] = (users || []).map((user) => {
         const userLeads = leadsData.filter(l => l.assigned_to === user.id);
         const userCustomers = customersData.filter(c => c.assigned_to === user.id);
         
-        // Revenue and converted from customers table (like scoreboard)
         const converted = userCustomers.length;
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
@@ -322,20 +365,21 @@ export const useSalesStats = (userId?: string) => {
         await checkAndAwardBadges(userId);
       }
 
-      const team = await fetchTeamStats();
+      const team = await fetchTeamStats(teamFilters);
       setTeamStats(team);
       
       setLoading(false);
     };
 
     loadData();
-  }, [userId, fetchPersonalStats, fetchTeamStats, fetchBadges, checkAndAwardBadges]);
+  }, [userId, teamFilters?.dateFrom?.getTime(), teamFilters?.dateTo?.getTime(), teamFilters?.agentId, fetchPersonalStats, fetchTeamStats, fetchBadges, checkAndAwardBadges]);
 
   return {
     personalStats,
     teamStats,
     userBadges,
     allBadges,
+    salesUsers,
     loading,
     refreshStats: async () => {
       setLoading(true);
@@ -343,7 +387,7 @@ export const useSalesStats = (userId?: string) => {
         const stats = await fetchPersonalStats(userId);
         setPersonalStats(stats);
       }
-      const team = await fetchTeamStats();
+      const team = await fetchTeamStats(teamFilters);
       setTeamStats(team);
       setLoading(false);
     }

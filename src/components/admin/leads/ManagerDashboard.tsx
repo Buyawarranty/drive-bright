@@ -1,21 +1,73 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSalesStats } from '@/hooks/useSalesStats';
 import { 
-  TrendingUp, Users, DollarSign, Target, 
-  Award, BarChart3, PieChart, ArrowUp, ArrowDown
+  TrendingUp, Users, 
+  Award, BarChart3, PieChart, ArrowUp, ArrowDown, CalendarIcon, X
 } from 'lucide-react';
+import { subDays, startOfDay, endOfDay, startOfMonth, startOfWeek } from 'date-fns';
+
+type QuickPeriod = 'all' | 'today' | 'yesterday' | '7days' | '14days' | '30days' | 'this_month' | 'this_week';
+
+const getDateRange = (period: QuickPeriod): { from: Date | undefined; to: Date | undefined } => {
+  const now = new Date();
+  switch (period) {
+    case 'today':
+      return { from: startOfDay(now), to: endOfDay(now) };
+    case 'yesterday': {
+      const y = subDays(now, 1);
+      return { from: startOfDay(y), to: endOfDay(y) };
+    }
+    case '7days':
+      return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+    case '14days':
+      return { from: startOfDay(subDays(now, 13)), to: endOfDay(now) };
+    case '30days':
+      return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
+    case 'this_month':
+      return { from: startOfMonth(now), to: endOfDay(now) };
+    case 'this_week':
+      return { from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfDay(now) };
+    case 'all':
+    default:
+      return { from: undefined, to: undefined };
+  }
+};
+
+const periodLabels: Record<QuickPeriod, string> = {
+  all: 'All Time',
+  today: 'Today',
+  yesterday: 'Yesterday',
+  this_week: 'This Week',
+  '7days': 'Last 7 Days',
+  '14days': 'Last 14 Days',
+  this_month: 'This Month',
+  '30days': 'Last 30 Days',
+};
 
 export const ManagerDashboard: React.FC = () => {
-  const { teamStats, allBadges, loading } = useSalesStats();
+  const [period, setPeriod] = useState<QuickPeriod>('all');
+  const [agentFilter, setAgentFilter] = useState<string>('all');
+
+  const dateRange = useMemo(() => getDateRange(period), [period]);
+
+  const teamFilters = useMemo(() => ({
+    dateFrom: dateRange.from,
+    dateTo: dateRange.to,
+    agentId: agentFilter,
+  }), [dateRange.from, dateRange.to, agentFilter]);
+
+  const { teamStats, salesUsers, loading } = useSalesStats(undefined, teamFilters);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -28,8 +80,64 @@ export const ManagerDashboard: React.FC = () => {
     );
   }
 
+  const hasFilters = period !== 'all' || agentFilter !== 'all';
+
   return (
     <div className="space-y-6">
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+          <Select value={period} onValueChange={(v) => setPeriod(v as QuickPeriod)}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(periodLabels).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <Select value={agentFilter} onValueChange={setAgentFilter}>
+            <SelectTrigger className="w-[200px] h-9">
+              <SelectValue placeholder="All Agents" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Agents</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {salesUsers.map(u => (
+                <SelectItem key={u.id} value={u.id}>
+                  {u.first_name} {u.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {hasFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setPeriod('all'); setAgentFilter('all'); }}
+            className="gap-1 text-xs"
+          >
+            <X className="h-3.5 w-3.5" />
+            Clear Filters
+          </Button>
+        )}
+
+        {hasFilters && (
+          <Badge variant="secondary" className="text-xs">
+            {periodLabels[period]}
+            {agentFilter !== 'all' && ` · ${agentFilter === 'unassigned' ? 'Unassigned' : salesUsers.find(u => u.id === agentFilter)?.first_name || 'Agent'}`}
+          </Badge>
+        )}
+      </div>
+
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -158,7 +266,7 @@ export const ManagerDashboard: React.FC = () => {
                     <div className="w-24 text-sm capitalize">{item.status.replace('_', ' ')}</div>
                     <div className="flex-1">
                       <Progress 
-                        value={(item.count / teamStats.totalLeads) * 100} 
+                        value={teamStats.totalLeads > 0 ? (item.count / teamStats.totalLeads) * 100 : 0} 
                         className="h-2"
                       />
                     </div>
@@ -177,7 +285,7 @@ export const ManagerDashboard: React.FC = () => {
                     <div className="w-24 text-sm capitalize">{item.source.replace('_', ' ')}</div>
                     <div className="flex-1">
                       <Progress 
-                        value={(item.count / teamStats.totalLeads) * 100} 
+                        value={teamStats.totalLeads > 0 ? (item.count / teamStats.totalLeads) * 100 : 0} 
                         className="h-2"
                       />
                     </div>
