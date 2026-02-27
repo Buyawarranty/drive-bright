@@ -7,13 +7,7 @@ const corsHeaders = {
 };
 
 // Welcome message for new leads
-const WELCOME_MESSAGE = `BuyAWarranty: Your personalised vehicle warranty quote is ready. You could save hundreds on unexpected repair costs Unexpected car repairs can cost £800+
-
-Secure cover in 60 seconds.
-
-View your vehicle warranty price here: www.buyawarranty.co.uk
-
-Reply YES for a quick call or STOP to opt out.`;
+const WELCOME_MESSAGE = `Your vehicle warranty quote is ready. Lock in your cover in under 60 seconds at https://buyawarranty.co.uk or call 0330 229 5040.`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
