@@ -2446,10 +2446,10 @@ export const CustomersTab = () => {
           )}
           {/* Enhanced Search and Filter Controls */}
           <div className="bg-white p-4 rounded-lg border space-y-4">
-            {/* Row 1: Search, Sort By, Plan Type, Status */}
+            {/* Row 1: Search, Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
-              <div className="space-y-1">
+              <div className="space-y-1 lg:col-span-3">
                 <Label htmlFor="search" className="text-sm font-medium">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -2461,41 +2461,6 @@ export const CustomersTab = () => {
                     className="pl-10"
                   />
                 </div>
-              </div>
-
-              {/* Sort By */}
-              <div className="space-y-1">
-                <Label htmlFor="sortBy" className="text-sm font-medium">Sort By</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="name">Name (A-Z)</SelectItem>
-                    <SelectItem value="email">Email (A-Z)</SelectItem>
-                    <SelectItem value="plan">Plan Type</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Filter by Plan */}
-              <div className="space-y-1">
-                <Label htmlFor="planFilter" className="text-sm font-medium">Plan Type</Label>
-                <Select value={filterByPlan} onValueChange={setFilterByPlan}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Plans</SelectItem>
-                    <SelectItem value="gold">Gold</SelectItem>
-                    <SelectItem value="electric">Electric</SelectItem>
-                    <SelectItem value="phev">PHEV</SelectItem>
-                    <SelectItem value="motorbike">Motorbike</SelectItem>
-                    <SelectItem value="van">Van</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               {/* Filter by Status */}
