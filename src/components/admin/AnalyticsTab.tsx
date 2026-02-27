@@ -31,6 +31,7 @@ interface Customer {
   vehicle_year: string | null;
   mileage: string | null;
   assigned_to: string | null;
+  updated_at: string | null;
 }
 
 interface AdminUser {
@@ -89,7 +90,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -209,9 +210,10 @@ export const AnalyticsTab = () => {
     return lowerStatus === 'cancelled' || lowerStatus === 'refunded' || lowerStatus === 'test purchase';
   };
   
-  // Helper function to check if status is specifically a refund
+  // Helper function to check if status is specifically a refund/cancellation
   const isRefunded = (status: string): boolean => {
-    return status?.toLowerCase() === 'refunded';
+    const lower = status?.toLowerCase() || '';
+    return lower === 'refunded' || lower === 'cancelled';
   };
 
   // Filter customers based on date range and source
@@ -332,13 +334,19 @@ export const AnalyticsTab = () => {
     };
   }, [customers, effectiveDateRange]);
 
-  // Refund metrics calculation
+  // Refund/cancellation metrics calculation
   const refundMetrics = useMemo(() => {
     const refundedCustomers = filteredCustomers.filter(c => isRefunded(c.status));
     const totalRefundAmount = refundedCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const totalSalesCount = filteredCustomers.length;
+    const totalSalesRevenue = filteredCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const percentOfSales = totalSalesCount > 0 ? ((refundedCustomers.length / totalSalesCount) * 100) : 0;
+    const percentOfRevenue = totalSalesRevenue > 0 ? ((totalRefundAmount / totalSalesRevenue) * 100) : 0;
     return {
       count: refundedCustomers.length,
-      totalAmount: totalRefundAmount
+      totalAmount: totalRefundAmount,
+      percentOfSales: percentOfSales.toFixed(1),
+      percentOfRevenue: percentOfRevenue.toFixed(1),
     };
   }, [filteredCustomers]);
 
@@ -356,9 +364,10 @@ export const AnalyticsTab = () => {
     }).reverse();
 
     customers.forEach(customer => {
-      if (isRefunded(customer.status) && customer.final_amount && customer.signup_date) {
-        const signupDate = new Date(customer.signup_date);
-        const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
+      if (isRefunded(customer.status) && customer.final_amount) {
+        // Use updated_at as cancellation date (when status changed), fall back to signup_date
+        const cancelDate = new Date(customer.updated_at || customer.signup_date);
+        const monthKey = `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}`;
         const monthData = months.find(m => m.monthKey === monthKey);
         if (monthData) {
           monthData.refundAmount += Number(customer.final_amount) || 0;
@@ -720,42 +729,50 @@ export const AnalyticsTab = () => {
         </Card>
       </div>
 
-      {/* Refunds Section */}
+      {/* Refunds & Cancellations Section */}
       <Card className="border-l-4 border-l-red-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-red-500" />
-              Refunds {selectedMonth ? `(${format(new Date(parseInt(selectedMonth.split('-')[0]), parseInt(selectedMonth.split('-')[1]) - 1), 'MMMM yyyy')})` : effectiveDateRange?.from ? '(Filtered Period)' : '(All Time)'}
+              Refunds &amp; Cancellations {selectedMonth ? `(${format(new Date(parseInt(selectedMonth.split('-')[0]), parseInt(selectedMonth.split('-')[1]) - 1), 'MMMM yyyy')})` : effectiveDateRange?.from ? '(Filtered Period)' : '(All Time)'}
             </CardTitle>
             <CardDescription className="mt-1">
-              Money refunded to customers
+              Money lost to refunds &amp; cancellations
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Total Refunds</span>
+              <span className="text-sm text-muted-foreground">Total Lost</span>
               <p className="text-2xl font-bold text-red-600">
                 £{refundMetrics.totalAmount.toLocaleString('en-GB')}
               </p>
             </div>
             <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Refund Count</span>
+              <span className="text-sm text-muted-foreground">Count</span>
               <p className="text-2xl font-bold">{refundMetrics.count}</p>
             </div>
             <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Avg Refund</span>
+              <span className="text-sm text-muted-foreground">Avg Amount</span>
               <p className="text-2xl font-bold text-red-600">
                 £{refundMetrics.count > 0 ? Math.round(refundMetrics.totalAmount / refundMetrics.count) : 0}
               </p>
             </div>
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">% of Orders</span>
+              <p className="text-2xl font-bold text-red-600">{refundMetrics.percentOfSales}%</p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">% of Revenue</span>
+              <p className="text-2xl font-bold text-red-600">{refundMetrics.percentOfRevenue}%</p>
+            </div>
           </div>
           
-          {/* Monthly refunds breakdown */}
+          {/* Monthly breakdown */}
           <div className="mt-4 pt-4 border-t">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Monthly Refunds (Last 12 Months)</p>
+            <p className="text-sm font-medium text-muted-foreground mb-2">Monthly Refunds &amp; Cancellations (Last 12 Months)</p>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {monthlyRefunds.map((month) => (
                 <div 
@@ -766,7 +783,7 @@ export const AnalyticsTab = () => {
                   <p className="text-sm font-semibold text-red-600">
                     £{month.refundAmount.toLocaleString()}
                   </p>
-                  <p className="text-xs text-muted-foreground">{month.refundCount} refunds</p>
+                  <p className="text-xs text-muted-foreground">{month.refundCount} cancelled</p>
                 </div>
               ))}
             </div>
