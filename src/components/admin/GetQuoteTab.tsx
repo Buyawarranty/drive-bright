@@ -442,25 +442,28 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
   // Handle custom price field changes
   const handleCustomMonthlyChange = (value: string) => {
-    setCustomMonthlyPrice(value);
-    if (value && parseFloat(value) > 0) {
+    // Allow empty or partial input for better UX
+    const sanitized = value.replace(/[^0-9.]/g, '');
+    setCustomMonthlyPrice(sanitized);
+    const parsed = parseFloat(sanitized);
+    if (sanitized && !isNaN(parsed) && parsed > 0) {
       setIsPriceOverridden(true);
-      // Sync full price when monthly is changed
-      const fullPrice = parseFloat(value) * 12;
+      const fullPrice = parsed * 12;
       setCustomFullPrice(fullPrice.toString());
-    } else if (!value) {
+    } else if (!sanitized) {
       setIsPriceOverridden(false);
     }
   };
 
   const handleCustomFullChange = (value: string) => {
-    setCustomFullPrice(value);
-    if (value && parseFloat(value) > 0) {
+    const sanitized = value.replace(/[^0-9.]/g, '');
+    setCustomFullPrice(sanitized);
+    const parsed = parseFloat(sanitized);
+    if (sanitized && !isNaN(parsed) && parsed > 0) {
       setIsPriceOverridden(true);
-      // Sync monthly price when full is changed
-      const monthly = Math.floor(parseFloat(value) / 12);
+      const monthly = Math.floor(parsed / 12);
       setCustomMonthlyPrice(monthly.toString());
-    } else if (!value) {
+    } else if (!sanitized) {
       setIsPriceOverridden(false);
     }
   };
@@ -2542,11 +2545,12 @@ Questions? Call 0330 229 5040`;
                       <Label htmlFor="custom-monthly">Monthly Price (£)</Label>
                       <Input
                         id="custom-monthly"
-                        type="number"
-                        step="1"
-                        min="0"
+                        type="text"
+                        inputMode="numeric"
                         value={customMonthlyPrice}
                         onChange={(e) => handleCustomMonthlyChange(e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        placeholder="0"
                         className={cn(
                           "font-semibold",
                           isPriceOverridden ? "border-amber-400 bg-amber-50" : "border-green-400 bg-green-50"
@@ -2560,11 +2564,12 @@ Questions? Call 0330 229 5040`;
                       <Label htmlFor="custom-full">Total Price (£)</Label>
                       <Input
                         id="custom-full"
-                        type="number"
-                        step="1"
-                        min="0"
+                        type="text"
+                        inputMode="numeric"
                         value={customFullPrice}
                         onChange={(e) => handleCustomFullChange(e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        placeholder="0"
                         className={cn(
                           "font-semibold",
                           isPriceOverridden ? "border-amber-400 bg-amber-50" : "border-green-400 bg-green-50"
