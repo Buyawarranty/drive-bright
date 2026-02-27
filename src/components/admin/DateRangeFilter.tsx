@@ -243,15 +243,6 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         </>
       )}
 
-      {/* Quick "Show last 30 days" link */}
-      <Button
-        variant="link"
-        size="sm"
-        className="text-primary text-xs px-2 whitespace-nowrap"
-        onClick={handleQuickLast30}
-      >
-        Show last 30 days
-      </Button>
 
       {/* Clear button */}
       {dateRange && (
