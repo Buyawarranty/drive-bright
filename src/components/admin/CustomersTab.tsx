@@ -626,6 +626,9 @@ export const CustomersTab = () => {
         } else if (filterBySource === 'quote_order') {
           // ADM- prefix = sales team confirmed / manual entry
           return warrantyNum.startsWith('ADM');
+        } else if (filterBySource === 'agent_sales') {
+          // Combined: BAW-S- (staff purchase) + ADM- (quote & orders)
+          return warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
         }
         return true;
       });
@@ -2608,6 +2611,12 @@ export const CustomersTab = () => {
                         Quote & Orders (ADM)
                       </div>
                     </SelectItem>
+                    <SelectItem value="agent_sales">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-orange-500" />
+                        Agent Sales (BAW-S + ADM)
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                </div>
@@ -2817,6 +2826,7 @@ export const CustomersTab = () => {
                       {filterBySource === 'website' && ' • Website (BAW)'}
                       {filterBySource === 'staff_purchase' && ' • Staff Purchase (BAW-S)'}
                       {filterBySource === 'quote_order' && ' • Quote & Orders (ADM)'}
+                      {filterBySource === 'agent_sales' && ' • Agent Sales (BAW-S + ADM)'}
                     </>
                   )}
                 </span>
