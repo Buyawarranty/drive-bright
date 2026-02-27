@@ -1587,10 +1587,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               vehicleModel={vehicleData.model}
               duration={getDurationText()}
               startDate={startDate}
-              onChangeDate={() => {
-                // Scroll to the date picker or toggle it
-                const dateSection = document.getElementById('start-date-section');
-                dateSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              onStartDateChange={(date) => {
+                setStartDate(date);
+                if (date) {
+                  try {
+                    localStorage.setItem('buyawarranty_startDate', date.toISOString());
+                  } catch (error) {
+                    console.error('Error saving start date:', error);
+                  }
+                }
               }}
             />
           </section>
