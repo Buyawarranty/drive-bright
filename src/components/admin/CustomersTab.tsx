@@ -2429,30 +2429,19 @@ export const CustomersTab = () => {
         </div>
 
         <TabsContent value="complete" className="space-y-4">
-          {/* Due Today Activations Banner */}
+          {/* Due Today Activations – lightweight inline banner */}
           {dueTodayCustomers.length > 0 && (
-            <div className="bg-orange-50 border-2 border-orange-400 rounded-lg p-4 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="bg-orange-500 text-white rounded-full p-2">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-orange-900 text-base flex items-center gap-2">
-                    🔔 {dueTodayCustomers.length} Activation{dueTodayCustomers.length !== 1 ? 's' : ''} Due Today
-                  </h3>
-                  <p className="text-orange-700 text-sm mt-0.5">
-                    The following warranties are scheduled for activation today. They have been moved to the top of the list.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {dueTodayCustomers.map(c => (
-                    <div key={c.id} className="bg-white border border-orange-300 rounded-md px-3 py-1.5 text-xs">
-                      <span className="font-bold text-orange-900">{c.name}</span>
-                      <span className="text-orange-600 ml-1.5">({c.registration_plate})</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-sm">
+              <Clock className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+              <span className="text-amber-800 font-medium">
+                {dueTodayCustomers.length} activation{dueTodayCustomers.length !== 1 ? 's' : ''} due today
+              </span>
+              <span className="text-amber-600">—</span>
+              {dueTodayCustomers.map((c, i) => (
+                <span key={c.id} className="text-amber-700 text-xs">
+                  {c.name} ({c.registration_plate}){i < dueTodayCustomers.length - 1 ? ', ' : ''}
+                </span>
+              ))}
             </div>
           )}
           {/* Enhanced Search and Filter Controls */}
@@ -2847,21 +2836,118 @@ export const CustomersTab = () => {
             </div>
           </div>
 
-      {/* Super Admin Total Sales Card */}
-      {currentAdminUser?.role === 'super_admin' && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowTotalSales(!showTotalSales)}
-                className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
-              >
-                {showTotalSales ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                Total Sales
-              </button>
-              {showTotalSales && (
-                <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
-                  <SelectTrigger className="w-[160px] h-8 text-xs">
+      {/* Results Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden mt-2">
+        {/* Inline Sales Summary in table header area */}
+        {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
+          <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30">
+            {/* Super Admin: Total Sales */}
+            {currentAdminUser?.role === 'super_admin' && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowTotalSales(!showTotalSales)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showTotalSales ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  Total Sales
+                </button>
+                {showTotalSales && (
+                  <>
+                    <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
+                      <SelectTrigger className="w-[130px] h-7 text-xs border-none bg-transparent shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="today">Today</SelectItem>
+                        <SelectItem value="yesterday">Yesterday</SelectItem>
+                        <SelectItem value="7days">Last 7 Days</SelectItem>
+                        <SelectItem value="14days">Last 14 Days</SelectItem>
+                        <SelectItem value="30days">Last 30 Days</SelectItem>
+                        <SelectItem value="this_month">This Month</SelectItem>
+                        <SelectItem value="all">All Time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(() => {
+                      const now = new Date();
+                      let dateFrom: Date | null = null;
+                      let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                      switch (totalSalesDateFilter) {
+                        case 'today': dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate()); break;
+                        case 'yesterday': { const y = new Date(now); y.setDate(y.getDate() - 1); dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate()); dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999); break; }
+                        case '7days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 7); break;
+                        case '14days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 14); break;
+                        case '30days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 30); break;
+                        case 'this_month': dateFrom = new Date(now.getFullYear(), now.getMonth(), 1); break;
+                        case 'all': dateFrom = null; break;
+                      }
+                      const getSalesForRange = (from: Date, to: Date) => {
+                        return customers.filter(c => {
+                          if (!c.final_amount || c.final_amount <= 0) return false;
+                          if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                          const d = new Date(c.signup_date || c.created_at || '');
+                          return d >= from && d <= to;
+                        }).reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                      };
+                      const salesInRange = customers.filter(c => {
+                        if (!c.final_amount || c.final_amount <= 0) return false;
+                        if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                        if (!dateFrom) return true;
+                        const signupDate = new Date(c.signup_date || c.created_at || '');
+                        return signupDate >= dateFrom && signupDate <= dateTo;
+                      });
+                      const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                      const count = salesInRange.length;
+
+                      // Record detection
+                      let isRecord = false;
+                      let recordLabel = '';
+                      if (totalSalesDateFilter === 'today' || totalSalesDateFilter === 'yesterday') {
+                        const earliest = customers.reduce((min, c) => { const d = new Date(c.signup_date || c.created_at || ''); return d < min ? d : min; }, new Date());
+                        let maxDaySales = 0;
+                        const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), earliest.getDate());
+                        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        while (cursor < todayStart) { const dayEnd = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), 23, 59, 59, 999); const ds = getSalesForRange(new Date(cursor), dayEnd); if (ds > maxDaySales) maxDaySales = ds; cursor.setDate(cursor.getDate() + 1); }
+                        if (totalValue > maxDaySales && totalValue > 0) { isRecord = true; recordLabel = 'Highest Day!'; }
+                      } else if (totalSalesDateFilter === '7days') {
+                        let maxWeekSales = 0;
+                        for (let w = 1; w <= 52; w++) { const wEnd = new Date(now); wEnd.setDate(wEnd.getDate() - (w * 7)); const wStart = new Date(wEnd); wStart.setDate(wStart.getDate() - 7); const ws = getSalesForRange(wStart, wEnd); if (ws > maxWeekSales) maxWeekSales = ws; }
+                        if (totalValue > maxWeekSales && totalValue > 0) { isRecord = true; recordLabel = 'Highest Week!'; }
+                      } else if (totalSalesDateFilter === 'this_month' || totalSalesDateFilter === '30days') {
+                        let maxMonthSales = 0;
+                        const earliest = customers.reduce((min, c) => { const d = new Date(c.signup_date || c.created_at || ''); return d < min ? d : min; }, new Date());
+                        for (let y = earliest.getFullYear(); y <= now.getFullYear(); y++) { const mStart = y === earliest.getFullYear() ? earliest.getMonth() : 0; const mEnd = y === now.getFullYear() ? now.getMonth() - 1 : 11; for (let m = mStart; m <= mEnd; m++) { const ms = getSalesForRange(new Date(y, m, 1), new Date(y, m + 1, 0, 23, 59, 59, 999)); if (ms > maxMonthSales) maxMonthSales = ms; } }
+                        if (totalValue > maxMonthSales && totalValue > 0) { isRecord = true; recordLabel = 'Highest Month!'; }
+                      }
+
+                      return (
+                        <div className="flex items-center gap-2">
+                          {isRecord && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                              <Trophy className="h-3 w-3" />
+                              {recordLabel}
+                            </span>
+                          )}
+                          <span className="text-sm font-bold text-green-700">
+                            £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{count} sale{count !== 1 ? 's' : ''}</span>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Sales / Sales Lead: My Deals */}
+            {(currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Star className="h-3.5 w-3.5 text-amber-500" />
+                  My Deals
+                </div>
+                <Select value={myDealsDateFilter} onValueChange={setMyDealsDateFilter}>
+                  <SelectTrigger className="w-[130px] h-7 text-xs border-none bg-transparent shadow-none">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -2874,240 +2960,46 @@ export const CustomersTab = () => {
                     <SelectItem value="all">All Time</SelectItem>
                   </SelectContent>
                 </Select>
-              )}
-            </div>
-            {showTotalSales && (() => {
-              const now = new Date();
-              let dateFrom: Date | null = null;
-              let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-              
-              switch (totalSalesDateFilter) {
-                case 'today':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                  break;
-                case 'yesterday': {
-                  const y = new Date(now);
-                  y.setDate(y.getDate() - 1);
-                  dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate());
-                  dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
-                  break;
-                }
-                case '7days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 7);
-                  break;
-                case '14days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 14);
-                  break;
-                case '30days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 30);
-                  break;
-                case 'this_month':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-                  break;
-                case 'all':
-                  dateFrom = null;
-                  break;
-              }
-
-              // Helper to get sales total for a date range
-              const getSalesForRange = (from: Date, to: Date) => {
-                return customers
-                  .filter(c => {
+                {(() => {
+                  const now = new Date();
+                  let dateFrom: Date | null = null;
+                  let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                  switch (myDealsDateFilter) {
+                    case 'today': dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate()); break;
+                    case 'yesterday': { const y = new Date(now); y.setDate(y.getDate() - 1); dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate()); dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999); break; }
+                    case '7days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 7); break;
+                    case '14days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 14); break;
+                    case '30days': dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 30); break;
+                    case 'this_month': dateFrom = new Date(now.getFullYear(), now.getMonth(), 1); break;
+                    case 'all': dateFrom = null; break;
+                  }
+                  const myDeals = customers.filter(c => {
+                    if (c.assigned_to !== currentAdminUser?.id) return false;
                     if (!c.final_amount || c.final_amount <= 0) return false;
                     if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
-                    const d = new Date(c.signup_date || c.created_at || '');
-                    return d >= from && d <= to;
-                  })
-                  .reduce((sum, c) => sum + (c.final_amount || 0), 0);
-              };
-
-              const salesInRange = customers.filter(c => {
-                if (!c.final_amount || c.final_amount <= 0) return false;
-                if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
-                if (!dateFrom) return true;
-                const signupDate = new Date(c.signup_date || c.created_at || '');
-                return signupDate >= dateFrom && signupDate <= dateTo;
-              });
-              const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
-              const count = salesInRange.length;
-
-              // Check if current period is a record
-              let isRecord = false;
-              let recordLabel = '';
-              
-              if (totalSalesDateFilter === 'today' || totalSalesDateFilter === 'yesterday') {
-                // Compare against every day in available data
-                const earliest = customers.reduce((min, c) => {
-                  const d = new Date(c.signup_date || c.created_at || '');
-                  return d < min ? d : min;
-                }, new Date());
-                let maxDaySales = 0;
-                const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), earliest.getDate());
-                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                while (cursor < todayStart) {
-                  const dayEnd = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), 23, 59, 59, 999);
-                  const daySales = getSalesForRange(new Date(cursor), dayEnd);
-                  if (daySales > maxDaySales) maxDaySales = daySales;
-                  cursor.setDate(cursor.getDate() + 1);
-                }
-                if (totalValue > maxDaySales && totalValue > 0) {
-                  isRecord = true;
-                  recordLabel = '🏆 Highest Day Ever!';
-                }
-              } else if (totalSalesDateFilter === '7days') {
-                // Compare against previous weeks
-                let maxWeekSales = 0;
-                for (let w = 1; w <= 52; w++) {
-                  const wEnd = new Date(now);
-                  wEnd.setDate(wEnd.getDate() - (w * 7));
-                  const wStart = new Date(wEnd);
-                  wStart.setDate(wStart.getDate() - 7);
-                  const ws = getSalesForRange(wStart, wEnd);
-                  if (ws > maxWeekSales) maxWeekSales = ws;
-                }
-                if (totalValue > maxWeekSales && totalValue > 0) {
-                  isRecord = true;
-                  recordLabel = '🏆 Highest Week Ever!';
-                }
-              } else if (totalSalesDateFilter === 'this_month' || totalSalesDateFilter === '30days') {
-                // Compare against previous months
-                let maxMonthSales = 0;
-                const earliest = customers.reduce((min, c) => {
-                  const d = new Date(c.signup_date || c.created_at || '');
-                  return d < min ? d : min;
-                }, new Date());
-                const startYear = earliest.getFullYear();
-                const startMonth = earliest.getMonth();
-                const curYear = now.getFullYear();
-                const curMonth = now.getMonth();
-                for (let y = startYear; y <= curYear; y++) {
-                  const mStart = y === startYear ? startMonth : 0;
-                  const mEnd = y === curYear ? curMonth - 1 : 11;
-                  for (let m = mStart; m <= mEnd; m++) {
-                    const ms = getSalesForRange(
-                      new Date(y, m, 1),
-                      new Date(y, m + 1, 0, 23, 59, 59, 999)
-                    );
-                    if (ms > maxMonthSales) maxMonthSales = ms;
-                  }
-                }
-                if (totalValue > maxMonthSales && totalValue > 0) {
-                  isRecord = true;
-                  recordLabel = '🏆 Highest Month Ever!';
-                }
-              }
-              
-              return (
-                <div className="flex items-center gap-4">
-                  {isRecord && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-full animate-pulse">
-                      <Trophy className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-bold text-amber-700">{recordLabel}</span>
+                    if (!dateFrom) return true;
+                    const signupDate = new Date(c.signup_date || c.created_at || '');
+                    return signupDate >= dateFrom && signupDate <= dateTo;
+                  });
+                  const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                  const count = myDeals.length;
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-primary">
+                        £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{count} deal{count !== 1 ? 's' : ''}</span>
                     </div>
-                  )}
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-700">
-                      £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{count} sale{count !== 1 ? 's' : ''}</div>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* Sales / Sales Lead: My Deals Card */}
-      {(currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Star className="h-4 w-4 text-amber-500" />
-                My Deals
+                  );
+                })()}
               </div>
-              <Select value={myDealsDateFilter} onValueChange={setMyDealsDateFilter}>
-                <SelectTrigger className="w-[160px] h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="yesterday">Yesterday</SelectItem>
-                  <SelectItem value="7days">Last 7 Days</SelectItem>
-                  <SelectItem value="14days">Last 14 Days</SelectItem>
-                  <SelectItem value="30days">Last 30 Days</SelectItem>
-                  <SelectItem value="this_month">This Month</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {(() => {
-              const now = new Date();
-              let dateFrom: Date | null = null;
-              let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+            )}
 
-              switch (myDealsDateFilter) {
-                case 'today':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                  break;
-                case 'yesterday': {
-                  const y = new Date(now);
-                  y.setDate(y.getDate() - 1);
-                  dateFrom = new Date(y.getFullYear(), y.getMonth(), y.getDate());
-                  dateTo = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
-                  break;
-                }
-                case '7days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 7);
-                  break;
-                case '14days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 14);
-                  break;
-                case '30days':
-                  dateFrom = new Date(now);
-                  dateFrom.setDate(dateFrom.getDate() - 30);
-                  break;
-                case 'this_month':
-                  dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-                  break;
-                case 'all':
-                  dateFrom = null;
-                  break;
-              }
-
-              const myDeals = customers.filter(c => {
-                if (c.assigned_to !== currentAdminUser?.id) return false;
-                if (!c.final_amount || c.final_amount <= 0) return false;
-                if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
-                if (!dateFrom) return true;
-                const signupDate = new Date(c.signup_date || c.created_at || '');
-                return signupDate >= dateFrom && signupDate <= dateTo;
-              });
-              const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
-              const count = myDeals.length;
-
-              return (
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">
-                      £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{count} deal{count !== 1 ? 's' : ''}</div>
-                  </div>
-                </div>
-              );
-            })()}
+            {/* Spacer for when neither role card is shown */}
+            {currentAdminUser?.role !== 'super_admin' && currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && <div />}
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="min-w-[1800px]">
           <TableHeader>
