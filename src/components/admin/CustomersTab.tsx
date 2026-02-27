@@ -2722,6 +2722,8 @@ export const CustomersTab = () => {
                               if (totalValue > maxMonthSales && totalValue > 0) { isRecord = true; recordLabel = 'Highest Month!'; }
                             }
 
+                            const avgValue = count > 0 ? totalValue / count : 0;
+
                             return (
                               <div className="flex items-center gap-2">
                                 {isRecord && (
@@ -2734,6 +2736,10 @@ export const CustomersTab = () => {
                                   £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                                 <span className="text-xs text-muted-foreground">{count} sale{count !== 1 ? 's' : ''}</span>
+                                <span className="text-xs text-muted-foreground">•</span>
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
                               </div>
                             );
                           })()}
