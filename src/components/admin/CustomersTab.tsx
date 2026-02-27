@@ -2462,40 +2462,6 @@ export const CustomersTab = () => {
                 </div>
               </div>
 
-              {/* Sort By */}
-              <div className="space-y-1">
-                <Label htmlFor="sortBy" className="text-sm font-medium">Sort By</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="name">Name (A-Z)</SelectItem>
-                    <SelectItem value="email">Email (A-Z)</SelectItem>
-                    <SelectItem value="plan">Plan Type</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Filter by Plan */}
-              <div className="space-y-1">
-                <Label htmlFor="planFilter" className="text-sm font-medium">Plan Type</Label>
-                <Select value={filterByPlan} onValueChange={setFilterByPlan}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Plans</SelectItem>
-                    <SelectItem value="gold">Gold</SelectItem>
-                    <SelectItem value="electric">Electric</SelectItem>
-                    <SelectItem value="phev">PHEV</SelectItem>
-                    <SelectItem value="motorbike">Motorbike</SelectItem>
-                    <SelectItem value="van">Van</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
               {/* Filter by Status */}
               <div className="space-y-1">
