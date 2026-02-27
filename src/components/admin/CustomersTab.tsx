@@ -4176,6 +4176,9 @@ Please log in and change your password after first login.`;
                     <div className="text-sm">
                       {format(new Date(customer.signup_date), 'dd/MM/yyyy')}
                     </div>
+                    <div className="text-xs text-muted-foreground">
+                      {format(new Date(customer.signup_date), 'HH:mm')}
+                    </div>
                   </TableCell>
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>{customer.phone || 'N/A'}</TableCell>
