@@ -2446,12 +2446,13 @@ export const CustomersTab = () => {
           )}
           {/* Enhanced Search and Filter Controls */}
           <div className="bg-white p-4 rounded-lg border space-y-4">
+            {/* Row 1: Search, Sort By, Plan Type, Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
               <div className="space-y-1">
                 <Label htmlFor="search" className="text-sm font-medium">Search</Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search"
                     placeholder="Search by name, email, phone, reg plate, vehicle, address..."
@@ -2462,6 +2463,40 @@ export const CustomersTab = () => {
                 </div>
               </div>
 
+              {/* Sort By */}
+              <div className="space-y-1">
+                <Label htmlFor="sortBy" className="text-sm font-medium">Sort By</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                    <SelectItem value="name">Name (A-Z)</SelectItem>
+                    <SelectItem value="email">Email (A-Z)</SelectItem>
+                    <SelectItem value="plan">Plan Type</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filter by Plan */}
+              <div className="space-y-1">
+                <Label htmlFor="planFilter" className="text-sm font-medium">Plan Type</Label>
+                <Select value={filterByPlan} onValueChange={setFilterByPlan}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Plans</SelectItem>
+                    <SelectItem value="gold">Gold</SelectItem>
+                    <SelectItem value="electric">Electric</SelectItem>
+                    <SelectItem value="phev">PHEV</SelectItem>
+                    <SelectItem value="motorbike">Motorbike</SelectItem>
+                    <SelectItem value="van">Van</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Filter by Status */}
               <div className="space-y-1">
@@ -2483,7 +2518,7 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-            {/* Second row for tag filter and date range */}
+            {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Filter by Tag */}
               <div className="space-y-1">
@@ -2595,8 +2630,11 @@ export const CustomersTab = () => {
                   </SelectContent>
                 </Select>
                </div>
+            </div>
 
-              {/* Filter by Agent - visible to sales, sales_lead, sales_manager, admin, super_admin */}
+            {/* Row 3: Sales by Agent + Total Sales summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Filter by Agent */}
               {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
                 <div className="space-y-1">
                   <Label className="text-sm font-medium">Sales by Agent</Label>
@@ -2605,7 +2643,6 @@ export const CustomersTab = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Only admin/super_admin/sales_lead can see All Agents & Unassigned */}
                       {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead') && (
                         <>
                           <SelectItem value="all">All Agents</SelectItem>
