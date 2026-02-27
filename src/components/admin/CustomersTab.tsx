@@ -2483,8 +2483,8 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-            {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               {/* Filter by Tag */}
               <div className="space-y-1">
                 <Label htmlFor="tagFilter" className="text-sm font-medium">Filter by Tag</Label>
@@ -2537,10 +2537,13 @@ export const CustomersTab = () => {
               </div>
 
               {/* Date Range Filter */}
-              <DateRangeFilter
-                dateRange={dateRange}
-                onDateRangeChange={setDateRange}
-              />
+              <div className="space-y-1">
+                <Label className="text-sm font-medium invisible">Date Range</Label>
+                <DateRangeFilter
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                />
+              </div>
 
               {/* Filter by Warranty Period */}
               <div className="space-y-1">
@@ -2597,8 +2600,8 @@ export const CustomersTab = () => {
                </div>
             </div>
 
-            {/* Row 3: Sales by Agent + Total Sales summary */}
-            <div className="flex items-center gap-4 flex-wrap">
+             {/* Row 3: Sales by Agent + Total Sales summary */}
+            <div className="flex items-end gap-4 flex-wrap">
               {/* Filter by Agent */}
               {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
                 <div className="space-y-1 w-[220px]">
