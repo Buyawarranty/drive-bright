@@ -593,6 +593,11 @@ export const CustomersTab = () => {
       }
     }
 
+    // Hide "Claim Made" customers from sales agents and sales leads
+    if (currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') {
+      filtered = filtered.filter(customer => customer.status?.toLowerCase() !== 'claim_made');
+    }
+
     // Apply tag filter - using cached data instead of DB calls
     if (filterByTag !== 'all') {
       const taggedIds = tagAssignmentsCache[filterByTag];
@@ -1594,21 +1599,27 @@ export const CustomersTab = () => {
   };
 
   const handleExport = (format: 'csv' | 'xlsx') => {
-    const exportData = filteredCustomers.map(customer => ({
-      'Name': customer.name,
-      'Email': customer.email,
-      'Phone': customer.phone || '',
-      'Address': `${customer.street || ''} ${customer.town || ''} ${customer.county || ''} ${customer.postcode || ''}`.trim(),
-      'Registration Plate': customer.registration_plate || '',
-      'Vehicle': `${customer.vehicle_make || ''} ${customer.vehicle_model || ''} ${customer.vehicle_year || ''}`.trim(),
-      'Plan Type': customer.plan_type,
-      'Payment Type': customer.payment_type || '',
-      'Signup Date': format === 'csv' ? customer.signup_date : new Date(customer.signup_date).toLocaleDateString(),
-      'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString() : 'N/A',
-      'Voluntary Excess': customer.voluntary_excess || 0,
-      'Status': customer.status,
-      'Final Amount': customer.final_amount || 0,
-    }));
+    const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+    const exportData = filteredCustomers.map(customer => {
+      const row: Record<string, any> = {
+        'Name': customer.name,
+        'Email': customer.email,
+        'Phone': customer.phone || '',
+        'Address': `${customer.street || ''} ${customer.town || ''} ${customer.county || ''} ${customer.postcode || ''}`.trim(),
+        'Registration Plate': customer.registration_plate || '',
+        'Vehicle': `${customer.vehicle_make || ''} ${customer.vehicle_model || ''} ${customer.vehicle_year || ''}`.trim(),
+        'Plan Type': customer.plan_type,
+        'Payment Type': customer.payment_type || '',
+        'Signup Date': format === 'csv' ? customer.signup_date : new Date(customer.signup_date).toLocaleDateString(),
+        'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString() : 'N/A',
+        'Voluntary Excess': customer.voluntary_excess || 0,
+        'Status': customer.status,
+      };
+      if (!isSalesRole) {
+        row['Final Amount'] = customer.final_amount || 0;
+      }
+      return row;
+    });
 
     if (format === 'csv') {
       exportDataToCSV(exportData, { filename: 'customers', format: 'csv' });
@@ -2477,7 +2488,9 @@ export const CustomersTab = () => {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                     <SelectItem value="refunded">Refunded</SelectItem>
-                    <SelectItem value="claim_made">Claim Made</SelectItem>
+                    {currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && (
+                      <SelectItem value="claim_made">Claim Made</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -2773,10 +2786,11 @@ export const CustomersTab = () => {
                         });
                         const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
                         const count = myDeals.length;
+                        const avgValue = count > 0 ? totalValue / count : 0;
                         return (
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-primary">
-                              £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                             <span className="text-xs text-muted-foreground">{count} deal{count !== 1 ? 's' : ''}</span>
                           </div>
@@ -2810,14 +2824,17 @@ export const CustomersTab = () => {
                   const selectedTotal = filteredCustomers
                     .filter(c => selectedCustomers.has(c.id))
                     .reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                  const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
                   return (
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="bg-blue-50 text-blue-700">
                         {selectedCustomers.size} selected
                       </Badge>
-                      <Badge variant="secondary" className="bg-green-50 text-green-700 font-semibold">
-                        Total: £{selectedTotal.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </Badge>
+                      {!isSalesRole && (
+                        <Badge variant="secondary" className="bg-green-50 text-green-700 font-semibold">
+                          Total: £{selectedTotal.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Badge>
+                      )}
                     </div>
                   );
                 })()}
@@ -4450,11 +4467,11 @@ Please log in and change your password after first login.`;
                              <span className="text-red-500" title="Payment not verified">✗</span>
                            )}
                          </div>
-                         {customer.final_amount && customer.final_amount > 0 && (
-                           <span className="text-xs font-medium text-green-700">
-                             £{customer.final_amount.toFixed(2)}
-                           </span>
-                         )}
+                         {customer.final_amount && customer.final_amount > 0 && currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && (
+                            <span className="text-xs font-medium text-green-700">
+                              £{customer.final_amount.toFixed(2)}
+                            </span>
+                          )}
                        </div>
                      </TableCell>
                      {/* Purchase Source */}
