@@ -87,22 +87,11 @@ export function InlineFutureActivationEdit({
     return (
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <div className="bg-amber-100 border-2 border-amber-400 rounded-lg px-3 py-2 inline-block shadow-sm cursor-pointer hover:bg-amber-200 transition-colors group">
-            <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs uppercase tracking-wide">
-              <Clock className="h-3.5 w-3.5" />
-              Future Activation
-              <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="text-amber-800 font-semibold text-sm mt-1">
-              {format(new Date(activationDate!), 'dd MMM yyyy')}
-            </div>
-            <div className="text-amber-600 text-xs mt-0.5">
-              {daysUntil > 0 ? `${daysUntil} day${daysUntil !== 1 ? 's' : ''} until activation` : 'Activates today'}
-            </div>
-            <div className="mt-1.5 flex items-center gap-1 text-xs text-amber-700">
-              <AlertCircle className="h-3 w-3" />
-              <span>Do not activate early</span>
-            </div>
+          <div className="inline-flex items-center gap-1.5 bg-amber-100 border border-amber-300 rounded-full px-2.5 py-1 cursor-pointer hover:bg-amber-200 transition-colors group text-xs">
+            <Clock className="h-3 w-3 text-amber-700" />
+            <span className="font-semibold text-amber-800">Future</span>
+            <span className="text-amber-700">{format(new Date(activationDate!), 'dd MMM yyyy')}</span>
+            <Pencil className="h-2.5 w-2.5 text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
