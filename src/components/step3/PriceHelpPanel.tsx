@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Loader2, Trophy, Phone, ChevronRight, ArrowRight } from 'lucide-react';
+import { X, Check, Loader2, Trophy, Phone, ChevronRight, ChevronDown, ArrowRight, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
+  const [requestEmail, setRequestEmail] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [isPhoneValid, setIsPhoneValid] = useState(false);
 
@@ -47,8 +49,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setRequestPhone('');
       setCompetitorPrice('');
       setRequestMessage('');
+      setRequestEmail('');
       setRequestSuccess(false);
       setShowDetails(false);
+      setShowEmail(false);
       setPhoneError('');
       setIsPhoneValid(false);
       document.body.style.overflow = 'hidden';
@@ -106,7 +110,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       const requestedOptions = getRequestedOptionsString();
 
       const { error } = await supabase.from('abandoned_carts').insert({
-        email: `callback-${Date.now()}@price-match.temp`,
+        email: requestEmail.trim() || `callback-${Date.now()}@price-match.temp`,
         phone: requestPhone.trim(),
         step_abandoned: 3,
         contact_status: 'new',
@@ -156,7 +160,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       <div>
         <Label className="text-sm font-bold text-gray-900 mb-1.5 block">What price were you quoted?</Label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-bold text-lg">£</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">£</span>
           <Input
             type="text"
             inputMode="numeric"
@@ -164,10 +168,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             onChange={(e) => setCompetitorPrice(e.target.value.replace(/[^0-9.]/g, ''))}
             placeholder="e.g. 350"
             className={cn(
-              "h-14 pl-9 pr-12 rounded-xl text-base font-semibold border-2 focus:ring-0 transition-colors",
+              "h-14 pl-9 pr-12 rounded-xl text-base font-semibold border focus:ring-0 transition-colors",
               competitorPrice
                 ? "border-emerald-500 bg-white focus:border-emerald-500"
-                : "border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange"
+                : "border-gray-200 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange"
             )}
             disabled={isSubmitting}
           />
@@ -185,7 +189,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       <div>
         <Label className="text-sm font-bold text-gray-900 mb-1.5 block">Your mobile number</Label>
         <div className="relative">
-          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-black/50" />
+          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input
             type="tel"
             value={requestPhone}
@@ -193,12 +197,12 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             onBlur={handlePhoneBlur}
             placeholder="07900 000000"
             className={cn(
-              "h-14 pl-11 pr-12 rounded-xl text-base font-semibold border-2 focus:ring-0 transition-colors",
+              "h-14 pl-11 pr-12 rounded-xl text-base font-semibold border focus:ring-0 transition-colors",
               phoneError
                 ? "border-red-500 bg-white focus:border-red-500"
                 : isPhoneValid
                   ? "border-emerald-500 bg-white focus:border-emerald-500"
-                  : "border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange"
+                  : "border-gray-200 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange"
             )}
             disabled={isSubmitting}
             autoComplete="tel"
@@ -212,16 +216,41 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           )}
         </div>
         {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
-        <p className="text-xs text-gray-500 mt-1">We'll call you back with a better price</p>
+        <p className="text-xs text-gray-400 mt-1">Unlock exclusive discounts and get expert advice</p>
       </div>
+
+      {/* Collapsible email field */}
+      <button
+        type="button"
+        onClick={() => setShowEmail(!showEmail)}
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        <Mail className="w-3.5 h-3.5" />
+        Add email <span className="text-gray-400">(optional)</span>
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showEmail && "rotate-180")} />
+      </button>
+      {showEmail && (
+        <div className="relative animate-fade-in">
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            type="email"
+            value={requestEmail}
+            onChange={(e) => setRequestEmail(e.target.value)}
+            placeholder="e.g. john@example.com"
+            className="h-14 pl-11 rounded-xl text-base font-semibold border border-gray-200 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange focus:ring-0 transition-colors"
+            disabled={isSubmitting}
+            autoComplete="email"
+          />
+        </div>
+      )}
 
       {/* Optional details toggle */}
       <button
         type="button"
         onClick={() => setShowDetails(!showDetails)}
-        className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
       >
-        More details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+        More details about your quote <span className="text-gray-400">(optional)</span>
         <ChevronRight className={cn("w-4 h-4 transition-transform", showDetails && "rotate-90")} />
       </button>
       {showDetails && (
@@ -229,7 +258,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           value={requestMessage}
           onChange={(e) => setRequestMessage(e.target.value)}
           placeholder="Tell us what the quote includes (provider, cover level, etc.)"
-          className="rounded-xl resize-none border-2 border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange text-sm font-medium"
+          className="rounded-xl resize-none border border-gray-200 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange text-sm font-medium"
           rows={3}
           disabled={isSubmitting}
         />
