@@ -111,7 +111,6 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
   const addOns = [
     // Breakdown recovery shown in key benefits, not as separate add-on
     policy.vehicle_rental && 'Vehicle Rental Cover',
-    policy.mot_fee && 'MOT Test Fee Cover',
     policy.mot_repair && 'MOT Repair Cover',
     policy.tyre_cover && 'Tyre Cover',
     policy.wear_tear && 'Wear & Tear Cover',

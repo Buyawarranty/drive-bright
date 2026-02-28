@@ -472,14 +472,6 @@ const WarrantyPlan = () => {
                 </div>
                 
                 <div className="space-y-6">
-                  <Card className="p-6">
-                    <CardContent className="space-y-3">
-                      <h3 className="text-xl font-bold text-foreground">Free MOT Coverage</h3>
-                      <p className="text-muted-foreground">
-                        Free Halfords MOT test fee coverage when your MOT is due for renewal with select packages.
-                      </p>
-                    </CardContent>
-                  </Card>
                   
                   <Card className="p-6">
                     <CardContent className="space-y-3">

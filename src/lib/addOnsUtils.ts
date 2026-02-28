@@ -115,14 +115,6 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
       displayPrice: autoIncluded.includes('motRepair') ? 'FREE' : `£${(4 * durationMonths)}`
     },
     {
-      key: 'motFee',
-      name: 'MOT Test Fee',
-      monthlyPrice: 1,
-      description: 'Reimbursement of the MOT test fee up to £75',
-      isAutoIncluded: autoIncluded.includes('motFee'),
-      displayPrice: autoIncluded.includes('motFee') ? 'FREE' : `£${(1 * durationMonths)}`
-    },
-    {
       key: 'lostKey',
       name: 'Lost Key Cover',
       monthlyPrice: 3,

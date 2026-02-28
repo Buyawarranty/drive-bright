@@ -667,10 +667,6 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
                     <Label htmlFor="wearTear" className="cursor-pointer">Wear & Tear</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="mot" checked={motFee} onCheckedChange={(c) => setMotFee(!!c)} />
-                    <Label htmlFor="mot" className="cursor-pointer">MOT Fee Cover</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
                     <Checkbox id="transfer" checked={transferCover} onCheckedChange={(c) => setTransferCover(!!c)} />
                     <Label htmlFor="transfer" className="cursor-pointer">Transfer Cover</Label>
                   </div>
