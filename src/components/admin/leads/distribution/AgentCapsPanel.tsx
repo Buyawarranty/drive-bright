@@ -11,6 +11,7 @@ import { PresenceBadge } from './PresenceBadge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Save, UserPlus, Trash2, Info, Zap, AlertCircle, UserCheck } from 'lucide-react';
+import { AgentSchedulePanel } from './AgentSchedulePanel';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -369,6 +370,13 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                     )}
                   </div>
                 </div>
+
+                {/* Schedule & Availability */}
+                <Separator className="my-2" />
+                <AgentSchedulePanel
+                  adminUserId={cap.admin_user_id}
+                  agentName={getAgentName(cap)}
+                />
               </div>
             );
           })

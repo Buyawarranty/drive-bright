@@ -649,6 +649,53 @@ export type Database = {
           },
         ]
       }
+      agent_schedules: {
+        Row: {
+          admin_user_id: string
+          break_end: string | null
+          break_start: string | null
+          created_at: string | null
+          day_of_week: number
+          id: string
+          is_available: boolean
+          shift_end: string
+          shift_start: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          break_end?: string | null
+          break_start?: string | null
+          created_at?: string | null
+          day_of_week: number
+          id?: string
+          is_available?: boolean
+          shift_end?: string
+          shift_start?: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          break_end?: string | null
+          break_start?: string | null
+          created_at?: string | null
+          day_of_week?: number
+          id?: string
+          is_available?: boolean
+          shift_end?: string
+          shift_start?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_schedules_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_ips: {
         Row: {
           blocked_at: string
