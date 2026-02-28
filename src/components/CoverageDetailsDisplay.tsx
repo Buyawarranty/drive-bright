@@ -64,7 +64,6 @@ const CoverageDetailsDisplay: React.FC<CoverageDetailsProps> = ({
   const autoIncluded = getAutoIncludedAddOns(payment_type);
   
   const coverageItems = [
-    { label: 'MOT Test Fee', value: mot_fee, key: 'mot_fee', icon: '🔧' },
     { label: 'Tyre Cover', value: tyre_cover, key: 'tyre_cover', icon: '🛞' },
     { label: 'Wear & Tear', value: wear_tear, key: 'wear_tear', icon: '🛠️' },
     { label: 'European Cover', value: europe_cover, key: 'europe_cover', icon: '🇪🇺' },

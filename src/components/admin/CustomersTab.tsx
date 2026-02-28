@@ -3709,14 +3709,6 @@ Please log in and change your password after first login.`;
                                     <div className="grid grid-cols-2 gap-4">
                                       <div className="flex items-center space-x-2">
                                         <Checkbox 
-                                          id="edit-mot-fee"
-                                          checked={editingCustomer.mot_fee || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, mot_fee: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-mot-fee" className="font-normal cursor-pointer">MOT Test Fee Cover</Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
                                           id="edit-breakdown-recovery"
                                           checked={editingCustomer.breakdown_recovery || false}
                                           onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, breakdown_recovery: !!checked })}

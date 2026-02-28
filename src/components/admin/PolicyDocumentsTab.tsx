@@ -172,7 +172,6 @@ export const PolicyDocumentsTab: React.FC = () => {
     // Breakdown recovery is shown in key benefits, not as a separate add-on
     if (selectedCustomer.wear_tear) addons.push('Wear & Tear Cover');
     if (selectedCustomer.europe_cover) addons.push('European Cover');
-    if (selectedCustomer.mot_fee) addons.push('MOT Test Fee Cover');
     if (selectedCustomer.mot_repair) addons.push('MOT Repair Cover');
     if (selectedCustomer.tyre_cover) addons.push('Tyre Cover');
     if (selectedCustomer.lost_key) addons.push('Lost Key Cover');

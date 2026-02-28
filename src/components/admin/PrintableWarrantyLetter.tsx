@@ -150,7 +150,6 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
     const addons: string[] = [];
     if (policy.wearTear) addons.push('Wear & Tear Cover');
     if (policy.europeCover) addons.push('European Cover');
-    if (policy.motFee) addons.push('MOT Test Fee Cover');
     if (policy.motRepair) addons.push('MOT Repair Cover');
     if (policy.tyreCover) addons.push('Tyre Cover');
     if (policy.lostKey) addons.push('Lost Key Cover');
