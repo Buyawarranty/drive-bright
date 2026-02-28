@@ -15,6 +15,10 @@ export interface SalespersonStats {
   avgResponseTimeHours: number | null;
   followUpsDue: number;
   followUpsOverdue: number;
+  // Real-time performance metrics
+  totalCalls: number;
+  avgPolicyValue: number;
+  avgSpeedToLeadHours: number | null;
 }
 
 export interface TeamStats {
@@ -84,6 +88,24 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         .filter(l => l.is_paid === true)
         .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
 
+      // Total calls made
+      const totalCalls = leadsData.reduce((sum, l) => sum + (l.call_count || 0), 0);
+
+      // Avg policy value
+      const avgPolicyValue = convertedLeads > 0 ? totalRevenue / convertedLeads : 0;
+
+      // Speed-to-lead: avg hours between created_at and last_contacted_at
+      const speedToLeadValues = leadsData
+        .filter(l => l.last_contacted_at && l.created_at)
+        .map(l => {
+          const created = new Date(l.created_at).getTime();
+          const contacted = new Date(l.last_contacted_at!).getTime();
+          return Math.max(0, (contacted - created) / (1000 * 60 * 60));
+        });
+      const avgSpeedToLeadHours = speedToLeadValues.length > 0
+        ? speedToLeadValues.reduce((a, b) => a + b, 0) / speedToLeadValues.length
+        : null;
+
       // Calculate follow-ups
       const now = new Date();
       const followUpsDue = leadsData.filter(l => 
@@ -109,9 +131,12 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         lostLeads,
         totalRevenue,
         conversionRate: leadsData.length > 0 ? (convertedLeads / leadsData.length) * 100 : 0,
-        avgResponseTimeHours: null, // Would need activity tracking to calculate
+        avgResponseTimeHours: avgSpeedToLeadHours,
         followUpsDue,
-        followUpsOverdue
+        followUpsOverdue,
+        totalCalls,
+        avgPolicyValue,
+        avgSpeedToLeadHours,
       };
 
       return stats;
@@ -194,6 +219,24 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         const converted = userCustomers.length;
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
+        // Calls made per agent
+        const totalCalls = userLeads.reduce((sum, l) => sum + (l.call_count || 0), 0);
+
+        // Avg policy value
+        const avgPolicyValue = converted > 0 ? revenue / converted : 0;
+
+        // Speed-to-lead per agent
+        const stlValues = userLeads
+          .filter(l => l.last_contacted_at && l.created_at)
+          .map(l => {
+            const created = new Date(l.created_at).getTime();
+            const contacted = new Date(l.last_contacted_at!).getTime();
+            return Math.max(0, (contacted - created) / (1000 * 60 * 60));
+          });
+        const avgSpeedToLeadHours = stlValues.length > 0
+          ? stlValues.reduce((a, b) => a + b, 0) / stlValues.length
+          : null;
+
         return {
           userId: user.id,
           userName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
@@ -205,9 +248,12 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
           lostLeads: userLeads.filter(l => l.status === 'lost').length,
           totalRevenue: revenue,
           conversionRate: userLeads.length > 0 ? (converted / userLeads.length) * 100 : 0,
-          avgResponseTimeHours: null,
+          avgResponseTimeHours: avgSpeedToLeadHours,
           followUpsDue: 0,
-          followUpsOverdue: 0
+          followUpsOverdue: 0,
+          totalCalls,
+          avgPolicyValue,
+          avgSpeedToLeadHours,
         };
       });
 

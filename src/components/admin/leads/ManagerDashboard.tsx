@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useSalesStats } from '@/hooks/useSalesStats';
 import { 
   TrendingUp, Users, 
-  Award, BarChart3, PieChart, ArrowUp, ArrowDown, CalendarIcon, X
+  Award, BarChart3, PieChart, ArrowUp, ArrowDown, CalendarIcon, X,
+  Phone, UserCheck, Gauge, Clock, ShieldCheck, PoundSterling
 } from 'lucide-react';
 import { subDays, startOfDay, endOfDay, startOfMonth, startOfWeek } from 'date-fns';
 
@@ -138,8 +139,8 @@ export const ManagerDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Overview Stats - Row 1 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Leads</CardDescription>
@@ -147,7 +148,7 @@ export const ManagerDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-sm">
-              <Badge variant="secondary" className="bg-yellow-100">
+              <Badge variant="secondary">
                 {teamStats.unassignedLeads} awaiting contact
               </Badge>
             </div>
@@ -193,6 +194,79 @@ export const ManagerDashboard: React.FC = () => {
                 : 'No data'
               }
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance KPIs - Row 2 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-1.5">
+              <Phone className="h-3.5 w-3.5" />
+              Total Calls Made
+            </CardDescription>
+            <CardTitle className="text-3xl">
+              {teamStats.leaderboard.reduce((sum, a) => sum + a.totalCalls, 0)}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Activity tracking</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-1.5">
+              <UserCheck className="h-3.5 w-3.5" />
+              Contacts Made
+            </CardDescription>
+            <CardTitle className="text-3xl">
+              {teamStats.leaderboard.reduce((sum, a) => sum + a.contactedLeads, 0)}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Engagement quality</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-1.5">
+              <PoundSterling className="h-3.5 w-3.5" />
+              Avg Policy Value
+            </CardDescription>
+            <CardTitle className="text-3xl">
+              £{teamStats.totalConverted > 0 
+                ? Math.round(teamStats.totalRevenue / teamStats.totalConverted).toLocaleString()
+                : '0'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Revenue quality</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              Avg Speed-to-Lead
+            </CardDescription>
+            <CardTitle className="text-3xl">
+              {(() => {
+                const stlValues = teamStats.leaderboard
+                  .filter(a => a.avgSpeedToLeadHours !== null)
+                  .map(a => a.avgSpeedToLeadHours!);
+                if (stlValues.length === 0) return 'N/A';
+                const avg = stlValues.reduce((a, b) => a + b, 0) / stlValues.length;
+                if (avg < 1) return `${Math.round(avg * 60)}m`;
+                return `${avg.toFixed(1)}h`;
+              })()}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Critical KPI</div>
           </CardContent>
         </Card>
       </div>
@@ -329,45 +403,59 @@ export const ManagerDashboard: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Team Performance Details
+            <Gauge className="h-5 w-5" />
+            Real-Time Agent Performance
           </CardTitle>
+          <CardDescription>Live metrics for coaching and instant corrections</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Team Member</TableHead>
-                <TableHead className="text-right">Total Leads</TableHead>
-                <TableHead className="text-right">New</TableHead>
-                <TableHead className="text-right">Contacted</TableHead>
-                <TableHead className="text-right">Paid</TableHead>
-                <TableHead className="text-right">Lost</TableHead>
+                <TableHead>Agent</TableHead>
+                <TableHead className="text-right">Calls</TableHead>
+                <TableHead className="text-right">Contacts</TableHead>
+                <TableHead className="text-right">Sales</TableHead>
+                <TableHead className="text-right">Conv %</TableHead>
+                <TableHead className="text-right">Avg Policy</TableHead>
+                <TableHead className="text-right">Speed-to-Lead</TableHead>
                 <TableHead className="text-right">Revenue</TableHead>
-                <TableHead className="text-right">Conversion %</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {teamStats.leaderboard.map((person) => (
                 <TableRow key={person.userId}>
                   <TableCell className="font-medium">{person.userName}</TableCell>
-                  <TableCell className="text-right">{person.totalLeads}</TableCell>
-                  <TableCell className="text-right">{person.newLeads}</TableCell>
-                  <TableCell className="text-right">{person.contactedLeads}</TableCell>
-                  <TableCell className="text-right text-green-600">{person.convertedLeads}</TableCell>
-                  <TableCell className="text-right text-red-600">{person.lostLeads}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    £{person.totalRevenue.toLocaleString()}
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
+                      {person.totalCalls}
+                    </div>
                   </TableCell>
+                  <TableCell className="text-right">{person.contactedLeads}</TableCell>
+                  <TableCell className="text-right text-green-600 font-medium">{person.convertedLeads}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      {person.conversionRate.toFixed(1)}%
-                      {person.conversionRate >= 50 ? (
-                        <ArrowUp className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <ArrowDown className="h-3 w-3 text-red-500" />
-                      )}
+                      <Badge 
+                        variant="secondary"
+                        className={person.conversionRate >= 50 ? 'bg-green-100 text-green-800' : person.conversionRate >= 25 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}
+                      >
+                        {person.conversionRate.toFixed(1)}%
+                      </Badge>
                     </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    £{person.avgPolicyValue > 0 ? Math.round(person.avgPolicyValue).toLocaleString() : '—'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {person.avgSpeedToLeadHours !== null
+                      ? person.avgSpeedToLeadHours < 1
+                        ? `${Math.round(person.avgSpeedToLeadHours * 60)}m`
+                        : `${person.avgSpeedToLeadHours.toFixed(1)}h`
+                      : '—'}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    £{person.totalRevenue.toLocaleString()}
                   </TableCell>
                 </TableRow>
               ))}
