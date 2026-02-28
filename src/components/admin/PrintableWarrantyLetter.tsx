@@ -46,6 +46,7 @@ interface PolicyDetails {
   transferCover?: boolean;
   consequential?: boolean;
   seasonalBonusMonths?: number;
+  additionalNotes?: string;
 }
 
 interface PrintableWarrantyLetterProps {
@@ -301,6 +302,14 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                 Your full policy booklet (attached) includes a detailed breakdown of inclusions, exclusions, claim procedures, and general conditions. Please keep it somewhere safe for future reference.
               </p>
             </div>
+
+            {/* Additional Notes */}
+            {policy.additionalNotes && policy.additionalNotes.trim() && (
+              <div style={{ background: isBW ? '#f5f5f5' : '#fef9ee', border: `1px solid ${isBW ? '#aaa' : '#f59e0b'}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
+                <h4 style={{ color: isBW ? '#000' : '#92400e', fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Important Notes About Your Cover</h4>
+                <p style={{ color: isBW ? '#333' : '#78350f', fontSize: '10.5px', margin: '0', whiteSpace: 'pre-wrap' }}>{policy.additionalNotes}</p>
+              </div>
+            )}
 
             {/* Claims */}
             <div style={{ background: c.claimsBg, border: `1px solid ${c.claimsBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
