@@ -67,8 +67,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { value: showAssignmentsToAgents } = useAdminConfig('show_assignments_to_agents');
   const hideAssignedColumnForAgents = isSalesAgent && showAssignmentsToAgents === false;
   
-  // Delete permission - admin role OR explicit delete permission
-  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
+  // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
+  // Sales Lead, Admin, Super Admin should NOT have delete by default
+  const canDelete = hasGranularPermission('new-leads', 'delete') === true;
   
   // Export permission - admins always can, others need explicit permission
   const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
