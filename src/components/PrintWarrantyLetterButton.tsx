@@ -40,6 +40,7 @@ interface PrintWarrantyLetterButtonProps {
     transferCover?: boolean;
     consequential?: boolean;
     seasonalBonusMonths?: number;
+    additionalNotes?: string;
   };
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
