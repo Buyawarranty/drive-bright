@@ -22,13 +22,16 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
     settings,
     agentCaps,
     agentPresences,
+    overflowRecipients,
     loading,
     updateSettings,
     updateAgentCap,
     toggleAgentPause,
     deleteAgentFromDistribution,
     getAgentPresenceStatus,
-    initializeAgentCaps
+    initializeAgentCaps,
+    addOverflowRecipient,
+    removeOverflowRecipient
   } = useLeadDistribution();
 
   const [capsSheetOpen, setCapsSheetOpen] = useState(false);
@@ -43,13 +46,13 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
     return counts;
   }, [agentCaps, getAgentPresenceStatus]);
 
-  // Get overflow recipient name
-  const overflowRecipientName = React.useMemo(() => {
-    if (!settings?.overflow_recipient_id) return null;
-    const user = salesUsers.find(u => u.id === settings.overflow_recipient_id);
-    if (!user) return null;
-    return user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email;
-  }, [settings?.overflow_recipient_id, salesUsers]);
+  // Get overflow recipient names
+  const overflowNames = React.useMemo(() => {
+    return overflowRecipients.map(r => {
+      const user = salesUsers.find(u => u.id === r.admin_user_id);
+      return user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.email || 'Unknown';
+    });
+  }, [overflowRecipients, salesUsers]);
 
   // Get solo agent name
   const soloAgentName = React.useMemo(() => {
@@ -128,26 +131,13 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
           </Select>
         )}
 
-        {/* Overflow recipient */}
-        {!settings?.solo_mode_enabled && (
-          <div className="flex items-center gap-2">
+        {/* Overflow recipients count */}
+        {!settings?.solo_mode_enabled && overflowRecipients.length > 0 && (
+          <div className="flex items-center gap-1">
             <Label className="text-xs text-muted-foreground">Overflow:</Label>
-            <Select
-              value={settings?.overflow_recipient_id || 'none'}
-              onValueChange={(value) => updateSettings({ overflow_recipient_id: value === 'none' ? null : value })}
-            >
-              <SelectTrigger className="w-[160px] h-8 text-xs">
-                <SelectValue placeholder="Select overflow" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {salesUsers.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Badge variant="secondary" className="text-xs">
+              {overflowRecipients.length} recipient{overflowRecipients.length > 1 ? 's' : ''}
+            </Badge>
           </div>
         )}
       </div>
@@ -170,10 +160,10 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
 
       {/* Right: Caps panel trigger */}
       <div className="flex items-center gap-2 ml-auto">
-        {overflowRecipientName && !settings?.solo_mode_enabled && (
+        {overflowNames.length > 0 && !settings?.solo_mode_enabled && (
           <Badge variant="secondary" className="text-xs">
             <UserCheck className="h-3 w-3 mr-1" />
-            Overflow: {overflowRecipientName}
+            Overflow: {overflowNames.join(', ')}
           </Badge>
         )}
 

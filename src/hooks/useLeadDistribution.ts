@@ -11,6 +11,13 @@ interface DistributionSettings {
   distribution_mode: 'round_robin' | 'percentage';
 }
 
+export interface OverflowRecipient {
+  id: string;
+  admin_user_id: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 interface AgentCap {
   id: string;
   admin_user_id: string;
@@ -39,6 +46,7 @@ export const useLeadDistribution = () => {
   const [settings, setSettings] = useState<DistributionSettings | null>(null);
   const [agentCaps, setAgentCaps] = useState<AgentCap[]>([]);
   const [agentPresences, setAgentPresences] = useState<AgentPresence[]>([]);
+  const [overflowRecipients, setOverflowRecipients] = useState<OverflowRecipient[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentAgentCap, setCurrentAgentCap] = useState<AgentCap | null>(null);
   const adminUserIdRef = useRef<string | null>(null);
@@ -118,6 +126,61 @@ export const useLeadDistribution = () => {
       console.error('Error fetching agent presences:', error);
     }
   }, []);
+
+  // Fetch overflow recipients
+  const fetchOverflowRecipients = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('overflow_recipients')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setOverflowRecipients(data || []);
+    } catch (error) {
+      console.error('Error fetching overflow recipients:', error);
+    }
+  }, []);
+
+  // Add overflow recipient
+  const addOverflowRecipient = useCallback(async (adminUserId: string) => {
+    try {
+      const maxOrder = overflowRecipients.length > 0
+        ? Math.max(...overflowRecipients.map(r => r.sort_order)) + 1
+        : 0;
+
+      const { error } = await supabase
+        .from('overflow_recipients')
+        .insert({ admin_user_id: adminUserId, sort_order: maxOrder });
+
+      if (error) throw error;
+      await fetchOverflowRecipients();
+      toast({ title: 'Overflow recipient added' });
+      return true;
+    } catch (error: any) {
+      console.error('Error adding overflow recipient:', error);
+      toast({ title: 'Error', description: error?.message || 'Failed to add overflow recipient.', variant: 'destructive' });
+      return false;
+    }
+  }, [overflowRecipients, fetchOverflowRecipients]);
+
+  // Remove overflow recipient
+  const removeOverflowRecipient = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('overflow_recipients')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      await fetchOverflowRecipients();
+      toast({ title: 'Overflow recipient removed' });
+      return true;
+    } catch (error) {
+      console.error('Error removing overflow recipient:', error);
+      return false;
+    }
+  }, [fetchOverflowRecipients]);
 
   // Update distribution settings
   const updateSettings = useCallback(async (updates: Partial<DistributionSettings>) => {
@@ -336,13 +399,12 @@ export const useLeadDistribution = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchSettings(), fetchAgentCaps(), fetchAgentPresences()]);
+      await Promise.all([fetchSettings(), fetchAgentCaps(), fetchAgentPresences(), fetchOverflowRecipients()]);
       setLoading(false);
     };
 
     loadData();
 
-    // Set up real-time subscription for presence changes
     const presenceChannel = supabase
       .channel('presence-changes')
       .on('postgres_changes', 
@@ -351,7 +413,6 @@ export const useLeadDistribution = () => {
       )
       .subscribe();
 
-    // Real-time sync for distribution settings (admin ↔ sales lead)
     const settingsChannel = supabase
       .channel('distribution-settings-sync')
       .on('postgres_changes',
@@ -360,7 +421,6 @@ export const useLeadDistribution = () => {
       )
       .subscribe();
 
-    // Real-time sync for agent caps (admin ↔ sales lead)
     const capsChannel = supabase
       .channel('agent-caps-sync')
       .on('postgres_changes',
@@ -369,7 +429,14 @@ export const useLeadDistribution = () => {
       )
       .subscribe();
 
-    // Refresh caps every 30 seconds
+    const overflowChannel = supabase
+      .channel('overflow-recipients-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'overflow_recipients' },
+        () => fetchOverflowRecipients()
+      )
+      .subscribe();
+
     const refreshInterval = setInterval(() => {
       fetchAgentCaps();
       fetchAgentPresences();
@@ -379,9 +446,10 @@ export const useLeadDistribution = () => {
       presenceChannel.unsubscribe();
       settingsChannel.unsubscribe();
       capsChannel.unsubscribe();
+      overflowChannel.unsubscribe();
       clearInterval(refreshInterval);
     };
-  }, [fetchSettings, fetchAgentCaps, fetchAgentPresences]);
+  }, [fetchSettings, fetchAgentCaps, fetchAgentPresences, fetchOverflowRecipients]);
 
   // Get presence status for an agent
   const getAgentPresenceStatus = useCallback((adminUserId: string): 'active' | 'idle' | 'offline' => {
@@ -404,6 +472,7 @@ export const useLeadDistribution = () => {
     settings,
     agentCaps,
     agentPresences,
+    overflowRecipients,
     currentAgentCap,
     loading,
     updateSettings,
@@ -414,6 +483,8 @@ export const useLeadDistribution = () => {
     togglePauseReceiving,
     initializeAgentCaps,
     getAgentPresenceStatus,
+    addOverflowRecipient,
+    removeOverflowRecipient,
     refreshCaps: fetchAgentCaps,
     refreshPresences: fetchAgentPresences
   };
