@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 import { PresenceBadge } from './PresenceBadge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Save, UserPlus, Trash2, Info, Zap, AlertCircle, UserCheck } from 'lucide-react';
+import { Save, UserPlus, Trash2, Info, Zap, AlertCircle, UserCheck, RotateCcw } from 'lucide-react';
 import { AgentSchedulePanel } from './AgentSchedulePanel';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AgentCap {
@@ -66,6 +67,24 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [resettingCaps, setResettingCaps] = useState(false);
+
+  const handleResetAllCaps = async () => {
+    setResettingCaps(true);
+    try {
+      const { error } = await supabase.rpc('reset_agent_caps_daily');
+      if (error) throw error;
+      toast({ title: 'Caps reset', description: 'All agent counters have been reset to 0.' });
+      // Trigger a refresh by updating a cap with no changes (parent will refetch)
+      if (agentCaps.length > 0) {
+        await onUpdateCap(agentCaps[0].admin_user_id, { assigned_today: 0 });
+      }
+    } catch (error) {
+      console.error('Error resetting caps:', error);
+      toast({ title: 'Error', description: 'Failed to reset caps.', variant: 'destructive' });
+    }
+    setResettingCaps(false);
+  };
 
   const handleCapChange = (adminUserId: string, value: string) => {
     // Empty value = null (unlimited)
@@ -194,12 +213,24 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
       {/* Header with refresh */}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">Agent Settings</h4>
-        {unconfiguredAgents.length > 0 && (
-          <Button variant="outline" size="sm" onClick={onInitializeCaps} className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            Add Unconfigured Agents ({unconfiguredAgents.length})
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleResetAllCaps} 
+            disabled={resettingCaps}
+            className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+          >
+            <RotateCcw className={`h-3.5 w-3.5 ${resettingCaps ? 'animate-spin' : ''}`} />
+            Reset Counters
           </Button>
-        )}
+          {unconfiguredAgents.length > 0 && (
+            <Button variant="outline" size="sm" onClick={onInitializeCaps} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add Unconfigured Agents ({unconfiguredAgents.length})
+            </Button>
+          )}
+        </div>
       </div>
 
       <Separator />
