@@ -629,6 +629,9 @@ export const CustomersTab = () => {
         } else if (filterBySource === 'agent_sales') {
           // Combined: BAW-S- (staff purchase) + ADM- (quote & orders)
           return warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+        } else if (filterBySource === 'cancelled_refunded') {
+          const status = customer.status?.toLowerCase() || '';
+          return status === 'cancelled' || status === 'refunded';
         }
         return true;
       });
@@ -2617,6 +2620,12 @@ export const CustomersTab = () => {
                         Agent Sales (BAW-S + ADM)
                       </div>
                     </SelectItem>
+                    <SelectItem value="cancelled_refunded">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                        Cancelled / Refunded
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                </div>
@@ -2827,6 +2836,7 @@ export const CustomersTab = () => {
                       {filterBySource === 'staff_purchase' && ' • Staff Purchase (BAW-S)'}
                       {filterBySource === 'quote_order' && ' • Quote & Orders (ADM)'}
                       {filterBySource === 'agent_sales' && ' • Agent Sales (BAW-S + ADM)'}
+                      {filterBySource === 'cancelled_refunded' && ' • Cancelled / Refunded'}
                     </>
                   )}
                 </span>
