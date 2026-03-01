@@ -145,12 +145,18 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="font-bold">£{agent.avgOrderValue.toFixed(0)}</div>
                       <div className="text-xs text-muted-foreground">AOV</div>
                     </div>
+                    {agent.cancelledCount > 0 && (
+                      <div className="text-center">
+                        <div className="font-bold text-red-600">{agent.cancelledCount}</div>
+                        <div className="text-xs text-red-500">Refunds</div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Mobile stats */}
                   <div className="md:hidden text-right">
                     <div className="font-bold text-emerald-600">£{agent.revenue.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">{agent.salesCount} sales</div>
+                    <div className="text-xs text-muted-foreground">{agent.salesCount} sales{agent.cancelledCount > 0 ? ` · ${agent.cancelledCount} refunds` : ''}</div>
                   </div>
 
                   {/* Performance badge */}

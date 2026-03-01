@@ -34,8 +34,6 @@ interface CustomerDeal {
 export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
   const [customerDeals, setCustomerDeals] = useState<CustomerDeal[]>([]);
-  const [cancelledCount, setCancelledCount] = useState(0);
-  const [cancelledRevenue, setCancelledRevenue] = useState(0);
   const [regPlatesOpen, setRegPlatesOpen] = useState(false);
 
   useEffect(() => {
@@ -93,24 +91,9 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
       setCustomerDeals((data || []) as CustomerDeal[]);
     };
 
-    // Fetch cancelled / refunded warranties this month
-    const fetchCancelled = async () => {
-      const { data } = await supabase
-        .from('customers')
-        .select('id, final_amount')
-        .eq('is_deleted', false)
-        .eq('assigned_to', agent.id)
-        .or('status.ilike.cancelled,status.ilike.refunded,status.ilike.Cancelled,status.ilike.Refunded')
-        .gte('created_at', monthStart.toISOString())
-        .lte('created_at', monthEnd.toISOString());
-
-      setCancelledCount((data || []).length);
-      setCancelledRevenue((data || []).reduce((s, c) => s + (c.final_amount || 0), 0));
-    };
 
     fetchDailyTrend();
     fetchCustomerDeals();
-    fetchCancelled();
   }, [agent]);
 
   if (!agent) {
@@ -165,7 +148,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
           { label: 'Avg Sale', value: `£${agent.avgOrderValue.toFixed(0)}`, icon: <BarChart3 className="h-4 w-4" />, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-200' },
           { label: 'Conversion', value: `${agent.conversionRate.toFixed(1)}%`, icon: <TrendingUp className="h-4 w-4" />, color: 'text-purple-600', bg: 'bg-purple-50 border-purple-200' },
           { label: 'AOV', value: `£${agent.avgOrderValue.toFixed(0)}`, icon: <Star className="h-4 w-4" />, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
-          { label: 'Cancelled', value: cancelledCount, icon: <XCircle className="h-4 w-4" />, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
+          { label: 'Refunds', value: agent?.cancelledCount ?? 0, icon: <XCircle className="h-4 w-4" />, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
         ].map(s => (
           <Card key={s.label} className={`border ${s.bg}`}>
             <CardContent className="p-3 text-center">
@@ -177,16 +160,16 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
       </div>
 
       {/* Cancelled / Refunded Summary */}
-      {cancelledCount > 0 && (
+      {(agent?.cancelledCount ?? 0) > 0 && (
         <Card className="border border-red-200 bg-red-50/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <XCircle className="h-5 w-5 text-red-500" />
               <div>
                 <p className="text-sm font-medium text-red-700">
-                  {cancelledCount} cancelled/refunded {cancelledCount === 1 ? 'warranty' : 'warranties'} this month
+                  {agent.cancelledCount} refunded/cancelled {agent.cancelledCount === 1 ? 'warranty' : 'warranties'} (no commission paid)
                 </p>
-                <p className="text-xs text-red-500">Lost revenue: £{cancelledRevenue.toLocaleString()}</p>
+                <p className="text-xs text-red-500">Lost revenue: £{(agent.cancelledRevenue ?? 0).toLocaleString()}</p>
               </div>
             </div>
           </CardContent>

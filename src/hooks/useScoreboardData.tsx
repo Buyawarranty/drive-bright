@@ -20,6 +20,8 @@ export interface AgentScore {
   previousRank: number | null;
   trend: 'up' | 'down' | 'same' | 'new';
   monthlyTarget: number | null;
+  cancelledCount: number;
+  cancelledRevenue: number;
 }
 
 export interface ScoreboardData {
@@ -129,6 +131,22 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: customers } = await customerQuery;
 
+      // Fetch cancelled/refunded customers per agent (merged as one metric)
+      let cancelledQuery = supabase
+        .from('customers')
+        .select('id, assigned_to, final_amount, updated_at')
+        .eq('is_deleted', false)
+        .or('status.ilike.cancelled,status.ilike.refunded')
+        .in('assigned_to', agentIds);
+
+      if (period !== 'all') {
+        cancelledQuery = cancelledQuery
+          .gte('updated_at', start.toISOString())
+          .lte('updated_at', end.toISOString());
+      }
+
+      const { data: cancelledCustomers } = await cancelledQuery;
+
       let leadsQuery = supabase
         .from('sales_leads')
         .select('id, assigned_to, is_paid, status, created_at')
@@ -162,6 +180,7 @@ export const useScoreboardData = (): ScoreboardData => {
         const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
         const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
+        const userCancelled = (cancelledCustomers || []).filter(c => c.assigned_to === u.id);
 
         const salesCount = userCustomers.length;
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
@@ -169,6 +188,8 @@ export const useScoreboardData = (): ScoreboardData => {
         const leadsConverted = userConvertedLeads.length;
         const conversionRate = leadsAssigned > 0 ? (leadsConverted / leadsAssigned) * 100 : 0;
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
+        const cancelledCount = userCancelled.length;
+        const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
         return {
           id: u.id,
@@ -185,6 +206,8 @@ export const useScoreboardData = (): ScoreboardData => {
           previousRank: null,
           trend: 'same' as const,
           monthlyTarget: targetMap.get(u.id) || null,
+          cancelledCount,
+          cancelledRevenue,
         };
       });
 
