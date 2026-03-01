@@ -55,7 +55,7 @@ export const VehicleStatsTab: React.FC = () => {
           .from('customers')
           .select('vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, final_amount, status, signup_date')
           .eq('is_deleted', false)
-          .eq('status', 'active'),
+          .ilike('status', 'active'),
         supabase
           .from('claims_submissions')
           .select('id, vehicle_registration, status, payment_amount'),
