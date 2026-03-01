@@ -3582,6 +3582,64 @@ export type Database = {
         }
         Relationships: []
       }
+      overflow_recipients: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overflow_recipients_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      overflow_round_robin_state: {
+        Row: {
+          id: string
+          last_assigned_overflow_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          last_assigned_overflow_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          last_assigned_overflow_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overflow_round_robin_state_last_assigned_overflow_id_fkey"
+            columns: ["last_assigned_overflow_id"]
+            isOneToOne: false
+            referencedRelation: "overflow_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_views: {
         Row: {
           created_at: string

@@ -117,12 +117,15 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     settings,
     agentCaps,
     agentPresences,
+    overflowRecipients,
     updateAgentCap,
     updateSettings,
     toggleAgentPause,
     deleteAgentFromDistribution,
     getAgentPresenceStatus,
     initializeAgentCaps,
+    addOverflowRecipient,
+    removeOverflowRecipient,
     loading
   } = useLeadDistribution();
 
@@ -1351,32 +1354,62 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             )}
           </div>
 
-          {/* Overflow Recipient Selector */}
-          <div className="flex items-center gap-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <div className="flex items-center gap-2 shrink-0">
+          {/* Overflow Recipients */}
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg space-y-3">
+            <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-medium">Overflow Recipient:</span>
+              <span className="text-sm font-medium">Overflow Recipients</span>
+              <span className="text-xs text-amber-700 dark:text-amber-300">
+                When all agents hit their daily cap, extra leads rotate among these people.
+              </span>
             </div>
-            <Select
-              value={settings?.overflow_recipient_id || 'none'}
-              onValueChange={(value) => updateSettings({ overflow_recipient_id: value === 'none' ? null : value })}
-              disabled={!isFullAdmin}
-            >
-              <SelectTrigger className="w-[200px] h-9 text-sm">
-                <SelectValue placeholder="Select overflow" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None (stays unassigned)</SelectItem>
-                {salesUsers.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-xs text-amber-700 dark:text-amber-300">
-              When all agents hit their daily cap, extra leads go to this person.
-            </span>
+            
+            {/* Current overflow recipients */}
+            {overflowRecipients.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {overflowRecipients.map((recipient, idx) => {
+                  const user = salesUsers.find(u => u.id === recipient.admin_user_id);
+                  const name = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.email || 'Unknown';
+                  return (
+                    <Badge key={recipient.id} variant="secondary" className="flex items-center gap-1 py-1 px-2">
+                      <span className="text-xs font-medium text-amber-700">#{idx + 1}</span>
+                      <span className="text-xs">{name}</span>
+                      {isFullAdmin && (
+                        <button
+                          onClick={() => removeOverflowRecipient(recipient.id)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Add overflow recipient */}
+            {isFullAdmin && (
+              <Select
+                value=""
+                onValueChange={(value) => {
+                  if (value) addOverflowRecipient(value);
+                }}
+              >
+                <SelectTrigger className="w-[220px] h-9 text-sm">
+                  <SelectValue placeholder="+ Add overflow recipient" />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesUsers
+                    .filter(u => !overflowRecipients.some(r => r.admin_user_id === u.id))
+                    .map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Agent Controls Table */}
