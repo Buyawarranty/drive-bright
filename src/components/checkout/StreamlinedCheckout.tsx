@@ -1093,7 +1093,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     // CRITICAL: Prevent applying the same promo code twice
     if (appliedDiscountCodes.some(d => d.code === codeUpper)) {
-      setPromoCodeError('This promo code has already been applied');
+      setPromoCodeError('A promo code has already been applied');
       return;
     }
     
