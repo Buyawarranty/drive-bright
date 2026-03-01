@@ -79,9 +79,9 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
     // Prevent multiple rapid clicks
     if (validatingDiscount) return;
     
-    // Prevent applying another code if one is already valid
+    // CRITICAL: Only one coupon per purchase - prevent clubbing
     if (discountValidation?.valid) {
-      toast.error('A discount code is already applied. Remove it first to apply a different code.');
+      toast.error('Only one discount code can be used per purchase. Remove the existing code first.');
       return;
     }
     
