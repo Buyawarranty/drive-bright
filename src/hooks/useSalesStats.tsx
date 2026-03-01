@@ -149,7 +149,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
   const fetchTeamStats = useCallback(async (filters?: TeamFilters) => {
     try {
       // Get all leads (for lead counts, status breakdowns, tags)
-      let leadsQuery = supabase.from('sales_leads').select('*');
+      let leadsQuery = supabase.from('sales_leads').select('id, status, assigned_to, call_count, last_contacted_at, created_at, priority, lead_source, converted_at, lost_at, lost_reason').limit(10000);
       
       // Apply date filter to leads
       if (filters?.dateFrom) {
