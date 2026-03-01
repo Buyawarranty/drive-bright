@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { CustomersTab } from '@/components/admin/CustomersTab';
 import { SetTargetsPanel } from './SetTargetsPanel';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
@@ -32,8 +33,8 @@ const useDashboardStats = () => {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
       const [leadsRes, cartsRes, usersRes, userRes] = await Promise.all([
-        supabase.from('sales_leads').select('id, assigned_to, is_paid, payment_amount, cart_value, quote_amount, updated_at, status', { count: 'exact' }).limit(10000),
-        supabase.from('abandoned_carts').select('id, contacted_by, is_converted', { count: 'exact' }).eq('is_converted', false).limit(10000),
+        fetchAllRows(() => supabase.from('sales_leads').select('id, assigned_to, is_paid, payment_amount, cart_value, quote_amount, updated_at, status')),
+        fetchAllRows(() => supabase.from('abandoned_carts').select('id, contacted_by, is_converted').eq('is_converted', false)),
         supabase.from('admin_users').select('id, user_id, first_name, last_name, email, is_active, role').eq('is_active', true).order('first_name'),
         supabase.auth.getUser()
       ]);
