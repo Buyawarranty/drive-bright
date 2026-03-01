@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { toast } from 'sonner';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -205,9 +206,9 @@ export const useLeads = () => {
       
       // Use Promise.all to fetch all data sources in parallel for better performance
       const [salesLeadsResult, abandonedCartsResult, dedupResult] = await Promise.all([
-        // Fetch sales_leads with optimized column selection
-        (async () => {
-        let query = supabase
+        // Fetch ALL sales_leads using batch fetching to bypass 1000-row PostgREST limit
+        fetchAllRows(() => {
+          let query = supabase
             .from('sales_leads')
             .select(`
               id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
@@ -218,41 +219,39 @@ export const useLeads = () => {
               call_count,
               assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
             `)
-            .order('created_at', { ascending: false })
-            .limit(5000); // Increased limit to fetch all leads
+            .order('created_at', { ascending: false });
 
           if (filter === 'all') {
-            // Exclude lost and fake leads from the main "All" view
             query = query.not('status', 'in', '("lost","fake_lead")');
           } else if (filter === 'high_priority') {
             query = query.in('priority', ['high', 'urgent']);
           } else if (filter === 'fake') {
             query = query.eq('status', 'fake_lead' as any);
           } else {
-            // Cast to any to allow custom status values not yet in database types
             query = query.eq('status', filter as any);
           }
 
           return query;
-        })(),
-        // Fetch abandoned carts with optimized column selection
-        supabase
-          .from('abandoned_carts')
-          .select(`
-            id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-            vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
-            contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
-            call_count, created_at, updated_at
-          `)
-          .eq('is_converted', false)
-          .order('created_at', { ascending: false })
-          .limit(5000), // Increased limit to fetch all carts
-        // Separate UNFILTERED query for dedup: get ALL sales_lead emails, phones, and abandoned_cart_ids
-        // This prevents leads filtered out by status (e.g. "lost") from causing cart duplicates
-        supabase
-          .from('sales_leads')
-          .select('email, phone, abandoned_cart_id')
-          .limit(10000)
+        }),
+        // Fetch ALL abandoned carts using batch fetching
+        fetchAllRows(() => 
+          supabase
+            .from('abandoned_carts')
+            .select(`
+              id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+              vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
+              contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
+              call_count, created_at, updated_at
+            `)
+            .eq('is_converted', false)
+            .order('created_at', { ascending: false })
+        ),
+        // Fetch ALL dedup data using batch fetching
+        fetchAllRows(() => 
+          supabase
+            .from('sales_leads')
+            .select('email, phone, abandoned_cart_id')
+        )
       ]);
 
       const { data: salesLeadsData, error: salesError } = salesLeadsResult;
@@ -262,6 +261,8 @@ export const useLeads = () => {
       if (cartsError) throw cartsError;
 
       const { data: dedupData } = dedupResult;
+      
+      console.log(`[Leads] Fetched ${salesLeadsData?.length || 0} sales leads, ${abandonedCartsData?.length || 0} abandoned carts`);
 
       // Build a map of auth.user_id -> admin_user for abandoned cart assignments
       // contacted_by stores auth.users.id, we need to map to admin_users
