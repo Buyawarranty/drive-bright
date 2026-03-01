@@ -459,131 +459,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </div>
       </TableCell>
 
-      {/* Payment Status */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        {lead.is_paid ? (
-          <div className="space-y-0.5">
-            <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
-              <CheckCircle className="h-3 w-3" />PAID
-            </Badge>
-            <div className="text-[10px] text-muted-foreground">£{lead.payment_amount?.toFixed(2) || 'N/A'}</div>
-            <div className="text-[10px] text-muted-foreground capitalize">{lead.payment_method || '—'}</div>
-            <Button
-              variant="link"
-              size="sm"
-              className="h-5 px-0 text-[10px] text-primary font-medium"
-              onClick={handleViewCustomer}
-            >
-              <ExternalLink className="h-3 w-3 mr-1" />View Customer
-            </Button>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-
-      {/* Price - Competitor price + Our quotes */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="space-y-1">
-          {/* Competitor price from cart_metadata */}
-          {lead.cart_metadata?.competitorPrice && (
-            <div className="flex items-center gap-1">
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-red-50 text-red-700 border-red-200 font-semibold">
-                🎯 £{lead.cart_metadata.competitorPrice}
-              </Badge>
-            </div>
-          )}
-          {/* Our sent quotes */}
-          {sentQuotes && sentQuotes.length > 0 && (
-            <div className="flex flex-col gap-0.5">
-              {sentQuotes.slice(0, 2).map((quote, idx) => (
-                <Badge 
-                  key={idx} 
-                  variant="outline" 
-                  className="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200 font-medium"
-                >
-                  📤 £{quote.total_price?.toFixed(0) || 'N/A'}
-                </Badge>
-              ))}
-              {sentQuotes.length > 2 && (
-                <span className="text-[10px] text-muted-foreground">+{sentQuotes.length - 2} more</span>
-              )}
-            </div>
-          )}
-          {/* Fallback if no pricing info */}
-          {!lead.cart_metadata?.competitorPrice && (!sentQuotes || sentQuotes.length === 0) && (
-            <span className="text-muted-foreground text-xs">—</span>
-          )}
-        </div>
-      </TableCell>
-
-      {/* Quote Sent */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <QuoteSentCell quotes={sentQuotes || []} leadEmail={lead.email} />
-      </TableCell>
-
-      {/* Next Action */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        {lead.next_action_date ? (
-          <div className={cn("text-xs", isOverdue && "text-red-600 font-semibold")}>
-            <div className="flex items-center gap-1 font-medium">
-              {lead.next_action_type === 'call' && <Phone className="h-3 w-3" />}
-              {lead.next_action_type === 'email' && <Mail className="h-3 w-3" />}
-              {lead.next_action_type === 'meeting' && <User className="h-3 w-3" />}
-              {lead.next_action_type === 'sms' && <MessageSquare className="h-3 w-3" />}
-              {getNextActionLabel()}
-            </div>
-            <div className="text-muted-foreground">
-              {format(new Date(lead.next_action_date), 'MMM d, HH:mm')}
-            </div>
-          </div>
-        ) : (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs w-full">
-                <CalendarIcon className="h-3 w-3 mr-1" />Schedule
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-3">
-              <div className="space-y-3">
-                <Select value={followUpType} onValueChange={setFollowUpType}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="call">📞 Call</SelectItem>
-                    <SelectItem value="email">✉️ Email</SelectItem>
-                    <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
-                    <SelectItem value="sms">📱 SMS</SelectItem>
-                    <SelectItem value="quote">📄 Send quote</SelectItem>
-                    <SelectItem value="meeting">👤 Meeting</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Calendar mode="single" selected={followUpDate} onSelect={setFollowUpDate} />
-                <Button 
-                  size="sm" 
-                  className="w-full"
-                  disabled={!followUpDate}
-                  onClick={() => {
-                    if (followUpDate) {
-                      onScheduleFollowUp(followUpType, followUpDate.toISOString());
-                      setFollowUpDate(undefined);
-                    }
-                  }}
-                >
-                  Schedule
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-      </TableCell>
-
-      {/* Urgency SLA */}
-      <TableCell>
-        <Badge className={cn("text-xs font-medium", sla.color)}>{sla.label}</Badge>
-      </TableCell>
-
       {/* Name */}
       <TableCell>
         <div className="flex items-center gap-1.5">
@@ -646,26 +521,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
 
-      {/* Step Reached */}
-      <TableCell>
-        {lead.step_abandoned ? (
-          <Badge 
-            variant="outline" 
-            className={cn(
-              "text-xs font-medium",
-              lead.step_abandoned === 1 && "bg-red-50 text-red-700 border-red-200",
-              lead.step_abandoned === 2 && "bg-orange-50 text-orange-700 border-orange-200",
-              lead.step_abandoned === 3 && "bg-yellow-50 text-yellow-700 border-yellow-200",
-              lead.step_abandoned === 4 && "bg-blue-50 text-blue-700 border-blue-200"
-            )}
-          >
-            Step {lead.step_abandoned}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-
       {/* Email */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-0.5">
@@ -693,6 +548,137 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </div>
       </TableCell>
 
+      {/* Quote Sent */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <QuoteSentCell quotes={sentQuotes || []} leadEmail={lead.email} />
+      </TableCell>
+
+      {/* Reg Plate */}
+      <TableCell>
+        {lead.vehicle_reg ? (
+          <Badge variant="outline" className="font-mono text-xs">{lead.vehicle_reg}</Badge>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+
+      {/* Price - Competitor price + Our quotes */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="space-y-1">
+          {lead.cart_metadata?.competitorPrice && (
+            <div className="flex items-center gap-1">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-red-50 text-red-700 border-red-200 font-semibold">
+                🎯 £{lead.cart_metadata.competitorPrice}
+              </Badge>
+            </div>
+          )}
+          {sentQuotes && sentQuotes.length > 0 && (
+            <div className="flex flex-col gap-0.5">
+              {sentQuotes.slice(0, 2).map((quote, idx) => (
+                <Badge 
+                  key={idx} 
+                  variant="outline" 
+                  className="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200 font-medium"
+                >
+                  📤 £{quote.total_price?.toFixed(0) || 'N/A'}
+                </Badge>
+              ))}
+              {sentQuotes.length > 2 && (
+                <span className="text-[10px] text-muted-foreground">+{sentQuotes.length - 2} more</span>
+              )}
+            </div>
+          )}
+          {!lead.cart_metadata?.competitorPrice && (!sentQuotes || sentQuotes.length === 0) && (
+            <span className="text-muted-foreground text-xs">—</span>
+          )}
+        </div>
+      </TableCell>
+
+      {/* Payment Status */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {lead.is_paid ? (
+          <div className="space-y-0.5">
+            <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
+              <CheckCircle className="h-3 w-3" />PAID
+            </Badge>
+            <div className="text-[10px] text-muted-foreground">£{lead.payment_amount?.toFixed(2) || 'N/A'}</div>
+            <div className="text-[10px] text-muted-foreground capitalize">{lead.payment_method || '—'}</div>
+            <Button
+              variant="link"
+              size="sm"
+              className="h-5 px-0 text-[10px] text-primary font-medium"
+              onClick={handleViewCustomer}
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />View Customer
+            </Button>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+
+      {/* Urgency SLA */}
+      <TableCell>
+        <Badge className={cn("text-xs font-medium", sla.color)}>{sla.label}</Badge>
+      </TableCell>
+
+      {/* Next Action */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {lead.next_action_date ? (
+          <div className={cn("text-xs", isOverdue && "text-red-600 font-semibold")}>
+            <div className="flex items-center gap-1 font-medium">
+              {lead.next_action_type === 'call' && <Phone className="h-3 w-3" />}
+              {lead.next_action_type === 'email' && <Mail className="h-3 w-3" />}
+              {lead.next_action_type === 'meeting' && <User className="h-3 w-3" />}
+              {lead.next_action_type === 'sms' && <MessageSquare className="h-3 w-3" />}
+              {getNextActionLabel()}
+            </div>
+            <div className="text-muted-foreground">
+              {format(new Date(lead.next_action_date), 'MMM d, HH:mm')}
+            </div>
+          </div>
+        ) : (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 text-xs w-full">
+                <CalendarIcon className="h-3 w-3 mr-1" />Schedule
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3">
+              <div className="space-y-3">
+                <Select value={followUpType} onValueChange={setFollowUpType}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="call">📞 Call</SelectItem>
+                    <SelectItem value="email">✉️ Email</SelectItem>
+                    <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
+                    <SelectItem value="sms">📱 SMS</SelectItem>
+                    <SelectItem value="quote">📄 Send quote</SelectItem>
+                    <SelectItem value="meeting">👤 Meeting</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Calendar mode="single" selected={followUpDate} onSelect={setFollowUpDate} />
+                <Button 
+                  size="sm" 
+                  className="w-full"
+                  disabled={!followUpDate}
+                  onClick={() => {
+                    if (followUpDate) {
+                      onScheduleFollowUp(followUpType, followUpDate.toISOString());
+                      setFollowUpDate(undefined);
+                    }
+                  }}
+                >
+                  Schedule
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </TableCell>
+
       {/* Plan */}
       <TableCell>
         {lead.plan_name || lead.plan_interest ? (
@@ -705,10 +691,21 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
 
-      {/* Reg Plate */}
+      {/* Step Reached */}
       <TableCell>
-        {lead.vehicle_reg ? (
-          <Badge variant="outline" className="font-mono text-xs">{lead.vehicle_reg}</Badge>
+        {lead.step_abandoned ? (
+          <Badge 
+            variant="outline" 
+            className={cn(
+              "text-xs font-medium",
+              lead.step_abandoned === 1 && "bg-red-50 text-red-700 border-red-200",
+              lead.step_abandoned === 2 && "bg-orange-50 text-orange-700 border-orange-200",
+              lead.step_abandoned === 3 && "bg-yellow-50 text-yellow-700 border-yellow-200",
+              lead.step_abandoned === 4 && "bg-blue-50 text-blue-700 border-blue-200"
+            )}
+          >
+            Step {lead.step_abandoned}
+          </Badge>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
