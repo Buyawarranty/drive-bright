@@ -197,7 +197,7 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
         {unconfiguredAgents.length > 0 && (
           <Button variant="outline" size="sm" onClick={onInitializeCaps} className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Add {unconfiguredAgents.length} new agent(s)
+            Add Unconfigured Agents ({unconfiguredAgents.length})
           </Button>
         )}
       </div>
