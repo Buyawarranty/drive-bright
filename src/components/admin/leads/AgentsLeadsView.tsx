@@ -1154,85 +1154,6 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         </Card>
       )}
 
-      {/* Admin toggle: Sales Lead distribution access */}
-      {isFullAdmin && (
-        <div className="flex items-center gap-3 p-3 bg-muted/30 border rounded-lg">
-          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Sales Lead Distribution Access</span>
-          <Switch
-            checked={salesLeadDistributionAccess !== false}
-            onCheckedChange={async (checked) => {
-              const success = await updateDistributionAccess(checked);
-              if (success) {
-                toast({
-                  title: checked ? 'Access granted' : 'Access revoked',
-                  description: checked
-                    ? 'Sales Leads can now view and manage distribution settings.'
-                    : 'Sales Leads can no longer access distribution settings.',
-                });
-              }
-            }}
-          />
-          <span className="text-xs text-muted-foreground">
-            {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Distribution restricted to admins only'}
-          </span>
-        </div>
-      )}
-
-      {/* Admin/Sales Lead toggle: Show assignments to agents */}
-      {(isFullAdmin || isSalesLead) && (
-        <div className="flex items-center gap-3 p-3 bg-muted/30 border rounded-lg">
-          {showAssignmentsToAgents !== false ? (
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <EyeOff className="h-4 w-4 text-muted-foreground" />
-          )}
-          <span className="text-sm font-medium">Agent Assignment Visibility</span>
-          <Switch
-            checked={showAssignmentsToAgents !== false}
-            onCheckedChange={async (checked) => {
-              const success = await updateShowAssignments(checked);
-              if (success) {
-                toast({
-                  title: checked ? 'Assignments visible' : 'Assignments hidden',
-                  description: checked
-                    ? 'Sales agents can now see who is assigned to each lead.'
-                    : 'Sales agents can no longer see lead assignments.',
-                });
-              }
-            }}
-          />
-          <span className="text-xs text-muted-foreground">
-            {showAssignmentsToAgents !== false ? 'Agents can see lead assignments' : 'Assignments hidden from agents'}
-          </span>
-        </div>
-      )}
-
-      {/* Admin/Sales Lead toggle: Allow agents to self-assign (claim) leads */}
-      {(isFullAdmin || isSalesLead) && (
-        <div className="flex items-center gap-3 p-3 bg-muted/30 border rounded-lg">
-          <Zap className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Agent Self-Assign (Claim Leads)</span>
-          <Switch
-            checked={allowAgentSelfAssign !== false}
-            onCheckedChange={async (checked) => {
-              const success = await updateAllowSelfAssign(checked);
-              if (success) {
-                toast({
-                  title: checked ? 'Self-assign enabled' : 'Self-assign disabled',
-                  description: checked
-                    ? 'Sales agents can now claim leads using the "Get Next Lead" button.'
-                    : 'Sales agents can no longer self-assign leads. Leads will only be distributed automatically.',
-                });
-              }
-            }}
-          />
-          <span className="text-xs text-muted-foreground">
-            {allowAgentSelfAssign !== false ? 'Agents can claim leads themselves' : 'Self-assign blocked — auto-distribution only'}
-          </span>
-        </div>
-      )}
-
       {/* Agent Distribution Settings Section */}
       {canSeeDistributionSettings ? (
       <Card>
@@ -1251,12 +1172,103 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 Reassign Agent's Leads
               </Button>
               {unconfiguredAgents.length > 0 && (
-                <Button variant="outline" size="sm" onClick={initializeAgentCaps} className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Add {unconfiguredAgents.length} new agent(s)
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={initializeAgentCaps} className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Add Unconfigured Agents ({unconfiguredAgents.length})
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-medium mb-1">These agents aren't in distribution yet:</p>
+                    <ul className="text-xs space-y-0.5">
+                      {unconfiguredAgents.map(a => (
+                        <li key={a.id}>• {a.first_name || ''} {a.last_name || a.email}</li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
+          </div>
+
+          {/* Admin toggles */}
+          <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
+            {isFullAdmin && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Sales Lead Distribution Access</span>
+                <Switch
+                  checked={salesLeadDistributionAccess !== false}
+                  onCheckedChange={async (checked) => {
+                    const success = await updateDistributionAccess(checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Access granted' : 'Access revoked',
+                        description: checked
+                          ? 'Sales Leads can now view and manage distribution settings.'
+                          : 'Sales Leads can no longer access distribution settings.',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Restricted to admins'}
+                </span>
+              </div>
+            )}
+
+            {(isFullAdmin || isSalesLead) && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                {showAssignmentsToAgents !== false ? (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">Agent Assignment Visibility</span>
+                <Switch
+                  checked={showAssignmentsToAgents !== false}
+                  onCheckedChange={async (checked) => {
+                    const success = await updateShowAssignments(checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Assignments visible' : 'Assignments hidden',
+                        description: checked
+                          ? 'Sales agents can now see who is assigned to each lead.'
+                          : 'Sales agents can no longer see lead assignments.',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {showAssignmentsToAgents !== false ? 'Agents can see assignments' : 'Hidden from agents'}
+                </span>
+              </div>
+            )}
+
+            {(isFullAdmin || isSalesLead) && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                <Zap className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Agent Self-Assign (Claim Leads)</span>
+                <Switch
+                  checked={allowAgentSelfAssign !== false}
+                  onCheckedChange={async (checked) => {
+                    const success = await updateAllowSelfAssign(checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Self-assign enabled' : 'Self-assign disabled',
+                        description: checked
+                          ? 'Sales agents can now claim leads using the "Get Next Lead" button.'
+                          : 'Sales agents can no longer self-assign leads.',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {allowAgentSelfAssign !== false ? 'Agents can claim leads' : 'Auto-distribution only'}
+                </span>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
