@@ -133,6 +133,7 @@ export const ROLE_TEMPLATES: Record<string, PermissionPolicy> = {
       warranties: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
       discount_codes: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
       abandoned_carts: { view: true, create: false, edit: true, delete: false, export: false, approve: false },
+      sales_scoreboard: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
     },
     columns: {
       'customers.email': partialMask,
@@ -291,6 +292,7 @@ export const ROLE_TEMPLATES: Record<string, PermissionPolicy> = {
       abandoned_carts: { view: true, create: false, edit: true, delete: false, export: true, approve: false },
       discount_codes: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
       referrals: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
+      sales_scoreboard: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
     },
     columns: {
       'customers.email': noMask,
