@@ -145,6 +145,33 @@ serve(async (req) => {
       seasonal_bonus_months: protectionAddOns.seasonalBonusMonths || 0
     };
 
+    // CRITICAL: Check for duplicate by email + reg plate before inserting
+    const regPlateForCheck = vehicleData?.registrationNumber || vehicleData?.registration_plate;
+    const normalizedReg = regPlateForCheck ? regPlateForCheck.toUpperCase().replace(/\s/g, '') : '';
+    const normalizedEmail = customerData.email.toLowerCase().trim();
+    
+    if (normalizedReg && normalizedEmail) {
+      const { data: existingByEmailReg } = await supabase
+        .from('customers')
+        .select('id, email, registration_plate')
+        .ilike('email', normalizedEmail)
+        .or('is_deleted.is.null,is_deleted.eq.false')
+        .in('status', ['Active', 'Pending']);
+      
+      const matchingRecord = existingByEmailReg?.find(r => {
+        const existingReg = (r.registration_plate || '').toUpperCase().replace(/\s/g, '');
+        return existingReg === normalizedReg;
+      });
+      
+      if (matchingRecord) {
+        logStep("DUPLICATE DETECTED by email + reg plate, skipping insert", { existingId: matchingRecord.id });
+        return new Response(null, {
+          status: 302,
+          headers: { ...corsHeaders, "Location": `${Deno.env.get('SITE_URL') || 'https://drive-bright.lovable.app'}/thank-you?duplicate=true` },
+        });
+      }
+    }
+
     logStep("Creating customer record", { email: customerData.email });
 
     const { data: customer, error: customerError } = await supabase

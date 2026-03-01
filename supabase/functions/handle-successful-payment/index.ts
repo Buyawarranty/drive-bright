@@ -139,7 +139,62 @@ serve(async (req) => {
         });
       }
       
-      logStep("No duplicate found, proceeding with payment processing");
+      logStep("No duplicate found by payment ID, proceeding with payment processing");
+    }
+
+    // CRITICAL: Additional duplicate check by email + registration plate
+    // This catches duplicates from manual orders, double-submissions, or webhook retries
+    const regPlateForCheck = vehicleData?.registrationNumber || vehicleData?.registration_plate || metadata?.vehicle_reg;
+    if (userEmail && regPlateForCheck) {
+      const normalizedReg = regPlateForCheck.toUpperCase().replace(/\s/g, '');
+      const normalizedEmail = userEmail.toLowerCase().trim();
+      
+      logStep("Checking for duplicate by email + reg plate", { normalizedEmail, normalizedReg });
+      
+      const { data: existingByEmailReg } = await supabaseClient
+        .from('customers')
+        .select('id, email, warranty_number, registration_plate, created_at')
+        .ilike('email', normalizedEmail)
+        .or('is_deleted.is.null,is_deleted.eq.false')
+        .in('status', ['Active', 'Pending']);
+      
+      if (existingByEmailReg && existingByEmailReg.length > 0) {
+        const matchingRecord = existingByEmailReg.find(r => {
+          const existingReg = (r.registration_plate || '').toUpperCase().replace(/\s/g, '');
+          return existingReg === normalizedReg;
+        });
+        
+        if (matchingRecord) {
+          logStep("DUPLICATE DETECTED by email + reg plate", {
+            existingCustomerId: matchingRecord.id,
+            existingEmail: matchingRecord.email,
+            warrantyNumber: matchingRecord.warranty_number,
+            originalProcessedAt: matchingRecord.created_at,
+          });
+          
+          const { data: existingPolicy } = await supabaseClient
+            .from('customer_policies')
+            .select('id, warranty_number')
+            .eq('customer_id', matchingRecord.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          return new Response(JSON.stringify({
+            success: true,
+            message: "Payment already processed - duplicate prevented (email + reg match)",
+            customerId: matchingRecord.id,
+            policyNumber: existingPolicy?.warranty_number || matchingRecord.warranty_number,
+            policyId: existingPolicy?.id,
+            isDuplicate: true
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+      }
+      
+      logStep("No duplicate found by email + reg plate");
     }
 
     // Validate vehicle age (must be 15 years or newer)
