@@ -4348,7 +4348,6 @@ Please log in and change your password after first login.`;
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="unassigned">Unassigned</SelectItem>
-                            <SelectItem value="website">Website</SelectItem>
                             {adminUsers.filter(u => u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin').map(user => (
                               <SelectItem key={user.id} value={user.id}>
                                 {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
