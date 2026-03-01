@@ -1089,6 +1089,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const applyPromoCode = async () => {
     if (!promoCodeInput.trim()) return;
     
+    const codeUpper = promoCodeInput.trim().toUpperCase();
+    
+    // CRITICAL: Prevent applying the same promo code twice
+    if (appliedDiscountCodes.some(d => d.code === codeUpper)) {
+      setPromoCodeError('This promo code has already been applied');
+      return;
+    }
+    
+    // Only allow one promo code at a time
+    if (appliedDiscountCodes.length > 0) {
+      setPromoCodeError('Only one promo code can be used per purchase. Remove the existing code first.');
+      return;
+    }
+    
     setIsValidatingPromoCode(true);
     setPromoCodeError('');
     
