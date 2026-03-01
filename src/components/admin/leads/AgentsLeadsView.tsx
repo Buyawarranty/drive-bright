@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -107,7 +107,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Bulk reassign dialog state (for absent agents)
   const [bulkReassignOpen, setBulkReassignOpen] = useState(false);
   const [bulkSourceAgent, setBulkSourceAgent] = useState<string>('');
-  const [bulkTargetAgent, setBulkTargetAgent] = useState<string>('');
+  const [bulkTargetAgents, setBulkTargetAgents] = useState<string[]>([]);
   const [bulkDateRange, setBulkDateRange] = useState<DateRange | undefined>(undefined);
   const [bulkReassigning, setBulkReassigning] = useState(false);
   const [bulkCalendarOpen, setBulkCalendarOpen] = useState(false);
@@ -362,37 +362,65 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   }, [bulkSourceAgent, leads, bulkDateRange]);
 
   const handleBulkReassign = async () => {
-    if (!bulkSourceAgent || !bulkTargetAgent || bulkSourceAgent === bulkTargetAgent) return;
+    if (!bulkSourceAgent || bulkTargetAgents.length === 0) return;
     
     setBulkReassigning(true);
     try {
-      let query = supabase
+      // First, get the actual lead IDs to reassign (so we can distribute equally)
+      let leadsQuery = supabase
         .from('sales_leads')
-        .update({ assigned_to: bulkTargetAgent, updated_at: new Date().toISOString() })
+        .select('id')
         .eq('assigned_to', bulkSourceAgent);
       
       // Apply date filter if set
       if (bulkDateRange?.from) {
-        query = query.gte('created_at', bulkDateRange.from.toISOString());
+        leadsQuery = leadsQuery.gte('created_at', bulkDateRange.from.toISOString());
         if (bulkDateRange.to) {
-          query = query.lte('created_at', endOfDay(bulkDateRange.to).toISOString());
+          leadsQuery = leadsQuery.lte('created_at', endOfDay(bulkDateRange.to).toISOString());
         }
       }
 
-      const { error, count } = await query;
-      if (error) throw error;
+      const { data: leadsToReassign, error: fetchError } = await leadsQuery;
+      if (fetchError) throw fetchError;
+      if (!leadsToReassign || leadsToReassign.length === 0) {
+        toast({ title: 'No leads', description: 'No leads found matching the criteria.', variant: 'destructive' });
+        return;
+      }
+
+      // Distribute leads equally (round-robin) across target agents
+      const now = new Date().toISOString();
+      const updatePromises = leadsToReassign.map((lead, index) => {
+        const targetAgent = bulkTargetAgents[index % bulkTargetAgents.length];
+        return supabase
+          .from('sales_leads')
+          .update({ assigned_to: targetAgent, updated_at: now })
+          .eq('id', lead.id);
+      });
+
+      const results = await Promise.all(updatePromises);
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) throw errors[0].error;
 
       const sourceAgent = salesUsers.find(u => u.id === bulkSourceAgent);
-      const targetAgent = salesUsers.find(u => u.id === bulkTargetAgent);
+      const targetNames = bulkTargetAgents
+        .map(id => getAgentName(salesUsers.find(u => u.id === id)))
+        .join(', ');
+      
+      // Calculate per-agent counts
+      const perAgent = Math.floor(leadsToReassign.length / bulkTargetAgents.length);
+      const remainder = leadsToReassign.length % bulkTargetAgents.length;
+      const distribution = bulkTargetAgents.length === 1
+        ? `${leadsToReassign.length} leads`
+        : `~${perAgent}${remainder > 0 ? `–${perAgent + 1}` : ''} leads each`;
       
       toast({
         title: 'Leads reassigned',
-        description: `${bulkSourceLeadCount} leads from ${getAgentName(sourceAgent)} reassigned to ${getAgentName(targetAgent)}.`,
+        description: `${leadsToReassign.length} leads from ${getAgentName(sourceAgent)} reassigned to ${targetNames} (${distribution}).`,
       });
 
       setBulkReassignOpen(false);
       setBulkSourceAgent('');
-      setBulkTargetAgent('');
+      setBulkTargetAgents([]);
       setBulkDateRange(undefined);
     } catch (error) {
       console.error('Bulk reassign error:', error);
@@ -766,7 +794,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
               Reassign Agent's Leads
             </DialogTitle>
             <DialogDescription>
-              Transfer all leads from one agent to another. Use this when an agent is off sick or absent.
+              Transfer leads from one agent to one or more covering agents. Leads are distributed equally using round-robin.
             </DialogDescription>
           </DialogHeader>
           
@@ -774,7 +802,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {/* Source Agent */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">From (absent agent)</Label>
-              <Select value={bulkSourceAgent} onValueChange={(v) => { setBulkSourceAgent(v); setBulkTargetAgent(''); }}>
+              <Select value={bulkSourceAgent} onValueChange={(v) => { setBulkSourceAgent(v); setBulkTargetAgents([]); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select agent to reassign from" />
                 </SelectTrigger>
@@ -832,36 +860,67 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
               </div>
             </div>
 
-            {/* Target Agent */}
+            {/* Target Agents (multi-select) */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">To (covering agent)</Label>
-              <Select value={bulkTargetAgent} onValueChange={setBulkTargetAgent} disabled={!bulkSourceAgent}>
-                <SelectTrigger>
-                  <SelectValue placeholder={bulkSourceAgent ? "Select agent to reassign to" : "Select source agent first"} />
-                </SelectTrigger>
-                <SelectContent>
+              <Label className="text-sm font-medium">
+                To (covering agents)
+                {bulkTargetAgents.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-[10px]">{bulkTargetAgents.length} selected</Badge>
+                )}
+              </Label>
+              {!bulkSourceAgent ? (
+                <p className="text-sm text-muted-foreground py-2">Select source agent first</p>
+              ) : (
+                <div className="border rounded-md max-h-[200px] overflow-y-auto">
                   {salesUsers
                     .filter(u => u.id !== bulkSourceAgent)
-                    .map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        <div className="flex items-center gap-2">
+                    .map(user => {
+                      const isSelected = bulkTargetAgents.includes(user.id);
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left ${
+                            isSelected ? 'bg-primary/5' : ''
+                          }`}
+                          onClick={() => {
+                            setBulkTargetAgents(prev =>
+                              isSelected ? prev.filter(id => id !== user.id) : [...prev, user.id]
+                            );
+                          }}
+                        >
+                          <div className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                            isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-input'
+                          }`}>
+                            {isSelected && <span className="text-[10px]">✓</span>}
+                          </div>
                           <PresenceBadge status={getAgentPresenceStatus(user.id)} size="sm" />
                           <span>{getAgentName(user)}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+                        </button>
+                      );
+                    })}
+                </div>
+              )}
+              {bulkTargetAgents.length > 1 && (
+                <p className="text-xs text-muted-foreground">
+                  Leads will be distributed equally across {bulkTargetAgents.length} agents (round-robin).
+                </p>
+              )}
             </div>
 
             {/* Preview */}
-            {bulkSourceAgent && bulkTargetAgent && (
-              <div className="flex items-center gap-2 text-sm bg-primary/5 border border-primary/20 p-3 rounded-lg">
-                <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+            {bulkSourceAgent && bulkTargetAgents.length > 0 && (
+              <div className="flex items-start gap-2 text-sm bg-primary/5 border border-primary/20 p-3 rounded-lg">
+                <ArrowRight className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <span>
                   <strong>{bulkSourceLeadCount}</strong> lead{bulkSourceLeadCount !== 1 ? 's' : ''} from{' '}
                   <strong>{getAgentName(salesUsers.find(u => u.id === bulkSourceAgent))}</strong> will be reassigned to{' '}
-                  <strong>{getAgentName(salesUsers.find(u => u.id === bulkTargetAgent))}</strong>
+                  <strong>
+                    {bulkTargetAgents.map(id => getAgentName(salesUsers.find(u => u.id === id))).join(', ')}
+                  </strong>
+                  {bulkTargetAgents.length > 1 && (
+                    <span> (~{Math.floor(bulkSourceLeadCount / bulkTargetAgents.length)} each)</span>
+                  )}
                   {bulkDateRange?.from && (
                     <span className="text-muted-foreground">
                       {' '}(created {format(bulkDateRange.from, 'dd MMM')}
@@ -879,7 +938,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             </Button>
             <Button
               onClick={handleBulkReassign}
-              disabled={!bulkSourceAgent || !bulkTargetAgent || bulkSourceLeadCount === 0 || bulkReassigning}
+              disabled={!bulkSourceAgent || bulkTargetAgents.length === 0 || bulkSourceLeadCount === 0 || bulkReassigning}
             >
               {bulkReassigning ? 'Reassigning...' : `Reassign ${bulkSourceLeadCount} Lead${bulkSourceLeadCount !== 1 ? 's' : ''}`}
             </Button>
