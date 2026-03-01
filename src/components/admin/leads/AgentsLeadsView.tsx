@@ -1480,7 +1480,14 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-xs text-muted-foreground">{agent?.email}</div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-muted-foreground">{agent?.email}</span>
+                                {agent?.role && (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal capitalize">
+                                    {agent.role.replace('_', ' ')}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
