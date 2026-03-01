@@ -2705,14 +2705,19 @@ export const CustomersTab = () => {
                             const getSalesForRange = (from: Date, to: Date) => {
                               return customers.filter(c => {
                                 if (!c.final_amount || c.final_amount <= 0) return false;
-                                if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                                const statusLower = c.status?.toLowerCase() || '';
+                                const isCancelled = statusLower === 'cancelled' || statusLower === 'refunded';
+                                if (isCancelledView ? !isCancelled : isCancelled) return false;
                                 const d = new Date(c.signup_date || c.created_at || '');
                                 return d >= from && d <= to;
                               }).reduce((sum, c) => sum + (c.final_amount || 0), 0);
                             };
+                            const isCancelledView = filterBySource === 'cancelled_refunded';
                             const salesInRange = customers.filter(c => {
                               if (!c.final_amount || c.final_amount <= 0) return false;
-                              if (c.status?.toLowerCase() === 'cancelled' || c.status?.toLowerCase() === 'refunded') return false;
+                              const statusLower = c.status?.toLowerCase() || '';
+                              const isCancelled = statusLower === 'cancelled' || statusLower === 'refunded';
+                              if (isCancelledView ? !isCancelled : isCancelled) return false;
                               if (!dateFrom) return true;
                               const signupDate = new Date(c.signup_date || c.created_at || '');
                               return signupDate >= dateFrom && signupDate <= dateTo;
@@ -2750,10 +2755,10 @@ export const CustomersTab = () => {
                                     {recordLabel}
                                   </span>
                                 )}
-                                <span className="text-sm font-bold text-green-700">
-                                  £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <span className={`text-sm font-bold ${isCancelledView ? 'text-red-600' : 'text-green-700'}`}>
+                                  {isCancelledView ? '-' : ''}£{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
-                                <span className="text-xs text-muted-foreground">{count} sale{count !== 1 ? 's' : ''}</span>
+                                <span className="text-xs text-muted-foreground">{count} {isCancelledView ? 'refund' : 'sale'}{count !== 1 ? 's' : ''}</span>
                                 <span className="text-xs text-muted-foreground">•</span>
                                 <span className="text-xs font-medium text-muted-foreground">
                                   Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
