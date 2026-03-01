@@ -384,7 +384,10 @@ export const CustomersTab = () => {
       const scheduledFor = c.warranties_2000_scheduled_for || c.policy_start_date;
       const policyStatus = c.customer_policies?.[0]?.status || c.policy_status;
       const w2kStatus = c.customer_policies?.[0]?.warranties_2000_status;
-      if (!scheduledFor || (policyStatus !== 'scheduled' && w2kStatus !== 'scheduled')) return false;
+      // Only show as "due today" if still scheduled — once processed (sent/active), drop them
+      if (!scheduledFor) return false;
+      if (policyStatus === 'active' || w2kStatus === 'sent' || w2kStatus === 'processing') return false;
+      if (policyStatus !== 'scheduled' && w2kStatus !== 'scheduled') return false;
       const scheduledDate = new Date(scheduledFor);
       return scheduledDate >= today && scheduledDate <= endOfToday;
     });
