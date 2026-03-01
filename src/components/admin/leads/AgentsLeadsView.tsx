@@ -1223,28 +1223,29 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
             {(isFullAdmin || isSalesLead) && (
               <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
-                {showAssignmentsToAgents !== false ? (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                ) : (
+                {showAssignmentsToAgents === false ? (
                   <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="text-sm font-medium">Agent Assignment Visibility</span>
                 <Switch
-                  checked={showAssignmentsToAgents !== false}
+                  checked={showAssignmentsToAgents === false}
                   onCheckedChange={async (checked) => {
-                    const success = await updateShowAssignments(checked);
+                    // checked = true means "hidden from agents" (config value = false)
+                    const success = await updateShowAssignments(!checked);
                     if (success) {
                       toast({
-                        title: checked ? 'Assignments visible' : 'Assignments hidden',
+                        title: checked ? 'Assignments hidden' : 'Assignments visible',
                         description: checked
-                          ? 'Sales agents can now see who is assigned to each lead.'
-                          : 'Sales agents can no longer see lead assignments.',
+                          ? 'Sales agents can no longer see lead assignments.'
+                          : 'Sales agents can now see who is assigned to each lead.',
                       });
                     }
                   }}
                 />
                 <span className="text-xs text-muted-foreground">
-                  {showAssignmentsToAgents !== false ? 'Agents can see assignments' : 'Hidden from agents'}
+                  {showAssignmentsToAgents === false ? 'Hidden from agents' : 'Visible to agents'}
                 </span>
               </div>
             )}
@@ -1254,21 +1255,22 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 <Zap className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Agent Self-Assign (Claim Leads)</span>
                 <Switch
-                  checked={allowAgentSelfAssign !== false}
+                  checked={allowAgentSelfAssign === false}
                   onCheckedChange={async (checked) => {
-                    const success = await updateAllowSelfAssign(checked);
+                    // checked = true means "auto-distribution only" (config value = false)
+                    const success = await updateAllowSelfAssign(!checked);
                     if (success) {
                       toast({
-                        title: checked ? 'Self-assign enabled' : 'Self-assign disabled',
+                        title: checked ? 'Self-assign disabled' : 'Self-assign enabled',
                         description: checked
-                          ? 'Sales agents can now claim leads using the "Get Next Lead" button.'
-                          : 'Sales agents can no longer self-assign leads.',
+                          ? 'Sales agents can no longer self-assign leads. Auto-distribution only.'
+                          : 'Sales agents can now claim leads using the "Get Next Lead" button.',
                       });
                     }
                   }}
                 />
                 <span className="text-xs text-muted-foreground">
-                  {allowAgentSelfAssign !== false ? 'Agents can claim leads' : 'Auto-distribution only'}
+                  {allowAgentSelfAssign === false ? 'Auto-distribution only' : 'Agents can claim leads'}
                 </span>
               </div>
             )}
