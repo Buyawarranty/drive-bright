@@ -1876,7 +1876,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                   <TableCell>
                                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                       <Calendar className="h-3 w-3" />
-                                      {format(new Date(lead.created_at), 'dd MMM yyyy')}
+                                      {format(new Date(lead.created_at), 'dd MMM yyyy, HH:mm')}
                                     </div>
                                   </TableCell>
                                 </TableRow>
