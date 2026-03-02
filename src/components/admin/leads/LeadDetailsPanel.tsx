@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,13 +27,15 @@ interface LeadDetailsPanelProps {
   onLogActivity: (leadId: string, type: string, description: string) => void;
   onRefresh?: () => void;
   onNavigateToQuote?: (lead: Lead) => void;
+  hasQuotesSent?: boolean;
 }
 
 export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   lead,
   onLogActivity,
   onRefresh,
-  onNavigateToQuote
+  onNavigateToQuote,
+  hasQuotesSent = false
 }) => {
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
@@ -343,8 +345,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             </div>
           )}
 
-          {/* Commission Claims Section - shown for paid leads with an assigned agent */}
-          {lead.is_paid && lead.assigned_to && (
+          {/* Commission Claims Section - only for direct website purchases (no quote sent) */}
+          {lead.is_paid && lead.assigned_to && !hasQuotesSent && (
             <div className="px-4 pt-3">
               <CommissionClaimDialog
                 customerId={lead.id}

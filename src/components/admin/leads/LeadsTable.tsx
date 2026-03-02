@@ -132,6 +132,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                         onLogActivity={onLogActivity}
                         onRefresh={onRefresh}
                         onNavigateToQuote={onSendQuote ? () => onSendQuote(lead) : undefined}
+                        hasQuotesSent={(quotesByEmail[lead.email?.toLowerCase()] || []).length > 0}
                       />
                     </TableCell>
                   </TableRow>
