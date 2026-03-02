@@ -476,7 +476,7 @@ export const useLeadDistribution = () => {
     const refreshInterval = setInterval(() => {
       fetchAgentCaps();
       fetchAgentPresences();
-    }, 30000);
+    }, 60000);
 
     return () => {
       presenceChannel.unsubscribe();
