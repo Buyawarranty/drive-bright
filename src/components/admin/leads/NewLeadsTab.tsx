@@ -442,10 +442,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount,
   ]);
 
-  // Sales agents get a completely restricted view - use SalesAgentDashboard
-  // They cannot see All Leads, Export, See Agents, or any other admin features
+  // Sales agents get a restricted view UNLESS they have the 'all-leads' permission
+  // If all-leads is not explicitly denied, they see the full leads feed
   // This is placed after all hooks to comply with React's rules of hooks
-  if (isSalesAgent) {
+  if (isSalesAgent && !canSeeAllLeads) {
     return (
       <SalesAgentDashboard
         leads={leads}
