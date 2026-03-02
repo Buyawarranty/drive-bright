@@ -1305,7 +1305,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Restricted to admins'}
-                  {salesLeadDistributionAccess !== false && <Check className="h-5 w-5 text-green-500" strokeWidth={3} />}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
             )}
@@ -1335,7 +1335,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {showAssignmentsToAgents === false ? 'Hidden from agents' : 'Visible to agents'}
-                  {showAssignmentsToAgents === false && <Check className="h-5 w-5 text-green-500" strokeWidth={3} />}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
             )}
@@ -1361,7 +1361,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {allowAgentSelfAssign === false ? 'Auto-distribution only' : 'Agents can claim leads'}
-                  {allowAgentSelfAssign === false && <Check className="h-5 w-5 text-green-500" strokeWidth={3} />}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
             )}
