@@ -936,7 +936,9 @@ export const CustomersTab = () => {
           payment_confirmed_by: null,
           gclid: null,
           ga_client_id: null,
-          payment_due_date: null
+          payment_due_date: null,
+          google_ads_conversion_uploaded_at: null,
+          google_ads_conversion_status: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
