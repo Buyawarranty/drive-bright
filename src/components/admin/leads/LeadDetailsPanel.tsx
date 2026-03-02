@@ -7,8 +7,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, 
-  Plus, CreditCard, Printer
+  Plus, CreditCard, Printer, Award
 } from 'lucide-react';
+import { CommissionClaimDialog } from './CommissionClaimDialog';
+import { CommissionClaimReviewPanel } from './CommissionClaimReviewPanel';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -338,6 +340,29 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Commission Claims Section - shown for paid leads with an assigned agent */}
+          {lead.is_paid && lead.assigned_to && (
+            <div className="px-4 pt-3">
+              <CommissionClaimDialog
+                customerId={lead.id}
+                leadId={lead.id}
+                agentId={lead.assigned_to}
+                customerName={displayName || lead.email}
+                dealValue={lead.payment_amount || undefined}
+                trigger={
+                  <Button variant="outline" size="sm" className="gap-1.5 text-amber-700 border-amber-300 hover:bg-amber-50">
+                    <Award className="h-4 w-4" />
+                    Claim Commission for This Sale
+                  </Button>
+                }
+              />
+              <CommissionClaimReviewPanel
+                customerId={lead.id}
+                isAdmin={false}
+              />
             </div>
           )}
 
