@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -38,6 +38,22 @@ export const EVIDENCE_TYPES = [
 
 export function useCommissionClaims() {
   const [loading, setLoading] = useState(false);
+  const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
+
+  // Resolve the current user's admin_users.id on mount
+  useEffect(() => {
+    const resolve = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data) setCurrentAdminId(data.id);
+    };
+    resolve();
+  }, []);
 
   const submitClaim = useCallback(async (data: {
     customer_id: string;
@@ -50,12 +66,15 @@ export function useCommissionClaims() {
   }) => {
     setLoading(true);
     try {
+      // Always use the authenticated user's admin ID to satisfy RLS
+      const agentId = currentAdminId || data.agent_id;
+
       const { error } = await supabase
         .from('commission_claims')
         .insert({
           customer_id: data.customer_id,
           lead_id: data.lead_id || null,
-          agent_id: data.agent_id,
+          agent_id: agentId,
           claim_reason: data.claim_reason,
           claim_notes: data.claim_notes,
           evidence_type: data.evidence_type || null,
@@ -71,7 +90,7 @@ export function useCommissionClaims() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentAdminId]);
 
   const reviewClaim = useCallback(async (
     claimId: string,
