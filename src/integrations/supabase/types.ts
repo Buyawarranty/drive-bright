@@ -1019,6 +1019,8 @@ export type Database = {
           discount_code: string | null
           final_amount: number
           gclid: string | null
+          google_ads_conversion_status: string | null
+          google_ads_conversion_uploaded_at: string | null
           id: string
           payment_type: string
           plan_id: string
@@ -1040,6 +1042,8 @@ export type Database = {
           discount_code?: string | null
           final_amount: number
           gclid?: string | null
+          google_ads_conversion_status?: string | null
+          google_ads_conversion_uploaded_at?: string | null
           id?: string
           payment_type: string
           plan_id: string
@@ -1061,6 +1065,8 @@ export type Database = {
           discount_code?: string | null
           final_amount?: number
           gclid?: string | null
+          google_ads_conversion_status?: string | null
+          google_ads_conversion_uploaded_at?: string | null
           id?: string
           payment_type?: string
           plan_id?: string
@@ -2024,6 +2030,8 @@ export type Database = {
           flat_number: string | null
           ga_client_id: string | null
           gclid: string | null
+          google_ads_conversion_status: string | null
+          google_ads_conversion_uploaded_at: string | null
           google_review_completed: boolean | null
           google_review_completed_at: string | null
           google_review_requested: boolean | null
@@ -2102,6 +2110,8 @@ export type Database = {
           flat_number?: string | null
           ga_client_id?: string | null
           gclid?: string | null
+          google_ads_conversion_status?: string | null
+          google_ads_conversion_uploaded_at?: string | null
           google_review_completed?: boolean | null
           google_review_completed_at?: string | null
           google_review_requested?: boolean | null
@@ -2180,6 +2190,8 @@ export type Database = {
           flat_number?: string | null
           ga_client_id?: string | null
           gclid?: string | null
+          google_ads_conversion_status?: string | null
+          google_ads_conversion_uploaded_at?: string | null
           google_review_completed?: boolean | null
           google_review_completed_at?: string | null
           google_review_requested?: boolean | null
