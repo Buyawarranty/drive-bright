@@ -364,11 +364,10 @@ export const useLeadDistribution = () => {
   // Initialize agent caps for all sales agents
   const initializeAgentCaps = useCallback(async () => {
     try {
-      // Get all active sales/admin users
+      // Get all sales/admin users (including inactive — they show but can be turned off)
       const { data: adminUsers, error } = await supabase
         .from('admin_users')
         .select('id')
-        .eq('is_active', true)
         .in('role', ['sales', 'sales_lead']);
 
       if (error) throw error;
@@ -395,7 +394,7 @@ export const useLeadDistribution = () => {
     }
   }, [agentCaps, fetchAgentCaps]);
 
-  // Load all data
+  // Load all data and auto-initialize missing agents
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -404,6 +403,43 @@ export const useLeadDistribution = () => {
     };
 
     loadData();
+
+    // Auto-initialize: after initial load, ensure all sales/sales_lead agents have cap records
+    const autoInit = async () => {
+      try {
+        const { data: adminUsers, error } = await supabase
+          .from('admin_users')
+          .select('id')
+          .in('role', ['sales', 'sales_lead']);
+
+        if (error || !adminUsers) return;
+
+        // Fetch current caps to compare
+        const { data: currentCaps } = await supabase
+          .from('agent_distribution_caps')
+          .select('admin_user_id');
+
+        const existingIds = new Set((currentCaps || []).map(c => c.admin_user_id));
+        const newUsers = adminUsers.filter(u => !existingIds.has(u.id));
+
+        if (newUsers.length > 0) {
+          await supabase
+            .from('agent_distribution_caps')
+            .insert(newUsers.map(u => ({
+              admin_user_id: u.id,
+              daily_cap: 20,
+              assigned_today: 0,
+              paused: false
+            })));
+          // Re-fetch after auto-init
+          fetchAgentCaps();
+        }
+      } catch (err) {
+        console.error('Auto-initialize agent caps failed:', err);
+      }
+    };
+    // Run auto-init after a short delay to avoid blocking initial render
+    const initTimer = setTimeout(autoInit, 1500);
 
     const presenceChannel = supabase
       .channel('presence-changes')
@@ -448,6 +484,7 @@ export const useLeadDistribution = () => {
       capsChannel.unsubscribe();
       overflowChannel.unsubscribe();
       clearInterval(refreshInterval);
+      clearTimeout(initTimer);
     };
   }, [fetchSettings, fetchAgentCaps, fetchAgentPresences, fetchOverflowRecipients]);
 
@@ -468,6 +505,36 @@ export const useLeadDistribution = () => {
     return 'active';
   }, [agentPresences]);
 
+  // Add a specific agent to distribution by admin_user_id
+  const addAgentToDistribution = useCallback(async (adminUserId: string) => {
+    try {
+      // Check if already exists
+      const existing = agentCaps.find(cap => cap.admin_user_id === adminUserId);
+      if (existing) {
+        toast({ title: 'Already added', description: 'This agent is already in distribution.' });
+        return true;
+      }
+
+      const { error } = await supabase
+        .from('agent_distribution_caps')
+        .insert({
+          admin_user_id: adminUserId,
+          daily_cap: 20,
+          assigned_today: 0,
+          paused: false
+        });
+
+      if (error) throw error;
+      await fetchAgentCaps();
+      toast({ title: 'Agent added', description: 'Agent has been added to lead distribution.' });
+      return true;
+    } catch (error: any) {
+      console.error('Error adding agent to distribution:', error);
+      toast({ title: 'Error', description: error?.message || 'Failed to add agent.', variant: 'destructive' });
+      return false;
+    }
+  }, [agentCaps, fetchAgentCaps]);
+
   return {
     settings,
     agentCaps,
@@ -485,6 +552,7 @@ export const useLeadDistribution = () => {
     getAgentPresenceStatus,
     addOverflowRecipient,
     removeOverflowRecipient,
+    addAgentToDistribution,
     refreshCaps: fetchAgentCaps,
     refreshPresences: fetchAgentPresences
   };
