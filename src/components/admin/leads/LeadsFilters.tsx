@@ -12,7 +12,7 @@ import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, startO
 import { DateRange } from 'react-day-picker';
 
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
-export type SortOption = 'newest' | 'oldest' | 'contacted' | 'follow_up' | 'quote_sent';
+export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
 
 interface SalesUser {
   id: string;
@@ -495,6 +495,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               </SelectTrigger>
               <SelectContent className="bg-popover border shadow-lg z-50">
                 <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="latest_submitted">Latest Submitted</SelectItem>
                 <SelectItem value="oldest">Oldest first</SelectItem>
                 <SelectItem value="contacted">Contacted</SelectItem>
                 <SelectItem value="follow_up">Follow-up</SelectItem>
