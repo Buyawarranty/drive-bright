@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf, Zap, CheckCircle2, AlertCircle, Upload, Clock } from 'lucide-react';
+import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf, Zap, CheckCircle2, AlertCircle, Upload, Clock, RefreshCw, Key, ExternalLink, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { toast } from 'sonner';
 import { format, subDays, startOfDay, endOfDay, startOfWeek, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, BarChart, Bar } from 'recharts';
 import { Input } from '@/components/ui/input';
@@ -435,8 +436,21 @@ export const PageAnalyticsTab: React.FC = () => {
   );
 };
 
-/** GCLID capture & conversion pipeline status card */
+const REQUIRED_SECRETS = [
+  { key: 'GOOGLE_ADS_DEVELOPER_TOKEN', label: 'Developer Token', where: 'Google Ads → Tools → API Center' },
+  { key: 'GOOGLE_ADS_CUSTOMER_ID', label: 'Customer ID', where: 'Your account number (no dashes)' },
+  { key: 'GOOGLE_ADS_CONVERSION_ACTION_ID', label: 'Conversion Action ID', where: 'Google Ads → Goals → Conversions' },
+  { key: 'GOOGLE_ADS_CLIENT_ID', label: 'OAuth2 Client ID', where: 'Google Cloud Console → Credentials' },
+  { key: 'GOOGLE_ADS_CLIENT_SECRET', label: 'OAuth2 Client Secret', where: 'Google Cloud Console → Credentials' },
+  { key: 'GOOGLE_ADS_REFRESH_TOKEN', label: 'OAuth2 Refresh Token', where: 'Generated via OAuth2 playground' },
+];
+
+/** GCLID capture & conversion pipeline — full functional card */
 const GclidPipelineCard: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [isUploading, setIsUploading] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+
   const { data: gclidStats } = useQuery({
     queryKey: ['page-analytics-gclid-stats'],
     queryFn: async () => {
@@ -457,6 +471,36 @@ const GclidPipelineCard: React.FC = () => {
     },
   });
 
+  // Recent upload history
+  const { data: recentUploads } = useQuery({
+    queryKey: ['page-analytics-recent-uploads'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('id, email, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at')
+        .not('gclid', 'is', null)
+        .not('google_ads_conversion_status', 'is', null)
+        .order('google_ads_conversion_uploaded_at', { ascending: false, nullsFirst: false })
+        .limit(5);
+      return data || [];
+    },
+  });
+
+  const triggerUpload = async () => {
+    setIsUploading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('upload-google-conversions');
+      if (error) throw error;
+      toast.success(`Upload complete — Uploaded: ${data?.uploaded || 0}, Failed: ${data?.failed || 0}`);
+      queryClient.invalidateQueries({ queryKey: ['page-analytics-gclid-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['page-analytics-recent-uploads'] });
+    } catch (error: any) {
+      toast.error(error.message || 'Upload failed — check that all API secrets are configured.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const steps = [
     { num: 1, title: 'Capture GCLID', desc: 'gclidCapture.ts grabs Google Click ID from URL params → localStorage', done: true },
     { num: 2, title: 'Store with Lead', desc: 'PageViewLogger logs to page_views; checkout passes to Stripe metadata → customers.gclid', done: true },
@@ -467,13 +511,38 @@ const GclidPipelineCard: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          GCLID Tracking Pipeline
-        </CardTitle>
-        <CardDescription>
-          How Google Click IDs flow from ads → your site → offline conversion uploads
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              GCLID Tracking Pipeline
+            </CardTitle>
+            <CardDescription>
+              How Google Click IDs flow from ads → your site → offline conversion uploads
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSetup(!showSetup)}
+              className="gap-1.5 text-xs"
+            >
+              <Key className="h-3.5 w-3.5" />
+              Setup Guide
+              {showSetup ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </Button>
+            <Button
+              size="sm"
+              onClick={triggerUpload}
+              disabled={isUploading || (gclidStats?.pending === 0)}
+              className="gap-1.5 text-xs"
+            >
+              {isUploading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              {isUploading ? 'Uploading...' : `Upload ${gclidStats?.pending || 0} Pending`}
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Mini KPIs */}
@@ -518,6 +587,122 @@ const GclidPipelineCard: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Recent Upload History */}
+        {recentUploads && recentUploads.length > 0 && (
+          <div>
+            <p className="text-sm font-medium mb-2">Recent Upload History</p>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Customer</TableHead>
+                    <TableHead className="text-xs text-right">Value</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">Uploaded</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentUploads.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="text-xs font-medium">{row.email || '—'}</TableCell>
+                      <TableCell className="text-xs text-right">
+                        {row.final_amount ? `£${Number(row.final_amount).toLocaleString()}` : '—'}
+                      </TableCell>
+                      <TableCell>
+                        {row.google_ads_conversion_status === 'uploaded' ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 text-xs">
+                            <CheckCircle2 className="h-3 w-3" /> Uploaded
+                          </Badge>
+                        ) : row.google_ads_conversion_status?.startsWith('failed') ? (
+                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1 text-xs">
+                            <XCircle className="h-3 w-3" /> Failed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="gap-1 text-xs">
+                            <Clock className="h-3 w-3" /> {row.google_ads_conversion_status || 'Pending'}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {row.google_ads_conversion_uploaded_at
+                          ? new Date(row.google_ads_conversion_uploaded_at).toLocaleDateString()
+                          : '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
+
+        {/* Collapsible Setup Guide */}
+        {showSetup && (
+          <div className="space-y-4 pt-2 border-t">
+            <div>
+              <p className="text-sm font-medium mb-2">Required API Credentials</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                These 6 secrets must be added in{' '}
+                <a
+                  href="https://supabase.com/dashboard/project/mzlpuxzwyrcyrgrongeb/settings/functions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline inline-flex items-center gap-0.5"
+                >
+                  Supabase Edge Function Secrets <ExternalLink className="h-3 w-3" />
+                </a>{' '}
+                before the upload function will work.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {REQUIRED_SECRETS.map((secret) => (
+                  <div key={secret.key} className="flex items-start gap-2 p-2.5 rounded-lg border bg-muted/30">
+                    <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-mono text-xs font-medium truncate">{secret.key}</p>
+                      <p className="text-xs text-muted-foreground">{secret.label} — {secret.where}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium mb-2">How It Works</p>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2 p-2.5 rounded-lg border bg-green-50/50">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium">1. GCLID Auto-Captured</p>
+                    <p className="text-xs text-muted-foreground">When someone clicks your Google Ad, the GCLID (e.g. <code className="bg-muted px-1 rounded">CjwK1234abcd</code>) is automatically saved from the URL to localStorage.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2.5 rounded-lg border bg-green-50/50">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium">2. Stored on Purchase</p>
+                    <p className="text-xs text-muted-foreground">At checkout, the GCLID is passed as Stripe metadata and stored in <code className="bg-muted px-1 rounded">customers.gclid</code> and <code className="bg-muted px-1 rounded">bumper_transactions.gclid</code>.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2.5 rounded-lg border bg-blue-50/50">
+                  <Upload className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium">3. Upload to Google Ads</p>
+                    <p className="text-xs text-muted-foreground">The <code className="bg-muted px-1 rounded">upload-google-conversions</code> edge function sends actual sale values back to Google Ads as offline conversions. This enables <strong>Target ROAS</strong> bidding. Use the "Upload Pending" button above or set up a daily cron job.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg border bg-primary/5">
+              <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-medium">Full settings & configuration</p>
+                <p className="text-xs text-muted-foreground">For detailed setup, predicted lead values, and conversion action management, visit the Google Ads ROAS tab in the sidebar.</p>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
