@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck, Eye, EyeOff, CheckCircle2
+  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck, Eye, EyeOff, Check
 } from 'lucide-react';
 import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -1217,7 +1217,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Restricted to admins'}
-                  {salesLeadDistributionAccess !== false && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+                  {salesLeadDistributionAccess !== false && <Check className="h-5 w-5 text-green-500" strokeWidth={3} />}
                 </span>
               </div>
             )}
@@ -1247,7 +1247,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {showAssignmentsToAgents === false ? 'Hidden from agents' : 'Visible to agents'}
-                  {showAssignmentsToAgents === false && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+                  {showAssignmentsToAgents === false && <Check className="h-5 w-5 text-green-500" strokeWidth={3} />}
                 </span>
               </div>
             )}
@@ -1273,7 +1273,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {allowAgentSelfAssign === false ? 'Auto-distribution only' : 'Agents can claim leads'}
-                  {allowAgentSelfAssign === false && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+                  {allowAgentSelfAssign === false && <Check className="h-5 w-5 text-green-500" strokeWidth={3} />}
                 </span>
               </div>
             )}
