@@ -45,6 +45,7 @@ const PolicyDocumentsTab = lazy(() => import('@/components/admin/PolicyDocuments
 const PageAnalyticsTab = lazy(() => import('@/components/admin/PageAnalyticsTab').then(m => ({ default: m.PageAnalyticsTab })));
 const VehicleStatsTab = lazy(() => import('@/components/admin/VehicleStatsTab').then(m => ({ default: m.VehicleStatsTab })));
 const SalesScoreboardTab = lazy(() => import('@/components/admin/scoreboard/SalesScoreboardTab'));
+const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 
 // Tab loading spinner
 const TabFallback = () => (
@@ -378,6 +379,8 @@ const AdminDashboard = () => {
         return <AnalyticsTab />;
       case 'page-analytics':
         return <PageAnalyticsTab />;
+      case 'google-ads':
+        return <GoogleAdsSettingsTab />;
       case 'vehicle-stats':
         return <VehicleStatsTab />;
       case 'security':

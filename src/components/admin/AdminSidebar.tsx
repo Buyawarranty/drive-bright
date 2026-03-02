@@ -194,6 +194,12 @@ const defaultTabs: Tab[] = [
     description: 'Track page visits, traffic sources & Google Ads'
   },
   {
+    id: 'google-ads',
+    label: 'Google Ads ROAS',
+    icon: Target,
+    description: 'Conversion uploads, GCLID tracking & ROAS settings'
+  },
+  {
     id: 'vehicle-stats',
     label: 'Vehicle Stats',
     icon: Car,
