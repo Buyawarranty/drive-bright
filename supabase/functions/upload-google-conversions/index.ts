@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       .select('id, gclid, final_amount, created_at, email, status')
       .not('gclid', 'is', null)
       .is('google_ads_conversion_uploaded_at', null)
-      .eq('status', 'active')
+      .in('status', ['active', 'Active'])
       .eq('is_deleted', false)
       .order('created_at', { ascending: true })
       .limit(200);

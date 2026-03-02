@@ -45,7 +45,7 @@ export const GoogleAdsSettingsTab: React.FC = () => {
           .select('id', { count: 'exact', head: true })
           .not('gclid', 'is', null)
           .is('google_ads_conversion_uploaded_at', null)
-          .eq('status', 'active')
+          .in('status', ['active', 'Active'])
           .eq('is_deleted', false),
         supabase
           .from('bumper_transactions')
@@ -82,15 +82,15 @@ export const GoogleAdsSettingsTab: React.FC = () => {
   const { data: gclidStats } = useQuery({
     queryKey: ['gclid-capture-stats'],
     queryFn: async () => {
-      const [customers, bumper, leads] = await Promise.all([
+      const [customers, bumper, pageViews] = await Promise.all([
         supabase.from('customers').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
         supabase.from('bumper_transactions').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
-        supabase.from('sales_leads').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
+        supabase.from('page_views').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
       ]);
       return {
         customers: customers.count || 0,
         bumper: bumper.count || 0,
-        leads: leads.count || 0,
+        pageViews: pageViews.count || 0,
       };
     },
   });
@@ -168,10 +168,10 @@ export const GoogleAdsSettingsTab: React.FC = () => {
               <div>
                 <p className="text-xs text-muted-foreground font-medium">GCLIDs Captured</p>
                 <p className="text-2xl font-bold">
-                  {gclidStats ? (gclidStats.customers + gclidStats.bumper + gclidStats.leads).toLocaleString() : '—'}
+                  {gclidStats ? (gclidStats.customers + gclidStats.bumper + gclidStats.pageViews).toLocaleString() : '—'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {gclidStats?.customers || 0} customers · {gclidStats?.bumper || 0} bumper · {gclidStats?.leads || 0} leads
+                  {gclidStats?.customers || 0} customers · {gclidStats?.bumper || 0} bumper · {gclidStats?.pageViews || 0} page views
                 </p>
               </div>
             </div>
