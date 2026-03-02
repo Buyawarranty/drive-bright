@@ -29,6 +29,7 @@ interface LeadsTableProps {
   onSendQuote?: (lead: Lead) => void;
   onRefresh?: () => void;
   hideAssignedColumn?: boolean;
+  canAssignLeads?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -51,7 +52,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onUpdateCallCount,
   onSendQuote,
   onRefresh,
-  hideAssignedColumn
+  hideAssignedColumn,
+  canAssignLeads = true,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -117,6 +119,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   onUpdateCallCount={(increment) => onUpdateCallCount(lead.id, increment)}
                   onSendQuote={onSendQuote ? () => onSendQuote(lead) : undefined}
                   hideAssignedColumn={hideAssignedColumn}
+                  canAssignLeads={canAssignLeads}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel */}

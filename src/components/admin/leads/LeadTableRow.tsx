@@ -43,6 +43,7 @@ interface LeadTableRowProps {
   onUpdateCallCount: (increment: number) => void;
   onSendQuote?: () => void;
   hideAssignedColumn?: boolean;
+  canAssignLeads?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -211,7 +212,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onLogActivity,
   onUpdateCallCount,
   onSendQuote,
-  hideAssignedColumn
+  hideAssignedColumn,
+  canAssignLeads = true,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -265,6 +267,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onAssign(value === 'unassigned' ? null : value);
             }
           }}
+          disabled={!canAssignLeads}
         >
             <SelectTrigger 
               className={cn(
