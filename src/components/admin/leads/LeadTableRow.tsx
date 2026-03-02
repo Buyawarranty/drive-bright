@@ -278,14 +278,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 {lead.assigned_to ? (
                   // Assigned state - show initials avatar with per-agent color
                   (() => {
-                    const AGENT_COLORS = [
-                      'bg-emerald-600', 'bg-blue-600', 'bg-purple-600', 'bg-orange-600',
-                      'bg-pink-600', 'bg-indigo-600', 'bg-teal-600', 'bg-rose-600',
-                      'bg-cyan-600', 'bg-amber-600'
+                    const AGENT_COLOR_MAP: Record<string, string> = {
+                      'isobel': 'bg-emerald-600',
+                      'james': 'bg-blue-600',
+                      'ash': 'bg-violet-600',
+                    };
+                    const FALLBACK_COLORS = [
+                      'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
+                      'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
                     ];
                     const assignedUser = lead.assigned_user || salesUsers.find(u => u.id === lead.assigned_to);
-                    const agentIndex = salesUsers.findIndex(u => u.id === lead.assigned_to);
-                    const agentColor = AGENT_COLORS[agentIndex >= 0 ? agentIndex % AGENT_COLORS.length : 0];
+                    const firstName = (assignedUser?.first_name || '').toLowerCase();
+                    const agentColor = AGENT_COLOR_MAP[firstName]
+                      || FALLBACK_COLORS[salesUsers.findIndex(u => u.id === lead.assigned_to) % FALLBACK_COLORS.length];
                     const initial = assignedUser?.first_name?.[0]?.toUpperCase() || assignedUser?.email?.[0]?.toUpperCase() || 'A';
                     const displayName = assignedUser 
                       ? `${assignedUser.first_name || ''}`.trim() || assignedUser.email?.split('@')[0] || 'Assigned'
@@ -339,12 +344,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </SelectItem>
               <div className="h-px bg-border my-1" />
               {salesUsers.map((user, idx) => {
-                const AGENT_COLORS = [
-                  'bg-emerald-600', 'bg-blue-600', 'bg-purple-600', 'bg-orange-600',
-                  'bg-pink-600', 'bg-indigo-600', 'bg-teal-600', 'bg-rose-600',
-                  'bg-cyan-600', 'bg-amber-600'
+                const AGENT_COLOR_MAP: Record<string, string> = {
+                  'isobel': 'bg-emerald-600',
+                  'james': 'bg-blue-600',
+                  'ash': 'bg-violet-600',
+                };
+                const FALLBACK_COLORS = [
+                  'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
+                  'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
                 ];
-                const color = AGENT_COLORS[idx % AGENT_COLORS.length];
+                const uFirstName = (user.first_name || '').toLowerCase();
+                const color = AGENT_COLOR_MAP[uFirstName]
+                  || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
                 return (
                 <SelectItem key={user.id} value={user.id}>
                   <div className="flex items-center gap-2">
