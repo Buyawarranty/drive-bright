@@ -279,8 +279,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   // Assigned state - show initials avatar with per-agent color
                   (() => {
                     const AGENT_COLORS = [
-                      'bg-blue-600', 'bg-purple-600', 'bg-teal-600', 'bg-orange-600',
-                      'bg-pink-600', 'bg-indigo-600', 'bg-emerald-600', 'bg-rose-600',
+                      'bg-emerald-600', 'bg-blue-600', 'bg-purple-600', 'bg-orange-600',
+                      'bg-pink-600', 'bg-indigo-600', 'bg-teal-600', 'bg-rose-600',
                       'bg-cyan-600', 'bg-amber-600'
                     ];
                     const assignedUser = lead.assigned_user || salesUsers.find(u => u.id === lead.assigned_to);
@@ -340,8 +340,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <div className="h-px bg-border my-1" />
               {salesUsers.map((user, idx) => {
                 const AGENT_COLORS = [
-                  'bg-blue-600', 'bg-purple-600', 'bg-teal-600', 'bg-orange-600',
-                  'bg-pink-600', 'bg-indigo-600', 'bg-emerald-600', 'bg-rose-600',
+                  'bg-emerald-600', 'bg-blue-600', 'bg-purple-600', 'bg-orange-600',
+                  'bg-pink-600', 'bg-indigo-600', 'bg-teal-600', 'bg-rose-600',
                   'bg-cyan-600', 'bg-amber-600'
                 ];
                 const color = AGENT_COLORS[idx % AGENT_COLORS.length];
