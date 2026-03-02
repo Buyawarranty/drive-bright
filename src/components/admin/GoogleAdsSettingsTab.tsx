@@ -337,50 +337,157 @@ export const GoogleAdsSettingsTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* GCLID Capture Info */}
+      {/* GCLID Capture Pipeline — Full 4-Step Breakdown */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            GCLID Capture Pipeline
+            GCLID Capture Pipeline — How It Works
           </CardTitle>
           <CardDescription>
-            How click IDs flow from Google Ads → your site → offline conversions
+            The complete flow from Google Ad click → offline conversion upload
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Step 1 */}
+          <div className="flex items-start gap-3 p-3 rounded-lg border bg-green-50/50">
+            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-sm">Step 1: Capture GCLID</p>
+              <p className="text-xs text-muted-foreground">
+                <code className="bg-muted px-1 rounded">gclidCapture.ts</code> extracts the Google Click ID
+                (e.g. <code className="bg-muted px-1 rounded">CjwK1234abcd5678xyz</code>) from URL params on every
+                page load and stores it in localStorage for 90 days. Captured on every CTA & form submission.
+              </p>
+            </div>
+          </div>
+          {/* Step 2 */}
+          <div className="flex items-start gap-3 p-3 rounded-lg border bg-green-50/50">
+            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-sm">Step 2: Store with Lead / Sale</p>
+              <p className="text-xs text-muted-foreground">
+                PageViewLogger logs GCLID to <code className="bg-muted px-1 rounded">page_views</code>.
+                Checkout passes it as Stripe metadata → saved to <code className="bg-muted px-1 rounded">customers.gclid</code>.
+                Sales leads also store GCLID via <code className="bg-muted px-1 rounded">sales_leads.gclid</code>.
+              </p>
+            </div>
+          </div>
+          {/* Step 3 */}
+          <div className="flex items-start gap-3 p-3 rounded-lg border bg-green-50/50">
+            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-sm">Step 3: Bumper Flow</p>
+              <p className="text-xs text-muted-foreground">
+                <code className="bg-muted px-1 rounded">bumper_transactions</code> also stores GCLID from the
+                checkout session. Both Stripe webhook and Bumper success handler fire server-side conversions.
+              </p>
+            </div>
+          </div>
+          {/* Step 4 */}
+          <div className="flex items-start gap-3 p-3 rounded-lg border bg-blue-50/50">
+            <Upload className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-sm">Step 4: Upload Offline Conversions (Google Ads API)</p>
+              <p className="text-xs text-muted-foreground">
+                The <code className="bg-muted px-1 rounded">upload-google-conversions</code> edge function queries
+                <code className="bg-muted px-1 rounded">customers</code> and <code className="bg-muted px-1 rounded">bumper_transactions</code> for
+                records with a GCLID that haven't been uploaded yet. It sends actual sale values
+                (<code className="bg-muted px-1 rounded">final_amount</code>) via the Google Ads API as "Closed Sale / Purchase"
+                conversions. Duplicates are tracked via <code className="bg-muted px-1 rounded">google_ads_conversion_uploaded_at</code>.
+                Schedule via cron for daily automated uploads.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Setup Guide */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Setup Steps for Offline Conversion Import
+          </CardTitle>
+          <CardDescription>
+            What you need to configure before the automated upload works
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 rounded-lg border bg-green-50/50">
-              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+          <ol className="space-y-3 text-sm">
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">1</span>
               <div>
-                <p className="font-medium text-sm">Frontend GCLID Capture</p>
-                <p className="text-xs text-muted-foreground">
-                  GCLID is extracted from the URL on page load and stored in localStorage + dataLayer.
-                  It's sent with every form submission, checkout, and Bumper redirect.
-                </p>
+                <p className="font-medium">Google Ads Developer Token</p>
+                <p className="text-xs text-muted-foreground">From your Google Ads Manager Account → Tools & Settings → API Center</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">2</span>
+              <div>
+                <p className="font-medium">OAuth2 Credentials (Client ID, Client Secret, Refresh Token)</p>
+                <p className="text-xs text-muted-foreground">Create in Google Cloud Console → APIs & Services → Credentials. Use OAuth2 Playground to generate refresh token.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">3</span>
+              <div>
+                <p className="font-medium">Google Ads Customer ID</p>
+                <p className="text-xs text-muted-foreground">Your account number (format: 123-456-7890, store without dashes as 1234567890)</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">4</span>
+              <div>
+                <p className="font-medium">Conversion Action ID</p>
+                <p className="text-xs text-muted-foreground">Create a "Closed Sale / Purchase" conversion action in Google Ads. Use the numeric ID.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">5</span>
+              <div>
+                <p className="font-medium">Set Bidding to "Maximize Conversion Value" with Target ROAS</p>
+                <p className="text-xs text-muted-foreground">Once conversions start uploading, switch your campaign bidding strategy. Google will optimise towards actual revenue.</p>
+              </div>
+            </li>
+          </ol>
+        </CardContent>
+      </Card>
+
+      {/* Predicted Lead Values */}
+      <Card className="border-amber-200/50 bg-amber-50/20">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-amber-600" />
+            Predicted Lead Values (Bootstrap Phase)
+          </CardTitle>
+          <CardDescription>
+            Until enough real sales data accumulates, assign predicted values to leads so Google can start learning
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground">
+              Since every user fills the form, you can assign a predicted conversion value based on vehicle type,
+              age, and mileage. This lets Google's Target ROAS algorithm start optimising immediately — even before
+              offline sales data is complete.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg border bg-background">
+                <p className="font-medium">High-Value Vehicles</p>
+                <p className="text-xs text-muted-foreground">Premium/luxury cars, newer models, low mileage</p>
+                <p className="text-lg font-bold text-primary mt-1">~£500 predicted</p>
+              </div>
+              <div className="p-3 rounded-lg border bg-background">
+                <p className="font-medium">Standard Vehicles</p>
+                <p className="text-xs text-muted-foreground">Older models, higher mileage, economy segment</p>
+                <p className="text-lg font-bold text-primary mt-1">~£200 predicted</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg border bg-green-50/50">
-              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Server-Side Conversion (Stripe & Bumper webhooks)</p>
-                <p className="text-xs text-muted-foreground">
-                  Both the Stripe webhook and Bumper success handler fire server-side conversions
-                  using the GCLID stored in session metadata.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg border bg-blue-50/50">
-              <Upload className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Offline Conversion Upload (Google Ads API)</p>
-                <p className="text-xs text-muted-foreground">
-                  The <code className="bg-muted px-1 rounded">upload-google-conversions</code> edge function
-                  batches all unuploaded conversions with GCLID and sends actual sale values to Google Ads
-                  for Target ROAS bidding optimisation.
-                </p>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              💡 As actual offline conversions are uploaded, Google will replace predicted values with real revenue data
+              and the bidding model will improve over time.
+            </p>
           </div>
         </CardContent>
       </Card>

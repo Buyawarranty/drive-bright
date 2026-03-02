@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf } from 'lucide-react';
+import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf, Zap, CheckCircle2, AlertCircle, Upload, Clock } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay, startOfWeek, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, BarChart, Bar } from 'recharts';
 import { Input } from '@/components/ui/input';
-
 const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#f59e0b'];
 
 const SEARCH_ENGINES = ['google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'ecosia', 'yandex', 'ask'];
@@ -427,9 +427,99 @@ export const PageAnalyticsTab: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+          {/* GCLID Tracking Pipeline */}
+          <GclidPipelineCard />
         </>
       ) : null}
     </div>
+  );
+};
+
+/** GCLID capture & conversion pipeline status card */
+const GclidPipelineCard: React.FC = () => {
+  const { data: gclidStats } = useQuery({
+    queryKey: ['page-analytics-gclid-stats'],
+    queryFn: async () => {
+      const [customers, bumper, leads, uploaded, pending] = await Promise.all([
+        supabase.from('customers').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
+        supabase.from('bumper_transactions').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
+        supabase.from('sales_leads').select('id', { count: 'exact', head: true }).not('gclid', 'is', null),
+        supabase.from('customers').select('id', { count: 'exact', head: true }).not('gclid', 'is', null).not('google_ads_conversion_uploaded_at', 'is', null),
+        supabase.from('customers').select('id', { count: 'exact', head: true }).not('gclid', 'is', null).is('google_ads_conversion_uploaded_at', null).eq('status', 'active').eq('is_deleted', false),
+      ]);
+      return {
+        customers: customers.count || 0,
+        bumper: bumper.count || 0,
+        leads: leads.count || 0,
+        uploaded: uploaded.count || 0,
+        pending: pending.count || 0,
+      };
+    },
+  });
+
+  const steps = [
+    { num: 1, title: 'Capture GCLID', desc: 'gclidCapture.ts grabs Google Click ID from URL params → localStorage', done: true },
+    { num: 2, title: 'Store with Lead', desc: 'PageViewLogger logs to page_views; checkout passes to Stripe metadata → customers.gclid', done: true },
+    { num: 3, title: 'Bumper Flow', desc: 'bumper_transactions also stores gclid from checkout session', done: true },
+    { num: 4, title: 'Upload Conversions', desc: 'upload-google-conversions edge function sends actual sale values to Google Ads API', done: (gclidStats?.uploaded || 0) > 0 },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Zap className="h-5 w-5 text-primary" />
+          GCLID Tracking Pipeline
+        </CardTitle>
+        <CardDescription>
+          How Google Click IDs flow from ads → your site → offline conversion uploads
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Mini KPIs */}
+        {gclidStats && (
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold">{gclidStats.customers}</p>
+              <p className="text-xs text-muted-foreground">Customers</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold">{gclidStats.bumper}</p>
+              <p className="text-xs text-muted-foreground">Bumper</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold">{gclidStats.leads}</p>
+              <p className="text-xs text-muted-foreground">Leads</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-green-50 text-center">
+              <p className="text-2xl font-bold text-green-700">{gclidStats.uploaded}</p>
+              <p className="text-xs text-green-600">Uploaded</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-amber-50 text-center">
+              <p className="text-2xl font-bold text-amber-700">{gclidStats.pending}</p>
+              <p className="text-xs text-amber-600">Pending</p>
+            </div>
+          </div>
+        )}
+
+        {/* 4-step pipeline */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {steps.map(step => (
+            <div key={step.num} className={`p-3 rounded-lg border ${step.done ? 'bg-green-50/50 border-green-200' : 'bg-amber-50/50 border-amber-200'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                {step.done ? (
+                  <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                )}
+                <span className="font-medium text-sm">Step {step.num}: {step.title}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
