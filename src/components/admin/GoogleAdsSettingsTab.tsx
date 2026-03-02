@@ -8,9 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import {
   CheckCircle2, XCircle, AlertTriangle, Upload, RefreshCw, Zap,
-  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart
+  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon
 } from 'lucide-react';
 
 // Required secrets for the upload-google-conversions edge function
@@ -33,8 +37,11 @@ export const GoogleAdsSettingsTab: React.FC = () => {
 
   // Sales by Agent state
   const [agentFilter, setAgentFilter] = useState<string>('all');
-  const [agentDateRange, setAgentDateRange] = useState<string>('last30');
-
+  const [agentDateFrom, setAgentDateFrom] = useState<Date>(() => {
+    const d = new Date(); d.setDate(d.getDate() - 30); return d;
+  });
+  const [agentDateTo, setAgentDateTo] = useState<Date>(new Date());
+  const [agentPreset, setAgentPreset] = useState<string>('last30');
 
   // Fetch conversion upload stats
   const { data: conversionStats, isLoading: statsLoading } = useQuery({
@@ -196,11 +203,11 @@ export const GoogleAdsSettingsTab: React.FC = () => {
 
   // Fetch agent sales data
   const { data: agentSalesData, isLoading: agentSalesLoading } = useQuery({
-    queryKey: ['google-ads-agent-sales', agentDateRange],
+    queryKey: ['google-ads-agent-sales', agentDateFrom.toISOString(), agentDateTo.toISOString()],
     queryFn: async () => {
-      const { from, to } = getDateRange(agentDateRange);
+      const from = new Date(agentDateFrom.getFullYear(), agentDateFrom.getMonth(), agentDateFrom.getDate(), 0, 0, 0);
+      const to = new Date(agentDateTo.getFullYear(), agentDateTo.getMonth(), agentDateTo.getDate(), 23, 59, 59);
 
-      // Fetch all agents
       const { data: agents } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role')
@@ -724,9 +731,42 @@ export const GoogleAdsSettingsTab: React.FC = () => {
               </SelectContent>
             </Select>
 
-            <Select value={agentDateRange} onValueChange={setAgentDateRange}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue />
+            {/* Date From */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal text-sm", !agentDateFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(agentDateFrom, 'dd MMM yyyy')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={agentDateFrom} onSelect={d => { if (d) { setAgentDateFrom(d); setAgentPreset('custom'); } }} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            <span className="text-sm text-muted-foreground">to</span>
+            {/* Date To */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal text-sm", !agentDateTo && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(agentDateTo, 'dd MMM yyyy')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={agentDateTo} onSelect={d => { if (d) { setAgentDateTo(d); setAgentPreset('custom'); } }} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+
+            {/* Quick presets */}
+            <Select value={agentPreset} onValueChange={(v) => {
+              setAgentPreset(v);
+              const now = new Date();
+              const { from, to } = getDateRange(v);
+              setAgentDateFrom(from);
+              setAgentDateTo(to);
+            }}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Preset" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="today">Today</SelectItem>
@@ -736,6 +776,7 @@ export const GoogleAdsSettingsTab: React.FC = () => {
                 <SelectItem value="lastMonth">Last Month</SelectItem>
                 <SelectItem value="last90">Last 90 Days</SelectItem>
                 <SelectItem value="allTime">All Time</SelectItem>
+                {agentPreset === 'custom' && <SelectItem value="custom">Custom</SelectItem>}
               </SelectContent>
             </Select>
 
