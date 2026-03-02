@@ -600,7 +600,7 @@ export const useLeads = () => {
         pendingRealtimeRef.current = false;
         fetchLeadsRef.current();
       }
-    }, 3000);
+    }, 1000);
   }, []);
 
   // Initial fetch + fetch on filter change (no subscription teardown)
@@ -630,10 +630,10 @@ export const useLeads = () => {
       )
       .subscribe();
 
-    // Polling fallback: refresh every 90s in case realtime silently disconnects
+    // Polling fallback: refresh every 30s in case realtime silently disconnects
     const pollingInterval = setInterval(() => {
       fetchLeadsRef.current();
-    }, 90000);
+    }, 30000);
 
     // Debounced visibility/focus handler - prevents rapid-fire refetches
     const throttledRefetch = () => {
@@ -768,11 +768,39 @@ export const useLeads = () => {
 
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity
+  // Includes a freshness check to prevent two agents assigning the same lead
   const assignLead = useCallback(async (leadId: string, userId: string | null) => {
     const now = new Date().toISOString();
     const user = salesUsersRef.current.find(u => u.id === userId);
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+
+    // FRESHNESS CHECK: Before assigning, verify the lead is still unassigned in the DB
+    // This prevents two agents from calling the same customer
+    if (userId) {
+      try {
+        const table = isAbandonedCart ? 'abandoned_carts' : 'sales_leads';
+        const field = isAbandonedCart ? 'contacted_by' : 'assigned_to';
+        const { data: freshLead, error: freshError } = await supabase
+          .from(table)
+          .select(`${field}`)
+          .eq('id', actualId)
+          .maybeSingle();
+
+        if (freshError) throw freshError;
+
+        const currentlyAssigned = freshLead?.[field];
+        if (currentlyAssigned && currentlyAssigned !== userId) {
+          // Someone else already grabbed this lead — refresh the list and warn
+          toast.error('This lead has already been assigned to another agent. Refreshing list...');
+          fetchLeadsRef.current();
+          return;
+        }
+      } catch (err) {
+        console.error('Freshness check failed, proceeding with assignment:', err);
+        // If the check fails, still try to assign — the RPC will handle conflicts
+      }
+    }
     
     // Capture previous state for rollback using functional update
     let previousLeadSnapshot: Lead | null = null;
