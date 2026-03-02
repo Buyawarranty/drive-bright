@@ -626,8 +626,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             >
               <ExternalLink className="h-3 w-3 mr-1" />View Customer
             </Button>
-            {/* Commission Claim - only for assigned agents on paid online sales */}
-            {lead.assigned_to && (
+            {/* Commission Claim - only for direct website purchases (no quote sent by agent) */}
+            {lead.is_paid && lead.assigned_to && (!sentQuotes || sentQuotes.length === 0) && (
               <CommissionClaimDialog
                 customerId={lead.id}
                 leadId={lead.id}
