@@ -1396,6 +1396,79 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_claims: {
+        Row: {
+          agent_id: string
+          claim_notes: string | null
+          claim_reason: string
+          created_at: string
+          customer_id: string | null
+          deal_value: number | null
+          evidence_type: string | null
+          id: string
+          lead_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          claim_notes?: string | null
+          claim_reason: string
+          created_at?: string
+          customer_id?: string | null
+          deal_value?: number | null
+          evidence_type?: string | null
+          id?: string
+          lead_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          claim_notes?: string | null
+          claim_reason?: string
+          created_at?: string
+          customer_id?: string | null
+          deal_value?: number | null
+          evidence_type?: string | null
+          id?: string
+          lead_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_claims_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_claims_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_claims_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_records: {
         Row: {
           admin_user_id: string | null

@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
+import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { SentQuote } from '@/hooks/useLeadQuotes';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -625,6 +626,16 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             >
               <ExternalLink className="h-3 w-3 mr-1" />View Customer
             </Button>
+            {/* Commission Claim - only for assigned agents on paid online sales */}
+            {lead.assigned_to && (
+              <CommissionClaimDialog
+                customerId={lead.id}
+                leadId={lead.id}
+                agentId={lead.assigned_to}
+                customerName={displayName || lead.email}
+                dealValue={lead.payment_amount || undefined}
+              />
+            )}
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>

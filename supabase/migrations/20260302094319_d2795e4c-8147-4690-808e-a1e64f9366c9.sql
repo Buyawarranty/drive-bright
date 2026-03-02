@@ -1,0 +1,1 @@
+ALTER TABLE public.commission_claims ALTER COLUMN customer_id DROP NOT NULL;
