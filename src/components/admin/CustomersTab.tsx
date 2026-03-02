@@ -1365,7 +1365,7 @@ export const CustomersTab = () => {
     }
   };
 
-  const assignCustomerToAgent = async (customerId: string, agentId: string | null) => {
+  const assignCustomerToAgent = async (customerId: string, agentId: string | null, markAsWebsite: boolean = false) => {
     setAssignmentLoading(prev => ({ ...prev, [customerId]: true }));
 
     try {
@@ -1379,12 +1379,23 @@ export const CustomersTab = () => {
         throw error;
       }
 
-      // When assigning from unassigned to an agent, change BAW- prefix to BAW-S- (staff purchase)
-      if (agentId) {
-        const customer = customers.find(c => c.id === customerId);
-        const policyWarrantyNum = customer?.customer_policies?.[0]?.warranty_number || '';
-        const policyId = customer?.customer_policies?.[0]?.id;
-        
+      const customer = customers.find(c => c.id === customerId);
+      const policyWarrantyNum = customer?.customer_policies?.[0]?.warranty_number || '';
+      const policyId = customer?.customer_policies?.[0]?.id;
+
+      if (markAsWebsite) {
+        // Revert BAW-S- back to BAW- (website sale)
+        if (policyWarrantyNum.startsWith('BAW-S-') && policyId) {
+          const newWarrantyNum = policyWarrantyNum.replace('BAW-S-', 'BAW-');
+          await supabase
+            .from('customer_policies')
+            .update({ warranty_number: newWarrantyNum })
+            .eq('id', policyId);
+          console.log(`Warranty number updated: ${policyWarrantyNum} → ${newWarrantyNum} (website sale)`);
+        }
+        toast.success('Customer marked as Website sale');
+      } else if (agentId) {
+        // When assigning to an agent, change BAW- prefix to BAW-S- (staff purchase)
         if (policyWarrantyNum.startsWith('BAW-') && !policyWarrantyNum.startsWith('BAW-S-') && policyId) {
           const newWarrantyNum = policyWarrantyNum.replace('BAW-', 'BAW-S-');
           await supabase
@@ -4342,8 +4353,17 @@ Please log in and change your password after first login.`;
                     <TableCell>
                       <div className="flex flex-col space-y-1">
                         <Select
-                          value={customer.assigned_to || 'unassigned'}
-                          onValueChange={(val) => assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val)}
+                          value={customer.assigned_to ? customer.assigned_to : (
+                            (customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-') && !(customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-S-')
+                              ? 'website' : 'unassigned'
+                          )}
+                          onValueChange={(val) => {
+                            if (val === 'website') {
+                              assignCustomerToAgent(customer.id, null, true);
+                            } else {
+                              assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val);
+                            }
+                          }}
                           disabled={assignmentLoading[customer.id]}
                         >
                           <SelectTrigger className="w-[160px] h-8 text-xs">
@@ -4351,6 +4371,7 @@ Please log in and change your password after first login.`;
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="unassigned">Unassigned</SelectItem>
+                            <SelectItem value="website">Website</SelectItem>
                             {adminUsers.filter(u => u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin').map(user => (
                               <SelectItem key={user.id} value={user.id}>
                                 {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
