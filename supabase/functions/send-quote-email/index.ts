@@ -128,20 +128,20 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               <!-- Discount Section -->
               <tr>
                 <td style="padding: 0 20px 20px 20px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #FFF8E7; border-radius: 10px; border: 2px solid #F59E0B;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #fff0f3; border-radius: 10px; border: 2px solid #e91e63;">
                     <tr>
                       <td align="center" style="padding: 20px 16px;">
-                        <p style="font-size: 15px; color: #92400E; font-weight: 600; margin: 0 0 12px 0;">
-                          Complete your purchase now and save £50 with code
+                        <p style="font-size: 15px; color: #880e4f; font-weight: 600; margin: 0 0 12px 0;">
+                          Complete your purchase now and save 10% with code
                         </p>
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color: #F59E0B; border-radius: 6px;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color: #e91e63; border-radius: 6px;">
                           <tr>
                             <td align="center" style="padding: 12px 24px;">
-                              <span style="font-size: 20px; font-weight: 800; color: #000000; letter-spacing: 2px; font-family: monospace;">SAVE50POUNDS</span>
+                              <a href="https://buyawarranty.co.uk?promo=SAVE10TODAY" style="font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: 2px; font-family: monospace; text-decoration: none;">SAVE10TODAY</a>
                             </td>
                           </tr>
                         </table>
-                        <p style="font-size: 12px; color: #92400E; margin: 10px 0 0 0;">
+                        <p style="font-size: 12px; color: #880e4f; margin: 10px 0 0 0;">
                           Apply at checkout &bull; <strong>Valid for 24 hours only</strong>
                         </p>
                       </td>

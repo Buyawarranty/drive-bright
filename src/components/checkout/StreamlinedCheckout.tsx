@@ -302,6 +302,54 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     discountAmount: number;
   }>>([]);
 
+  // Auto-apply promo code from email link (?promo=SAVE10TODAY)
+  const hasAutoAppliedPromo = React.useRef(false);
+  useEffect(() => {
+    if (hasAutoAppliedPromo.current) return;
+    const savedPromo = localStorage.getItem('buyawarranty_promoCode');
+    if (savedPromo && appliedDiscountCodes.length === 0) {
+      hasAutoAppliedPromo.current = true;
+      localStorage.removeItem('buyawarranty_promoCode');
+      // Set the input and trigger apply
+      setPromoCodeInput(savedPromo);
+      setPromoOpen(true);
+      // Delay to allow component to mount fully, then auto-apply
+      setTimeout(async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke('validate-discount-code', {
+            body: { code: savedPromo, vehicleReg: vehicleData.regNumber }
+          });
+          if (error || !data?.valid) {
+            setPromoCodeError(data?.error || data?.message || 'Invalid promo code');
+            return;
+          }
+          const discountCode = data.discountCode;
+          if (!discountCode) return;
+          setAppliedDiscountCodes([{
+            code: savedPromo,
+            type: discountCode.type,
+            value: discountCode.value,
+            discountAmount: 0,
+          }]);
+          setPromoCodeInput('');
+          // Show pink Airbnb-style toast
+          toast.success(`🎉 Code ${savedPromo} applied — you're saving ${discountCode.type === 'percentage' ? `${discountCode.value}%` : `£${discountCode.value}`}!`, {
+            style: {
+              background: '#E91E63',
+              color: '#ffffff',
+              fontWeight: '600',
+              borderRadius: '8px',
+              border: 'none',
+            },
+            duration: 5000,
+          });
+        } catch (err) {
+          console.error('Auto-apply promo failed:', err);
+        }
+      }, 500);
+    }
+  }, []);
+
   // Pricing data state - ALWAYS use pricingData from Step 3 as source of truth
   const [updatedPricingData, setUpdatedPricingData] = useState(() => {
     localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));

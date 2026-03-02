@@ -564,6 +564,19 @@ const Index = () => {
     }
   }, [isRestoringFromUrl]);
 
+  // Capture promo code from URL (?promo=SAVE10TODAY) and store for checkout auto-apply
+  useEffect(() => {
+    const promoParam = searchParams.get('promo');
+    if (promoParam) {
+      localStorage.setItem('buyawarranty_promoCode', promoParam.toUpperCase());
+      console.log('🎟️ Promo code captured from URL:', promoParam);
+      // Clean param from URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('promo');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   // Capture GCLID from Google Ads on page load for server-side conversion tracking
   useEffect(() => {
     captureGclid();

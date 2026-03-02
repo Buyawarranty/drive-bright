@@ -111,16 +111,16 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
     ctaText = 'Complete My Purchase';
     showPromo = true;
-    promoCode = 'SAVE50POUNDS';
-    promoText = 'Complete your purchase now and save £50 with code SAVE50POUNDS. Valid for 24 hours only!';
+    promoCode = 'SAVE10TODAY';
+    promoText = 'Complete your purchase now and save 10% with code';
   } else if (request.triggerType === 'pricing_page_view_24h') {
     showPromo = true;
-    promoCode = 'SAVE50POUNDS';
-    promoText = 'Special offer: Use code SAVE50POUNDS for £50 off – valid for 24 hours only!';
+    promoCode = 'SAVE10TODAY';
+    promoText = 'Special offer: Save 10% with code';
   } else if (request.triggerType === 'pricing_page_view_72h') {
     showPromo = true;
-    promoCode = 'SAVE50POUNDS';
-    promoText = 'Limited time: Use code SAVE50POUNDS for £50 off your purchase. Valid for 24 hours!';
+    promoCode = 'SAVE10TODAY';
+    promoText = 'Limited time: Save 10% with code';
     intro = `This is a reminder about your warranty quote for ${vehicleReg}.`;
     body = "Your quote information is still available to review.";
   }
@@ -151,10 +151,10 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
 
       ${showPromo ? `
       <!-- Promo Section -->
-      <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-        <p style="color: #856404; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
-        <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace;">${promoCode}</div>
-        <p style="color: #856404; font-size: 12px; margin: 10px 0 0 0;">Apply at checkout &bull; <strong>Valid for 24 hours only</strong></p>
+      <div style="background-color: #fff0f3; border: 2px solid #e91e63; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <p style="color: #880e4f; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
+        <a href="https://buyawarranty.co.uk?promo=${promoCode}" style="background-color: #e91e63; color: #fff; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace; text-decoration: none; cursor: pointer;">${promoCode}</a>
+        <p style="color: #880e4f; font-size: 12px; margin: 10px 0 0 0;">Apply at checkout &bull; <strong>Valid for 24 hours only</strong></p>
       </div>
       ` : ''}
 
