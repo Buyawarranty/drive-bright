@@ -2855,9 +2855,9 @@ export const CustomersTab = () => {
             <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
               <div className="flex items-center gap-4">
                 {selectedCustomers.size > 0 && (() => {
-                  const selectedTotal = filteredCustomers
-                    .filter(c => selectedCustomers.has(c.id))
-                    .reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                  const selectedItems = filteredCustomers.filter(c => selectedCustomers.has(c.id));
+                  const selectedTotal = selectedItems.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+                  const selectedAvg = selectedItems.length > 0 ? selectedTotal / selectedItems.length : 0;
                   const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
                   return (
                     <div className="flex items-center gap-2">
@@ -2867,6 +2867,7 @@ export const CustomersTab = () => {
                       {!isSalesRole && (
                         <Badge variant="secondary" className="bg-green-50 text-green-700 font-semibold">
                           Total: £{selectedTotal.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {' · '}Avg: £{selectedAvg.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </Badge>
                       )}
                     </div>
