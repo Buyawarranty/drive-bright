@@ -196,6 +196,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       switch (sortOption) {
         case 'newest':
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+        case 'latest_submitted':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case 'oldest':
           return new Date(a.last_activity_date || a.created_at).getTime() - new Date(b.last_activity_date || b.created_at).getTime();
         case 'contacted':
