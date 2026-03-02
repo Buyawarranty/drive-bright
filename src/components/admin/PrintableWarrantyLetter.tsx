@@ -205,7 +205,7 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
         </DialogHeader>
 
         {/* Preview */}
-        <div className="border rounded-lg bg-white p-8 shadow-inner">
+        <div className="border rounded-lg bg-white px-16 py-10 shadow-inner">
           <div ref={printRef} className="letter-container">
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: `3px solid ${c.borderAccent}`, marginBottom: '14px' }}>
@@ -221,7 +221,7 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
             <div style={{ textAlign: 'right', fontSize: '10px', color: '#666', marginBottom: '12px' }}>{todayDate}</div>
 
             <div style={{ marginBottom: '14px', fontSize: '11px' }}>
-              <p style={{ fontWeight: '700', fontSize: '12px', margin: '1px 0' }}>{policy.customerName}</p>
+              <p style={{ fontWeight: '700', fontSize: '11px', margin: '1px 0' }}>{policy.customerName}</p>
               {address.map((line, i) => (
                 <p key={i} style={{ margin: '1px 0' }}>{line}</p>
               ))}
