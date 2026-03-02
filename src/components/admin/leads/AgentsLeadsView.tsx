@@ -126,8 +126,49 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     initializeAgentCaps,
     addOverflowRecipient,
     removeOverflowRecipient,
+    addAgentToDistribution,
     loading
   } = useLeadDistribution();
+
+  // Add agent search state
+  const [addAgentSearch, setAddAgentSearch] = useState('');
+  const [addAgentResults, setAddAgentResults] = useState<Array<{id: string; first_name: string | null; last_name: string | null; email: string; role: string}>>([]);
+  const [addAgentLoading, setAddAgentLoading] = useState(false);
+  const [showAddAgent, setShowAddAgent] = useState(false);
+
+  // Search for admin users to add to distribution
+  const handleAgentSearch = useCallback(async (query: string) => {
+    setAddAgentSearch(query);
+    if (query.length < 2) {
+      setAddAgentResults([]);
+      return;
+    }
+    setAddAgentLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email, role')
+        .or(`email.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+        .limit(10);
+      
+      if (error) throw error;
+      const existingIds = new Set(agentCaps.map(c => c.admin_user_id));
+      setAddAgentResults((data || []).filter(u => !existingIds.has(u.id)));
+    } catch (err) {
+      console.error('Agent search failed:', err);
+    } finally {
+      setAddAgentLoading(false);
+    }
+  }, [agentCaps]);
+
+  const handleAddAgent = useCallback(async (adminUserId: string) => {
+    const success = await addAgentToDistribution(adminUserId);
+    if (success) {
+      setAddAgentSearch('');
+      setAddAgentResults([]);
+      setShowAddAgent(false);
+    }
+  }, [addAgentToDistribution]);
 
   // Get distribution mode from settings (persisted in DB)
   const distributionMode = (settings?.distribution_mode as DistributionMode) || 'round_robin';
@@ -1174,12 +1215,59 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 <ArrowRight className="h-4 w-4" />
                 Reassign Agent's Leads
               </Button>
+              {/* Add Agent Search */}
+              {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && (
+                <Popover open={showAddAgent} onOpenChange={setShowAddAgent}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Add Agent
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-3" align="end">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Search for a user to add</p>
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={addAgentSearch}
+                        onChange={(e) => handleAgentSearch(e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                      {addAgentLoading && (
+                        <p className="text-xs text-muted-foreground">Searching...</p>
+                      )}
+                      {addAgentResults.length > 0 && (
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                          {addAgentResults.map(user => (
+                            <button
+                              key={user.id}
+                              className="w-full flex items-center justify-between p-2 rounded hover:bg-muted text-left text-sm"
+                              onClick={() => handleAddAgent(user.id)}
+                            >
+                              <div>
+                                <div className="font-medium">{user.first_name || ''} {user.last_name || ''}</div>
+                                <div className="text-xs text-muted-foreground">{user.email}</div>
+                              </div>
+                              <Badge variant="outline" className="text-[10px] capitalize">
+                                {(user.role || '').replace('_', ' ')}
+                              </Badge>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {addAgentSearch.length >= 2 && !addAgentLoading && addAgentResults.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No users found or all already added.</p>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
               {unconfiguredAgents.length > 0 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="sm" onClick={initializeAgentCaps} className="gap-2">
                       <UserPlus className="h-4 w-4" />
-                      Add Unconfigured Agents ({unconfiguredAgents.length})
+                      Add Missing ({unconfiguredAgents.length})
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
