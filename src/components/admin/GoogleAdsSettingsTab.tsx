@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   CheckCircle2, XCircle, AlertTriangle, Upload, RefreshCw, Zap,
-  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight
+  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart
 } from 'lucide-react';
 
 // Required secrets for the upload-google-conversions edge function
@@ -24,37 +26,21 @@ const REQUIRED_SECRETS = [
 export const GoogleAdsSettingsTab: React.FC = () => {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
+  const [salesSearch, setSalesSearch] = useState('');
+  const [salesFilter, setSalesFilter] = useState<'all' | 'with_gclid' | 'no_gclid' | 'uploaded' | 'pending'>('all');
+  const [salesPage, setSalesPage] = useState(0);
+  const SALES_PER_PAGE = 25;
 
   // Fetch conversion upload stats
   const { data: conversionStats, isLoading: statsLoading } = useQuery({
     queryKey: ['google-ads-conversion-stats'],
     queryFn: async () => {
       const [customersResult, bumperResult, pendingCustomers, pendingBumper] = await Promise.all([
-        supabase
-          .from('customers')
-          .select('id', { count: 'exact', head: true })
-          .not('gclid', 'is', null)
-          .not('google_ads_conversion_uploaded_at', 'is', null),
-        supabase
-          .from('bumper_transactions')
-          .select('id', { count: 'exact', head: true })
-          .not('gclid', 'is', null)
-          .not('google_ads_conversion_uploaded_at', 'is', null),
-        supabase
-          .from('customers')
-          .select('id', { count: 'exact', head: true })
-          .not('gclid', 'is', null)
-          .is('google_ads_conversion_uploaded_at', null)
-          .in('status', ['active', 'Active'])
-          .eq('is_deleted', false),
-        supabase
-          .from('bumper_transactions')
-          .select('id', { count: 'exact', head: true })
-          .not('gclid', 'is', null)
-          .is('google_ads_conversion_uploaded_at', null)
-          .eq('status', 'completed'),
+        supabase.from('customers').select('id', { count: 'exact', head: true }).not('gclid', 'is', null).not('google_ads_conversion_uploaded_at', 'is', null),
+        supabase.from('bumper_transactions').select('id', { count: 'exact', head: true }).not('gclid', 'is', null).not('google_ads_conversion_uploaded_at', 'is', null),
+        supabase.from('customers').select('id', { count: 'exact', head: true }).not('gclid', 'is', null).is('google_ads_conversion_uploaded_at', null).in('status', ['active', 'Active']).eq('is_deleted', false),
+        supabase.from('bumper_transactions').select('id', { count: 'exact', head: true }).not('gclid', 'is', null).is('google_ads_conversion_uploaded_at', null).eq('status', 'completed'),
       ]);
-
       return {
         uploaded: (customersResult.count || 0) + (bumperResult.count || 0),
         pending: (pendingCustomers.count || 0) + (pendingBumper.count || 0),
@@ -94,6 +80,96 @@ export const GoogleAdsSettingsTab: React.FC = () => {
       };
     },
   });
+
+  // Fetch ALL website sales (customers + bumper) - LIVE data
+  const { data: allSalesData, isLoading: salesLoading } = useQuery({
+    queryKey: ['google-ads-all-sales'],
+    queryFn: async () => {
+      const [customersRes, bumperRes] = await Promise.all([
+        supabase
+          .from('customers')
+          .select('id, email, first_name, last_name, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at, created_at, status, warranty_number, registration_plate, phone')
+          .eq('is_deleted', false)
+          .in('status', ['active', 'Active'])
+          .order('created_at', { ascending: false })
+          .limit(500),
+        supabase
+          .from('bumper_transactions')
+          .select('id, customer_data, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at, created_at, status, transaction_id')
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .limit(500),
+      ]);
+
+      const customerSales = (customersRes.data || []).map(c => ({
+        id: c.id,
+        email: c.email || '',
+        name: `${c.first_name || ''} ${c.last_name || ''}`.trim(),
+        amount: c.final_amount || 0,
+        gclid: c.gclid,
+        conversionStatus: c.google_ads_conversion_status,
+        uploadedAt: c.google_ads_conversion_uploaded_at,
+        createdAt: c.created_at,
+        ref: c.warranty_number || '',
+        reg: c.registration_plate || '',
+        phone: c.phone || '',
+        source: 'stripe' as const,
+      }));
+
+      const bumperSales = (bumperRes.data || []).map(b => {
+        const cd = (b.customer_data as any) || {};
+        return {
+          id: b.id,
+          email: cd.email || '',
+          name: `${cd.firstName || ''} ${cd.lastName || ''}`.trim(),
+          amount: b.final_amount || 0,
+          gclid: b.gclid,
+          conversionStatus: b.google_ads_conversion_status,
+          uploadedAt: b.google_ads_conversion_uploaded_at,
+          createdAt: b.created_at,
+          ref: b.transaction_id || '',
+          reg: (cd as any).vehicleReg || '',
+          phone: cd.phone || '',
+          source: 'bumper' as const,
+        };
+      });
+
+      return [...customerSales, ...bumperSales].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    },
+    refetchInterval: 60000,
+  });
+
+  // Filter and search sales
+  const filteredSales = useMemo(() => {
+    if (!allSalesData) return [];
+    let result = allSalesData;
+    if (salesFilter === 'with_gclid') result = result.filter(s => !!s.gclid);
+    else if (salesFilter === 'no_gclid') result = result.filter(s => !s.gclid);
+    else if (salesFilter === 'uploaded') result = result.filter(s => s.conversionStatus === 'uploaded');
+    else if (salesFilter === 'pending') result = result.filter(s => s.gclid && !s.uploadedAt);
+    if (salesSearch.trim()) {
+      const q = salesSearch.toLowerCase();
+      result = result.filter(s => s.email.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.ref.toLowerCase().includes(q) || s.reg.toLowerCase().includes(q));
+    }
+    return result;
+  }, [allSalesData, salesFilter, salesSearch]);
+
+  const paginatedSales = filteredSales.slice(salesPage * SALES_PER_PAGE, (salesPage + 1) * SALES_PER_PAGE);
+  const totalSalesPages = Math.ceil(filteredSales.length / SALES_PER_PAGE);
+
+  const salesSummary = useMemo(() => {
+    if (!allSalesData) return { total: 0, totalValue: 0, withGclid: 0, uploaded: 0, pending: 0, noGclid: 0 };
+    return {
+      total: allSalesData.length,
+      totalValue: allSalesData.reduce((sum, s) => sum + (s.amount || 0), 0),
+      withGclid: allSalesData.filter(s => !!s.gclid).length,
+      uploaded: allSalesData.filter(s => s.conversionStatus === 'uploaded').length,
+      pending: allSalesData.filter(s => s.gclid && !s.uploadedAt).length,
+      noGclid: allSalesData.filter(s => !s.gclid).length,
+    };
+  }, [allSalesData]);
 
   // Trigger manual upload
   const triggerUpload = async () => {
@@ -337,7 +413,179 @@ export const GoogleAdsSettingsTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* GCLID Capture Pipeline — Full 4-Step Breakdown */}
+      {/* All Website Sales — Live Data */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            All Website Sales — Live Conversion Data
+          </CardTitle>
+          <CardDescription>
+            All completed sales automatically pulled from the database. No CSV upload needed — this is live data ready for Google Ads conversion tracking.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Summary stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold">{salesSummary.total}</p>
+              <p className="text-xs text-muted-foreground">Total Sales</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold">£{salesSummary.totalValue.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">Total Value</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold text-primary">{salesSummary.withGclid}</p>
+              <p className="text-xs text-muted-foreground">With GCLID</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold text-green-600">{salesSummary.uploaded}</p>
+              <p className="text-xs text-muted-foreground">Uploaded</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold text-amber-600">{salesSummary.pending}</p>
+              <p className="text-xs text-muted-foreground">Pending Upload</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold text-muted-foreground">{salesSummary.noGclid}</p>
+              <p className="text-xs text-muted-foreground">No GCLID</p>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by email, name, ref, or reg..."
+                  value={salesSearch}
+                  onChange={e => { setSalesSearch(e.target.value); setSalesPage(0); }}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <Select value={salesFilter} onValueChange={(v: any) => { setSalesFilter(v); setSalesPage(0); }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sales</SelectItem>
+                <SelectItem value="with_gclid">With GCLID</SelectItem>
+                <SelectItem value="no_gclid">No GCLID</SelectItem>
+                <SelectItem value="uploaded">Uploaded</SelectItem>
+                <SelectItem value="pending">Pending Upload</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Sales table */}
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Reg</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Ref</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>GCLID</TableHead>
+                  <TableHead>Conversion Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {salesLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
+                      Loading sales data...
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedSales.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No sales found
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedSales.map(sale => (
+                  <TableRow key={sale.id}>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {new Date(sale.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
+                    </TableCell>
+                    <TableCell>
+                      {sale.reg ? (
+                        <span className="inline-block px-2 py-0.5 bg-yellow-100 border border-yellow-400 rounded text-xs font-bold tracking-wider uppercase">{sale.reg}</span>
+                      ) : '—'}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      <div>{sale.name || '—'}</div>
+                      <div className="text-xs text-muted-foreground">{sale.email}</div>
+                    </TableCell>
+                    <TableCell className="text-xs font-mono">{sale.ref || '—'}</TableCell>
+                    <TableCell className="text-sm font-semibold">£{sale.amount.toLocaleString()}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={sale.source === 'bumper' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-blue-50 text-blue-700 border-blue-200'}>
+                        {sale.source === 'bumper' ? 'Bumper' : 'Stripe'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {sale.gclid ? (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 text-xs">
+                          <CheckCircle2 className="h-3 w-3" /> Yes
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground gap-1 text-xs">
+                          <XCircle className="h-3 w-3" /> No
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {sale.conversionStatus === 'uploaded' ? (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 text-xs">
+                          <CheckCircle2 className="h-3 w-3" /> Uploaded
+                        </Badge>
+                      ) : sale.conversionStatus?.startsWith('failed') ? (
+                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1 text-xs">
+                          <XCircle className="h-3 w-3" /> Failed
+                        </Badge>
+                      ) : sale.gclid && !sale.uploadedAt ? (
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1 text-xs">
+                          <Clock className="h-3 w-3" /> Pending
+                        </Badge>
+                      ) : !sale.gclid ? (
+                        <span className="text-xs text-muted-foreground">No GCLID</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalSalesPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Showing {salesPage * SALES_PER_PAGE + 1}–{Math.min((salesPage + 1) * SALES_PER_PAGE, filteredSales.length)} of {filteredSales.length}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSalesPage(p => p - 1)} disabled={salesPage === 0}>Previous</Button>
+                <Button variant="outline" size="sm" onClick={() => setSalesPage(p => p + 1)} disabled={salesPage >= totalSalesPages - 1}>Next</Button>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            💡 This data refreshes automatically every 60 seconds. Sales with a GCLID can be uploaded to Google Ads for offline conversion tracking. Sales without GCLID came from non-Google Ads traffic (organic, direct, etc.).
+          </p>
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
