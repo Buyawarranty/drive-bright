@@ -204,11 +204,13 @@ export const useLeads = () => {
         }, 8000);
       }
       
-      // Use Promise.all to fetch all data sources in parallel for better performance
-      const [salesLeadsResult, abandonedCartsResult, dedupResult] = await Promise.all([
-        // Fetch ALL sales_leads using batch fetching to bypass 1000-row PostgREST limit
-        fetchAllRows(() => {
-          let query = supabase
+      // PERFORMANCE: Fetch sales leads and abandoned carts in parallel
+      // We fetch ALL sales_leads (unfiltered) first for dedup, then filter client-side
+      // This eliminates the separate dedup query that was previously a redundant full-table scan
+      const [allSalesLeadsResult, abandonedCartsResult] = await Promise.all([
+        // Fetch ALL sales_leads (unfiltered) — needed for dedup AND display
+        fetchAllRows(() =>
+          supabase
             .from('sales_leads')
             .select(`
               id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
@@ -219,21 +221,9 @@ export const useLeads = () => {
               call_count,
               assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
             `)
-            .order('created_at', { ascending: false });
-
-          if (filter === 'all') {
-            query = query.not('status', 'in', '("lost","fake_lead")');
-          } else if (filter === 'high_priority') {
-            query = query.in('priority', ['high', 'urgent']);
-          } else if (filter === 'fake') {
-            query = query.eq('status', 'fake_lead' as any);
-          } else {
-            query = query.eq('status', filter as any);
-          }
-
-          return query;
-        }),
-        // Fetch ALL abandoned carts using batch fetching
+            .order('created_at', { ascending: false })
+        ),
+        // Fetch ALL abandoned carts
         fetchAllRows(() => 
           supabase
             .from('abandoned_carts')
@@ -246,26 +236,44 @@ export const useLeads = () => {
             .eq('is_converted', false)
             .order('created_at', { ascending: false })
         ),
-        // Fetch ALL dedup data using batch fetching
-        fetchAllRows(() => 
-          supabase
-            .from('sales_leads')
-            .select('email, phone, abandoned_cart_id')
-        )
       ]);
 
-      const { data: salesLeadsData, error: salesError } = salesLeadsResult;
+      const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;
 
       const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
       if (cartsError) throw cartsError;
-
-      const { data: dedupData } = dedupResult;
       
-      console.log(`[Leads] Fetched ${salesLeadsData?.length || 0} sales leads, ${abandonedCartsData?.length || 0} abandoned carts`);
+      console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads, ${abandonedCartsData?.length || 0} abandoned carts`);
 
-      // Build a map of auth.user_id -> admin_user for abandoned cart assignments
-      // contacted_by stores auth.users.id, we need to map to admin_users
+      // Apply filter to sales leads client-side (avoids a second full fetch for dedup)
+      let salesLeadsData = allSalesLeadsData || [];
+      if (filter === 'all') {
+        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
+      } else if (filter === 'high_priority') {
+        salesLeadsData = salesLeadsData.filter((lead: any) => lead.priority === 'high' || lead.priority === 'urgent');
+      } else if (filter === 'fake') {
+        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === 'fake_lead');
+      } else {
+        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === filter);
+      }
+
+      // Build dedup sets from ALL (unfiltered) sales leads — prevents carts reappearing
+      const linkedCartIds = new Set(
+        (allSalesLeadsData || [])
+          .filter((lead: any) => lead.abandoned_cart_id)
+          .map((lead: any) => lead.abandoned_cart_id)
+      );
+      const existingEmails = new Set(
+        (allSalesLeadsData || []).map((lead: any) => lead.email?.toLowerCase()).filter(Boolean)
+      );
+      const existingPhones = new Set(
+        (allSalesLeadsData || [])
+          .map((lead: any) => lead.phone?.replace(/\s/g, ''))
+          .filter(Boolean)
+      );
+
+      // Build admin user lookup for abandoned cart assignments (contacted_by -> admin_users)
       const contactedByIds = (abandonedCartsData || [])
         .filter((cart: any) => cart.contacted_by)
         .map((cart: any) => cart.contacted_by);
@@ -277,31 +285,12 @@ export const useLeads = () => {
           .select('id, user_id, first_name, last_name, email')
           .in('user_id', contactedByIds);
         
-        // Create map: auth.user_id -> admin_user
         (adminUsersForCarts || []).forEach((user: any) => {
           if (user.user_id) {
             adminUsersByAuthId[user.user_id] = user;
           }
         });
       }
-
-      // Use UNFILTERED dedup data to prevent carts from reappearing when
-      // their matching sales_lead is excluded by status filter (e.g. "lost")
-      const linkedCartIds = new Set(
-        (dedupData || [])
-          .filter((lead: any) => lead.abandoned_cart_id)
-          .map((lead: any) => lead.abandoned_cart_id)
-      );
-
-      // Get emails AND phones from ALL sales_leads (unfiltered) to avoid duplicates
-      const existingEmails = new Set(
-        (dedupData || []).map((lead: any) => lead.email?.toLowerCase()).filter(Boolean)
-      );
-      const existingPhones = new Set(
-        (dedupData || [])
-          .map((lead: any) => lead.phone?.replace(/\s/g, ''))
-          .filter(Boolean)
-      );
 
       // Helper function to map contact_status to LeadStatus
       const mapContactStatusToLeadStatus = (contactStatus: string | null, isFakeLead: boolean): LeadStatus => {
@@ -420,34 +409,22 @@ export const useLeads = () => {
         };
       });
 
-      // Filter cartsAsLeads based on the selected filter
-      // The sales_leads query already filters, but cartsAsLeads needs the same filtering
+      // Filter cartsAsLeads to match the same filter applied to sales leads
       let filteredCartsAsLeads = cartsAsLeads;
-      if (filter !== 'all' && filter !== 'high_priority') {
-        if (filter === 'fake') {
-          filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === 'fake_lead');
-        } else {
-          // For specific status filters, only include carts matching that status
-          filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === filter);
-        }
+      if (filter === 'all') {
+        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
+      } else if (filter === 'high_priority') {
+        // Keep all carts for high priority (they don't have priority scores)
+      } else if (filter === 'fake') {
+        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === 'fake_lead');
+      } else {
+        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === filter);
       }
 
       // Combine and sort by created_at (newest first)
+      // Sales leads are already filtered client-side above; carts are filtered here
       let allLeads = [...salesLeadsWithFlags, ...filteredCartsAsLeads]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      
-      // For "all" filter, exclude lost and fake leads (they have their own tabs)
-      if (filter === 'all') {
-        allLeads = allLeads.filter((lead: any) => 
-          lead.status !== 'lost' && lead.status !== 'fake_lead'
-        );
-      } else if (filter === 'fake') {
-        // Only show fake leads
-        allLeads = allLeads.filter((lead: any) => lead.status === 'fake_lead');
-      } else if (filter === 'lost') {
-        // Only show lost leads
-        allLeads = allLeads.filter((lead: any) => lead.status === 'lost');
-      }
 
       // Calculate application count per email (how many times this email has applied)
       const emailCounts: Record<string, number> = {};
@@ -630,10 +607,10 @@ export const useLeads = () => {
       )
       .subscribe();
 
-    // Polling fallback: refresh every 30s in case realtime silently disconnects
+    // Polling fallback: refresh every 60s (realtime handles fast sync, this is a safety net)
     const pollingInterval = setInterval(() => {
       fetchLeadsRef.current();
-    }, 30000);
+    }, 60000);
 
     // Debounced visibility/focus handler - prevents rapid-fire refetches
     const throttledRefetch = () => {
