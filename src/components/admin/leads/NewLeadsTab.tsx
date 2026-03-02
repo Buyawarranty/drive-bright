@@ -71,6 +71,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Sales Lead, Admin, Super Admin should NOT have delete by default
   const canDelete = hasGranularPermission('new-leads', 'delete') === true;
   
+  // Assign permission - defaults to allowed unless explicitly denied
+  // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
+  const canAssignLeads = hasGranularPermission('new-leads', 'assign') !== false;
+  
   // Export permission - admins always can, others need explicit permission
   const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
   
@@ -631,15 +635,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 totalVisible={pagination.paginatedData.length}
                 allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
                 onSelectAll={handleSelectAll}
-                salesUsers={salesUsers}
-                onBulkAssign={handleBulkAssign}
-                onBulkAutoAssign={handleBulkAutoAssign}
+                salesUsers={canAssignLeads ? salesUsers : []}
+                onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
+                onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
               />
               
               <LeadsTable
                 leads={pagination.paginatedData}
                 tags={tags}
                 salesUsers={salesUsers}
+                canAssignLeads={canAssignLeads}
                 selectedLeads={selectedLeads}
                 onSelectLead={handleSelectLead}
                 onSelectAll={handleSelectAll}

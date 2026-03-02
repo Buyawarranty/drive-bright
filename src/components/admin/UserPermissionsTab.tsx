@@ -70,6 +70,7 @@ const GRANULAR_PERMISSIONS = {
   ],
   'new-leads': [
     { key: 'view', label: 'View', description: 'Can view lead data' },
+    { key: 'assign', label: 'Assign Leads', description: 'Can assign or reassign leads to agents' },
     { key: 'export', label: 'Export', description: 'Can export lead data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete lead records' },
     { key: 'all-leads', label: 'All Leads', description: 'Can view the All Leads section' },
@@ -89,6 +90,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_customers': true,
     'tab_selling-tips': true,
     'tab_new-leads_view': true,
+    'tab_new-leads_assign': true,
     'tab_new-leads_all-leads': true,
     'tab_new-leads_team-view': true,
     'tab_new-leads_my-dashboard': true,
