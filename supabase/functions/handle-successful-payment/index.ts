@@ -857,12 +857,19 @@ serve(async (req) => {
         const saleValue = customerData?.final_amount || customerData?.original_amount || 'N/A';
         const saleValueDisplay = typeof saleValue === 'number' ? `£${saleValue.toFixed(2)}` : saleValue;
 
+        const regPlate = vehicleData?.regNumber || 'Unknown';
+        
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Warranty Sale</h2>
             
+            <!-- Reg Plate Banner -->
+            <div style="margin-top: 20px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">${regPlate}</div>
+            </div>
+            
             <!-- Sale Summary Banner -->
-            <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 8px; color: white;">
+            <div style="margin-top: 16px; padding: 20px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 8px; color: white;">
               <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
               <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
               <div style="font-size: 14px; opacity: 0.9;">Paid via <strong>${paymentMethod}</strong></div>
@@ -917,7 +924,7 @@ serve(async (req) => {
         await resend.emails.send({
           from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale: ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
+          subject: `New Sale: ${regPlate} - ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
           html: salesEmailHtml
         });
 
