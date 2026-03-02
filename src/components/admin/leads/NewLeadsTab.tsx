@@ -195,26 +195,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     result = [...result].sort((a, b) => {
       switch (sortOption) {
         case 'newest':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          // Sort by last_activity_date (most recently active first), fallback to created_at
+          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
         case 'oldest':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          return new Date(a.last_activity_date || a.created_at).getTime() - new Date(b.last_activity_date || b.created_at).getTime();
         case 'contacted':
-          // Contacted status first, then by date
           if (a.status === 'contacted' && b.status !== 'contacted') return -1;
           if (a.status !== 'contacted' && b.status === 'contacted') return 1;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
         case 'follow_up':
-          // Follow-up status first, then by date
           if (a.status === 'follow_up' && b.status !== 'follow_up') return -1;
           if (a.status !== 'follow_up' && b.status === 'follow_up') return 1;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
         case 'quote_sent':
-          // Quote sent status first, then by date
           if (a.status === 'quote_sent' && b.status !== 'quote_sent') return -1;
           if (a.status !== 'quote_sent' && b.status === 'quote_sent') return 1;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
       }
     });
     
