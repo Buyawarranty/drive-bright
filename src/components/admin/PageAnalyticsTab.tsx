@@ -50,6 +50,25 @@ const isOrganic = (pv: any): boolean => {
   return !pv.referrer || isSearchEngineReferrer(pv.referrer);
 };
 
+// Exclude internal/admin routes — only show public website & blog pages
+const EXCLUDED_PATH_PREFIXES = [
+  '/auth',
+  '/admin',
+  '/customer-dashboard',
+  '/forgot-password',
+  '/quote/',
+  '/reset-password',
+  '/login',
+  '/register',
+  '/signup',
+];
+
+const isPublicPage = (pagePath: string): boolean => {
+  if (!pagePath) return false;
+  const lower = pagePath.toLowerCase();
+  return !EXCLUDED_PATH_PREFIXES.some(prefix => lower.startsWith(prefix));
+};
+
 export const PageAnalyticsTab: React.FC = () => {
   const [period, setPeriod] = useState<Period>('this_week');
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,19 +92,22 @@ export const PageAnalyticsTab: React.FC = () => {
   const stats = useMemo(() => {
     if (!pageViews) return null;
 
-    const totalViews = pageViews.length;
-    const uniqueVisitors = new Set(pageViews.map(pv => pv.visitor_id)).size;
-    const uniqueSessions = new Set(pageViews.map(pv => pv.session_id)).size;
-    const googleAdsViews = pageViews.filter(pv => pv.is_google_ads).length;
+    // Filter to public pages only (exclude admin, auth, quotes, customer dashboard)
+    const publicPageViews = pageViews.filter(pv => isPublicPage(pv.page_path));
+
+    const totalViews = publicPageViews.length;
+    const uniqueVisitors = new Set(publicPageViews.map(pv => pv.visitor_id)).size;
+    const uniqueSessions = new Set(publicPageViews.map(pv => pv.session_id)).size;
+    const googleAdsViews = publicPageViews.filter(pv => pv.is_google_ads).length;
 
     // Organic
-    const organicViews = pageViews.filter(isOrganic);
+    const organicViews = publicPageViews.filter(isOrganic);
     const totalOrganic = organicViews.length;
     const uniqueOrganicVisitors = new Set(organicViews.map(pv => pv.visitor_id)).size;
 
     // Page breakdown
     const pageMap = new Map<string, { views: number; uniqueVisitors: Set<string>; googleAds: number; organic: number }>();
-    pageViews.forEach(pv => {
+    publicPageViews.forEach(pv => {
       const existing = pageMap.get(pv.page_path) || { views: 0, uniqueVisitors: new Set<string>(), googleAds: 0, organic: 0 };
       existing.views++;
       if (pv.visitor_id) existing.uniqueVisitors.add(pv.visitor_id);
@@ -106,7 +128,7 @@ export const PageAnalyticsTab: React.FC = () => {
 
     // Source breakdown — refined to separate organic search from direct
     const sourceMap = new Map<string, number>();
-    pageViews.forEach(pv => {
+    publicPageViews.forEach(pv => {
       let source: string;
       if (pv.utm_source) {
         source = pv.utm_source;
@@ -125,9 +147,9 @@ export const PageAnalyticsTab: React.FC = () => {
       .slice(0, 8);
 
     // Device breakdown
-    const mobile = pageViews.filter(pv => (pv.screen_width || 0) < 768).length;
-    const tablet = pageViews.filter(pv => (pv.screen_width || 0) >= 768 && (pv.screen_width || 0) < 1024).length;
-    const desktop = pageViews.filter(pv => (pv.screen_width || 0) >= 1024).length;
+    const mobile = publicPageViews.filter(pv => (pv.screen_width || 0) < 768).length;
+    const tablet = publicPageViews.filter(pv => (pv.screen_width || 0) >= 768 && (pv.screen_width || 0) < 1024).length;
+    const desktop = publicPageViews.filter(pv => (pv.screen_width || 0) >= 1024).length;
     const devices = [
       { name: 'Desktop', value: desktop },
       { name: 'Tablet', value: tablet },
@@ -136,7 +158,7 @@ export const PageAnalyticsTab: React.FC = () => {
 
     // Daily trend (total + organic)
     const dayMap = new Map<string, { views: number; organic: number }>();
-    pageViews.forEach(pv => {
+    publicPageViews.forEach(pv => {
       const day = format(new Date(pv.created_at), 'MMM dd');
       const existing = dayMap.get(day) || { views: 0, organic: 0 };
       existing.views++;
