@@ -1237,8 +1237,6 @@ export const useLeads = () => {
 
         if (existing) continue;
 
-        const { data: nextUserId } = await supabase.rpc('get_next_sales_user');
-
         const { error: insertError } = await supabase
           .from('sales_leads')
           .insert({
@@ -1256,9 +1254,7 @@ export const useLeads = () => {
             vehicle_type: cart.vehicle_type,
             mileage: cart.mileage,
             notes: cart.contact_notes,
-            abandoned_cart_id: cart.id,
-            assigned_to: nextUserId,
-            assigned_at: nextUserId ? new Date().toISOString() : null
+            abandoned_cart_id: cart.id
           });
 
         if (!insertError) {
