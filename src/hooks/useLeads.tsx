@@ -134,8 +134,8 @@ export const useLeads = () => {
   leadsRef.current = leads;
 
   // Cache admin user ID to avoid repeated auth lookups
-  const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string } | null>(null);
-  const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string } | null> | null>(null);
+  const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string; role: string } | null>(null);
+  const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string; role: string } | null> | null>(null);
 
   const getCachedAdminUser = useCallback(async () => {
     if (cachedAdminUserRef.current) return cachedAdminUserRef.current;
@@ -149,7 +149,7 @@ export const useLeads = () => {
       
       const { data: adminUser } = await supabase
         .from('admin_users')
-        .select('id, first_name, email')
+        .select('id, first_name, email, role')
         .eq('user_id', user.id)
         .maybeSingle();
       
@@ -157,7 +157,8 @@ export const useLeads = () => {
         const cached = { 
           id: adminUser.id, 
           firstName: adminUser.first_name || adminUser.email?.split('@')[0] || 'Admin',
-          email: adminUser.email 
+          email: adminUser.email,
+          role: adminUser.role || 'sales'
         };
         cachedAdminUserRef.current = cached;
         return cached;
@@ -754,7 +755,11 @@ export const useLeads = () => {
 
     // FRESHNESS CHECK: Before assigning, verify the lead is still unassigned in the DB
     // This prevents two agents from calling the same customer
-    if (userId) {
+    // Super admins and admins can always override assignments
+    const currentAdmin = await getCachedAdminUser();
+    const isOverrideRole = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin';
+
+    if (userId && !isOverrideRole) {
       try {
         const table = isAbandonedCart ? 'abandoned_carts' : 'sales_leads';
         const field = isAbandonedCart ? 'contacted_by' : 'assigned_to';
