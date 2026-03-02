@@ -916,7 +916,7 @@ serve(async (req) => {
 
         await resend.emails.send({
           from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
-          to: ['info@buyawarranty.co.uk'],
+          to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
           subject: `New Sale: ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
           html: salesEmailHtml
         });
