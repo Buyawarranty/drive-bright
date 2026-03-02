@@ -93,7 +93,7 @@ export const GoogleAdsSettingsTab: React.FC = () => {
     },
   });
 
-  // Fetch ALL website sales (customers + bumper) - LIVE data
+  // Fetch WEBSITE-ONLY sales (BAW- prefix, excludes BAW-S-, ADM-, cancelled/refunded) - LIVE data
   const { data: allSalesData, isLoading: salesLoading } = useQuery({
     queryKey: ['google-ads-all-sales'],
     queryFn: async () => {
@@ -103,6 +103,8 @@ export const GoogleAdsSettingsTab: React.FC = () => {
           .select('id, email, first_name, last_name, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at, created_at, status, warranty_number, registration_plate, phone')
           .eq('is_deleted', false)
           .in('status', ['active', 'Active'])
+          .like('warranty_number', 'BAW-%')
+          .not('warranty_number', 'like', 'BAW-S-%')
           .order('created_at', { ascending: false })
           .limit(500),
         supabase
@@ -539,10 +541,10 @@ export const GoogleAdsSettingsTab: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
-            All Website Sales — Live Conversion Data
+            Website Sales Only — Live Conversion Data
           </CardTitle>
           <CardDescription>
-            All completed sales automatically pulled from the database. No CSV upload needed — this is live data ready for Google Ads conversion tracking.
+            Direct website sales only (BAW- prefix). Excludes Staff Purchases (BAW-S), Admin/Quotes (ADM), and Cancelled/Refunded. Auto-refreshes every 60 seconds.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
