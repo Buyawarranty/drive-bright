@@ -93,29 +93,24 @@ export const GoogleAdsSettingsTab: React.FC = () => {
     },
   });
 
-  // Fetch WEBSITE-ONLY sales (BAW- prefix, excludes BAW-S-, ADM-, cancelled/refunded) - LIVE data
+  // Fetch WEBSITE-ONLY sales from customers table (BAW- prefix, excludes BAW-S-, ADM-, cancelled/refunded)
+  // Bumper sales already appear in the customers table so we only query customers to avoid double-counting
   const { data: allSalesData, isLoading: salesLoading } = useQuery({
     queryKey: ['google-ads-all-sales'],
     queryFn: async () => {
-      const [customersRes, bumperRes] = await Promise.all([
-        supabase
-          .from('customers')
-          .select('id, email, first_name, last_name, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at, created_at, status, warranty_number, registration_plate, phone')
-          .eq('is_deleted', false)
-          .in('status', ['active', 'Active'])
-          .like('warranty_number', 'BAW-%')
-          .not('warranty_number', 'like', 'BAW-S-%')
-          .order('created_at', { ascending: false })
-          .limit(500),
-        supabase
-          .from('bumper_transactions')
-          .select('id, customer_data, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at, created_at, status, transaction_id')
-          .eq('status', 'completed')
-          .order('created_at', { ascending: false })
-          .limit(500),
-      ]);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, email, first_name, last_name, final_amount, gclid, google_ads_conversion_status, google_ads_conversion_uploaded_at, created_at, status, warranty_number, registration_plate, phone, payment_type')
+        .eq('is_deleted', false)
+        .in('status', ['active', 'Active'])
+        .like('warranty_number', 'BAW-%')
+        .not('warranty_number', 'like', 'BAW-S-%')
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
-      const customerSales = (customersRes.data || []).map(c => ({
+      if (error) throw error;
+
+      return (data || []).map(c => ({
         id: c.id,
         email: c.email || '',
         name: `${c.first_name || ''} ${c.last_name || ''}`.trim(),
@@ -127,30 +122,8 @@ export const GoogleAdsSettingsTab: React.FC = () => {
         ref: c.warranty_number || '',
         reg: c.registration_plate || '',
         phone: c.phone || '',
-        source: 'stripe' as const,
+        source: (c.payment_type === 'bumper' ? 'bumper' : 'stripe') as 'bumper' | 'stripe',
       }));
-
-      const bumperSales = (bumperRes.data || []).map(b => {
-        const cd = (b.customer_data as any) || {};
-        return {
-          id: b.id,
-          email: cd.email || '',
-          name: `${cd.firstName || ''} ${cd.lastName || ''}`.trim(),
-          amount: b.final_amount || 0,
-          gclid: b.gclid,
-          conversionStatus: b.google_ads_conversion_status,
-          uploadedAt: b.google_ads_conversion_uploaded_at,
-          createdAt: b.created_at,
-          ref: b.transaction_id || '',
-          reg: (cd as any).vehicleReg || '',
-          phone: cd.phone || '',
-          source: 'bumper' as const,
-        };
-      });
-
-      return [...customerSales, ...bumperSales].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
     },
     refetchInterval: 60000,
   });
