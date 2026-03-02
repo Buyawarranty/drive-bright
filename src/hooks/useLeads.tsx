@@ -757,7 +757,7 @@ export const useLeads = () => {
     // This prevents two agents from calling the same customer
     // Super admins and admins can always override assignments
     const currentAdmin = await getCachedAdminUser();
-    const isOverrideRole = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin';
+    const isOverrideRole = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_lead';
 
     if (userId && !isOverrideRole) {
       try {
