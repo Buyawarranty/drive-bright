@@ -237,7 +237,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     <div className="space-y-4">
       {/* Tabs for status filter */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-12">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
@@ -278,17 +278,9 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             ✅ Converted
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-emerald-100">{leadCounts.converted}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="lost">
-            Lost
-            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-gray-100">{leadCounts.lost}</Badge>
-          </TabsTrigger>
           <TabsTrigger value="high_priority">
             🔥 Priority
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-red-100">{leadCounts.high_priority}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="fake">
-            Fake
-            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-orange-100">{leadCounts.fake}</Badge>
           </TabsTrigger>
         </TabsList>
       </Tabs>
