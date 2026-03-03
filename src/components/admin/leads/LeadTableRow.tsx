@@ -108,6 +108,11 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
     return { label: 'New', color: 'bg-blue-100 text-blue-800', priority: 2 };
   }
   
+  // Closed leads don't need action
+  if (lead.status === 'converted' || lead.status === 'lost') {
+    return { label: lead.status === 'converted' ? 'Converted' : 'Lost', color: 'bg-gray-100 text-gray-600', priority: 5 };
+  }
+  
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
