@@ -45,6 +45,7 @@ interface LeadTableRowProps {
   onSendQuote?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
+  noteCount?: number;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -215,6 +216,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onSendQuote,
   hideAssignedColumn,
   canAssignLeads = true,
+  noteCount = 0,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -442,11 +444,17 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <Button 
                 variant="ghost" 
                 size="icon"
-                className={cn("h-7 w-7 relative", lead.notes && "text-amber-600")}
+                className={cn("h-7 w-7 relative", (lead.notes || noteCount > 0) && "text-amber-600")}
                 onClick={onToggleExpand}
               >
                 <StickyNote className="h-3.5 w-3.5" />
-                {lead.notes && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />}
+                {noteCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-amber-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+                    {noteCount}
+                  </span>
+                ) : lead.notes ? (
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />
+                ) : null}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
