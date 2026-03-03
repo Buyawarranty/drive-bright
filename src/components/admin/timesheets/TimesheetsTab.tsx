@@ -11,6 +11,7 @@ import { DealsSection } from './DealsSection';
 import { CommissionsSection } from './CommissionsSection';
 import { TimesheetApprovals } from './TimesheetApprovals';
 import { TimesheetComments } from './TimesheetComments';
+import { AdditionalBonuses } from './AdditionalBonuses';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -249,6 +250,9 @@ export function TimesheetsTab() {
           <TabsContent value="commissions" className="mt-4">
             <CommissionsSection commissions={commissions} />
             <div className="mt-4">
+              <AdditionalBonuses currentMonth={currentMonth} />
+            </div>
+            <div className="mt-4">
               <TimesheetComments currentMonth={currentMonth} />
             </div>
           </TabsContent>
@@ -263,6 +267,7 @@ export function TimesheetsTab() {
         <div className="space-y-6">
           <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} />
           <CommissionsSection commissions={commissions} />
+          <AdditionalBonuses currentMonth={currentMonth} />
           <TimesheetComments currentMonth={currentMonth} />
         </div>
       </div>
