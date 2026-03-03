@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail } from 'lucide-react';
+import { format, subMonths, addMonths, subDays } from 'date-fns';
+import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTimesheets } from '@/hooks/useTimesheets';
@@ -105,6 +105,8 @@ export function TimesheetsTab() {
     }
   };
 
+  const isCurrentMonth = currentMonth.getMonth() === new Date().getMonth() && currentMonth.getFullYear() === new Date().getFullYear();
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -126,6 +128,49 @@ export function TimesheetsTab() {
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
+        </div>
+      </div>
+
+      {/* Month Selector Bar */}
+      <div className="bg-white rounded-xl shadow-sm border p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <h2 className="text-lg font-semibold text-gray-900 min-w-[160px] text-center">
+              {format(currentMonth, 'MMMM yyyy')}
+            </h2>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            {!isCurrentMonth && (
+              <Button variant="outline" size="sm" className="ml-2 text-xs" onClick={() => setCurrentMonth(new Date())}>
+                This Month
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                const thirtyDaysAgo = subDays(new Date(), 30);
+                setCurrentMonth(thirtyDaysAgo);
+              }}
+            >
+              Last 30 Days
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => setCurrentMonth(subMonths(new Date(), 1))}
+            >
+              Last Month
+            </Button>
+          </div>
         </div>
       </div>
 
