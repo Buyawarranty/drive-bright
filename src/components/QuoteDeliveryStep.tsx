@@ -144,10 +144,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       if (quoteEmailError) {
         console.error('Error sending quote email:', quoteEmailError);
       }
-      // NOTE: We intentionally do NOT call track-abandoned-cart here.
-      // A sales_lead entry is created below, so creating an abandoned_cart
-      // would cause duplicate entries in the leads dashboard.
-
+      // Update the existing abandoned_cart with step 2 data (name, email, phone).
+      // The trigger on abandoned_carts will update the corresponding sales_lead.
+      // We do NOT insert directly into sales_leads to avoid duplicates.
+      
       // Save customer data to localStorage for Step 4 pre-population
       try {
         const existingCustomerData = localStorage.getItem('buyawarranty_customerData');
@@ -163,72 +163,90 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         console.error('Error saving customer data to localStorage:', error);
       }
 
-      // Always create a NEW lead for every quote submission
-      // Returning customers get a fresh entry at the top of the dashboard
-      // The round-robin trigger will auto-assign to the next agent
-      const leadPayload = {
-        first_name: firstName.trim() || null,
-        email: email.trim().toLowerCase(),
-        phone: phone || null,
-        lead_source: 'website' as const,
-        status: 'new' as const,
-        priority: 'medium' as const,
-        plan_interest: 'Quote Requested',
-        vehicle_reg: vehicleData?.regNumber || null,
-        vehicle_make: vehicleData?.make || null,
-        vehicle_model: vehicleData?.model || null,
-        vehicle_year: vehicleData?.year || null,
-        vehicle_type: vehicleData?.vehicleType || 'car',
-        mileage: vehicleData?.mileage || null,
-        assigned_to: null,
-        assigned_at: null,
-        next_action_type: 'call',
-        next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        notes: null,
-        last_activity_date: new Date().toISOString(),
-        step_two_completed_at: new Date().toISOString()
-      };
-
-      const { error: leadInsertError } = await supabase
-        .from('sales_leads')
-        .insert([leadPayload]);
-
-      if (leadInsertError) {
-        console.error('Error inserting into sales_leads, falling back to track-abandoned-cart:', leadInsertError);
-
-        const { error: fallbackError } = await supabase.functions.invoke('track-abandoned-cart', {
-          body: {
-            full_name: firstName.trim() || email.trim(),
-            email: email.trim().toLowerCase(),
-            phone: phone.trim() || '',
-            vehicle_reg: vehicleData?.regNumber,
-            vehicle_make: vehicleData?.make,
-            vehicle_model: vehicleData?.model,
-            vehicle_year: vehicleData?.year,
-            mileage: vehicleData?.mileage,
-            step_abandoned: 2,
-            cart_metadata: {
-              source: 'quote_delivery_fallback',
-              reason: 'sales_lead_insert_failed'
-            }
+      // Try to update the existing abandoned_cart with step 2 contact info.
+      // The trigger will propagate changes to the sales_lead automatically.
+      const normalizedEmail = email.trim().toLowerCase();
+      const regNumber = vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || '';
+      
+      let cartUpdated = false;
+      
+      if (regNumber) {
+        // Find and update the most recent abandoned cart for this vehicle
+        const { data: existingCarts } = await supabase
+          .from('abandoned_carts')
+          .select('id')
+          .eq('vehicle_reg', regNumber)
+          .eq('is_converted', false)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (existingCarts && existingCarts.length > 0) {
+          const { error: updateError } = await supabase
+            .from('abandoned_carts')
+            .update({
+              email: normalizedEmail,
+              full_name: firstName.trim(),
+              phone: phone.trim() || null,
+              step_abandoned: 2,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingCarts[0].id);
+          
+          if (!updateError) {
+            cartUpdated = true;
+            console.log('✅ Updated existing abandoned cart with step 2 data');
           }
-        });
-
-        if (fallbackError) {
-          console.error('Fallback tracking failed:', fallbackError);
         }
       }
 
-      // Mark ALL corresponding abandoned_carts as converted so they don't show as duplicate leads
-      // Use case-insensitive match to handle any legacy mixed-case emails
-      try {
-        const normalizedEmail = email.trim().toLowerCase();
-        await supabase
+      // If no existing cart was found/updated, create a new abandoned cart entry.
+      // The trigger will create the sales_lead automatically.
+      if (!cartUpdated) {
+        const { error: cartInsertError } = await supabase
           .from('abandoned_carts')
-          .update({ is_converted: true, updated_at: new Date().toISOString() })
-          .ilike('email', normalizedEmail);
-      } catch (cartLinkError) {
-        console.error('Error marking abandoned cart as converted:', cartLinkError);
+          .insert({
+            email: normalizedEmail,
+            full_name: firstName.trim(),
+            phone: phone.trim() || null,
+            vehicle_reg: regNumber || null,
+            vehicle_make: vehicleData?.make || null,
+            vehicle_model: vehicleData?.model || null,
+            vehicle_year: vehicleData?.year || null,
+            vehicle_type: vehicleData?.vehicleType || 'car',
+            mileage: vehicleData?.mileage || null,
+            step_abandoned: 2,
+          });
+
+        if (cartInsertError) {
+          console.error('Error creating abandoned cart, falling back to direct lead insert:', cartInsertError);
+          
+          // Last resort fallback: insert directly into sales_leads
+          const { error: leadInsertError } = await supabase
+            .from('sales_leads')
+            .insert([{
+              first_name: firstName.trim() || null,
+              email: normalizedEmail,
+              phone: phone.trim() || null,
+              lead_source: 'website' as const,
+              status: 'new' as const,
+              priority: 'medium' as const,
+              plan_interest: 'Quote Requested',
+              vehicle_reg: vehicleData?.regNumber || null,
+              vehicle_make: vehicleData?.make || null,
+              vehicle_model: vehicleData?.model || null,
+              vehicle_year: vehicleData?.year || null,
+              vehicle_type: vehicleData?.vehicleType || 'car',
+              mileage: vehicleData?.mileage || null,
+              step_two_completed_at: new Date().toISOString(),
+              last_activity_date: new Date().toISOString()
+            }]);
+          
+          if (leadInsertError) {
+            console.error('Direct lead insert also failed:', leadInsertError);
+          }
+        } else {
+          console.log('✅ Created new abandoned cart (trigger will create lead)');
+        }
       }
 
       // Schedule SMS to be sent 10 minutes after quote submission
