@@ -600,7 +600,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Reg Plate */}
       <TableCell>
         {lead.vehicle_reg ? (
-          <Badge variant="outline" className="font-mono text-xs">{lead.vehicle_reg}</Badge>
+          <Badge variant="outline" className="font-mono text-xs bg-yellow-400 text-black border-yellow-500">{lead.vehicle_reg}</Badge>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
