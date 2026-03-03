@@ -163,59 +163,33 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         console.error('Error saving customer data to localStorage:', error);
       }
 
-      // Create lead in sales_leads table - DO NOT auto-assign, leave for manual assignment
-      const { data: existingLeads } = await supabase
+      // Always create a NEW lead for every quote submission
+      // Returning customers get a fresh entry at the top of the dashboard
+      // The round-robin trigger will auto-assign to the next agent
+      await supabase
         .from('sales_leads')
-        .select('id, first_name, phone')
-        .eq('email', email.trim().toLowerCase())
-        .limit(1);
-      
-      const existingLead = existingLeads && existingLeads.length > 0 ? existingLeads[0] : null;
-      
-      if (!existingLead) {
-        await supabase
-          .from('sales_leads')
-          .insert({
-            first_name: firstName.trim() || null,
-            email: email.trim().toLowerCase(),
-            phone: phone || null,
-            lead_source: 'website',
-            status: 'new',
-            priority: 'medium',
-            plan_interest: 'Quote Requested',
-            vehicle_reg: vehicleData?.regNumber || null,
-            vehicle_make: vehicleData?.make || null,
-            vehicle_model: vehicleData?.model || null,
-            vehicle_year: vehicleData?.year || null,
-            vehicle_type: vehicleData?.vehicleType || 'car',
-            mileage: vehicleData?.mileage || null,
-            assigned_to: null,
-            assigned_at: null,
-            next_action_type: 'call',
-            next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            notes: null,
-            last_activity_date: new Date().toISOString(),
-            step_two_completed_at: new Date().toISOString()
-          });
-      } else {
-        // Update existing lead with latest details
-        await supabase
-          .from('sales_leads')
-          .update({ 
-            first_name: firstName.trim() || existingLead.first_name,
-            phone: phone || existingLead.phone,
-            vehicle_reg: vehicleData?.regNumber || null,
-            vehicle_make: vehicleData?.make || null,
-            vehicle_model: vehicleData?.model || null,
-            vehicle_year: vehicleData?.year || null,
-            vehicle_type: vehicleData?.vehicleType || 'car',
-            mileage: vehicleData?.mileage || null,
-            last_activity_date: new Date().toISOString(),
-            
-            step_two_completed_at: new Date().toISOString()
-          })
-          .eq('id', existingLead.id);
-      }
+        .insert({
+          first_name: firstName.trim() || null,
+          email: email.trim().toLowerCase(),
+          phone: phone || null,
+          lead_source: 'website',
+          status: 'new',
+          priority: 'medium',
+          plan_interest: 'Quote Requested',
+          vehicle_reg: vehicleData?.regNumber || null,
+          vehicle_make: vehicleData?.make || null,
+          vehicle_model: vehicleData?.model || null,
+          vehicle_year: vehicleData?.year || null,
+          vehicle_type: vehicleData?.vehicleType || 'car',
+          mileage: vehicleData?.mileage || null,
+          assigned_to: null,
+          assigned_at: null,
+          next_action_type: 'call',
+          next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          notes: null,
+          last_activity_date: new Date().toISOString(),
+          step_two_completed_at: new Date().toISOString()
+        });
 
       // Mark ALL corresponding abandoned_carts as converted so they don't show as duplicate leads
       // Use case-insensitive match to handle any legacy mixed-case emails
