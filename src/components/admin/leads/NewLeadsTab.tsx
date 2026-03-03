@@ -224,17 +224,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
 
   const leadCounts = useMemo(() => ({
-    all: leads.length,
+    all: leads.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
     new: leads.filter(l => l.status === 'new').length,
     contacted: leads.filter(l => l.status === 'contacted').length,
     follow_up: leads.filter(l => l.status === 'follow_up').length,
     quote_sent: leads.filter(l => l.status === 'quote_sent').length,
     urgent_callback: leads.filter(l => l.status === 'urgent_callback').length,
     paid: leads.filter(l => l.is_paid === true).length,
-    lost: leads.filter(l => l.status === 'lost').length,
+    lost: 0,
     converted: leads.filter(l => l.status === 'converted').length,
-    high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
-    fake: leads.filter(l => l.status === 'fake_lead').length,
+    high_priority: leads.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+    fake: 0,
   }), [leads]);
 
   // Assignment counts for the filter dropdown
