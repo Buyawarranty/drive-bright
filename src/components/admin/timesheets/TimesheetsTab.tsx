@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, subMonths, addMonths, subDays } from 'date-fns';
-import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail, ChevronLeft, ChevronRight, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTimesheets } from '@/hooks/useTimesheets';
@@ -9,12 +9,15 @@ import { TimesheetCalendar } from './TimesheetCalendar';
 import { TimesheetStats } from './TimesheetStats';
 import { DealsSection } from './DealsSection';
 import { CommissionsSection } from './CommissionsSection';
+import { TimesheetApprovals } from './TimesheetApprovals';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export function TimesheetsTab() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [activeView, setActiveView] = useState<'my-timesheet' | 'approvals'>('my-timesheet');
   const { session } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const {
     entries,
@@ -29,6 +32,21 @@ export function TimesheetsTab() {
     refresh,
   } = useTimesheets(currentMonth);
 
+  // Check if user has accounts/payroll role
+  useEffect(() => {
+    async function checkRole() {
+      if (!session?.user?.id) return;
+      const { data } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      setUserRole(data?.role || null);
+    }
+    checkRole();
+  }, [session?.user?.id]);
+
+  const isAccountsRole = userRole === 'accounts_manager' || userRole === 'accounts_payroll' || userRole === 'super_admin' || userRole === 'admin';
   const generateTimesheetHTML = () => {
     const monthLabel = format(currentMonth, 'MMMM yyyy');
     const userEmail = session?.user?.email || 'Unknown';
@@ -107,6 +125,27 @@ export function TimesheetsTab() {
 
   const isCurrentMonth = currentMonth.getMonth() === new Date().getMonth() && currentMonth.getFullYear() === new Date().getFullYear();
 
+  // If accounts role and viewing approvals, show the approvals UI
+  if (isAccountsRole && activeView === 'approvals') {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Timesheet Approvals</h1>
+            <p className="text-gray-500 mt-1">Review and approve staff timesheets and deals</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setActiveView('my-timesheet')} className="gap-2">
+              <Calendar className="h-4 w-4" />
+              My Timesheet
+            </Button>
+          </div>
+        </div>
+        <TimesheetApprovals />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -116,6 +155,12 @@ export function TimesheetsTab() {
           <p className="text-gray-500 mt-1">Track your work hours, record deals, and monitor your commissions</p>
         </div>
         <div className="flex items-center gap-2 self-start flex-wrap">
+          {isAccountsRole && (
+            <Button variant="default" size="sm" onClick={() => setActiveView('approvals')} className="gap-2 bg-orange-600 hover:bg-orange-700">
+              <ClipboardCheck className="h-4 w-4" />
+              Approve Timesheets
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="gap-2">
             <FileDown className="h-4 w-4" />
             Download PDF

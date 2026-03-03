@@ -296,8 +296,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
-    if (userRole === 'accounts_manager') {
-      // Accounts managers: customers, timesheets, analytics, user permissions, account
+    if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
+      // Accounts/Payroll: customers, timesheets (with approvals), analytics, user permissions, account
       const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
@@ -356,7 +356,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = getVisibleTabs();
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll') {
       setTabs(visibleTabs);
       return;
     }
