@@ -901,7 +901,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
             email: customerData.email,
-            full_name: customerData.first_name ? `${customerData.first_name} ${customerData.last_name || ''}`.trim() : (customerData.full_name?.trim() || customerData.email),
+            full_name: customerData.first_name ? `${customerData.first_name} ${customerData.last_name || ''}`.trim() : (customerData.full_name?.trim() || null),
             phone: customerData.phone || '',
             vehicle_reg: vehicleData.regNumber || '',
             vehicle_make: vehicleData.make || '',
