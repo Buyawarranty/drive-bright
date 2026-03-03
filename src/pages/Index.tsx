@@ -1224,7 +1224,7 @@ const Index = () => {
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
-          full_name: data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.email,
+          full_name: data.firstName ? `${data.firstName}${data.lastName ? ' ' + data.lastName : ''}`.trim() : data.email,
           email: data.email,
           phone: data.phone || '',
           vehicle_reg: data.regNumber,
