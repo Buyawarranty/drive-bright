@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWeekend, addMonths, subMonths, isToday } from 'date-fns';
-import { ChevronLeft, ChevronRight, Briefcase, Home, Umbrella, HeartPulse, GraduationCap, Coffee, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Briefcase, Umbrella, HeartPulse, GraduationCap, Coffee, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { TimesheetEntry, TimesheetEntryType } from '@/hooks/useTimesheets';
@@ -25,14 +25,23 @@ interface TimesheetCalendarProps {
   onEntryDelete: (date: Date) => Promise<void>;
 }
 
-const entryTypeConfig: Record<TimesheetEntryType, { icon: React.ElementType; label: string; color: string; bgColor: string }> = {
-  worked: { icon: Briefcase, label: 'Worked', color: 'text-emerald-600', bgColor: 'bg-emerald-100 hover:bg-emerald-200' },
-  wfh: { icon: Home, label: 'Work from Home', color: 'text-blue-600', bgColor: 'bg-blue-100 hover:bg-blue-200' },
-  holiday: { icon: Umbrella, label: 'Holiday', color: 'text-amber-600', bgColor: 'bg-amber-100 hover:bg-amber-200' },
-  sick: { icon: HeartPulse, label: 'Sick', color: 'text-red-600', bgColor: 'bg-red-100 hover:bg-red-200' },
-  training: { icon: GraduationCap, label: 'Training', color: 'text-purple-600', bgColor: 'bg-purple-100 hover:bg-purple-200' },
-  unpaid_leave: { icon: Coffee, label: 'Unpaid Leave', color: 'text-gray-600', bgColor: 'bg-gray-100 hover:bg-gray-200' },
+const entryTypeConfig: Record<string, { icon: React.ElementType; label: string; color: string; bgColor: string; selectedBg: string }> = {
+  worked: { icon: Briefcase, label: 'Worked', color: 'text-emerald-700', bgColor: 'bg-emerald-100', selectedBg: 'bg-emerald-500' },
+  holiday: { icon: Umbrella, label: 'Holiday', color: 'text-amber-700', bgColor: 'bg-amber-100', selectedBg: 'bg-amber-500' },
+  sick: { icon: HeartPulse, label: 'Sick', color: 'text-red-700', bgColor: 'bg-red-100', selectedBg: 'bg-red-500' },
+  training: { icon: GraduationCap, label: 'Training', color: 'text-purple-700', bgColor: 'bg-purple-100', selectedBg: 'bg-purple-500' },
+  unpaid_leave: { icon: Coffee, label: 'Unpaid Leave', color: 'text-gray-700', bgColor: 'bg-gray-200', selectedBg: 'bg-gray-500' },
 };
+
+function getDefaults(date: Date) {
+  const weekend = isWeekend(date);
+  return {
+    startTime: '09:00',
+    endTime: weekend ? '14:00' : '18:00',
+    hoursWorked: weekend ? 5 : 9,
+    breakMinutes: weekend ? 0 : 30,
+  };
+}
 
 export function TimesheetCalendar({
   entries,
@@ -44,9 +53,9 @@ export function TimesheetCalendar({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     entryType: 'worked' as TimesheetEntryType,
-    hoursWorked: 8,
+    hoursWorked: 9,
     startTime: '09:00',
-    endTime: '17:00',
+    endTime: '18:00',
     breakMinutes: 30,
     notes: '',
   });
@@ -54,8 +63,6 @@ export function TimesheetCalendar({
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-  // Get starting day padding
   const startPadding = monthStart.getDay();
 
   const getEntryForDate = (date: Date) => {
@@ -63,26 +70,22 @@ export function TimesheetCalendar({
   };
 
   const handleDayClick = (date: Date, entry?: TimesheetEntry) => {
-    setSelectedDate(date);
-    if (entry) {
-      setFormData({
-        entryType: entry.entry_type,
-        hoursWorked: entry.hours_worked || 8,
-        startTime: entry.start_time || '09:00',
-        endTime: entry.end_time || '17:00',
-        breakMinutes: entry.break_minutes || 30,
-        notes: entry.notes || '',
-      });
-    } else {
-      setFormData({
-        entryType: 'worked',
-        hoursWorked: 8,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakMinutes: 30,
-        notes: '',
-      });
+    if (!entry) {
+      // One click = Worked with defaults
+      const defaults = getDefaults(date);
+      onEntryUpdate(date, 'worked', defaults.hoursWorked, defaults.startTime, defaults.endTime, defaults.breakMinutes, '');
+      return;
     }
+    // Already has entry - open popover to edit
+    setSelectedDate(date);
+    setFormData({
+      entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
+      hoursWorked: entry.hours_worked || getDefaults(date).hoursWorked,
+      startTime: entry.start_time || '09:00',
+      endTime: entry.end_time || getDefaults(date).endTime,
+      breakMinutes: entry.break_minutes || 0,
+      notes: entry.notes || '',
+    });
   };
 
   const handleSave = async () => {
@@ -115,25 +118,11 @@ export function TimesheetCalendar({
           {format(currentMonth, 'MMMM yyyy')}
         </h2>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onMonthChange(subMonths(currentMonth, 1))}
-          >
+          <Button variant="outline" size="icon" onClick={() => onMonthChange(subMonths(currentMonth, 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onMonthChange(new Date())}
-          >
-            Today
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onMonthChange(addMonths(currentMonth, 1))}
-          >
+          <Button variant="outline" size="sm" onClick={() => onMonthChange(new Date())}>Today</Button>
+          <Button variant="outline" size="icon" onClick={() => onMonthChange(addMonths(currentMonth, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -143,33 +132,32 @@ export function TimesheetCalendar({
       <div className="flex flex-wrap gap-3 mb-4 text-xs">
         {Object.entries(entryTypeConfig).map(([type, config]) => (
           <div key={type} className="flex items-center gap-1.5">
-            <div className={cn('w-3 h-3 rounded', config.bgColor.split(' ')[0])} />
+            <div className={cn('w-3 h-3 rounded', config.bgColor)} />
             <span className="text-gray-600">{config.label}</span>
           </div>
         ))}
       </div>
 
+      {/* Hint */}
+      <p className="text-xs text-gray-400 mb-3">Click a day to mark as Worked. Click a filled day to edit or change type.</p>
+
       {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-1">
-        {/* Day headers */}
         {weekDays.map(day => (
-          <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
-            {day}
-          </div>
+          <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">{day}</div>
         ))}
 
-        {/* Empty padding for start of month */}
         {Array.from({ length: startPadding }).map((_, i) => (
           <div key={`pad-${i}`} className="aspect-square" />
         ))}
 
-        {/* Days */}
         {days.map(day => {
           const entry = getEntryForDate(day);
-          const config = entry ? entryTypeConfig[entry.entry_type] : null;
-          const Icon = config?.icon;
+          const entryType = entry?.entry_type === 'wfh' ? 'worked' : entry?.entry_type;
+          const config = entryType ? entryTypeConfig[entryType] : null;
           const weekend = isWeekend(day);
           const today = isToday(day);
+          const hasEntry = !!entry;
 
           return (
             <Popover
@@ -181,111 +169,97 @@ export function TimesheetCalendar({
                 <button
                   onClick={() => handleDayClick(day, entry)}
                   className={cn(
-                    'aspect-square p-1 rounded-lg flex flex-col items-center justify-center gap-0.5 text-sm transition-all',
-                    weekend && !entry && 'bg-gray-50 text-gray-400',
-                    !weekend && !entry && 'hover:bg-gray-100',
-                    entry && config?.bgColor,
+                    'aspect-square p-1 rounded-lg flex flex-col items-center justify-center gap-0.5 text-sm transition-all relative',
+                    weekend && !hasEntry && 'bg-gray-50 text-gray-400',
+                    !weekend && !hasEntry && 'hover:bg-gray-100',
+                    hasEntry && config && config.bgColor,
                     today && 'ring-2 ring-orange-500 ring-offset-1',
-                    entry?.is_approved && 'ring-2 ring-green-500 ring-offset-1'
                   )}
                 >
                   <span className={cn(
                     'font-medium',
                     today && 'text-orange-600',
-                    entry && config?.color
+                    hasEntry && config?.color
                   )}>
                     {format(day, 'd')}
                   </span>
-                  {Icon && <Icon className={cn('h-3.5 w-3.5', config?.color)} />}
+                  {hasEntry && (
+                    <div className={cn(
+                      'w-5 h-5 rounded-full flex items-center justify-center',
+                      config?.selectedBg || 'bg-emerald-500'
+                    )}>
+                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                    </div>
+                  )}
                   {entry?.hours_worked && entry.hours_worked > 0 && (
-                    <span className="text-[10px] text-gray-500">
-                      {entry.hours_worked}h
-                    </span>
+                    <span className="text-[10px] text-gray-500">{entry.hours_worked}h</span>
                   )}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-4" align="start">
+              <PopoverContent className="w-80 p-4 pointer-events-auto" align="start">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold">{format(day, 'EEEE, d MMMM')}</h3>
                     {entry && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-red-500 hover:text-red-700"
-                        onClick={handleDelete}
-                      >
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-700" onClick={handleDelete}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
 
-                  {/* Entry Type Selection */}
+                  {/* Entry Type Selection - big clear buttons */}
                   <div className="grid grid-cols-3 gap-2">
                     {Object.entries(entryTypeConfig).map(([type, cfg]) => {
                       const TypeIcon = cfg.icon;
+                      const isSelected = formData.entryType === type;
                       return (
                         <button
                           key={type}
-                          onClick={() => setFormData(prev => ({ ...prev, entryType: type as TimesheetEntryType }))}
+                          onClick={() => {
+                            const defaults = getDefaults(day);
+                            if (type === 'worked' || type === 'training') {
+                              setFormData(prev => ({ ...prev, entryType: type as TimesheetEntryType, ...defaults }));
+                            } else {
+                              setFormData(prev => ({ ...prev, entryType: type as TimesheetEntryType, hoursWorked: 0, startTime: '', endTime: '' }));
+                            }
+                          }}
                           className={cn(
-                            'flex flex-col items-center gap-1 p-2 rounded-lg border transition-all',
-                            formData.entryType === type
-                              ? cn(cfg.bgColor, 'border-transparent')
+                            'flex flex-col items-center gap-1 p-2.5 rounded-lg border-2 transition-all relative',
+                            isSelected
+                              ? cn(cfg.bgColor, 'border-current', cfg.color)
                               : 'border-gray-200 hover:border-gray-300'
                           )}
                         >
-                          <TypeIcon className={cn('h-4 w-4', cfg.color)} />
-                          <span className="text-xs">{cfg.label}</span>
+                          {isSelected && (
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                            </div>
+                          )}
+                          <TypeIcon className={cn('h-4 w-4', isSelected ? cfg.color : 'text-gray-400')} />
+                          <span className={cn('text-xs font-medium', isSelected ? cfg.color : 'text-gray-500')}>{cfg.label}</span>
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Time inputs - only for worked/wfh */}
-                  {(formData.entryType === 'worked' || formData.entryType === 'wfh' || formData.entryType === 'training') && (
+                  {/* Time inputs - only for worked/training */}
+                  {(formData.entryType === 'worked' || formData.entryType === 'training') && (
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label className="text-xs">Start</Label>
-                        <Input
-                          type="time"
-                          value={formData.startTime}
-                          onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                          className="h-8"
-                        />
+                        <Input type="time" value={formData.startTime} onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))} className="h-8" />
                       </div>
                       <div>
                         <Label className="text-xs">End</Label>
-                        <Input
-                          type="time"
-                          value={formData.endTime}
-                          onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                          className="h-8"
-                        />
+                        <Input type="time" value={formData.endTime} onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))} className="h-8" />
                       </div>
                       <div>
                         <Label className="text-xs">Hours</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="24"
-                          step="0.5"
-                          value={formData.hoursWorked}
-                          onChange={(e) => setFormData(prev => ({ ...prev, hoursWorked: parseFloat(e.target.value) || 0 }))}
-                          className="h-8"
-                        />
+                        <Input type="number" min="0" max="24" step="0.5" value={formData.hoursWorked} onChange={(e) => setFormData(prev => ({ ...prev, hoursWorked: parseFloat(e.target.value) || 0 }))} className="h-8" />
                       </div>
                       <div>
                         <Label className="text-xs">Break (min)</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="120"
-                          step="5"
-                          value={formData.breakMinutes}
-                          onChange={(e) => setFormData(prev => ({ ...prev, breakMinutes: parseInt(e.target.value) || 0 }))}
-                          className="h-8"
-                        />
+                        <Input type="number" min="0" max="120" step="5" value={formData.breakMinutes} onChange={(e) => setFormData(prev => ({ ...prev, breakMinutes: parseInt(e.target.value) || 0 }))} className="h-8" />
                       </div>
                     </div>
                   )}
@@ -293,15 +267,10 @@ export function TimesheetCalendar({
                   {/* Notes */}
                   <div>
                     <Label className="text-xs">Notes (optional)</Label>
-                    <Textarea
-                      value={formData.notes}
-                      onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Add any notes..."
-                      className="h-16 resize-none"
-                    />
+                    <Textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} placeholder="Add any notes..." className="h-16 resize-none" />
                   </div>
 
-                  <Button onClick={handleSave} className="w-full">
+                  <Button onClick={handleSave} className="w-full bg-emerald-600 hover:bg-emerald-700">
                     {entry ? 'Update Entry' : 'Save Entry'}
                   </Button>
                 </div>

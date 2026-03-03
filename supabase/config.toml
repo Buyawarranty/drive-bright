@@ -213,3 +213,6 @@ verify_jwt = true
 
 [functions.upload-google-conversions]
 verify_jwt = false
+
+[functions.send-timesheet-email]
+verify_jwt = true

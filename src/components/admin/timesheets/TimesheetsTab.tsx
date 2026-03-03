@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, TrendingUp, Coins, RefreshCw } from 'lucide-react';
+import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTimesheets } from '@/hooks/useTimesheets';
+import { useAuth } from '@/hooks/useAuth';
 import { TimesheetCalendar } from './TimesheetCalendar';
 import { TimesheetStats } from './TimesheetStats';
 import { DealsSection } from './DealsSection';
 import { CommissionsSection } from './CommissionsSection';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export function TimesheetsTab() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { session } = useAuth();
+  const [sendingEmail, setSendingEmail] = useState(false);
   const {
     entries,
     deals,
@@ -24,26 +29,104 @@ export function TimesheetsTab() {
     refresh,
   } = useTimesheets(currentMonth);
 
+  const generateTimesheetHTML = () => {
+    const monthLabel = format(currentMonth, 'MMMM yyyy');
+    const userEmail = session?.user?.email || 'Unknown';
+    
+    const rows = entries.map(e => {
+      const type = e.entry_type === 'wfh' ? 'Worked' : (e.entry_type.charAt(0).toUpperCase() + e.entry_type.slice(1).replace('_', ' '));
+      return `<tr>
+        <td style="padding:8px;border:1px solid #ddd">${format(new Date(e.entry_date), 'EEE dd/MM/yyyy')}</td>
+        <td style="padding:8px;border:1px solid #ddd">${type}</td>
+        <td style="padding:8px;border:1px solid #ddd">${e.start_time || '-'}</td>
+        <td style="padding:8px;border:1px solid #ddd">${e.end_time || '-'}</td>
+        <td style="padding:8px;border:1px solid #ddd">${e.hours_worked || 0}</td>
+        <td style="padding:8px;border:1px solid #ddd">${e.break_minutes || 0}</td>
+        <td style="padding:8px;border:1px solid #ddd">${e.notes || ''}</td>
+      </tr>`;
+    }).join('');
+
+    return `<html><body style="font-family:Arial,sans-serif">
+      <h2 style="color:#333">Timesheet — ${monthLabel}</h2>
+      <p><strong>Employee:</strong> ${userEmail}</p>
+      <p><strong>Days Worked:</strong> ${stats.totalWorkedDays} | <strong>Hours:</strong> ${stats.totalWorkedHours.toFixed(1)} | <strong>Sick:</strong> ${stats.sickDays} | <strong>Holiday:</strong> ${stats.holidayDays} | <strong>Training:</strong> ${stats.trainingDays}</p>
+      <table style="border-collapse:collapse;width:100%;margin-top:16px">
+        <thead><tr style="background:#f5f5f5">
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">Date</th>
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">Type</th>
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">Start</th>
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">End</th>
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">Hours</th>
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">Break</th>
+          <th style="padding:8px;border:1px solid #ddd;text-align:left">Notes</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="margin-top:16px;color:#888;font-size:12px">Generated ${format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
+    </body></html>`;
+  };
+
+  const handleDownloadPDF = () => {
+    const html = generateTimesheetHTML();
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+    toast.success('Print dialog opened — save as PDF');
+  };
+
+  const handleEmailToAccounts = async () => {
+    if (!session?.user?.id) return;
+    setSendingEmail(true);
+    try {
+      const html = generateTimesheetHTML();
+      const monthLabel = format(currentMonth, 'MMMM yyyy');
+      const userEmail = session.user.email || 'Unknown';
+
+      const { data, error } = await supabase.functions.invoke('send-timesheet-email', {
+        body: {
+          html,
+          monthLabel,
+          userEmail,
+        },
+      });
+
+      if (error) throw error;
+      toast.success('Timesheet emailed to accounts@buyawarranty.co.uk');
+    } catch (err) {
+      console.error('Error sending timesheet email:', err);
+      toast.error('Failed to send timesheet email');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Timesheets & Performance</h1>
-          <p className="text-gray-500 mt-1">
-            Track your work hours, record deals, and monitor your commissions
-          </p>
+          <p className="text-gray-500 mt-1">Track your work hours, record deals, and monitor your commissions</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={refresh}
-          disabled={loading}
-          className="gap-2 self-start"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2 self-start flex-wrap">
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="gap-2">
+            <FileDown className="h-4 w-4" />
+            Download PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleEmailToAccounts} disabled={sendingEmail} className="gap-2">
+            <Mail className={`h-4 w-4 ${sendingEmail ? 'animate-pulse' : ''}`} />
+            {sendingEmail ? 'Sending...' : 'Email to Accounts'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-2">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -67,20 +150,10 @@ export function TimesheetsTab() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="calendar" className="mt-4">
-            <TimesheetCalendar
-              entries={entries}
-              currentMonth={currentMonth}
-              onMonthChange={setCurrentMonth}
-              onEntryUpdate={upsertEntry}
-              onEntryDelete={deleteEntry}
-            />
+            <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
           </TabsContent>
           <TabsContent value="deals" className="mt-4">
-            <DealsSection
-              deals={deals}
-              onAddDeal={addDeal}
-              onDeleteDeal={deleteDeal}
-            />
+            <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} />
           </TabsContent>
           <TabsContent value="commissions" className="mt-4">
             <CommissionsSection commissions={commissions} />
@@ -91,20 +164,10 @@ export function TimesheetsTab() {
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <TimesheetCalendar
-            entries={entries}
-            currentMonth={currentMonth}
-            onMonthChange={setCurrentMonth}
-            onEntryUpdate={upsertEntry}
-            onEntryDelete={deleteEntry}
-          />
+          <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
         </div>
         <div className="space-y-6">
-          <DealsSection
-            deals={deals}
-            onAddDeal={addDeal}
-            onDeleteDeal={deleteDeal}
-          />
+          <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} />
           <CommissionsSection commissions={commissions} />
         </div>
       </div>

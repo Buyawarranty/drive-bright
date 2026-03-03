@@ -112,13 +112,13 @@ export function useTimesheets(month?: Date) {
       
       // Calculate stats
       const newStats: TimesheetStats = {
-        totalWorkedDays: typedEntries.filter(e => e.entry_type === 'worked' || e.entry_type === 'wfh').length,
+  totalWorkedDays: typedEntries.filter(e => e.entry_type === 'worked' || e.entry_type === 'wfh').length,
         totalWorkedHours: typedEntries
           .filter(e => e.entry_type === 'worked' || e.entry_type === 'wfh')
           .reduce((sum, e) => sum + (e.hours_worked || 0), 0),
         sickDays: typedEntries.filter(e => e.entry_type === 'sick').length,
         holidayDays: typedEntries.filter(e => e.entry_type === 'holiday').length,
-        wfhDays: typedEntries.filter(e => e.entry_type === 'wfh').length,
+        wfhDays: 0,
         trainingDays: typedEntries.filter(e => e.entry_type === 'training').length,
       };
       setStats(newStats);
