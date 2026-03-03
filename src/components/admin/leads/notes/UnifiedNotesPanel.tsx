@@ -39,6 +39,22 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track latest values in refs for cleanup
+  const quickNoteRef = useRef(quickNoteValue);
+  const addNoteRef = useRef(addNote);
+  quickNoteRef.current = quickNoteValue;
+  addNoteRef.current = addNote;
+
+  // Auto-save unsaved note on unmount (e.g. collapsing the panel)
+  useEffect(() => {
+    return () => {
+      const pending = quickNoteRef.current?.trim();
+      if (pending) {
+        addNoteRef.current(pending).catch(() => {});
+      }
+    };
+  }, [leadId]);
+
   // Reset state when lead changes
   useEffect(() => {
     setQuickNoteValue('');
