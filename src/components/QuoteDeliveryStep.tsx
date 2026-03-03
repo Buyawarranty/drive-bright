@@ -166,30 +166,58 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // Always create a NEW lead for every quote submission
       // Returning customers get a fresh entry at the top of the dashboard
       // The round-robin trigger will auto-assign to the next agent
-      await supabase
+      const leadPayload = {
+        first_name: firstName.trim() || null,
+        email: email.trim().toLowerCase(),
+        phone: phone || null,
+        lead_source: 'website' as const,
+        status: 'new' as const,
+        priority: 'medium' as const,
+        plan_interest: 'Quote Requested',
+        vehicle_reg: vehicleData?.regNumber || null,
+        vehicle_make: vehicleData?.make || null,
+        vehicle_model: vehicleData?.model || null,
+        vehicle_year: vehicleData?.year || null,
+        vehicle_type: vehicleData?.vehicleType || 'car',
+        mileage: vehicleData?.mileage || null,
+        assigned_to: null,
+        assigned_at: null,
+        next_action_type: 'call',
+        next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        notes: null,
+        last_activity_date: new Date().toISOString(),
+        step_two_completed_at: new Date().toISOString()
+      };
+
+      const { error: leadInsertError } = await supabase
         .from('sales_leads')
-        .insert({
-          first_name: firstName.trim() || null,
-          email: email.trim().toLowerCase(),
-          phone: phone || null,
-          lead_source: 'website',
-          status: 'new',
-          priority: 'medium',
-          plan_interest: 'Quote Requested',
-          vehicle_reg: vehicleData?.regNumber || null,
-          vehicle_make: vehicleData?.make || null,
-          vehicle_model: vehicleData?.model || null,
-          vehicle_year: vehicleData?.year || null,
-          vehicle_type: vehicleData?.vehicleType || 'car',
-          mileage: vehicleData?.mileage || null,
-          assigned_to: null,
-          assigned_at: null,
-          next_action_type: 'call',
-          next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          notes: null,
-          last_activity_date: new Date().toISOString(),
-          step_two_completed_at: new Date().toISOString()
+        .insert([leadPayload]);
+
+      if (leadInsertError) {
+        console.error('Error inserting into sales_leads, falling back to track-abandoned-cart:', leadInsertError);
+
+        const { error: fallbackError } = await supabase.functions.invoke('track-abandoned-cart', {
+          body: {
+            full_name: firstName.trim() || email.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim() || '',
+            vehicle_reg: vehicleData?.regNumber,
+            vehicle_make: vehicleData?.make,
+            vehicle_model: vehicleData?.model,
+            vehicle_year: vehicleData?.year,
+            mileage: vehicleData?.mileage,
+            step_abandoned: 2,
+            cart_metadata: {
+              source: 'quote_delivery_fallback',
+              reason: 'sales_lead_insert_failed'
+            }
+          }
         });
+
+        if (fallbackError) {
+          console.error('Fallback tracking failed:', fallbackError);
+        }
+      }
 
       // Mark ALL corresponding abandoned_carts as converted so they don't show as duplicate leads
       // Use case-insensitive match to handle any legacy mixed-case emails
