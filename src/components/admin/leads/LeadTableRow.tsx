@@ -108,7 +108,7 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
     return { label: 'New', color: 'bg-blue-100 text-blue-800', priority: 2 };
   }
   
-  return { label: 'Low', color: 'bg-gray-100 text-gray-600', priority: 4 };
+  return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
 const getRowUrgencyClass = (lead: Lead): string => {
