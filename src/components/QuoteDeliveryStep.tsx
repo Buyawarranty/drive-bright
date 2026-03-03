@@ -218,31 +218,27 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           });
 
         if (cartInsertError) {
-          console.error('Error creating abandoned cart, falling back to direct lead insert:', cartInsertError);
-          
-          // Last resort fallback: insert directly into sales_leads
-          const { error: leadInsertError } = await supabase
-            .from('sales_leads')
-            .insert([{
-              first_name: firstName.trim() || null,
+          console.error('Error creating abandoned cart, retrying via track-abandoned-cart edge function:', cartInsertError);
+
+          const { error: fallbackTrackError } = await supabase.functions.invoke('track-abandoned-cart', {
+            body: {
+              full_name: firstName.trim(),
               email: normalizedEmail,
-              phone: phone.trim() || null,
-              lead_source: 'website' as const,
-              status: 'new' as const,
-              priority: 'medium' as const,
-              plan_interest: 'Quote Requested',
-              vehicle_reg: vehicleData?.regNumber || null,
-              vehicle_make: vehicleData?.make || null,
-              vehicle_model: vehicleData?.model || null,
-              vehicle_year: vehicleData?.year || null,
+              phone: phone.trim() || '',
+              vehicle_reg: regNumber || undefined,
+              vehicle_make: vehicleData?.make,
+              vehicle_model: vehicleData?.model,
+              vehicle_year: vehicleData?.year,
+              mileage: vehicleData?.mileage,
               vehicle_type: vehicleData?.vehicleType || 'car',
-              mileage: vehicleData?.mileage || null,
-              step_two_completed_at: new Date().toISOString(),
-              last_activity_date: new Date().toISOString()
-            }]);
-          
-          if (leadInsertError) {
-            console.error('Direct lead insert also failed:', leadInsertError);
+              step_abandoned: 2,
+            }
+          });
+
+          if (fallbackTrackError) {
+            console.error('Fallback track-abandoned-cart also failed:', fallbackTrackError);
+          } else {
+            console.log('✅ Recovered via track-abandoned-cart fallback');
           }
         } else {
           console.log('✅ Created new abandoned cart (trigger will create lead)');
