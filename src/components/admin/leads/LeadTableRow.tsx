@@ -17,7 +17,7 @@ import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, AlertTriangle, FileText, StickyNote,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -113,6 +113,7 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
 
 const getRowUrgencyClass = (lead: Lead): string => {
   if (lead.is_paid) return 'bg-green-50 hover:bg-green-100/70';
+  if ((lead.resubmission_count || 0) > 0) return 'bg-purple-50 hover:bg-purple-100/70';
   const sla = getUrgencySLA(lead);
   if (sla.priority === 0) return 'bg-red-50 hover:bg-red-100/70';
   if (sla.priority === 1) return 'bg-amber-50 hover:bg-amber-100/70';
@@ -488,7 +489,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       <TableCell>
         <div className="flex items-center gap-1.5">
           {isOverdue && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
-          {lead.application_count > 1 && (
+          {(lead.resubmission_count || 0) > 0 && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-purple-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 animate-pulse">
+                  <RotateCw className="h-3 w-3" />Re-sub
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Returning customer — resubmitted {lead.resubmission_count}x{lead.last_resubmitted_at ? ` (last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')})` : ''}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {lead.application_count > 1 && !(lead.resubmission_count || 0) && (
             <Badge className="text-[10px] px-1.5 py-0.5 bg-orange-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
               <Flame className="h-3 w-3" />{lead.application_count}x
             </Badge>

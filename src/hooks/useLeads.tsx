@@ -76,6 +76,9 @@ export interface Lead {
   } | null;
   // Application count - how many times they've applied (hot lead indicator)
   application_count: number;
+  // Resubmission tracking - when returning customer submits again
+  resubmission_count: number;
+  last_resubmitted_at: string | null;
   // Joined data
   assigned_user?: {
     id: string;
@@ -384,7 +387,9 @@ export const useLeads = () => {
               last_name: assignedAdminUser.last_name,
               email: assignedAdminUser.email
             } : null,
-            tags: []
+            tags: [],
+            resubmission_count: 0,
+            last_resubmitted_at: null
           };
         });
 
@@ -406,7 +411,9 @@ export const useLeads = () => {
           contact_status: null,
           is_from_abandoned_cart: false,
           call_count: lead.call_count || 0,
-          cart_metadata: null
+          cart_metadata: null,
+          resubmission_count: lead.resubmission_count || 0,
+          last_resubmitted_at: lead.last_resubmitted_at || null
         };
       });
 
