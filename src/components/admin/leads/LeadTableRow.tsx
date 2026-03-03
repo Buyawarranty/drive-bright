@@ -235,7 +235,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
     : lead.full_name && !lead.full_name.includes('@')
       ? lead.full_name
-      : (lead.email?.split('@')[0] || null);
+      : null;
   
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
