@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { isWeekend } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -62,6 +63,9 @@ export interface CommissionRecord {
 export interface TimesheetStats {
   totalWorkedDays: number;
   totalWorkedHours: number;
+  fullDays: number;
+  halfDays: number;
+  weekendDays: number;
   sickDays: number;
   holidayDays: number;
   wfhDays: number;
@@ -77,6 +81,9 @@ export function useTimesheets(month?: Date) {
   const [stats, setStats] = useState<TimesheetStats>({
     totalWorkedDays: 0,
     totalWorkedHours: 0,
+    fullDays: 0,
+    halfDays: 0,
+    weekendDays: 0,
     sickDays: 0,
     holidayDays: 0,
     wfhDays: 0,
@@ -110,12 +117,17 @@ export function useTimesheets(month?: Date) {
       
       setEntries(typedEntries);
       
-      // Calculate stats
+      const workedEntries = typedEntries.filter(e => e.entry_type === 'worked' || e.entry_type === 'wfh' || e.entry_type === 'training');
+      const fullDays = workedEntries.filter(e => (e.hours_worked || 0) > 5).length;
+      const halfDays = workedEntries.filter(e => (e.hours_worked || 0) > 0 && (e.hours_worked || 0) <= 5).length;
+      const weekendDays = workedEntries.filter(e => isWeekend(new Date(e.entry_date))).length;
+
       const newStats: TimesheetStats = {
-  totalWorkedDays: typedEntries.filter(e => e.entry_type === 'worked' || e.entry_type === 'wfh').length,
-        totalWorkedHours: typedEntries
-          .filter(e => e.entry_type === 'worked' || e.entry_type === 'wfh')
-          .reduce((sum, e) => sum + (e.hours_worked || 0), 0),
+        totalWorkedDays: workedEntries.length,
+        totalWorkedHours: workedEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0),
+        fullDays,
+        halfDays,
+        weekendDays,
         sickDays: typedEntries.filter(e => e.entry_type === 'sick').length,
         holidayDays: typedEntries.filter(e => e.entry_type === 'holiday').length,
         wfhDays: 0,
@@ -187,7 +199,6 @@ export function useTimesheets(month?: Date) {
     const dateStr = date.toISOString().split('T')[0];
     
     try {
-      // Get admin_user_id if exists
       const { data: adminUser } = await supabase
         .from('admin_users')
         .select('id')

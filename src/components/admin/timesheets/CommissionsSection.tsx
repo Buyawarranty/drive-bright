@@ -10,14 +10,6 @@ interface CommissionsSectionProps {
 }
 
 export function CommissionsSection({ commissions }: CommissionsSectionProps) {
-  const totalPending = commissions
-    .filter(c => c.status === 'pending' || c.status === 'approved')
-    .reduce((sum, c) => sum + Number(c.commission_amount) + Number(c.bonus_amount), 0);
-  
-  const totalPaid = commissions
-    .filter(c => c.status === 'paid')
-    .reduce((sum, c) => sum + Number(c.commission_amount) + Number(c.bonus_amount), 0);
-
   const statusConfig = {
     pending: { icon: Clock, label: 'Pending', color: 'text-amber-600', bg: 'bg-amber-100' },
     approved: { icon: CheckCircle2, label: 'Approved', color: 'text-blue-600', bg: 'bg-blue-100' },
@@ -34,20 +26,8 @@ export function CommissionsSection({ commissions }: CommissionsSectionProps) {
           </div>
           <div>
             <h3 className="font-semibold text-gray-900">Commission History</h3>
-            <p className="text-sm text-gray-500">Your earnings over time</p>
+            <p className="text-sm text-gray-500">Commission is calculated monthly by Payroll</p>
           </div>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <div className="grid grid-cols-2 gap-4 p-5 border-b bg-gradient-to-r from-amber-50 to-green-50">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-amber-600">£{totalPending.toFixed(2)}</div>
-          <div className="text-xs text-gray-500">Pending / Approved</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">£{totalPaid.toFixed(2)}</div>
-          <div className="text-xs text-gray-500">Paid Out</div>
         </div>
       </div>
 
@@ -57,14 +37,13 @@ export function CommissionsSection({ commissions }: CommissionsSectionProps) {
           <div className="p-8 text-center text-gray-500">
             <Coins className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No commission records yet</p>
-            <p className="text-xs mt-1">Commissions are calculated monthly</p>
+            <p className="text-xs mt-1">Commission is calculated monthly by Payroll</p>
           </div>
         ) : (
           <div className="divide-y">
             {commissions.map((commission) => {
               const config = statusConfig[commission.status as keyof typeof statusConfig];
               const Icon = config.icon;
-              const totalAmount = Number(commission.commission_amount) + Number(commission.bonus_amount);
               
               return (
                 <div key={commission.id} className="p-4 hover:bg-gray-50">
@@ -77,31 +56,16 @@ export function CommissionsSection({ commissions }: CommissionsSectionProps) {
                       {config.label}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 text-sm">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <div className="text-gray-500 text-xs">Deals</div>
                       <div className="font-medium">{commission.deals_count}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 text-xs">Sales</div>
-                      <div className="font-medium">£{Number(commission.total_sales_value).toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-500 text-xs">Rate</div>
-                      <div className="font-medium">{(Number(commission.commission_rate) * 100).toFixed(1)}%</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-500 text-xs">Total</div>
-                      <div className={cn('font-bold', config.color)}>
-                        £{totalAmount.toFixed(2)}
-                      </div>
+                      <div className="text-gray-500 text-xs">Status</div>
+                      <div className={cn('font-medium', config.color)}>{config.label}</div>
                     </div>
                   </div>
-                  {commission.bonus_amount > 0 && (
-                    <div className="mt-2 text-xs text-purple-600 bg-purple-50 rounded px-2 py-1 inline-block">
-                      +£{Number(commission.bonus_amount).toFixed(2)} bonus
-                    </div>
-                  )}
                 </div>
               );
             })}
