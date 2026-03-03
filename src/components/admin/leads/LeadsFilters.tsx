@@ -377,6 +377,30 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             </Select>
           )}
 
+          {/* Quick Date Links */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant={dateRange?.from && dateRange?.to && 
+                dateRange.from.toDateString() === startOfDay(new Date()).toDateString() && 
+                dateRange.to.toDateString() === endOfDay(new Date()).toDateString() ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleQuickFilter(0)}
+              className="text-xs h-7 px-2"
+            >
+              Today
+            </Button>
+            <Button
+              variant={dateRange?.from && dateRange?.to && 
+                dateRange.from.toDateString() === startOfDay(subDays(new Date(), 1)).toDateString() && 
+                dateRange.to.toDateString() === endOfDay(subDays(new Date(), 1)).toDateString() ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleQuickFilter(1, true)}
+              className="text-xs h-7 px-2"
+            >
+              Yesterday
+            </Button>
+          </div>
+
           {/* Date Range Filter */}
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
