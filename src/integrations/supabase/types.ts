@@ -4866,6 +4866,72 @@ export type Database = {
         }
         Relationships: []
       }
+      timesheet_bonuses: {
+        Row: {
+          admin_user_id: string | null
+          amount: number | null
+          bonus_type: string
+          created_at: string
+          description: string | null
+          id: string
+          month_year: string
+          quantity: number
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          amount?: number | null
+          bonus_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          month_year: string
+          quantity?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          amount?: number | null
+          bonus_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          month_year?: string
+          quantity?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheet_bonuses_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_bonuses_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timesheet_comments: {
         Row: {
           admin_user_id: string

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
-import { Check, ChevronLeft, ChevronRight, Clock, User, CheckCircle2, Search, MessageSquare, Send, AlertTriangle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Clock, User, CheckCircle2, Search, MessageSquare, Send, AlertTriangle, XCircle, ChevronDown, ChevronUp, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,16 @@ interface TimesheetComment {
   author_name: string;
 }
 
+interface BonusEntry {
+  id: string;
+  bonus_type: string;
+  description: string | null;
+  quantity: number;
+  amount: number | null;
+  status: string;
+  created_at: string;
+}
+
 interface AgentTimesheet {
   admin_user_id: string;
   email: string;
@@ -52,6 +62,7 @@ interface AgentTimesheet {
   }[];
   commissionClaims: CommissionClaim[];
   comments: TimesheetComment[];
+  bonuses: BonusEntry[];
   fullDays: number;
   halfDays: number;
   weekendDays: number;
@@ -73,6 +84,7 @@ export function TimesheetApprovals() {
   const [sendingReply, setSendingReply] = useState<string | null>(null);
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [approvingClaimId, setApprovingClaimId] = useState<string | null>(null);
+  const [approvingBonusId, setApprovingBonusId] = useState<string | null>(null);
 
   const monthStart = startOfMonth(currentMonth).toISOString().split('T')[0];
   const monthEnd = endOfMonth(currentMonth).toISOString().split('T')[0];
@@ -108,8 +120,8 @@ export function TimesheetApprovals() {
         return;
       }
 
-      // Fetch entries, deals, commission claims, and comments in parallel
-      const [entriesRes, dealsRes, claimsRes, commentsRes] = await Promise.all([
+      // Fetch entries, deals, commission claims, comments, and bonuses in parallel
+      const [entriesRes, dealsRes, claimsRes, commentsRes, bonusesRes] = await Promise.all([
         supabase
           .from('staff_timesheets')
           .select('*')
@@ -133,6 +145,11 @@ export function TimesheetApprovals() {
           .select('*, author:author_id(first_name, last_name, email)')
           .eq('month_year', monthKey)
           .order('created_at', { ascending: true }),
+        supabase
+          .from('timesheet_bonuses')
+          .select('*')
+          .eq('month_year', monthKey)
+          .order('created_at', { ascending: false }),
       ]);
 
       if (entriesRes.error) throw entriesRes.error;
@@ -142,6 +159,7 @@ export function TimesheetApprovals() {
       const allDeals = dealsRes.data || [];
       const allClaims = claimsRes.data || [];
       const allComments = commentsRes.data || [];
+      const allBonuses = bonusesRes.data || [];
 
       const agentMap: AgentTimesheet[] = adminUsers.map(user => {
         const userEntries = allEntries.filter(e => e.admin_user_id === user.id || e.user_id === user.user_id);
@@ -204,6 +222,17 @@ export function TimesheetApprovals() {
             customer_id: c.customer_id,
           })),
           comments: userComments,
+          bonuses: allBonuses
+            .filter((b: any) => b.admin_user_id === user.id || b.user_id === user.user_id)
+            .map((b: any) => ({
+              id: b.id,
+              bonus_type: b.bonus_type,
+              description: b.description,
+              quantity: b.quantity,
+              amount: b.amount ? Number(b.amount) : null,
+              status: b.status,
+              created_at: b.created_at,
+            })),
           fullDays,
           halfDays,
           weekendDays,
@@ -381,6 +410,7 @@ export function TimesheetApprovals() {
         <div className="space-y-3">
           {filteredAgents.map(agent => {
             const pendingClaims = agent.commissionClaims.filter(c => c.status === 'pending').length;
+            const pendingBonuses = agent.bonuses.filter(b => b.status === 'pending').length;
             const unreadComments = agent.comments.filter(c => !c.is_from_accounts).length;
 
             return (
@@ -404,6 +434,12 @@ export function TimesheetApprovals() {
                         {pendingClaims > 0 && (
                           <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-1.5">
                             {pendingClaims} claim{pendingClaims > 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                        {pendingBonuses > 0 && (
+                          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 text-[10px] px-1.5">
+                            <Gift className="h-2.5 w-2.5 mr-0.5" />
+                            {pendingBonuses} bonus{pendingBonuses > 1 ? 'es' : ''}
                           </Badge>
                         )}
                         {unreadComments > 0 && (
@@ -598,6 +634,83 @@ export function TimesheetApprovals() {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Additional Bonuses */}
+                    {agent.bonuses.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-700 mb-2 flex items-center gap-2">
+                          <Gift className="h-4 w-4 text-purple-500" />
+                          Additional Bonuses ({agent.bonuses.length})
+                        </h4>
+                        <div className="space-y-2">
+                          {agent.bonuses.map(bonus => {
+                            const bonusLabel = bonus.bonus_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            return (
+                              <div key={bonus.id} className={`border rounded-lg p-3 ${bonus.status === 'pending' ? 'border-purple-200 bg-purple-50' : bonus.status === 'approved' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium text-sm text-gray-900">{bonusLabel}</span>
+                                      {bonus.quantity > 1 && <span className="text-xs text-gray-500">×{bonus.quantity}</span>}
+                                      {bonus.amount && <span className="text-sm font-medium text-gray-700">£{bonus.amount.toFixed(2)}</span>}
+                                      <Badge className={
+                                        bonus.status === 'pending' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' :
+                                        bonus.status === 'approved' ? 'bg-green-100 text-green-700 hover:bg-green-100' :
+                                        'bg-red-100 text-red-700 hover:bg-red-100'
+                                      }>
+                                        {bonus.status.charAt(0).toUpperCase() + bonus.status.slice(1)}
+                                      </Badge>
+                                    </div>
+                                    {bonus.description && (
+                                      <p className="text-sm text-gray-600 italic">"{bonus.description}"</p>
+                                    )}
+                                  </div>
+                                  {bonus.status === 'pending' && (
+                                    <div className="flex gap-2 flex-shrink-0">
+                                      <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700 text-white h-8 px-3"
+                                        onClick={async () => {
+                                          setApprovingBonusId(bonus.id);
+                                          const { error } = await supabase
+                                            .from('timesheet_bonuses')
+                                            .update({ status: 'approved', reviewed_by: currentAdminId, reviewed_at: new Date().toISOString() })
+                                            .eq('id', bonus.id);
+                                          if (!error) { toast.success('Bonus approved'); fetchAllTimesheets(); }
+                                          else toast.error('Failed to approve');
+                                          setApprovingBonusId(null);
+                                        }}
+                                        disabled={approvingBonusId === bonus.id}
+                                      >
+                                        <Check className="h-3.5 w-3.5 mr-1" /> Approve
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-red-600 border-red-200 hover:bg-red-50 h-8 px-3"
+                                        onClick={async () => {
+                                          setApprovingBonusId(bonus.id);
+                                          const { error } = await supabase
+                                            .from('timesheet_bonuses')
+                                            .update({ status: 'rejected', reviewed_by: currentAdminId, reviewed_at: new Date().toISOString() })
+                                            .eq('id', bonus.id);
+                                          if (!error) { toast.success('Bonus rejected'); fetchAllTimesheets(); }
+                                          else toast.error('Failed to reject');
+                                          setApprovingBonusId(null);
+                                        }}
+                                        disabled={approvingBonusId === bonus.id}
+                                      >
+                                        <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
