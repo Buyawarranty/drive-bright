@@ -397,7 +397,7 @@ export const useLeads = () => {
       const salesLeadsWithFlags = (salesLeadsData || []).map((lead: any) => {
         const fullName = lead.first_name || lead.last_name 
           ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim() 
-          : null;
+          : lead.full_name || null;
         const isFakeLead = isTestLead(fullName, lead.phone);
         
         return {
