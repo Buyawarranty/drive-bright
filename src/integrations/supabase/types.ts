@@ -4866,6 +4866,54 @@ export type Database = {
         }
         Relationships: []
       }
+      timesheet_comments: {
+        Row: {
+          admin_user_id: string
+          author_id: string | null
+          created_at: string
+          id: string
+          is_from_accounts: boolean | null
+          message: string
+          month_year: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          is_from_accounts?: boolean | null
+          message: string
+          month_year: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          is_from_accounts?: boolean | null
+          message?: string
+          month_year?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheet_comments_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       triggered_emails_log: {
         Row: {
           cart_id: string | null
