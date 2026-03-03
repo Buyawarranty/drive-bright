@@ -1,6 +1,7 @@
 import React, { useState, useCallback, memo, useMemo } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
+import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -61,6 +62,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const leadEmails = useMemo(() => leads.map(l => l.email), [leads]);
   const { quotesByEmail } = useLeadQuotes(leadEmails);
 
+  // Fetch note counts for all visible leads
+  const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
+  const noteCounts = useLeadNoteCounts(leadIds);
+
   // Memoized callbacks for row actions
   const handleToggleExpand = useCallback((leadId: string) => {
     setExpandedLead(prev => prev === leadId ? null : leadId);
@@ -120,6 +125,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   onSendQuote={onSendQuote ? () => onSendQuote(lead) : undefined}
                   hideAssignedColumn={hideAssignedColumn}
                   canAssignLeads={canAssignLeads}
+                  noteCount={noteCounts[lead.id] || 0}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel */}
