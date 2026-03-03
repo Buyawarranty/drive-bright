@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
-import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
+import { format, subDays, addDays, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
@@ -138,6 +138,14 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       }
       setIsCalendarOpen(false);
     }
+  };
+
+  const handleDayNav = (direction: 'prev' | 'next') => {
+    if (!onDateRangeChange) return;
+    const baseDate = dateRange?.from ?? new Date();
+    const newDate = direction === 'prev' ? subDays(baseDate, 1) : addDays(baseDate, 1);
+    if (startOfDay(newDate) > startOfDay(new Date())) return;
+    onDateRangeChange({ from: startOfDay(newDate), to: endOfDay(newDate) });
   };
 
   const handleAllTime = () => {
@@ -401,18 +409,29 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             </Button>
           </div>
 
-          {/* Date Range Filter */}
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button 
-                variant={hasDateFilter ? "default" : "outline"} 
-                size="sm" 
-                className="gap-2 min-w-[140px]"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                <span className="text-xs">{getDateFilterLabel()}</span>
-              </Button>
-            </PopoverTrigger>
+          {/* Date Range Filter with Day Navigation Arrows */}
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDayNav('prev')}
+              className="h-8 w-8 p-0"
+              title="Previous day"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant={hasDateFilter ? "default" : "outline"} 
+                  size="sm" 
+                  className="gap-2 min-w-[140px]"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  <span className="text-xs">{getDateFilterLabel()}</span>
+                </Button>
+              </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               {/* Quick Filters Row */}
               <div className="p-3 border-b space-y-2">
@@ -505,7 +524,19 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 </div>
               )}
             </PopoverContent>
-          </Popover>
+            </Popover>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDayNav('next')}
+              className="h-8 w-8 p-0"
+              title="Next day"
+              disabled={dateRange?.from && startOfDay(dateRange.from) >= startOfDay(new Date())}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
 
           {/* Sort Dropdown */}
           {onSortChange && (
