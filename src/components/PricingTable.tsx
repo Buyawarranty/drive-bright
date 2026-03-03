@@ -485,9 +485,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
-            full_name: vehicleData?.firstName && vehicleData?.lastName 
-              ? `${vehicleData.firstName} ${vehicleData.lastName}` 
-              : vehicleData.email,
+            full_name: vehicleData?.firstName ? `${vehicleData.firstName}${vehicleData?.lastName ? ' ' + vehicleData.lastName : ''}`.trim() : vehicleData.email,
             email: vehicleData.email,
             phone: vehicleData?.phone || '',
             vehicle_reg: vehicleData?.regNumber,
