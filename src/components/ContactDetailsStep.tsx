@@ -5,7 +5,7 @@ import { trackFormSubmission, trackStepCompletion } from '@/utils/analytics';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 
 interface ContactDetailsStepProps {
-  onNext: (data: { email: string; phone: string; firstName: string; lastName: string; address: string }) => void;
+  onNext: (data: { email: string; phone: string; firstName: string; lastName?: string; address: string }) => void;
   onBack: () => void;
   initialData?: {
     regNumber: string;
@@ -22,7 +22,6 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
   const [email, setEmail] = useState(initialData?.email || '');
   const [phone, setPhone] = useState(initialData?.phone || '');
   const [firstName, setFirstName] = useState(initialData?.firstName || '');
-  const [lastName, setLastName] = useState(initialData?.lastName || '');
   const [address, setAddress] = useState(initialData?.address || '');
 
   const handleAddressSelect = (addressData: AddressData) => {
@@ -39,7 +38,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && phone && firstName && lastName && address) {
+    if (email && phone && firstName && address) {
       // Track contact details form completion
       trackFormSubmission('contact_details', {
         has_email: !!email,
@@ -52,21 +51,19 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
         email,
         phone,
         firstName,
-        lastName,
         address
       });
-      
+
       onNext({ 
         email, 
         phone,
         firstName,
-        lastName,
         address
       });
     }
   };
 
-  const isFormValid = email && phone && firstName && lastName && address;
+  const isFormValid = email && phone && firstName && address;
 
   return (
     <section className="bg-[#e8f4fb] py-10 min-h-screen">
@@ -79,48 +76,25 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* First Name and Last Name Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block font-semibold mb-3 text-gray-700 text-xl">First Name</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Enter your first name"
-                  className="w-full border-2 border-gray-300 rounded-[6px] px-[16px] py-[12px] pr-[50px] focus:outline-none transition-all duration-200"
-                  onFocus={(e) => e.target.style.borderColor = '#224380'}
-                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  required
-                />
-                {firstName.trim() && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block font-semibold mb-3 text-gray-700 text-xl">Last Name</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Enter your last name"
-                  className="w-full border-2 border-gray-300 rounded-[6px] px-[16px] py-[12px] pr-[50px] focus:outline-none transition-all duration-200"
-                  onFocus={(e) => e.target.style.borderColor = '#224380'}
-                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  required
-                />
-                {lastName.trim() && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                )}
-              </div>
+          {/* First Name Field */}
+          <div className="mb-6">
+            <label className="block font-semibold mb-3 text-gray-700 text-xl">Your First Name</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter your first name"
+                className="w-full border-2 border-gray-300 rounded-[6px] px-[16px] py-[12px] pr-[50px] focus:outline-none transition-all duration-200"
+                onFocus={(e) => e.target.style.borderColor = '#224380'}
+                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                required
+              />
+              {firstName.trim() && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <Check className="w-4 h-4 text-white" />
+                </div>
+              )}
             </div>
           </div>
 
