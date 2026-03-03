@@ -23,8 +23,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback';
-  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback') => void;
+  filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted';
+  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -39,6 +39,7 @@ interface LeadsFiltersProps {
     urgent_callback: number;
     paid: number;
     lost: number;
+    converted: number;
     high_priority: number;
     fake: number;
   };
@@ -226,7 +227,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     if (isAwaitingActive) {
       onAssignmentFilterChange?.('all');
     }
-    onFilterChange(value as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback');
+    onFilterChange(value as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted');
   };
 
   // Determine effective tab value - if awaiting is active, show it as selected
@@ -236,7 +237,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     <div className="space-y-4">
       {/* Tabs for status filter */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-11">
+        <TabsList className="grid w-full grid-cols-12">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
@@ -272,6 +273,10 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
           <TabsTrigger value="paid">
             Paid
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-green-100">{leadCounts.paid}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="converted">
+            ✅ Converted
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-emerald-100">{leadCounts.converted}</Badge>
           </TabsTrigger>
           <TabsTrigger value="lost">
             Lost

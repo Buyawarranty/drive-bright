@@ -232,6 +232,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     urgent_callback: leads.filter(l => l.status === 'urgent_callback').length,
     paid: leads.filter(l => l.is_paid === true).length,
     lost: leads.filter(l => l.status === 'lost').length,
+    converted: leads.filter(l => l.status === 'converted').length,
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
     fake: leads.filter(l => l.status === 'fake_lead').length,
   }), [leads]);
