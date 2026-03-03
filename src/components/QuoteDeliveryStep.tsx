@@ -122,7 +122,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     
     try {
       // Send quote email
-      const { error: emailError } = await supabase.functions.invoke('send-quote-email', {
+      const { error: quoteEmailError } = await supabase.functions.invoke('send-quote-email', {
         body: {
           email: email.trim(),
           firstName: 'Valued Customer',
@@ -141,8 +141,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         }
       });
 
-      if (emailError) {
-        console.error('Error sending quote email:', emailError);
+      if (quoteEmailError) {
+        console.error('Error sending quote email:', quoteEmailError);
       }
       // NOTE: We intentionally do NOT call track-abandoned-cart here.
       // A sales_lead entry is created below, so creating an abandoned_cart
