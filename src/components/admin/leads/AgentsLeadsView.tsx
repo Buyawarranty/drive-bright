@@ -548,6 +548,15 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     const now = new Date();
     
     switch (filter) {
+      case 'today':
+        setDateRange({ from: new Date(now.getFullYear(), now.getMonth(), now.getDate()), to: endOfDay(now) });
+        break;
+      case 'yesterday': {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        setDateRange({ from: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate()), to: endOfDay(yesterday) });
+        break;
+      }
       case 'week':
         setDateRange({ from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfDay(now) });
         break;
@@ -1829,6 +1838,20 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 <div className="text-sm font-medium">Quick filters</div>
                 <div className="flex flex-wrap gap-1">
                   <Button 
+                    variant={quickDateFilter === 'today' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => handleQuickDateFilter('today')}
+                  >
+                    Today
+                  </Button>
+                  <Button 
+                    variant={quickDateFilter === 'yesterday' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => handleQuickDateFilter('yesterday')}
+                  >
+                    Yesterday
+                  </Button>
+                  <Button 
                     variant={quickDateFilter === 'week' ? 'default' : 'outline'} 
                     size="sm" 
                     onClick={() => handleQuickDateFilter('week')}
@@ -1867,7 +1890,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   setQuickDateFilter('custom');
                 }}
                 numberOfMonths={2}
-                className="p-3"
+                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
