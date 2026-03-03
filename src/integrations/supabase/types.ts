@@ -4147,6 +4147,7 @@ export type Database = {
           last_activity_date: string | null
           last_contacted_at: string | null
           last_name: string | null
+          last_resubmitted_at: string | null
           lead_source: Database["public"]["Enums"]["lead_source"] | null
           lost_at: string | null
           lost_reason: string | null
@@ -4162,6 +4163,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["lead_priority"] | null
           priority_score: number | null
           quote_amount: number | null
+          resubmission_count: number | null
           status: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at: string | null
           updated_at: string
@@ -4187,6 +4189,7 @@ export type Database = {
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
+          last_resubmitted_at?: string | null
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           lost_at?: string | null
           lost_reason?: string | null
@@ -4202,6 +4205,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           quote_amount?: number | null
+          resubmission_count?: number | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
@@ -4227,6 +4231,7 @@ export type Database = {
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
+          last_resubmitted_at?: string | null
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           lost_at?: string | null
           lost_reason?: string | null
@@ -4242,6 +4247,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           quote_amount?: number | null
+          resubmission_count?: number | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
