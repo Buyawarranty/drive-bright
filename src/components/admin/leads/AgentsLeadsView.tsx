@@ -1352,24 +1352,25 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {(isFullAdmin || isSalesLead) && (
               <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
                 <Zap className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Agent Self-Assign (Claim Leads)</span>
+                <span className="text-sm font-medium">Allow Agents to Claim Leads</span>
                 <Switch
-                  checked={allowAgentSelfAssign === false}
+                  checked={allowAgentSelfAssign !== false}
                   onCheckedChange={async (checked) => {
-                    // checked = true means "auto-distribution only" (config value = false)
-                    const success = await updateAllowSelfAssign(!checked);
+                    const success = await updateAllowSelfAssign(checked);
                     if (success) {
                       toast({
-                        title: checked ? 'Self-assign disabled' : 'Self-assign enabled',
+                        title: checked ? 'Self-assign enabled' : 'Self-assign disabled',
                         description: checked
-                          ? 'Sales agents can no longer self-assign leads. Auto-distribution only.'
-                          : 'Sales agents can now claim leads using the "Get Next Lead" button.',
+                          ? 'Agents can now also claim leads manually. Round-robin auto-distribution continues as normal.'
+                          : 'Agents can no longer self-assign. Leads are distributed via round-robin only.',
                       });
                     }
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {allowAgentSelfAssign === false ? 'Auto-distribution only' : 'Agents can claim leads'}
+                  {allowAgentSelfAssign !== false
+                    ? 'Auto-distribution + manual claiming'
+                    : 'Auto-distribution only'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
