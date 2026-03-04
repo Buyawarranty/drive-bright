@@ -4274,6 +4274,96 @@ export type Database = {
           },
         ]
       }
+      sales_leads_changelog: {
+        Row: {
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          id: string
+          lead_id: string
+          new_assigned_to: string | null
+          new_call_count: number | null
+          new_contact_notes: string | null
+          new_is_paid: boolean | null
+          new_next_action_date: string | null
+          new_next_action_type: string | null
+          new_notes: string | null
+          new_payment_amount: number | null
+          new_priority: string | null
+          new_record: Json | null
+          new_status: string | null
+          old_assigned_to: string | null
+          old_call_count: number | null
+          old_contact_notes: string | null
+          old_is_paid: boolean | null
+          old_next_action_date: string | null
+          old_next_action_type: string | null
+          old_notes: string | null
+          old_payment_amount: number | null
+          old_priority: string | null
+          old_record: Json | null
+          old_status: string | null
+        }
+        Insert: {
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          lead_id: string
+          new_assigned_to?: string | null
+          new_call_count?: number | null
+          new_contact_notes?: string | null
+          new_is_paid?: boolean | null
+          new_next_action_date?: string | null
+          new_next_action_type?: string | null
+          new_notes?: string | null
+          new_payment_amount?: number | null
+          new_priority?: string | null
+          new_record?: Json | null
+          new_status?: string | null
+          old_assigned_to?: string | null
+          old_call_count?: number | null
+          old_contact_notes?: string | null
+          old_is_paid?: boolean | null
+          old_next_action_date?: string | null
+          old_next_action_type?: string | null
+          old_notes?: string | null
+          old_payment_amount?: number | null
+          old_priority?: string | null
+          old_record?: Json | null
+          old_status?: string | null
+        }
+        Update: {
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          lead_id?: string
+          new_assigned_to?: string | null
+          new_call_count?: number | null
+          new_contact_notes?: string | null
+          new_is_paid?: boolean | null
+          new_next_action_date?: string | null
+          new_next_action_type?: string | null
+          new_notes?: string | null
+          new_payment_amount?: number | null
+          new_priority?: string | null
+          new_record?: Json | null
+          new_status?: string | null
+          old_assigned_to?: string | null
+          old_call_count?: number | null
+          old_contact_notes?: string | null
+          old_is_paid?: boolean | null
+          old_next_action_date?: string | null
+          old_next_action_type?: string | null
+          old_notes?: string | null
+          old_payment_amount?: number | null
+          old_priority?: string | null
+          old_record?: Json | null
+          old_status?: string | null
+        }
+        Relationships: []
+      }
       sales_targets: {
         Row: {
           achieved_amount: number
@@ -5742,6 +5832,10 @@ export type Database = {
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
+      restore_lead_to_snapshot: {
+        Args: { p_changelog_id: string; p_restored_by?: string }
+        Returns: Json
+      }
       set_user_offline: { Args: never; Returns: undefined }
       soft_delete_customer: {
         Args: { admin_uuid: string; customer_uuid: string }
