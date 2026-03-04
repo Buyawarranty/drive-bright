@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf, Zap, CheckCircle2, AlertCircle, Upload, Clock, RefreshCw, Key, ExternalLink, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { LeadFormCompletionsCard } from './LeadFormCompletionsCard';
 import { toast } from 'sonner';
 import { format, subDays, startOfDay, endOfDay, startOfWeek, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, BarChart, Bar } from 'recharts';
@@ -285,6 +286,9 @@ export const PageAnalyticsTab: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Lead Form Completions */}
+          <LeadFormCompletionsCard />
 
           {/* Daily Trend Chart */}
           {stats.dailyTrend.length > 1 && (
