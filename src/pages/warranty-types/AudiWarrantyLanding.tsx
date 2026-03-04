@@ -28,6 +28,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import audiWhyChooseUs from '@/assets/audi-used-car-warranty-uk.webp';
 import audiHighMileage from '@/assets/audi-warranty-cover-uk.webp';
+import audiMobileQuote from '@/assets/audi-warranty-mobile-quote.webp';
 
 // Audi Models covered (grouped by category)
 const audiModelCategories = {
@@ -1084,11 +1085,11 @@ const AudiWarrantyLanding: React.FC = () => {
               {/* Image on LEFT side */}
               <div className="flex justify-center">
                  <OptimizedImage 
-                   src={audiHighMileage}
-                   alt="Used Audi Q2 high mileage extended warranty UK — affordable cover for older Audi models nationwide"
-                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain -scale-x-100"
+                   src={audiMobileQuote}
+                   alt="Audi A3 extended warranty quote on mobile — instant online quote for used Audi warranty UK"
+                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
                    width={448}
-                   height={300}
+                   height={500}
                  />
               </div>
               {/* Text on RIGHT side */}
