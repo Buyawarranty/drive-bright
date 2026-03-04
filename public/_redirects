@@ -22,6 +22,10 @@ https://www.buyawarranty.co.uk/* https://buyawarranty.co.uk/:splat 301!
 /van-warranty-companies-uk-warranties /van-warranty/ 301!
 /van-warranty-companies-uk-warranties/ /van-warranty/ 301!
 
+# Redirect uppercase AUDI-warranty to lowercase
+/warranty-types/AUDI-warranty /warranty-types/audi-warranty/ 301!
+/warranty-types/AUDI-warranty/ /warranty-types/audi-warranty/ 301!
+
 # Ensure trailing slashes (fallback for any missed routes)
 /what-is-covered /what-is-covered/ 301
 /make-a-claim /make-a-claim/ 301

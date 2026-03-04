@@ -54,6 +54,16 @@
       "source": "/van-warranty-companies-uk-warranties/",
       "destination": "/van-warranty/",
       "permanent": true
+    },
+    {
+      "source": "/warranty-types/AUDI-warranty",
+      "destination": "/warranty-types/audi-warranty/",
+      "permanent": true
+    },
+    {
+      "source": "/warranty-types/AUDI-warranty/",
+      "destination": "/warranty-types/audi-warranty/",
+      "permanent": true
     }
   ],
   "rewrites": [
