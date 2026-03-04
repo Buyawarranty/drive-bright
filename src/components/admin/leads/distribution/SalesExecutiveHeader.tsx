@@ -18,6 +18,7 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
 }) => {
   const {
     currentAgentCap,
+    todayLeadCounts,
     claimNextLead,
     loading
   } = useLeadDistribution();
@@ -51,7 +52,7 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
     fetchCurrentUser();
   }, []);
 
-  const assignedToday = currentAgentCap?.assigned_today ?? 0;
+  const assignedToday = currentAgentCap ? (todayLeadCounts[currentAgentCap.admin_user_id] || 0) : 0;
   const dailyCap = currentAgentCap?.daily_cap; // NULL = unlimited
   const hasUnlimitedCap = dailyCap === null || dailyCap === undefined;
   const capReached = !hasUnlimitedCap && assignedToday >= dailyCap;

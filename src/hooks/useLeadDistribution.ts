@@ -49,6 +49,7 @@ export const useLeadDistribution = () => {
   const [overflowRecipients, setOverflowRecipients] = useState<OverflowRecipient[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentAgentCap, setCurrentAgentCap] = useState<AgentCap | null>(null);
+  const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const adminUserIdRef = useRef<string | null>(null);
 
   // Fetch distribution settings
@@ -139,6 +140,32 @@ export const useLeadDistribution = () => {
       setOverflowRecipients(data || []);
     } catch (error) {
       console.error('Error fetching overflow recipients:', error);
+    }
+  }, []);
+
+  // Fetch actual lead counts for today from sales_leads table
+  const fetchTodayLeadCounts = useCallback(async () => {
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const { data, error } = await supabase
+        .from('sales_leads')
+        .select('assigned_to')
+        .not('assigned_to', 'is', null)
+        .gte('created_at', todayStart.toISOString());
+
+      if (error) throw error;
+      
+      const counts: Record<string, number> = {};
+      (data || []).forEach((lead: any) => {
+        if (lead.assigned_to) {
+          counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+        }
+      });
+      setTodayLeadCounts(counts);
+    } catch (error) {
+      console.error('Error fetching today lead counts:', error);
     }
   }, []);
 
@@ -398,7 +425,7 @@ export const useLeadDistribution = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchSettings(), fetchAgentCaps(), fetchAgentPresences(), fetchOverflowRecipients()]);
+      await Promise.all([fetchSettings(), fetchAgentCaps(), fetchAgentPresences(), fetchOverflowRecipients(), fetchTodayLeadCounts()]);
       setLoading(false);
     };
 
@@ -476,6 +503,7 @@ export const useLeadDistribution = () => {
     const refreshInterval = setInterval(() => {
       fetchAgentCaps();
       fetchAgentPresences();
+      fetchTodayLeadCounts();
     }, 60000);
 
     return () => {
@@ -486,7 +514,7 @@ export const useLeadDistribution = () => {
       clearInterval(refreshInterval);
       clearTimeout(initTimer);
     };
-  }, [fetchSettings, fetchAgentCaps, fetchAgentPresences, fetchOverflowRecipients]);
+  }, [fetchSettings, fetchAgentCaps, fetchAgentPresences, fetchOverflowRecipients, fetchTodayLeadCounts]);
 
   // Get presence status for an agent
   const getAgentPresenceStatus = useCallback((adminUserId: string): 'active' | 'idle' | 'offline' => {
@@ -541,6 +569,7 @@ export const useLeadDistribution = () => {
     agentPresences,
     overflowRecipients,
     currentAgentCap,
+    todayLeadCounts,
     loading,
     updateSettings,
     updateAgentCap,
@@ -554,6 +583,7 @@ export const useLeadDistribution = () => {
     removeOverflowRecipient,
     addAgentToDistribution,
     refreshCaps: fetchAgentCaps,
-    refreshPresences: fetchAgentPresences
+    refreshPresences: fetchAgentPresences,
+    refreshTodayLeadCounts: fetchTodayLeadCounts
   };
 };

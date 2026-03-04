@@ -50,6 +50,7 @@ interface AgentCapsPanelProps {
   onInitializeCaps: () => Promise<void>;
   overflowRecipientId?: string | null;
   onOverflowChange?: (recipientId: string | null) => void;
+  todayLeadCounts?: Record<string, number>;
 }
 
 export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
@@ -62,7 +63,8 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
   getAgentPresenceStatus,
   onInitializeCaps,
   overflowRecipientId,
-  onOverflowChange
+  onOverflowChange,
+  todayLeadCounts = {}
 }) => {
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
@@ -249,7 +251,8 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
             const presence = getPresence(cap.admin_user_id);
             const status = getAgentPresenceStatus(cap.admin_user_id);
             const hasUnlimitedCap = cap.daily_cap === null;
-            const progressPercent = hasUnlimitedCap ? 0 : (cap.daily_cap > 0 ? (cap.assigned_today / cap.daily_cap) * 100 : 0);
+            const actualToday = todayLeadCounts[cap.admin_user_id] || 0;
+            const progressPercent = hasUnlimitedCap ? 0 : (cap.daily_cap > 0 ? (actualToday / cap.daily_cap) * 100 : 0);
             const editedCap = editedCaps[cap.admin_user_id];
             const hasChanges = editedCap !== undefined && editedCap !== cap.daily_cap;
 
@@ -358,7 +361,7 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                      Assigned today: <span className="font-medium text-foreground">{cap.assigned_today}</span>
+                      Assigned today: <span className="font-medium text-foreground">{todayLeadCounts[cap.admin_user_id] || 0}</span>
                     </span>
                     <span className="text-muted-foreground">
                       Daily cap: <span className="font-medium text-foreground">

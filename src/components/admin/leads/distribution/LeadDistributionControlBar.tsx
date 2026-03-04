@@ -23,6 +23,7 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
     agentCaps,
     agentPresences,
     overflowRecipients,
+    todayLeadCounts,
     loading,
     updateSettings,
     updateAgentCap,
@@ -199,6 +200,7 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
               onInitializeCaps={initializeAgentCaps}
               overflowRecipientId={settings?.overflow_recipient_id}
               onOverflowChange={(id) => updateSettings({ overflow_recipient_id: id })}
+              todayLeadCounts={todayLeadCounts}
             />
           </SheetContent>
         </Sheet>
