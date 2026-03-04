@@ -1235,7 +1235,7 @@ const Index = () => {
         body: {
           full_name: data.firstName ? `${data.firstName}${data.lastName ? ' ' + data.lastName : ''}`.trim() : null,
           email: data.email,
-          phone: data.phone || '',
+          phone: data.phone?.trim() || undefined,
           vehicle_reg: data.regNumber,
           vehicle_make: data.make,
           vehicle_model: data.model,

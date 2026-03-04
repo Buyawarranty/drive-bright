@@ -66,7 +66,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           body: {
             full_name: firstName.trim() || null,
             email: email.trim(),
-            phone: phone || '',
+            phone: phone.trim() || undefined,
             vehicle_reg: vehicleData?.regNumber,
             vehicle_make: vehicleData?.make,
             vehicle_model: vehicleData?.model,
@@ -224,7 +224,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             body: {
               full_name: firstName.trim(),
               email: normalizedEmail,
-              phone: phone.trim() || '',
+              phone: phone.trim() || undefined,
               vehicle_reg: regNumber || undefined,
               vehicle_make: vehicleData?.make,
               vehicle_model: vehicleData?.model,
