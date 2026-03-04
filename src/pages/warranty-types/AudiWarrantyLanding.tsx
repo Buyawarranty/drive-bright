@@ -26,8 +26,8 @@ const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 import audiHeroImage from '@/assets/audi-extended-warranty-uk-miles-panda.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
-import audiWhyChooseUs from '@/assets/audi-extended-used-car-warranty.webp';
-import audiHighMileage from '@/assets/audi-etron-high-mileage-warranty-v2.webp';
+import audiWhyChooseUs from '@/assets/audi-used-car-warranty-uk.webp';
+import audiHighMileage from '@/assets/audi-warranty-cover-uk.webp';
 
 // Audi Models covered (grouped by category)
 const audiModelCategories = {
@@ -939,13 +939,14 @@ const AudiWarrantyLanding: React.FC = () => {
               
               {/* Mascot - Miles the Panda with Audi */}
               <div className="hidden lg:flex justify-center items-end">
-                <OptimizedImage 
-                  src={audiWhyChooseUs}
-                  alt="Miles the Panda mechanic with Audi - Why Audi owners choose us for extended warranty"
-                  className="w-[400px] h-auto object-contain"
-                  width={400}
-                  height={300}
-                />
+               <OptimizedImage 
+                   src={audiWhyChooseUs}
+                   alt="Audi Q4 e-tron extended warranty UK - Why Audi drivers choose BuyAWarranty for transparent coverage"
+                   className="w-[400px] h-auto object-contain"
+                   priority={false}
+                   width={400}
+                   height={300}
+                 />
               </div>
             </div>
           </div>
@@ -1020,13 +1021,13 @@ const AudiWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
               {/* Image on LEFT side */}
               <div className="flex justify-center">
-                <OptimizedImage 
-                  src={audiHighMileage}
-                  alt="Audi e-tron with BuyAWarranty branding - High mileage Audi warranty coverage"
-                  className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
-                  width={448}
-                  height={300}
-                />
+                 <OptimizedImage 
+                   src={audiHighMileage}
+                   alt="Audi Q4 e-tron high mileage warranty UK - Drive your Audi with confidence, you're covered"
+                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
+                   width={448}
+                   height={300}
+                 />
               </div>
               {/* Text on RIGHT side */}
               <div className="text-center lg:text-left">
