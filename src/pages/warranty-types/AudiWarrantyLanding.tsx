@@ -533,16 +533,6 @@ const AudiWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               {/* Left Column - Content */}
               <div className="text-center lg:text-left">
-                {/* Brand Logo */}
-                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Audi-Logo_2016.svg/800px-Audi-Logo_2016.svg.png" 
-                    alt="Audi Logo" 
-                    className="h-10 md:h-14 w-auto object-contain"
-                    width={112}
-                    height={56}
-                  />
-                </div>
 
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4" itemProp="headline">
