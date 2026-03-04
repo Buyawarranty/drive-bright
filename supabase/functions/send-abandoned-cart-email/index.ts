@@ -151,10 +151,10 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
 
       ${showPromo ? `
       <!-- Promo Section -->
-      <div style="background-color: #fff0f3; border: 2px solid #e91e63; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-        <p style="color: #880e4f; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
-        <a href="https://buyawarranty.co.uk?promo=${promoCode}" style="background-color: #e91e63; color: #fff; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace; text-decoration: none; cursor: pointer;">${promoCode}</a>
-        <p style="color: #880e4f; font-size: 12px; margin: 10px 0 0 0;">Apply at checkout &bull; <strong>Valid for 24 hours only</strong></p>
+      <div style="background-color: #FFF8E7; border: 2px solid #FF7A00; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <p style="color: #1A1A1A; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
+        <a href="https://buyawarranty.co.uk?promo=${promoCode}" style="background-color: #1A1A1A; color: #fff; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace; text-decoration: none; cursor: pointer;">${promoCode}</a>
+        <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">Tap to copy &bull; <strong>Valid for 24 hours</strong></p>
       </div>
       ` : ''}
 
@@ -169,7 +169,7 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 32px 0;">
-        <a href="${continueUrl}" style="background-color: #ea580c; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
+        <a href="${continueUrl}" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
           ${ctaText}
         </a>
       </div>

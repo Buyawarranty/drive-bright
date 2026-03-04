@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
+import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
@@ -568,8 +569,16 @@ const Index = () => {
   useEffect(() => {
     const promoParam = searchParams.get('promo');
     if (promoParam) {
-      localStorage.setItem('buyawarranty_promoCode', promoParam.toUpperCase());
-      console.log('🎟️ Promo code captured from URL:', promoParam);
+      const code = promoParam.toUpperCase();
+      localStorage.setItem('buyawarranty_promoCode', code);
+      console.log('🎟️ Promo code captured from URL:', code);
+      
+      // Show immediate notification so users know the voucher is applied
+      toast.success(`Voucher ${code} has been applied — your discount will show at checkout`, {
+        duration: 6000,
+        id: 'promo-applied',
+      });
+
       // Clean param from URL
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('promo');
