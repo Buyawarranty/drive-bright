@@ -1112,7 +1112,7 @@ const AudiWarrantyLanding: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2 md:gap-3">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-gray-700">No mileage restrictions during cover</span>
+                    <span className="text-sm md:text-base text-gray-700">Cover for used Audi models</span>
                   </div>
                   <div className="flex items-center gap-2 md:gap-3">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
