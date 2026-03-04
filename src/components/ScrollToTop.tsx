@@ -31,6 +31,12 @@ const ScrollToTop = () => {
       return;
     }
     
+    // Redirect uppercase AUDI-warranty to lowercase
+    if (pathname === '/warranty-types/AUDI-warranty' || pathname === '/warranty-types/AUDI-warranty/') {
+      navigate('/warranty-types/audi-warranty/' + search, { replace: true });
+      return;
+    }
+    
     // Redirect old van warranty URL to van warranty page
     if (pathname === '/van-warranty-companies-uk-warranties' || pathname === '/van-warranty-companies-uk-warranties/') {
       navigate('/van-warranty/' + search, { replace: true });

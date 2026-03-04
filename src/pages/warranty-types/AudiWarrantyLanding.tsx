@@ -23,7 +23,7 @@ const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClarit
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 
 // Assets
-import audiHeroImage from '@/assets/audi-panda-hero-warranty-uk.webp';
+import audiHeroImage from '@/assets/audi-extended-warranty-uk-miles-panda.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import audiWhyChooseUs from '@/assets/audi-extended-used-car-warranty.webp';
@@ -549,7 +549,7 @@ const AudiWarrantyLanding: React.FC = () => {
                 <div className="relative">
                   <OptimizedImage
                     src={audiHeroImage}
-                    alt="Audi extended warranty UK - Professional Audi warranty coverage with Miles the Panda"
+                    alt="Audi extended warranty UK - Miles the Panda with two Audi cars, affordable used Audi warranty cover"
                     className="w-full h-auto"
                     priority={true}
                     width={1024}
