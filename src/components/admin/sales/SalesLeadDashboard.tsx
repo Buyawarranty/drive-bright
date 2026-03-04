@@ -26,6 +26,7 @@ const useDashboardStats = () => {
   const [salesUsers, setSalesUsers] = useState<any[]>([]);
   const [agentStats, setAgentStats] = useState<any[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +48,10 @@ const useDashboardStats = () => {
       // Current user
       if (userRes.data?.user) {
         const adminUser = users.find((u: any) => u.user_id === userRes.data.user!.id);
-        if (adminUser) setCurrentUserId(adminUser.id);
+        if (adminUser) {
+          setCurrentUserId(adminUser.id);
+          setCurrentUserRole(adminUser.role);
+        }
       }
 
       setSalesUsers(users);
@@ -78,12 +82,13 @@ const useDashboardStats = () => {
 
   const activeAgentCount = useMemo(() => salesUsers.filter((u: any) => u.role !== 'admin' && u.role !== 'super_admin').length, [salesUsers]);
 
-  return { stats, salesUsers, agentStats, activeAgentCount, currentUserId, loading };
+  return { stats, salesUsers, agentStats, activeAgentCount, currentUserId, currentUserRole, loading };
 };
 
 export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNavigateToTab }) => {
   const [activeTab, setActiveTab] = useState('all-leads');
-  const { stats, salesUsers, agentStats, activeAgentCount, currentUserId, loading } = useDashboardStats();
+  const { stats, salesUsers, agentStats, activeAgentCount, currentUserId, currentUserRole, loading } = useDashboardStats();
+  const canViewHistory = ['super_admin', 'admin', 'sales_lead'].includes(currentUserRole || '');
 
   if (loading) {
     return (
@@ -159,10 +164,12 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">Team KPIs</span>
           </TabsTrigger>
-          <TabsTrigger value="version-history" className="gap-2 flex-1 lg:flex-none">
-            <History className="h-4 w-4" />
-            <span className="hidden sm:inline">Version History</span>
-          </TabsTrigger>
+          {canViewHistory && (
+            <TabsTrigger value="version-history" className="gap-2 flex-1 lg:flex-none">
+              <History className="h-4 w-4" />
+              <span className="hidden sm:inline">Version History</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="all-leads">
@@ -235,9 +242,11 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
           </div>
         </TabsContent>
 
-        <TabsContent value="version-history">
-          <LeadVersionHistory />
-        </TabsContent>
+        {canViewHistory && (
+          <TabsContent value="version-history">
+            <LeadVersionHistory />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
