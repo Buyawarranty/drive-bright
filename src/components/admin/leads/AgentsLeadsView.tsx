@@ -118,6 +118,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     agentCaps,
     agentPresences,
     overflowRecipients,
+    todayLeadCounts,
     updateAgentCap,
     updateSettings,
     toggleAgentPause,
@@ -1672,7 +1673,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                         {/* Today's Count */}
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{cap.assigned_today}</span>
+                            <span className="font-medium">{todayLeadCounts[cap.admin_user_id] || 0}</span>
                             <span className="text-muted-foreground text-xs">
                               / {cap.daily_cap === null ? '∞' : cap.daily_cap}
                             </span>
