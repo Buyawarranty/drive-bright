@@ -902,7 +902,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           body: {
             email: customerData.email,
             full_name: customerData.first_name ? `${customerData.first_name} ${customerData.last_name || ''}`.trim() : (customerData.full_name?.trim() || null),
-            phone: customerData.phone || '',
+            phone: customerData.phone?.trim() || undefined,
             vehicle_reg: vehicleData.regNumber || '',
             vehicle_make: vehicleData.make || '',
             vehicle_model: vehicleData.model || '',

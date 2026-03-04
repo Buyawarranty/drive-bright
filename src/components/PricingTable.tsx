@@ -487,7 +487,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           body: {
             full_name: vehicleData?.firstName ? `${vehicleData.firstName}${vehicleData?.lastName ? ' ' + vehicleData.lastName : ''}`.trim() : vehicleData.email,
             email: vehicleData.email,
-            phone: vehicleData?.phone || '',
+            phone: vehicleData?.phone?.trim() || undefined,
             vehicle_reg: vehicleData?.regNumber,
             vehicle_make: vehicleData?.make,
             vehicle_model: vehicleData?.model,

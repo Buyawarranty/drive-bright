@@ -148,6 +148,12 @@ const handler = async (req: Request): Promise<Response> => {
       cartData.email = cartData.email.trim().toLowerCase();
     }
 
+    // Normalize phone: never persist empty string (prevents wiping existing valid phones)
+    if (typeof cartData.phone === 'string') {
+      const normalizedPhone = cartData.phone.trim();
+      cartData.phone = normalizedPhone === '' ? undefined : normalizedPhone;
+    }
+
     // Track if we have at least an email or vehicle registration
     // For abandoned cart tracking, we accept any identifier including vehicle reg
     if (!cartData.email || cartData.email === '') {
@@ -181,7 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
         .from('abandoned_carts')
         .update({
           full_name: cartData.full_name,
-          phone: cartData.phone,
+          phone: cartData.phone ?? undefined,
           vehicle_reg: cartData.vehicle_reg,
           vehicle_make: cartData.vehicle_make,
           vehicle_model: cartData.vehicle_model,
