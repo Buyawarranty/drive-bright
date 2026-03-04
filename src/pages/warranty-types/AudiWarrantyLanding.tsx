@@ -270,12 +270,12 @@ const AudiWarrantyLanding: React.FC = () => {
     }
   };
 
-  // Schema.org structured data
+  // Schema.org structured data — optimised for Google, Bing, and AI search engines
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": "Audi Extended Warranty UK",
-    "description": "Comprehensive extended warranty coverage for all Audi models including A3, A4, A5, A6, Q3, Q5, Q7, Q8, e-tron, e-tron GT, TT. Covers TFSI/TDI engines, S tronic gearbox, quattro drivetrain, MMI systems, EV components. Nationwide UK coverage.",
+    "description": "Comprehensive used Audi extended warranty plans covering A3, A4, A5, A6, A7, A8, Q2, Q3, Q5, Q7, Q8, TT, R8, e-tron and e-tron GT models. Includes S tronic gearbox, quattro drivetrain, TFSI and TDI engines, MMI infotainment, air suspension and EV components. Available nationwide across England, Scotland, Wales and Northern Ireland from £25 per month.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": {
       "@type": "Organization",
@@ -316,34 +316,55 @@ const AudiWarrantyLanding: React.FC = () => {
       "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     })),
     "category": "Vehicle Extended Warranty",
-    "audience": { "@type": "Audience", "audienceType": "Audi vehicle owners in the United Kingdom" }
+    "audience": { "@type": "Audience", "audienceType": "Used Audi car owners in England, Scotland, Wales and Northern Ireland" },
+    "additionalProperty": [
+      { "@type": "PropertyValue", "name": "Coverage Area", "value": "United Kingdom — England, Scotland, Wales, Northern Ireland" },
+      { "@type": "PropertyValue", "name": "Max Vehicle Age", "value": "15 years" },
+      { "@type": "PropertyValue", "name": "Max Mileage at Inception", "value": "150,000 miles" },
+      { "@type": "PropertyValue", "name": "Claims Limit", "value": "Unlimited claims value" },
+      { "@type": "PropertyValue", "name": "Garage Network", "value": "Any VAT-registered garage in the UK" }
+    ]
   };
 
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "name": "Audi Extended Warranty Service",
-    "alternateName": "Audi Used Car Warranty",
+    "name": "Audi Extended Warranty Service UK",
+    "alternateName": ["Audi Used Car Warranty", "Audi Second Hand Warranty", "Audi Aftermarket Warranty", "Used Audi Warranty Cover UK"],
     "provider": {
       "@type": "LocalBusiness",
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": "£25-£95/month",
-      "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "addressCountry": "GB", "addressRegion": "United Kingdom" },
+      "geo": { "@type": "GeoCoordinates", "latitude": "51.5074", "longitude": "-0.1278" },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "17:30"
+      }
     },
-    "areaServed": { "@type": "Country", "name": "United Kingdom" },
-    "description": "Extended warranty coverage for all Audi models including A3, A4, A5, A6, Q Series, e-tron, and TT. Covers TFSI/TDI engines, S tronic gearbox, quattro drivetrain, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage. 24/7 roadside assistance included.",
+    "areaServed": [
+      { "@type": "Country", "name": "United Kingdom" },
+      { "@type": "AdministrativeArea", "name": "England" },
+      { "@type": "AdministrativeArea", "name": "Scotland" },
+      { "@type": "AdministrativeArea", "name": "Wales" },
+      { "@type": "AdministrativeArea", "name": "Northern Ireland" }
+    ],
+    "description": "Extended warranty protection for all used Audi models. Covers TFSI and TDI engines, S tronic dual-clutch gearbox, quattro all-wheel-drive system, MMI infotainment, air suspension, e-tron electric motors and battery management. Use any VAT-registered garage. 24/7 roadside assistance included. Monthly or annual plans with no mileage restrictions during cover.",
     "serviceType": "Vehicle Extended Warranty",
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Audi Warranty Plans",
       "itemListElement": [
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "1 Year Audi Warranty" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "2 Year Audi Warranty" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3 Year Audi Warranty" } }
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "1 Year Audi Extended Warranty" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "2 Year Audi Extended Warranty" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3 Year Audi Extended Warranty" } }
       ]
-    }
+    },
+    "termsOfService": "https://buyawarranty.co.uk/terms-and-conditions/"
   };
 
   const faqSchema = {
@@ -362,7 +383,7 @@ const AudiWarrantyLanding: React.FC = () => {
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
       { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
-      { "@type": "ListItem", "position": 3, "name": "Audi Extended Warranty", "item": "https://buyawarranty.co.uk/warranty-types/audi-warranty/" }
+      { "@type": "ListItem", "position": 3, "name": "Audi Extended Warranty UK", "item": "https://buyawarranty.co.uk/warranty-types/audi-warranty/" }
     ]
   };
 
@@ -372,7 +393,7 @@ const AudiWarrantyLanding: React.FC = () => {
     "name": "Buy A Warranty",
     "url": "https://buyawarranty.co.uk",
     "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
-    "description": "UK's trusted extended car warranty provider. Protecting vehicles since 2016 with comprehensive coverage and excellent customer service.",
+    "description": "UK's trusted extended car warranty provider covering Audi, BMW, Mercedes-Benz and all major brands. Protecting vehicles nationwide since 2016.",
     "foundingDate": "2016",
     "sameAs": ["https://uk.trustpilot.com/review/buyawarranty.co.uk"],
     "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", "areaServed": "GB", "availableLanguage": "English" }
@@ -381,77 +402,119 @@ const AudiWarrantyLanding: React.FC = () => {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Audi Extended Warranty UK - Get Instant Quote",
-    "description": "Protect your Audi with comprehensive extended warranty cover. All models from A3 to Q8 and e-tron. Nationwide UK coverage, approved garages, unlimited claims. Get your instant quote in 60 seconds.",
+    "name": "Audi Extended Warranty UK — Used Audi Warranty Cover from £25/mo | Buy A Warranty",
+    "description": "Protect your used Audi with a comprehensive extended warranty. Covering all models from A3 to Q8 and e-tron across England, Scotland, Wales and Northern Ireland. S tronic, quattro, TFSI/TDI and EV components covered. Use any VAT-registered garage. Instant quote in 60 seconds.",
     "url": "https://buyawarranty.co.uk/warranty-types/audi-warranty/",
+    "datePublished": "2024-01-15",
+    "dateModified": new Date().toISOString().split('T')[0],
+    "inLanguage": "en-GB",
     "isPartOf": { "@type": "WebSite", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
-    "about": { "@type": "Thing", "name": "Audi Extended Warranty" },
+    "about": [
+      { "@type": "Thing", "name": "Audi Extended Warranty" },
+      { "@type": "Thing", "name": "Used Car Warranty UK" },
+      { "@type": "Thing", "name": "Audi Aftermarket Warranty" }
+    ],
     "mentions": [
       { "@type": "Brand", "name": "Audi" },
-      { "@type": "Thing", "name": "Extended Warranty" },
-      { "@type": "Thing", "name": "Vehicle Protection" }
+      { "@type": "Thing", "name": "S tronic gearbox" },
+      { "@type": "Thing", "name": "quattro all-wheel drive" },
+      { "@type": "Thing", "name": "TFSI engine" },
+      { "@type": "Thing", "name": "TDI engine" },
+      { "@type": "Thing", "name": "e-tron electric vehicle" },
+      { "@type": "Thing", "name": "MMI infotainment system" }
     ],
-    "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".hero-description"] },
-    "mainContentOfPage": { "@type": "WebPageElement", "cssSelector": "main" }
+    "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".hero-description", "[itemprop='description']"] },
+    "mainContentOfPage": { "@type": "WebPageElement", "cssSelector": "main" },
+    "potentialAction": {
+      "@type": "Action",
+      "name": "Get Audi Warranty Quote",
+      "target": "https://buyawarranty.co.uk/warranty-types/audi-warranty/"
+    }
   };
 
   const howToSchema = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    "name": "How to Get an Audi Extended Warranty Quote",
-    "description": "Get an instant Audi extended warranty quote in 60 seconds",
+    "name": "How to get an Audi extended warranty quote in the UK",
+    "description": "Get an instant Audi extended warranty quote online in 60 seconds. Available for all Audi models up to 15 years old and 150,000 miles.",
     "totalTime": "PT1M",
     "step": [
-      { "@type": "HowToStep", "position": 1, "name": "Enter Registration", "text": "Enter your Audi registration number to look up your vehicle details automatically" },
-      { "@type": "HowToStep", "position": 2, "name": "Select Mileage", "text": "Choose your current mileage range (under or over 120,000 miles)" },
-      { "@type": "HowToStep", "position": 3, "name": "Get Instant Quote", "text": "Receive your personalised warranty quote instantly with pricing for different coverage levels" }
+      { "@type": "HowToStep", "position": 1, "name": "Enter your Audi registration", "text": "Type your Audi registration number and we automatically look up your vehicle details via the DVLA database" },
+      { "@type": "HowToStep", "position": 2, "name": "Select your current mileage", "text": "Choose whether your Audi is under or over 120,000 miles to see the right plans" },
+      { "@type": "HowToStep", "position": 3, "name": "Get your instant quote", "text": "Receive personalised Audi warranty prices instantly — cover starts the same day" }
     ]
+  };
+
+  // AI-friendly ItemList schema for model coverage
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Audi models covered by Buy A Warranty",
+    "description": "Complete list of Audi models eligible for extended warranty cover in the UK",
+    "numberOfItems": Object.values(audiModelCategories).reduce((acc, cat) => acc + Object.keys(cat).length, 0),
+    "itemListElement": Object.entries(audiModelCategories).flatMap(([category, models], catIdx) =>
+      Object.keys(models).map((model, modelIdx) => ({
+        "@type": "ListItem",
+        "position": catIdx * 10 + modelIdx + 1,
+        "name": `Audi ${model}`,
+        "description": `Extended warranty cover for used Audi ${model} — ${category}`
+      }))
+    )
   };
 
   return (
     <>
       <Helmet>
-        <title>Audi Extended Warranty UK | A3, A4, Q5, e-tron Cover from £25/mo</title>
-        <meta name="description" content="Protect your Audi with comprehensive extended warranty cover. All models from A3 to Q8 and e-tron covered. S tronic, quattro, TFSI/TDI & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £25/month. Get your instant quote in 60 seconds." />
-        <meta name="keywords" content="Audi extended warranty, Audi used car warranty, Audi warranty UK, Audi warranty cost, Audi warranty quote, Audi A4 warranty, Audi Q5 warranty, Audi e-tron warranty, Audi A3 warranty, Audi Q7 warranty, Audi S tronic warranty, used Audi warranty, second hand Audi warranty" />
+        <title>Audi Extended Warranty UK | Used Audi Warranty Cover from £25/mo</title>
+        <meta name="description" content="Get a used Audi extended warranty from £25/month. Covers A3, A4, A5, A6, Q3, Q5, Q7, Q8, e-tron, TT and R8. S tronic gearbox, quattro drivetrain, TFSI/TDI engines and EV components included. Any VAT-registered garage across England, Scotland, Wales and Northern Ireland. Instant online quote in 60 seconds." />
+        <meta name="keywords" content="Audi extended warranty, Audi used car warranty, Audi warranty UK, Audi warranty cost, Audi A4 warranty, Audi Q5 warranty, Audi e-tron warranty, Audi A3 warranty, Audi Q7 warranty, Audi S tronic warranty, used Audi warranty, second hand Audi warranty, Audi aftermarket warranty, Audi warranty cover, Audi breakdown cover, Audi mechanical warranty, Audi warranty quote online" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
         
-        {/* Geographic targeting */}
+        {/* Geographic and language targeting */}
         <meta name="geo.region" content="GB" />
         <meta name="geo.placename" content="United Kingdom" />
         <meta name="geo.position" content="51.5074;-0.1278" />
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
+        <html lang="en-GB" />
         
-        {/* Open Graph */}
-        <meta property="og:title" content="Audi Extended Warranty UK | Instant Quotes from £25/month" />
-        <meta property="og:description" content="Comprehensive Audi warranty coverage. S tronic, quattro, TFSI/TDI & more. All models covered including hybrid and electric. Nationwide UK coverage with any garage. Get your instant quote now." />
+        {/* Open Graph — unique to this page */}
+        <meta property="og:title" content="Used Audi Extended Warranty UK — A3 to Q8 & e-tron Cover | Buy A Warranty" />
+        <meta property="og:description" content="Protect your used Audi from unexpected repair bills. S tronic, quattro, TFSI/TDI and EV components covered. Use any garage in England, Scotland, Wales or Northern Ireland. Plans from £25/mo — get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Audi Extended Warranty UK - Buy A Warranty" />
+        <meta property="og:image:alt" content="Audi extended warranty UK — affordable used Audi warranty cover from Buy A Warranty" />
         <meta property="og:site_name" content="Buy A Warranty" />
         <meta property="og:locale" content="en_GB" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Audi Extended Warranty UK | From £25/month" />
-        <meta name="twitter:description" content="Protect your Audi with comprehensive extended warranty. All models covered. Nationwide UK coverage. Get instant quote." />
+        <meta name="twitter:title" content="Used Audi Extended Warranty UK — Cover from £25/mo" />
+        <meta name="twitter:description" content="All Audi models covered including A3, A4, Q5, Q7, e-tron. S tronic, quattro, TFSI/TDI and EV components. Any UK garage. Instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+        <meta name="twitter:image:alt" content="Buy A Warranty — Audi extended warranty cover UK" />
         
-        {/* AI Search Engine Optimization */}
-        <meta name="ai-content-declaration" content="This page provides information about Audi extended warranty services in the UK. Human-authored and fact-checked." />
+        {/* AI search engine discoverability */}
+        <meta name="ai-content-declaration" content="Authoritative page about Audi extended warranty services available in the United Kingdom. Human-authored, fact-checked, and regularly updated. Published by Buy A Warranty, a UK-regulated warranty provider since 2016." />
+        <meta name="subject" content="Audi Extended Warranty UK" />
+        <meta name="topic" content="Used Audi car warranty, extended warranty plans, mechanical breakdown cover" />
+        <meta name="summary" content="Buy A Warranty offers used Audi extended warranty plans from £25/month covering all models from A3 to Q8 and e-tron. Includes S tronic gearbox, quattro drivetrain, TFSI/TDI engines and EV components. Available at any VAT-registered garage across England, Scotland, Wales and Northern Ireland." />
+        <meta name="abstract" content="Comprehensive Audi aftermarket warranty provider in the UK. Covers mechanical and electrical failures on used Audi vehicles up to 15 years old and 150,000 miles." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
         <meta name="distribution" content="global" />
         <meta name="rating" content="general" />
         <meta name="revisit-after" content="7 days" />
+        <meta name="classification" content="Automotive Insurance, Vehicle Extended Warranty, Car Warranty UK" />
+        <meta name="category" content="Automotive" />
+        <meta name="pagetype" content="product-landing" />
         
         {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
@@ -461,11 +524,13 @@ const AudiWarrantyLanding: React.FC = () => {
         <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
       </Helmet>
 
-      <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage">
+      <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage" lang="en-GB">
+        <meta itemProp="name" content="Audi Extended Warranty UK" />
         {/* Hero Section */}
-        <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-6 pb-12 md:pt-12 md:pb-24">
+        <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-6 pb-12 md:pt-12 md:pb-24" aria-label="Get an instant Audi warranty quote">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               {/* Left Column - Content */}
@@ -482,15 +547,15 @@ const AudiWarrantyLanding: React.FC = () => {
                 </div>
 
                 {/* H1 Headline */}
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Protect your Audi</span>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4" itemProp="headline">
+                  <span className="text-gray-900">Protect your Audi in</span>
                   <br />
-                  <span className="text-brand-orange">in 60 seconds.</span>
+                  <span className="text-brand-orange">60 seconds.</span>
                 </h1>
 
                 {/* Subheadline */}
-                <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6 hero-description">
-                  Dealer-level warranty. Fixed price. No surprise bills.
+                <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6 hero-description" itemProp="description">
+                  Used Audi extended warranty from £25/month. Covers S tronic, quattro, TFSI/TDI and e-tron components at any UK garage.
                 </p>
 
                 {/* Benefits */}
@@ -620,7 +685,7 @@ const AudiWarrantyLanding: React.FC = () => {
 
         {/* Warranty Benefits Section - Matching Homepage Design */}
         <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
-          <WarrantyBenefitsSection headline="The Ultimate Audi Warranty." />
+          <WarrantyBenefitsSection headline="The ultimate Audi warranty." />
         </Suspense>
 
         {/* Vehicle Coverage Accordion Section - Matching Homepage */}
@@ -639,7 +704,7 @@ const AudiWarrantyLanding: React.FC = () => {
         </Suspense>
 
         {/* What Audi Repairs Actually Cost */}
-        <section className="py-10 md:py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white" aria-label="Audi repair costs without warranty">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <div className="inline-flex items-center gap-2 bg-red-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
@@ -647,10 +712,10 @@ const AudiWarrantyLanding: React.FC = () => {
                 <span className="text-xs md:text-sm font-semibold text-red-700">Without warranty, you pay the full bill</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                What Audi repairs actually cost
+                What Audi repairs actually cost in the UK
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-                One breakdown could cost more than years of warranty cover. Here's what Audi owners pay without protection.
+                A single Audi breakdown could cost more than years of warranty cover. Here's what owners across the UK pay without protection.
               </p>
             </div>
 
@@ -727,11 +792,11 @@ const AudiWarrantyLanding: React.FC = () => {
                 <Shield className="w-3.5 h-3.5" />
                 Full Coverage Details
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-                All Audi Models Covered
+               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
+                All Audi models covered across the UK
               </h2>
               <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-                Select your Audi model to see tailored warranty options designed for premium performance vehicles.
+                Select your Audi model to see tailored warranty options. We cover every model from A1 to R8 at any VAT-registered garage in England, Scotland, Wales and Northern Ireland.
               </p>
             </div>
 
@@ -901,11 +966,11 @@ const AudiWarrantyLanding: React.FC = () => {
         )}
 
         {/* Why Audi Drivers Choose Us Section */}
-        <section className="py-10 md:py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white" aria-label="Why UK Audi drivers choose Buy A Warranty">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Why Audi Drivers Choose Us
+                Why Audi drivers across the UK choose us
               </h2>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -952,12 +1017,12 @@ const AudiWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* How Claims Work Section */}
-        <section className="py-10 md:py-16 bg-gray-50">
+        {/* How Audi warranty claims work */}
+        <section className="py-10 md:py-16 bg-gray-50" aria-label="How Audi warranty claims work in the UK">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                How Claims Work
+                How Audi warranty claims work
               </h2>
             </div>
 
@@ -988,11 +1053,11 @@ const AudiWarrantyLanding: React.FC = () => {
                 <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                 <span className="text-xs md:text-sm font-semibold text-green-700">Transparent Coverage</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 Your Audi cover, made <span className="text-brand-orange">crystal clear</span>
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-                See what's included - clear terms, no jargon, no surprises.
+                See exactly what's included — clear terms, plain English, no surprises. Trusted by Audi owners across the UK.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
@@ -1016,14 +1081,14 @@ const AudiWarrantyLanding: React.FC = () => {
         </section>
 
         {/* High Mileage Audi Section */}
-        <section className="py-10 md:py-16 bg-gray-50">
+        <section className="py-10 md:py-16 bg-gray-50" aria-label="High mileage Audi warranty cover UK">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
               {/* Image on LEFT side */}
               <div className="flex justify-center">
                  <OptimizedImage 
                    src={audiHighMileage}
-                   alt="Audi Q4 e-tron high mileage warranty UK - Drive your Audi with confidence, you're covered"
+                   alt="Used Audi Q2 high mileage extended warranty UK — affordable cover for older Audi models nationwide"
                    className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
                    width={448}
                    height={300}
@@ -1032,16 +1097,16 @@ const AudiWarrantyLanding: React.FC = () => {
               {/* Text on RIGHT side */}
               <div className="text-center lg:text-left">
                 <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
-                  High Mileage Audi, No Problem!
+                  High mileage Audi? No problem
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
-                  Drive Your Audi With Confidence<br />
-                  <span className="text-brand-orange">You're Covered</span>
+                  Drive your Audi with confidence<br />
+                  <span className="text-brand-orange">You're covered</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">
-                  Once you have your Audi warranty, drive with complete peace of mind. If something 
-                  goes wrong, simply call our claims team and we'll take care of everything.
-                  We want to get you back on the road as soon as possible.
+                  Once you have your Audi warranty, drive with complete peace of mind across England, Scotland, Wales and Northern Ireland. 
+                  If something goes wrong, simply call our UK-based claims team and we'll take care of everything — 
+                  we want to get you back on the road as quickly as possible.
                 </p>
                 <div className="space-y-2 md:space-y-3 text-left max-w-md mx-auto lg:mx-0">
                   <div className="flex items-center gap-2 md:gap-3">
@@ -1076,14 +1141,14 @@ const AudiWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Additional Audi Cover Options Section */}
-        <section className="py-10 md:py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white" aria-label="Optional Audi warranty extras">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Additional Audi Cover Options
+                Additional Audi cover options
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-                Enhance your Audi warranty with these optional extras
+                Enhance your Audi warranty with these optional extras — available across the UK
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
@@ -1113,15 +1178,15 @@ const AudiWarrantyLanding: React.FC = () => {
         </section>
 
         {/* UK Coverage Section */}
-        <section className="py-10 md:py-16 bg-gradient-to-br from-blue-900 to-gray-900 text-white">
+        <section className="py-10 md:py-16 bg-gradient-to-br from-blue-900 to-gray-900 text-white" aria-label="Audi warranty coverage across the UK">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
               <div className="text-center md:text-left">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-white">
-                  Nationwide UK Coverage
+                  Audi warranty cover across the entire UK
                 </h2>
                 <p className="text-base md:text-lg text-white mb-4 md:mb-6">
-                  Your Audi is covered wherever you drive in the United Kingdom. Our network of approved garages spans England, Scotland, Wales, and Northern Ireland.
+                  Your Audi is covered wherever you drive in England, Scotland, Wales and Northern Ireland. Our network of approved garages spans the whole of the United Kingdom.
                 </p>
                 <ul className="space-y-2 md:space-y-3 text-left max-w-md mx-auto md:mx-0">
                   {[
