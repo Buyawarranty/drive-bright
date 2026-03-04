@@ -1089,7 +1089,7 @@ const AudiWarrantyLanding: React.FC = () => {
                  <OptimizedImage 
                    src={audiHighMileage}
                    alt="Used Audi Q2 high mileage extended warranty UK — affordable cover for older Audi models nationwide"
-                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
+                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain -scale-x-100"
                    width={448}
                    height={300}
                  />
