@@ -691,17 +691,6 @@ const MercedesWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               {/* Left Column - Content */}
               <div className="text-center lg:text-left">
-                {/* Brand Logo */}
-                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
-                  <OptimizedImage 
-                    src={mercedesLogo} 
-                    alt="Mercedes-Benz Logo" 
-                    className="h-12 md:h-16 w-auto object-contain"
-                    priority={true}
-                    width={64}
-                    height={64}
-                  />
-                </div>
 
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
