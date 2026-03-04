@@ -552,7 +552,7 @@ const AudiWarrantyLanding: React.FC = () => {
 
                 {/* Subheadline */}
                 <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6 hero-description" itemProp="description">
-                  Used Audi extended warranty from £25/month. Covers S tronic, quattro, TFSI/TDI and e-tron components at any UK garage.
+                  Used Audi extended warranty from £19/month. Covers S tronic, quattro, TFSI/TDI and e-tron components at any UK garage.
                 </p>
 
                 {/* Benefits */}
