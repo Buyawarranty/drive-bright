@@ -50,12 +50,9 @@ const audiModelCategories = {
     'A5 Coupé': ['F5'],
     'A5 Cabriolet': ['F5'],
     'TT': ['8S'],
-    'TT RS': ['8S'],
-    'R8': ['4S'],
   },
   'Electric & Hybrid': {
     'e-tron': ['GE'],
-    'e-tron GT': ['F8'],
     'Q4 e-tron': ['F4'],
     'Q8 e-tron': ['GE'],
     'A6 TFSI e': ['C8'],
@@ -85,7 +82,7 @@ const audiFAQs = [
   },
   {
     question: "Does the warranty cover electric and hybrid Audi models?",
-    answer: "Yes. Our plans cover e-tron, e-tron GT, Q4 e-tron and TFSI e plug-in hybrid components including the electric motor, battery management system, power electronics, on-board charger, and thermal management."
+    answer: "Yes. Our plans cover e-tron, Q4 e-tron, Q8 e-tron and TFSI e plug-in hybrid components including the electric motor, battery management system, power electronics, on-board charger, and thermal management."
   },
   {
     question: "Is the S tronic gearbox covered?",
@@ -275,7 +272,7 @@ const AudiWarrantyLanding: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": "Audi Extended Warranty UK",
-    "description": "Comprehensive used Audi extended warranty plans covering A3, A4, A5, A6, A7, A8, Q2, Q3, Q5, Q7, Q8, TT, R8, e-tron and e-tron GT models. Includes S tronic gearbox, quattro drivetrain, TFSI and TDI engines, MMI infotainment, air suspension and EV components. Available nationwide across England, Scotland, Wales and Northern Ireland from £25 per month.",
+    "description": "Comprehensive used Audi extended warranty plans covering A3, A4, A5, A6, A7, A8, Q2, Q3, Q5, Q7, Q8, TT and e-tron models. Includes S tronic gearbox, quattro drivetrain, TFSI and TDI engines, MMI infotainment, air suspension and EV components. Available nationwide across England, Scotland, Wales and Northern Ireland from £25 per month.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": {
       "@type": "Organization",
@@ -466,7 +463,7 @@ const AudiWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Audi Extended Warranty UK | Used Audi Warranty Cover from £25/mo</title>
-        <meta name="description" content="Get a used Audi extended warranty from £25/month. Covers A3, A4, A5, A6, Q3, Q5, Q7, Q8, e-tron, TT and R8. S tronic gearbox, quattro drivetrain, TFSI/TDI engines and EV components included. Any VAT-registered garage across England, Scotland, Wales and Northern Ireland. Instant online quote in 60 seconds." />
+        <meta name="description" content="Get a used Audi extended warranty from £25/month. Covers A3, A4, A5, A6, Q3, Q5, Q7, Q8, TT and e-tron. S tronic gearbox, quattro drivetrain, TFSI/TDI engines and EV components included. Any VAT-registered garage across England, Scotland, Wales and Northern Ireland. Instant online quote in 60 seconds." />
         <meta name="keywords" content="Audi extended warranty, Audi used car warranty, Audi warranty UK, Audi warranty cost, Audi A4 warranty, Audi Q5 warranty, Audi e-tron warranty, Audi A3 warranty, Audi Q7 warranty, Audi S tronic warranty, used Audi warranty, second hand Audi warranty, Audi aftermarket warranty, Audi warranty cover, Audi breakdown cover, Audi mechanical warranty, Audi warranty quote online" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
