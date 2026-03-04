@@ -7,9 +7,10 @@ import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { CustomersTab } from '@/components/admin/CustomersTab';
 import { SetTargetsPanel } from './SetTargetsPanel';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
+import { LeadVersionHistory } from '@/components/admin/leads/LeadVersionHistory';
 import { 
   Users, ShoppingBag, Target, 
-  TrendingUp, UserCheck, ClipboardList
+  TrendingUp, UserCheck, ClipboardList, History
 } from 'lucide-react';
 
 interface SalesLeadDashboardProps {
@@ -158,6 +159,10 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">Team KPIs</span>
           </TabsTrigger>
+          <TabsTrigger value="version-history" className="gap-2 flex-1 lg:flex-none">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Version History</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all-leads">
@@ -228,6 +233,10 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="version-history">
+          <LeadVersionHistory />
         </TabsContent>
       </Tabs>
     </div>
