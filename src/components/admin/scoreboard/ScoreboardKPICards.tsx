@@ -15,11 +15,11 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
   const topAgent = agents[0];
   const myAgent = agents.find(a => a.id === currentAdminUserId);
 
-  // My target progress (deals converted from leads)
+  // My target progress (based on actual sales/deals closed)
   const myTarget = myAgent?.monthlyTarget || null;
-  const myConverted = myAgent?.leadsConverted || 0;
-  const myRemaining = myTarget ? Math.max(myTarget - myConverted, 0) : null;
-  const myProgress = myTarget ? Math.min((myConverted / myTarget) * 100, 100) : null;
+  const mySales = myAgent?.salesCount || 0;
+  const myRemaining = myTarget ? Math.max(myTarget - mySales, 0) : null;
+  const myProgress = myTarget ? Math.min((mySales / myTarget) * 100, 100) : null;
 
   // My conversion rate: leads converted / leads assigned
   const myConversionRate = myAgent
@@ -38,13 +38,13 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
                   <Target className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Your Monthly Lead Conversion Target</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">{myConverted}</span>
-                    <span className="text-muted-foreground text-lg">/</span>
-                    <span className="text-2xl font-bold text-muted-foreground">{myTarget}</span>
-                    <span className="text-sm text-muted-foreground">leads converted</span>
-                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Your Monthly Sales Target</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold">{mySales}</span>
+                      <span className="text-muted-foreground text-lg">/</span>
+                      <span className="text-2xl font-bold text-muted-foreground">{myTarget}</span>
+                      <span className="text-sm text-muted-foreground">deals closed</span>
+                    </div>
                 </div>
               </div>
               <div className="flex-1 max-w-md">
@@ -87,10 +87,10 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-emerald-600">
               <CheckCircle2 className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">Converted</span>
+              <span className="text-xs font-medium truncate">My Sales</span>
             </div>
-            <div className="text-xl font-bold">{myConverted}</div>
-            <div className="text-xs text-muted-foreground mt-1">leads closed</div>
+            <div className="text-xl font-bold">{mySales}</div>
+            <div className="text-xs text-muted-foreground mt-1">deals closed</div>
           </CardContent>
         </Card>
 
