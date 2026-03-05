@@ -5846,6 +5846,14 @@ export type Database = {
         Args: { p_campaign_id: string }
         Returns: undefined
       }
+      update_lead_status: {
+        Args: {
+          p_is_abandoned_cart?: boolean
+          p_lead_id: string
+          p_status: string
+        }
+        Returns: Json
+      }
       update_user_presence: {
         Args: { p_current_tab?: string; p_status?: string }
         Returns: string
