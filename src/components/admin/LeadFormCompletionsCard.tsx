@@ -48,15 +48,24 @@ export const LeadFormCompletionsCard: React.FC = () => {
       // But created_at is when the record was first created (step 1)
       // We need records that REACHED step 3+ within our date range
       // The most accurate: query abandoned_carts created in range with step >= 3
-      const { data: carts, error } = await supabase
-        .from('abandoned_carts')
-        .select('id, full_name, email, phone, vehicle_reg, step_abandoned, created_at, is_converted')
-        .gte('created_at', from.toISOString())
-        .lte('created_at', to.toISOString())
-        .gte('step_abandoned', 3)
-        .order('created_at', { ascending: false });
+      const [cartsRes, leadsRes] = await Promise.all([
+        supabase
+          .from('abandoned_carts')
+          .select('id, full_name, email, phone, vehicle_reg, step_abandoned, created_at, is_converted')
+          .gte('created_at', from.toISOString())
+          .lte('created_at', to.toISOString())
+          .gte('step_abandoned', 3)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('sales_leads')
+          .select('id')
+          .gte('created_at', from.toISOString())
+          .lte('created_at', to.toISOString()),
+      ]);
       
-      if (error) throw error;
+      if (cartsRes.error) throw cartsRes.error;
+      const carts = cartsRes.data;
+      const uniqueLeads = leadsRes.data?.length || 0;
       
       const total = carts?.length || 0;
       const converted = carts?.filter(c => c.is_converted).length || 0;
@@ -73,7 +82,7 @@ export const LeadFormCompletionsCard: React.FC = () => {
         .map(([date, count]) => ({ date, count }))
         .sort((a, b) => a.date.localeCompare(b.date));
 
-      return { total, converted, step3, step4, dailyBreakdown, records: carts || [] };
+      return { total, uniqueLeads, converted, step3, step4, dailyBreakdown, records: carts || [] };
     },
   });
 
@@ -163,10 +172,16 @@ export const LeadFormCompletionsCard: React.FC = () => {
         ) : data ? (
           <div className="space-y-4">
             {/* KPI Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div className="p-3 rounded-lg border bg-white text-center">
                 <p className="text-3xl font-bold text-gray-900">{data.total}</p>
                 <p className="text-xs text-gray-500 mt-1">Total Completions</p>
+                <p className="text-[10px] text-gray-400">Incl. re-submissions</p>
+              </div>
+              <div className="p-3 rounded-lg border bg-orange-50 text-center">
+                <p className="text-3xl font-bold text-orange-600">{data.uniqueLeads}</p>
+                <p className="text-xs text-orange-700 mt-1">Unique Leads</p>
+                <p className="text-[10px] text-orange-500">De-duplicated</p>
               </div>
               <div className="p-3 rounded-lg border bg-white text-center">
                 <p className="text-3xl font-bold text-blue-600">{data.step3}</p>
