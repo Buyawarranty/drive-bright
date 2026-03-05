@@ -154,7 +154,7 @@ const hondaFAQs = [
   },
   {
     question: "How much does a Honda extended warranty cost in the UK?",
-    answer: "Extended Honda warranty prices typically start from £24 a month, depending on your Honda model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    answer: "Extended Honda warranty prices typically start from £19 a month, depending on your Honda model, mileage, and chosen claim limit. We offer plans from just 60p a day with flexible monthly or annual payment options."
   },
   {
     question: "Can I buy a Honda extended warranty after my original warranty has expired?",
@@ -402,7 +402,7 @@ const HondaWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "24",
+      "price": "19",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/honda-warranty/",
@@ -410,7 +410,7 @@ const HondaWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "24",
+        "price": "19",
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -444,7 +444,7 @@ const HondaWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£24-£85/month",
+      "priceRange": "£19-£85/month",
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
@@ -501,7 +501,7 @@ const HondaWarrantyLanding: React.FC = () => {
     "url": "https://buyawarranty.co.uk",
     "telephone": "+44-800-917-9270",
     "email": "support@buyawarranty.co.uk",
-    "priceRange": "£24-£85/month",
+    "priceRange": "£19-£85/month",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "124 City Road",
@@ -556,8 +556,8 @@ const HondaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Honda Extended Warranty UK | Civic, CR-V, Jazz, HR-V Cover from £24/mo</title>
-        <meta name="description" content="Protect your Honda Civic, CR-V, Jazz, HR-V, ZR-V, Accord or Honda e with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
+        <title>Honda Extended Warranty UK | Civic, CR-V, Jazz, HR-V Cover from £19/mo</title>
+        <meta name="description" content="Protect your Honda Civic, CR-V, Jazz, HR-V, ZR-V, Accord or Honda e with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Honda extended warranty, Honda used car warranty, Honda warranty UK, Honda warranty cost, Honda warranty quote, Honda Civic warranty, Honda CR-V warranty, Honda Jazz warranty, Honda HR-V warranty, Honda e warranty, Honda hybrid warranty, used Honda warranty, second hand Honda warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/honda-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -570,7 +570,7 @@ const HondaWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Honda Warranty UK | Civic, CR-V, Jazz, HR-V, ZR-V from £24/mo" />
+        <meta property="og:title" content="Honda Warranty UK | Civic, CR-V, Jazz, HR-V, ZR-V from £19/mo" />
         <meta property="og:description" content="Comprehensive Honda warranty coverage for Civic, CR-V, Jazz, HR-V, ZR-V, Accord and e:HEV hybrids. Engine, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/honda-warranty/" />
         <meta property="og:type" content="website" />
@@ -582,12 +582,12 @@ const HondaWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Honda Warranty UK | Civic, CR-V, Jazz, HR-V from £24/mo" />
+        <meta name="twitter:title" content="Honda Warranty UK | Civic, CR-V, Jazz, HR-V from £19/mo" />
         <meta name="twitter:description" content="Protect your Honda Civic, CR-V, Jazz, HR-V, ZR-V with comprehensive extended warranty. Hybrid and EV models covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Honda extended warranty services in the UK, covering Civic, CR-V, Jazz, HR-V, ZR-V, Accord, Honda e, and e:Ny1 models. Human-authored and fact-checked." />
-        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Honda extended warranty plans in the UK from £24/month. Coverage includes engine, gearbox, electrical, hybrid and EV components for all Honda models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
+        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Honda extended warranty plans in the UK from £19/month. Coverage includes engine, gearbox, electrical, hybrid and EV components for all Honda models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
@@ -612,26 +612,17 @@ const HondaWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               {/* Left Column - Content */}
               <div className="text-center lg:text-left">
-                {/* Brand Logo */}
-                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Honda.svg/800px-Honda.svg.png" 
-                    alt="Honda Logo" 
-                    className="h-10 md:h-14 w-auto object-contain"
-                    width={112}
-                    height={56}
-                  />
-                </div>
 
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Honda Extended Warranty </span>
-                  <span className="text-brand-orange">in 60 Seconds!</span>
+                  <span className="text-gray-900">Protect your Honda</span>
+                  <br />
+                  <span className="text-brand-orange">in 60 seconds.</span>
                 </h1>
 
                 {/* Subheadline */}
                 <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6">
-                  Protect your Honda with dealer-level repairs, UK-wide cover and no-surprise costs. Get a fixed-price with instant cover.
+                  Dealer-level warranty. Fixed price. No surprise bills.
                 </p>
 
                 {/* Benefits */}
@@ -778,7 +769,7 @@ const HondaWarrantyLanding: React.FC = () => {
         </Suspense>
         <BrandRepairCosts
           brandName="Honda"
-          monthlyPrice="£24"
+          monthlyPrice="£19"
           onGetQuote={scrollToQuoteForm}
           repairs={[
             { name: 'CVT Transmission Rebuild', cost: '£2,000 – £4,500', icon: 'Wrench', severity: 'critical' },
@@ -1001,8 +992,8 @@ const HondaWarrantyLanding: React.FC = () => {
               <div className="hidden lg:flex justify-center items-end pt-16">
                 <OptimizedImage 
                   src={hondaCrvWarranty}
-                  alt="Honda CR-V front view - Why Honda CR-V owners choose Buy A Warranty for extended warranty cover"
-                  className="max-w-[35%] h-auto object-contain"
+                   alt="Honda CR-V front view - Why Honda CR-V owners choose Buy A Warranty for extended warranty cover"
+                  className="w-[400px] h-auto object-contain"
                   width={400}
                   height={300}
                 />
@@ -1081,8 +1072,8 @@ const HondaWarrantyLanding: React.FC = () => {
               <div className="flex justify-center">
                 <OptimizedImage 
                   src={hondaHrvHighMileage}
-                  alt="Honda HR-V front view - High mileage Honda HR-V extended warranty coverage UK"
-                  className="max-w-[35%] h-auto object-contain"
+                   alt="Honda HR-V front view - High mileage Honda HR-V extended warranty coverage UK"
+                  className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
                   width={448}
                   height={300}
                 />
