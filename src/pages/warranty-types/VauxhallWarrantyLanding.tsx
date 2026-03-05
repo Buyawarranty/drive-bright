@@ -25,9 +25,9 @@ const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 // Assets
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
-import vauxhallCorsaHero from '@/assets/vauxhall-corsa-extended-warranty-uk.png';
+import vauxhallCorsaHero from '@/assets/vauxhall-extended-warranty-uk.png';
 import vauxhallWhyChooseUs from '@/assets/vauxhall-why-choose-us.webp';
-import vauxhallConfidenceCovered from '@/assets/vauxhall-confidence-covered.webp';
+import vauxhallConfidenceCovered from '@/assets/vauxhall-confidence-covered.png';
 
 // Vauxhall Models covered (grouped by category)
 const vauxhallModelCategories = {
