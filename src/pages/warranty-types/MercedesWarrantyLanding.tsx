@@ -633,7 +633,7 @@ const MercedesWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Mercedes-Benz Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
-        <meta name="description" content="Protect your Mercedes-Benz with comprehensive extended warranty cover. All models from A-Class to S-Class and EQ Series covered. Engine, gearbox, electrics & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £29/month. Get your instant quote in 60 seconds." />
+        <meta name="description" content="Protect your Mercedes-Benz with comprehensive extended warranty cover. All models from A-Class to S-Class and EQ Series covered. Engine, gearbox, electrics & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Mercedes extended warranty, Mercedes-Benz used car warranty, Mercedes warranty UK, Mercedes warranty cost, Mercedes warranty quote, Mercedes C-Class warranty, Mercedes GLC warranty, Mercedes EQC warranty, Mercedes E-Class warranty, Mercedes S-Class warranty, Mercedes electric warranty, Mercedes hybrid warranty, used Mercedes warranty, second hand Mercedes warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/mercedes-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -648,7 +648,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         <meta httpEquiv="content-language" content="en-GB" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Mercedes-Benz Extended Warranty UK | Instant Quotes from £29/month" />
+        <meta property="og:title" content="Mercedes-Benz Extended Warranty UK | Instant Quotes from £19/month" />
         <meta property="og:description" content="Comprehensive Mercedes-Benz warranty coverage. Engine, gearbox, electrics & more. All models covered including hybrid and electric. Nationwide UK coverage with any garage. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/mercedes-warranty/" />
         <meta property="og:type" content="website" />
@@ -661,7 +661,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Mercedes-Benz Extended Warranty UK | From £29/month" />
+        <meta name="twitter:title" content="Mercedes-Benz Extended Warranty UK | From £19/month" />
         <meta name="twitter:description" content="Protect your Mercedes-Benz with comprehensive extended warranty. All models covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
@@ -848,10 +848,10 @@ const MercedesWarrantyLanding: React.FC = () => {
         <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
-        <BrandRepairCosts
-          brandName="Mercedes-Benz"
-          monthlyPrice="£29"
-          onGetQuote={scrollToQuoteForm}
+         <BrandRepairCosts
+           brandName="Mercedes-Benz"
+           monthlyPrice="£19"
+           onGetQuote={scrollToQuoteForm}
           repairs={[
             { name: 'Timing Chain Kit', cost: '£1,500 – £3,500', icon: 'Wrench', severity: 'high' },
             { name: 'Turbocharger Replacement', cost: '£2,000 – £4,000', icon: 'Zap', severity: 'high' },
