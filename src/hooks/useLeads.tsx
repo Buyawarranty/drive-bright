@@ -679,7 +679,7 @@ export const useLeads = () => {
     
     // Mark this lead as recently updated to protect from realtime overwrites
     recentOptimisticUpdatesRef.current.add(leadId);
-    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 10000);
+    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 30000);
 
     // Optimistic update - instant UI response, capture previous state
     setLeads(prev => prev.map(lead => {
@@ -689,49 +689,27 @@ export const useLeads = () => {
     }));
 
     try {
-      if (isAbandonedCart) {
-        const contactStatus = status;
-        
-        // When marking as lost or fake_lead, also set is_converted = true
-        // so the cart won't reappear as a duplicate lead on next refetch
-        const updatePayload: any = {
-          contact_status: contactStatus,
-          updated_at: now
-        };
-        if (status === 'lost' || status === 'fake_lead' || status === 'converted') {
-          updatePayload.is_converted = true;
-        }
-        
-        const { data, error } = await supabase
-          .from('abandoned_carts')
-          .update(updatePayload)
-          .eq('id', actualId)
-          .select('id');
+      // Use SECURITY DEFINER RPC to bypass RLS — ensures all agents can update status
+      const { data: result, error: rpcError } = await supabase
+        .rpc('update_lead_status', {
+          p_lead_id: actualId,
+          p_status: status,
+          p_is_abandoned_cart: isAbandonedCart
+        });
 
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-          throw new Error('Status update was blocked by permissions. Please refresh and try again.');
-        }
-        
-        // If marked as converted/lost/fake, remove from local state immediately
-        // since the cart won't be fetched on next refetch (is_converted = true)
-        if (status === 'lost' || status === 'fake_lead' || status === 'converted') {
-          setLeads(prev => prev.filter(lead => lead.id !== leadId));
-        }
-      } else {
-        const { data, error } = await supabase
-          .from('sales_leads')
-          .update(updates)
-          .eq('id', actualId)
-          .select('id');
+      if (rpcError) throw rpcError;
 
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-          throw new Error('Status update was blocked by permissions. Please refresh and try again.');
-        }
+      const statusResult = result as { success: boolean; error?: string };
+      if (!statusResult.success) {
+        throw new Error(statusResult.error || 'Status update failed');
+      }
 
+      // If marked as converted/lost/fake on abandoned cart, remove from local state
+      if (isAbandonedCart && (status === 'lost' || status === 'fake_lead' || status === 'converted')) {
+        setLeads(prev => prev.filter(lead => lead.id !== leadId));
+      }
+
+      if (!isAbandonedCart) {
         // Log activity in background (don't await)
         logActivity(leadId, 'status_change', `Status changed to ${status}`);
       }
@@ -796,7 +774,7 @@ export const useLeads = () => {
     
     // Protect from realtime overwrites
     recentOptimisticUpdatesRef.current.add(leadId);
-    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 10000);
+    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 30000);
     
     // Optimistic update
     setLeads(prev => prev.map(lead => {
