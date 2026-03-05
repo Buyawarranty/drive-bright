@@ -57,6 +57,7 @@ interface PolicyData {
   claim_limit?: number;
   voluntary_excess?: number;
   payment_type: string;
+  additional_notes?: string;
 }
 
 export const PolicyDocumentsTab: React.FC = () => {
@@ -554,6 +555,14 @@ export const PolicyDocumentsTab: React.FC = () => {
                   Your full policy booklet (attached) includes a detailed breakdown of inclusions, exclusions, claim procedures, and general conditions. Please keep it somewhere safe for future reference.
                 </p>
               </div>
+
+              {/* Additional Notes */}
+              {(selectedPolicy as any)?.additional_notes && (selectedPolicy as any).additional_notes.trim() && (
+                <div style={{ background: isBW ? '#f5f5f5' : '#fef9ee', border: `2px solid ${isBW ? '#666' : '#f59e0b'}`, borderRadius: '6px', padding: '12px 14px', marginBottom: '14px' }}>
+                  <h4 style={{ color: isBW ? '#000' : '#92400e', fontSize: '13px', marginBottom: '6px', fontWeight: '700' }}>⭐ Important Notes About Your Cover</h4>
+                  <p style={{ color: isBW ? '#333' : '#78350f', fontSize: '11px', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{(selectedPolicy as any).additional_notes}</p>
+                </div>
+              )}
 
               {/* Claims */}
               <div style={{ background: c.claimsBg, border: `1px solid ${c.claimsBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
