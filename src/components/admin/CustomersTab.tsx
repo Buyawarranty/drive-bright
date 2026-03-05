@@ -1569,6 +1569,7 @@ export const CustomersTab = () => {
             voluntary_excess: editingCustomer.voluntary_excess,
             claim_limit: editingCustomer.claim_limit,
             payment_type: editingCustomer.payment_type,
+            payment_amount: editingCustomer.final_amount || null,
             mot_fee: editingCustomer.mot_fee,
             tyre_cover: editingCustomer.tyre_cover,
             wear_tear: editingCustomer.wear_tear,
