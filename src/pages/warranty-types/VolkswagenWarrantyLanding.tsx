@@ -24,7 +24,7 @@ const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
 
 // Assets
-import vwHeroImage from '@/assets/vw-used-car-extended-warranty-uk.webp';
+const vwHeroImage = '/lovable-uploads/vw-used-car-warranty-hero.png';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
@@ -33,8 +33,8 @@ import pandaMascot from '@/assets/warranty-panda-mascot.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
-import vwWhyChooseUs from '@/assets/vw-extended-used-car-warranty.webp';
-import vwHighMileage from '@/assets/vw-id3-warranty.webp';
+import vwWhyChooseUs from '@/assets/vw-why-choose-us.webp';
+import vwHighMileage from '@/assets/vw-confidence-covered.webp';
 
 // VW Models covered (grouped by category)
 const vwModelCategories = {
