@@ -27,7 +27,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import peugeot3008Hero from '@/assets/peugeot-3008-extended-warranty-uk.png';
 import peugeotWhyChooseUs from '@/assets/peugeot-why-choose-us.webp';
-import peugeotConfidenceCovered from '@/assets/peugeot-confidence-covered.webp';
+import peugeotConfidenceCovered from '@/assets/peugeot-confidence-covered.png';
 
 // Peugeot Models covered (grouped by category)
 const peugeotModelCategories = {
