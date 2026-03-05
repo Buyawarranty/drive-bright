@@ -836,7 +836,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Date Created */}
       <TableCell>
         <span className="text-xs text-muted-foreground">
-          {format(new Date(lead.created_at), 'MMM d, yyyy')}
+          {format(new Date(lead.created_at), 'MMM d, yyyy HH:mm')}
         </span>
       </TableCell>
     </TableRow>
