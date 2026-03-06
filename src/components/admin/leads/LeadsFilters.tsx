@@ -290,6 +290,10 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             🔥 Priority
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-red-100">{leadCounts.high_priority}</Badge>
           </TabsTrigger>
+          <TabsTrigger value="fake">
+            🚫 Fake
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-red-200">{leadCounts.fake}</Badge>
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
