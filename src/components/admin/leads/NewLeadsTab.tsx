@@ -234,7 +234,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     lost: 0,
     converted: leads.filter(l => l.status === 'converted').length,
     high_priority: leads.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
-    fake: 0,
+    fake: leads.filter(l => l.status === 'fake_lead').length,
   }), [leads]);
 
   // Assignment counts for the filter dropdown
