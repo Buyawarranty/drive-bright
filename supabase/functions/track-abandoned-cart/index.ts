@@ -183,31 +183,44 @@ const handler = async (req: Request): Promise<Response> => {
 
     // If we have a recent entry, update it instead of creating a new one
     if (existingCart && existingCart.length > 0) {
-      // CRITICAL SAFEGUARD: Never send phone/name in the update payload if the new value is empty.
-      // This prevents Step 3 (which doesn't collect phone) from wiping Step 2 phone data.
+      // CRITICAL SAFEGUARD: Build update payload carefully.
+      // Only include phone/full_name if the new value is non-empty.
+      // This prevents Step 3 (which doesn't collect phone) from wiping Step 2 data.
       const updatePayload: Record<string, any> = {
         vehicle_reg: cartData.vehicle_reg,
-          vehicle_make: cartData.vehicle_make,
-          vehicle_model: cartData.vehicle_model,
-          vehicle_year: cartData.vehicle_year,
-          mileage: cartData.mileage,
-          plan_id: cartData.plan_id,
-          plan_name: cartData.plan_name,
-          payment_type: cartData.payment_type,
-          vehicle_type: cartData.vehicle_type,
-          step_abandoned: cartData.step_abandoned, // Update to the latest step reached
-          // Store extended data in metadata JSON
-          cart_metadata: {
-            total_price: cartData.total_price,
-            voluntary_excess: cartData.voluntary_excess,
-            claim_limit: cartData.claim_limit,
-            labour_rate: cartData.labour_rate,
-            boost_addon: cartData.boost_addon,
-            address: cartData.address,
-            protection_addons: cartData.protection_addons
-          },
-          updated_at: new Date().toISOString()
-        })
+        vehicle_make: cartData.vehicle_make,
+        vehicle_model: cartData.vehicle_model,
+        vehicle_year: cartData.vehicle_year,
+        mileage: cartData.mileage,
+        plan_id: cartData.plan_id,
+        plan_name: cartData.plan_name,
+        payment_type: cartData.payment_type,
+        vehicle_type: cartData.vehicle_type,
+        step_abandoned: cartData.step_abandoned,
+        cart_metadata: {
+          total_price: cartData.total_price,
+          voluntary_excess: cartData.voluntary_excess,
+          claim_limit: cartData.claim_limit,
+          labour_rate: cartData.labour_rate,
+          boost_addon: cartData.boost_addon,
+          address: cartData.address,
+          protection_addons: cartData.protection_addons
+        },
+        updated_at: new Date().toISOString()
+      };
+
+      // ONLY include phone if the new value is non-empty — never wipe existing phone
+      if (cartData.phone && cartData.phone.trim() !== '') {
+        updatePayload.phone = cartData.phone;
+      }
+      // ONLY include full_name if the new value is non-empty — never wipe existing name
+      if (cartData.full_name && cartData.full_name.trim() !== '') {
+        updatePayload.full_name = cartData.full_name;
+      }
+
+      const { error: updateError } = await supabase
+        .from('abandoned_carts')
+        .update(updatePayload)
         .eq('id', existingCart[0].id);
 
       if (updateError) {
