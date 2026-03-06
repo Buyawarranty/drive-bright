@@ -225,6 +225,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Server-side identity hydration: recover phone/name from historical records when Step 3/4 payloads omit them
+    await hydrateIdentityFromHistory(supabase, cartData);
+
     console.log(`📊 Tracking abandoned cart for: ${cartData.email} at step ${cartData.step_abandoned}`);
 
     // Check if we already have a recent abandoned cart entry for this email (any step)
