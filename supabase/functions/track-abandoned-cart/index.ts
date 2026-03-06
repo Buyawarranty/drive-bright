@@ -183,12 +183,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // If we have a recent entry, update it instead of creating a new one
     if (existingCart && existingCart.length > 0) {
-      const { error: updateError } = await supabase
-        .from('abandoned_carts')
-        .update({
-          full_name: cartData.full_name,
-          phone: cartData.phone ?? undefined,
-          vehicle_reg: cartData.vehicle_reg,
+      // CRITICAL SAFEGUARD: Never send phone/name in the update payload if the new value is empty.
+      // This prevents Step 3 (which doesn't collect phone) from wiping Step 2 phone data.
+      const updatePayload: Record<string, any> = {
+        vehicle_reg: cartData.vehicle_reg,
           vehicle_make: cartData.vehicle_make,
           vehicle_model: cartData.vehicle_model,
           vehicle_year: cartData.vehicle_year,
