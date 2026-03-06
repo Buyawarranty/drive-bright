@@ -127,6 +127,65 @@ async function triggerWhatsAppMessage(supabase: any, supabaseUrl: string, supaba
   }
 }
 
+async function hydrateIdentityFromHistory(supabase: any, cartData: AbandonedCartData) {
+  if (!cartData.email) return;
+
+  const isBlank = (value?: string | null) => !value || value.trim() === '';
+  const needsPhone = isBlank(cartData.phone);
+  const needsName = isBlank(cartData.full_name);
+
+  if (!needsPhone && !needsName) return;
+
+  try {
+    let historicalPhone: string | undefined;
+    let historicalName: string | undefined;
+
+    const { data: cartHistory } = await supabase
+      .from('abandoned_carts')
+      .select('phone, full_name, created_at')
+      .eq('email', cartData.email)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (cartHistory && cartHistory.length > 0) {
+      for (const row of cartHistory) {
+        if (!historicalPhone && !isBlank(row.phone)) historicalPhone = row.phone;
+        if (!historicalName && !isBlank(row.full_name)) historicalName = row.full_name;
+        if (historicalPhone && historicalName) break;
+      }
+    }
+
+    if (!historicalPhone || !historicalName) {
+      const { data: leadHistory } = await supabase
+        .from('sales_leads')
+        .select('phone, first_name, created_at')
+        .eq('email', cartData.email)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (leadHistory && leadHistory.length > 0) {
+        for (const row of leadHistory) {
+          if (!historicalPhone && !isBlank(row.phone)) historicalPhone = row.phone;
+          if (!historicalName && !isBlank(row.first_name)) historicalName = row.first_name;
+          if (historicalPhone && historicalName) break;
+        }
+      }
+    }
+
+    if (needsPhone && historicalPhone) {
+      cartData.phone = historicalPhone;
+      console.log(`📞 Hydrated missing phone from history for: ${cartData.email}`);
+    }
+
+    if (needsName && historicalName) {
+      cartData.full_name = historicalName;
+      console.log(`👤 Hydrated missing name from history for: ${cartData.email}`);
+    }
+  } catch (historyError) {
+    console.error('Identity hydration failed (non-blocking):', historyError);
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
