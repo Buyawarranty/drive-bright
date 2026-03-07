@@ -394,32 +394,30 @@ export const PolicyDocumentsTab: React.FC = () => {
                 <User className="h-4 w-4" />
                 Customer Details
               </CardTitle>
-              {selectedPolicy && (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => setPrintMode('bw')}
-                      className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                    >
-                      B&W
-                    </button>
-                    <button
-                      onClick={() => setPrintMode('colour')}
-                      className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                    >
-                      Colour
-                    </button>
-                  </div>
-                  <Button size="sm" onClick={() => { setShowPreview(true); }} className="gap-1">
-                    <FileText className="h-3.5 w-3.5" />
-                    Preview
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); setTimeout(handlePrint, 100); }} className="gap-1">
-                    <Printer className="h-3.5 w-3.5" />
-                    Print
-                  </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setPrintMode('bw')}
+                    className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                  >
+                    B&W
+                  </button>
+                  <button
+                    onClick={() => setPrintMode('colour')}
+                    className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                  >
+                    Colour
+                  </button>
                 </div>
-              )}
+                <Button size="sm" onClick={() => { setShowPreview(true); }} className="gap-1">
+                  <FileText className="h-3.5 w-3.5" />
+                  Preview
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); setTimeout(handlePrint, 100); }} className="gap-1">
+                  <Printer className="h-3.5 w-3.5" />
+                  Print
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="text-sm space-y-1">
               <p><span className="text-gray-500">Name:</span> <strong>{selectedCustomer.name}</strong></p>
