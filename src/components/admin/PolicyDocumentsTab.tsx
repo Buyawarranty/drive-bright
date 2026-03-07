@@ -465,15 +465,15 @@ export const PolicyDocumentsTab: React.FC = () => {
                     Colour
                   </button>
                 </div>
-                <Button size="sm" onClick={() => { setShowPreview(true); }} className="gap-1">
+                <Button size="sm" onClick={() => { setShowPreview(true); logLetterToPostedLog('letter'); }} className="gap-1">
                   <FileText className="h-3.5 w-3.5" />
                   Preview
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); setTimeout(handlePrint, 100); }} className="gap-1">
+                <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); logLetterToPostedLog('letter'); setTimeout(handlePrint, 100); }} className="gap-1">
                   <Printer className="h-3.5 w-3.5" />
                   Print
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => handlePrintLabel()} className="gap-1">
+                <Button size="sm" variant="outline" onClick={() => { handlePrintLabel(); logLetterToPostedLog('label'); }} className="gap-1">
                   <Tag className="h-3.5 w-3.5" />
                   Print Label
                 </Button>
