@@ -528,7 +528,16 @@ export const PolicyDocumentsTab: React.FC = () => {
 
       {/* A4 Letter Preview */}
       {showPreview && selectedCustomer && selectedPolicy && (
-        <Card className="border-2">
+        <Card className="border-2 relative">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => { setTimeout(handlePrint, 100); }} className="gap-1">
+              <Printer className="h-3.5 w-3.5" />
+              Print This
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowPreview(false)} className="h-8 w-8 p-0">
+              ✕
+            </Button>
+          </div>
           <CardContent className="p-8 bg-white">
             <div ref={printRef} className="policy-letter">
               {/* Header */}
