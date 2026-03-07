@@ -43,6 +43,7 @@ interface Order {
   warranty_number: string | null;
   claim_limit: number | null;
   voluntary_excess: number | null;
+  seasonal_bonus_months?: number | null;
   additional_notes: string | null;
   customer?: {
     name?: string | null;
@@ -402,6 +403,7 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
             policyEndDate: printLetterDialog.order.policy_end_date,
             claimLimit: printLetterDialog.order.claim_limit || undefined,
             voluntaryExcess: printLetterDialog.order.voluntary_excess || undefined,
+            seasonalBonusMonths: printLetterDialog.order.seasonal_bonus_months ?? undefined,
             additionalNotes: printLetterDialog.order.additional_notes || undefined,
           }}
         />

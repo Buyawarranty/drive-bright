@@ -5087,7 +5087,7 @@ Please log in and change your password after first login.`;
             vehicleRental: editingCustomer.vehicle_rental || false,
             transferCover: editingCustomer.transfer_cover || false,
             consequential: editingCustomer.consequential || false,
-            seasonalBonusMonths: (editingCustomer as any).seasonal_bonus_months || undefined,
+            seasonalBonusMonths: editingCustomer.customer_policies?.[0]?.seasonal_bonus_months ?? (editingCustomer as any).seasonal_bonus_months ?? undefined,
             additionalNotes: editingCustomer.customer_policies?.[0]?.additional_notes || undefined,
           }}
         />
