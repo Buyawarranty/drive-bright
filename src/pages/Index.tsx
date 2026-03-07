@@ -588,9 +588,10 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Capture GCLID from Google Ads on page load for server-side conversion tracking
+  // Capture GCLID/FBCLID from ads on page load for server-side conversion tracking
   useEffect(() => {
     captureGclid();
+    captureFbclid();
   }, []);
   
   // Handle PayPal/redirect payment returns
@@ -1122,6 +1123,13 @@ const Index = () => {
     saveStateToLocalStorage(3);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
+    // Fire Meta Pixel Lead event on Step 2 completion
+    trackMetaPixelFunnelEvent('Lead', {
+      content_name: 'Step 2 - Quote Delivery',
+      content_category: 'Lead Capture',
+      vehicle_reg: vehicleData?.regNumber,
+    });
+    
     // NOTE: Do NOT call trackAbandonedCart here - a sales_lead was already
     // created in QuoteDeliveryStep, so this would cause duplicate entries.
   };
@@ -1233,6 +1241,8 @@ const Index = () => {
         return;
       }
       
+      const fbclid = getStoredFbclid();
+      
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
           full_name: data.firstName ? `${data.firstName}${data.lastName ? ' ' + data.lastName : ''}`.trim() : null,
@@ -1246,7 +1256,8 @@ const Index = () => {
           mileage: data.mileage,
           plan_name: planName,
           payment_type: paymentType,
-          step_abandoned: step
+          step_abandoned: step,
+          ...(fbclid ? { fbclid } : {}),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);

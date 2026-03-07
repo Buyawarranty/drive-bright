@@ -520,6 +520,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {lead.is_from_abandoned_cart && (
             <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300">Cart</Badge>
           )}
+          {(() => {
+            const metadata = lead.cart_metadata as { fbclid?: string; utm_source?: string } | null;
+            const isFacebook = metadata?.fbclid || metadata?.utm_source?.toLowerCase() === 'facebook' || metadata?.utm_source?.toLowerCase() === 'fb' || metadata?.utm_source?.toLowerCase() === 'ig';
+            return isFacebook ? (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 bg-blue-100 text-blue-800 border-blue-300">📘 FB</Badge>
+            ) : null;
+          })()}
         </div>
       </TableCell>
 
