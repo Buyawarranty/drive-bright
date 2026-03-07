@@ -98,6 +98,7 @@ const PeugeotWarrantyLanding = lazy(() => import("./pages/warranty-types/Peugeot
 const VauxhallWarrantyLanding = lazy(() => import("./pages/warranty-types/VauxhallWarrantyLanding"));
 const VolvoWarrantyLanding = lazy(() => import("./pages/warranty-types/VolvoWarrantyLanding"));
 const EVWarrantyLanding = lazy(() => import("./pages/warranty-types/EVWarrantyLanding"));
+const ClaimUpdateForm = lazy(() => import("./pages/ClaimUpdateForm"));
 const HybridWarrantyLanding = lazy(() => import("./pages/warranty-types/HybridWarrantyLanding"));
 const PHEVWarrantyLanding = lazy(() => import("./pages/warranty-types/PHEVWarrantyLanding"));
 const VolkswagenWarrantyLanding = lazy(() => import("./pages/warranty-types/VolkswagenWarrantyLanding"));
@@ -273,6 +274,7 @@ const App = () => {
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
+                    <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
                     <Route path="/steptest" element={<StepTest />} />
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
