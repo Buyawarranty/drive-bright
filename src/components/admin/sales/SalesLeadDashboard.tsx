@@ -101,6 +101,8 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
 
   return (
     <div className="space-y-6">
+      <LeadDroughtAlert userRole={currentUserRole} />
+
       <div>
         <h1 className="text-2xl font-bold">Sales Lead Dashboard</h1>
         <p className="text-muted-foreground">Manage your team, assign leads, and track performance</p>
