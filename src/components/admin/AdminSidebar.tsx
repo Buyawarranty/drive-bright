@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -204,6 +204,12 @@ const defaultTabs: Tab[] = [
     label: 'Vehicle Stats',
     icon: Car,
     description: 'Analyse which vehicles sell the most warranties'
+  },
+  {
+    id: 'lead-backup',
+    label: 'Lead Backup & Recovery',
+    icon: Database,
+    description: 'Backup all contacts, export & sync to marketing'
   },
   {
     id: 'user-permissions',
