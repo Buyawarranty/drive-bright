@@ -163,10 +163,15 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
     if (!policy.policyStartDate || !policy.policyEndDate) return 'N/A';
     const start = new Date(policy.policyStartDate);
     const end = new Date(policy.policyEndDate);
-    if (policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0) {
-      end.setMonth(end.getMonth() + policy.seasonalBonusMonths);
+    const bonusMonths = Number(policy.seasonalBonusMonths) || 0;
+
+    if (bonusMonths > 0) {
+      end.setMonth(end.getMonth() + bonusMonths);
     }
+
     const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
+
+    if (bonusMonths > 0) return `${months} Months`;
     if (months >= 36) return '3 Years';
     if (months >= 24) return '2 Years';
     if (months >= 12) return '1 Year';
@@ -300,8 +305,8 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                     {addons.map((addon, i) => (
                       <li key={i} style={{ marginBottom: '3px' }}>✓ {addon}</li>
                     ))}
-                    {policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0 && (
-                      <li style={{ marginBottom: '3px' }}>✓ Free extended cover: {policy.seasonalBonusMonths} bonus month{policy.seasonalBonusMonths > 1 ? 's' : ''}</li>
+                    {(Number(policy.seasonalBonusMonths) || 0) > 0 && (
+                      <li style={{ marginBottom: '3px' }}>✓ Free extended cover: {policy.seasonalBonusMonths} bonus month{policy.seasonalBonusMonths! > 1 ? 's' : ''}</li>
                     )}
                   </ul>
                 </div>

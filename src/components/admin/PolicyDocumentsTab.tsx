@@ -59,6 +59,7 @@ interface PolicyData {
   voluntary_excess?: number;
   payment_type: string;
   additional_notes?: string;
+  seasonal_bonus_months?: number | null;
 }
 
 export const PolicyDocumentsTab: React.FC = () => {
@@ -142,14 +143,20 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
   };
 
+  const getBonusMonths = () => Number(selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
+
   const getDuration = () => {
     if (!selectedPolicy) return 'N/A';
     const start = new Date(selectedPolicy.policy_start_date);
     const end = new Date(selectedPolicy.policy_end_date);
-    if (selectedCustomer?.seasonal_bonus_months && selectedCustomer.seasonal_bonus_months > 0) {
-      end.setMonth(end.getMonth() + selectedCustomer.seasonal_bonus_months);
+    const bonusMonths = getBonusMonths();
+
+    if (bonusMonths > 0) {
+      end.setMonth(end.getMonth() + bonusMonths);
     }
+
     const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    if (bonusMonths > 0) return `${months} Months`;
     if (months >= 36) return '3 Years';
     if (months >= 24) return '2 Years';
     if (months >= 12) return '1 Year';
@@ -514,8 +521,9 @@ export const PolicyDocumentsTab: React.FC = () => {
                     ['Start Date', format(new Date(selectedPolicy.policy_start_date), 'd MMM yyyy')],
                     ['End Date', (() => {
                       const endDate = new Date(selectedPolicy.policy_end_date);
-                      if (selectedCustomer?.seasonal_bonus_months && selectedCustomer.seasonal_bonus_months > 0) {
-                        endDate.setMonth(endDate.getMonth() + selectedCustomer.seasonal_bonus_months);
+                      const bonusMonths = getBonusMonths();
+                      if (bonusMonths > 0) {
+                        endDate.setMonth(endDate.getMonth() + bonusMonths);
                       }
                       return format(endDate, 'd MMM yyyy');
                     })()],
@@ -547,15 +555,15 @@ export const PolicyDocumentsTab: React.FC = () => {
                   </ul>
                 </div>
 
-                {addons.length > 0 && (
+                {(addons.length > 0 || getBonusMonths() > 0) && (
                   <div style={{ background: c.addonsBg, border: `1px solid ${c.addonsBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
                     <h4 style={{ color: c.addonsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Additional Included Services</h4>
                     <ul style={{ margin: '0', paddingLeft: '16px', color: c.addonsText, fontSize: '10.5px' }}>
                       {addons.map((addon, i) => (
                         <li key={i} style={{ marginBottom: '3px' }}>✓ {addon}</li>
                       ))}
-                      {selectedCustomer.seasonal_bonus_months && selectedCustomer.seasonal_bonus_months > 0 && (
-                        <li style={{ marginBottom: '3px' }}>✓ Free extended cover: {selectedCustomer.seasonal_bonus_months} bonus month{selectedCustomer.seasonal_bonus_months > 1 ? 's' : ''}</li>
+                      {getBonusMonths() > 0 && (
+                        <li style={{ marginBottom: '3px' }}>✓ Free extended cover: {getBonusMonths()} bonus month{getBonusMonths() > 1 ? 's' : ''}</li>
                       )}
                     </ul>
                   </div>
