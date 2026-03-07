@@ -216,3 +216,9 @@ verify_jwt = false
 
 [functions.send-timesheet-email]
 verify_jwt = true
+
+[functions.send-claim-update-request]
+verify_jwt = true
+
+[functions.submit-claim-update]
+verify_jwt = false
