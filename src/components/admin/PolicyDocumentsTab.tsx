@@ -287,12 +287,27 @@ export const PolicyDocumentsTab: React.FC = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Address Label - ${selectedCustomer.name}</title>
+          <title>Envelope Label - ${selectedCustomer.name}</title>
           <style>
-            @page { size: A4; margin: 0; }
+            @page { size: 324mm 229mm; margin: 0; }
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
-            .label { padding: 24px 32px; font-size: 16px; line-height: 1.6; font-weight: 600; color: #000; }
+            body {
+              font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+              width: 324mm;
+              height: 229mm;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background: white;
+            }
+            .label {
+              padding: 20mm;
+              font-size: 22pt;
+              line-height: 1.6;
+              font-weight: 600;
+              color: #000;
+              text-align: left;
+            }
             .label p { margin: 0; }
           </style>
         </head>
