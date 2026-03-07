@@ -3973,6 +3973,56 @@ export type Database = {
         }
         Relationships: []
       }
+      posted_letters_log: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string
+          id: string
+          marked_sent_by: string | null
+          notes: string | null
+          plan_type: string | null
+          registration_plate: string
+          sent_at: string
+          warranty_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name: string
+          id?: string
+          marked_sent_by?: string | null
+          notes?: string | null
+          plan_type?: string | null
+          registration_plate: string
+          sent_at?: string
+          warranty_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string
+          id?: string
+          marked_sent_by?: string | null
+          notes?: string | null
+          plan_type?: string | null
+          registration_plate?: string
+          sent_at?: string
+          warranty_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posted_letters_log_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_data: {
         Row: {
           created_at: string
