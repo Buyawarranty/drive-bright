@@ -25,28 +25,34 @@ interface BackupContact {
 }
 
 // Helper to fetch ALL rows from a table, paginating past the 1000-row limit
-async function fetchAllRows<T>(
-  tableName: string,
+async function fetchAllRows(
+  tableName: 'sales_leads' | 'abandoned_carts' | 'marketing_audience',
   selectFields: string,
   orderField: string = 'created_at',
-): Promise<T[]> {
+): Promise<any[]> {
   const PAGE_SIZE = 1000;
-  let allData: T[] = [];
+  let allData: any[] = [];
   let from = 0;
   let hasMore = true;
 
   while (hasMore) {
-    const { data, error } = await supabase
+    const query = supabase
       .from(tableName)
       .select(selectFields)
-      .order(orderField, { ascending: false })
       .range(from, from + PAGE_SIZE - 1);
+
+    // marketing_audience may not have created_at, so only order if applicable
+    if (tableName !== 'marketing_audience') {
+      query.order(orderField, { ascending: false });
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     if (!data || data.length === 0) {
       hasMore = false;
     } else {
-      allData = allData.concat(data as T[]);
+      allData = allData.concat(data);
       if (data.length < PAGE_SIZE) {
         hasMore = false;
       } else {
