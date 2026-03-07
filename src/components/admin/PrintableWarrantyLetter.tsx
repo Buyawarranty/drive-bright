@@ -163,6 +163,9 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
     if (!policy.policyStartDate || !policy.policyEndDate) return 'N/A';
     const start = new Date(policy.policyStartDate);
     const end = new Date(policy.policyEndDate);
+    if (policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0) {
+      end.setMonth(end.getMonth() + policy.seasonalBonusMonths);
+    }
     const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
     if (months >= 36) return '3 Years';
     if (months >= 24) return '2 Years';
@@ -255,7 +258,13 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                   ['Duration', getDuration()],
                   ['Mileage', policy.mileage ? `${parseInt(policy.mileage).toLocaleString()} miles` : 'N/A'],
                   ['Start Date', policy.policyStartDate ? format(new Date(policy.policyStartDate), 'd MMM yyyy') : 'N/A'],
-                  ['End Date', policy.policyEndDate ? format(new Date(policy.policyEndDate), 'd MMM yyyy') : 'N/A'],
+                  ['End Date', policy.policyEndDate ? (() => {
+                    const endDate = new Date(policy.policyEndDate);
+                    if (policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0) {
+                      endDate.setMonth(endDate.getMonth() + policy.seasonalBonusMonths);
+                    }
+                    return format(endDate, 'd MMM yyyy');
+                  })() : 'N/A'],
                   ['Warranty Ref', warrantyRef],
                   ['Policy No.', policy.policyNumber || 'N/A'],
                 ].map(([label, value], i) => (
