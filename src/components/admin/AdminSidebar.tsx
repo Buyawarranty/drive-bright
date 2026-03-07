@@ -206,6 +206,12 @@ const defaultTabs: Tab[] = [
     description: 'Analyse which vehicles sell the most warranties'
   },
   {
+    id: 'lead-backup',
+    label: 'Lead Backup & Recovery',
+    icon: Database,
+    description: 'Backup all contacts, export & sync to marketing'
+  },
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,
