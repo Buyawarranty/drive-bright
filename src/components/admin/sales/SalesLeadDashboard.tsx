@@ -12,6 +12,7 @@ import {
   Users, ShoppingBag, Target, 
   TrendingUp, UserCheck, ClipboardList, History
 } from 'lucide-react';
+import { LeadDroughtAlert } from './LeadDroughtAlert';
 
 interface SalesLeadDashboardProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
