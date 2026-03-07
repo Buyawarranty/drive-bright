@@ -1265,6 +1265,125 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_update_requests: {
+        Row: {
+          claim_id: string
+          claim_reason: string | null
+          created_at: string | null
+          customer_name: string | null
+          expires_at: string | null
+          id: string
+          is_responded: boolean | null
+          recipient_email: string
+          sent_at: string | null
+          sent_by: string | null
+          token: string
+          vehicle_registration: string | null
+        }
+        Insert: {
+          claim_id: string
+          claim_reason?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          expires_at?: string | null
+          id?: string
+          is_responded?: boolean | null
+          recipient_email: string
+          sent_at?: string | null
+          sent_by?: string | null
+          token?: string
+          vehicle_registration?: string | null
+        }
+        Update: {
+          claim_id?: string
+          claim_reason?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          expires_at?: string | null
+          id?: string
+          is_responded?: boolean | null
+          recipient_email?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          token?: string
+          vehicle_registration?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_update_requests_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_update_responses: {
+        Row: {
+          claim_id: string
+          created_at: string | null
+          estimated_completion: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          invoice_amount: number | null
+          invoice_number: string | null
+          is_read: boolean | null
+          notes: string | null
+          request_id: string
+          respondent_email: string | null
+          respondent_name: string | null
+          status_update: string | null
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string | null
+          estimated_completion?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          invoice_amount?: number | null
+          invoice_number?: string | null
+          is_read?: boolean | null
+          notes?: string | null
+          request_id: string
+          respondent_email?: string | null
+          respondent_name?: string | null
+          status_update?: string | null
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string | null
+          estimated_completion?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          invoice_amount?: number | null
+          invoice_number?: string | null
+          is_read?: boolean | null
+          notes?: string | null
+          request_id?: string
+          respondent_email?: string | null
+          respondent_name?: string | null
+          status_update?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_update_responses_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_update_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "claim_update_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims_submissions: {
         Row: {
           approved_at: string | null
