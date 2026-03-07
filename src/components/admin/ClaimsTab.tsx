@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Trash2, Car } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Trash2, Car, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
@@ -15,6 +15,8 @@ import { ClaimsFilterBar, getReadinessState } from './claims/ClaimsFilterBar';
 import { ClaimsEnhancedTable } from './claims/ClaimsEnhancedTable';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
+import { RequestUpdateDialog } from './claims/RequestUpdateDialog';
+import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 
 interface ClaimSubmission {
   id: string;
