@@ -309,6 +309,25 @@ export const PolicyDocumentsTab: React.FC = () => {
     setTimeout(() => { printWindow.print(); }, 250);
   };
 
+  const logLetterToPostedLog = async (type: 'letter' | 'label') => {
+    if (!selectedCustomer) return;
+    try {
+      await supabase.from('posted_letters_log').insert({
+        customer_id: selectedCustomer.id,
+        registration_plate: selectedCustomer.registration_plate || 'N/A',
+        customer_name: selectedCustomer.name,
+        customer_email: selectedCustomer.email,
+        warranty_number: selectedPolicy?.warranty_number || selectedCustomer.warranty_number || selectedCustomer.warranty_reference_number || null,
+        plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || null,
+        sent_at: new Date().toISOString(),
+        marked_sent_by: null,
+        notes: type === 'label' ? 'Address label printed' : 'Confirmation letter printed',
+      });
+    } catch (e) {
+      // Silent fail - don't block the print action
+    }
+  };
+
   const warrantyRef = selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || selectedCustomer?.warranty_reference_number || 'N/A';
   const claimLimit = selectedPolicy?.claim_limit || selectedCustomer?.claim_limit;
   const excess = selectedPolicy?.voluntary_excess ?? selectedCustomer?.voluntary_excess;
@@ -446,15 +465,15 @@ export const PolicyDocumentsTab: React.FC = () => {
                     Colour
                   </button>
                 </div>
-                <Button size="sm" onClick={() => { setShowPreview(true); }} className="gap-1">
+                <Button size="sm" onClick={() => { setShowPreview(true); logLetterToPostedLog('letter'); }} className="gap-1">
                   <FileText className="h-3.5 w-3.5" />
                   Preview
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); setTimeout(handlePrint, 100); }} className="gap-1">
+                <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); logLetterToPostedLog('letter'); setTimeout(handlePrint, 100); }} className="gap-1">
                   <Printer className="h-3.5 w-3.5" />
                   Print
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => handlePrintLabel()} className="gap-1">
+                <Button size="sm" variant="outline" onClick={() => { handlePrintLabel(); logLetterToPostedLog('label'); }} className="gap-1">
                   <Tag className="h-3.5 w-3.5" />
                   Print Label
                 </Button>
