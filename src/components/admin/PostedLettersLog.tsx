@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download } from 'lucide-react';
+import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -31,6 +31,85 @@ interface CustomerMatch {
   warranty_number?: string;
   plan_type: string;
 }
+
+// Print a C4 envelope label (229mm × 324mm) with name + address
+const printEnvelopeLabel = async (entry: PostedLetterEntry) => {
+  if (!entry.customer_id) {
+    toast({ title: 'No customer linked', description: 'Cannot print label — no customer ID on this entry.', variant: 'destructive' });
+    return;
+  }
+
+  // Fetch customer address
+  const { data: customer, error } = await supabase
+    .from('customers')
+    .select('name, flat_number, building_name, building_number, street, town, county, postcode')
+    .eq('id', entry.customer_id)
+    .maybeSingle();
+
+  if (error || !customer) {
+    toast({ title: 'Error', description: 'Could not load customer address.', variant: 'destructive' });
+    return;
+  }
+
+  const addressParts = [
+    customer.flat_number && `Flat ${customer.flat_number}`,
+    customer.building_name,
+    customer.building_number && customer.street
+      ? `${customer.building_number} ${customer.street}`
+      : customer.street,
+    customer.town,
+    customer.county,
+    customer.postcode,
+  ].filter(Boolean);
+
+  const lines = [customer.name, ...addressParts].filter(Boolean);
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Please allow pop-ups to print the label');
+    return;
+  }
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Envelope Label - ${customer.name}</title>
+        <style>
+          @page { size: 324mm 229mm; margin: 0; }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body {
+            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+            width: 324mm;
+            height: 229mm;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+          }
+          .label {
+            padding: 20mm;
+            font-size: 22pt;
+            line-height: 1.6;
+            font-weight: 600;
+            color: #000;
+            text-align: left;
+          }
+          .label p { margin: 0; }
+        </style>
+      </head>
+      <body>
+        <div class="label">
+          ${lines.map(l => `<p>${l}</p>`).join('')}
+        </div>
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => { printWindow.print(); }, 250);
+};
 
 export const PostedLettersLog: React.FC = () => {
   const [logEntries, setLogEntries] = useState<PostedLetterEntry[]>([]);
@@ -326,7 +405,7 @@ export const PostedLettersLog: React.FC = () => {
                     <th className="py-2 px-2 font-medium text-muted-foreground">Email</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Warranty #</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Plan</th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground w-20">Actions</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -359,14 +438,26 @@ export const PostedLettersLog: React.FC = () => {
                       <td className="py-2 px-2 text-xs font-mono">{entry.warranty_number || '—'}</td>
                       <td className="py-2 px-2 text-xs">{entry.plan_type || '—'}</td>
                       <td className="py-2 px-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-xs text-destructive hover:text-destructive h-7"
-                          onClick={() => removeEntry(entry.id)}
-                        >
-                          Remove
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1 bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-200"
+                            onClick={() => printEnvelopeLabel(entry)}
+                            title="Print envelope label"
+                          >
+                            <Tag className="h-3 w-3" />
+                            Label
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs text-destructive hover:text-destructive h-7"
+                            onClick={() => removeEntry(entry.id)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
