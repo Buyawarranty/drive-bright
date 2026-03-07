@@ -3731,8 +3731,10 @@ export type Database = {
       page_views: {
         Row: {
           created_at: string
+          fbclid: string | null
           gclid: string | null
           id: string
+          is_facebook_ads: boolean | null
           is_google_ads: boolean | null
           page_path: string
           page_title: string | null
@@ -3750,8 +3752,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fbclid?: string | null
           gclid?: string | null
           id?: string
+          is_facebook_ads?: boolean | null
           is_google_ads?: boolean | null
           page_path: string
           page_title?: string | null
@@ -3769,8 +3773,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fbclid?: string | null
           gclid?: string | null
           id?: string
+          is_facebook_ads?: boolean | null
           is_google_ads?: boolean | null
           page_path?: string
           page_title?: string | null
