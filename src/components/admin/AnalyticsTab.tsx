@@ -435,7 +435,7 @@ export const AnalyticsTab = () => {
     return months;
   }, [filteredCustomers]);
 
-  // Monthly revenue data (last 12 months) - uses ALL customers (not filtered) for chart display
+  // Monthly revenue data (last 12 months) - respects source filter to match agent table
   const monthlyRevenue = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
@@ -448,9 +448,25 @@ export const AnalyticsTab = () => {
       };
     }).reverse();
 
-    // Use all customers for chart display (not filtered customers) - EXCLUDING cancelled/refunded
-    customers.forEach(customer => {
-      // Skip cancelled/refunded orders from revenue chart
+    // Apply source filter but NOT date filter (chart always shows 12 months)
+    const sourceFilteredCustomers = customers.filter(customer => {
+      if (sourceFilter === 'all') return true;
+      const source = customer.purchase_source?.toLowerCase() || '';
+      const isManual = customer.is_manual_entry === true;
+      const warrantyNum = customer.warranty_reference_number || '';
+      if (sourceFilter === 'website') {
+        const isBawS = warrantyNum.startsWith('BAW-S-');
+        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
+      } else if (sourceFilter === 'staff_purchase') {
+        return warrantyNum.startsWith('BAW-S-');
+      } else if (sourceFilter === 'sales_team') {
+        return isManual || source === 'quote_link' || source === 'external' || source === 'admin_external';
+      }
+      return true;
+    });
+
+    // EXCLUDING cancelled/refunded from revenue
+    sourceFilteredCustomers.forEach(customer => {
       if (isRevenueLost(customer.status)) return;
       
       if (customer.final_amount && customer.signup_date) {
@@ -472,7 +488,7 @@ export const AnalyticsTab = () => {
     }
 
     return months;
-  }, [customers, selectedMonth]);
+  }, [customers, selectedMonth, sourceFilter]);
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
