@@ -82,9 +82,9 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     try {
       // Fetch ALL contacts from all three sources using paginated helper
       const [salesData, cartsData, marketingData] = await Promise.all([
-        fetchAllRows<any>('sales_leads', 'id, email, phone, first_name, last_name, vehicle_reg, status, created_at'),
-        fetchAllRows<any>('abandoned_carts', 'id, email, phone, full_name, vehicle_reg, step_abandoned, contact_status, created_at'),
-        fetchAllRows<any>('marketing_audience', 'email, phone'),
+        fetchAllRows('sales_leads', 'id, email, phone, first_name, last_name, vehicle_reg, status, created_at'),
+        fetchAllRows('abandoned_carts', 'id, email, phone, full_name, vehicle_reg, step_abandoned, contact_status, created_at'),
+        fetchAllRows('marketing_audience', 'email, phone'),
       ]);
 
       const marketingEmails = new Set(
