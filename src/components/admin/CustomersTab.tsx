@@ -217,7 +217,7 @@ interface Customer {
     customer_id?: string;
     email?: string;
     additional_notes?: string;
-  }>;
+    seasonal_bonus_months?: number | null;
 }
 
 interface IncompleteCustomer {
