@@ -382,6 +382,8 @@ const AdminDashboard = () => {
         return <PageAnalyticsTab />;
       case 'google-ads':
         return <MarketingAnalyticsTab />;
+      case 'lead-backup':
+        return <LeadBackupRecoveryTab />;
       case 'vehicle-stats':
         return <VehicleStatsTab />;
       case 'security':
