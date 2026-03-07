@@ -309,6 +309,25 @@ export const PolicyDocumentsTab: React.FC = () => {
     setTimeout(() => { printWindow.print(); }, 250);
   };
 
+  const logLetterToPostedLog = async (type: 'letter' | 'label') => {
+    if (!selectedCustomer) return;
+    try {
+      await supabase.from('posted_letters_log').insert({
+        customer_id: selectedCustomer.id,
+        registration_plate: selectedCustomer.registration_plate || 'N/A',
+        customer_name: selectedCustomer.name,
+        customer_email: selectedCustomer.email,
+        warranty_number: selectedPolicy?.warranty_number || selectedCustomer.warranty_number || selectedCustomer.warranty_reference_number || null,
+        plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || null,
+        sent_at: new Date().toISOString(),
+        marked_sent_by: null,
+        notes: type === 'label' ? 'Address label printed' : 'Confirmation letter printed',
+      });
+    } catch (e) {
+      // Silent fail - don't block the print action
+    }
+  };
+
   const warrantyRef = selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || selectedCustomer?.warranty_reference_number || 'N/A';
   const claimLimit = selectedPolicy?.claim_limit || selectedCustomer?.claim_limit;
   const excess = selectedPolicy?.voluntary_excess ?? selectedCustomer?.voluntary_excess;
