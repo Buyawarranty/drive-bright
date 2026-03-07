@@ -24,6 +24,39 @@ interface BackupContact {
   in_marketing: boolean;
 }
 
+// Helper to fetch ALL rows from a table, paginating past the 1000-row limit
+async function fetchAllRows<T>(
+  tableName: string,
+  selectFields: string,
+  orderField: string = 'created_at',
+): Promise<T[]> {
+  const PAGE_SIZE = 1000;
+  let allData: T[] = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(selectFields)
+      .order(orderField, { ascending: false })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      hasMore = false;
+    } else {
+      allData = allData.concat(data as T[]);
+      if (data.length < PAGE_SIZE) {
+        hasMore = false;
+      } else {
+        from += PAGE_SIZE;
+      }
+    }
+  }
+  return allData;
+}
+
 export const LeadBackupRecoveryTab: React.FC = () => {
   const [contacts, setContacts] = useState<BackupContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,34 +74,26 @@ export const LeadBackupRecoveryTab: React.FC = () => {
   const fetchAllContacts = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all contacts from both sources in parallel
-      const [salesResult, cartsResult, marketingResult] = await Promise.all([
-        supabase
-          .from('sales_leads')
-          .select('id, email, phone, first_name, last_name, vehicle_reg, status, created_at')
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('abandoned_carts')
-          .select('id, email, phone, full_name, vehicle_reg, step_abandoned, contact_status, created_at')
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('marketing_audience')
-          .select('email, phone'),
+      // Fetch ALL contacts from all three sources using paginated helper
+      const [salesData, cartsData, marketingData] = await Promise.all([
+        fetchAllRows<any>('sales_leads', 'id, email, phone, first_name, last_name, vehicle_reg, status, created_at'),
+        fetchAllRows<any>('abandoned_carts', 'id, email, phone, full_name, vehicle_reg, step_abandoned, contact_status, created_at'),
+        fetchAllRows<any>('marketing_audience', 'email, phone'),
       ]);
 
       const marketingEmails = new Set(
-        (marketingResult.data || []).map(m => m.email?.toLowerCase()).filter(Boolean)
+        marketingData.map((m: any) => m.email?.toLowerCase()).filter(Boolean)
       );
       const marketingPhones = new Set(
-        (marketingResult.data || []).map(m => m.phone?.replace(/\s/g, '')).filter(Boolean)
+        marketingData.map((m: any) => m.phone?.replace(/\s/g, '')).filter(Boolean)
       );
 
       const allContacts: BackupContact[] = [];
       const seen = new Set<string>();
 
       // Process sales leads
-      for (const lead of salesResult.data || []) {
-        const key = `${lead.email?.toLowerCase()}-${lead.phone}`;
+      for (const lead of salesData) {
+        const key = `${lead.email?.toLowerCase() || ''}-${lead.phone || ''}`;
         if (seen.has(key)) continue;
         seen.add(key);
 
@@ -91,8 +116,8 @@ export const LeadBackupRecoveryTab: React.FC = () => {
       }
 
       // Process abandoned carts (only those not already in sales_leads by email)
-      for (const cart of cartsResult.data || []) {
-        const key = `${cart.email?.toLowerCase()}-${cart.phone}`;
+      for (const cart of cartsData) {
+        const key = `${cart.email?.toLowerCase() || ''}-${cart.phone || ''}`;
         if (seen.has(key)) continue;
         seen.add(key);
 
@@ -142,7 +167,11 @@ export const LeadBackupRecoveryTab: React.FC = () => {
       const { data, error } = await supabase.rpc('sync_leads_to_marketing_audience');
       if (error) throw error;
       const result = data as any;
-      toast.success(`Marketing sync complete: ${result?.processed || 0} contacts synced`);
+      if (result?.success === false) {
+        toast.error(`Sync failed: ${result?.error || 'Unknown error'}`);
+      } else {
+        toast.success(`Marketing sync complete: ${result?.processed || 0} contacts synced`);
+      }
       await fetchAllContacts();
     } catch (error) {
       console.error('Sync error:', error);
@@ -195,17 +224,17 @@ export const LeadBackupRecoveryTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Shield className="h-6 w-6 text-blue-600" />
             Lead Backup & Recovery
           </h2>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             Every contact from Step 2 is captured here. Export or sync to marketing at any time.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={fetchAllContacts} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -216,10 +245,25 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           </Button>
           <Button onClick={handleSyncToMarketing} disabled={syncing} className="bg-orange-600 hover:bg-orange-700 text-white">
             <Database className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync to Marketing'}
+            {syncing ? 'Syncing...' : `Recover ${stats.missingFromMarketing > 0 ? stats.missingFromMarketing + ' Missing' : 'All'}`}
           </Button>
         </div>
       </div>
+
+      {/* Missing alert banner */}
+      {stats.missingFromMarketing > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <span className="text-sm font-medium text-amber-800">
+              {stats.missingFromMarketing} contacts with email are not in marketing. Click "Recover" to sync them now.
+            </span>
+          </div>
+          <Button size="sm" onClick={handleSyncToMarketing} disabled={syncing} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+            {syncing ? 'Recovering...' : 'Recover Now'}
+          </Button>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -227,42 +271,42 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto text-blue-500 mb-1" />
             <div className="text-2xl font-bold">{stats.totalContacts.toLocaleString()}</div>
-            <div className="text-xs text-gray-500">Total Contacts</div>
+            <div className="text-xs text-muted-foreground">Total Contacts</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <Mail className="h-5 w-5 mx-auto text-green-500 mb-1" />
             <div className="text-2xl font-bold">{stats.withEmail.toLocaleString()}</div>
-            <div className="text-xs text-gray-500">With Email</div>
+            <div className="text-xs text-muted-foreground">With Email</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <Phone className="h-5 w-5 mx-auto text-purple-500 mb-1" />
             <div className="text-2xl font-bold">{stats.withPhone.toLocaleString()}</div>
-            <div className="text-xs text-gray-500">With Phone</div>
+            <div className="text-xs text-muted-foreground">With Phone</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <User className="h-5 w-5 mx-auto text-orange-500 mb-1" />
             <div className="text-2xl font-bold">{stats.withName.toLocaleString()}</div>
-            <div className="text-xs text-gray-500">With Name</div>
+            <div className="text-xs text-muted-foreground">With Name</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <CheckCircle className="h-5 w-5 mx-auto text-green-600 mb-1" />
             <div className="text-2xl font-bold">{stats.inMarketing.toLocaleString()}</div>
-            <div className="text-xs text-gray-500">In Marketing</div>
+            <div className="text-xs text-muted-foreground">In Marketing</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <AlertTriangle className="h-5 w-5 mx-auto text-amber-500 mb-1" />
             <div className="text-2xl font-bold text-amber-600">{stats.missingFromMarketing.toLocaleString()}</div>
-            <div className="text-xs text-gray-500">Missing from Marketing</div>
+            <div className="text-xs text-muted-foreground">Missing from Marketing</div>
           </CardContent>
         </Card>
       </div>
@@ -281,7 +325,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
 
         <div className="mt-4">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, email, phone, or reg..."
               value={searchTerm}
@@ -316,6 +360,11 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
   const totalPages = Math.ceil(contacts.length / pageSize);
   const paged = contacts.slice(page * pageSize, (page + 1) * pageSize);
 
+  // Reset page when contacts change
+  useEffect(() => {
+    setPage(0);
+  }, [contacts.length]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-40">
@@ -343,7 +392,7 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
           <TableBody>
             {paged.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500 py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   No contacts found
                 </TableCell>
               </TableRow>
@@ -351,10 +400,10 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
               paged.map((contact) => (
                 <TableRow key={`${contact.source}-${contact.id}`}>
                   <TableCell className="font-medium">
-                    {contact.first_name || contact.full_name || <span className="text-gray-400">—</span>}
+                    {contact.first_name || contact.full_name || <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell className="text-sm">{contact.email || '—'}</TableCell>
-                  <TableCell className="text-sm">{contact.phone || <span className="text-gray-400">—</span>}</TableCell>
+                  <TableCell className="text-sm">{contact.phone || <span className="text-muted-foreground">—</span>}</TableCell>
                   <TableCell>
                     {contact.vehicle_reg ? (
                       <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
@@ -367,8 +416,8 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
                       {contact.source === 'sales_lead' ? 'Lead' : 'Cart'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-gray-500">{contact.status || '—'}</TableCell>
-                  <TableCell className="text-xs text-gray-500">
+                  <TableCell className="text-xs text-muted-foreground">{contact.status || '—'}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
                     {contact.created_at ? format(new Date(contact.created_at), 'MMM d, yyyy HH:mm') : '—'}
                   </TableCell>
                   <TableCell>
@@ -386,7 +435,7 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
       </div>
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, contacts.length)} of {contacts.length.toLocaleString()}
           </div>
           <div className="flex gap-2">
