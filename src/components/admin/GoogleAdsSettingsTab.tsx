@@ -27,7 +27,7 @@ const REQUIRED_SECRETS = [
   { key: 'GOOGLE_ADS_REFRESH_TOKEN', label: 'OAuth2 Refresh Token', description: 'Generated via OAuth2 flow' },
 ];
 
-export const GoogleAdsSettingsTab: React.FC = () => {
+export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideHeader }) => {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [salesSearch, setSalesSearch] = useState('');
@@ -293,12 +293,14 @@ export const GoogleAdsSettingsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Google Ads — Conversion & ROAS Settings</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage offline conversion uploads, GCLID tracking, and Target ROAS optimisation
-        </p>
-      </div>
+      {!hideHeader && (
+        <div>
+          <h2 className="text-2xl font-bold">Google Ads — Conversion & ROAS Settings</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage offline conversion uploads, GCLID tracking, and Target ROAS optimisation
+          </p>
+        </div>
+      )}
 
       {/* Strategy Overview */}
       <Card className="border-primary/20 bg-primary/5">

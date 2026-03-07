@@ -66,31 +66,16 @@ export const FacebookAdsTab: React.FC = () => {
     },
   });
 
-  // Fetch Facebook customers (purchases with fbclid)
-  const { data: fbCustomers, isLoading: custLoading } = useQuery({
-    queryKey: ['fb-customers', dateRange],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .gte('created_at', dateFrom.toISOString())
-        .lte('created_at', dateTo.toISOString())
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []).filter((c) => {
-        const meta = c.metadata as Record<string, any> | null;
-        if (meta?.fbclid) return true;
-        const src = (meta?.utm_source || '').toLowerCase();
-        return src === 'facebook' || src === 'fb' || src === 'ig';
-      });
-    },
-  });
+  // Count conversions from FB leads
+  const fbConvertedLeads = useMemo(() => {
+    return (fbLeads || []).filter(l => l.is_converted);
+  }, [fbLeads]);
 
   // Summary stats
   const totalPageViews = fbPageViews?.length || 0;
   const uniqueVisitors = new Set(fbPageViews?.map(pv => pv.visitor_id)).size;
   const totalLeads = fbLeads?.length || 0;
-  const totalConversions = fbCustomers?.length || 0;
+  const totalConversions = fbConvertedLeads.length;
   const conversionRate = totalLeads > 0 ? ((totalConversions / totalLeads) * 100).toFixed(1) : '0';
 
   // Page breakdown
@@ -127,7 +112,7 @@ export const FacebookAdsTab: React.FC = () => {
     return Object.values(campaigns).sort((a, b) => b.views - a.views);
   }, [fbPageViews]);
 
-  const isLoading = pvLoading || leadsLoading || custLoading;
+  const isLoading = pvLoading || leadsLoading;
 
   return (
     <div className="space-y-6">
