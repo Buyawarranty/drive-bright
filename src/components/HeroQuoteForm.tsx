@@ -196,7 +196,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
             <div className="mb-6 text-gray-700 text-sm md:text-base space-y-2">
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                <span className="font-medium">From just 80p a day • Easy claims • Fast payouts</span>
+                <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
