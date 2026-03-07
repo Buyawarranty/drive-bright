@@ -445,12 +445,12 @@ export const PolicyDocumentsTab: React.FC = () => {
       {selectedCustomer && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Customer Details
-              </CardTitle>
-              <div className="flex items-center gap-2">
+            <CardHeader className="space-y-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Customer Details
+                </CardTitle>
                 <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
                   <button
                     onClick={() => setPrintMode('bw')}
@@ -465,17 +465,19 @@ export const PolicyDocumentsTab: React.FC = () => {
                     Colour
                   </button>
                 </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
                 <Button size="sm" onClick={() => { setShowPreview(true); logLetterToPostedLog('letter'); }} className="gap-1">
                   <FileText className="h-3.5 w-3.5" />
-                  Preview
+                  Preview Letter
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => { setShowPreview(true); logLetterToPostedLog('letter'); setTimeout(handlePrint, 100); }} className="gap-1">
                   <Printer className="h-3.5 w-3.5" />
-                  Print
+                  Print Letter
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { handlePrintLabel(); logLetterToPostedLog('label'); }} className="gap-1">
+                <Button size="sm" variant="secondary" onClick={() => { handlePrintLabel(); logLetterToPostedLog('label'); }} className="gap-1 bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300">
                   <Tag className="h-3.5 w-3.5" />
-                  Print Label
+                  🏷️ Print Envelope Label
                 </Button>
               </div>
             </CardHeader>
