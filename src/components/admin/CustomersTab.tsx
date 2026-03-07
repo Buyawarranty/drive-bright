@@ -821,6 +821,7 @@ export const CustomersTab = () => {
             lost_key,
             consequential,
             additional_notes,
+            seasonal_bonus_months,
             user_id,
             customer_id,
             email
@@ -1122,6 +1123,8 @@ export const CustomersTab = () => {
             mot_repair,
             lost_key,
             consequential,
+            additional_notes,
+            seasonal_bonus_months,
             user_id,
             customer_id,
             email
