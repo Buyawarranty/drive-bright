@@ -57,6 +57,7 @@ export const ClaimsTab = () => {
   const [emailingClaim, setEmailingClaim] = useState<ClaimSubmission | null>(null);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
   const [selectedClaimIds, setSelectedClaimIds] = useState<Set<string>>(new Set());
+  const [showRequestUpdate, setShowRequestUpdate] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence'>('claims');
 
   // Filters
@@ -305,6 +306,15 @@ export const ClaimsTab = () => {
           >
             📊 Analytics & Charts
           </Button>
+          <Button onClick={() => {
+            if (selectedClaimIds.size > 0) {
+              setShowRequestUpdate(true);
+            } else {
+              toast({ title: "Select Claims", description: "Select one or more claims to request an update", variant: "destructive" });
+            }
+          }} variant="outline" size="sm" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+            <ExternalLink className="h-4 w-4 mr-1" /> Request Update
+          </Button>
           <Button onClick={() => setShowAddClaimDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-1" /> Add Claim
           </Button>
@@ -341,6 +351,8 @@ export const ClaimsTab = () => {
       {/* Claims List Sub-tab */}
       {activeSubTab === 'claims' && (
         <>
+          {/* Claim Update Notifications */}
+          <ClaimUpdateNotifications />
           {/* Triage Command Centre */}
           <ClaimsTriageBlocks
             claims={claims}
@@ -439,6 +451,20 @@ export const ClaimsTab = () => {
         open={showAddClaimDialog}
         onOpenChange={setShowAddClaimDialog}
         onClaimAdded={fetchClaims}
+      />
+      <RequestUpdateDialog
+        claims={claims.filter(c => selectedClaimIds.has(c.id)).map(c => ({
+          id: c.id,
+          name: c.name,
+          vehicle_registration: c.vehicle_registration,
+          claim_reason: c.claim_reason,
+        }))}
+        open={showRequestUpdate}
+        onOpenChange={setShowRequestUpdate}
+        onSent={() => {
+          fetchClaims();
+          setSelectedClaimIds(new Set());
+        }}
       />
     </div>
   );
