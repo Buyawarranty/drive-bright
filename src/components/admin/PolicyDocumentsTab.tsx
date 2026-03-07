@@ -146,6 +146,9 @@ export const PolicyDocumentsTab: React.FC = () => {
     if (!selectedPolicy) return 'N/A';
     const start = new Date(selectedPolicy.policy_start_date);
     const end = new Date(selectedPolicy.policy_end_date);
+    if (selectedCustomer?.seasonal_bonus_months && selectedCustomer.seasonal_bonus_months > 0) {
+      end.setMonth(end.getMonth() + selectedCustomer.seasonal_bonus_months);
+    }
     const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
     if (months >= 36) return '3 Years';
     if (months >= 24) return '2 Years';
@@ -509,7 +512,13 @@ export const PolicyDocumentsTab: React.FC = () => {
                     ['Duration', getDuration()],
                     ['Mileage', selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'],
                     ['Start Date', format(new Date(selectedPolicy.policy_start_date), 'd MMM yyyy')],
-                    ['End Date', format(new Date(selectedPolicy.policy_end_date), 'd MMM yyyy')],
+                    ['End Date', (() => {
+                      const endDate = new Date(selectedPolicy.policy_end_date);
+                      if (selectedCustomer?.seasonal_bonus_months && selectedCustomer.seasonal_bonus_months > 0) {
+                        endDate.setMonth(endDate.getMonth() + selectedCustomer.seasonal_bonus_months);
+                      }
+                      return format(endDate, 'd MMM yyyy');
+                    })()],
                     ['Warranty Ref', warrantyRef],
                     ['Policy No.', selectedPolicy.policy_number],
                   ].map(([label, value], i) => (
