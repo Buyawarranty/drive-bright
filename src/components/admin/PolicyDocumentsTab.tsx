@@ -60,6 +60,7 @@ interface PolicyData {
   payment_type: string;
   additional_notes?: string;
   seasonal_bonus_months?: number | null;
+}
 
 export const PolicyDocumentsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
