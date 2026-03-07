@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, User, Car, Mail, Phone } from 'lucide-react';
+import { Search, Printer, FileText, User, Car, Mail, Phone, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -272,6 +272,43 @@ export const PolicyDocumentsTab: React.FC = () => {
     }, 250);
   };
 
+  const handlePrintLabel = () => {
+    if (!selectedCustomer) return;
+    const addr = formatAddress();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow pop-ups to print the label');
+      return;
+    }
+
+    const lines = [selectedCustomer.name, ...addr].filter(Boolean);
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Address Label - ${selectedCustomer.name}</title>
+          <style>
+            @page { size: A4; margin: 0; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
+            .label { padding: 24px 32px; font-size: 16px; line-height: 1.6; font-weight: 600; color: #000; }
+            .label p { margin: 0; }
+          </style>
+        </head>
+        <body>
+          <div class="label">
+            ${lines.map(l => `<p>${l}</p>`).join('')}
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); }, 250);
+  };
+
   const warrantyRef = selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || selectedCustomer?.warranty_reference_number || 'N/A';
   const claimLimit = selectedPolicy?.claim_limit || selectedCustomer?.claim_limit;
   const excess = selectedPolicy?.voluntary_excess ?? selectedCustomer?.voluntary_excess;
@@ -417,6 +454,10 @@ export const PolicyDocumentsTab: React.FC = () => {
                   <Printer className="h-3.5 w-3.5" />
                   Print
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => handlePrintLabel()} className="gap-1">
+                  <Tag className="h-3.5 w-3.5" />
+                  Print Label
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="text-sm space-y-1">
@@ -485,7 +526,7 @@ export const PolicyDocumentsTab: React.FC = () => {
               <div style={{ textAlign: 'right', fontSize: '10px', color: '#666', marginBottom: '12px' }}>{todayDate}</div>
 
               <div style={{ marginBottom: '14px', fontSize: '11px' }}>
-                <p style={{ fontWeight: '700', fontSize: '12px', margin: '1px 0' }}>{selectedCustomer.name}</p>
+                <p style={{ fontWeight: '700', fontSize: '11px', margin: '1px 0' }}>{selectedCustomer.name}</p>
                 {address.map((line, i) => (
                   <p key={i} style={{ margin: '1px 0' }}>{line}</p>
                 ))}
