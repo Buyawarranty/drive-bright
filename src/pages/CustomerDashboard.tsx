@@ -590,6 +590,36 @@ const CustomerDashboard = () => {
         console.log("WARNING: No policies found");
         setPolicies([]);
         setSelectedPolicy(null);
+        
+        // When impersonating, still fetch customer data even without policies
+        if (isImpersonating && effectiveEmail) {
+          console.log("Impersonating with no policies - fetching customer data directly");
+          const { data: custData } = await supabase
+            .from('customers')
+            .select('id, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, mileage, phone, first_name, last_name, flat_number, building_name, building_number, street, town, county, postcode, country, labour_rate')
+            .ilike('email', effectiveEmail)
+            .limit(1)
+            .maybeSingle();
+          
+          if (custData) {
+            console.log("Found customer data for impersonation:", custData);
+            setCustomerData(custData);
+            setAddress(prev => ({
+              ...prev,
+              phone: custData.phone || '',
+              firstName: custData.first_name || '',
+              lastName: custData.last_name || '',
+              flatNumber: custData.flat_number || '',
+              buildingName: custData.building_name || '',
+              buildingNumber: custData.building_number || '',
+              street: custData.street || '',
+              city: custData.town || '',
+              county: (custData as any).county || '',
+              postcode: custData.postcode || '',
+              country: custData.country || 'United Kingdom'
+            }));
+          }
+        }
       }
     } catch (error) {
       console.error('EXCEPTION in fetchPolicies:', error);
