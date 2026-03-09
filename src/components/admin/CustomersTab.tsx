@@ -774,6 +774,102 @@ export const CustomersTab = () => {
     }
   };
 
+  const normaliseEmail = (value?: string | null) => value?.trim().toLowerCase() || '';
+  const normaliseReg = (value?: string | null) => value?.toUpperCase().replace(/\s+/g, '') || '';
+  const normalisePhone = (value?: string | null) => value?.replace(/\s+/g, '') || '';
+
+  const fetchPhoneSources = async (table: 'sales_leads' | 'abandoned_carts') => {
+    const pageSize = 1000;
+    let from = 0;
+    const rows: Array<{ email: string | null; vehicle_reg: string | null; phone: string | null; created_at: string }> = [];
+
+    while (true) {
+      const { data, error } = await supabase
+        .from(table)
+        .select('email, vehicle_reg, phone, created_at')
+        .not('phone', 'is', null)
+        .order('created_at', { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (error) throw error;
+
+      const valid = (data || []).filter((row: any) => row.phone && String(row.phone).trim().length > 0);
+      rows.push(...valid);
+
+      if (!data || data.length < pageSize) break;
+      from += pageSize;
+    }
+
+    return rows;
+  };
+
+  const recoverMissingPhones = async (customerRows: Customer[]) => {
+    const missing = customerRows.filter((customer) => !customer.phone || !customer.phone.trim());
+    if (missing.length === 0) {
+      return { recoveredRows: customerRows, recoveredCount: 0 };
+    }
+
+    const [salesPhones, cartPhones] = await Promise.all([
+      fetchPhoneSources('sales_leads'),
+      fetchPhoneSources('abandoned_carts'),
+    ]);
+
+    const phoneByEmail = new Map<string, string>();
+    const phoneByReg = new Map<string, string>();
+
+    for (const source of [...salesPhones, ...cartPhones]) {
+      const phone = normalisePhone(source.phone);
+      if (!phone) continue;
+
+      const emailKey = normaliseEmail(source.email);
+      const regKey = normaliseReg(source.vehicle_reg);
+
+      if (emailKey && !phoneByEmail.has(emailKey)) {
+        phoneByEmail.set(emailKey, phone);
+      }
+
+      if (regKey && !phoneByReg.has(regKey)) {
+        phoneByReg.set(regKey, phone);
+      }
+    }
+
+    let recoveredCount = 0;
+
+    const recoveredRows = customerRows.map((customer) => {
+      if (customer.phone && customer.phone.trim()) return customer;
+
+      const recoveredPhone =
+        phoneByEmail.get(normaliseEmail(customer.email)) ||
+        phoneByReg.get(normaliseReg(customer.registration_plate));
+
+      if (!recoveredPhone) return customer;
+
+      recoveredCount += 1;
+      return {
+        ...customer,
+        phone: recoveredPhone,
+      };
+    });
+
+    const rowsToPersist = recoveredRows.filter((customer) => {
+      const original = customerRows.find((row) => row.id === customer.id);
+      return (!original?.phone || !original.phone.trim()) && !!customer.phone;
+    });
+
+    if (rowsToPersist.length > 0) {
+      await Promise.all(
+        rowsToPersist.map((customer) =>
+          supabase
+            .from('customers')
+            .update({ phone: customer.phone })
+            .eq('id', customer.id)
+        )
+      );
+    }
+
+    return { recoveredRows, recoveredCount };
+  };
+
   const fetchCustomers = async () => {
     try {
       console.log('🔍 Starting customer fetch process...');
@@ -1008,9 +1104,15 @@ export const CustomersTab = () => {
         warranties_2000_scheduled_for: customer.customer_policies?.[0]?.warranties_2000_scheduled_for || null,
         last_login: customer.last_login || null
       })) || [];
-      
-      setCustomers(processedData);
-      setFilteredCustomers(processedData);
+
+      const { recoveredRows, recoveredCount } = await recoverMissingPhones(processedData);
+
+      setCustomers(recoveredRows);
+      setFilteredCustomers(recoveredRows);
+
+      if (recoveredCount > 0) {
+        toast.success(`Recovered ${recoveredCount} missing phone number${recoveredCount > 1 ? 's' : ''} from Step 2 backups`);
+      }
       
       // Fetch email statuses after customers are loaded
       fetchEmailStatuses();
