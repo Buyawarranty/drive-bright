@@ -491,7 +491,7 @@ const CustomerDashboard = () => {
         error = result.error;
       }
 
-      // Strategy 2: If no results, try by user_id (skip when impersonating as we use email)
+      // Strategy 2: If no results, try by user_id (for normal login)
       if ((!data || data.length === 0) && user?.id && !isImpersonating) {
         console.log("Strategy 2: Querying by user_id:", user.id);
         const result = await supabase
@@ -502,6 +502,22 @@ const CustomerDashboard = () => {
           .order('created_at', { ascending: false });
         
         console.log("User ID query result:", result);
+        data = result.data;
+        error = result.error;
+      }
+
+      // Strategy 3: When impersonating and email didn't match, try by customer_id
+      // This handles cases where the policy email has typos but customer_id is correct
+      if ((!data || data.length === 0) && isImpersonating && impersonatedCustomer?.customerId) {
+        console.log("Strategy 3: Querying by customer_id (impersonation fallback):", impersonatedCustomer.customerId);
+        let query = supabase
+          .from('customer_policies')
+          .select('*')
+          .eq('customer_id', impersonatedCustomer.customerId);
+        
+        const result = await query.order('created_at', { ascending: false });
+        
+        console.log("Customer ID query result:", result);
         data = result.data;
         error = result.error;
       }
