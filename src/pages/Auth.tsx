@@ -130,7 +130,7 @@ const Auth = () => {
           });
 
           // Define admin roles that should go to admin dashboard
-          const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer'];
+          const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll'];
           
           // Check if user has ANY admin role
           const hasAdminRole = !error && roleData && roleData.some(r => adminRoles.includes(r.role));
