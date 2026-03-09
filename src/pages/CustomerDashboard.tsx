@@ -474,20 +474,25 @@ const CustomerDashboard = () => {
       // Strategy 1: Try by email first (most reliable) - using case-insensitive match
       if (effectiveEmail) {
         console.log("Strategy 1: Querying by email:", effectiveEmail);
-        const result = await supabase
+        let query = supabase
           .from('customer_policies')
           .select('*')
-          .ilike('email', effectiveEmail)
-          .or('is_deleted.is.null,is_deleted.eq.false')
-          .order('created_at', { ascending: false });
+          .ilike('email', effectiveEmail);
+        
+        // When impersonating, show ALL policies including soft-deleted ones
+        if (!isImpersonating) {
+          query = query.or('is_deleted.is.null,is_deleted.eq.false');
+        }
+        
+        const result = await query.order('created_at', { ascending: false });
         
         console.log("Email query result:", result);
         data = result.data;
         error = result.error;
       }
 
-      // Strategy 2: If no results, try by user_id
-      if ((!data || data.length === 0) && user?.id) {
+      // Strategy 2: If no results, try by user_id (skip when impersonating as we use email)
+      if ((!data || data.length === 0) && user?.id && !isImpersonating) {
         console.log("Strategy 2: Querying by user_id:", user.id);
         const result = await supabase
           .from('customer_policies')
@@ -1267,8 +1272,19 @@ const CustomerDashboard = () => {
               <div className="space-y-4">
                 <div className="text-sm text-gray-600 space-y-2 bg-gray-50 p-4 rounded">
                   <p><strong>Debug Info:</strong></p>
-                  <p>User ID: {user?.id || 'Not set'}</p>
-                  <p>Email: {user?.email || 'Not set'}</p>
+                  {isImpersonating && impersonatedCustomer ? (
+                    <>
+                      <p>Impersonating: {impersonatedCustomer.customerName}</p>
+                      <p>Customer Email: {impersonatedCustomer.customerEmail}</p>
+                      <p>Customer ID: {impersonatedCustomer.customerId}</p>
+                      <p>Admin Email: {user?.email || 'Not set'}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>User ID: {user?.id || 'Not set'}</p>
+                      <p>Email: {user?.email || 'Not set'}</p>
+                    </>
+                  )}
                   <p>Auth Status: {loading ? 'Loading...' : user ? 'Authenticated' : 'Not authenticated'}</p>
                   <p>Policies Loading: {policyLoading ? 'Yes' : 'No'}</p>
                 </div>
