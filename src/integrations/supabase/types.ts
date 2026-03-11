@@ -5131,6 +5131,33 @@ export type Database = {
         }
         Relationships: []
       }
+      system_event_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_data: Json | null
+          event_source: string | null
+          event_type: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_data?: Json | null
+          event_source?: string | null
+          event_type: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_data?: Json | null
+          event_source?: string | null
+          event_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       timesheet_bonuses: {
         Row: {
           admin_user_id: string | null
@@ -6004,6 +6031,7 @@ export type Database = {
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       process_scheduled_sms: { Args: never; Returns: number }
+      recover_orphaned_leads: { Args: never; Returns: Json }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
