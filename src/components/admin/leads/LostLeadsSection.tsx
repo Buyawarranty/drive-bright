@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface OrphanedLead {
   id: string;
@@ -36,11 +37,11 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
   const [syncing, setSyncing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [dismissingId, setDismissingId] = useState<string | null>(null);
 
   const fetchOrphanedLeads = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch abandoned carts and sales leads in parallel
       const [cartsRes, leadsRes] = await Promise.all([
         fetchAllRows(() =>
           supabase
@@ -59,7 +60,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
       const carts = cartsRes.data || [];
       const leads = leadsRes.data || [];
 
-      // Build lookup sets from sales_leads
       const linkedCartIds = new Set(
         leads.filter((l: any) => l.abandoned_cart_id).map((l: any) => l.abandoned_cart_id)
       );
@@ -67,23 +67,15 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
         leads.map((l: any) => l.email?.toLowerCase()).filter(Boolean)
       );
 
-      // Find orphaned carts: exist in backup but NOT in sales_leads
-      // Skip already converted and already contacted ones
       const orphans = carts.filter((cart: any) => {
-        // Skip if already linked by cart ID
         if (linkedCartIds.has(cart.id)) return false;
-        // Skip if email already exists in sales_leads
         if (existingEmails.has(cart.email?.toLowerCase())) return false;
-        // Skip converted carts
         if (cart.is_converted === true) return false;
-        // Skip already contacted (they're being handled)
         if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead'].includes(cart.contact_status)) return false;
         return true;
       });
 
       setOrphanedLeads(orphans);
-      
-      // Auto-open if there are orphans
       if (orphans.length > 0) {
         setIsOpen(true);
       }
@@ -102,7 +94,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
     setSyncing(true);
     try {
       const { data, error } = await supabase.rpc('recover_orphaned_leads');
-      
       if (error) throw error;
 
       const result = data as any;
@@ -112,9 +103,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
       if (recovered > 0) {
         toast.success(`✅ Recovered ${recovered} lost lead${recovered > 1 ? 's' : ''} to sales pipeline`);
         setLastSyncedAt(new Date().toISOString());
-        // Refresh the orphaned leads list
         await fetchOrphanedLeads();
-        // Notify parent to refresh leads
         onRecovered?.();
       } else if (skipped > 0) {
         toast.info(`No new leads to recover (${skipped} skipped as duplicates)`);
@@ -128,6 +117,27 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
       setSyncing(false);
     }
   }, [fetchOrphanedLeads, onRecovered]);
+
+  const handleDismissLead = useCallback(async (lead: OrphanedLead) => {
+    setDismissingId(lead.id);
+    try {
+      // Mark abandoned cart as fake_lead so it's excluded from future recovery
+      const { error } = await supabase
+        .from('abandoned_carts')
+        .update({ contact_status: 'fake_lead', is_converted: true })
+        .eq('id', lead.id);
+
+      if (error) throw error;
+
+      toast.success(`Dismissed "${lead.email}" — will not be recovered`);
+      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+    } catch (err: any) {
+      console.error('Dismiss error:', err);
+      toast.error(`Failed to dismiss: ${err.message}`);
+    } finally {
+      setDismissingId(null);
+    }
+  }, []);
 
   if (loading) return null;
 
@@ -172,7 +182,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
           <CardContent className="pt-0">
             {orphanedLeads.length > 0 && (
               <>
-                {/* Sync Button */}
                 <div className="flex items-center gap-3 mb-4">
                   <Button
                     onClick={handleSyncToSales}
@@ -203,7 +212,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                   </Button>
                 </div>
 
-                {/* Orphaned Leads Table */}
                 <div className="rounded-md border overflow-x-auto max-h-[400px] overflow-y-auto">
                   <Table>
                     <TableHeader>
@@ -216,6 +224,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                         <TableHead className="w-[100px]">Plan</TableHead>
                         <TableHead className="w-[60px]">Step</TableHead>
                         <TableHead className="w-[120px]">Date</TableHead>
+                        <TableHead className="w-[80px] text-center">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -248,6 +257,38 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {format(new Date(lead.created_at), 'MMM d, HH:mm')}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  disabled={dismissingId === lead.id}
+                                  title="Reject this lead"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    <strong>{lead.email}</strong> will be marked as a fake lead and won't appear in future recovery. This cannot be undone from here.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDismissLead(lead)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Reject Lead
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </TableCell>
                         </TableRow>
                       ))}
