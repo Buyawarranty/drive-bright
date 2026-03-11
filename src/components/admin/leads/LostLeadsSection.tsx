@@ -148,7 +148,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                 ) : (
                   <>
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span>Lost Leads — All Synced</span>
+                    <span>Recovered Leads — All Synced</span>
                   </>
                 )}
               </CardTitle>
