@@ -142,13 +142,13 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                 {orphanedLeads.length > 0 ? (
                   <>
                     <AlertTriangle className="h-5 w-5 text-amber-600" />
-                    <span>Lost Leads</span>
+                    <span>Recovered Leads</span>
                     <Badge variant="destructive" className="ml-1">{orphanedLeads.length}</Badge>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span>Lost Leads — All Synced</span>
+                    <span>Recovered Leads — All Synced</span>
                   </>
                 )}
               </CardTitle>
@@ -262,7 +262,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
               <div className="text-center py-4">
                 <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">
-                  All backup leads are synced with the sales pipeline. No lost leads detected.
+                  All backup leads are synced with the sales pipeline. No recovered leads detected.
                 </p>
               </div>
             )}
