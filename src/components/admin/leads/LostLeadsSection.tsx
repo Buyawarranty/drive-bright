@@ -130,7 +130,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
   }, [fetchOrphanedLeads, onRecovered]);
 
   if (loading) return null;
-  if (orphanedLeads.length === 0 && !lastSyncedAt) return null;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
