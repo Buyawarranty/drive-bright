@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, RefreshCw, Search, Database, Shield, Users, Phone, Mail, User, Calendar, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Download, RefreshCw, Search, Database, Shield, Users, Phone, Mail, User, Calendar, AlertTriangle, CheckCircle, Clock, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface BackupContact {
@@ -41,7 +41,6 @@ async function fetchAllRows(
       .select(selectFields)
       .range(from, from + PAGE_SIZE - 1);
 
-    // marketing_audience may not have created_at, so only order if applicable
     if (tableName !== 'marketing_audience') {
       query.order(orderField, { ascending: false });
     }
@@ -68,6 +67,8 @@ export const LeadBackupRecoveryTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [syncing, setSyncing] = useState(false);
+  const [recoveringSales, setRecoveringSales] = useState(false);
+  const [lastRecoveryAt, setLastRecoveryAt] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalContacts: 0,
     withEmail: 0,
@@ -75,14 +76,30 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     withName: 0,
     inMarketing: 0,
     missingFromMarketing: 0,
+    missingFromSales: 0,
   });
+
+  const fetchLastRecovery = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('system_event_logs')
+        .select('created_at')
+        .eq('event_type', 'lead_recovery_run')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        setLastRecoveryAt(data[0].created_at);
+      }
+    } catch {
+      // silently ignore
+    }
+  }, []);
 
   const fetchAllContacts = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch ALL contacts from all three sources using paginated helper
       const [salesData, cartsData, marketingData] = await Promise.all([
-        fetchAllRows('sales_leads', 'id, email, phone, first_name, last_name, vehicle_reg, status, created_at'),
+        fetchAllRows('sales_leads', 'id, email, phone, first_name, last_name, vehicle_reg, status, created_at, abandoned_cart_id'),
         fetchAllRows('abandoned_carts', 'id, email, phone, full_name, vehicle_reg, step_abandoned, contact_status, created_at'),
         fetchAllRows('marketing_audience', 'email, phone'),
       ]);
@@ -94,10 +111,30 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         marketingData.map((m: any) => m.phone?.replace(/\s/g, '')).filter(Boolean)
       );
 
+      // Build set of abandoned_cart_ids that have a matching sales_lead
+      const linkedCartIds = new Set(
+        salesData.filter((sl: any) => sl.abandoned_cart_id).map((sl: any) => sl.abandoned_cart_id)
+      );
+      const salesEmails = new Set(
+        salesData.map((sl: any) => sl.email?.toLowerCase()).filter(Boolean)
+      );
+
+      // Count orphaned carts (step >= 2, have email, not converted, no matching sales_lead)
+      let orphanedCount = 0;
+      for (const cart of cartsData) {
+        if (
+          cart.email &&
+          cart.step_abandoned >= 2 &&
+          !linkedCartIds.has(cart.id) &&
+          !salesEmails.has(cart.email?.toLowerCase())
+        ) {
+          orphanedCount++;
+        }
+      }
+
       const allContacts: BackupContact[] = [];
       const seen = new Set<string>();
 
-      // Process sales leads
       for (const lead of salesData) {
         const key = `${lead.email?.toLowerCase() || ''}-${lead.phone || ''}`;
         if (seen.has(key)) continue;
@@ -121,7 +158,6 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         });
       }
 
-      // Process abandoned carts (only those not already in sales_leads by email)
       for (const cart of cartsData) {
         const key = `${cart.email?.toLowerCase() || ''}-${cart.phone || ''}`;
         if (seen.has(key)) continue;
@@ -154,6 +190,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         withName: allContacts.filter(c => c.first_name || c.full_name).length,
         inMarketing: allContacts.filter(c => c.in_marketing).length,
         missingFromMarketing: allContacts.filter(c => !c.in_marketing && c.email).length,
+        missingFromSales: orphanedCount,
       });
     } catch (error) {
       console.error('Error fetching contacts:', error);
@@ -165,7 +202,8 @@ export const LeadBackupRecoveryTab: React.FC = () => {
 
   useEffect(() => {
     fetchAllContacts();
-  }, [fetchAllContacts]);
+    fetchLastRecovery();
+  }, [fetchAllContacts, fetchLastRecovery]);
 
   const handleSyncToMarketing = async () => {
     setSyncing(true);
@@ -184,6 +222,26 @@ export const LeadBackupRecoveryTab: React.FC = () => {
       toast.error('Failed to sync contacts to marketing');
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleRecoverToSales = async () => {
+    setRecoveringSales(true);
+    try {
+      const { data, error } = await supabase.rpc('recover_orphaned_leads');
+      if (error) throw error;
+      const result = data as any;
+      if (result?.success === false) {
+        toast.error(`Recovery failed: ${result?.error || 'Unknown error'}`);
+      } else {
+        toast.success(`Recovered ${result?.recovered || 0} leads to Sales (${result?.skipped || 0} skipped)`);
+      }
+      await Promise.all([fetchAllContacts(), fetchLastRecovery()]);
+    } catch (error) {
+      console.error('Recovery error:', error);
+      toast.error('Failed to recover orphaned leads');
+    } finally {
+      setRecoveringSales(false);
     }
   };
 
@@ -239,6 +297,12 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           <p className="text-muted-foreground mt-1">
             Every contact from Step 2 is captured here. Export or sync to marketing at any time.
           </p>
+          {lastRecoveryAt && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Last auto-recovery: {format(new Date(lastRecoveryAt), 'MMM d, yyyy HH:mm')}
+            </p>
+          )}
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={fetchAllContacts} disabled={loading}>
@@ -256,7 +320,23 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Missing alert banner */}
+      {/* Missing from Sales alert banner */}
+      {stats.missingFromSales > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-red-600" />
+            <span className="text-sm font-medium text-red-800">
+              {stats.missingFromSales} abandoned carts never reached New Leads! Click "Recover to Sales" to create the missing sales leads now.
+            </span>
+          </div>
+          <Button size="sm" onClick={handleRecoverToSales} disabled={recoveringSales} className="bg-red-600 hover:bg-red-700 text-white">
+            <Zap className={`h-3 w-3 mr-1 ${recoveringSales ? 'animate-spin' : ''}`} />
+            {recoveringSales ? 'Recovering...' : 'Recover to Sales'}
+          </Button>
+        </div>
+      )}
+
+      {/* Missing from Marketing alert banner */}
       {stats.missingFromMarketing > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -272,7 +352,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto text-blue-500 mb-1" />
@@ -312,7 +392,16 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           <CardContent className="p-4 text-center">
             <AlertTriangle className="h-5 w-5 mx-auto text-amber-500 mb-1" />
             <div className="text-2xl font-bold text-amber-600">{stats.missingFromMarketing.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Missing from Marketing</div>
+            <div className="text-xs text-muted-foreground">Missing Marketing</div>
+          </CardContent>
+        </Card>
+        <Card className={stats.missingFromSales > 0 ? 'border-red-300 bg-red-50/50' : ''}>
+          <CardContent className="p-4 text-center">
+            <Zap className={`h-5 w-5 mx-auto mb-1 ${stats.missingFromSales > 0 ? 'text-red-600' : 'text-muted-foreground'}`} />
+            <div className={`text-2xl font-bold ${stats.missingFromSales > 0 ? 'text-red-600' : ''}`}>
+              {stats.missingFromSales.toLocaleString()}
+            </div>
+            <div className="text-xs text-muted-foreground">Missing Sales</div>
           </CardContent>
         </Card>
       </div>
@@ -366,7 +455,6 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
   const totalPages = Math.ceil(contacts.length / pageSize);
   const paged = contacts.slice(page * pageSize, (page + 1) * pageSize);
 
-  // Reset page when contacts change
   useEffect(() => {
     setPage(0);
   }, [contacts.length]);

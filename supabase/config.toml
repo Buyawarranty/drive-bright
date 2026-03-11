@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.send-abandoned-cart-email]
 verify_jwt = false
 
+[functions.auto-recover-leads]
+verify_jwt = false
+
 [functions.schedule-abandoned-cart-emails] 
 verify_jwt = false
 
