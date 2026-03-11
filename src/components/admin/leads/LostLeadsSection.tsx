@@ -142,7 +142,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                 {orphanedLeads.length > 0 ? (
                   <>
                     <AlertTriangle className="h-5 w-5 text-amber-600" />
-                    <span>Lost Leads</span>
+                    <span>Recovered Leads</span>
                     <Badge variant="destructive" className="ml-1">{orphanedLeads.length}</Badge>
                   </>
                 ) : (
