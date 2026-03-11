@@ -603,6 +603,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             />
           )}
 
+          {/* Lost Leads Section - Shows orphaned leads from backup */}
+          {isAdmin && (
+            <LostLeadsSection onRecovered={fetchLeads} />
+          )}
+
           <LeadsFilters
             filter={filter}
             onFilterChange={setFilter}
