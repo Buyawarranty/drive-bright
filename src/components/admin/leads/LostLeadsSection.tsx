@@ -262,7 +262,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
               <div className="text-center py-4">
                 <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">
-                  All backup leads are synced with the sales pipeline. No lost leads detected.
+                  All backup leads are synced with the sales pipeline. No recovered leads detected.
                 </p>
               </div>
             )}
