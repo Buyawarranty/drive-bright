@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -33,20 +33,31 @@ interface LostLeadsSectionProps {
 
 export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
+  const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isRejectedOpen, setIsRejectedOpen] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [dismissingId, setDismissingId] = useState<string | null>(null);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
 
   const fetchOrphanedLeads = useCallback(async () => {
     setLoading(true);
     try {
-      const [cartsRes, leadsRes] = await Promise.all([
+      const [cartsRes, rejectedCartsRes, leadsRes] = await Promise.all([
         fetchAllRows(() =>
           supabase
             .from('abandoned_carts')
             .select('id, email, phone, full_name, vehicle_reg, vehicle_make, vehicle_model, plan_name, step_abandoned, contact_status, contacted_by, created_at, is_converted')
+            .gte('step_abandoned', 2)
+            .order('created_at', { ascending: false })
+        ),
+        fetchAllRows(() =>
+          supabase
+            .from('abandoned_carts')
+            .select('id, email, phone, full_name, vehicle_reg, vehicle_make, vehicle_model, plan_name, step_abandoned, contact_status, contacted_by, created_at')
+            .eq('contact_status', 'fake_lead')
             .gte('step_abandoned', 2)
             .order('created_at', { ascending: false })
         ),
@@ -59,6 +70,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
 
       const carts = cartsRes.data || [];
       const leads = leadsRes.data || [];
+      const rejected = rejectedCartsRes.data || [];
 
       const linkedCartIds = new Set(
         leads.filter((l: any) => l.abandoned_cart_id).map((l: any) => l.abandoned_cart_id)
@@ -75,7 +87,15 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
         return true;
       });
 
+      // Filter rejected leads: only show those not already in sales pipeline
+      const rejectedOrphans = rejected.filter((cart: any) => {
+        if (linkedCartIds.has(cart.id)) return false;
+        if (existingEmails.has(cart.email?.toLowerCase())) return false;
+        return true;
+      });
+
       setOrphanedLeads(orphans);
+      setRejectedLeads(rejectedOrphans);
       if (orphans.length > 0) {
         setIsOpen(true);
       }
@@ -121,7 +141,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
   const handleDismissLead = useCallback(async (lead: OrphanedLead) => {
     setDismissingId(lead.id);
     try {
-      // Mark abandoned cart as fake_lead so it's excluded from future recovery
       const { error } = await supabase
         .from('abandoned_carts')
         .update({ contact_status: 'fake_lead', is_converted: true })
@@ -129,13 +148,35 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
 
       if (error) throw error;
 
-      toast.success(`Dismissed "${lead.email}" — will not be recovered`);
+      toast.success(`Dismissed "${lead.email}" — moved to rejected`);
       setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+      setRejectedLeads(prev => [{ ...lead, contact_status: 'fake_lead' }, ...prev]);
     } catch (err: any) {
       console.error('Dismiss error:', err);
       toast.error(`Failed to dismiss: ${err.message}`);
     } finally {
       setDismissingId(null);
+    }
+  }, []);
+
+  const handleRestoreLead = useCallback(async (lead: OrphanedLead) => {
+    setRestoringId(lead.id);
+    try {
+      const { error } = await supabase
+        .from('abandoned_carts')
+        .update({ contact_status: null, is_converted: false })
+        .eq('id', lead.id);
+
+      if (error) throw error;
+
+      toast.success(`Restored "${lead.email}" — now available for recovery`);
+      setRejectedLeads(prev => prev.filter(l => l.id !== lead.id));
+      setOrphanedLeads(prev => [{ ...lead, contact_status: null }, ...prev]);
+    } catch (err: any) {
+      console.error('Restore error:', err);
+      toast.error(`Failed to restore: ${err.message}`);
+    } finally {
+      setRestoringId(null);
     }
   }, []);
 
@@ -160,6 +201,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                     <span>Recovered Leads — All Synced</span>
                   </>
                 )}
+                {rejectedLeads.length > 0 && (
+                  <Badge variant="outline" className="ml-1 text-muted-foreground">{rejectedLeads.length} rejected</Badge>
+                )}
               </CardTitle>
               <div className="flex items-center gap-2">
                 {lastSyncedAt && (
@@ -179,7 +223,8 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 space-y-6">
+            {/* Orphaned leads table */}
             {orphanedLeads.length > 0 && (
               <>
                 <div className="flex items-center gap-3 mb-4">
@@ -212,89 +257,41 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                   </Button>
                 </div>
 
-                <div className="rounded-md border overflow-x-auto max-h-[400px] overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/30">
-                        <TableHead className="w-[160px]">Name</TableHead>
-                        <TableHead className="w-[200px]">Email</TableHead>
-                        <TableHead className="w-[120px]">Phone</TableHead>
-                        <TableHead className="w-[100px]">Reg Plate</TableHead>
-                        <TableHead className="w-[120px]">Vehicle</TableHead>
-                        <TableHead className="w-[100px]">Plan</TableHead>
-                        <TableHead className="w-[60px]">Step</TableHead>
-                        <TableHead className="w-[120px]">Date</TableHead>
-                        <TableHead className="w-[80px] text-center">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orphanedLeads.map((lead) => (
-                        <TableRow key={lead.id}>
-                          <TableCell className="font-medium text-sm">
-                            {lead.full_name || '—'}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {lead.email}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {lead.phone || '—'}
-                          </TableCell>
-                          <TableCell>
-                            {lead.vehicle_reg ? (
-                              <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
-                                {lead.vehicle_reg}
-                              </Badge>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {lead.plan_name || '—'}
-                          </TableCell>
-                          <TableCell className="text-center text-sm">
-                            {lead.step_abandoned}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {format(new Date(lead.created_at), 'MMM d, HH:mm')}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  disabled={dismissingId === lead.id}
-                                  title="Reject this lead"
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    <strong>{lead.email}</strong> will be marked as a fake lead and won't appear in future recovery. This cannot be undone from here.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDismissLead(lead)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Reject Lead
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                <LeadTable
+                  leads={orphanedLeads}
+                  actionColumn={(lead) => (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          disabled={dismissingId === lead.id}
+                          title="Reject this lead"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            <strong>{lead.email}</strong> will be marked as rejected. You can restore it later from the Rejected Leads section below.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDismissLead(lead)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Reject Lead
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                />
               </>
             )}
 
@@ -306,9 +303,114 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                 </p>
               </div>
             )}
+
+            {/* Rejected leads recovery section */}
+            {rejectedLeads.length > 0 && (
+              <Collapsible open={isRejectedOpen} onOpenChange={setIsRejectedOpen}>
+                <div className="border rounded-md bg-muted/10">
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <XCircle className="h-4 w-4" />
+                        <span>Rejected Leads</span>
+                        <Badge variant="secondary" className="ml-1">{rejectedLeads.length}</Badge>
+                      </div>
+                      {isRejectedOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="px-4 pb-4">
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Previously rejected leads. Click restore to move them back to the recovery queue.
+                      </p>
+                      <LeadTable
+                        leads={rejectedLeads}
+                        actionColumn={(lead) => (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                disabled={restoringId === lead.id}
+                                title="Restore this lead"
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Restore this lead?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  <strong>{lead.email}</strong> will be moved back to the recovery queue and can be synced to the sales pipeline.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleRestoreLead(lead)}
+                                  className="bg-green-600 text-white hover:bg-green-700"
+                                >
+                                  Restore Lead
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            )}
           </CardContent>
         </CollapsibleContent>
       </Card>
     </Collapsible>
   );
 };
+
+/** Shared lead table used for both orphaned and rejected leads */
+const LeadTable: React.FC<{
+  leads: OrphanedLead[];
+  actionColumn: (lead: OrphanedLead) => React.ReactNode;
+}> = ({ leads, actionColumn }) => (
+  <div className="rounded-md border overflow-x-auto max-h-[400px] overflow-y-auto">
+    <Table>
+      <TableHeader>
+        <TableRow className="bg-muted/30">
+          <TableHead className="w-[160px]">Name</TableHead>
+          <TableHead className="w-[200px]">Email</TableHead>
+          <TableHead className="w-[120px]">Phone</TableHead>
+          <TableHead className="w-[100px]">Reg Plate</TableHead>
+          <TableHead className="w-[120px]">Vehicle</TableHead>
+          <TableHead className="w-[100px]">Plan</TableHead>
+          <TableHead className="w-[60px]">Step</TableHead>
+          <TableHead className="w-[120px]">Date</TableHead>
+          <TableHead className="w-[80px] text-center">Action</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {leads.map((lead) => (
+          <TableRow key={lead.id}>
+            <TableCell className="font-medium text-sm">{lead.full_name || '—'}</TableCell>
+            <TableCell className="text-sm text-muted-foreground">{lead.email}</TableCell>
+            <TableCell className="text-sm">{lead.phone || '—'}</TableCell>
+            <TableCell>
+              {lead.vehicle_reg ? (
+                <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
+                  {lead.vehicle_reg}
+                </Badge>
+              ) : '—'}
+            </TableCell>
+            <TableCell className="text-sm">{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</TableCell>
+            <TableCell className="text-sm">{lead.plan_name || '—'}</TableCell>
+            <TableCell className="text-center text-sm">{lead.step_abandoned}</TableCell>
+            <TableCell className="text-sm text-muted-foreground">{format(new Date(lead.created_at), 'MMM d, HH:mm')}</TableCell>
+            <TableCell className="text-center">{actionColumn(lead)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+);
