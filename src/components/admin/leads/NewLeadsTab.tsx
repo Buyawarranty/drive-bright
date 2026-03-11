@@ -603,8 +603,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             />
           )}
 
-          {/* Lost Leads Section - Shows orphaned leads from backup */}
-          {isAdmin && (
+          {/* Recovered Leads Section - Only for super_admin and sales_lead */}
+          {(userRole === 'super_admin' || userRole === 'sales_lead') && (
             <LostLeadsSection onRecovered={fetchLeads} />
           )}
 
