@@ -14,6 +14,7 @@ import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
+import { LostLeadsSection } from './LostLeadsSection';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -600,6 +601,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <SalesExecutiveHeader
               onLeadClaimed={() => fetchLeads()}
             />
+          )}
+
+          {/* Lost Leads Section - Shows orphaned leads from backup */}
+          {isAdmin && (
+            <LostLeadsSection onRecovered={fetchLeads} />
           )}
 
           <LeadsFilters
