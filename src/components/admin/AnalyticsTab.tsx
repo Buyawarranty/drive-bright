@@ -144,7 +144,7 @@ export const AnalyticsTab = () => {
   }, []);
 
   // Handle period comparison selection
-  const handlePeriodComparison = useCallback((period: 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null) => {
+  const handlePeriodComparison = useCallback((period: 'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null) => {
     if (comparisonPeriod === period) {
       setComparisonPeriod(null);
       setDateRange(undefined);
@@ -156,6 +156,16 @@ export const AnalyticsTab = () => {
       let from: Date, to: Date;
       
       switch (period) {
+        case 'today':
+          from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+          break;
+        case 'yesterday':
+          const yest = new Date(now);
+          yest.setDate(yest.getDate() - 1);
+          from = new Date(yest.getFullYear(), yest.getMonth(), yest.getDate());
+          to = new Date(yest.getFullYear(), yest.getMonth(), yest.getDate(), 23, 59, 59, 999);
+          break;
         case 'week':
           from = startOfWeek(now, { weekStartsOn: 1 });
           to = endOfWeek(now, { weekStartsOn: 1 });
