@@ -2040,8 +2040,6 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                     )}
                                   </TableCell>
                                   <TableCell>
-                                    <span className="text-sm">{lead.plan_interest || '-'}</span>
-                                  </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                       <Calendar className="h-3 w-3" />

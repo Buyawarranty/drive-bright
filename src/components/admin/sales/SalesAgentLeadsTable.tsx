@@ -292,7 +292,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                   {/* Expanded row with LeadDetailsPanel */}
                   {expandedLead === lead.id && (
                     <TableRow>
-                      <TableCell colSpan={8} className="p-0 bg-muted/20">
+                      <TableCell colSpan={7} className="p-0 bg-muted/20">
                         <LeadDetailsPanel
                           lead={lead}
                           onUpdateNotes={handlers.updateLeadNotes}
