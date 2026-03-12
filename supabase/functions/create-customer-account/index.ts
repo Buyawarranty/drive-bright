@@ -38,9 +38,28 @@ serve(async (req) => {
 
     console.log('Creating customer account for:', email);
 
-    // First, try to find if user already exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    // First, try to find if user already exists (paginate to avoid missing users beyond first 1000)
+    let existingUser: { id: string; email?: string | null; user_metadata?: Record<string, any> } | undefined;
+    let page = 1;
+    const perPage = 1000;
+
+    while (!existingUser && page <= 20) {
+      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({ page, perPage });
+
+      if (listError) {
+        console.error('Error listing users:', listError);
+        throw listError;
+      }
+
+      const batch = existingUsers?.users ?? [];
+      existingUser = batch.find(u => u.email?.toLowerCase() === email);
+
+      if (batch.length < perPage) {
+        break;
+      }
+
+      page += 1;
+    }
 
     let userId: string;
     
