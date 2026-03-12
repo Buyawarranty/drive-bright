@@ -267,6 +267,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         }
       }
 
+      // Mark Step 2 attempt as successful
+      try {
+        await supabase.from('step2_submission_attempts')
+          .update({ attempt_status: 'success' })
+          .eq('session_id', sessionId)
+          .eq('email', email.trim().toLowerCase())
+          .eq('attempt_status', 'attempted');
+      } catch { /* non-blocking */ }
+
       // Schedule SMS to be sent 10 minutes after quote submission
       try {
         console.log('Scheduling delayed SMS for:', phone);
