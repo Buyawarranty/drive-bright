@@ -344,6 +344,46 @@ export const AnalyticsTab = () => {
     };
   }, [customers, effectiveDateRange]);
 
+  // Price metrics by source: lowest, highest, average
+  const priceMetrics = useMemo(() => {
+    const calcMetrics = (custs: Customer[]) => {
+      const paid = custs.filter(c => c.final_amount && Number(c.final_amount) > 0 && !isRevenueLost(c.status));
+      if (paid.length === 0) return { lowest: 0, highest: 0, average: 0, count: 0 };
+      const amounts = paid.map(c => Number(c.final_amount));
+      return {
+        lowest: Math.min(...amounts),
+        highest: Math.max(...amounts),
+        average: Math.round(amounts.reduce((a, b) => a + b, 0) / amounts.length),
+        count: paid.length
+      };
+    };
+
+    // Use effectiveDateRange-filtered customers for date consistency
+    const dateFiltered = customers.filter(customer => {
+      if (effectiveDateRange?.from) {
+        const signupDate = new Date(customer.signup_date);
+        const fromStart = new Date(effectiveDateRange.from);
+        fromStart.setHours(0, 0, 0, 0);
+        if (signupDate < fromStart) return false;
+        if (effectiveDateRange.to) {
+          const toEnd = new Date(effectiveDateRange.to);
+          toEnd.setHours(23, 59, 59, 999);
+          if (signupDate > toEnd) return false;
+        }
+      }
+      return true;
+    });
+
+    const websiteCusts = dateFiltered.filter(c => getCustomerSource(c) === 'website');
+    const salesCusts = dateFiltered.filter(c => getCustomerSource(c) === 'sales_team');
+
+    return {
+      combined: calcMetrics(dateFiltered),
+      website: calcMetrics(websiteCusts),
+      salesTeam: calcMetrics(salesCusts),
+    };
+  }, [customers, effectiveDateRange]);
+
   // Refund/cancellation metrics calculation
   const refundMetrics = useMemo(() => {
     const refundedCustomers = filteredCustomers.filter(c => isRefunded(c.status));
