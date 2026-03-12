@@ -671,37 +671,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
 
-      {/* Price - Competitor price + Our quotes */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="space-y-1">
-          {lead.cart_metadata?.competitorPrice && (
-            <div className="flex items-center gap-1">
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-red-50 text-red-700 border-red-200 font-semibold">
-                🎯 £{lead.cart_metadata.competitorPrice}
-              </Badge>
-            </div>
-          )}
-          {sentQuotes && sentQuotes.length > 0 && (
-            <div className="flex flex-col gap-0.5">
-              {sentQuotes.slice(0, 2).map((quote, idx) => (
-                <Badge 
-                  key={idx} 
-                  variant="outline" 
-                  className="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200 font-medium"
-                >
-                  📤 £{quote.total_price?.toFixed(0) || 'N/A'}
-                </Badge>
-              ))}
-              {sentQuotes.length > 2 && (
-                <span className="text-[10px] text-muted-foreground">+{sentQuotes.length - 2} more</span>
-              )}
-            </div>
-          )}
-          {!lead.cart_metadata?.competitorPrice && (!sentQuotes || sentQuotes.length === 0) && (
-            <span className="text-muted-foreground text-xs">—</span>
-          )}
-        </div>
-      </TableCell>
 
       {/* Payment Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
