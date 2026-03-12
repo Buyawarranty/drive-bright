@@ -285,7 +285,7 @@ export const ManagerDashboard: React.FC = () => {
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="border-b-2 border-border">
                   <TableHead className="w-[50px]">#</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>
