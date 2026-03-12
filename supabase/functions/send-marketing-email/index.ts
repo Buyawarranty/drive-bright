@@ -68,9 +68,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Convert content to HTML format (basic line breaks)
     const htmlContent = content.replace(/\n/g, '<br>');
 
-    // Send emails in batches to avoid rate limiting
-    const batchSize = 50; // Resend allows up to 50 recipients per request
+    // Send emails individually for personalized unsubscribe links
     const results = [];
+    const batchSize = 10; // Process in smaller batches with delays
 
     for (let i = 0; i < filteredEmails.length; i += batchSize) {
       const batch = filteredEmails.slice(i, i + batchSize);
@@ -92,33 +92,42 @@ const handler = async (req: Request): Promise<Response> => {
         
         await Promise.all(emailLogsPromises);
 
-        const emailResponse = await resend.emails.send({
-          from: "Buyawarranty Customer Care <marketing@buyawarranty.co.uk>",
-          to: batch,
-          subject: subject,
-          html: batch.map((recipientEmail: string) => `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="margin-bottom: 30px;">${htmlContent}</div>
-              
-              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 12px;">
-                <p>You're receiving this email because you've interacted with Buy A Warranty.</p>
-                <p>Buy A Warranty Ltd - Your trusted warranty provider</p>
-                <p style="margin-top: 12px;">
-                  <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(recipientEmail.trim().toLowerCase())}&token=${btoa(recipientEmail.trim().toLowerCase() + '_baw_unsub_2024')}" style="color: #999; text-decoration: underline; font-size: 11px;">Unsubscribe</a> from future emails.
-                </p>
+        // Send individually so each recipient gets their own unsubscribe link
+        const sendPromises = batch.map(async (recipientEmail: string) => {
+          const cleanEmail = recipientEmail.trim().toLowerCase();
+          const unsubToken = btoa(cleanEmail + '_baw_unsub_2024');
+          const unsubUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(cleanEmail)}&token=${encodeURIComponent(unsubToken)}`;
+          
+          return resend.emails.send({
+            from: "Buyawarranty Customer Care <marketing@buyawarranty.co.uk>",
+            to: [recipientEmail],
+            subject: subject,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="margin-bottom: 30px;">${htmlContent}</div>
+                
+                <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 12px;">
+                  <p>You're receiving this email because you've interacted with Buy A Warranty.</p>
+                  <p>Buy A Warranty Ltd - Your trusted warranty provider</p>
+                  <p style="margin-top: 12px;">
+                    <a href="${unsubUrl}" style="color: #999; text-decoration: underline; font-size: 11px;">Unsubscribe</a> from future emails.
+                  </p>
+                </div>
               </div>
-            </div>
-          `)[0],
+            `,
+          });
         });
+
+        const batchResults = await Promise.all(sendPromises);
 
         results.push({
           batch: Math.floor(i/batchSize) + 1,
           success: true,
           count: batch.length,
-          response: emailResponse
+          response: batchResults
         });
 
-        console.log(`Batch ${Math.floor(i/batchSize) + 1} sent successfully:`, emailResponse);
+        console.log(`Batch ${Math.floor(i/batchSize) + 1} sent successfully`);
 
         // Update email logs with delivery confirmation
         await Promise.all(
