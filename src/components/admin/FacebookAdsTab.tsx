@@ -1,15 +1,20 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick } from 'lucide-react';
+import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 
 export const FacebookAdsTab: React.FC = () => {
   const [dateRange, setDateRange] = useState<string>('last7');
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const queryClient = useQueryClient();
 
   const dateFrom = useMemo(() => {
     const now = new Date();
@@ -27,6 +32,24 @@ export const FacebookAdsTab: React.FC = () => {
     if (dateRange === 'yesterday') return endOfDay(subDays(new Date(), 1));
     return endOfDay(new Date());
   }, [dateRange]);
+
+  // Auto-refresh every hour
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['fb-page-views'] });
+      queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
+      queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
+      setLastRefresh(new Date());
+    }, AUTO_REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [queryClient]);
+
+  const handleManualRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['fb-page-views'] });
+    queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
+    queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
+    setLastRefresh(new Date());
+  };
 
   // Fetch Facebook page views
   const { data: fbPageViews, isLoading: pvLoading } = useQuery({
@@ -66,17 +89,44 @@ export const FacebookAdsTab: React.FC = () => {
     },
   });
 
+  // Fetch Step 2 attempts in the period
+  const { data: step2Attempts, isLoading: attemptsLoading } = useQuery({
+    queryKey: ['fb-step2-attempts', dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('step2_submission_attempts')
+        .select('*')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString())
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Count conversions from FB leads
   const fbConvertedLeads = useMemo(() => {
     return (fbLeads || []).filter(l => l.is_converted);
   }, [fbLeads]);
+
+  // Step 2 stats
+  const step2Stats = useMemo(() => {
+    const attempts = step2Attempts || [];
+    return {
+      total: attempts.length,
+      success: attempts.filter(a => a.attempt_status === 'success').length,
+      failed: attempts.filter(a => a.attempt_status === 'failed').length,
+      pending: attempts.filter(a => a.attempt_status === 'attempted').length,
+    };
+  }, [step2Attempts]);
 
   // Summary stats
   const totalPageViews = fbPageViews?.length || 0;
   const uniqueVisitors = new Set(fbPageViews?.map(pv => pv.visitor_id)).size;
   const totalLeads = fbLeads?.length || 0;
   const totalConversions = fbConvertedLeads.length;
-  const conversionRate = totalLeads > 0 ? ((totalConversions / totalLeads) * 100).toFixed(1) : '0';
+  const conversionRate = uniqueVisitors > 0 ? ((totalLeads / uniqueVisitors) * 100).toFixed(1) : '0';
+  const purchaseRate = totalLeads > 0 ? ((totalConversions / totalLeads) * 100).toFixed(1) : '0';
 
   // Page breakdown
   const pageBreakdown = useMemo(() => {
@@ -112,34 +162,106 @@ export const FacebookAdsTab: React.FC = () => {
     return Object.values(campaigns).sort((a, b) => b.views - a.views);
   }, [fbPageViews]);
 
-  const isLoading = pvLoading || leadsLoading;
+  // Daily breakdown for funnel
+  const dailyFunnel = useMemo(() => {
+    if (!fbPageViews) return [];
+    const days: Record<string, { visitors: Set<string>; views: number; leads: number; conversions: number }> = {};
+    
+    fbPageViews.forEach(pv => {
+      const day = format(new Date(pv.created_at), 'yyyy-MM-dd');
+      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0 };
+      days[day].views++;
+      if (pv.visitor_id) days[day].visitors.add(pv.visitor_id);
+    });
+    
+    (fbLeads || []).forEach(lead => {
+      const day = format(new Date(lead.created_at), 'yyyy-MM-dd');
+      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0 };
+      days[day].leads++;
+      if (lead.is_converted) days[day].conversions++;
+    });
+    
+    return Object.entries(days)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, data]) => ({
+        date,
+        visitors: data.visitors.size,
+        views: data.views,
+        leads: data.leads,
+        conversions: data.conversions,
+        formRate: data.visitors.size > 0 ? ((data.leads / data.visitors.size) * 100).toFixed(1) : '0',
+      }));
+  }, [fbPageViews, fbLeads]);
+
+  const isLoading = pvLoading || leadsLoading || attemptsLoading;
 
   return (
     <div className="space-y-6">
-      {/* Header with date filter */}
-      <div className="flex items-center justify-between">
+      {/* Header with date filter + refresh */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Facebook className="h-5 w-5 text-blue-600" />
             Facebook & Instagram Ads Tracking
           </h3>
           <p className="text-sm text-muted-foreground">
-            Track visitors, leads, and conversions from Meta ads via fbclid and UTM parameters
+            Track visitors, leads, and conversions from Meta ads · Auto-refreshes every hour
           </p>
         </div>
-        <Select value={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="yesterday">Yesterday</SelectItem>
-            <SelectItem value="last7">Last 7 days</SelectItem>
-            <SelectItem value="last30">Last 30 days</SelectItem>
-            <SelectItem value="last90">Last 90 days</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {format(lastRefresh, 'HH:mm')}
+          </span>
+          <Button variant="outline" size="sm" onClick={handleManualRefresh} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="yesterday">Yesterday</SelectItem>
+              <SelectItem value="last7">Last 7 days</SelectItem>
+              <SelectItem value="last30">Last 30 days</SelectItem>
+              <SelectItem value="last90">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
+      {/* Conversion Funnel */}
+      <Card className="border-blue-200 bg-blue-50/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">📊 Facebook Conversion Funnel</CardTitle>
+          <CardDescription>Visitor → Form Completion → Purchase pipeline</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            {/* Visitors */}
+            <div className="text-center p-4 bg-background rounded-lg border min-w-[120px]">
+              <p className="text-3xl font-bold">{isLoading ? '...' : uniqueVisitors}</p>
+              <p className="text-xs text-muted-foreground mt-1">FB Visitors</p>
+            </div>
+            <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
+            {/* Form Completions */}
+            <div className="text-center p-4 bg-background rounded-lg border min-w-[120px]">
+              <p className="text-3xl font-bold">{isLoading ? '...' : totalLeads}</p>
+              <p className="text-xs text-muted-foreground mt-1">Form Completions</p>
+              <p className="text-xs font-medium text-blue-600 mt-0.5">{conversionRate}% of visitors</p>
+            </div>
+            <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
+            {/* Conversions */}
+            <div className="text-center p-4 bg-background rounded-lg border min-w-[120px]">
+              <p className="text-3xl font-bold">{isLoading ? '...' : totalConversions}</p>
+              <p className="text-xs text-muted-foreground mt-1">Purchases</p>
+              <p className="text-xs font-medium text-green-600 mt-0.5">{purchaseRate}% of leads</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -162,7 +284,7 @@ export const FacebookAdsTab: React.FC = () => {
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <MousePointerClick className="h-4 w-4" /> Leads
+              <MousePointerClick className="h-4 w-4" /> FB Leads
             </div>
             <p className="text-2xl font-bold">{isLoading ? '...' : totalLeads}</p>
           </CardContent>
@@ -178,12 +300,110 @@ export const FacebookAdsTab: React.FC = () => {
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <TrendingUp className="h-4 w-4" /> Conv. Rate
+              <TrendingUp className="h-4 w-4" /> Form Rate
             </div>
             <p className="text-2xl font-bold">{isLoading ? '...' : `${conversionRate}%`}</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Step 2 Attempt Tracking */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">🔍 Step 2 Submission Attempts (All Traffic)</CardTitle>
+          <CardDescription>Track attempted form submissions that succeed or fail — identifies technical drop-offs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3 rounded-lg border bg-muted/30 text-center">
+              <p className="text-2xl font-bold">{isLoading ? '...' : step2Stats.total}</p>
+              <p className="text-xs text-muted-foreground">Total Attempts</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-green-50 text-center">
+              <p className="text-2xl font-bold text-green-700">{isLoading ? '...' : step2Stats.success}</p>
+              <p className="text-xs text-muted-foreground">Successful</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-red-50 text-center">
+              <p className="text-2xl font-bold text-red-700">{isLoading ? '...' : step2Stats.failed}</p>
+              <p className="text-xs text-muted-foreground">Failed</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-yellow-50 text-center">
+              <p className="text-2xl font-bold text-yellow-700">{isLoading ? '...' : step2Stats.pending}</p>
+              <p className="text-xs text-muted-foreground">Pending/Abandoned</p>
+            </div>
+          </div>
+          {step2Stats.failed > 0 && (
+            <div className="mt-3">
+              <p className="text-sm font-medium text-red-600 mb-2">⚠️ Failed submissions:</p>
+              <div className="max-h-[200px] overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Vehicle</TableHead>
+                      <TableHead>Error</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(step2Attempts || [])
+                      .filter(a => a.attempt_status === 'failed')
+                      .slice(0, 20)
+                      .map(a => (
+                        <TableRow key={a.id}>
+                          <TableCell className="text-xs">{format(new Date(a.created_at), 'dd/MM HH:mm')}</TableCell>
+                          <TableCell className="text-sm">{a.email || '-'}</TableCell>
+                          <TableCell className="text-sm">{a.vehicle_reg || '-'}</TableCell>
+                          <TableCell className="text-xs text-red-600 max-w-[200px] truncate">{a.error_message || '-'}</TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Daily Funnel Breakdown */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">📅 Daily Facebook Funnel</CardTitle>
+          <CardDescription>Visitors → Leads → Purchases by day</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dailyFunnel.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No data in this period</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Visitors</TableHead>
+                  <TableHead className="text-right">Page Views</TableHead>
+                  <TableHead className="text-right">Leads</TableHead>
+                  <TableHead className="text-right">Purchases</TableHead>
+                  <TableHead className="text-right">Form Rate</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dailyFunnel.map(row => (
+                  <TableRow key={row.date}>
+                    <TableCell className="font-medium">{format(new Date(row.date), 'dd MMM')}</TableCell>
+                    <TableCell className="text-right">{row.visitors}</TableCell>
+                    <TableCell className="text-right">{row.views}</TableCell>
+                    <TableCell className="text-right">{row.leads}</TableCell>
+                    <TableCell className="text-right">{row.conversions}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="outline" className="text-xs">{row.formRate}%</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* UTM Campaign Breakdown */}
       <Card>
@@ -219,7 +439,7 @@ export const FacebookAdsTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Page Breakdown */}
+      {/* Top Pages */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Top Pages (Facebook Traffic)</CardTitle>
@@ -302,7 +522,7 @@ export const FacebookAdsTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Meta Pixel Setup Info */}
+      {/* Tracking Setup Info */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -316,7 +536,7 @@ export const FacebookAdsTab: React.FC = () => {
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">1</span>
               <div>
                 <p className="font-medium">FBCLID Capture</p>
-                <p className="text-muted-foreground">Automatically captured from URL parameters and stored in localStorage for 90 days. Attached to leads and page views.</p>
+                <p className="text-muted-foreground">Automatically captured from URL parameters and stored in localStorage for 90 days. Now attached to abandoned carts on Step 2 submission.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">

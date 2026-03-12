@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
+import { getStoredFbclid } from '@/utils/fbclidCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
@@ -189,6 +190,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // The trigger will propagate changes to the sales_lead automatically.
       const normalizedEmail = email.trim().toLowerCase();
       const regNumber = vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || '';
+      const storedFbclid = getStoredFbclid();
+      const utmSource = new URLSearchParams(window.location.search).get('utm_source');
       
       let cartUpdated = false;
       
@@ -210,7 +213,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               full_name: firstName.trim(),
               phone: phone.trim() || null,
               step_abandoned: 2,
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
+              ...(storedFbclid || utmSource ? {
+                cart_metadata: {
+                  ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                  ...(utmSource ? { utm_source: utmSource } : {}),
+                }
+              } : {})
             })
             .eq('id', existingCarts[0].id);
           
@@ -237,6 +246,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
+            ...(storedFbclid || utmSource ? {
+              cart_metadata: {
+                ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                ...(utmSource ? { utm_source: utmSource } : {}),
+              }
+            } : {})
           });
 
         if (cartInsertError) {
