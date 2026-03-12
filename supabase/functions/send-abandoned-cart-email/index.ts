@@ -194,9 +194,16 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0;">
         📧 support@buyawarranty.co.uk
       </p>
-      <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0 48px 0;">
+      <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0 24px 0;">
         📞 0330 229 5040
       </p>
+
+      <div style="border-top: 1px solid #e6ebf1; padding-top: 16px; margin-top: 16px; text-align: center;">
+        <p style="color: #aab7c4; font-size: 11px; line-height: 16px; margin: 0;">
+          You're receiving this email because you requested a warranty quote from Buy A Warranty.<br>
+          <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(request.email)}&token=${btoa(request.email.trim().toLowerCase() + '_baw_unsub_2024')}" style="color: #aab7c4; text-decoration: underline;">Unsubscribe</a> from future emails.
+        </p>
+      </div>
     </div>
   </div>
 </body>
