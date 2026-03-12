@@ -144,7 +144,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
   }, [effectiveUserId, startOfMonth.toISOString(), endOfMonth.toISOString()]);
 
   const fetchDeals = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!effectiveUserId) return;
     
     try {
       const { data, error } = await supabase
