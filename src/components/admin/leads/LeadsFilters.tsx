@@ -32,6 +32,7 @@ interface LeadsFiltersProps {
   onExport: (format: 'csv' | 'xlsx') => void;
   leadCounts: {
     all: number;
+    total: number;
     new: number;
     contacted: number;
     follow_up: number;
@@ -245,10 +246,13 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     <div className="space-y-4">
       {/* Tabs for status filter */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-11">
+        <TabsList className="flex w-full flex-wrap gap-1">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
+            {leadCounts.total !== leadCounts.all && (
+              <span className="ml-0.5 text-[10px] text-muted-foreground">/ {leadCounts.total}</span>
+            )}
           </TabsTrigger>
           <TabsTrigger value="urgent_callback" className="relative">
             <span className="flex items-center gap-1">
