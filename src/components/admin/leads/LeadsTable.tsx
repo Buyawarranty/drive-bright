@@ -76,21 +76,21 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       <TooltipProvider>
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/30">
-              <TableHead className="w-[40px]">
+            <TableRow className="bg-muted/20 border-b-2 border-border/40">
+              <TableHead className="w-[36px] py-2">
                 {/* Checkbox moved to control bar */}
               </TableHead>
-              {!hideAssignedColumn && <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>}
-              <TableHead className="w-[100px]">Status</TableHead>
-              <TableHead className="w-[70px] text-center">Calls</TableHead>
-              <TableHead className="w-[120px]">Actions</TableHead>
-              <TableHead className="w-[120px]">Name</TableHead>
-              <TableHead className="w-[160px]">Phone</TableHead>
-              <TableHead className="w-[180px]">Email</TableHead>
-              <TableHead className="w-[90px]">Reg Plate</TableHead>
-              <TableHead className="w-[90px]">Payment</TableHead>
-              <TableHead className="w-[100px]">Last Activity</TableHead>
-              <TableHead className="w-[100px]">Date Created</TableHead>
+              {!hideAssignedColumn && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</TableHead>}
+              <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+              <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>
+              <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+              <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
+              <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+              <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
+              <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>
+              <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>
+              <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Activity</TableHead>
+              <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
