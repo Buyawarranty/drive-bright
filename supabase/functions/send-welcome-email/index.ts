@@ -103,21 +103,28 @@ serve(async (req) => {
       logStep("User already exists", { userId: userExists.id });
       userId = userExists.id;
       
-      // Update existing user's password
-      const { data: updateData, error: updateError } = await supabaseClient.auth.admin.updateUserById(userExists.id, {
-        password: tempPassword,
-        user_metadata: {
-          plan_type: planType,
-          policy_number: policyNumber
-        }
-      });
-
-      if (updateError) {
-        logStep("Failed to update user password", updateError);
-        throw new Error(`Failed to update user password: ${updateError.message}`);
-      }
+      // Only update password if user hasn't reset it themselves
+      const userHasResetPassword = existingWelcomeEmail?.password_reset_by_user === true;
       
-      logStep("Updated existing user password and metadata", { userId: userExists.id, tempPasswordLength: tempPassword.length });
+      if (userHasResetPassword) {
+        logStep("Skipping password update - user has already set their own password", { userId: userExists.id });
+      } else {
+        // Update existing user's password
+        const { data: updateData, error: updateError } = await supabaseClient.auth.admin.updateUserById(userExists.id, {
+          password: tempPassword,
+          user_metadata: {
+            plan_type: planType,
+            policy_number: policyNumber
+          }
+        });
+
+        if (updateError) {
+          logStep("Failed to update user password", updateError);
+          throw new Error(`Failed to update user password: ${updateError.message}`);
+        }
+        
+        logStep("Updated existing user password and metadata", { userId: userExists.id, tempPasswordLength: tempPassword.length });
+      }
     } else {
       // Create user with Supabase Auth
       logStep("Creating new user with auth");
