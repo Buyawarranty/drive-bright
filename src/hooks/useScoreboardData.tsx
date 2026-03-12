@@ -196,9 +196,12 @@ export const useScoreboardData = (): ScoreboardData => {
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
         const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
         const userCancelled = (cancelledCustomers || []).filter(c => c.assigned_to === u.id);
+        const userClaims = (approvedClaims || []).filter(c => c.agent_id === u.id);
 
-        const salesCount = userCustomers.length;
-        const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+        // Include approved commission claims in sales count & revenue
+        const salesCount = userCustomers.length + userClaims.length;
+        const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
+        const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const leadsAssigned = userLeads.length;
         const leadsConverted = userConvertedLeads.length;
         const conversionRate = leadsAssigned > 0 ? (leadsConverted / leadsAssigned) * 100 : 0;
