@@ -72,7 +72,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, []);
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-md border-2 border-border overflow-x-auto">
       <TooltipProvider>
         <Table>
           <TableHeader>
