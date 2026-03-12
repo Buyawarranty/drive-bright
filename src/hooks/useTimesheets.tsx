@@ -150,7 +150,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
       const { data, error } = await supabase
         .from('deal_records')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', effectiveUserId)
         .gte('deal_date', startOfMonth.toISOString().split('T')[0])
         .lte('deal_date', endOfMonth.toISOString().split('T')[0])
         .order('deal_date', { ascending: false });
