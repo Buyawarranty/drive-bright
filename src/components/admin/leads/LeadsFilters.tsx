@@ -290,7 +290,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Assignment filter */}
         {onAssignmentFilterChange && (
           <Select value={assignmentFilter} onValueChange={(v) => onAssignmentFilterChange(v as AssignmentFilter)}>
-            <SelectTrigger className="w-[150px] h-8 text-xs rounded-lg border-border/60">
+            <SelectTrigger className="w-[150px] h-8 text-xs rounded-lg border-2 border-border">
               <Filter className="h-3 w-3 mr-1.5 text-muted-foreground" />
               <SelectValue placeholder="All Leads" />
             </SelectTrigger>
