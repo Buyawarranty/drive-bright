@@ -154,7 +154,6 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                 <TableHead className="text-center">Calls</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
-                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
