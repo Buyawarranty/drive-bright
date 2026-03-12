@@ -40,6 +40,16 @@ interface AssignedCustomer {
   status: string;
 }
 
+interface CommissionClaimDeal {
+  id: string;
+  agent_id: string;
+  deal_value: number;
+  claim_reason: string;
+  status: string;
+  created_at: string;
+  customer_id: string | null;
+}
+
 const proofTypes = [
   { value: 'screenshot', label: 'Screenshot' },
   { value: 'email_confirmation', label: 'Email Confirmation' },
