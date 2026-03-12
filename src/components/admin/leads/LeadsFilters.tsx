@@ -314,7 +314,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Agent filter */}
         {onAgentFilterChange && salesUsers && salesUsers.length > 0 && (
           <Select value={agentFilter} onValueChange={(v) => onAgentFilterChange(v)}>
-            <SelectTrigger className="w-[160px] h-8 text-xs rounded-lg border-border/60">
+            <SelectTrigger className="w-[160px] h-8 text-xs rounded-lg border-2 border-border">
               <Users className="h-3 w-3 mr-1.5 text-muted-foreground" />
               <SelectValue placeholder="All Agents" />
             </SelectTrigger>
