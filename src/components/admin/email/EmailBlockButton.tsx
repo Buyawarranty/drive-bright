@@ -36,8 +36,6 @@ export const EmailBlockButton: React.FC<EmailBlockButtonProps> = ({
       source,
       customerName,
       vehicleReg,
-      unsubscribedBy: adminUser?.id,
-      unsubscribedByName: adminUser ? `${adminUser.first_name || ''} ${adminUser.last_name || ''}`.trim() || adminUser.email : undefined,
     });
     setDialogOpen(false);
     setReason('');
