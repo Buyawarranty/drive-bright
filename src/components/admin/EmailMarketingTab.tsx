@@ -1143,6 +1143,14 @@ const EmailMarketingTab = () => {
             GDPR
           </Button>
           <Button
+            variant={activeView === 'blocklist' ? 'default' : 'ghost'}
+            onClick={() => setActiveView('blocklist')}
+            className="whitespace-nowrap"
+          >
+            <Ban className="h-4 w-4 mr-2" />
+            Blocklist
+          </Button>
+          <Button
             variant={activeView === 'automation' ? 'default' : 'ghost'}
             onClick={() => setActiveView('automation')}
             className="whitespace-nowrap"
