@@ -58,7 +58,7 @@ serve(async (req) => {
     logStep("Checking for existing welcome email record");
     const { data: existingWelcomeEmail } = await supabaseClient
       .from('welcome_emails')
-      .select('temporary_password, email_sent_at')
+      .select('temporary_password, email_sent_at, password_reset_by_user')
       .eq('email', email)
       .order('created_at', { ascending: false })
       .limit(1)
