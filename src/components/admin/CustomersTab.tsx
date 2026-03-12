@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy } from 'lucide-react';
+import { CommissionClaimedBadge } from './CommissionClaimedBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -4456,17 +4457,20 @@ Please log in and change your password after first login.`;
                        )}
                      </div>
                    </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={customer.status === 'Active' ? 'default' : 'destructive'}
-                      className={cn(
-                        customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
-                        customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
-                      )}
-                    >
-                      {customer.status?.toLowerCase() === 'refunded' && '💰 '}
-                      {customer.status}
-                    </Badge>
+                   <TableCell>
+                    <div className="flex flex-col gap-1">
+                     <Badge 
+                       variant={customer.status === 'Active' ? 'default' : 'destructive'}
+                       className={cn(
+                         customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
+                         customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
+                       )}
+                     >
+                       {customer.status?.toLowerCase() === 'refunded' && '💰 '}
+                       {customer.status}
+                     </Badge>
+                     <CommissionClaimedBadge customerId={customer.id} />
+                    </div>
                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col space-y-1">

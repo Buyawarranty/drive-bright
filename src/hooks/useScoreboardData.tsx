@@ -160,6 +160,21 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: leads } = await leadsQuery;
 
+      // Fetch approved commission claims per agent
+      let claimsQuery = supabase
+        .from('commission_claims')
+        .select('id, agent_id, deal_value, created_at, status')
+        .eq('status', 'approved')
+        .in('agent_id', agentIds);
+
+      if (period !== 'all') {
+        claimsQuery = claimsQuery
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+      }
+
+      const { data: approvedClaims } = await claimsQuery;
+
       // Fetch monthly targets
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());
@@ -181,9 +196,12 @@ export const useScoreboardData = (): ScoreboardData => {
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
         const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
         const userCancelled = (cancelledCustomers || []).filter(c => c.assigned_to === u.id);
+        const userClaims = (approvedClaims || []).filter(c => c.agent_id === u.id);
 
-        const salesCount = userCustomers.length;
-        const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+        // Include approved commission claims in sales count & revenue
+        const salesCount = userCustomers.length + userClaims.length;
+        const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
+        const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const leadsAssigned = userLeads.length;
         const leadsConverted = userConvertedLeads.length;
         const conversionRate = leadsAssigned > 0 ? (leadsConverted / leadsAssigned) * 100 : 0;
@@ -229,6 +247,7 @@ export const useScoreboardData = (): ScoreboardData => {
       .channel('scoreboard-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'commission_claims' }, () => fetchData())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };

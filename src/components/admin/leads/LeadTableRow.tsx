@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
+import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { SentQuote } from '@/hooks/useLeadQuotes';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -17,7 +18,7 @@ import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, AlertTriangle, FileText, StickyNote,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -201,6 +202,67 @@ const EmailCopyText = memo<{ email: string }>(({ email }) => {
   );
 });
 EmailCopyText.displayName = 'EmailCopyText';
+
+// Separate component for PAID cell to use hooks (useLeadCommissionClaim)
+const PaidCellContent = memo<{
+  lead: Lead;
+  displayName: string | null;
+  handleViewCustomer: () => void;
+}>(({ lead, displayName, handleViewCustomer }) => {
+  const { claim } = useLeadCommissionClaim(lead.id);
+
+  return (
+    <div className={cn(
+      "space-y-0.5 rounded-md p-1.5 -m-1.5",
+      claim && "bg-amber-50 border border-amber-200"
+    )}>
+      <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
+        <CheckCircle className="h-3 w-3" />PAID
+      </Badge>
+      <div className="text-[10px] text-muted-foreground">£{lead.payment_amount?.toFixed(2) || 'N/A'}</div>
+      <div className="text-[10px] text-muted-foreground capitalize">{lead.payment_method || '—'}</div>
+      <Button
+        variant="link"
+        size="sm"
+        className="h-5 px-0 text-[10px] text-primary font-medium"
+        onClick={handleViewCustomer}
+      >
+        <ExternalLink className="h-3 w-3 mr-1" />View Customer
+      </Button>
+
+      {/* Show claim status if already claimed */}
+      {claim ? (
+        <div className="space-y-0.5">
+          <Badge variant="outline" className={cn(
+            "text-[10px] flex items-center gap-1 w-fit",
+            claim.status === 'approved' && "bg-green-50 text-green-700 border-green-300",
+            claim.status === 'pending' && "bg-amber-50 text-amber-700 border-amber-300",
+            claim.status === 'rejected' && "bg-red-50 text-red-700 border-red-300",
+          )}>
+            <Award className="h-3 w-3" />
+            {claim.status === 'pending' ? 'Claimed' : claim.status === 'approved' ? 'Approved' : 'Rejected'}
+          </Badge>
+          <div className="text-[10px] font-medium text-amber-800">
+            By {claim.agent_name}
+          </div>
+        </div>
+      ) : (
+        /* Commission Claim - available to all users for PAID leads */
+        lead.is_paid && (
+          <CommissionClaimDialog
+            customerId={lead.id}
+            leadId={lead.id}
+            agentId={lead.assigned_to || ''}
+            customerName={displayName || lead.email}
+            dealValue={lead.payment_amount || undefined}
+          />
+        )
+      )}
+    </div>
+  );
+});
+PaidCellContent.displayName = 'PaidCellContent';
+
 
 export const LeadTableRow = memo<LeadTableRowProps>(({
   lead,
@@ -648,31 +710,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Payment Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.is_paid ? (
-          <div className="space-y-0.5">
-            <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
-              <CheckCircle className="h-3 w-3" />PAID
-            </Badge>
-            <div className="text-[10px] text-muted-foreground">£{lead.payment_amount?.toFixed(2) || 'N/A'}</div>
-            <div className="text-[10px] text-muted-foreground capitalize">{lead.payment_method || '—'}</div>
-            <Button
-              variant="link"
-              size="sm"
-              className="h-5 px-0 text-[10px] text-primary font-medium"
-              onClick={handleViewCustomer}
-            >
-              <ExternalLink className="h-3 w-3 mr-1" />View Customer
-            </Button>
-            {/* Commission Claim - only for direct website purchases (no quote sent by agent) */}
-            {lead.is_paid && lead.assigned_to && (!sentQuotes || sentQuotes.length === 0) && (
-              <CommissionClaimDialog
-                customerId={lead.id}
-                leadId={lead.id}
-                agentId={lead.assigned_to}
-                customerName={displayName || lead.email}
-                dealValue={lead.payment_amount || undefined}
-              />
-            )}
-          </div>
+          <PaidCellContent
+            lead={lead}
+            displayName={displayName}
+            handleViewCustomer={handleViewCustomer}
+          />
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
