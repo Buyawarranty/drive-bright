@@ -345,13 +345,13 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             </div>
           )}
 
-          {/* Commission Claims Section - only for direct website purchases (no quote sent) */}
-          {lead.is_paid && lead.assigned_to && !hasQuotesSent && (
+          {/* Commission Claims Section - available to all users for PAID leads */}
+          {lead.is_paid && (
             <div className="px-4 pt-3">
               <CommissionClaimDialog
                 customerId={lead.id}
                 leadId={lead.id}
-                agentId={lead.assigned_to}
+                agentId={lead.assigned_to || ''}
                 customerName={displayName || lead.email}
                 dealValue={lead.payment_amount || undefined}
                 trigger={
