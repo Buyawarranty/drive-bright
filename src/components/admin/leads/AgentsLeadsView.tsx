@@ -1980,10 +1980,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                         No leads assigned to this agent
                       </div>
                     ) : (
-                      <div className="border rounded-lg overflow-hidden">
+                      <div className="border-2 border-border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow className="bg-muted/30">
+                            <TableRow className="bg-muted/30 border-b-2 border-border">
                               <TableHead>Customer</TableHead>
                               <TableHead>Contact</TableHead>
                               <TableHead>Vehicle</TableHead>

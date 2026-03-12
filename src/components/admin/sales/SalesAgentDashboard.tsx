@@ -161,7 +161,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
 
       {/* Restricted Tab Navigation - No Export, No All Leads, No See Agents */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid border-2 border-border rounded-xl">
           <TabsTrigger value="dashboard" className="gap-2">
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">My Dashboard</span>

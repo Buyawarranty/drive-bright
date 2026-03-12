@@ -411,7 +411,7 @@ export const ManagerDashboard: React.FC = () => {
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-b-2 border-border">
                 <TableHead>Agent</TableHead>
                 <TableHead className="text-right">Calls</TableHead>
                 <TableHead className="text-right">Contacts</TableHead>
