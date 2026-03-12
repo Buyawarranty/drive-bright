@@ -90,12 +90,32 @@ serve(async (req) => {
 
     // Use existing password or generate new one
     const tempPassword = existingWelcomeEmail?.temporary_password || generateTempPassword();
+    const userHasResetPassword = existingWelcomeEmail?.password_reset_by_user === true;
     logStep(existingWelcomeEmail ? "Using existing temporary password" : "Generated new temporary password");
 
-    // Check if user already exists first by email
+    // Check if user already exists first by email (paginate to avoid missing users beyond first 1000)
     logStep("Checking if user exists");
-    const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    let userExists: { id: string; email?: string | null; user_metadata?: Record<string, any> } | undefined;
+    let page = 1;
+    const perPage = 1000;
+
+    while (!userExists && page <= 20) {
+      const { data: existingUsers, error: listUsersError } = await supabaseClient.auth.admin.listUsers({ page, perPage });
+
+      if (listUsersError) {
+        logStep("Failed to list users", listUsersError);
+        throw new Error(`Failed to list users: ${listUsersError.message}`);
+      }
+
+      const batch = existingUsers?.users ?? [];
+      userExists = batch.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+      if (batch.length < perPage) {
+        break;
+      }
+
+      page += 1;
+    }
     
     let userId = null;
     
@@ -104,12 +124,9 @@ serve(async (req) => {
       userId = userExists.id;
       
       // Only update password if user hasn't reset it themselves
-      const userHasResetPassword = existingWelcomeEmail?.password_reset_by_user === true;
-      
       if (userHasResetPassword) {
         logStep("Skipping password update - user has already set their own password", { userId: userExists.id });
       } else {
-        // Update existing user's password
         const { data: updateData, error: updateError } = await supabaseClient.auth.admin.updateUserById(userExists.id, {
           password: tempPassword,
           user_metadata: {
@@ -164,7 +181,8 @@ serve(async (req) => {
           user_id: userId,
           email: email,
           temporary_password: tempPassword,
-          email_sent_at: new Date().toISOString()
+          email_sent_at: new Date().toISOString(),
+          password_reset_by_user: userHasResetPassword
         });
 
       if (welcomeEmailError) {
@@ -412,8 +430,11 @@ serve(async (req) => {
             <p style="color: #333333; font-size: 15px; line-height: 1.6; margin: 0 0 15px 0;">You can view your updated policy anytime via your customer portal:</p>
             <p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Login:</strong> <a href="https://buyawarranty.co.uk/auth" style="color: #1a73e8; text-decoration: none;">Customer Dashboard</a></p>
             <p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Email:</strong> ${email}</p>
-            <p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Temporary Password:</strong> <code style="background-color: #ffffff; padding: 4px 8px; border-radius: 4px; font-family: 'Courier New', monospace; color: #333333; border: 1px solid #dee2e6;">${tempPassword}</code></p>
-            <p style="margin: 8px 0; color: #555555; font-size: 13px; font-style: italic;">Use your previous password if you have one or you may reset it.</p>
+            ${userHasResetPassword
+              ? `<p style="margin: 8px 0; color: #555555; font-size: 13px; font-style: italic;">You have already set your dashboard password. Use your existing password to log in, or reset it from the login page if needed.</p>`
+              : `<p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Temporary Password:</strong> <code style="background-color: #ffffff; padding: 4px 8px; border-radius: 4px; font-family: 'Courier New', monospace; color: #333333; border: 1px solid #dee2e6;">${tempPassword}</code></p>
+                 <p style="margin: 8px 0; color: #555555; font-size: 13px; font-style: italic;">Use your previous password if you have one or you may reset it.</p>`
+            }
           </div>
 
           <!-- Documents -->

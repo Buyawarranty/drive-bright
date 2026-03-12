@@ -24,11 +24,48 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    const { email, newPassword }: ResetPasswordRequest = await req.json();
-    
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user: requestUser }, error: userError } = await authClient.auth.getUser();
+    if (userError || !requestUser) {
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { data: roleRows } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', requestUser.id);
+
+    const allowedRoles = new Set(['super_admin', 'admin', 'member', 'sales_lead', 'sales']);
+    const isAuthorized = (roleRows || []).some(r => allowedRoles.has(r.role));
+
+    if (!isAuthorized) {
+      return new Response(JSON.stringify({ success: false, error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const payload: ResetPasswordRequest = await req.json();
+    const email = payload.email?.trim()?.toLowerCase();
+    const newPassword = payload.newPassword;
+
     logStep('Password reset request received', { email });
 
     if (!email || !newPassword) {
@@ -44,20 +81,33 @@ serve(async (req) => {
       );
     }
 
-    // Find the user by email
-    const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000
-    });
+    // Find the user by email (paginate to avoid missing users beyond first 1000)
+    let targetUser: { id: string; email?: string | null } | undefined;
+    let page = 1;
+    const perPage = 1000;
 
-    if (findError) {
-      logStep('Error finding users', findError);
-      throw findError;
+    while (!targetUser && page <= 20) {
+      const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
+        page,
+        perPage
+      });
+
+      if (findError) {
+        logStep('Error finding users', findError);
+        throw findError;
+      }
+
+      const batch = users?.users ?? [];
+      targetUser = batch.find(u => u.email?.toLowerCase() === email);
+
+      if (batch.length < perPage) {
+        break;
+      }
+
+      page += 1;
     }
-
-    const user = users.users.find(u => u.email === email);
     
-    if (!user) {
+    if (!targetUser) {
       logStep('User not found', { email });
       return new Response(
         JSON.stringify({ 
@@ -71,11 +121,11 @@ serve(async (req) => {
       );
     }
 
-    logStep('User found, updating password', { userId: user.id, email });
+    logStep('User found, updating password', { userId: targetUser.id, email });
 
     // Update the user's password
     const { data: updateData, error: updateError } = await supabaseClient.auth.admin.updateUserById(
-      user.id,
+      targetUser.id,
       { password: newPassword }
     );
 

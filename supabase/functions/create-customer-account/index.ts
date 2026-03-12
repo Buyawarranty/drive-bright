@@ -15,11 +15,51 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    // Create Supabase client with service role key for admin operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    const { email, password, firstName, lastName, customerId } = await req.json();
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Create Supabase clients for admin operations and caller auth validation
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: userError } = await authClient.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { data: roleRows } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    const allowedRoles = new Set(['super_admin', 'admin', 'member', 'sales_lead', 'sales']);
+    const isAuthorized = (roleRows || []).some(r => allowedRoles.has(r.role));
+
+    if (!isAuthorized) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const payload = await req.json();
+    const email = payload.email?.trim()?.toLowerCase();
+    const password = payload.password;
+    const firstName = payload.firstName;
+    const lastName = payload.lastName;
+    const customerId = payload.customerId;
 
     if (!email || !password) {
       return new Response(
@@ -33,9 +73,28 @@ serve(async (req) => {
 
     console.log('Creating customer account for:', email);
 
-    // First, try to find if user already exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    // First, try to find if user already exists (paginate to avoid missing users beyond first 1000)
+    let existingUser: { id: string; email?: string | null; user_metadata?: Record<string, any> } | undefined;
+    let page = 1;
+    const perPage = 1000;
+
+    while (!existingUser && page <= 20) {
+      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({ page, perPage });
+
+      if (listError) {
+        console.error('Error listing users:', listError);
+        throw listError;
+      }
+
+      const batch = existingUsers?.users ?? [];
+      existingUser = batch.find(u => u.email?.toLowerCase() === email);
+
+      if (batch.length < perPage) {
+        break;
+      }
+
+      page += 1;
+    }
 
     let userId: string;
     
