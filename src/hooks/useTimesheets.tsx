@@ -169,7 +169,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
       const { data, error } = await supabase
         .from('commission_records')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', effectiveUserId)
         .order('period_start', { ascending: false })
         .limit(12);
 
