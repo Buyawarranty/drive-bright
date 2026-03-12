@@ -225,3 +225,6 @@ verify_jwt = true
 
 [functions.submit-claim-update]
 verify_jwt = false
+
+[functions.handle-email-unsubscribe]
+verify_jwt = false
