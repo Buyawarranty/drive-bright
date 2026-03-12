@@ -25,7 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { AIEmailSuggestions } from './email/AIEmailSuggestions';
 
 const EmailMarketingTab = () => {
-  const [activeView, setActiveView] = useState<'overview' | 'campaigns' | 'subscribers' | 'analytics' | 'history' | 'gdpr' | 'automation'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'campaigns' | 'subscribers' | 'analytics' | 'history' | 'gdpr' | 'automation' | 'blocklist'>('overview');
   const [loading, setLoading] = useState(false);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
