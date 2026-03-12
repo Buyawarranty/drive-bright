@@ -104,7 +104,7 @@ export const ManagerDashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" />
           <Select value={agentFilter} onValueChange={setAgentFilter}>
-            <SelectTrigger className="w-[200px] h-9">
+            <SelectTrigger className="w-[200px] h-9 border-2 border-border">
               <SelectValue placeholder="All Agents" />
             </SelectTrigger>
             <SelectContent>
