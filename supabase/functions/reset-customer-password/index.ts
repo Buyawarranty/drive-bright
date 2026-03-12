@@ -39,8 +39,8 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } }
     });
 
-    const { data: { user }, error: userError } = await authClient.auth.getUser();
-    if (userError || !user) {
+    const { data: { user: requestUser }, error: userError } = await authClient.auth.getUser();
+    if (userError || !requestUser) {
       return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -50,7 +50,7 @@ serve(async (req) => {
     const { data: roleRows } = await supabaseClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id);
+      .eq('user_id', requestUser.id);
 
     const allowedRoles = new Set(['super_admin', 'admin', 'member', 'sales_lead', 'sales']);
     const isAuthorized = (roleRows || []).some(r => allowedRoles.has(r.role));
