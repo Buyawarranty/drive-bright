@@ -103,7 +103,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
       const { data, error } = await supabase
         .from('staff_timesheets')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', effectiveUserId)
         .gte('entry_date', startOfMonth.toISOString().split('T')[0])
         .lte('entry_date', endOfMonth.toISOString().split('T')[0])
         .order('entry_date', { ascending: true });
