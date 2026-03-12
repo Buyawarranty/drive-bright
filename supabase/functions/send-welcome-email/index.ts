@@ -181,7 +181,8 @@ serve(async (req) => {
           user_id: userId,
           email: email,
           temporary_password: tempPassword,
-          email_sent_at: new Date().toISOString()
+          email_sent_at: new Date().toISOString(),
+          password_reset_by_user: userHasResetPassword
         });
 
       if (welcomeEmailError) {
