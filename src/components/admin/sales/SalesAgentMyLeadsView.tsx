@@ -358,7 +358,7 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
       </div>
 
       {/* Leads Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-2 border-border">
         <CardContent className="p-0">
           {/* Control Bar - Simplified for sales agents (no bulk actions) */}
           <div className="sticky top-0 z-20 bg-background border-b px-4 py-3 flex items-center justify-between gap-4">
