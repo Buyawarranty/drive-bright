@@ -233,35 +233,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
             {/* Orphaned leads table */}
             {orphanedLeads.length > 0 && (
               <>
-                <div className="flex items-center gap-3 mb-4">
-                  <Button
-                    onClick={handleSyncToSales}
-                    disabled={syncing}
-                    className="gap-2"
-                    size="sm"
-                  >
-                    {syncing ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        Syncing...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRightCircle className="h-4 w-4" />
-                        Recover {orphanedLeads.length} Lead{orphanedLeads.length > 1 ? 's' : ''} to Sales
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={fetchOrphanedLeads}
-                    className="gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Refresh
-                  </Button>
-                </div>
 
                 <LeadTable
                   leads={orphanedLeads}
