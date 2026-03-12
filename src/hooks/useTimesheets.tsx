@@ -72,8 +72,9 @@ export interface TimesheetStats {
   trainingDays: number;
 }
 
-export function useTimesheets(month?: Date) {
+export function useTimesheets(month?: Date, viewingUserId?: string) {
   const { session } = useAuth();
+  const effectiveUserId = viewingUserId || session?.user?.id;
   const [entries, setEntries] = useState<TimesheetEntry[]>([]);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [commissions, setCommissions] = useState<CommissionRecord[]>([]);
