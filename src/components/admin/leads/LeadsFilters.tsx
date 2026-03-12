@@ -275,7 +275,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             placeholder="Name, email, phone, reg..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-8 pl-8 pr-8 text-sm bg-background border-border/60 rounded-lg"
+            className="h-8 pl-8 pr-8 text-sm bg-background border-2 border-border rounded-lg"
           />
           {searchTerm && (
             <button 
