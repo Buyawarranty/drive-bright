@@ -258,12 +258,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
   }), [dateFilteredLeadsForCounts]);
 
-  // Assignment counts for the filter dropdown
+  // Assignment counts for the filter dropdown - also respects date range
   const assignmentCounts = useMemo(() => ({
-    total: leads.length,
-    awaiting_contact: leads.filter(l => !l.assigned_to).length,
-    assigned: leads.filter(l => !!l.assigned_to).length,
-  }), [leads]);
+    total: dateFilteredLeadsForCounts.length,
+    awaiting_contact: dateFilteredLeadsForCounts.filter(l => !l.assigned_to).length,
+    assigned: dateFilteredLeadsForCounts.filter(l => !!l.assigned_to).length,
+  }), [dateFilteredLeadsForCounts]);
 
   // Agent lead counts - respects date range filter
   const agentLeadCounts = useMemo(() => {
