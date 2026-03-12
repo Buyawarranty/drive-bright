@@ -5004,6 +5004,57 @@ export type Database = {
           },
         ]
       }
+      step2_submission_attempts: {
+        Row: {
+          attempt_status: string
+          created_at: string
+          email: string | null
+          error_message: string | null
+          error_source: string | null
+          first_name: string | null
+          id: string
+          mileage: string | null
+          phone: string | null
+          session_id: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_reg: string | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          attempt_status?: string
+          created_at?: string
+          email?: string | null
+          error_message?: string | null
+          error_source?: string | null
+          first_name?: string | null
+          id?: string
+          mileage?: string | null
+          phone?: string | null
+          session_id?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          attempt_status?: string
+          created_at?: string
+          email?: string | null
+          error_message?: string | null
+          error_source?: string | null
+          first_name?: string | null
+          id?: string
+          mileage?: string | null
+          phone?: string | null
+          session_id?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_year?: string | null
+        }
+        Relationships: []
+      }
       structured_customer_notes: {
         Row: {
           actions_taken: Json | null

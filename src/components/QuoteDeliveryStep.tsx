@@ -119,6 +119,28 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     if (!isFormValid) return;
     
     setSendingEmail(true);
+
+    // Track Step 2 attempt immediately (before any server calls)
+    const sessionId = (() => {
+      try { return sessionStorage.getItem('baw_session_id') || crypto.randomUUID(); } catch { return crypto.randomUUID(); }
+    })();
+    try {
+      await supabase.from('step2_submission_attempts').insert({
+        session_id: sessionId,
+        email: email.trim().toLowerCase(),
+        phone: phone.trim() || null,
+        first_name: firstName.trim() || null,
+        vehicle_reg: vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || null,
+        vehicle_make: vehicleData?.make || null,
+        vehicle_model: vehicleData?.model || null,
+        vehicle_year: vehicleData?.year || null,
+        mileage: vehicleData?.mileage || null,
+        attempt_status: 'attempted',
+      });
+    } catch (e) {
+      // Don't block the user flow if tracking fails
+      console.error('Step 2 attempt tracking failed:', e);
+    }
     
     try {
       // Send quote email
@@ -245,6 +267,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         }
       }
 
+      // Mark Step 2 attempt as successful
+      try {
+        await supabase.from('step2_submission_attempts')
+          .update({ attempt_status: 'success' })
+          .eq('session_id', sessionId)
+          .eq('email', email.trim().toLowerCase())
+          .eq('attempt_status', 'attempted');
+      } catch { /* non-blocking */ }
+
       // Schedule SMS to be sent 10 minutes after quote submission
       try {
         console.log('Scheduling delayed SMS for:', phone);
@@ -269,6 +300,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       }
     } catch (error) {
       console.error('Error in quote flow:', error);
+      // Mark Step 2 attempt as failed
+      try {
+        await supabase.from('step2_submission_attempts')
+          .update({ attempt_status: 'failed', error_message: String(error), error_source: 'quote_flow' })
+          .eq('session_id', sessionId)
+          .eq('email', email.trim().toLowerCase())
+          .eq('attempt_status', 'attempted');
+      } catch { /* non-blocking */ }
     }
     
     setSendingEmail(false);
