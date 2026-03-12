@@ -12,7 +12,7 @@ import {
   Mail, Users, TrendingUp, Calendar, Brain, History, 
   Shield, Zap, Paperclip, Bell, TestTube, Send, Download,
   Search, RefreshCw, CheckCircle, XCircle, Clock, BarChart3,
-  Tag, Filter, Settings, Play, Pause, Eye, Edit
+  Tag, Filter, Settings, Play, Pause, Eye, Edit, Ban
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
