@@ -253,7 +253,6 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                       </Select>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1">
                         <Button 
                           size="icon" 
