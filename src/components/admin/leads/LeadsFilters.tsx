@@ -234,7 +234,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     <div className="space-y-3">
       {/* Row 1: Status pills — compact, color-coded, scannable */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="h-auto p-1 bg-muted/40 border border-border/50 rounded-xl flex flex-wrap gap-0.5">
+        <TabsList className="h-auto p-1 bg-muted/50 border-2 border-border rounded-xl flex flex-wrap gap-0.5">
           {STATUS_PILLS.map(pill => {
             const count = getCount(pill);
             const isActive = effectiveTabValue === pill.value;
