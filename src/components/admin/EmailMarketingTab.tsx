@@ -1169,6 +1169,7 @@ const EmailMarketingTab = () => {
         {activeView === 'analytics' && <AnalyticsView />}
         {activeView === 'history' && <HistoryView />}
         {activeView === 'gdpr' && <GDPRView />}
+        {activeView === 'blocklist' && <EmailBlocklistView />}
         {activeView === 'automation' && <AutomationView />}
       </div>
     </div>
