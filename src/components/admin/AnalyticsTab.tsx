@@ -344,7 +344,7 @@ export const AnalyticsTab = () => {
     };
   }, [customers, effectiveDateRange]);
 
-  // Price metrics by source: lowest, highest, average
+  // Price metrics by source: lowest, highest, average — respects both date AND source filter
   const priceMetrics = useMemo(() => {
     const calcMetrics = (custs: Customer[]) => {
       const paid = custs.filter(c => c.final_amount && Number(c.final_amount) > 0 && !isRevenueLost(c.status));
@@ -358,31 +358,16 @@ export const AnalyticsTab = () => {
       };
     };
 
-    // Use effectiveDateRange-filtered customers for date consistency
-    const dateFiltered = customers.filter(customer => {
-      if (effectiveDateRange?.from) {
-        const signupDate = new Date(customer.signup_date);
-        const fromStart = new Date(effectiveDateRange.from);
-        fromStart.setHours(0, 0, 0, 0);
-        if (signupDate < fromStart) return false;
-        if (effectiveDateRange.to) {
-          const toEnd = new Date(effectiveDateRange.to);
-          toEnd.setHours(23, 59, 59, 999);
-          if (signupDate > toEnd) return false;
-        }
-      }
-      return true;
-    });
-
-    const websiteCusts = dateFiltered.filter(c => getCustomerSource(c) === 'website');
-    const salesCusts = dateFiltered.filter(c => getCustomerSource(c) === 'sales_team');
+    // Use filteredCustomers which already has date + source filters applied
+    const websiteCusts = filteredCustomers.filter(c => getCustomerSource(c) === 'website');
+    const salesCusts = filteredCustomers.filter(c => getCustomerSource(c) === 'sales_team');
 
     return {
-      combined: calcMetrics(dateFiltered),
+      combined: calcMetrics(filteredCustomers),
       website: calcMetrics(websiteCusts),
       salesTeam: calcMetrics(salesCusts),
     };
-  }, [customers, effectiveDateRange]);
+  }, [filteredCustomers]);
 
   // Refund/cancellation metrics calculation
   const refundMetrics = useMemo(() => {
