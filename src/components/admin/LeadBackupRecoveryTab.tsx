@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, RefreshCw, Search, Database, Shield, Users, Phone, Mail, User, Calendar, AlertTriangle, CheckCircle, Clock, Zap } from 'lucide-react';
-import { format } from 'date-fns';
+import { Download, RefreshCw, Search, Database, Shield, Users, Phone, Mail, User, Calendar, AlertTriangle, CheckCircle, Clock, Zap, Filter, XCircle } from 'lucide-react';
+import { format, subDays, startOfWeek, startOfMonth, endOfDay, startOfDay } from 'date-fns';
+import { DateRangeFilter } from './DateRangeFilter';
+import { DateRange } from 'react-day-picker';
 
 interface BackupContact {
   id: string;
@@ -22,6 +25,21 @@ interface BackupContact {
   step_abandoned: number | null;
   created_at: string;
   in_marketing: boolean;
+}
+
+interface Step2Attempt {
+  id: string;
+  session_id: string | null;
+  email: string | null;
+  phone: string | null;
+  first_name: string | null;
+  vehicle_reg: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  attempt_status: string;
+  error_message: string | null;
+  error_source: string | null;
+  created_at: string;
 }
 
 // Helper to fetch ALL rows from a table, paginating past the 1000-row limit
@@ -62,6 +80,8 @@ async function fetchAllRows(
   return allData;
 }
 
+type LeadTypeFilter = 'all' | 'real' | 'fake';
+
 export const LeadBackupRecoveryTab: React.FC = () => {
   const [contacts, setContacts] = useState<BackupContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +89,10 @@ export const LeadBackupRecoveryTab: React.FC = () => {
   const [syncing, setSyncing] = useState(false);
   const [recoveringSales, setRecoveringSales] = useState(false);
   const [lastRecoveryAt, setLastRecoveryAt] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [leadTypeFilter, setLeadTypeFilter] = useState<LeadTypeFilter>('all');
+  const [step2Attempts, setStep2Attempts] = useState<Step2Attempt[]>([]);
+  const [loadingAttempts, setLoadingAttempts] = useState(false);
   const [stats, setStats] = useState({
     totalContacts: 0,
     withEmail: 0,
@@ -78,6 +102,20 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     missingFromMarketing: 0,
     missingFromSales: 0,
   });
+
+  // Known fake indicators
+  const isFakeIndicator = (contact: BackupContact): boolean => {
+    const fakeStatuses = ['fake_lead', 'fake'];
+    const testNames = ['kamran', 'prajwal', 'praj', 'test'];
+    const testPhones = ['07960111131', '07000000000', '07777777777'];
+    
+    if (fakeStatuses.includes(contact.status?.toLowerCase() || '')) return true;
+    const name = (contact.first_name || contact.full_name || '').toLowerCase();
+    if (testNames.some(t => name.includes(t))) return true;
+    const phone = (contact.phone || '').replace(/\s/g, '');
+    if (testPhones.includes(phone)) return true;
+    return false;
+  };
 
   const fetchLastRecovery = useCallback(async () => {
     try {
@@ -95,6 +133,32 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     }
   }, []);
 
+  const fetchStep2Attempts = useCallback(async () => {
+    setLoadingAttempts(true);
+    try {
+      let query = supabase
+        .from('step2_submission_attempts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (dateRange?.from) {
+        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
+      }
+      if (dateRange?.to) {
+        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setStep2Attempts(data || []);
+    } catch (err) {
+      console.error('Error fetching Step 2 attempts:', err);
+    } finally {
+      setLoadingAttempts(false);
+    }
+  }, [dateRange]);
+
   const fetchAllContacts = useCallback(async () => {
     setLoading(true);
     try {
@@ -111,7 +175,6 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         marketingData.map((m: any) => m.phone?.replace(/\s/g, '')).filter(Boolean)
       );
 
-      // Build set of abandoned_cart_ids that have a matching sales_lead
       const linkedCartIds = new Set(
         salesData.filter((sl: any) => sl.abandoned_cart_id).map((sl: any) => sl.abandoned_cart_id)
       );
@@ -119,7 +182,6 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         salesData.map((sl: any) => sl.email?.toLowerCase()).filter(Boolean)
       );
 
-      // Count orphaned carts (step >= 2, have email, not converted, no matching sales_lead)
       let orphanedCount = 0;
       for (const cart of cartsData) {
         if (
@@ -205,6 +267,10 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     fetchLastRecovery();
   }, [fetchAllContacts, fetchLastRecovery]);
 
+  useEffect(() => {
+    fetchStep2Attempts();
+  }, [fetchStep2Attempts]);
+
   const handleSyncToMarketing = async () => {
     setSyncing(true);
     try {
@@ -245,16 +311,74 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     }
   };
 
+  // Apply date range + type filter + search
+  const filteredContacts = useMemo(() => {
+    let result = contacts;
+
+    // Date filter
+    if (dateRange?.from) {
+      const from = startOfDay(dateRange.from);
+      const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(new Date());
+      result = result.filter(c => {
+        const d = new Date(c.created_at);
+        return d >= from && d <= to;
+      });
+    }
+
+    // Lead type filter
+    if (leadTypeFilter === 'real') {
+      result = result.filter(c => !isFakeIndicator(c));
+    } else if (leadTypeFilter === 'fake') {
+      result = result.filter(c => isFakeIndicator(c));
+    }
+
+    // Search
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(c =>
+        c.email?.toLowerCase().includes(term) ||
+        c.phone?.includes(term) ||
+        c.first_name?.toLowerCase().includes(term) ||
+        c.full_name?.toLowerCase().includes(term) ||
+        c.vehicle_reg?.toLowerCase().includes(term)
+      );
+    }
+
+    return result;
+  }, [contacts, dateRange, leadTypeFilter, searchTerm]);
+
+  // Filtered stats (respects date + type filter)
+  const filteredStats = useMemo(() => {
+    const real = filteredContacts.filter(c => !isFakeIndicator(c));
+    const fake = filteredContacts.filter(c => isFakeIndicator(c));
+    return {
+      total: filteredContacts.length,
+      real: real.length,
+      fake: fake.length,
+      withEmail: filteredContacts.filter(c => c.email).length,
+      withPhone: filteredContacts.filter(c => c.phone).length,
+    };
+  }, [filteredContacts]);
+
+  // Step 2 attempt stats
+  const attemptStats = useMemo(() => {
+    const total = step2Attempts.length;
+    const success = step2Attempts.filter(a => a.attempt_status === 'success').length;
+    const failed = step2Attempts.filter(a => a.attempt_status === 'failed').length;
+    const pending = step2Attempts.filter(a => a.attempt_status === 'attempted').length;
+    return { total, success, failed, pending };
+  }, [step2Attempts]);
+
   const handleExportCSV = () => {
-    const filtered = getFilteredContacts();
-    const headers = ['First Name', 'Email', 'Phone', 'Vehicle Reg', 'Source', 'Status', 'Date Created', 'In Marketing'];
-    const rows = filtered.map(c => [
+    const headers = ['First Name', 'Email', 'Phone', 'Vehicle Reg', 'Source', 'Status', 'Type', 'Date Created', 'In Marketing'];
+    const rows = filteredContacts.map(c => [
       c.first_name || c.full_name || '',
       c.email || '',
       c.phone || '',
       c.vehicle_reg || '',
       c.source === 'sales_lead' ? 'Sales Lead' : 'Abandoned Cart',
       c.status || '',
+      isFakeIndicator(c) ? 'Fake' : 'Real',
       c.created_at ? format(new Date(c.created_at), 'yyyy-MM-dd HH:mm') : '',
       c.in_marketing ? 'Yes' : 'No',
     ]);
@@ -267,22 +391,9 @@ export const LeadBackupRecoveryTab: React.FC = () => {
     a.download = `lead-backup-${format(new Date(), 'yyyy-MM-dd-HHmm')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${filtered.length} contacts`);
+    toast.success(`Exported ${filteredContacts.length} contacts`);
   };
 
-  const getFilteredContacts = () => {
-    if (!searchTerm.trim()) return contacts;
-    const term = searchTerm.toLowerCase();
-    return contacts.filter(c =>
-      c.email?.toLowerCase().includes(term) ||
-      c.phone?.includes(term) ||
-      c.first_name?.toLowerCase().includes(term) ||
-      c.full_name?.toLowerCase().includes(term) ||
-      c.vehicle_reg?.toLowerCase().includes(term)
-    );
-  };
-
-  const filtered = getFilteredContacts();
   const missingFromMarketing = contacts.filter(c => !c.in_marketing && c.email);
 
   return (
@@ -305,7 +416,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           )}
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={fetchAllContacts} disabled={loading}>
+          <Button variant="outline" onClick={() => { fetchAllContacts(); fetchStep2Attempts(); }} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -318,6 +429,25 @@ export const LeadBackupRecoveryTab: React.FC = () => {
             {syncing ? 'Syncing...' : `Recover ${stats.missingFromMarketing > 0 ? stats.missingFromMarketing + ' Missing' : 'All'}`}
           </Button>
         </div>
+      </div>
+
+      {/* Date Range + Lead Type Filter */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <DateRangeFilter
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+        />
+        <Select value={leadTypeFilter} onValueChange={(v) => setLeadTypeFilter(v as LeadTypeFilter)}>
+          <SelectTrigger className="w-[160px] h-9">
+            <Filter className="h-3.5 w-3.5 mr-2 opacity-50" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Leads ({filteredStats.total})</SelectItem>
+            <SelectItem value="real">✅ Real Only ({filteredStats.real})</SelectItem>
+            <SelectItem value="fake">🚫 Fake Only ({filteredStats.fake})</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Missing from Sales alert banner */}
@@ -356,36 +486,38 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-            <div className="text-2xl font-bold">{stats.totalContacts.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Total Contacts</div>
+            <div className="text-2xl font-bold">{filteredStats.total.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">
+              {dateRange?.from ? 'Filtered' : 'Total'} Contacts
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-green-200">
+          <CardContent className="p-4 text-center">
+            <CheckCircle className="h-5 w-5 mx-auto text-green-600 mb-1" />
+            <div className="text-2xl font-bold text-green-700">{filteredStats.real.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Real Leads</div>
+          </CardContent>
+        </Card>
+        <Card className="border-red-200">
+          <CardContent className="p-4 text-center">
+            <XCircle className="h-5 w-5 mx-auto text-red-500 mb-1" />
+            <div className="text-2xl font-bold text-red-600">{filteredStats.fake.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Fake / Test</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <Mail className="h-5 w-5 mx-auto text-green-500 mb-1" />
-            <div className="text-2xl font-bold">{stats.withEmail.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{filteredStats.withEmail.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">With Email</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <Phone className="h-5 w-5 mx-auto text-purple-500 mb-1" />
-            <div className="text-2xl font-bold">{stats.withPhone.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{filteredStats.withPhone.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">With Phone</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <User className="h-5 w-5 mx-auto text-orange-500 mb-1" />
-            <div className="text-2xl font-bold">{stats.withName.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">With Name</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <CheckCircle className="h-5 w-5 mx-auto text-green-600 mb-1" />
-            <div className="text-2xl font-bold">{stats.inMarketing.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">In Marketing</div>
           </CardContent>
         </Card>
         <Card>
@@ -406,14 +538,23 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </Card>
       </div>
 
-      {/* Tabs for All vs Missing */}
+      {/* Tabs for All / Missing / Step 2 Attempts */}
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All Contacts ({contacts.length.toLocaleString()})</TabsTrigger>
+          <TabsTrigger value="all">All Contacts ({filteredContacts.length.toLocaleString()})</TabsTrigger>
           <TabsTrigger value="missing">
             Missing from Marketing
             {missingFromMarketing.length > 0 && (
               <Badge variant="destructive" className="ml-2 text-xs">{missingFromMarketing.length}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="step2_attempts">
+            Step 2 Attempts
+            {attemptStats.failed > 0 && (
+              <Badge variant="destructive" className="ml-2 text-xs">{attemptStats.failed} failed</Badge>
+            )}
+            {attemptStats.pending > 0 && (
+              <Badge variant="outline" className="ml-1 text-xs">{attemptStats.pending} pending</Badge>
             )}
           </TabsTrigger>
         </TabsList>
@@ -431,7 +572,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
 
         <TabsContent value="all" className="mt-4">
-          <ContactTable contacts={filtered} loading={loading} />
+          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} />
         </TabsContent>
 
         <TabsContent value="missing" className="mt-4">
@@ -442,6 +583,15 @@ export const LeadBackupRecoveryTab: React.FC = () => {
               return c.email?.toLowerCase().includes(term) || c.phone?.includes(term) || c.first_name?.toLowerCase().includes(term);
             })}
             loading={loading}
+            isFakeIndicator={isFakeIndicator}
+          />
+        </TabsContent>
+
+        <TabsContent value="step2_attempts" className="mt-4">
+          <Step2AttemptsSection
+            attempts={step2Attempts}
+            loading={loadingAttempts}
+            stats={attemptStats}
           />
         </TabsContent>
       </Tabs>
@@ -449,7 +599,163 @@ export const LeadBackupRecoveryTab: React.FC = () => {
   );
 };
 
-const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = ({ contacts, loading }) => {
+// Step 2 Attempts Section
+const Step2AttemptsSection: React.FC<{
+  attempts: Step2Attempt[];
+  loading: boolean;
+  stats: { total: number; success: number; failed: number; pending: number };
+}> = ({ attempts, loading, stats }) => {
+  const [page, setPage] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const pageSize = 50;
+
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return attempts;
+    return attempts.filter(a => a.attempt_status === statusFilter);
+  }, [attempts, statusFilter]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paged = filtered.slice(page * pageSize, (page + 1) * pageSize);
+
+  useEffect(() => { setPage(0); }, [filtered.length]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-xs text-muted-foreground">Total Attempts</div>
+          </CardContent>
+        </Card>
+        <Card className="border-green-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-700">{stats.success}</div>
+            <div className="text-xs text-muted-foreground">Successful</div>
+          </CardContent>
+        </Card>
+        <Card className="border-red-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
+            <div className="text-xs text-muted-foreground">Failed</div>
+          </CardContent>
+        </Card>
+        <Card className="border-amber-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
+            <div className="text-xs text-muted-foreground">Pending / Abandoned</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {stats.total > 0 && (
+        <p className="text-sm text-muted-foreground">
+          Conversion rate: <span className="font-semibold text-foreground">{stats.total > 0 ? ((stats.success / stats.total) * 100).toFixed(1) : 0}%</span> of attempts succeeded.
+          {stats.failed > 0 && <span className="text-red-600 ml-2">⚠ {stats.failed} submissions failed — potential lost leads.</span>}
+          {stats.pending > 0 && <span className="text-amber-600 ml-2">⏳ {stats.pending} attempts never completed (user may have closed the page).</span>}
+        </p>
+      )}
+
+      {/* Filter */}
+      <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <SelectTrigger className="w-[180px] h-9">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All ({stats.total})</SelectItem>
+          <SelectItem value="success">✅ Success ({stats.success})</SelectItem>
+          <SelectItem value="failed">❌ Failed ({stats.failed})</SelectItem>
+          <SelectItem value="attempted">⏳ Pending ({stats.pending})</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <div className="rounded-md border overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Status</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Vehicle</TableHead>
+              <TableHead>Error</TableHead>
+              <TableHead>Time</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paged.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  {stats.total === 0 ? 'No Step 2 attempts tracked yet. Data will appear after users start submitting the form.' : 'No matching attempts'}
+                </TableCell>
+              </TableRow>
+            ) : (
+              paged.map((attempt) => (
+                <TableRow key={attempt.id} className={attempt.attempt_status === 'failed' ? 'bg-red-50/50' : attempt.attempt_status === 'attempted' ? 'bg-amber-50/50' : ''}>
+                  <TableCell>
+                    <Badge
+                      variant={attempt.attempt_status === 'success' ? 'default' : attempt.attempt_status === 'failed' ? 'destructive' : 'outline'}
+                      className="text-xs"
+                    >
+                      {attempt.attempt_status === 'success' ? '✅ Success' : attempt.attempt_status === 'failed' ? '❌ Failed' : '⏳ Pending'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">{attempt.email || '—'}</TableCell>
+                  <TableCell className="text-sm">{attempt.phone || '—'}</TableCell>
+                  <TableCell className="text-sm">{attempt.first_name || '—'}</TableCell>
+                  <TableCell>
+                    {attempt.vehicle_reg ? (
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
+                        {attempt.vehicle_reg}
+                      </Badge>
+                    ) : '—'}
+                  </TableCell>
+                  <TableCell className="text-xs text-red-600 max-w-[200px] truncate">
+                    {attempt.error_message || '—'}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                    {format(new Date(attempt.created_at), 'MMM d, HH:mm:ss')}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, filtered.length)} of {filtered.length}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ContactTable: React.FC<{
+  contacts: BackupContact[];
+  loading: boolean;
+  isFakeIndicator: (c: BackupContact) => boolean;
+}> = ({ contacts, loading, isFakeIndicator }) => {
   const [page, setPage] = useState(0);
   const pageSize = 50;
   const totalPages = Math.ceil(contacts.length / pageSize);
@@ -473,6 +779,7 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Type</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -486,43 +793,53 @@ const ContactTable: React.FC<{ contacts: BackupContact[]; loading: boolean }> = 
           <TableBody>
             {paged.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   No contacts found
                 </TableCell>
               </TableRow>
             ) : (
-              paged.map((contact) => (
-                <TableRow key={`${contact.source}-${contact.id}`}>
-                  <TableCell className="font-medium">
-                    {contact.first_name || contact.full_name || <span className="text-muted-foreground">—</span>}
-                  </TableCell>
-                  <TableCell className="text-sm">{contact.email || '—'}</TableCell>
-                  <TableCell className="text-sm">{contact.phone || <span className="text-muted-foreground">—</span>}</TableCell>
-                  <TableCell>
-                    {contact.vehicle_reg ? (
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
-                        {contact.vehicle_reg}
+              paged.map((contact) => {
+                const isFake = isFakeIndicator(contact);
+                return (
+                  <TableRow key={`${contact.source}-${contact.id}`} className={isFake ? 'bg-red-50/30' : ''}>
+                    <TableCell>
+                      {isFake ? (
+                        <Badge variant="destructive" className="text-xs">Fake</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Real</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {contact.first_name || contact.full_name || <span className="text-muted-foreground">—</span>}
+                    </TableCell>
+                    <TableCell className="text-sm">{contact.email || '—'}</TableCell>
+                    <TableCell className="text-sm">{contact.phone || <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell>
+                      {contact.vehicle_reg ? (
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
+                          {contact.vehicle_reg}
+                        </Badge>
+                      ) : '—'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={contact.source === 'sales_lead' ? 'default' : 'secondary'} className="text-xs">
+                        {contact.source === 'sales_lead' ? 'Lead' : 'Cart'}
                       </Badge>
-                    ) : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={contact.source === 'sales_lead' ? 'default' : 'secondary'} className="text-xs">
-                      {contact.source === 'sales_lead' ? 'Lead' : 'Cart'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{contact.status || '—'}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {contact.created_at ? format(new Date(contact.created_at), 'MMM d, yyyy HH:mm') : '—'}
-                  </TableCell>
-                  <TableCell>
-                    {contact.in_marketing ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{contact.status || '—'}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {contact.created_at ? format(new Date(contact.created_at), 'MMM d, yyyy HH:mm') : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {contact.in_marketing ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
