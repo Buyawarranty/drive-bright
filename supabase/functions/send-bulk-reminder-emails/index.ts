@@ -74,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`📨 Sending reminder emails to ${filteredCustomers.length} customers (${blockedSet.size} blocked)...`);
 
-    const emailPromises = customers.map(async (customer) => {
+    const emailPromises = filteredCustomers.map(async (customer) => {
       const firstName = customer.full_name?.split(' ')[0] || 'there';
       
       const htmlContent = `
