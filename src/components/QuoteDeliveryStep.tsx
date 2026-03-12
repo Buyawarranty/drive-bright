@@ -119,6 +119,28 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     if (!isFormValid) return;
     
     setSendingEmail(true);
+
+    // Track Step 2 attempt immediately (before any server calls)
+    const sessionId = (() => {
+      try { return sessionStorage.getItem('baw_session_id') || crypto.randomUUID(); } catch { return crypto.randomUUID(); }
+    })();
+    try {
+      await supabase.from('step2_submission_attempts').insert({
+        session_id: sessionId,
+        email: email.trim().toLowerCase(),
+        phone: phone.trim() || null,
+        first_name: firstName.trim() || null,
+        vehicle_reg: vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || null,
+        vehicle_make: vehicleData?.make || null,
+        vehicle_model: vehicleData?.model || null,
+        vehicle_year: vehicleData?.year || null,
+        mileage: vehicleData?.mileage || null,
+        attempt_status: 'attempted',
+      });
+    } catch (e) {
+      // Don't block the user flow if tracking fails
+      console.error('Step 2 attempt tracking failed:', e);
+    }
     
     try {
       // Send quote email
