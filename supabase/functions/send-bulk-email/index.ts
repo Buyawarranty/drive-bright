@@ -109,11 +109,16 @@ serve(async (req) => {
         const personalizedSubject = emailSubject.replace(/\{name\}/g, recipientName);
         const personalizedContent = emailContent.replace(/\{name\}/g, recipientName);
 
+        const cleanEmail = recipient.email.trim().toLowerCase();
+        const unsubToken = btoa(cleanEmail + '_baw_unsub_2024');
+        const unsubUrl = `${supabaseUrl}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(cleanEmail)}&token=${encodeURIComponent(unsubToken)}`;
+        const unsubFooter = `<div style="border-top: 1px solid #eee; padding-top: 16px; margin-top: 24px; text-align: center;"><p style="color: #aab7c4; font-size: 11px; margin: 0;"><a href="${unsubUrl}" style="color: #aab7c4; text-decoration: underline;">Unsubscribe</a> from future emails.</p></div>`;
+
         const emailResponse = await resend.emails.send({
           from: fromEmail,
           to: [recipient.email],
           subject: personalizedSubject,
-          html: personalizedContent.replace(/\n/g, '<br>'), // Convert line breaks to HTML
+          html: personalizedContent.replace(/\n/g, '<br>') + unsubFooter,
         });
 
         console.log(`Email sent to ${recipient.email}:`, emailResponse);
