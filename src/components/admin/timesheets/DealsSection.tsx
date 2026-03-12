@@ -102,6 +102,18 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: D
 
       if (error) throw error;
       setAssignedCustomers((data || []) as AssignedCustomer[]);
+
+      // Fetch approved commission claims for this agent in this month
+      const { data: claims } = await supabase
+        .from('commission_claims')
+        .select('id, agent_id, deal_value, claim_reason, status, created_at, customer_id')
+        .eq('agent_id', adminUser.id)
+        .in('status', ['approved', 'pending'])
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', monthEnd.toISOString())
+        .order('created_at', { ascending: false });
+
+      setCommissionClaims((claims || []) as CommissionClaimDeal[]);
     } catch (err) {
       console.error('Error fetching assigned customers:', err);
     } finally {
