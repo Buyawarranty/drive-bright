@@ -252,9 +252,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
-                      {getUrgencyBadge(lead)}
-                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1">
                         <Button 
