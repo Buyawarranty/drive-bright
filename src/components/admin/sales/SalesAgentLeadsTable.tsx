@@ -153,7 +153,6 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                 <TableHead>Vehicle</TableHead>
                 <TableHead className="text-center">Calls</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Urgency</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -253,9 +252,6 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
-                      {getUrgencyBadge(lead)}
-                    </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1">
                         <Button 
@@ -295,7 +291,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                   {/* Expanded row with LeadDetailsPanel */}
                   {expandedLead === lead.id && (
                     <TableRow>
-                      <TableCell colSpan={8} className="p-0 bg-muted/20">
+                      <TableCell colSpan={7} className="p-0 bg-muted/20">
                         <LeadDetailsPanel
                           lead={lead}
                           onUpdateNotes={handlers.updateLeadNotes}

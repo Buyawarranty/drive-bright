@@ -1988,7 +1988,6 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                               <TableHead>Contact</TableHead>
                               <TableHead>Vehicle</TableHead>
                               <TableHead>Status</TableHead>
-                              <TableHead>Plan</TableHead>
                               <TableHead>Created</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -2039,9 +2038,6 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                     {lead.is_paid && (
                                       <Badge className="ml-1 bg-green-600 text-white">Paid</Badge>
                                     )}
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="text-sm">{lead.plan_interest || '-'}</span>
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
