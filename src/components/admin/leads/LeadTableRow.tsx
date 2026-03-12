@@ -264,6 +264,7 @@ const PaidCellContent = memo<{
 PaidCellContent.displayName = 'PaidCellContent';
 
 
+export const LeadTableRow = memo<LeadTableRowProps>(({
   lead,
   tags,
   salesUsers,
