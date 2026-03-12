@@ -115,15 +115,13 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             className="flex items-center gap-3 p-4 border-b bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={() => setNotesOpen(!notesOpen)}
           >
-            {/* Expand/Collapse Chevron - Click to toggle */}
+            {/* Expand/Collapse Chevron - Click to toggle notes section only */}
             <Button
-              variant={notesOpen ? "default" : "outline"}
+              variant="outline"
               size="icon"
               className={cn(
                 "h-10 w-10 flex-shrink-0 transition-all duration-100",
-                notesOpen 
-                  ? "bg-primary text-primary-foreground shadow-lg scale-105" 
-                  : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-lg"
+                "bg-muted text-muted-foreground border-2 border-border hover:bg-muted/80 hover:text-foreground"
               )}
               onClick={(e) => { 
                 e.stopPropagation(); 
