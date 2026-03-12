@@ -35,13 +35,6 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   const [salesPage, setSalesPage] = useState(0);
   const SALES_PER_PAGE = 25;
 
-  // Sales by Agent state
-  const [agentFilter, setAgentFilter] = useState<string>('all');
-  const [agentDateFrom, setAgentDateFrom] = useState<Date>(() => {
-    const d = new Date(); d.setDate(d.getDate() - 30); return d;
-  });
-  const [agentDateTo, setAgentDateTo] = useState<Date>(new Date());
-  const [agentPreset, setAgentPreset] = useState<string>('last30');
 
   // Fetch conversion upload stats
   const { data: conversionStats, isLoading: statsLoading } = useQuery({
