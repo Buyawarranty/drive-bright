@@ -13,6 +13,7 @@ import { TimesheetApprovals } from './TimesheetApprovals';
 import { TimesheetComments } from './TimesheetComments';
 import { AdditionalBonuses } from './AdditionalBonuses';
 import { CommissionClaimsSection } from './CommissionClaimsSection';
+import { StaffTimesheetSelector } from './StaffTimesheetSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -22,6 +23,11 @@ export function TimesheetsTab() {
   const { session } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+
+  const effectiveViewingUserId = viewingUserId && viewingUserId !== session?.user?.id ? viewingUserId : undefined;
+  const isViewingOther = !!effectiveViewingUserId;
+
   const {
     entries,
     deals,
@@ -33,7 +39,7 @@ export function TimesheetsTab() {
     addDeal,
     deleteDeal,
     refresh,
-  } = useTimesheets(currentMonth);
+  } = useTimesheets(currentMonth, effectiveViewingUserId);
 
   // Check if user has accounts/payroll role
   useEffect(() => {
@@ -154,10 +160,19 @@ export function TimesheetsTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Timesheets & Performance</h1>
-          <p className="text-gray-500 mt-1">Track your work hours, record deals, and monitor your commissions</p>
+          <h1 className="text-2xl font-bold text-foreground">Timesheets & Performance</h1>
+          <p className="text-muted-foreground mt-1">
+            {isViewingOther ? 'Viewing staff member\'s timesheet (read-only)' : 'Track your work hours, record deals, and monitor your commissions'}
+          </p>
         </div>
         <div className="flex items-center gap-2 self-start flex-wrap">
+          {isAccountsRole && session?.user?.id && (
+            <StaffTimesheetSelector
+              currentUserId={session.user.id}
+              selectedUserId={viewingUserId || session.user.id}
+              onUserChange={(uid) => setViewingUserId(uid)}
+            />
+          )}
           {isAccountsRole && (
             <Button variant="default" size="sm" onClick={() => setActiveView('approvals')} className="gap-2 bg-orange-600 hover:bg-orange-700">
               <ClipboardCheck className="h-4 w-4" />

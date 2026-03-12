@@ -72,8 +72,9 @@ export interface TimesheetStats {
   trainingDays: number;
 }
 
-export function useTimesheets(month?: Date) {
+export function useTimesheets(month?: Date, viewingUserId?: string) {
   const { session } = useAuth();
+  const effectiveUserId = viewingUserId || session?.user?.id;
   const [entries, setEntries] = useState<TimesheetEntry[]>([]);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [commissions, setCommissions] = useState<CommissionRecord[]>([]);
@@ -95,14 +96,14 @@ export function useTimesheets(month?: Date) {
   const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
   const fetchTimesheets = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!effectiveUserId) return;
     
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('staff_timesheets')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', effectiveUserId)
         .gte('entry_date', startOfMonth.toISOString().split('T')[0])
         .lte('entry_date', endOfMonth.toISOString().split('T')[0])
         .order('entry_date', { ascending: true });
@@ -140,16 +141,16 @@ export function useTimesheets(month?: Date) {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id, startOfMonth.toISOString(), endOfMonth.toISOString()]);
+  }, [effectiveUserId, startOfMonth.toISOString(), endOfMonth.toISOString()]);
 
   const fetchDeals = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!effectiveUserId) return;
     
     try {
       const { data, error } = await supabase
         .from('deal_records')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', effectiveUserId)
         .gte('deal_date', startOfMonth.toISOString().split('T')[0])
         .lte('deal_date', endOfMonth.toISOString().split('T')[0])
         .order('deal_date', { ascending: false });
@@ -159,16 +160,16 @@ export function useTimesheets(month?: Date) {
     } catch (error) {
       console.error('Error fetching deals:', error);
     }
-  }, [session?.user?.id, startOfMonth.toISOString(), endOfMonth.toISOString()]);
+  }, [effectiveUserId, startOfMonth.toISOString(), endOfMonth.toISOString()]);
 
   const fetchCommissions = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!effectiveUserId) return;
     
     try {
       const { data, error } = await supabase
         .from('commission_records')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', effectiveUserId)
         .order('period_start', { ascending: false })
         .limit(12);
 
@@ -177,7 +178,7 @@ export function useTimesheets(month?: Date) {
     } catch (error) {
       console.error('Error fetching commissions:', error);
     }
-  }, [session?.user?.id]);
+  }, [effectiveUserId]);
 
   useEffect(() => {
     fetchTimesheets();
