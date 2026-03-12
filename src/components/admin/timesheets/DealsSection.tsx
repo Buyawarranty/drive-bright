@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import { Plus, Trash2, TrendingUp, Package, Car, Search, Globe, PenLine, AlertCircle, Check, Import, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, TrendingUp, Package, Car, Search, Globe, PenLine, AlertCircle, Check, Import, RefreshCw, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
