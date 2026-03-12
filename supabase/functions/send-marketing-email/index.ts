@@ -40,6 +40,27 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No email addresses provided");
     }
 
+    // Filter out unsubscribed/blocked emails
+    const { data: blockedEmails } = await supabaseClient
+      .from('email_unsubscribes')
+      .select('email')
+      .in('email', emails.map((e: string) => e.trim().toLowerCase()));
+
+    const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
+    const filteredEmails = emails.filter((e: string) => !blockedSet.has(e.trim().toLowerCase()));
+    
+    if (blockedSet.size > 0) {
+      console.log(`Filtered out ${blockedSet.size} blocked/unsubscribed emails`);
+    }
+
+    if (filteredEmails.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: "All recipients are unsubscribed/blocked",
+        stats: { total_emails: emails.length, blocked_emails: blockedSet.size, successful_emails: 0, failed_emails: 0 }
+      }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
     if (!subject || !content) {
       throw new Error("Subject and content are required");
     }
