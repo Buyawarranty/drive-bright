@@ -31,6 +31,8 @@ serve(async (req) => {
     const email = payload.email?.trim()?.toLowerCase();
     const newPassword = payload.newPassword;
 
+    logStep('Password reset request received', { email });
+
     if (!email || !newPassword) {
       return new Response(
         JSON.stringify({ 
@@ -44,18 +46,31 @@ serve(async (req) => {
       );
     }
 
-    // Find the user by email
-    const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000
-    });
+    // Find the user by email (paginate to avoid missing users beyond first 1000)
+    let user: { id: string; email?: string | null } | undefined;
+    let page = 1;
+    const perPage = 1000;
 
-    if (findError) {
-      logStep('Error finding users', findError);
-      throw findError;
+    while (!user && page <= 20) {
+      const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
+        page,
+        perPage
+      });
+
+      if (findError) {
+        logStep('Error finding users', findError);
+        throw findError;
+      }
+
+      const batch = users?.users ?? [];
+      user = batch.find(u => u.email?.toLowerCase() === email);
+
+      if (batch.length < perPage) {
+        break;
+      }
+
+      page += 1;
     }
-
-    const user = users.users.find(u => u.email === email);
     
     if (!user) {
       logStep('User not found', { email });
