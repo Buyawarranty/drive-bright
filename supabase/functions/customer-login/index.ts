@@ -47,7 +47,7 @@ serve(async (req) => {
     const maxAttempts = 3;
     
     while (attempts < maxAttempts) {
-      const result = await supabase.auth.signInWithPassword({
+      const result = await supabaseAuth.auth.signInWithPassword({
         email,
         password,
       });
