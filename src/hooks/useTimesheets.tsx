@@ -141,7 +141,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id, startOfMonth.toISOString(), endOfMonth.toISOString()]);
+  }, [effectiveUserId, startOfMonth.toISOString(), endOfMonth.toISOString()]);
 
   const fetchDeals = useCallback(async () => {
     if (!session?.user?.id) return;
