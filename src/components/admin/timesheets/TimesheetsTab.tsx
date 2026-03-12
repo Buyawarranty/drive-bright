@@ -172,8 +172,7 @@ export function TimesheetsTab() {
               selectedUserId={viewingUserId || session.user.id}
               onUserChange={(uid) => setViewingUserId(uid)}
             />
-        </div>
-        <div className="flex items-center gap-2 self-start flex-wrap">
+          )}
           {isAccountsRole && (
             <Button variant="default" size="sm" onClick={() => setActiveView('approvals')} className="gap-2 bg-orange-600 hover:bg-orange-700">
               <ClipboardCheck className="h-4 w-4" />
