@@ -6,8 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Ban, MailX, CheckCircle } from 'lucide-react';
 import { useEmailUnsubscribes } from '@/hooks/useEmailUnsubscribes';
-import { useAuth } from '@/hooks/useAuth';
-
 interface EmailBlockButtonProps {
   email: string;
   customerName?: string;
