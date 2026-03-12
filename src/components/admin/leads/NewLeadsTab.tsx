@@ -224,19 +224,39 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
 
+  // Apply date range filter to leads for accurate counts
+  const dateFilteredLeadsForCounts = useMemo(() => {
+    if (!dateRange.from && !dateRange.to) return leads;
+    return leads.filter(lead => {
+      const leadDate = new Date(lead.created_at);
+      if (dateRange.from) {
+        const fromStart = new Date(dateRange.from);
+        fromStart.setHours(0, 0, 0, 0);
+        if (leadDate < fromStart) return false;
+      }
+      if (dateRange.to) {
+        const toEnd = new Date(dateRange.to);
+        toEnd.setHours(23, 59, 59, 999);
+        if (leadDate > toEnd) return false;
+      }
+      return true;
+    });
+  }, [leads, dateRange]);
+
   const leadCounts = useMemo(() => ({
-    all: leads.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
-    new: leads.filter(l => l.status === 'new').length,
-    contacted: leads.filter(l => l.status === 'contacted').length,
-    follow_up: leads.filter(l => l.status === 'follow_up').length,
-    quote_sent: leads.filter(l => l.status === 'quote_sent').length,
-    urgent_callback: leads.filter(l => l.status === 'urgent_callback').length,
-    paid: leads.filter(l => l.is_paid === true).length,
-    lost: 0,
-    converted: leads.filter(l => l.status === 'converted').length,
-    high_priority: leads.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
-    fake: leads.filter(l => l.status === 'fake_lead').length,
-  }), [leads]);
+    all: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
+    total: dateFilteredLeadsForCounts.length,
+    new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
+    contacted: dateFilteredLeadsForCounts.filter(l => l.status === 'contacted').length,
+    follow_up: dateFilteredLeadsForCounts.filter(l => l.status === 'follow_up').length,
+    quote_sent: dateFilteredLeadsForCounts.filter(l => l.status === 'quote_sent').length,
+    urgent_callback: dateFilteredLeadsForCounts.filter(l => l.status === 'urgent_callback').length,
+    paid: dateFilteredLeadsForCounts.filter(l => l.is_paid === true).length,
+    lost: dateFilteredLeadsForCounts.filter(l => l.status === 'lost').length,
+    converted: dateFilteredLeadsForCounts.filter(l => l.status === 'converted').length,
+    high_priority: dateFilteredLeadsForCounts.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+    fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
+  }), [dateFilteredLeadsForCounts]);
 
   // Assignment counts for the filter dropdown
   const assignmentCounts = useMemo(() => ({
