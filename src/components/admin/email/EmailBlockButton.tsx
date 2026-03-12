@@ -26,7 +26,6 @@ export const EmailBlockButton: React.FC<EmailBlockButtonProps> = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reason, setReason] = useState('');
   const { blockEmail, unblockEmail, isBlocked } = useEmailUnsubscribes();
-  const { adminUser } = useAuth();
 
   const blocked = isBlocked(email);
 
