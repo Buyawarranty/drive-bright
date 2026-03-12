@@ -649,31 +649,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Payment Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.is_paid ? (
-          <div className="space-y-0.5">
-            <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
-              <CheckCircle className="h-3 w-3" />PAID
-            </Badge>
-            <div className="text-[10px] text-muted-foreground">£{lead.payment_amount?.toFixed(2) || 'N/A'}</div>
-            <div className="text-[10px] text-muted-foreground capitalize">{lead.payment_method || '—'}</div>
-            <Button
-              variant="link"
-              size="sm"
-              className="h-5 px-0 text-[10px] text-primary font-medium"
-              onClick={handleViewCustomer}
-            >
-              <ExternalLink className="h-3 w-3 mr-1" />View Customer
-            </Button>
-            {/* Commission Claim - only for direct website purchases (no quote sent by agent) */}
-            {lead.is_paid && lead.assigned_to && (!sentQuotes || sentQuotes.length === 0) && (
-              <CommissionClaimDialog
-                customerId={lead.id}
-                leadId={lead.id}
-                agentId={lead.assigned_to}
-                customerName={displayName || lead.email}
-                dealValue={lead.payment_amount || undefined}
-              />
-            )}
-          </div>
+          <PaidCellContent
+            lead={lead}
+            displayName={displayName}
+            handleViewCustomer={handleViewCustomer}
+          />
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
