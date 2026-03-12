@@ -131,7 +131,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
             <p>This email was sent to remind you about your incomplete warranty purchase.</p>
-            <p>If you no longer wish to receive these emails, please contact us.</p>
+            <p><a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(customer.email.trim().toLowerCase())}&token=${encodeURIComponent(btoa(customer.email.trim().toLowerCase() + '_baw_unsub_2024'))}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> from future emails.</p>
           </div>
         </body>
         </html>
