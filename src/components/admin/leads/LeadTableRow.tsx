@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
+import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { SentQuote } from '@/hooks/useLeadQuotes';
 import { TableCell, TableRow } from '@/components/ui/table';
