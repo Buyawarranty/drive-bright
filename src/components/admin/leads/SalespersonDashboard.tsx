@@ -305,7 +305,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       )}
 
       {/* All My Leads with Delete */}
-      <Card>
+      <Card className="border-2 border-border">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg">All My Leads</CardTitle>
