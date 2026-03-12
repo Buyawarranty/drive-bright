@@ -612,7 +612,13 @@ export const AnalyticsTab = () => {
           {/* Period Comparison Toggle */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Quick Period</Label>
-            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null)}>
+            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as any)}>
+              <ToggleGroupItem value="today" aria-label="Today" className="px-3">
+                Today
+              </ToggleGroupItem>
+              <ToggleGroupItem value="yesterday" aria-label="Yesterday" className="px-3">
+                Yesterday
+              </ToggleGroupItem>
               <ToggleGroupItem value="week" aria-label="This Week" className="px-3">
                 This Week
               </ToggleGroupItem>
