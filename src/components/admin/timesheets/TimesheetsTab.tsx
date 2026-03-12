@@ -160,9 +160,19 @@ export function TimesheetsTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Timesheets & Performance</h1>
-          <p className="text-gray-500 mt-1">Track your work hours, record deals, and monitor your commissions</p>
+          <h1 className="text-2xl font-bold text-foreground">Timesheets & Performance</h1>
+          <p className="text-muted-foreground mt-1">
+            {isViewingOther ? 'Viewing staff member\'s timesheet (read-only)' : 'Track your work hours, record deals, and monitor your commissions'}
+          </p>
         </div>
+        <div className="flex items-center gap-2 self-start flex-wrap">
+          {isAccountsRole && session?.user?.id && (
+            <StaffTimesheetSelector
+              currentUserId={session.user.id}
+              selectedUserId={viewingUserId || session.user.id}
+              onUserChange={(uid) => setViewingUserId(uid)}
+            />
+          )}
         <div className="flex items-center gap-2 self-start flex-wrap">
           {isAccountsRole && (
             <Button variant="default" size="sm" onClick={() => setActiveView('approvals')} className="gap-2 bg-orange-600 hover:bg-orange-700">
