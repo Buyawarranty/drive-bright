@@ -124,6 +124,9 @@ serve(async (req) => {
       userId = userExists.id;
       
       // Only update password if user hasn't reset it themselves
+      if (userHasResetPassword) {
+        logStep("Skipping password update - user has already set their own password", { userId: userExists.id });
+      } else {
         const { data: updateData, error: updateError } = await supabaseClient.auth.admin.updateUserById(userExists.id, {
           password: tempPassword,
           user_metadata: {
