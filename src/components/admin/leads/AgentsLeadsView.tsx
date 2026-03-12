@@ -1989,7 +1989,6 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                               <TableHead>Vehicle</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>Created</TableHead>
-                              <TableHead>Created</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
