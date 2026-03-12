@@ -140,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Add a small delay between batches to be respectful of rate limits
-      if (i + batchSize < emails.length) {
+      if (i + batchSize < filteredEmails.length) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
