@@ -577,8 +577,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Team View</span>
               </Button>
             )}
-            {/* See Agents - Sales Lead & Super Admin only */}
-            {(userRole === 'sales_lead' || userRole === 'super_admin') && (
+            {/* See Agents - Sales Lead, Admin & Super Admin only */}
+            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin') && (
               <Button 
                 variant={activeView === 'agents-view' ? 'default' : 'ghost'}
                 size="sm"
@@ -699,8 +699,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <ManagerDashboard />
       )}
       
-      {/* Agents View - Sales Lead & Super Admin only */}
-      {(userRole === 'sales_lead' || userRole === 'super_admin') && activeView === 'agents-view' && (
+      {/* Agents View - Sales Lead, Admin & Super Admin only */}
+      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin') && activeView === 'agents-view' && (
         <AgentsLeadsView 
           leads={leads}
           salesUsers={salesUsers}
