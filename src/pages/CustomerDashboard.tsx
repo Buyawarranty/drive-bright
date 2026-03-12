@@ -296,24 +296,39 @@ const CustomerDashboard = () => {
     e.preventDefault();
     setLoginLoading(true);
 
-    console.log("=== LOGIN ATTEMPT ===", { email });
+    console.log("=== LOGIN ATTEMPT ===", { email: email.trim().toLowerCase() });
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      
       // Use the customer-login edge function instead of direct Supabase auth
       const { data, error } = await supabase.functions.invoke('customer-login', {
         body: {
-          email,
+          email: normalizedEmail,
           password,
         }
       });
 
       console.log("Login response:", { data, error });
 
+      // supabase.functions.invoke puts non-2xx responses in `data` (not `error`)
+      // so we must check both `error` AND `data.success === false` / `data.error`
       if (error) {
-        console.error("Login error:", error);
+        console.error("Login transport error:", error);
         toast({
           title: "Login Failed",
-          description: error.message,
+          description: "Unable to connect to the login service. Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Edge function returned an error response (401, 400, etc.)
+      if (data?.success === false || data?.error) {
+        console.error("Login failed:", data.error);
+        toast({
+          title: "Login Failed",
+          description: data.error || "Invalid email or password. Please check your credentials and try again.",
           variant: "destructive",
         });
         return;
@@ -330,6 +345,16 @@ const CustomerDashboard = () => {
         
         console.log("Session set result:", { sessionData, sessionError });
         
+        if (sessionError) {
+          console.error("Session set error:", sessionError);
+          toast({
+            title: "Login Failed",
+            description: "Login succeeded but session could not be established. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         toast({
           title: "Welcome back!",
           description: "You have been signed in successfully.",
@@ -339,10 +364,10 @@ const CustomerDashboard = () => {
         console.log("Fetching policies immediately after login...");
         await fetchPolicies();
       } else {
-        console.error("No user or session in response");
+        console.error("No user or session in response:", data);
         toast({
           title: "Login Failed",
-          description: "Invalid email or password.",
+          description: "Something went wrong. Please try again or reset your password.",
           variant: "destructive",
         });
       }
