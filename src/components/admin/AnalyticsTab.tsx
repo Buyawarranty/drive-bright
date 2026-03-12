@@ -801,7 +801,85 @@ export const AnalyticsTab = () => {
         </Card>
       </div>
 
-      {/* Refunds & Cancellations Section */}
+      {/* Price Metrics: Lowest, Highest, Average - by Source */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PoundSterling className="h-5 w-5 text-primary" />
+            Price Analytics
+          </CardTitle>
+          <CardDescription>
+            Lowest, highest &amp; average sale price {effectiveDateRange?.from ? '(filtered period)' : '(all time)'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Combined */}
+            <div className="space-y-3 p-4 rounded-lg bg-muted/30 border">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="font-semibold text-sm">All Sources Combined</span>
+                <Badge variant="secondary" className="ml-auto text-xs">{priceMetrics.combined.count} sales</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Lowest Price</span>
+                <span className="font-bold text-lg">{priceMetrics.combined.count > 0 ? `£${priceMetrics.combined.lowest.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Highest Price</span>
+                <span className="font-bold text-lg">{priceMetrics.combined.count > 0 ? `£${priceMetrics.combined.highest.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-sm font-medium">Average Price</span>
+                <span className="text-xl font-bold text-primary">{priceMetrics.combined.count > 0 ? `£${priceMetrics.combined.average.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+            </div>
+
+            {/* Website */}
+            <div className="space-y-3 p-4 rounded-lg border border-blue-200 bg-blue-50/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="h-4 w-4 text-blue-500" />
+                <span className="font-semibold text-sm">Website Only (BAW)</span>
+                <Badge variant="secondary" className="ml-auto text-xs">{priceMetrics.website.count} sales</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Lowest Price</span>
+                <span className="font-bold text-lg">{priceMetrics.website.count > 0 ? `£${priceMetrics.website.lowest.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Highest Price</span>
+                <span className="font-bold text-lg">{priceMetrics.website.count > 0 ? `£${priceMetrics.website.highest.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+                <span className="text-sm font-medium">Average Price</span>
+                <span className="text-xl font-bold text-blue-600">{priceMetrics.website.count > 0 ? `£${priceMetrics.website.average.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+            </div>
+
+            {/* Sales Team */}
+            <div className="space-y-3 p-4 rounded-lg border border-orange-200 bg-orange-50/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Phone className="h-4 w-4 text-orange-500" />
+                <span className="font-semibold text-sm">Sales Team Only (ADM)</span>
+                <Badge variant="secondary" className="ml-auto text-xs">{priceMetrics.salesTeam.count} sales</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Lowest Price</span>
+                <span className="font-bold text-lg">{priceMetrics.salesTeam.count > 0 ? `£${priceMetrics.salesTeam.lowest.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Highest Price</span>
+                <span className="font-bold text-lg">{priceMetrics.salesTeam.count > 0 ? `£${priceMetrics.salesTeam.highest.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-orange-200">
+                <span className="text-sm font-medium">Average Price</span>
+                <span className="text-xl font-bold text-orange-600">{priceMetrics.salesTeam.count > 0 ? `£${priceMetrics.salesTeam.average.toLocaleString('en-GB')}` : '-'}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="border-l-4 border-l-red-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
