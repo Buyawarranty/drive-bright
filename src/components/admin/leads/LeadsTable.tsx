@@ -87,16 +87,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               <TableHead className="w-[120px]">Name</TableHead>
               <TableHead className="w-[160px]">Phone</TableHead>
               <TableHead className="w-[180px]">Email</TableHead>
-              <TableHead className="w-[90px]">Quote Sent</TableHead>
               <TableHead className="w-[90px]">Reg Plate</TableHead>
-              <TableHead className="w-[100px]">Price</TableHead>
               <TableHead className="w-[90px]">Payment</TableHead>
-              <TableHead className="w-[90px]">Urgency</TableHead>
-              <TableHead className="w-[100px]">Next Action</TableHead>
-              <TableHead className="w-[120px]">Plan</TableHead>
-              <TableHead className="w-[60px]">Step</TableHead>
-              <TableHead className="w-[70px] text-right">Mileage</TableHead>
-              <TableHead className="w-[140px]">Tags</TableHead>
               <TableHead className="w-[100px]">Last Activity</TableHead>
               <TableHead className="w-[100px]">Date Created</TableHead>
             </TableRow>
