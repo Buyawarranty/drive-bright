@@ -19,7 +19,12 @@ serve(async (req) => {
     // Create Supabase client with service role key for admin operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, password, firstName, lastName, customerId } = await req.json();
+    const payload = await req.json();
+    const email = payload.email?.trim()?.toLowerCase();
+    const password = payload.password;
+    const firstName = payload.firstName;
+    const lastName = payload.lastName;
+    const customerId = payload.customerId;
 
     if (!email || !password) {
       return new Response(

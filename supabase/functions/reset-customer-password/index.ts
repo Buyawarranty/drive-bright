@@ -27,9 +27,9 @@ serve(async (req) => {
     
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, newPassword }: ResetPasswordRequest = await req.json();
-    
-    logStep('Password reset request received', { email });
+    const payload: ResetPasswordRequest = await req.json();
+    const email = payload.email?.trim()?.toLowerCase();
+    const newPassword = payload.newPassword;
 
     if (!email || !newPassword) {
       return new Response(
