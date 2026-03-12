@@ -300,6 +300,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       }
     } catch (error) {
       console.error('Error in quote flow:', error);
+      // Mark Step 2 attempt as failed
+      try {
+        await supabase.from('step2_submission_attempts')
+          .update({ attempt_status: 'failed', error_message: String(error), error_source: 'quote_flow' })
+          .eq('session_id', sessionId)
+          .eq('email', email.trim().toLowerCase())
+          .eq('attempt_status', 'attempted');
+      } catch { /* non-blocking */ }
     }
     
     setSendingEmail(false);
