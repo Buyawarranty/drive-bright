@@ -160,6 +160,21 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: leads } = await leadsQuery;
 
+      // Fetch approved commission claims per agent
+      let claimsQuery = supabase
+        .from('commission_claims')
+        .select('id, agent_id, deal_value, created_at, status')
+        .eq('status', 'approved')
+        .in('agent_id', agentIds);
+
+      if (period !== 'all') {
+        claimsQuery = claimsQuery
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+      }
+
+      const { data: approvedClaims } = await claimsQuery;
+
       // Fetch monthly targets
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());
