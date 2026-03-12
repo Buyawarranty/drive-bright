@@ -65,7 +65,7 @@ export const AnalyticsTab = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
+  const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
 
