@@ -371,7 +371,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       </Card>
 
       {/* Scoreboard - Always show */}
-      <Card>
+      <Card className="border-2 border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Trophy className="h-5 w-5 text-orange-500" />
