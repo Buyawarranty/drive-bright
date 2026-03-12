@@ -178,7 +178,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
     } catch (error) {
       console.error('Error fetching commissions:', error);
     }
-  }, [session?.user?.id]);
+  }, [effectiveUserId]);
 
   useEffect(() => {
     fetchTimesheets();
