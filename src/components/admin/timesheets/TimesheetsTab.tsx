@@ -23,6 +23,11 @@ export function TimesheetsTab() {
   const { session } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+
+  const effectiveViewingUserId = viewingUserId && viewingUserId !== session?.user?.id ? viewingUserId : undefined;
+  const isViewingOther = !!effectiveViewingUserId;
+
   const {
     entries,
     deals,
@@ -34,7 +39,7 @@ export function TimesheetsTab() {
     addDeal,
     deleteDeal,
     refresh,
-  } = useTimesheets(currentMonth);
+  } = useTimesheets(currentMonth, effectiveViewingUserId);
 
   // Check if user has accounts/payroll role
   useEffect(() => {
