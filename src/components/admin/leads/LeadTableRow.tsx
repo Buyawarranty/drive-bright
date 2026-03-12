@@ -317,7 +317,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
   return (
     <TableRow className={cn(
-      "transition-colors", 
+      "transition-colors border-b border-border/30 group", 
       getRowUrgencyClass(lead),
       isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60"
     )}>
