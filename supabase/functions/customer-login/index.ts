@@ -15,8 +15,12 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Use anon key for signInWithPassword (correct auth flow)
+    // Service key is only for admin lookups (roles, customer data)
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const rawBody = await req.json();
     const email = rawBody.email?.trim()?.toLowerCase();
@@ -43,7 +47,7 @@ serve(async (req) => {
     const maxAttempts = 3;
     
     while (attempts < maxAttempts) {
-      const result = await supabase.auth.signInWithPassword({
+      const result = await supabaseAuth.auth.signInWithPassword({
         email,
         password,
       });
@@ -100,14 +104,14 @@ serve(async (req) => {
     }
 
     // Check if user has a customer role (optional - for role-based access)
-    const { data: roleData } = await supabase
+    const { data: roleData } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', authData.user.id)
       .maybeSingle();
 
     // Get customer data if exists
-    const { data: customerData } = await supabase
+    const { data: customerData } = await supabaseAdmin
       .from('customers')
       .select('*')
       .eq('email', email)
