@@ -369,9 +369,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                 </div>
               </Collapsible>
             )}
-          </CardContent>
+          </div>
         </CollapsibleContent>
-      </Card>
+      </div>
     </Collapsible>
   );
 };
