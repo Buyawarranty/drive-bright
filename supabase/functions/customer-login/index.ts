@@ -104,7 +104,7 @@ serve(async (req) => {
     }
 
     // Check if user has a customer role (optional - for role-based access)
-    const { data: roleData } = await supabase
+    const { data: roleData } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', authData.user.id)
