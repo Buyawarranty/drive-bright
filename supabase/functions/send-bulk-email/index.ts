@@ -72,13 +72,28 @@ serve(async (req) => {
       throw customersError;
     }
 
-    console.log(`Sending to ${customers.length} customers`);
+    console.log(`Found ${customers.length} customers`);
 
-    // Prepare list of all recipients (customers + custom emails)
+    // Check blocklist
+    const allEmails = [
+      ...customers.map(c => c.email.trim().toLowerCase()),
+      ...(customEmails || []).map((e: string) => e.trim().toLowerCase())
+    ];
+    const { data: blockedEmails } = await supabase
+      .from('email_unsubscribes')
+      .select('email')
+      .in('email', allEmails);
+    const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
+    
+    if (blockedSet.size > 0) {
+      console.log(`Filtering out ${blockedSet.size} blocked/unsubscribed emails`);
+    }
+
+    // Prepare list of all recipients (customers + custom emails), excluding blocked
     const allRecipients = [
       ...customers.map(c => ({ email: c.email, name: c.name || 'Customer', isCustomer: true, customerId: c.id })),
       ...(customEmails || []).map((email: string) => ({ email, name: 'Recipient', isCustomer: false }))
-    ];
+    ].filter(r => !blockedSet.has(r.email.trim().toLowerCase()));
 
     const results = {
       success: 0,

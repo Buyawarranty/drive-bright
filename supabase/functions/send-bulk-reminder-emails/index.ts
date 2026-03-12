@@ -54,7 +54,25 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`📨 Sending reminder emails to ${customers.length} customers...`);
+    // Check blocklist
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.45.0");
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const customerEmails = customers.map(c => c.email.trim().toLowerCase());
+    const { data: blockedEmails } = await supabase
+      .from('email_unsubscribes')
+      .select('email')
+      .in('email', customerEmails);
+    const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
+    const filteredCustomers = customers.filter(c => !blockedSet.has(c.email.trim().toLowerCase()));
+
+    if (blockedSet.size > 0) {
+      console.log(`⛔ Filtered out ${blockedSet.size} blocked/unsubscribed emails`);
+    }
+
+    console.log(`📨 Sending reminder emails to ${filteredCustomers.length} customers (${blockedSet.size} blocked)...`);
 
     const emailPromises = customers.map(async (customer) => {
       const firstName = customer.full_name?.split(' ')[0] || 'there';

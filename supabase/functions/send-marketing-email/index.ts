@@ -72,8 +72,8 @@ const handler = async (req: Request): Promise<Response> => {
     const batchSize = 50; // Resend allows up to 50 recipients per request
     const results = [];
 
-    for (let i = 0; i < emails.length; i += batchSize) {
-      const batch = emails.slice(i, i + batchSize);
+    for (let i = 0; i < filteredEmails.length; i += batchSize) {
+      const batch = filteredEmails.slice(i, i + batchSize);
       
       console.log(`Sending batch ${Math.floor(i/batchSize) + 1}: ${batch.length} emails`);
       
