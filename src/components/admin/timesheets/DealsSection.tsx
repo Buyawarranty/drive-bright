@@ -418,6 +418,48 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: D
                 </Button>
               </div>
             ))}
+
+            {/* Commission Claimed Deals */}
+            {commissionClaims.length > 0 && (
+              <>
+                <div className="px-4 py-2 bg-amber-50 border-y border-amber-200">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700">
+                    <Award className="h-3.5 w-3.5" />
+                    Commission Claims ({commissionClaims.length})
+                  </div>
+                </div>
+                {commissionClaims.map((claim) => (
+                  <div key={claim.id} className="p-4 flex items-center justify-between bg-amber-50/30">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-amber-100">
+                        <Award className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-gray-900 text-sm">
+                            Commission Claim
+                          </span>
+                          <Badge className={cn(
+                            "text-[10px] px-1.5 py-0",
+                            claim.status === 'approved' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                          )}>
+                            {claim.status === 'approved' ? 'Approved' : 'Pending'}
+                          </Badge>
+                          {claim.deal_value > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              £{claim.deal_value.toLocaleString()}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {claim.claim_reason.replace('_', ' ')} • {format(new Date(claim.created_at), 'dd MMM yyyy')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
