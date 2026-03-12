@@ -18,7 +18,9 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, password } = await req.json();
+    const rawBody = await req.json();
+    const email = rawBody.email?.trim()?.toLowerCase();
+    const password = rawBody.password;
 
     if (!email || !password) {
       return new Response(
