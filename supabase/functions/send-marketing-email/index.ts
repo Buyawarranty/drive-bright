@@ -148,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
     const successfulBatches = results.filter(r => r.success).length;
     const totalSuccessful = results.filter(r => r.success).reduce((sum, r) => sum + r.count, 0);
 
-    console.log(`Marketing email campaign completed: ${successfulBatches}/${results.length} batches successful, ${totalSuccessful}/${emails.length} emails sent`);
+    console.log(`Marketing email campaign completed: ${successfulBatches}/${results.length} batches successful, ${totalSuccessful}/${filteredEmails.length} emails sent (${blockedSet.size} blocked)`);
 
     // Update campaign status if campaignId provided
     if (campaignId) {
