@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { AIEmailSuggestions } from './email/AIEmailSuggestions';
+import { EmailBlocklistView } from './email/EmailBlocklistView';
 
 const EmailMarketingTab = () => {
   const [activeView, setActiveView] = useState<'overview' | 'campaigns' | 'subscribers' | 'analytics' | 'history' | 'gdpr' | 'automation' | 'blocklist'>('overview');
