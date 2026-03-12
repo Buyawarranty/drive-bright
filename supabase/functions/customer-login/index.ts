@@ -111,7 +111,7 @@ serve(async (req) => {
       .maybeSingle();
 
     // Get customer data if exists
-    const { data: customerData } = await supabase
+    const { data: customerData } = await supabaseAdmin
       .from('customers')
       .select('*')
       .eq('email', email)
