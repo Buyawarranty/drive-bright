@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption } from './LeadsFilters';
@@ -488,15 +489,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
+      {/* Header — compact, action-dense */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">New Leads</h1>
-          <p className="text-muted-foreground">Manage and track your sales pipeline</p>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight">Leads</h1>
+          <Badge variant="secondary" className="text-xs font-mono tabular-nums">{leads.length} total</Badge>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Notification Bell */}
           {onMarkAsRead && onMarkAllAsRead && (
             <AdminNotificationBell
@@ -508,16 +509,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             />
           )}
           
-          
-          {/* Export Button - Permission Controlled */}
+          {/* Export Button */}
           {canExport && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    Export{selectedLeads.size > 0 ? ` (${selectedLeads.size})` : ''}
-                  </span>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+                  <Download className="h-3.5 w-3.5" />
+                  Export{selectedLeads.size > 0 ? ` (${selectedLeads.size})` : ''}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -533,13 +531,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
-          {/* Archive Button - Shows when leads selected and user has delete permission */}
+          {/* Archive Button */}
           {canDelete && selectedLeads.size > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50">
-                  <Archive className="h-4 w-4" />
-                  <span className="hidden sm:inline">Archive ({selectedLeads.size})</span>
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs border-orange-300 text-orange-700 hover:bg-orange-50">
+                  <Archive className="h-3.5 w-3.5" />
+                  Archive ({selectedLeads.size})
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -562,16 +560,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </AlertDialog>
           )}
           
-          {/* View Toggle - Optimized with useCallback */}
-          <div className="flex items-center border rounded-lg bg-muted/50 p-1">
+          {/* View Toggle — pill-style, tight */}
+          <div className="flex items-center bg-muted/40 border border-border/50 rounded-lg p-0.5">
             {canSeeAllLeads && (
               <Button 
                 variant={activeView === 'leads' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('leads')}
-                className="flex items-center gap-2 transition-none"
+                className="h-7 px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
-                <LayoutDashboard className="h-4 w-4" />
+                <LayoutDashboard className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">All Leads</span>
               </Button>
             )}
@@ -580,10 +578,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 variant={activeView === 'my-dashboard' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('my-dashboard')}
-                className="flex items-center gap-2 transition-none"
+                className="h-7 px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
-                <UserCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">My Dashboard</span>
+                <UserCircle className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">My Leads</span>
               </Button>
             )}
             {canSeeTeamView && (
@@ -591,22 +589,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 variant={activeView === 'team-dashboard' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('team-dashboard')}
-                className="flex items-center gap-2 transition-none"
+                className="h-7 px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Team View</span>
+                <Users className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Team</span>
               </Button>
             )}
-            {/* See Agents - Sales Lead, Admin & Super Admin only */}
             {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin') && (
               <Button 
                 variant={activeView === 'agents-view' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('agents-view')}
-                className="flex items-center gap-2 transition-none"
+                className="h-7 px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
-                <UsersRound className="h-4 w-4" />
-                <span className="hidden sm:inline">See Agents</span>
+                <UsersRound className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Agents</span>
               </Button>
             )}
           </div>
