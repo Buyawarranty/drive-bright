@@ -82,11 +82,11 @@ serve(async (req) => {
     }
 
     // Find the user by email (paginate to avoid missing users beyond first 1000)
-    let user: { id: string; email?: string | null } | undefined;
+    let targetUser: { id: string; email?: string | null } | undefined;
     let page = 1;
     const perPage = 1000;
 
-    while (!user && page <= 20) {
+    while (!targetUser && page <= 20) {
       const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
         page,
         perPage
@@ -98,7 +98,7 @@ serve(async (req) => {
       }
 
       const batch = users?.users ?? [];
-      user = batch.find(u => u.email?.toLowerCase() === email);
+      targetUser = batch.find(u => u.email?.toLowerCase() === email);
 
       if (batch.length < perPage) {
         break;
@@ -107,7 +107,7 @@ serve(async (req) => {
       page += 1;
     }
     
-    if (!user) {
+    if (!targetUser) {
       logStep('User not found', { email });
       return new Response(
         JSON.stringify({ 
@@ -121,11 +121,11 @@ serve(async (req) => {
       );
     }
 
-    logStep('User found, updating password', { userId: user.id, email });
+    logStep('User found, updating password', { userId: targetUser.id, email });
 
     // Update the user's password
     const { data: updateData, error: updateError } = await supabaseClient.auth.admin.updateUserById(
-      user.id,
+      targetUser.id,
       { password: newPassword }
     );
 
