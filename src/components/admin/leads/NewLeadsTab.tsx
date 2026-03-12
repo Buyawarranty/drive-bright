@@ -561,7 +561,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           )}
           
           {/* View Toggle — pill-style, tight */}
-          <div className="flex items-center bg-muted/40 border border-border/50 rounded-lg p-0.5">
+          <div className="flex items-center bg-muted/50 border-2 border-border rounded-lg p-0.5">
             {canSeeAllLeads && (
               <Button 
                 variant={activeView === 'leads' ? 'default' : 'ghost'}
