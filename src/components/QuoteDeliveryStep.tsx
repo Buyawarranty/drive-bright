@@ -246,6 +246,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
+            ...(storedFbclid || utmSource ? {
+              cart_metadata: {
+                ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                ...(utmSource ? { utm_source: utmSource } : {}),
+              }
+            } : {})
           });
 
         if (cartInsertError) {
