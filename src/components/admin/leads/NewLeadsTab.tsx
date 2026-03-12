@@ -620,32 +620,38 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             />
           )}
 
-          {/* Recovered Leads Section - Only for super_admin and sales_lead */}
-          {(userRole === 'super_admin' || userRole === 'sales_lead') && (
-            <LostLeadsSection onRecovered={fetchLeads} />
-          )}
+          <div className="flex items-start gap-3">
+            {/* Recovered Leads Section - Inline, Only for super_admin and sales_lead */}
+            {(userRole === 'super_admin' || userRole === 'sales_lead') && (
+              <div className="flex-shrink-0">
+                <LostLeadsSection onRecovered={fetchLeads} />
+              </div>
+            )}
 
-          <LeadsFilters
-            filter={filter}
-            onFilterChange={setFilter}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            onRefresh={fetchLeads}
-            onMigrate={migrateFromAbandonedCarts}
-            onExport={handleExport}
-            leadCounts={leadCounts}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-            assignmentFilter={assignmentFilter}
-            onAssignmentFilterChange={setAssignmentFilter}
-            assignmentCounts={assignmentCounts}
-            sortOption={sortOption}
-            onSortChange={setSortOption}
-            salesUsers={salesUsers}
-            agentFilter={agentFilter}
-            onAgentFilterChange={setAgentFilter}
-            agentLeadCounts={agentLeadCounts}
-          />
+            <div className="flex-1 min-w-0">
+              <LeadsFilters
+                filter={filter}
+                onFilterChange={setFilter}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onRefresh={fetchLeads}
+                onMigrate={migrateFromAbandonedCarts}
+                onExport={handleExport}
+                leadCounts={leadCounts}
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+                assignmentFilter={assignmentFilter}
+                onAssignmentFilterChange={setAssignmentFilter}
+                assignmentCounts={assignmentCounts}
+                sortOption={sortOption}
+                onSortChange={setSortOption}
+                salesUsers={salesUsers}
+                agentFilter={agentFilter}
+                onAgentFilterChange={setAgentFilter}
+                agentLeadCounts={agentLeadCounts}
+              />
+            </div>
+          </div>
           
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
