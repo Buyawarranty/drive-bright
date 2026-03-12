@@ -661,10 +661,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </div>
       </TableCell>
 
-      {/* Quote Sent */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <QuoteSentCell quotes={sentQuotes || []} leadEmail={lead.email} />
-      </TableCell>
 
       {/* Reg Plate */}
       <TableCell>
@@ -675,37 +671,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
 
-      {/* Price - Competitor price + Our quotes */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="space-y-1">
-          {lead.cart_metadata?.competitorPrice && (
-            <div className="flex items-center gap-1">
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-red-50 text-red-700 border-red-200 font-semibold">
-                🎯 £{lead.cart_metadata.competitorPrice}
-              </Badge>
-            </div>
-          )}
-          {sentQuotes && sentQuotes.length > 0 && (
-            <div className="flex flex-col gap-0.5">
-              {sentQuotes.slice(0, 2).map((quote, idx) => (
-                <Badge 
-                  key={idx} 
-                  variant="outline" 
-                  className="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200 font-medium"
-                >
-                  📤 £{quote.total_price?.toFixed(0) || 'N/A'}
-                </Badge>
-              ))}
-              {sentQuotes.length > 2 && (
-                <span className="text-[10px] text-muted-foreground">+{sentQuotes.length - 2} more</span>
-              )}
-            </div>
-          )}
-          {!lead.cart_metadata?.competitorPrice && (!sentQuotes || sentQuotes.length === 0) && (
-            <span className="text-muted-foreground text-xs">—</span>
-          )}
-        </div>
-      </TableCell>
 
       {/* Payment Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -720,160 +685,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
 
-      {/* Urgency SLA */}
-      <TableCell>
-        <Badge className={cn("text-xs font-medium", sla.color)}>{sla.label}</Badge>
-      </TableCell>
 
-      {/* Next Action */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        {lead.next_action_date ? (
-          <div className={cn("text-xs", isOverdue && "text-red-600 font-semibold")}>
-            <div className="flex items-center gap-1 font-medium">
-              {lead.next_action_type === 'call' && <Phone className="h-3 w-3" />}
-              {lead.next_action_type === 'email' && <Mail className="h-3 w-3" />}
-              {lead.next_action_type === 'meeting' && <User className="h-3 w-3" />}
-              {lead.next_action_type === 'sms' && <MessageSquare className="h-3 w-3" />}
-              {getNextActionLabel()}
-            </div>
-            <div className="text-muted-foreground">
-              {format(new Date(lead.next_action_date), 'MMM d, HH:mm')}
-            </div>
-          </div>
-        ) : (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs w-full">
-                <CalendarIcon className="h-3 w-3 mr-1" />Schedule
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-3">
-              <div className="space-y-3">
-                <Select value={followUpType} onValueChange={setFollowUpType}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="call">📞 Call</SelectItem>
-                    <SelectItem value="email">✉️ Email</SelectItem>
-                    <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
-                    <SelectItem value="sms">📱 SMS</SelectItem>
-                    <SelectItem value="quote">📄 Send quote</SelectItem>
-                    <SelectItem value="meeting">👤 Meeting</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Calendar mode="single" selected={followUpDate} onSelect={setFollowUpDate} />
-                <Button 
-                  size="sm" 
-                  className="w-full"
-                  disabled={!followUpDate}
-                  onClick={() => {
-                    if (followUpDate) {
-                      onScheduleFollowUp(followUpType, followUpDate.toISOString());
-                      setFollowUpDate(undefined);
-                    }
-                  }}
-                >
-                  Schedule
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-      </TableCell>
-
-      {/* Plan */}
-      <TableCell>
-        {lead.plan_name || lead.plan_interest ? (
-          <Badge variant="secondary" className="text-xs font-normal truncate max-w-[110px]">
-            {lead.plan_name || lead.plan_interest}
-            {lead.payment_type && <span className="ml-1 opacity-70 capitalize">• {lead.payment_type}</span>}
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-xs text-muted-foreground">Quote requested</Badge>
-        )}
-      </TableCell>
-
-      {/* Step Reached */}
-      <TableCell>
-        {lead.step_abandoned ? (
-          <Badge 
-            variant="outline" 
-            className={cn(
-              "text-xs font-medium",
-              lead.step_abandoned === 1 && "bg-red-50 text-red-700 border-red-200",
-              lead.step_abandoned === 2 && "bg-orange-50 text-orange-700 border-orange-200",
-              lead.step_abandoned === 3 && "bg-yellow-50 text-yellow-700 border-yellow-200",
-              lead.step_abandoned === 4 && "bg-blue-50 text-blue-700 border-blue-200"
-            )}
-          >
-            Step {lead.step_abandoned}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-
-      {/* Mileage */}
-      <TableCell className="text-right">
-        {lead.mileage ? (
-          <span className="text-xs font-medium">{formatMileageTier(lead.mileage)}</span>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-
-      {/* Tags */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-wrap gap-1 items-center max-w-[130px]">
-          {(lead.tags || []).slice(0, 2).map((tag) => (
-            <Badge 
-              key={tag.id}
-              style={{ backgroundColor: tag.color }}
-              className="text-[10px] px-1.5 py-0 text-white flex items-center gap-0.5"
-            >
-              {tag.name}
-              {!lead.is_from_abandoned_cart && (
-                <X 
-                  className="h-2.5 w-2.5 cursor-pointer hover:opacity-75" 
-                  onClick={() => onRemoveTag(tag.id)}
-                />
-              )}
-            </Badge>
-          ))}
-          {(lead.tags || []).length > 2 && (
-            <Badge variant="outline" className="text-[10px] px-1">+{(lead.tags || []).length - 2}</Badge>
-          )}
-          {!lead.is_from_abandoned_cart && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-5 w-5">
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-40 p-2">
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {tags.filter(t => !(lead.tags || []).some(lt => lt.id === t.id)).map((tag) => (
-                    <Button
-                      key={tag.id}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start text-xs h-7"
-                      onClick={() => onAddTag(tag.id)}
-                    >
-                      <span 
-                        className="w-2 h-2 rounded-full mr-2" 
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      {tag.name}
-                    </Button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
-        </div>
-      </TableCell>
 
       {/* Last Activity */}
       <TableCell>
