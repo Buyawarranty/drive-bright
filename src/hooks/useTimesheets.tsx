@@ -160,7 +160,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
     } catch (error) {
       console.error('Error fetching deals:', error);
     }
-  }, [session?.user?.id, startOfMonth.toISOString(), endOfMonth.toISOString()]);
+  }, [effectiveUserId, startOfMonth.toISOString(), endOfMonth.toISOString()]);
 
   const fetchCommissions = useCallback(async () => {
     if (!session?.user?.id) return;
