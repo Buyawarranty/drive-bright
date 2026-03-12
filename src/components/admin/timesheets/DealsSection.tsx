@@ -68,6 +68,7 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: D
   const [proofType, setProofType] = useState('');
   const [comment, setComment] = useState('');
   const [assignedCustomers, setAssignedCustomers] = useState<AssignedCustomer[]>([]);
+  const [commissionClaims, setCommissionClaims] = useState<CommissionClaimDeal[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
 
   // Found customer from import search
