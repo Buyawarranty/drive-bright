@@ -249,7 +249,7 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
 
       {/* Status Tabs - No "All" tab for sales agents, they only see their assigned leads */}
       <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-        <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50">
+        <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50 border-2 border-border rounded-xl">
           {leadCounts.urgent_callback > 0 && (
             <TabsTrigger value="urgent_callback" className="relative data-[state=active]:bg-white">
               <Bell className="h-3.5 w-3.5 mr-1 text-orange-500" />
@@ -358,7 +358,7 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
       </div>
 
       {/* Leads Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-2 border-border">
         <CardContent className="p-0">
           {/* Control Bar - Simplified for sales agents (no bulk actions) */}
           <div className="sticky top-0 z-20 bg-background border-b px-4 py-3 flex items-center justify-between gap-4">

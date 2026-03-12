@@ -305,7 +305,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       )}
 
       {/* All My Leads with Delete */}
-      <Card>
+      <Card className="border-2 border-border">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg">All My Leads</CardTitle>
@@ -371,7 +371,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       </Card>
 
       {/* Scoreboard - Always show */}
-      <Card>
+      <Card className="border-2 border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Trophy className="h-5 w-5 text-orange-500" />
@@ -388,7 +388,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
           {teamStats && teamStats.leaderboard.length > 0 ? (
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="border-b-2 border-border">
                   <TableHead className="w-[50px]">#</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>

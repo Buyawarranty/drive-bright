@@ -90,7 +90,7 @@ export const ManagerDashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           <Select value={period} onValueChange={(v) => setPeriod(v as QuickPeriod)}>
-            <SelectTrigger className="w-[160px] h-9">
+            <SelectTrigger className="w-[160px] h-9 border-2 border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -104,7 +104,7 @@ export const ManagerDashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" />
           <Select value={agentFilter} onValueChange={setAgentFilter}>
-            <SelectTrigger className="w-[200px] h-9">
+            <SelectTrigger className="w-[200px] h-9 border-2 border-border">
               <SelectValue placeholder="All Agents" />
             </SelectTrigger>
             <SelectContent>
@@ -285,7 +285,7 @@ export const ManagerDashboard: React.FC = () => {
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="border-b-2 border-border">
                   <TableHead className="w-[50px]">#</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>
@@ -411,7 +411,7 @@ export const ManagerDashboard: React.FC = () => {
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-b-2 border-border">
                 <TableHead>Agent</TableHead>
                 <TableHead className="text-right">Calls</TableHead>
                 <TableHead className="text-right">Contacts</TableHead>
