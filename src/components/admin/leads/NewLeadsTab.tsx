@@ -647,7 +647,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLeadCounts={agentLeadCounts}
           />
           
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
               {/* Sticky Control Bar */}
               <LeadsTableControlBar

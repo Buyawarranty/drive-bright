@@ -334,7 +334,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         )}
 
         {/* Separator */}
-        <div className="h-5 w-px bg-border/60" />
+        <div className="h-5 w-px bg-border" />
 
         {/* Quick date buttons */}
         <div className="flex items-center gap-0.5">
