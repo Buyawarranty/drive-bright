@@ -40,6 +40,27 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No email addresses provided");
     }
 
+    // Filter out unsubscribed/blocked emails
+    const { data: blockedEmails } = await supabaseClient
+      .from('email_unsubscribes')
+      .select('email')
+      .in('email', emails.map((e: string) => e.trim().toLowerCase()));
+
+    const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
+    const filteredEmails = emails.filter((e: string) => !blockedSet.has(e.trim().toLowerCase()));
+    
+    if (blockedSet.size > 0) {
+      console.log(`Filtered out ${blockedSet.size} blocked/unsubscribed emails`);
+    }
+
+    if (filteredEmails.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: "All recipients are unsubscribed/blocked",
+        stats: { total_emails: emails.length, blocked_emails: blockedSet.size, successful_emails: 0, failed_emails: 0 }
+      }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
     if (!subject || !content) {
       throw new Error("Subject and content are required");
     }
@@ -51,8 +72,8 @@ const handler = async (req: Request): Promise<Response> => {
     const batchSize = 50; // Resend allows up to 50 recipients per request
     const results = [];
 
-    for (let i = 0; i < emails.length; i += batchSize) {
-      const batch = emails.slice(i, i + batchSize);
+    for (let i = 0; i < filteredEmails.length; i += batchSize) {
+      const batch = filteredEmails.slice(i, i + batchSize);
       
       console.log(`Sending batch ${Math.floor(i/batchSize) + 1}: ${batch.length} emails`);
       
@@ -119,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Add a small delay between batches to be respectful of rate limits
-      if (i + batchSize < emails.length) {
+      if (i + batchSize < filteredEmails.length) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
@@ -127,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
     const successfulBatches = results.filter(r => r.success).length;
     const totalSuccessful = results.filter(r => r.success).reduce((sum, r) => sum + r.count, 0);
 
-    console.log(`Marketing email campaign completed: ${successfulBatches}/${results.length} batches successful, ${totalSuccessful}/${emails.length} emails sent`);
+    console.log(`Marketing email campaign completed: ${successfulBatches}/${results.length} batches successful, ${totalSuccessful}/${filteredEmails.length} emails sent (${blockedSet.size} blocked)`);
 
     // Update campaign status if campaignId provided
     if (campaignId) {

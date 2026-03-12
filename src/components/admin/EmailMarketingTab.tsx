@@ -12,7 +12,7 @@ import {
   Mail, Users, TrendingUp, Calendar, Brain, History, 
   Shield, Zap, Paperclip, Bell, TestTube, Send, Download,
   Search, RefreshCw, CheckCircle, XCircle, Clock, BarChart3,
-  Tag, Filter, Settings, Play, Pause, Eye, Edit
+  Tag, Filter, Settings, Play, Pause, Eye, Edit, Ban
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -23,9 +23,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { AIEmailSuggestions } from './email/AIEmailSuggestions';
+import { EmailBlocklistView } from './email/EmailBlocklistView';
 
 const EmailMarketingTab = () => {
-  const [activeView, setActiveView] = useState<'overview' | 'campaigns' | 'subscribers' | 'analytics' | 'history' | 'gdpr' | 'automation'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'campaigns' | 'subscribers' | 'analytics' | 'history' | 'gdpr' | 'automation' | 'blocklist'>('overview');
   const [loading, setLoading] = useState(false);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
@@ -1142,6 +1143,14 @@ const EmailMarketingTab = () => {
             GDPR
           </Button>
           <Button
+            variant={activeView === 'blocklist' ? 'default' : 'ghost'}
+            onClick={() => setActiveView('blocklist')}
+            className="whitespace-nowrap"
+          >
+            <Ban className="h-4 w-4 mr-2" />
+            Blocklist
+          </Button>
+          <Button
             variant={activeView === 'automation' ? 'default' : 'ghost'}
             onClick={() => setActiveView('automation')}
             className="whitespace-nowrap"
@@ -1160,6 +1169,7 @@ const EmailMarketingTab = () => {
         {activeView === 'analytics' && <AnalyticsView />}
         {activeView === 'history' && <HistoryView />}
         {activeView === 'gdpr' && <GDPRView />}
+        {activeView === 'blocklist' && <EmailBlocklistView />}
         {activeView === 'automation' && <AutomationView />}
       </div>
     </div>

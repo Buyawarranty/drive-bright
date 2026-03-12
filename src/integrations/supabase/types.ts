@@ -2875,6 +2875,42 @@ export type Database = {
           },
         ]
       }
+      email_unsubscribes: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          email: string
+          id: string
+          reason: string | null
+          source: string | null
+          unsubscribed_by: string | null
+          unsubscribed_by_name: string | null
+          vehicle_reg: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          email: string
+          id?: string
+          reason?: string | null
+          source?: string | null
+          unsubscribed_by?: string | null
+          unsubscribed_by_name?: string | null
+          vehicle_reg?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          email?: string
+          id?: string
+          reason?: string | null
+          source?: string | null
+          unsubscribed_by?: string | null
+          unsubscribed_by_name?: string | null
+          vehicle_reg?: string | null
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           brand_logo_url: string | null

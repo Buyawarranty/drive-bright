@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { EmailBlockButton } from '../email/EmailBlockButton';
 import { Lead } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -206,6 +207,17 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 <Printer className="h-4 w-4 mr-1.5" />
                 Print Letter
               </Button>
+              
+              {/* Block Marketing Emails */}
+              <div onClick={(e) => e.stopPropagation()}>
+                <EmailBlockButton
+                  email={lead.email}
+                  customerName={displayName || undefined}
+                  vehicleReg={lead.vehicle_reg || undefined}
+                  source="lead"
+                  size="sm"
+                />
+              </div>
 
               {/* Remind Me Button */}
               <div onClick={(e) => e.stopPropagation()}>
