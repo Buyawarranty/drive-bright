@@ -96,7 +96,7 @@ export function useTimesheets(month?: Date, viewingUserId?: string) {
   const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
   const fetchTimesheets = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!effectiveUserId) return;
     
     setLoading(true);
     try {
