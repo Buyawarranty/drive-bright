@@ -699,8 +699,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <ManagerDashboard />
       )}
       
-      {/* Agents View - Admin only */}
-      {isAdmin && activeView === 'agents-view' && (
+      {/* Agents View - Sales Lead & Super Admin only */}
+      {(userRole === 'sales_lead' || userRole === 'super_admin') && activeView === 'agents-view' && (
         <AgentsLeadsView 
           leads={leads}
           salesUsers={salesUsers}
