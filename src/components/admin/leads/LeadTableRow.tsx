@@ -661,10 +661,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </div>
       </TableCell>
 
-      {/* Quote Sent */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <QuoteSentCell quotes={sentQuotes || []} leadEmail={lead.email} />
-      </TableCell>
 
       {/* Reg Plate */}
       <TableCell>
