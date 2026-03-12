@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -184,78 +184,55 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className={orphanedLeads.length > 0 ? 'border-amber-300 bg-amber-50/30' : 'border-green-300 bg-green-50/30'}>
+      <div className={cn(
+        "rounded-lg border-2 overflow-hidden",
+        orphanedLeads.length > 0 ? 'border-amber-400 bg-amber-50/40' : 'border-green-400 bg-green-50/40'
+      )}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/20 transition-colors pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                {orphanedLeads.length > 0 ? (
-                  <>
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
-                    <span>Recovered Leads</span>
-                    <Badge variant="destructive" className="ml-1">{orphanedLeads.length}</Badge>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span>Recovered Leads — All Synced</span>
-                  </>
-                )}
-                {rejectedLeads.length > 0 && (
-                  <Badge variant="outline" className="ml-1 text-muted-foreground">{rejectedLeads.length} rejected</Badge>
-                )}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                {lastSyncedAt && (
-                  <span className="text-xs text-muted-foreground">
-                    Last synced: {format(new Date(lastSyncedAt), 'HH:mm')}
-                  </span>
-                )}
-                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
+          <div className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-muted/20 transition-colors">
+            <div className="flex items-center gap-2">
+              {orphanedLeads.length > 0 ? (
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              )}
+              <span className="text-sm font-semibold">
+                {orphanedLeads.length > 0 ? 'Recovered Leads' : 'Recovered Leads — All Synced'}
+              </span>
+              {orphanedLeads.length > 0 && (
+                <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">{orphanedLeads.length}</Badge>
+              )}
+              {rejectedLeads.length > 0 && (
+                <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground">{rejectedLeads.length} rejected</Badge>
+              )}
             </div>
-            {orphanedLeads.length > 0 && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {orphanedLeads.length} lead{orphanedLeads.length > 1 ? 's' : ''} found in backup but missing from sales pipeline. Sync to recover.
-              </p>
-            )}
-          </CardHeader>
+            <div className="flex items-center gap-2">
+              {orphanedLeads.length > 0 && (
+                <Button
+                  onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
+                  disabled={syncing}
+                  size="sm"
+                  className="h-6 px-2 text-[10px] gap-1"
+                >
+                  {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
+                  {syncing ? 'Syncing...' : 'Recover'}
+                </Button>
+              )}
+              {lastSyncedAt && (
+                <span className="text-[10px] text-muted-foreground">
+                  Synced {format(new Date(lastSyncedAt), 'HH:mm')}
+                </span>
+              )}
+              {isOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+            </div>
+          </div>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="pt-0 space-y-6">
+          <div className="px-3 pb-3 pt-0 space-y-4 border-t border-border/50">
             {/* Orphaned leads table */}
             {orphanedLeads.length > 0 && (
               <>
-                <div className="flex items-center gap-3 mb-4">
-                  <Button
-                    onClick={handleSyncToSales}
-                    disabled={syncing}
-                    className="gap-2"
-                    size="sm"
-                  >
-                    {syncing ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        Syncing...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRightCircle className="h-4 w-4" />
-                        Recover {orphanedLeads.length} Lead{orphanedLeads.length > 1 ? 's' : ''} to Sales
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={fetchOrphanedLeads}
-                    className="gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Refresh
-                  </Button>
-                </div>
 
                 <LeadTable
                   leads={orphanedLeads}
@@ -363,9 +340,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
                 </div>
               </Collapsible>
             )}
-          </CardContent>
+          </div>
         </CollapsibleContent>
-      </Card>
+      </div>
     </Collapsible>
   );
 };

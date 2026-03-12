@@ -234,7 +234,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     <div className="space-y-3">
       {/* Row 1: Status pills — compact, color-coded, scannable */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="h-auto p-1 bg-muted/40 border border-border/50 rounded-xl flex flex-wrap gap-0.5">
+        <TabsList className="h-auto p-1 bg-muted/50 border-2 border-border rounded-xl flex flex-wrap gap-0.5">
           {STATUS_PILLS.map(pill => {
             const count = getCount(pill);
             const isActive = effectiveTabValue === pill.value;
@@ -275,7 +275,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             placeholder="Name, email, phone, reg..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-8 pl-8 pr-8 text-sm bg-background border-border/60 rounded-lg"
+            className="h-8 pl-8 pr-8 text-sm bg-background border-2 border-border rounded-lg"
           />
           {searchTerm && (
             <button 
@@ -290,7 +290,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Assignment filter */}
         {onAssignmentFilterChange && (
           <Select value={assignmentFilter} onValueChange={(v) => onAssignmentFilterChange(v as AssignmentFilter)}>
-            <SelectTrigger className="w-[150px] h-8 text-xs rounded-lg border-border/60">
+            <SelectTrigger className="w-[150px] h-8 text-xs rounded-lg border-2 border-border">
               <Filter className="h-3 w-3 mr-1.5 text-muted-foreground" />
               <SelectValue placeholder="All Leads" />
             </SelectTrigger>
@@ -314,7 +314,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Agent filter */}
         {onAgentFilterChange && salesUsers && salesUsers.length > 0 && (
           <Select value={agentFilter} onValueChange={(v) => onAgentFilterChange(v)}>
-            <SelectTrigger className="w-[160px] h-8 text-xs rounded-lg border-border/60">
+            <SelectTrigger className="w-[160px] h-8 text-xs rounded-lg border-2 border-border">
               <Users className="h-3 w-3 mr-1.5 text-muted-foreground" />
               <SelectValue placeholder="All Agents" />
             </SelectTrigger>
@@ -334,7 +334,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         )}
 
         {/* Separator */}
-        <div className="h-5 w-px bg-border/60" />
+        <div className="h-5 w-px bg-border" />
 
         {/* Quick date buttons */}
         <div className="flex items-center gap-0.5">

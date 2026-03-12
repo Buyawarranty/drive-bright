@@ -72,11 +72,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, []);
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-md border-2 border-border overflow-x-auto">
       <TooltipProvider>
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/20 border-b-2 border-border/40">
+            <TableRow className="bg-muted/30 border-b-2 border-border">
               <TableHead className="w-[36px] py-2">
                 {/* Checkbox moved to control bar */}
               </TableHead>
