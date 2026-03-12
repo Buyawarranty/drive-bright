@@ -247,6 +247,7 @@ export const useScoreboardData = (): ScoreboardData => {
       .channel('scoreboard-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'commission_claims' }, () => fetchData())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
