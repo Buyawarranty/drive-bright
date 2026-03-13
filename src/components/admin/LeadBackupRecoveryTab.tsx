@@ -873,7 +873,7 @@ const ContactTable: React.FC<{
   loading: boolean;
   isFakeIndicator: (c: BackupContact) => boolean;
   getFakeReason?: (c: BackupContact) => string | null;
-}> = ({ contacts, loading, isFakeIndicator }) => {
+}> = ({ contacts, loading, isFakeIndicator, getFakeReason }) => {
   const [page, setPage] = useState(0);
   const pageSize = 50;
   const totalPages = Math.ceil(contacts.length / pageSize);
