@@ -1180,6 +1180,16 @@ const NissanWarrantyLanding: React.FC = () => {
                   </div>
                 </div>
               </div>
+              {/* Image shown below text on mobile */}
+              <div className="flex lg:hidden justify-center mt-2">
+                <OptimizedImage 
+                  src={nissanLeafWarranty}
+                  alt="Red Nissan Juke - High mileage Nissan extended warranty coverage UK"
+                  className="w-64 sm:w-80 h-auto object-contain"
+                  width={900}
+                  height={550}
+                />
+              </div>
             </div>
             
             {/* CTA Button */}
