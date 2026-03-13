@@ -465,17 +465,32 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
         />
-        <Select value={leadTypeFilter} onValueChange={(v) => setLeadTypeFilter(v as LeadTypeFilter)}>
-          <SelectTrigger className="w-[160px] h-9">
-            <Filter className="h-3.5 w-3.5 mr-2 opacity-50" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Leads ({filteredStats.total})</SelectItem>
-            <SelectItem value="real">✅ Real Only ({filteredStats.real})</SelectItem>
-            <SelectItem value="fake">🚫 Fake Only ({filteredStats.fake})</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1 border-2 border-border rounded-lg p-1">
+          <Button
+            variant={leadTypeFilter === 'all' ? 'default' : 'ghost'}
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => setLeadTypeFilter('all')}
+          >
+            All ({filteredStats.total.toLocaleString()})
+          </Button>
+          <Button
+            variant={leadTypeFilter === 'real' ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 text-xs ${leadTypeFilter === 'real' ? 'bg-green-600 hover:bg-green-700' : 'text-green-700 hover:bg-green-50'}`}
+            onClick={() => setLeadTypeFilter('real')}
+          >
+            ✅ Real ({filteredStats.real.toLocaleString()})
+          </Button>
+          <Button
+            variant={leadTypeFilter === 'fake' ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 text-xs ${leadTypeFilter === 'fake' ? 'bg-red-600 hover:bg-red-700' : 'text-red-700 hover:bg-red-50'}`}
+            onClick={() => setLeadTypeFilter('fake')}
+          >
+            🚫 Fake ({filteredStats.fake.toLocaleString()})
+          </Button>
+        </div>
       </div>
 
       {/* Missing from Sales alert banner */}
