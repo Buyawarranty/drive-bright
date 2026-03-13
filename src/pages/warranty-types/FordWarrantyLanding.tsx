@@ -579,7 +579,7 @@ const FordWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger, Mach-E from £24/mo" />
+        <meta property="og:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger, Mach-E from £19/mo" />
         <meta property="og:description" content="Comprehensive Ford warranty coverage for Fiesta, Focus, Kuga, Puma, Ranger, Transit and Mustang Mach-E. EcoBoost engines, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/ford-warranty/" />
         <meta property="og:type" content="website" />
