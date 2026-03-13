@@ -705,7 +705,7 @@ const NissanWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={nissanQashqaiHero}
                     alt="Nissan extended warranty UK - Professional Nissan warranty coverage with Miles the Panda"
-                    className="w-full h-auto"
+                    className="w-full max-w-sm sm:max-w-md lg:max-w-none mx-auto h-auto"
                     priority={true}
                     width={651}
                     height={434}
