@@ -105,16 +105,22 @@ export const LeadBackupRecoveryTab: React.FC = () => {
 
   // Known fake indicators
   const isFakeIndicator = (contact: BackupContact): boolean => {
+    return getFakeReason(contact) !== null;
+  };
+
+  // Returns the reason a contact is flagged as fake, or null if real
+  const getFakeReason = (contact: BackupContact): string | null => {
     const fakeStatuses = ['fake_lead', 'fake'];
     const testNames = ['kamran', 'prajwal', 'praj', 'test'];
     const testPhones = ['07960111131', '07000000000', '07777777777'];
     
-    if (fakeStatuses.includes(contact.status?.toLowerCase() || '')) return true;
+    if (fakeStatuses.includes(contact.status?.toLowerCase() || '')) return 'Manually marked as fake by admin';
     const name = (contact.first_name || contact.full_name || '').toLowerCase();
-    if (testNames.some(t => name.includes(t))) return true;
+    const matchedName = testNames.find(t => name.includes(t));
+    if (matchedName) return `Name matches test pattern: "${matchedName}"`;
     const phone = (contact.phone || '').replace(/\s/g, '');
-    if (testPhones.includes(phone)) return true;
-    return false;
+    if (testPhones.includes(phone)) return `Phone matches test number: ${phone}`;
+    return null;
   };
 
   const fetchLastRecovery = useCallback(async () => {
@@ -459,17 +465,32 @@ export const LeadBackupRecoveryTab: React.FC = () => {
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
         />
-        <Select value={leadTypeFilter} onValueChange={(v) => setLeadTypeFilter(v as LeadTypeFilter)}>
-          <SelectTrigger className="w-[160px] h-9">
-            <Filter className="h-3.5 w-3.5 mr-2 opacity-50" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Leads ({filteredStats.total})</SelectItem>
-            <SelectItem value="real">✅ Real Only ({filteredStats.real})</SelectItem>
-            <SelectItem value="fake">🚫 Fake Only ({filteredStats.fake})</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1 border-2 border-border rounded-lg p-1">
+          <Button
+            variant={leadTypeFilter === 'all' ? 'default' : 'ghost'}
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => setLeadTypeFilter('all')}
+          >
+            All ({filteredStats.total.toLocaleString()})
+          </Button>
+          <Button
+            variant={leadTypeFilter === 'real' ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 text-xs ${leadTypeFilter === 'real' ? 'bg-green-600 hover:bg-green-700' : 'text-green-700 hover:bg-green-50'}`}
+            onClick={() => setLeadTypeFilter('real')}
+          >
+            ✅ Real ({filteredStats.real.toLocaleString()})
+          </Button>
+          <Button
+            variant={leadTypeFilter === 'fake' ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 text-xs ${leadTypeFilter === 'fake' ? 'bg-red-600 hover:bg-red-700' : 'text-red-700 hover:bg-red-50'}`}
+            onClick={() => setLeadTypeFilter('fake')}
+          >
+            🚫 Fake ({filteredStats.fake.toLocaleString()})
+          </Button>
+        </div>
       </div>
 
       {/* Missing from Sales alert banner */}
@@ -594,7 +615,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
 
         <TabsContent value="all" className="mt-4">
-          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} />
+          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} getFakeReason={getFakeReason} />
         </TabsContent>
 
         <TabsContent value="missing" className="mt-4">
@@ -606,6 +627,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
             })}
             loading={loading}
             isFakeIndicator={isFakeIndicator}
+            getFakeReason={getFakeReason}
           />
         </TabsContent>
 
@@ -851,7 +873,8 @@ const ContactTable: React.FC<{
   contacts: BackupContact[];
   loading: boolean;
   isFakeIndicator: (c: BackupContact) => boolean;
-}> = ({ contacts, loading, isFakeIndicator }) => {
+  getFakeReason?: (c: BackupContact) => string | null;
+}> = ({ contacts, loading, isFakeIndicator, getFakeReason }) => {
   const [page, setPage] = useState(0);
   const pageSize = 50;
   const totalPages = Math.ceil(contacts.length / pageSize);
@@ -900,7 +923,14 @@ const ContactTable: React.FC<{
                   <TableRow key={`${contact.source}-${contact.id}`} className={isFake ? 'bg-red-50/30' : ''}>
                     <TableCell>
                       {isFake ? (
-                        <Badge variant="destructive" className="text-xs">Fake</Badge>
+                        <div className="flex flex-col gap-0.5">
+                          <Badge variant="destructive" className="text-xs">Fake</Badge>
+                          {getFakeReason && (
+                            <span className="text-[10px] text-red-500 max-w-[140px] leading-tight">
+                              {getFakeReason(contact)}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Real</Badge>
                       )}
