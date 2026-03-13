@@ -252,7 +252,9 @@ export const useLeads = () => {
 
       // Apply filter to sales leads client-side (avoids a second full fetch for dedup)
       let salesLeadsData = allSalesLeadsData || [];
-      if (filter === 'all') {
+      if (filter === 'all_leads') {
+        // Show ALL leads — no exclusions
+      } else if (filter === 'all' || filter === 'live') {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
       } else if (filter === 'high_priority') {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.priority === 'high' || lead.priority === 'urgent');
