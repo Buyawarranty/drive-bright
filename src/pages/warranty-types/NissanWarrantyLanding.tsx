@@ -1065,7 +1065,7 @@ const NissanWarrantyLanding: React.FC = () => {
                 <OptimizedImage 
                   src={nissanJukeWarranty}
                   alt="Nissan Qashqai SUV - Why Nissan owners choose Buy A Warranty for extended warranty cover"
-                  className="w-[400px] h-auto object-contain"
+                  className="w-[480px] h-auto object-contain"
                   width={800}
                   height={600}
                 />
