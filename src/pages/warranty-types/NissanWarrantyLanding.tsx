@@ -1064,10 +1064,10 @@ const NissanWarrantyLanding: React.FC = () => {
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
                   src={nissanJukeWarranty}
-                  alt="Miles the Panda with Nissan - Why Nissan owners choose us for extended warranty"
+                  alt="Nissan Qashqai SUV - Why Nissan owners choose Buy A Warranty for extended warranty cover"
                   className="w-[400px] h-auto object-contain"
-                  width={400}
-                  height={300}
+                  width={800}
+                  height={600}
                 />
               </div>
             </div>
@@ -1145,10 +1145,10 @@ const NissanWarrantyLanding: React.FC = () => {
               <div className="flex justify-center">
                 <OptimizedImage 
                   src={nissanLeafWarranty}
-                  alt="Nissan Leaf with BuyAWarranty branding - High mileage Nissan warranty coverage"
+                  alt="Red Nissan Juke - High mileage Nissan extended warranty coverage UK"
                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
-                  width={448}
-                  height={300}
+                  width={900}
+                  height={550}
                 />
               </div>
               {/* Text on RIGHT side */}
