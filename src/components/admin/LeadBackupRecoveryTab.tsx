@@ -861,19 +861,13 @@ const ContactTable: React.FC<{
         </Table>
       </div>
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, contacts.length)} of {contacts.length.toLocaleString()}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
-              Previous
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
-              Next
-            </Button>
-          </div>
-        </div>
+        <PaginationBar
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={contacts.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );
