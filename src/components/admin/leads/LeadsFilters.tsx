@@ -12,7 +12,7 @@ import { format, subDays, addDays, startOfDay, endOfDay, startOfMonth, endOfMont
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 
-export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
+export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
 
 interface SalesUser {
@@ -24,15 +24,17 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted';
-  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
   onMigrate: () => void;
   onExport: (format: 'csv' | 'xlsx') => void;
   leadCounts: {
+    all_leads: number;
     all: number;
+    live: number;
     total: number;
     new: number;
     contacted: number;
@@ -71,10 +73,11 @@ const STATUS_PILLS: {
   countKey: keyof LeadsFiltersProps['leadCounts'];
   isAssignment?: boolean;
 }[] = [
-  { value: 'all', label: 'All', colorClass: 'data-[state=active]:bg-foreground data-[state=active]:text-background', countKey: 'all' },
+  { value: 'all_leads', label: 'All Leads', colorClass: 'data-[state=active]:bg-foreground data-[state=active]:text-background', countKey: 'all_leads' },
+  { value: 'live', label: 'Live', icon: '🟢', colorClass: 'data-[state=active]:bg-emerald-700 data-[state=active]:text-white', countKey: 'live' },
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
   { value: 'new', label: 'New', colorClass: 'data-[state=active]:bg-blue-600 data-[state=active]:text-white', countKey: 'new' },
-  { value: 'awaiting_contact', label: 'Awaiting', colorClass: 'data-[state=active]:bg-amber-500 data-[state=active]:text-white', countKey: 'all', isAssignment: true },
+  { value: 'awaiting_contact', label: 'Awaiting', colorClass: 'data-[state=active]:bg-amber-500 data-[state=active]:text-white', countKey: 'all_leads', isAssignment: true },
   { value: 'contacted', label: 'Contacted', colorClass: 'data-[state=active]:bg-yellow-500 data-[state=active]:text-white', countKey: 'contacted' },
   { value: 'follow_up', label: 'Follow-up', colorClass: 'data-[state=active]:bg-purple-600 data-[state=active]:text-white', countKey: 'follow_up' },
   { value: 'quote_sent', label: 'Quoted', colorClass: 'data-[state=active]:bg-indigo-600 data-[state=active]:text-white', countKey: 'quote_sent' },
@@ -220,7 +223,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted');
+    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted');
   };
 
   const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
@@ -296,10 +299,10 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                All Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all}</Badge>
+                All Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all_leads}</Badge>
               </SelectItem>
               <SelectItem value="total">
-                Total <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{assignmentCounts?.total}</Badge>
+                Live <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-green-100">{leadCounts.live}</Badge>
               </SelectItem>
               <SelectItem value="awaiting_contact">
                 Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-amber-100">{assignmentCounts?.awaiting_contact}</Badge>

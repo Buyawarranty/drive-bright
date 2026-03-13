@@ -128,7 +128,7 @@ export const useLeads = () => {
   const initialLoadDoneRef = useRef(false);
   const initialLoadStartedRef = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all_leads');
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -252,7 +252,9 @@ export const useLeads = () => {
 
       // Apply filter to sales leads client-side (avoids a second full fetch for dedup)
       let salesLeadsData = allSalesLeadsData || [];
-      if (filter === 'all') {
+      if (filter === 'all_leads') {
+        // Show ALL leads — no exclusions
+      } else if (filter === 'all' || filter === 'live') {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
       } else if (filter === 'high_priority') {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.priority === 'high' || lead.priority === 'urgent');
@@ -419,7 +421,9 @@ export const useLeads = () => {
 
       // Filter cartsAsLeads to match the same filter applied to sales leads
       let filteredCartsAsLeads = cartsAsLeads;
-      if (filter === 'all') {
+      if (filter === 'all_leads') {
+        // Show ALL — no exclusions
+      } else if (filter === 'all' || filter === 'live') {
         filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
       } else if (filter === 'high_priority') {
         // Keep all carts for high priority (they don't have priority scores)
