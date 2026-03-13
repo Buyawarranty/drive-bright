@@ -844,7 +844,7 @@ const NissanWarrantyLanding: React.FC = () => {
 
             {/* Bottom CTA */}
             <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
+              <div className="bg-brand-deep-blue rounded-2xl p-5 sm:p-8 md:p-12 max-w-3xl mx-auto">
                 <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-4">
                   <div className="text-center">
                     <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Typical repair</p>
