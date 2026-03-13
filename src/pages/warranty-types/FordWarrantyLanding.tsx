@@ -1013,7 +1013,7 @@ const FordWarrantyLanding: React.FC = () => {
                 <OptimizedImage 
                   src={fordKugaWarranty}
                   alt="Ford Kuga SUV front view - Why Ford drivers choose Buy A Warranty for extended warranty cover"
-                  className="w-full max-w-[368px] h-auto object-contain"
+                  className="w-full max-w-[442px] h-auto object-contain"
                   width={800}
                   height={600}
                 />
@@ -1093,7 +1093,7 @@ const FordWarrantyLanding: React.FC = () => {
                 <OptimizedImage 
                   src={fordPumaHighMileage}
                   alt="Ford Focus hatchback and Ford Kuga SUV - High mileage Ford extended warranty coverage UK"
-                  className="w-full max-w-[442px] h-auto object-contain"
+                  className="w-full max-w-[530px] h-auto object-contain"
                   width={900}
                   height={550}
                 />
