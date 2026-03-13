@@ -922,7 +922,14 @@ const ContactTable: React.FC<{
                   <TableRow key={`${contact.source}-${contact.id}`} className={isFake ? 'bg-red-50/30' : ''}>
                     <TableCell>
                       {isFake ? (
-                        <Badge variant="destructive" className="text-xs">Fake</Badge>
+                        <div className="flex flex-col gap-0.5">
+                          <Badge variant="destructive" className="text-xs">Fake</Badge>
+                          {getFakeReason && (
+                            <span className="text-[10px] text-red-500 max-w-[140px] leading-tight">
+                              {getFakeReason(contact)}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Real</Badge>
                       )}
