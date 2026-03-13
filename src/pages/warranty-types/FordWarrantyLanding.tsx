@@ -164,7 +164,7 @@ const fordFAQs = [
   },
   {
     question: "How much does a Ford extended warranty cost in the UK?",
-    answer: "Extended Ford warranty prices typically start from £24 a month, depending on your Ford model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    answer: "Extended Ford warranty prices typically start from £19 a month, depending on your Ford model, mileage, and chosen claim limit. We offer plans from just 60p a day with flexible monthly or annual payment options."
   },
   {
     question: "Can I buy a Ford extended warranty after my original warranty has expired?",
