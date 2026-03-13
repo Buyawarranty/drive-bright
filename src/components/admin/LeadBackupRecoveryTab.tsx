@@ -431,8 +431,30 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Date Range + Lead Type Filter */}
-      <div className="flex items-center gap-3 flex-wrap">
+      {/* Date Range + Quick Buttons + Lead Type Filter */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button
+          variant={dateRange?.from && dateRange?.to && format(dateRange.from, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') && format(dateRange.to, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'default' : 'outline'}
+          size="sm"
+          className="h-9"
+          onClick={() => {
+            const today = new Date();
+            setDateRange({ from: today, to: today });
+          }}
+        >
+          Today
+        </Button>
+        <Button
+          variant={dateRange?.from && dateRange?.to && format(dateRange.from, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd') && format(dateRange.to, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'default' : 'outline'}
+          size="sm"
+          className="h-9"
+          onClick={() => {
+            const yesterday = subDays(new Date(), 1);
+            setDateRange({ from: yesterday, to: yesterday });
+          }}
+        >
+          Yesterday
+        </Button>
         <DateRangeFilter
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
