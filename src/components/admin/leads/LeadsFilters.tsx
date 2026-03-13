@@ -12,7 +12,7 @@ import { format, subDays, addDays, startOfDay, endOfDay, startOfMonth, endOfMont
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 
-export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
+export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
 
 interface SalesUser {
