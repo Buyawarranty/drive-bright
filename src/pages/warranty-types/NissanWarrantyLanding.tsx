@@ -1141,12 +1141,12 @@ const NissanWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              {/* Image on LEFT side */}
-              <div className="flex justify-center">
+              {/* Image on LEFT side - hidden on mobile, shown after text */}
+              <div className="hidden lg:flex justify-center">
                 <OptimizedImage 
                   src={nissanLeafWarranty}
                   alt="Red Nissan Juke - High mileage Nissan extended warranty coverage UK"
-                  className="w-80 sm:w-96 md:w-[28rem] lg:w-[33.6rem] h-auto object-contain"
+                  className="w-full max-w-[33.6rem] h-auto object-contain"
                   width={900}
                   height={550}
                 />
