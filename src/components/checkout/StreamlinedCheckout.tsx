@@ -10,6 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
+import { getStoredFbclid } from '@/utils/fbclidCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -911,7 +912,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             mileage: vehicleData.mileage || '',
             plan_name: planName || '',
             payment_type: paymentType || '',
-            step_abandoned: 4
+            step_abandoned: 4,
+            ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
           }
         });
       } catch (error) {

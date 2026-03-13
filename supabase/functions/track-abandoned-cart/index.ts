@@ -51,6 +51,9 @@ interface AbandonedCartData {
     lostKey?: boolean;
     consequential?: boolean;
   };
+  // Facebook/Google ad attribution
+  fbclid?: string;
+  gclid?: string;
 }
 
 async function triggerWhatsAppMessage(supabase: any, supabaseUrl: string, supabaseServiceKey: string, cartData: AbandonedCartData) {
@@ -266,7 +269,9 @@ const handler = async (req: Request): Promise<Response> => {
           labour_rate: cartData.labour_rate,
           boost_addon: cartData.boost_addon,
           address: cartData.address,
-          protection_addons: cartData.protection_addons
+          protection_addons: cartData.protection_addons,
+          ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
+          ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
         },
         updated_at: new Date().toISOString()
       };
@@ -309,7 +314,9 @@ const handler = async (req: Request): Promise<Response> => {
             labour_rate: cartData.labour_rate,
             boost_addon: cartData.boost_addon,
             address: cartData.address,
-            protection_addons: cartData.protection_addons
+            protection_addons: cartData.protection_addons,
+            ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
+            ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
           }
         }]);
 
