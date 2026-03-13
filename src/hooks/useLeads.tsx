@@ -421,7 +421,9 @@ export const useLeads = () => {
 
       // Filter cartsAsLeads to match the same filter applied to sales leads
       let filteredCartsAsLeads = cartsAsLeads;
-      if (filter === 'all') {
+      if (filter === 'all_leads') {
+        // Show ALL — no exclusions
+      } else if (filter === 'all' || filter === 'live') {
         filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
       } else if (filter === 'high_priority') {
         // Keep all carts for high priority (they don't have priority scores)

@@ -299,10 +299,10 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                All Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all}</Badge>
+                All Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all_leads}</Badge>
               </SelectItem>
               <SelectItem value="total">
-                Total <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{assignmentCounts?.total}</Badge>
+                Live <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-green-100">{leadCounts.live}</Badge>
               </SelectItem>
               <SelectItem value="awaiting_contact">
                 Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-amber-100">{assignmentCounts?.awaiting_contact}</Badge>
