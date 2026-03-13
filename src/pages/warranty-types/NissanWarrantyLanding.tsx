@@ -661,7 +661,7 @@ const NissanWarrantyLanding: React.FC = () => {
                 </div>
 
                 {/* Quote Form */}
-                <div className="mx-auto lg:mx-0 space-y-4">
+                <div className="max-w-md mx-auto lg:mx-0 space-y-4">
                   {/* Registration Input */}
                   <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black">
                     <div className="bg-blue-600 text-white font-bold px-3 sm:px-4 py-3 flex items-center justify-center min-w-[60px] sm:min-w-[80px]">
@@ -705,7 +705,7 @@ const NissanWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={nissanQashqaiHero}
                     alt="Nissan extended warranty UK - Professional Nissan warranty coverage with Miles the Panda"
-                    className="w-full h-auto"
+                    className="w-full max-w-sm sm:max-w-md lg:max-w-none mx-auto h-auto"
                     priority={true}
                     width={651}
                     height={434}
@@ -844,8 +844,8 @@ const NissanWarrantyLanding: React.FC = () => {
 
             {/* Bottom CTA */}
             <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-4">
+              <div className="bg-brand-deep-blue rounded-2xl p-5 sm:p-8 md:p-12 max-w-3xl mx-auto">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8 mb-4">
                   <div className="text-center">
                     <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Typical repair</p>
                     <p className="text-2xl md:text-4xl font-bold text-red-400 line-through decoration-2">£2,200</p>
@@ -1141,12 +1141,12 @@ const NissanWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              {/* Image on LEFT side */}
-              <div className="flex justify-center">
+              {/* Image on LEFT side - hidden on mobile, shown after text */}
+              <div className="hidden lg:flex justify-center">
                 <OptimizedImage 
                   src={nissanLeafWarranty}
                   alt="Red Nissan Juke - High mileage Nissan extended warranty coverage UK"
-                  className="w-80 sm:w-96 md:w-[28rem] lg:w-[33.6rem] h-auto object-contain"
+                  className="w-full max-w-[33.6rem] h-auto object-contain"
                   width={900}
                   height={550}
                 />
@@ -1179,6 +1179,16 @@ const NissanWarrantyLanding: React.FC = () => {
                     <span className="text-sm md:text-base text-gray-700">Unlimited claims value</span>
                   </div>
                 </div>
+              </div>
+              {/* Image shown below text on mobile */}
+              <div className="flex lg:hidden justify-center mt-2">
+                <OptimizedImage 
+                  src={nissanLeafWarranty}
+                  alt="Red Nissan Juke - High mileage Nissan extended warranty coverage UK"
+                  className="w-64 sm:w-80 h-auto object-contain"
+                  width={900}
+                  height={550}
+                />
               </div>
             </div>
             

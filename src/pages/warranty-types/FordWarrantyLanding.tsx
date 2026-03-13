@@ -696,7 +696,7 @@ const FordWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={fordFocusHero}
                     alt="Ford Focus ST front view - Ford extended warranty UK coverage for all Focus models"
-                    className="w-full max-w-md mx-auto h-auto object-contain"
+                    className="w-full max-w-sm sm:max-w-md lg:max-w-none mx-auto h-auto object-contain"
                     priority={true}
                     width={651}
                     height={500}
@@ -1089,7 +1089,8 @@ const FordWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              <div className="flex justify-center">
+              {/* Image - hidden on mobile, shown on desktop left */}
+              <div className="hidden lg:flex justify-center">
                 <OptimizedImage 
                   src={fordPumaHighMileage}
                   alt="Ford Focus hatchback and Ford Kuga SUV - High mileage Ford extended warranty coverage UK"
@@ -1125,6 +1126,16 @@ const FordWarrantyLanding: React.FC = () => {
                     <span className="text-sm md:text-base text-gray-700">Unlimited claims value</span>
                   </div>
                 </div>
+              </div>
+              {/* Image shown below text on mobile */}
+              <div className="flex lg:hidden justify-center mt-2">
+                <OptimizedImage 
+                  src={fordPumaHighMileage}
+                  alt="Ford Focus hatchback and Ford Kuga SUV - High mileage Ford extended warranty coverage UK"
+                  className="w-64 sm:w-80 h-auto object-contain"
+                  width={900}
+                  height={550}
+                />
               </div>
             </div>
             
