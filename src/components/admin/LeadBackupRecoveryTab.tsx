@@ -767,7 +767,87 @@ const Step2AttemptsSection: React.FC<{
   );
 };
 
-const ContactTable: React.FC<{
+// Reusable numbered pagination bar
+const PaginationBar: React.FC<{
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalPages, totalItems, pageSize, onPageChange }) => {
+  const startItem = currentPage * pageSize + 1;
+  const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
+
+  // Generate page numbers with ellipsis
+  const getPageNumbers = (): (number | '...')[] => {
+    const pages: (number | '...')[] = [];
+    const maxVisible = 7;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 0; i < totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    // Always show first page
+    pages.push(0);
+
+    const start = Math.max(1, currentPage - 1);
+    const end = Math.min(totalPages - 2, currentPage + 1);
+
+    if (start > 1) pages.push('...');
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages - 2) pages.push('...');
+
+    // Always show last page
+    pages.push(totalPages - 1);
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-between mt-4">
+      <div className="text-sm text-muted-foreground">
+        Showing <span className="font-medium text-foreground">{startItem.toLocaleString()}–{endItem.toLocaleString()}</span> of <span className="font-medium text-foreground">{totalItems.toLocaleString()}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.max(0, currentPage - 1))}
+          disabled={currentPage === 0}
+          className="h-8"
+        >
+          Previous
+        </Button>
+        {getPageNumbers().map((p, idx) =>
+          p === '...' ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-sm text-muted-foreground">…</span>
+          ) : (
+            <Button
+              key={p}
+              variant={currentPage === p ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onPageChange(p)}
+              className="h-8 w-8 p-0 text-xs"
+            >
+              {p + 1}
+            </Button>
+          )
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.min(totalPages - 1, currentPage + 1))}
+          disabled={currentPage >= totalPages - 1}
+          className="h-8"
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+
   contacts: BackupContact[];
   loading: boolean;
   isFakeIndicator: (c: BackupContact) => boolean;
