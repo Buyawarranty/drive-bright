@@ -847,7 +847,7 @@ const PaginationBar: React.FC<{
   );
 };
 
-
+const ContactTable: React.FC<{
   contacts: BackupContact[];
   loading: boolean;
   isFakeIndicator: (c: BackupContact) => boolean;
