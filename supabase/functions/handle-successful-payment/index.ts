@@ -400,6 +400,41 @@ serve(async (req) => {
       purchase_source: trackingData?.gclid ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : null))
     };
 
+    // Detect Facebook Ads attribution from abandoned cart metadata
+    let detectedAdSource: 'google' | 'facebook' | null = null;
+    if (trackingData?.gclid || metadata?.gclid) {
+      detectedAdSource = 'google';
+    } else {
+      // Check abandoned cart for fbclid / utm_source=facebook
+      try {
+        const { data: cartData } = await supabaseClient
+          .from('abandoned_carts')
+          .select('cart_metadata')
+          .ilike('email', userEmail)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (cartData?.cart_metadata) {
+          const meta = cartData.cart_metadata as Record<string, any>;
+          if (meta.fbclid) {
+            detectedAdSource = 'facebook';
+            // Also update purchase_source for Facebook attribution
+            customerInsertData.purchase_source = 'facebook_ads';
+          } else {
+            const utmSrc = (meta.utm_source || '').toLowerCase();
+            if (utmSrc === 'facebook' || utmSrc === 'fb' || utmSrc === 'ig') {
+              detectedAdSource = 'facebook';
+              customerInsertData.purchase_source = 'facebook_ads';
+            }
+          }
+        }
+      } catch (e) {
+        logStep("Warning: Failed to check cart metadata for ad source", e);
+      }
+    }
+    logStep("Ad source detection", { detectedAdSource });
+
     // Debug addon metadata parsing
     logStep("Addon metadata debug", {
       rawMetadata: metadata,
@@ -924,7 +959,7 @@ serve(async (req) => {
         await resend.emails.send({
           from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale: ${regPlate} - ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
+          subject: `New Sale${detectedAdSource === 'google' ? ' G' : detectedAdSource === 'facebook' ? ' F' : ''}: ${regPlate} - ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
           html: salesEmailHtml
         });
 
