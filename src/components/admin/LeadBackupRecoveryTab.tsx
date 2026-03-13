@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, RefreshCw, Search, Database, Shield, Users, Phone, Mail, User, Calendar, AlertTriangle, CheckCircle, Clock, Zap, Filter, XCircle } from 'lucide-react';
+import { Download, RefreshCw, Search, Database, Shield, Users, Phone, Mail, User, Calendar, AlertTriangle, CheckCircle, Clock, Zap, Filter, XCircle, RotateCcw } from 'lucide-react';
 import { format, subDays, startOfWeek, startOfMonth, endOfDay, startOfDay } from 'date-fns';
 import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
@@ -615,7 +616,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
 
         <TabsContent value="all" className="mt-4">
-          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} getFakeReason={getFakeReason} />
+          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} getFakeReason={getFakeReason} onRefresh={fetchAllContacts} />
         </TabsContent>
 
         <TabsContent value="missing" className="mt-4">
@@ -628,6 +629,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
             loading={loading}
             isFakeIndicator={isFakeIndicator}
             getFakeReason={getFakeReason}
+            onRefresh={fetchAllContacts}
           />
         </TabsContent>
 
@@ -874,8 +876,11 @@ const ContactTable: React.FC<{
   loading: boolean;
   isFakeIndicator: (c: BackupContact) => boolean;
   getFakeReason?: (c: BackupContact) => string | null;
-}> = ({ contacts, loading, isFakeIndicator, getFakeReason }) => {
+  onRefresh?: () => void;
+}> = ({ contacts, loading, isFakeIndicator, getFakeReason, onRefresh }) => {
   const [page, setPage] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [restoring, setRestoring] = useState(false);
   const pageSize = 50;
   const totalPages = Math.ceil(contacts.length / pageSize);
   const paged = contacts.slice(page * pageSize, (page + 1) * pageSize);
@@ -883,6 +888,60 @@ const ContactTable: React.FC<{
   useEffect(() => {
     setPage(0);
   }, [contacts.length]);
+
+  // Clear selection when filter changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [contacts]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paged.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paged.map(c => c.id)));
+    }
+  };
+
+  const handleRestoreToNew = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    setRestoring(true);
+    try {
+      // Update sales_leads status back to 'new'
+      const { error: salesError } = await supabase
+        .from('sales_leads')
+        .update({ status: 'new' })
+        .in('id', ids);
+
+      if (salesError) throw salesError;
+
+      // Also reset contact_status on abandoned_carts if they exist
+      const matchingContacts = contacts.filter(c => ids.includes(c.id));
+      const emails = matchingContacts.map(c => c.email?.toLowerCase()).filter(Boolean);
+      if (emails.length > 0) {
+        await supabase
+          .from('abandoned_carts')
+          .update({ contact_status: 'not_contacted' })
+          .in('email', emails);
+      }
+
+      toast.success(`Restored ${ids.length} lead${ids.length > 1 ? 's' : ''} back to New Leads`);
+      setSelectedIds(new Set());
+      onRefresh?.();
+    } catch (error) {
+      console.error('Restore error:', error);
+      toast.error('Failed to restore leads');
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -892,12 +951,47 @@ const ContactTable: React.FC<{
     );
   }
 
+  const selectedFakeCount = Array.from(selectedIds).filter(id => {
+    const c = contacts.find(ct => ct.id === id);
+    return c && isFakeIndicator(c);
+  }).length;
+
   return (
     <div>
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="mb-3 p-3 bg-blue-50 border-2 border-blue-200 rounded-lg flex items-center justify-between flex-wrap gap-2">
+          <span className="text-sm font-medium text-blue-800">
+            {selectedIds.size} lead{selectedIds.size > 1 ? 's' : ''} selected
+            {selectedFakeCount > 0 && ` (${selectedFakeCount} marked fake)`}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => handleRestoreToNew(Array.from(selectedIds))}
+              disabled={restoring}
+              className="bg-green-600 hover:bg-green-700 text-white gap-1"
+            >
+              <RotateCcw className={`h-3 w-3 ${restoring ? 'animate-spin' : ''}`} />
+              {restoring ? 'Restoring...' : 'Restore to New Leads'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              Clear
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={paged.length > 0 && selectedIds.size === paged.length}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
@@ -906,13 +1000,13 @@ const ContactTable: React.FC<{
               <TableHead>Source</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Marketing</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paged.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                   No contacts found
                 </TableCell>
               </TableRow>
@@ -921,6 +1015,12 @@ const ContactTable: React.FC<{
                 const isFake = isFakeIndicator(contact);
                 return (
                   <TableRow key={`${contact.source}-${contact.id}`} className={isFake ? 'bg-red-50/30' : ''}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(contact.id)}
+                        onCheckedChange={() => toggleSelect(contact.id)}
+                      />
+                    </TableCell>
                     <TableCell>
                       {isFake ? (
                         <div className="flex flex-col gap-0.5">
@@ -957,10 +1057,23 @@ const ContactTable: React.FC<{
                       {contact.created_at ? format(new Date(contact.created_at), 'MMM d, yyyy HH:mm') : '—'}
                     </TableCell>
                     <TableCell>
-                      {contact.in_marketing ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      {isFake && contact.source === 'sales_lead' ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs gap-1 border-green-300 text-green-700 hover:bg-green-50"
+                          onClick={() => handleRestoreToNew([contact.id])}
+                          disabled={restoring}
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Restore
+                        </Button>
                       ) : (
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        contact.in_marketing ? (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        )
                       )}
                     </TableCell>
                   </TableRow>
