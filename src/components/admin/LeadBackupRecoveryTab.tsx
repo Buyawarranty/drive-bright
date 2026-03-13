@@ -615,7 +615,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
 
         <TabsContent value="all" className="mt-4">
-          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} />
+          <ContactTable contacts={filteredContacts} loading={loading} isFakeIndicator={isFakeIndicator} getFakeReason={getFakeReason} />
         </TabsContent>
 
         <TabsContent value="missing" className="mt-4">
