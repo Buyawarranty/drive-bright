@@ -1089,7 +1089,8 @@ const FordWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              <div className="flex justify-center">
+              {/* Image - hidden on mobile, shown on desktop left */}
+              <div className="hidden lg:flex justify-center">
                 <OptimizedImage 
                   src={fordPumaHighMileage}
                   alt="Ford Focus hatchback and Ford Kuga SUV - High mileage Ford extended warranty coverage UK"
