@@ -591,7 +591,7 @@ const FordWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £24/mo" />
+        <meta name="twitter:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £19/mo" />
         <meta name="twitter:description" content="Protect your Ford Fiesta, Focus, Kuga, Puma, Ranger with comprehensive extended warranty. EV and hybrid models covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
