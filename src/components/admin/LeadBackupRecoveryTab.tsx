@@ -872,6 +872,7 @@ const ContactTable: React.FC<{
   contacts: BackupContact[];
   loading: boolean;
   isFakeIndicator: (c: BackupContact) => boolean;
+  getFakeReason?: (c: BackupContact) => string | null;
 }> = ({ contacts, loading, isFakeIndicator }) => {
   const [page, setPage] = useState(0);
   const pageSize = 50;
