@@ -431,8 +431,30 @@ export const LeadBackupRecoveryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Date Range + Lead Type Filter */}
-      <div className="flex items-center gap-3 flex-wrap">
+      {/* Date Range + Quick Buttons + Lead Type Filter */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button
+          variant={dateRange?.from && dateRange?.to && format(dateRange.from, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') && format(dateRange.to, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'default' : 'outline'}
+          size="sm"
+          className="h-9"
+          onClick={() => {
+            const today = new Date();
+            setDateRange({ from: today, to: today });
+          }}
+        >
+          Today
+        </Button>
+        <Button
+          variant={dateRange?.from && dateRange?.to && format(dateRange.from, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd') && format(dateRange.to, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'default' : 'outline'}
+          size="sm"
+          className="h-9"
+          onClick={() => {
+            const yesterday = subDays(new Date(), 1);
+            setDateRange({ from: yesterday, to: yesterday });
+          }}
+        >
+          Yesterday
+        </Button>
         <DateRangeFilter
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
@@ -733,20 +755,94 @@ const Step2AttemptsSection: React.FC<{
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, filtered.length)} of {filtered.length}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
-              Previous
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
-              Next
-            </Button>
-          </div>
-        </div>
+        <PaginationBar
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
       )}
+    </div>
+  );
+};
+
+// Reusable numbered pagination bar
+const PaginationBar: React.FC<{
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalPages, totalItems, pageSize, onPageChange }) => {
+  const startItem = currentPage * pageSize + 1;
+  const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
+
+  // Generate page numbers with ellipsis
+  const getPageNumbers = (): (number | '...')[] => {
+    const pages: (number | '...')[] = [];
+    const maxVisible = 7;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 0; i < totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    // Always show first page
+    pages.push(0);
+
+    const start = Math.max(1, currentPage - 1);
+    const end = Math.min(totalPages - 2, currentPage + 1);
+
+    if (start > 1) pages.push('...');
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages - 2) pages.push('...');
+
+    // Always show last page
+    pages.push(totalPages - 1);
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-between mt-4">
+      <div className="text-sm text-muted-foreground">
+        Showing <span className="font-medium text-foreground">{startItem.toLocaleString()}–{endItem.toLocaleString()}</span> of <span className="font-medium text-foreground">{totalItems.toLocaleString()}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.max(0, currentPage - 1))}
+          disabled={currentPage === 0}
+          className="h-8"
+        >
+          Previous
+        </Button>
+        {getPageNumbers().map((p, idx) =>
+          p === '...' ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-sm text-muted-foreground">…</span>
+          ) : (
+            <Button
+              key={p}
+              variant={currentPage === p ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onPageChange(p)}
+              className="h-8 w-8 p-0 text-xs"
+            >
+              {p + 1}
+            </Button>
+          )
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.min(totalPages - 1, currentPage + 1))}
+          disabled={currentPage >= totalPages - 1}
+          className="h-8"
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 };
@@ -845,19 +941,13 @@ const ContactTable: React.FC<{
         </Table>
       </div>
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, contacts.length)} of {contacts.length.toLocaleString()}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
-              Previous
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
-              Next
-            </Button>
-          </div>
-        </div>
+        <PaginationBar
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={contacts.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );
