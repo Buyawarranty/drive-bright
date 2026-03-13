@@ -32,7 +32,9 @@ interface LeadsFiltersProps {
   onMigrate: () => void;
   onExport: (format: 'csv' | 'xlsx') => void;
   leadCounts: {
+    all_leads: number;
     all: number;
+    live: number;
     total: number;
     new: number;
     contacted: number;
