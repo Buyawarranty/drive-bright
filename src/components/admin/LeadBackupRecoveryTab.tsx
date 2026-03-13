@@ -105,16 +105,22 @@ export const LeadBackupRecoveryTab: React.FC = () => {
 
   // Known fake indicators
   const isFakeIndicator = (contact: BackupContact): boolean => {
+    return getFakeReason(contact) !== null;
+  };
+
+  // Returns the reason a contact is flagged as fake, or null if real
+  const getFakeReason = (contact: BackupContact): string | null => {
     const fakeStatuses = ['fake_lead', 'fake'];
     const testNames = ['kamran', 'prajwal', 'praj', 'test'];
     const testPhones = ['07960111131', '07000000000', '07777777777'];
     
-    if (fakeStatuses.includes(contact.status?.toLowerCase() || '')) return true;
+    if (fakeStatuses.includes(contact.status?.toLowerCase() || '')) return 'Manually marked as fake by admin';
     const name = (contact.first_name || contact.full_name || '').toLowerCase();
-    if (testNames.some(t => name.includes(t))) return true;
+    const matchedName = testNames.find(t => name.includes(t));
+    if (matchedName) return `Name matches test pattern: "${matchedName}"`;
     const phone = (contact.phone || '').replace(/\s/g, '');
-    if (testPhones.includes(phone)) return true;
-    return false;
+    if (testPhones.includes(phone)) return `Phone matches test number: ${phone}`;
+    return null;
   };
 
   const fetchLastRecovery = useCallback(async () => {
