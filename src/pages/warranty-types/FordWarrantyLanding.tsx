@@ -1013,9 +1013,9 @@ const FordWarrantyLanding: React.FC = () => {
                 <OptimizedImage 
                   src={fordKugaWarranty}
                   alt="Ford Kuga SUV front view - Why Ford drivers choose Buy A Warranty for extended warranty cover"
-                  className="max-w-[30%] h-auto object-contain"
-                  width={400}
-                  height={300}
+                  className="w-full max-w-xs h-auto object-contain"
+                  width={800}
+                  height={600}
                 />
               </div>
             </div>
