@@ -164,7 +164,7 @@ const fordFAQs = [
   },
   {
     question: "How much does a Ford extended warranty cost in the UK?",
-    answer: "Extended Ford warranty prices typically start from £24 a month, depending on your Ford model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    answer: "Extended Ford warranty prices typically start from £19 a month, depending on your Ford model, mileage, and chosen claim limit. We offer plans from just 60p a day with flexible monthly or annual payment options."
   },
   {
     question: "Can I buy a Ford extended warranty after my original warranty has expired?",
@@ -453,7 +453,7 @@ const FordWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£24-£85/month",
+      "priceRange": "£19-£85/month",
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
@@ -510,7 +510,7 @@ const FordWarrantyLanding: React.FC = () => {
     "url": "https://buyawarranty.co.uk",
     "telephone": "+44-800-917-9270",
     "email": "support@buyawarranty.co.uk",
-    "priceRange": "£24-£85/month",
+    "priceRange": "£19-£85/month",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "124 City Road",
@@ -565,8 +565,8 @@ const FordWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Ford Extended Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £24/mo</title>
-        <meta name="description" content="Protect your Ford Fiesta, Focus, Kuga, Puma, Ranger, Transit or Mustang Mach-E with comprehensive extended warranty cover. EcoBoost engines, PowerShift gearboxes, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
+        <title>Ford Extended Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £19/mo</title>
+        <meta name="description" content="Protect your Ford Fiesta, Focus, Kuga, Puma, Ranger, Transit or Mustang Mach-E with comprehensive extended warranty cover. EcoBoost engines, PowerShift gearboxes, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Ford extended warranty, Ford used car warranty, Ford warranty UK, Ford warranty cost, Ford warranty quote, Ford Fiesta warranty, Ford Focus warranty, Ford Kuga warranty, Ford Puma warranty, Ford Ranger warranty, Ford Transit warranty, Ford EcoBoost warranty, used Ford warranty, second hand Ford warranty, Ford Mustang Mach-E warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/ford-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -579,7 +579,7 @@ const FordWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger, Mach-E from £24/mo" />
+        <meta property="og:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger, Mach-E from £19/mo" />
         <meta property="og:description" content="Comprehensive Ford warranty coverage for Fiesta, Focus, Kuga, Puma, Ranger, Transit and Mustang Mach-E. EcoBoost engines, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/ford-warranty/" />
         <meta property="og:type" content="website" />
@@ -591,12 +591,12 @@ const FordWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £24/mo" />
+        <meta name="twitter:title" content="Ford Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £19/mo" />
         <meta name="twitter:description" content="Protect your Ford Fiesta, Focus, Kuga, Puma, Ranger with comprehensive extended warranty. EV and hybrid models covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Ford extended warranty services in the UK, covering Fiesta, Focus, Kuga, Puma, Mondeo, Ranger, Transit, and Mustang Mach-E models. Human-authored and fact-checked." />
-        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Ford extended warranty plans in the UK from £24/month. Coverage includes EcoBoost engines, PowerShift gearboxes, SYNC infotainment, electrical, hybrid and EV components for all Ford models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
+        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Ford extended warranty plans in the UK from £19/month. Coverage includes EcoBoost engines, PowerShift gearboxes, SYNC infotainment, electrical, hybrid and EV components for all Ford models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
@@ -782,7 +782,7 @@ const FordWarrantyLanding: React.FC = () => {
         </Suspense>
         <BrandRepairCosts
           brandName="Ford"
-          monthlyPrice="£24"
+          monthlyPrice="£19"
           onGetQuote={scrollToQuoteForm}
           repairs={[
             { name: 'EcoBoost Turbocharger', cost: '£1,500 – £3,000', icon: 'Zap', severity: 'high' },
