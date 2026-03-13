@@ -61,8 +61,8 @@ const BrandRepairCosts: React.FC<BrandRepairCostsProps> = ({ brandName, monthlyP
         </div>
 
         <div className="mt-8 md:mt-12 text-center">
-          <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-            <div className="flex items-center justify-center gap-4 md:gap-8 mb-4">
+          <div className="bg-brand-deep-blue rounded-2xl p-5 sm:p-8 md:p-12 max-w-3xl mx-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8 mb-4">
               <div className="text-center">
                 <p className="text-xs md:text-sm font-semibold text-white/60 uppercase tracking-wider mb-1">Typical repair</p>
                 <p className="text-2xl md:text-4xl font-bold text-red-400 line-through decoration-2">{typicalRepairCost}</p>
