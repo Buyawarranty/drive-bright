@@ -629,6 +629,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
             loading={loading}
             isFakeIndicator={isFakeIndicator}
             getFakeReason={getFakeReason}
+            onRefresh={fetchAllContacts}
           />
         </TabsContent>
 
