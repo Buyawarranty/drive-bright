@@ -128,7 +128,7 @@ export const useLeads = () => {
   const initialLoadDoneRef = useRef(false);
   const initialLoadStartedRef = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all_leads');
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
