@@ -565,7 +565,7 @@ const FordWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Ford Extended Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £24/mo</title>
+        <title>Ford Extended Warranty UK | Fiesta, Focus, Kuga, Puma, Ranger from £19/mo</title>
         <meta name="description" content="Protect your Ford Fiesta, Focus, Kuga, Puma, Ranger, Transit or Mustang Mach-E with comprehensive extended warranty cover. EcoBoost engines, PowerShift gearboxes, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Ford extended warranty, Ford used car warranty, Ford warranty UK, Ford warranty cost, Ford warranty quote, Ford Fiesta warranty, Ford Focus warranty, Ford Kuga warranty, Ford Puma warranty, Ford Ranger warranty, Ford Transit warranty, Ford EcoBoost warranty, used Ford warranty, second hand Ford warranty, Ford Mustang Mach-E warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/ford-warranty/" />
