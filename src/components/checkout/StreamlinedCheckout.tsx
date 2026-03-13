@@ -912,7 +912,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             mileage: vehicleData.mileage || '',
             plan_name: planName || '',
             payment_type: paymentType || '',
-            step_abandoned: 4
+            step_abandoned: 4,
+            ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
           }
         });
       } catch (error) {
