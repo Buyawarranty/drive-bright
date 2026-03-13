@@ -1092,8 +1092,8 @@ const FordWarrantyLanding: React.FC = () => {
               <div className="flex justify-center">
                 <OptimizedImage 
                   src={fordPumaHighMileage}
-                  alt="Ford Puma front view - High mileage Ford Puma extended warranty coverage UK"
-                  className="max-w-[35%] h-auto object-contain"
+                  alt="Ford Focus hatchback and Ford Kuga SUV - High mileage Ford extended warranty coverage UK"
+                  className="max-w-[30%] h-auto object-contain"
                   width={448}
                   height={300}
                 />
