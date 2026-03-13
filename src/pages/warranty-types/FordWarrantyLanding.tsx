@@ -782,7 +782,7 @@ const FordWarrantyLanding: React.FC = () => {
         </Suspense>
         <BrandRepairCosts
           brandName="Ford"
-          monthlyPrice="£24"
+          monthlyPrice="£19"
           onGetQuote={scrollToQuoteForm}
           repairs={[
             { name: 'EcoBoost Turbocharger', cost: '£1,500 – £3,000', icon: 'Zap', severity: 'high' },
