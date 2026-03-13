@@ -1064,10 +1064,10 @@ const NissanWarrantyLanding: React.FC = () => {
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
                   src={nissanJukeWarranty}
-                  alt="Miles the Panda with Nissan - Why Nissan owners choose us for extended warranty"
+                  alt="Nissan Qashqai SUV - Why Nissan owners choose Buy A Warranty for extended warranty cover"
                   className="w-[400px] h-auto object-contain"
-                  width={400}
-                  height={300}
+                  width={800}
+                  height={600}
                 />
               </div>
             </div>
