@@ -596,7 +596,7 @@ const FordWarrantyLanding: React.FC = () => {
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Ford extended warranty services in the UK, covering Fiesta, Focus, Kuga, Puma, Mondeo, Ranger, Transit, and Mustang Mach-E models. Human-authored and fact-checked." />
-        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Ford extended warranty plans in the UK from £24/month. Coverage includes EcoBoost engines, PowerShift gearboxes, SYNC infotainment, electrical, hybrid and EV components for all Ford models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
+        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Ford extended warranty plans in the UK from £19/month. Coverage includes EcoBoost engines, PowerShift gearboxes, SYNC infotainment, electrical, hybrid and EV components for all Ford models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
