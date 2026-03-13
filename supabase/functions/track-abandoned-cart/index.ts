@@ -314,7 +314,9 @@ const handler = async (req: Request): Promise<Response> => {
             labour_rate: cartData.labour_rate,
             boost_addon: cartData.boost_addon,
             address: cartData.address,
-            protection_addons: cartData.protection_addons
+            protection_addons: cartData.protection_addons,
+            ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
+            ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
           }
         }]);
 
