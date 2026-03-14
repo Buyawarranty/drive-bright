@@ -366,7 +366,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                 </ul>
               </div>
               <div className="flex flex-col items-center order-first md:order-last">
-                <OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona front view - Nationwide UK Hyundai warranty coverage" className="max-w-[200px] md:max-w-[240px] h-auto object-contain mb-4 md:mb-6" width={240} height={180} />
+                <OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona front view - Nationwide UK Hyundai warranty coverage" className="w-full max-w-xs md:max-w-sm h-auto object-contain mb-4 md:mb-6" width={1024} height={768} />
                 <div className="inline-block bg-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-4 backdrop-blur-sm"><p className="text-sm md:text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p></div>
               </div>
             </div>
