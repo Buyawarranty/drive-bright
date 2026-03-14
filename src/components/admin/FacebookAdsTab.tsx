@@ -112,7 +112,7 @@ export const FacebookAdsTab: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_make, vehicle_model, vehicle_reg')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_make, vehicle_model, registration_plate')
         .eq('purchase_source', 'facebook_ads')
         .gte('signup_date', dateFrom.toISOString())
         .lte('signup_date', dateTo.toISOString())
