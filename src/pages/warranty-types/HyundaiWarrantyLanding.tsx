@@ -192,7 +192,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
               </div>
               <div className="relative">
                 <div className="relative">
-                  <OptimizedImage src={hyundaiTucsonHero} alt="Hyundai Tucson front view - Hyundai extended warranty UK coverage" className="w-full max-w-md mx-auto h-auto object-contain" priority={true} width={651} height={500} />
+                  <OptimizedImage src={hyundaiTucsonHero} alt="Hyundai Tucson front view - Hyundai extended warranty UK coverage" className="w-full max-w-lg mx-auto h-auto object-contain" priority={true} width={1024} height={768} />
                   <div className="absolute top-4 right-4"><a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity"><OptimizedImage src={trustpilotExcellent} alt="Trustpilot Excellent Rating" className="h-auto w-28 sm:w-36 object-contain" width={144} height={61} /></a></div>
                 </div>
                 <div className="flex flex-col items-center gap-4 mt-6">
@@ -278,7 +278,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="flex gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100"><div className="w-10 h-10 md:w-12 md:h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0"><b.icon className="w-5 h-5 md:w-6 md:h-6 text-brand-orange" /></div><div><h3 className="text-base md:text-lg font-bold text-gray-900 mb-0.5 md:mb-1">{b.title}</h3><p className="text-gray-600 text-xs md:text-sm">{b.desc}</p></div></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center items-end pt-16"><OptimizedImage src={hyundaiTucsonHero} alt="Hyundai Tucson front view - Why Hyundai owners choose Buy A Warranty" className="max-w-[35%] h-auto object-contain" width={400} height={300} /></div>
+              <div className="hidden lg:flex justify-center items-end pt-16"><OptimizedImage src={hyundaiSantaFeTestimonials} alt="Hyundai Santa Fe front view - Why Hyundai owners choose Buy A Warranty" className="w-full max-w-[320px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
@@ -293,7 +293,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="text-center"><div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">{item.step}</div><h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3><p className="text-xs md:text-base text-gray-600">{item.desc}</p></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - How Hyundai warranty claims work" className="max-w-[200px] xl:max-w-[240px] h-auto object-contain" width={240} height={180} /></div>
+              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - How Hyundai warranty claims work" className="w-full max-w-[300px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
@@ -312,7 +312,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center"><div className="text-3xl md:text-4xl mb-3 md:mb-4">{c.emoji}</div><h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{c.title}</h3><p className="text-gray-600 text-xs md:text-sm">{c.desc}</p></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona Electric front view - Crystal clear Hyundai warranty coverage UK" className="max-w-[200px] xl:max-w-[240px] h-auto object-contain" width={240} height={180} /></div>
+              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona Electric front view - Crystal clear Hyundai warranty coverage UK" className="w-full max-w-[300px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
@@ -321,7 +321,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              <div className="flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - High mileage Hyundai warranty coverage UK" className="max-w-[35%] h-auto object-contain" width={448} height={300} /></div>
+              <div className="flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - High mileage Hyundai warranty coverage UK" className="w-full max-w-sm h-auto object-contain" width={1024} height={768} /></div>
               <div className="text-center lg:text-left">
                 <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">High mileage Hyundai, no problem!</div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">Drive your Hyundai with confidence<br /><span className="text-brand-orange">You're covered</span></h2>
@@ -347,7 +347,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100"><div className={`w-10 h-10 md:w-12 md:h-12 bg-${o.color}-100 rounded-xl flex items-center justify-center mb-3 md:mb-4`}><o.icon className={`w-5 h-5 md:w-6 md:h-6 text-${o.color}-600`} /></div><h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">{o.title}</h3><p className="text-sm md:text-base text-gray-600">{o.desc}</p></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiIoniq5Cover} alt="Hyundai IONIQ 5 front view - Additional Hyundai warranty cover options UK" className="max-w-[200px] xl:max-w-[240px] h-auto object-contain" width={240} height={180} /></div>
+              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiIoniq5Cover} alt="Hyundai IONIQ 5 front view - Additional Hyundai warranty cover options UK" className="w-full max-w-[300px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
@@ -366,7 +366,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                 </ul>
               </div>
               <div className="flex flex-col items-center order-first md:order-last">
-                <OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona front view - Nationwide UK Hyundai warranty coverage" className="max-w-[200px] md:max-w-[240px] h-auto object-contain mb-4 md:mb-6" width={240} height={180} />
+                <OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona front view - Nationwide UK Hyundai warranty coverage" className="w-full max-w-xs md:max-w-sm h-auto object-contain mb-4 md:mb-6" width={1024} height={768} />
                 <div className="inline-block bg-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-4 backdrop-blur-sm"><p className="text-sm md:text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p></div>
               </div>
             </div>
