@@ -572,8 +572,8 @@ const ToyotaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Toyota Extended Warranty UK | Yaris, Corolla, RAV4, Prius from £24/mo</title>
-        <meta name="description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius, Camry or bZ4X with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
+        <title>Toyota Extended Warranty UK | Yaris, Corolla, RAV4, Prius from £19/mo</title>
+        <meta name="description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius, Camry or bZ4X with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Toyota extended warranty, Toyota used car warranty, Toyota warranty UK, Toyota warranty cost, Toyota warranty quote, Toyota Yaris warranty, Toyota Corolla warranty, Toyota RAV4 warranty, Toyota C-HR warranty, Toyota Prius warranty, Toyota hybrid warranty, used Toyota warranty, second hand Toyota warranty, Toyota bZ4X warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/toyota-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
