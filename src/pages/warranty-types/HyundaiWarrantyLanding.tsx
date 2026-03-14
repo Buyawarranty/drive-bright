@@ -321,7 +321,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
-              <div className="flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - High mileage Hyundai warranty coverage UK" className="w-full max-w-sm h-auto object-contain" width={1024} height={768} /></div>
+              <div className="flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - High mileage Hyundai warranty coverage UK" className="max-w-[240px] md:max-w-[280px] h-auto object-contain" width={1024} height={768} /></div>
               <div className="text-center lg:text-left">
                 <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">High mileage Hyundai, no problem!</div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">Drive your Hyundai with confidence<br /><span className="text-brand-orange">You're covered</span></h2>
