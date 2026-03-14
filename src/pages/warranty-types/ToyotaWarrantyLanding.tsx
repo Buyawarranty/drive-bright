@@ -1038,21 +1038,32 @@ const ToyotaWarrantyLanding: React.FC = () => {
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {[
-                { step: 1, title: 'Diagnose', desc: 'Diagnose at any VAT-registered garage' },
-                { step: 2, title: 'Authorise', desc: 'We authorise eligible repairs quickly' },
-                { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your Toyota' },
-                { step: 4, title: 'We Pay', desc: 'We pay the garage directly for covered items' },
-              ].map((item, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
-                    {item.step}
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                {[
+                  { step: 1, title: 'Diagnose', desc: 'Diagnose at any VAT-registered garage' },
+                  { step: 2, title: 'Authorise', desc: 'We authorise eligible repairs quickly' },
+                  { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your Toyota' },
+                  { step: 4, title: 'We Pay', desc: 'We pay the garage directly for covered items' },
+                ].map((item, index) => (
+                  <div key={index} className="text-center">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
+                      {item.step}
+                    </div>
+                    <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
+                    <p className="text-xs md:text-base text-gray-600">{item.desc}</p>
                   </div>
-                  <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
-                  <p className="text-xs md:text-base text-gray-600">{item.desc}</p>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaChrClaims}
+                  alt="Toyota C-HR front view - How Toyota warranty claims work with Buy A Warranty UK"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
+              </div>
             </div>
           </div>
         </section>
