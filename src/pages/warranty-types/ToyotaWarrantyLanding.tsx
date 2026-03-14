@@ -1083,21 +1083,32 @@ const ToyotaWarrantyLanding: React.FC = () => {
                 See what's included - clear terms, no jargon, no surprises.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-3xl md:text-4xl mb-3 md:mb-4">✅</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">No hidden catches</h3>
-                <p className="text-gray-600 text-xs md:text-sm">What you see is what you get</p>
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 md:mb-4">✅</div>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">No hidden catches</h3>
+                  <p className="text-gray-600 text-xs md:text-sm">What you see is what you get</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
+                  <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 md:mb-4">⭐</div>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved fast</h3>
+                  <p className="text-gray-600 text-xs md:text-sm">We pay when you need us</p>
+                </div>
               </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
-                <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-3xl md:text-4xl mb-3 md:mb-4">⭐</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved fast</h3>
-                <p className="text-gray-600 text-xs md:text-sm">We pay when you need us</p>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaPriusCoverage}
+                  alt="Toyota Prius front view - Crystal clear transparent Toyota warranty coverage UK"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
               </div>
             </div>
           </div>
