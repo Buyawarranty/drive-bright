@@ -449,7 +449,7 @@ export const FacebookAdsTab: React.FC = () => {
                     <TableRow key={customer.id}>
                       <TableCell className="text-xs">{format(new Date(customer.signup_date), 'dd/MM/yy')}</TableCell>
                       <TableCell className="text-sm font-medium">{customer.name || customer.email}</TableCell>
-                      <TableCell className="text-sm">{customer.vehicle_reg || `${customer.vehicle_make || ''} ${customer.vehicle_model || ''}`.trim() || '-'}</TableCell>
+                      <TableCell className="text-sm">{customer.registration_plate || `${customer.vehicle_make || ''} ${customer.vehicle_model || ''}`.trim() || '-'}</TableCell>
                       <TableCell className="text-sm">{customer.plan_type || '-'}</TableCell>
                       <TableCell className="text-right font-semibold text-green-700">
                         £{(customer.final_amount || 0).toFixed(2)}
