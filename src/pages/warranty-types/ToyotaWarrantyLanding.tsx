@@ -426,7 +426,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "24",
+        "price": "19",
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
