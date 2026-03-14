@@ -517,7 +517,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     "url": "https://buyawarranty.co.uk",
     "telephone": "+44-800-917-9270",
     "email": "support@buyawarranty.co.uk",
-    "priceRange": "£24-£85/month",
+    "priceRange": "£19-£85/month",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "124 City Road",
