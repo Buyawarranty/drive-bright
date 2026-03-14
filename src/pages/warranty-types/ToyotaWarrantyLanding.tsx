@@ -598,7 +598,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, Prius from £24/mo" />
+        <meta name="twitter:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, Prius from £19/mo" />
         <meta name="twitter:description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius with comprehensive extended warranty. Hybrid and EV models covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
