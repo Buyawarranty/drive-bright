@@ -293,7 +293,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="text-center"><div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">{item.step}</div><h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3><p className="text-xs md:text-base text-gray-600">{item.desc}</p></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - How Hyundai warranty claims work" className="w-full max-w-[300px] h-auto object-contain" width={1024} height={768} /></div>
+              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiI30Claims} alt="Hyundai i30 front view - How Hyundai warranty claims work" className="max-w-[200px] xl:max-w-[240px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
