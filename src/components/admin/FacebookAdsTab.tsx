@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight } from 'lucide-react';
+import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
@@ -39,6 +39,7 @@ export const FacebookAdsTab: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['fb-page-views'] });
       queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
       queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
+      queryClient.invalidateQueries({ queryKey: ['fb-paid-customers'] });
       setLastRefresh(new Date());
     }, AUTO_REFRESH_INTERVAL);
     return () => clearInterval(interval);
@@ -48,6 +49,7 @@ export const FacebookAdsTab: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['fb-page-views'] });
     queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
     queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
+    queryClient.invalidateQueries({ queryKey: ['fb-paid-customers'] });
     setLastRefresh(new Date());
   };
 
@@ -104,6 +106,39 @@ export const FacebookAdsTab: React.FC = () => {
     },
   });
 
+  // Fetch PAID customers attributed to Facebook Ads
+  const { data: fbPaidCustomers, isLoading: paidLoading } = useQuery({
+    queryKey: ['fb-paid-customers', dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_make, vehicle_model, registration_plate')
+        .eq('purchase_source', 'facebook_ads')
+        .gte('signup_date', dateFrom.toISOString())
+        .lte('signup_date', dateTo.toISOString())
+        .not('status', 'ilike', '%cancelled%')
+        .not('status', 'ilike', '%refunded%')
+        .order('signup_date', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch ALL-TIME FB paid customers for total metrics
+  const { data: fbAllTimePaid } = useQuery({
+    queryKey: ['fb-paid-customers-alltime'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, final_amount, signup_date')
+        .eq('purchase_source', 'facebook_ads')
+        .not('status', 'ilike', '%cancelled%')
+        .not('status', 'ilike', '%refunded%');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Count conversions from FB leads
   const fbConvertedLeads = useMemo(() => {
     return (fbLeads || []).filter(l => l.is_converted);
@@ -120,13 +155,34 @@ export const FacebookAdsTab: React.FC = () => {
     };
   }, [step2Attempts]);
 
+  // Revenue metrics
+  const revenueStats = useMemo(() => {
+    const customers = fbPaidCustomers || [];
+    const totalRevenue = customers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+    const avgOrderValue = customers.length > 0 ? totalRevenue / customers.length : 0;
+    return {
+      totalRevenue,
+      avgOrderValue,
+      paidCount: customers.length,
+    };
+  }, [fbPaidCustomers]);
+
+  const allTimeStats = useMemo(() => {
+    const customers = fbAllTimePaid || [];
+    const totalRevenue = customers.reduce((sum, c) => sum + ((c as any).final_amount || 0), 0);
+    return {
+      totalRevenue,
+      totalCustomers: customers.length,
+    };
+  }, [fbAllTimePaid]);
+
   // Summary stats
   const totalPageViews = fbPageViews?.length || 0;
   const uniqueVisitors = new Set(fbPageViews?.map(pv => pv.visitor_id)).size;
   const totalLeads = fbLeads?.length || 0;
   const totalConversions = fbConvertedLeads.length;
   const conversionRate = uniqueVisitors > 0 ? ((totalLeads / uniqueVisitors) * 100).toFixed(1) : '0';
-  const purchaseRate = totalLeads > 0 ? ((totalConversions / totalLeads) * 100).toFixed(1) : '0';
+  const purchaseRate = totalLeads > 0 ? ((revenueStats.paidCount / totalLeads) * 100).toFixed(1) : '0';
 
   // Page breakdown
   const pageBreakdown = useMemo(() => {
@@ -165,20 +221,26 @@ export const FacebookAdsTab: React.FC = () => {
   // Daily breakdown for funnel
   const dailyFunnel = useMemo(() => {
     if (!fbPageViews) return [];
-    const days: Record<string, { visitors: Set<string>; views: number; leads: number; conversions: number }> = {};
+    const days: Record<string, { visitors: Set<string>; views: number; leads: number; conversions: number; revenue: number }> = {};
     
     fbPageViews.forEach(pv => {
       const day = format(new Date(pv.created_at), 'yyyy-MM-dd');
-      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0 };
+      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0, revenue: 0 };
       days[day].views++;
       if (pv.visitor_id) days[day].visitors.add(pv.visitor_id);
     });
     
     (fbLeads || []).forEach(lead => {
       const day = format(new Date(lead.created_at), 'yyyy-MM-dd');
-      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0 };
+      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0, revenue: 0 };
       days[day].leads++;
       if (lead.is_converted) days[day].conversions++;
+    });
+
+    (fbPaidCustomers || []).forEach(customer => {
+      const day = format(new Date(customer.signup_date), 'yyyy-MM-dd');
+      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0, revenue: 0 };
+      days[day].revenue += customer.final_amount || 0;
     });
     
     return Object.entries(days)
@@ -189,11 +251,12 @@ export const FacebookAdsTab: React.FC = () => {
         views: data.views,
         leads: data.leads,
         conversions: data.conversions,
+        revenue: data.revenue,
         formRate: data.visitors.size > 0 ? ((data.leads / data.visitors.size) * 100).toFixed(1) : '0',
       }));
-  }, [fbPageViews, fbLeads]);
+  }, [fbPageViews, fbLeads, fbPaidCustomers]);
 
-  const isLoading = pvLoading || leadsLoading || attemptsLoading;
+  const isLoading = pvLoading || leadsLoading || attemptsLoading || paidLoading;
 
   return (
     <div className="space-y-6">
@@ -202,10 +265,10 @@ export const FacebookAdsTab: React.FC = () => {
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Facebook className="h-5 w-5 text-blue-600" />
-            Facebook & Instagram Ads Tracking
+            Facebook & Instagram Ads Performance
           </h3>
           <p className="text-sm text-muted-foreground">
-            Track visitors, leads, and conversions from Meta ads · Auto-refreshes every hour
+            Live revenue, leads & conversions from Meta ads · Auto-refreshes hourly
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -232,11 +295,53 @@ export const FacebookAdsTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Revenue & ROI Summary - NEW */}
+      <Card className="border-green-200 bg-green-50/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <PoundSterling className="h-4 w-4 text-green-700" />
+            Facebook Ads Revenue (Period)
+          </CardTitle>
+          <CardDescription>Paid customers attributed to Facebook/Instagram ads via FBCLID or UTM</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-background rounded-lg border">
+              <p className="text-3xl font-bold text-green-700">
+                {isLoading ? '...' : `£${revenueStats.totalRevenue.toFixed(0)}`}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Total Revenue</p>
+            </div>
+            <div className="text-center p-4 bg-background rounded-lg border">
+              <p className="text-3xl font-bold">{isLoading ? '...' : revenueStats.paidCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">Paid Customers</p>
+            </div>
+            <div className="text-center p-4 bg-background rounded-lg border">
+              <p className="text-3xl font-bold">
+                {isLoading ? '...' : `£${revenueStats.avgOrderValue.toFixed(0)}`}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Avg Order Value</p>
+            </div>
+            <div className="text-center p-4 bg-background rounded-lg border">
+              <p className="text-3xl font-bold text-blue-700">{isLoading ? '...' : `${purchaseRate}%`}</p>
+              <p className="text-xs text-muted-foreground mt-1">Lead → Sale Rate</p>
+            </div>
+          </div>
+          {/* All-time summary */}
+          <div className="mt-3 p-3 rounded-lg bg-muted/50 border flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">All-time Facebook Ads:</span>
+            <span className="text-sm font-semibold">
+              {allTimeStats.totalCustomers} customers · £{allTimeStats.totalRevenue.toFixed(0)} revenue
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Conversion Funnel */}
       <Card className="border-blue-200 bg-blue-50/30">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">📊 Facebook Conversion Funnel</CardTitle>
-          <CardDescription>Visitor → Form Completion → Purchase pipeline</CardDescription>
+          <CardDescription>Visitor → Form Completion → Paid Customer pipeline</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -253,11 +358,17 @@ export const FacebookAdsTab: React.FC = () => {
               <p className="text-xs font-medium text-blue-600 mt-0.5">{conversionRate}% of visitors</p>
             </div>
             <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
-            {/* Conversions */}
-            <div className="text-center p-4 bg-background rounded-lg border min-w-[120px]">
-              <p className="text-3xl font-bold">{isLoading ? '...' : totalConversions}</p>
-              <p className="text-xs text-muted-foreground mt-1">Purchases</p>
+            {/* Paid Customers */}
+            <div className="text-center p-4 bg-background rounded-lg border min-w-[120px] border-green-200">
+              <p className="text-3xl font-bold text-green-700">{isLoading ? '...' : revenueStats.paidCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">Paid Customers</p>
               <p className="text-xs font-medium text-green-600 mt-0.5">{purchaseRate}% of leads</p>
+            </div>
+            <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
+            {/* Revenue */}
+            <div className="text-center p-4 bg-background rounded-lg border min-w-[120px] border-green-300">
+              <p className="text-3xl font-bold text-green-700">{isLoading ? '...' : `£${revenueStats.totalRevenue.toFixed(0)}`}</p>
+              <p className="text-xs text-muted-foreground mt-1">Revenue</p>
             </div>
           </div>
         </CardContent>
@@ -292,9 +403,9 @@ export const FacebookAdsTab: React.FC = () => {
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <ShoppingCart className="h-4 w-4" /> Conversions
+              <ShoppingCart className="h-4 w-4" /> Paid Sales
             </div>
-            <p className="text-2xl font-bold">{isLoading ? '...' : totalConversions}</p>
+            <p className="text-2xl font-bold text-green-700">{isLoading ? '...' : revenueStats.paidCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -306,6 +417,57 @@ export const FacebookAdsTab: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* FB Paid Customers Table - NEW */}
+      <Card className="border-green-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-green-700" />
+            Facebook Ads — Paid Customers
+          </CardTitle>
+          <CardDescription>Customers who purchased via Facebook/Instagram ads (purchase_source = facebook_ads)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {(fbPaidCustomers?.length || 0) === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No paid Facebook customers in this period</p>
+          ) : (
+            <div className="max-h-[400px] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Vehicle</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Warranty</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fbPaidCustomers?.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="text-xs">{format(new Date(customer.signup_date), 'dd/MM/yy')}</TableCell>
+                      <TableCell className="text-sm font-medium">{customer.name || customer.email}</TableCell>
+                      <TableCell className="text-sm">{customer.registration_plate || `${customer.vehicle_make || ''} ${customer.vehicle_model || ''}`.trim() || '-'}</TableCell>
+                      <TableCell className="text-sm">{customer.plan_type || '-'}</TableCell>
+                      <TableCell className="text-right font-semibold text-green-700">
+                        £{(customer.final_amount || 0).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-xs font-mono">{customer.warranty_reference_number || '-'}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-green-100 text-green-800 border-green-300 text-xs">
+                          {customer.status || 'Active'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Step 2 Attempt Tracking */}
       <Card>
@@ -369,7 +531,7 @@ export const FacebookAdsTab: React.FC = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">📅 Daily Facebook Funnel</CardTitle>
-          <CardDescription>Visitors → Leads → Purchases by day</CardDescription>
+          <CardDescription>Visitors → Leads → Paid Sales → Revenue by day</CardDescription>
         </CardHeader>
         <CardContent>
           {dailyFunnel.length === 0 ? (
@@ -382,7 +544,8 @@ export const FacebookAdsTab: React.FC = () => {
                   <TableHead className="text-right">Visitors</TableHead>
                   <TableHead className="text-right">Page Views</TableHead>
                   <TableHead className="text-right">Leads</TableHead>
-                  <TableHead className="text-right">Purchases</TableHead>
+                  <TableHead className="text-right">Paid Sales</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
                   <TableHead className="text-right">Form Rate</TableHead>
                 </TableRow>
               </TableHeader>
@@ -393,7 +556,10 @@ export const FacebookAdsTab: React.FC = () => {
                     <TableCell className="text-right">{row.visitors}</TableCell>
                     <TableCell className="text-right">{row.views}</TableCell>
                     <TableCell className="text-right">{row.leads}</TableCell>
-                    <TableCell className="text-right">{row.conversions}</TableCell>
+                    <TableCell className="text-right font-semibold text-green-700">{row.conversions > 0 || row.revenue > 0 ? (fbPaidCustomers || []).filter(c => format(new Date(c.signup_date), 'yyyy-MM-dd') === row.date).length : 0}</TableCell>
+                    <TableCell className="text-right font-semibold text-green-700">
+                      {row.revenue > 0 ? `£${row.revenue.toFixed(0)}` : '-'}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Badge variant="outline" className="text-xs">{row.formRate}%</Badge>
                     </TableCell>
@@ -548,6 +714,13 @@ export const FacebookAdsTab: React.FC = () => {
             </div>
             <div className="flex items-start gap-3">
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">3</span>
+              <div>
+                <p className="font-medium">Revenue Attribution</p>
+                <p className="text-muted-foreground">Paid customers with <code className="bg-muted px-1 rounded">purchase_source = 'facebook_ads'</code> are tracked via FBCLID or UTM source matching at checkout.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">4</span>
               <div>
                 <p className="font-medium">Meta Pixel Events</p>
                 <p className="text-muted-foreground">Fires <code className="bg-muted px-1 rounded">ViewContent</code> on homepage, <code className="bg-muted px-1 rounded">Lead</code> on Step 2, <code className="bg-muted px-1 rounded">AddToCart</code> on pricing, <code className="bg-muted px-1 rounded">InitiateCheckout</code> on Step 4, and <code className="bg-muted px-1 rounded">Purchase</code> on completion.</p>
