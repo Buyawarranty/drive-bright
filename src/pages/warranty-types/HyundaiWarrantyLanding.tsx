@@ -347,7 +347,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100"><div className={`w-10 h-10 md:w-12 md:h-12 bg-${o.color}-100 rounded-xl flex items-center justify-center mb-3 md:mb-4`}><o.icon className={`w-5 h-5 md:w-6 md:h-6 text-${o.color}-600`} /></div><h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">{o.title}</h3><p className="text-sm md:text-base text-gray-600">{o.desc}</p></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiIoniq5Cover} alt="Hyundai IONIQ 5 front view - Additional Hyundai warranty cover options UK" className="w-full max-w-[300px] h-auto object-contain" width={1024} height={768} /></div>
+              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiIoniq5Cover} alt="Hyundai IONIQ 5 front view - Additional Hyundai warranty cover options UK" className="max-w-[200px] xl:max-w-[240px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
