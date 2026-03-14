@@ -192,7 +192,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
               </div>
               <div className="relative">
                 <div className="relative">
-                  <OptimizedImage src={hyundaiTucsonHero} alt="Hyundai Tucson front view - Hyundai extended warranty UK coverage" className="w-full max-w-lg mx-auto h-auto object-contain" priority={true} width={1024} height={768} />
+                  <OptimizedImage src={hyundaiTucsonHero} alt="Hyundai Tucson front view - Hyundai extended warranty UK coverage" className="w-full max-w-sm mx-auto h-auto object-contain" priority={true} width={1024} height={768} />
                   <div className="absolute top-4 right-4"><a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity"><OptimizedImage src={trustpilotExcellent} alt="Trustpilot Excellent Rating" className="h-auto w-28 sm:w-36 object-contain" width={144} height={61} /></a></div>
                 </div>
                 <div className="flex flex-col items-center gap-4 mt-6">
