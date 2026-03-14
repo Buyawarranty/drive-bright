@@ -1272,21 +1272,32 @@ const ToyotaWarrantyLanding: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                  <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-3">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-yellow-400" />
-                    ))}
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                {testimonials.map((testimonial, index) => (
+                  <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                    <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-3">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-yellow-400" />
+                      ))}
+                    </div>
+                    <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4">"{testimonial.text}"</p>
+                    <div className="border-t pt-3 md:pt-4">
+                      <p className="font-bold text-gray-900 text-sm md:text-base">{testimonial.name}</p>
+                      <p className="text-xs md:text-sm text-gray-500">{testimonial.model} • {testimonial.location}</p>
+                    </div>
                   </div>
-                  <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4">"{testimonial.text}"</p>
-                  <div className="border-t pt-3 md:pt-4">
-                    <p className="font-bold text-gray-900 text-sm md:text-base">{testimonial.name}</p>
-                    <p className="text-xs md:text-sm text-gray-500">{testimonial.model} • {testimonial.location}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaRav4Testimonials}
+                  alt="Toyota RAV4 Hybrid front view - Toyota owners trust Buy A Warranty for extended warranty cover"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
+              </div>
             </div>
           </div>
         </section>
