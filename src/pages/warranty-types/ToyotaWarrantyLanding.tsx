@@ -33,6 +33,11 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import toyotaYarisHero from '@/assets/toyota-yaris-extended-warranty-uk.png';
 import toyotaRav4Warranty from '@/assets/toyota-rav4-used-car-warranty.png';
 import toyotaCorollaHighMileage from '@/assets/toyota-corolla-high-mileage-warranty.png';
+import toyotaChrClaims from '@/assets/toyota-chr-claims-warranty-uk.png';
+import toyotaPriusCoverage from '@/assets/toyota-prius-transparent-coverage.png';
+import toyotaLandCruiserCover from '@/assets/toyota-land-cruiser-additional-cover.png';
+import toyotaRav4Testimonials from '@/assets/toyota-rav4-hybrid-testimonials.png';
+import toyotaCamryCoverage from '@/assets/toyota-camry-uk-coverage.png';
 
 // Toyota Models covered (grouped by category) - 2012 to 2026
 const toyotaModelCategories = {
@@ -166,7 +171,7 @@ const toyotaFAQs = [
   },
   {
     question: "How much does a Toyota extended warranty cost in the UK?",
-    answer: "Extended Toyota warranty prices typically start from £24 a month, depending on your Toyota model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    answer: "Extended Toyota warranty prices typically start from £19 a month, depending on your Toyota model, mileage, and chosen claim limit. We offer plans from just 60p a day with flexible monthly or annual payment options."
   },
   {
     question: "Can I buy a Toyota extended warranty after my original warranty has expired?",
@@ -413,7 +418,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "24",
+      "price": "19",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/toyota-warranty/",
@@ -421,7 +426,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "24",
+        "price": "19",
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -455,7 +460,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£24-£85/month",
+      "priceRange": "£19-£85/month",
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
@@ -512,7 +517,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     "url": "https://buyawarranty.co.uk",
     "telephone": "+44-800-917-9270",
     "email": "support@buyawarranty.co.uk",
-    "priceRange": "£24-£85/month",
+    "priceRange": "£19-£85/month",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "124 City Road",
@@ -567,8 +572,8 @@ const ToyotaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Toyota Extended Warranty UK | Yaris, Corolla, RAV4, Prius from £24/mo</title>
-        <meta name="description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius, Camry or bZ4X with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £24/month. Get your instant quote in 60 seconds." />
+        <title>Toyota Extended Warranty UK | Yaris, Corolla, RAV4, Prius from £19/mo</title>
+        <meta name="description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius, Camry or bZ4X with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="Toyota extended warranty, Toyota used car warranty, Toyota warranty UK, Toyota warranty cost, Toyota warranty quote, Toyota Yaris warranty, Toyota Corolla warranty, Toyota RAV4 warranty, Toyota C-HR warranty, Toyota Prius warranty, Toyota hybrid warranty, used Toyota warranty, second hand Toyota warranty, Toyota bZ4X warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/toyota-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -581,7 +586,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, C-HR, Prius from £24/mo" />
+        <meta property="og:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, C-HR, Prius from £19/mo" />
         <meta property="og:description" content="Comprehensive Toyota warranty coverage for Yaris, Corolla, RAV4, C-HR, Prius, Camry and Hybrid Synergy Drive models. Engine, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/toyota-warranty/" />
         <meta property="og:type" content="website" />
@@ -593,12 +598,12 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, Prius from £24/mo" />
+        <meta name="twitter:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, Prius from £19/mo" />
         <meta name="twitter:description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius with comprehensive extended warranty. Hybrid and EV models covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Toyota extended warranty services in the UK, covering Yaris, Corolla, RAV4, C-HR, Prius, Camry, bZ4X, Land Cruiser, and Hilux models. Human-authored and fact-checked." />
-        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Toyota extended warranty plans in the UK from £24/month. Coverage includes engine, gearbox, electrical, Hybrid Synergy Drive and EV components for all Toyota models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
+        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Toyota extended warranty plans in the UK from £19/month. Coverage includes engine, gearbox, electrical, Hybrid Synergy Drive and EV components for all Toyota models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
@@ -649,7 +654,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">From just 80p a day • Easy claims • Fast payouts</span>
+                    <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
@@ -1033,21 +1038,32 @@ const ToyotaWarrantyLanding: React.FC = () => {
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {[
-                { step: 1, title: 'Diagnose', desc: 'Diagnose at any VAT-registered garage' },
-                { step: 2, title: 'Authorise', desc: 'We authorise eligible repairs quickly' },
-                { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your Toyota' },
-                { step: 4, title: 'We Pay', desc: 'We pay the garage directly for covered items' },
-              ].map((item, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
-                    {item.step}
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                {[
+                  { step: 1, title: 'Diagnose', desc: 'Diagnose at any VAT-registered garage' },
+                  { step: 2, title: 'Authorise', desc: 'We authorise eligible repairs quickly' },
+                  { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your Toyota' },
+                  { step: 4, title: 'We Pay', desc: 'We pay the garage directly for covered items' },
+                ].map((item, index) => (
+                  <div key={index} className="text-center">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
+                      {item.step}
+                    </div>
+                    <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
+                    <p className="text-xs md:text-base text-gray-600">{item.desc}</p>
                   </div>
-                  <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
-                  <p className="text-xs md:text-base text-gray-600">{item.desc}</p>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaChrClaims}
+                  alt="Toyota C-HR front view - How Toyota warranty claims work with Buy A Warranty UK"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -1067,21 +1083,32 @@ const ToyotaWarrantyLanding: React.FC = () => {
                 See what's included - clear terms, no jargon, no surprises.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-3xl md:text-4xl mb-3 md:mb-4">✅</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">No hidden catches</h3>
-                <p className="text-gray-600 text-xs md:text-sm">What you see is what you get</p>
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 md:mb-4">✅</div>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">No hidden catches</h3>
+                  <p className="text-gray-600 text-xs md:text-sm">What you see is what you get</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
+                  <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 md:mb-4">⭐</div>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved fast</h3>
+                  <p className="text-gray-600 text-xs md:text-sm">We pay when you need us</p>
+                </div>
               </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
-                <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-3xl md:text-4xl mb-3 md:mb-4">⭐</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved fast</h3>
-                <p className="text-gray-600 text-xs md:text-sm">We pay when you need us</p>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaPriusCoverage}
+                  alt="Toyota Prius front view - Crystal clear transparent Toyota warranty coverage UK"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
               </div>
             </div>
           </div>
@@ -1155,27 +1182,38 @@ const ToyotaWarrantyLanding: React.FC = () => {
                 Enhance your Toyota warranty with these optional extras
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
-                  <Car className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <Car className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Courtesy Car</h3>
+                  <p className="text-sm md:text-base text-gray-600">Keep moving while your Toyota is being repaired</p>
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Courtesy Car</h3>
-                <p className="text-sm md:text-base text-gray-600">Keep moving while your Toyota is being repaired</p>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <MapPin className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European Cover</h3>
+                  <p className="text-sm md:text-base text-gray-600">Extended protection when driving abroad</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Wear & Tear</h3>
+                  <p className="text-sm md:text-base text-gray-600">Cover for gradual component deterioration</p>
+                </div>
               </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
-                  <MapPin className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European Cover</h3>
-                <p className="text-sm md:text-base text-gray-600">Extended protection when driving abroad</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
-                  <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Wear & Tear</h3>
-                <p className="text-sm md:text-base text-gray-600">Cover for gradual component deterioration</p>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaLandCruiserCover}
+                  alt="Toyota Land Cruiser front view - Additional Toyota warranty cover options UK"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
               </div>
             </div>
           </div>
@@ -1208,11 +1246,11 @@ const ToyotaWarrantyLanding: React.FC = () => {
               </div>
               <div className="flex flex-col items-center order-first md:order-last">
                 <OptimizedImage 
-                  src={pandaThumbsUp}
-                  alt="Miles the Panda giving thumbs up for UK-wide Toyota warranty coverage"
-                  className="w-36 sm:w-48 md:w-64 h-auto object-contain mb-3 md:mb-4"
-                  width={256}
-                  height={256}
+                  src={toyotaCamryCoverage}
+                  alt="Toyota Camry front view - Nationwide UK Toyota warranty coverage"
+                  className="max-w-[200px] md:max-w-[240px] h-auto object-contain mb-4 md:mb-6"
+                  width={240}
+                  height={180}
                 />
                 <div className="inline-block bg-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-4 backdrop-blur-sm">
                   <p className="text-sm md:text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p>
@@ -1234,21 +1272,32 @@ const ToyotaWarrantyLanding: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                  <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-3">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-yellow-400" />
-                    ))}
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                {testimonials.map((testimonial, index) => (
+                  <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                    <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-3">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-yellow-400" />
+                      ))}
+                    </div>
+                    <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4">"{testimonial.text}"</p>
+                    <div className="border-t pt-3 md:pt-4">
+                      <p className="font-bold text-gray-900 text-sm md:text-base">{testimonial.name}</p>
+                      <p className="text-xs md:text-sm text-gray-500">{testimonial.model} • {testimonial.location}</p>
+                    </div>
                   </div>
-                  <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4">"{testimonial.text}"</p>
-                  <div className="border-t pt-3 md:pt-4">
-                    <p className="font-bold text-gray-900 text-sm md:text-base">{testimonial.name}</p>
-                    <p className="text-xs md:text-sm text-gray-500">{testimonial.model} • {testimonial.location}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaRav4Testimonials}
+                  alt="Toyota RAV4 Hybrid front view - Toyota owners trust Buy A Warranty for extended warranty cover"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
+              </div>
             </div>
           </div>
         </section>
