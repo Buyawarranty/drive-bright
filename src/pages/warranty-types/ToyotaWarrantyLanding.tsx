@@ -33,6 +33,11 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import toyotaYarisHero from '@/assets/toyota-yaris-extended-warranty-uk.png';
 import toyotaRav4Warranty from '@/assets/toyota-rav4-used-car-warranty.png';
 import toyotaCorollaHighMileage from '@/assets/toyota-corolla-high-mileage-warranty.png';
+import toyotaChrClaims from '@/assets/toyota-chr-claims-warranty-uk.png';
+import toyotaPriusCoverage from '@/assets/toyota-prius-transparent-coverage.png';
+import toyotaLandCruiserCover from '@/assets/toyota-land-cruiser-additional-cover.png';
+import toyotaRav4Testimonials from '@/assets/toyota-rav4-hybrid-testimonials.png';
+import toyotaCamryCoverage from '@/assets/toyota-camry-uk-coverage.png';
 
 // Toyota Models covered (grouped by category) - 2012 to 2026
 const toyotaModelCategories = {
