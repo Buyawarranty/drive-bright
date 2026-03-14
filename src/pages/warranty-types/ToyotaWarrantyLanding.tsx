@@ -1182,27 +1182,38 @@ const ToyotaWarrantyLanding: React.FC = () => {
                 Enhance your Toyota warranty with these optional extras
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
-                  <Car className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+            <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <Car className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Courtesy Car</h3>
+                  <p className="text-sm md:text-base text-gray-600">Keep moving while your Toyota is being repaired</p>
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Courtesy Car</h3>
-                <p className="text-sm md:text-base text-gray-600">Keep moving while your Toyota is being repaired</p>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <MapPin className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European Cover</h3>
+                  <p className="text-sm md:text-base text-gray-600">Extended protection when driving abroad</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Wear & Tear</h3>
+                  <p className="text-sm md:text-base text-gray-600">Cover for gradual component deterioration</p>
+                </div>
               </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
-                  <MapPin className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European Cover</h3>
-                <p className="text-sm md:text-base text-gray-600">Extended protection when driving abroad</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
-                  <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Wear & Tear</h3>
-                <p className="text-sm md:text-base text-gray-600">Cover for gradual component deterioration</p>
+              <div className="hidden lg:flex justify-center">
+                <OptimizedImage
+                  src={toyotaLandCruiserCover}
+                  alt="Toyota Land Cruiser front view - Additional Toyota warranty cover options UK"
+                  className="max-w-[200px] xl:max-w-[240px] h-auto object-contain"
+                  width={240}
+                  height={180}
+                />
               </div>
             </div>
           </div>
