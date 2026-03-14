@@ -586,7 +586,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, C-HR, Prius from £24/mo" />
+        <meta property="og:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, C-HR, Prius from £19/mo" />
         <meta property="og:description" content="Comprehensive Toyota warranty coverage for Yaris, Corolla, RAV4, C-HR, Prius, Camry and Hybrid Synergy Drive models. Engine, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/toyota-warranty/" />
         <meta property="og:type" content="website" />
