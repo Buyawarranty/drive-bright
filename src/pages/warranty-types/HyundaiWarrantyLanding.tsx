@@ -312,7 +312,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center"><div className="text-3xl md:text-4xl mb-3 md:mb-4">{c.emoji}</div><h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{c.title}</h3><p className="text-gray-600 text-xs md:text-sm">{c.desc}</p></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona Electric front view - Crystal clear Hyundai warranty coverage UK" className="max-w-[200px] xl:max-w-[240px] h-auto object-contain" width={240} height={180} /></div>
+              <div className="hidden lg:flex justify-center"><OptimizedImage src={hyundaiKonaCoverage} alt="Hyundai Kona Electric front view - Crystal clear Hyundai warranty coverage UK" className="w-full max-w-[300px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
