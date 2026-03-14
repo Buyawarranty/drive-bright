@@ -278,7 +278,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
                   <div key={i} className="flex gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100"><div className="w-10 h-10 md:w-12 md:h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0"><b.icon className="w-5 h-5 md:w-6 md:h-6 text-brand-orange" /></div><div><h3 className="text-base md:text-lg font-bold text-gray-900 mb-0.5 md:mb-1">{b.title}</h3><p className="text-gray-600 text-xs md:text-sm">{b.desc}</p></div></div>
                 ))}
               </div>
-              <div className="hidden lg:flex justify-center items-end pt-16"><OptimizedImage src={hyundaiTucsonHero} alt="Hyundai Tucson front view - Why Hyundai owners choose Buy A Warranty" className="max-w-[35%] h-auto object-contain" width={400} height={300} /></div>
+              <div className="hidden lg:flex justify-center items-end pt-16"><OptimizedImage src={hyundaiSantaFeTestimonials} alt="Hyundai Santa Fe front view - Why Hyundai owners choose Buy A Warranty" className="w-full max-w-[320px] h-auto object-contain" width={1024} height={768} /></div>
             </div>
           </div>
         </section>
