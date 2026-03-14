@@ -603,7 +603,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Toyota extended warranty services in the UK, covering Yaris, Corolla, RAV4, C-HR, Prius, Camry, bZ4X, Land Cruiser, and Hilux models. Human-authored and fact-checked." />
-        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Toyota extended warranty plans in the UK from £24/month. Coverage includes engine, gearbox, electrical, Hybrid Synergy Drive and EV components for all Toyota models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
+        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Toyota extended warranty plans in the UK from £19/month. Coverage includes engine, gearbox, electrical, Hybrid Synergy Drive and EV components for all Toyota models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
