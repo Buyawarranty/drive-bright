@@ -418,7 +418,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "24",
+      "price": "19",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/toyota-warranty/",
