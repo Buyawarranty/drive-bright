@@ -75,7 +75,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Assign permission - ALL sales roles and admins can ALWAYS assign leads
   // This is a core sales function that must never be blocked by granular permissions
-  const canAssignLeads = isAdmin || userRole === 'sales' || hasGranularPermission('new-leads', 'assign') !== false;
+  const canAssignLeads = isAdmin || userRole === 'sales' || userRole === 'sales_lead' || hasGranularPermission('new-leads', 'assign') !== false;
   
   // Export permission - admins always can, others need explicit permission
   const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
