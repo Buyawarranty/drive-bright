@@ -1334,6 +1334,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         mileage: customerData.mileage || vehicleData.mileage
       };
       
+      const trackingData = getTrackingData();
+
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
           planId,
@@ -1361,6 +1363,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
+          trackingData,
           protectionAddOns: {
             tyre: updatedPricingData.protectionAddOns?.tyre || false,
             wearAndTear: updatedPricingData.protectionAddOns?.wearAndTear || false,
