@@ -1455,6 +1455,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       
       console.log('💳 processStripeCheckout: Calling create-payment-intent API...');
       
+      const trackingData = getTrackingData();
+
       // Create PaymentIntent for embedded checkout (no redirect)
       const { data: paymentIntentData, error: paymentIntentError } = await supabase.functions.invoke('create-payment-intent', {
         body: {
@@ -1494,8 +1496,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             motFee: updatedPricingData.protectionAddOns?.motFee || false,
           },
           // Tracking data for conversions
-          gclid: localStorage.getItem('gclid') || '',
-          gaClientId: localStorage.getItem('ga_client_id') || '',
+          gclid: trackingData.gclid || '',
+          gaClientId: trackingData.clientId || '',
         }
       });
 
