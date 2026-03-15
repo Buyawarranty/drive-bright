@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getStoredFbclid } from '@/utils/fbclidCapture';
+import { getTrackingData } from '@/utils/gclidCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -1333,6 +1334,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         mileage: customerData.mileage || vehicleData.mileage
       };
       
+      const trackingData = getTrackingData();
+
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
           planId,
@@ -1360,6 +1363,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
+          trackingData,
           protectionAddOns: {
             tyre: updatedPricingData.protectionAddOns?.tyre || false,
             wearAndTear: updatedPricingData.protectionAddOns?.wearAndTear || false,
@@ -1451,6 +1455,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       
       console.log('💳 processStripeCheckout: Calling create-payment-intent API...');
       
+      const trackingData = getTrackingData();
+
       // Create PaymentIntent for embedded checkout (no redirect)
       const { data: paymentIntentData, error: paymentIntentError } = await supabase.functions.invoke('create-payment-intent', {
         body: {
@@ -1490,8 +1496,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             motFee: updatedPricingData.protectionAddOns?.motFee || false,
           },
           // Tracking data for conversions
-          gclid: localStorage.getItem('gclid') || '',
-          gaClientId: localStorage.getItem('ga_client_id') || '',
+          gclid: trackingData.gclid || '',
+          gaClientId: trackingData.clientId || '',
         }
       });
 
