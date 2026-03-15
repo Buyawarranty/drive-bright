@@ -781,12 +781,16 @@ export const CustomersTab = () => {
         return { start: y, end: ye };
       }
       case 'last7':
+      case '7days':
         return { start: new Date(todayStart.getTime() - 6 * 86400000), end: todayEnd };
       case 'last14':
+      case '14days':
         return { start: new Date(todayStart.getTime() - 13 * 86400000), end: todayEnd };
       case 'last30':
+      case '30days':
         return { start: new Date(todayStart.getTime() - 29 * 86400000), end: todayEnd };
       case 'month':
+      case 'this_month':
         return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
       case 'all':
       default:
