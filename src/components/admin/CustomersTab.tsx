@@ -375,7 +375,6 @@ export const CustomersTab = () => {
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('today');
   const [myDealsDateFilter, setMyDealsDateFilter] = useState<string>('today');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
-  const [agentCountsPeriod, setAgentCountsPeriod] = useState<string>('all');
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
@@ -496,10 +495,10 @@ export const CustomersTab = () => {
     fetchAvailableTags();
   }, []);
 
-  // Re-fetch agent deal counts when period changes
+  // Re-fetch agent deal counts when Total Sales date filter changes
   useEffect(() => {
     fetchAgentDealCounts();
-  }, [agentCountsPeriod]);
+  }, [totalSalesDateFilter]);
 
   // Fetch tag assignments after tags and customers are loaded
   useEffect(() => {
@@ -782,12 +781,16 @@ export const CustomersTab = () => {
         return { start: y, end: ye };
       }
       case 'last7':
+      case '7days':
         return { start: new Date(todayStart.getTime() - 6 * 86400000), end: todayEnd };
       case 'last14':
+      case '14days':
         return { start: new Date(todayStart.getTime() - 13 * 86400000), end: todayEnd };
       case 'last30':
+      case '30days':
         return { start: new Date(todayStart.getTime() - 29 * 86400000), end: todayEnd };
       case 'month':
+      case 'this_month':
         return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
       case 'all':
       default:
@@ -797,7 +800,7 @@ export const CustomersTab = () => {
 
   const fetchAgentDealCounts = async () => {
     try {
-      const range = getAgentCountsDateRange(agentCountsPeriod);
+      const range = getAgentCountsDateRange(totalSalesDateFilter);
 
       let activeQuery = supabase
         .from('customers')
@@ -2869,30 +2872,13 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1 w-[160px]">
-                  <Label className="text-sm font-medium">Deals period</Label>
-                  <Select value={agentCountsPeriod} onValueChange={setAgentCountsPeriod}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="yesterday">Yesterday</SelectItem>
-                      <SelectItem value="last7">Last 7 Days</SelectItem>
-                      <SelectItem value="last14">Last 14 Days</SelectItem>
-                      <SelectItem value="last30">Last 30 Days</SelectItem>
-                      <SelectItem value="month">This Month</SelectItem>
-                      <SelectItem value="all">All Time</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 </>
               )}
 
               {/* Inline Total Sales / My Deals */}
               {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
                 <div className="flex items-end gap-3 pb-0.5">
-                  {/* Super Admin: Total Sales */}
+                  {/* Super Admin / Admin: Total Sales */}
                   {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && (
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-md border">
                       <button
@@ -2954,20 +2940,22 @@ export const CustomersTab = () => {
                             const totalValue = salesInRange.reduce((sum, c) => sum + (c.final_amount || 0), 0);
                             const count = salesInRange.length;
 
+                            const isSuperAdmin = currentAdminUser?.role === 'super_admin';
+
                             let isRecord = false;
                             let recordLabel = '';
-                            if (totalSalesDateFilter === 'today' || totalSalesDateFilter === 'yesterday') {
+                            if (isSuperAdmin && (totalSalesDateFilter === 'today' || totalSalesDateFilter === 'yesterday')) {
                               const earliest = customers.reduce((min, c) => { const d = new Date(c.signup_date || c.created_at || ''); return d < min ? d : min; }, new Date());
                               let maxDaySales = 0;
                               const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), earliest.getDate());
                               const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                               while (cursor < todayStart) { const dayEnd = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), 23, 59, 59, 999); const ds = getSalesForRange(new Date(cursor), dayEnd); if (ds > maxDaySales) maxDaySales = ds; cursor.setDate(cursor.getDate() + 1); }
                               if (totalValue > maxDaySales && totalValue > 0) { isRecord = true; recordLabel = 'Highest Day!'; }
-                            } else if (totalSalesDateFilter === '7days') {
+                            } else if (isSuperAdmin && totalSalesDateFilter === '7days') {
                               let maxWeekSales = 0;
                               for (let w = 1; w <= 52; w++) { const wEnd = new Date(now); wEnd.setDate(wEnd.getDate() - (w * 7)); const wStart = new Date(wEnd); wStart.setDate(wStart.getDate() - 7); const ws = getSalesForRange(wStart, wEnd); if (ws > maxWeekSales) maxWeekSales = ws; }
                               if (totalValue > maxWeekSales && totalValue > 0) { isRecord = true; recordLabel = 'Highest Week!'; }
-                            } else if (totalSalesDateFilter === 'this_month' || totalSalesDateFilter === '30days') {
+                            } else if (isSuperAdmin && (totalSalesDateFilter === 'this_month' || totalSalesDateFilter === '30days')) {
                               let maxMonthSales = 0;
                               const earliest = customers.reduce((min, c) => { const d = new Date(c.signup_date || c.created_at || ''); return d < min ? d : min; }, new Date());
                               for (let y = earliest.getFullYear(); y <= now.getFullYear(); y++) { const mStart = y === earliest.getFullYear() ? earliest.getMonth() : 0; const mEnd = y === now.getFullYear() ? now.getMonth() - 1 : 11; for (let m = mStart; m <= mEnd; m++) { const ms = getSalesForRange(new Date(y, m, 1), new Date(y, m + 1, 0, 23, 59, 59, 999)); if (ms > maxMonthSales) maxMonthSales = ms; } }
@@ -2984,14 +2972,18 @@ export const CustomersTab = () => {
                                     {recordLabel}
                                   </span>
                                 )}
-                                <span className={`text-sm font-bold ${isCancelledView ? 'text-red-600' : 'text-green-700'}`}>
-                                  {isCancelledView ? '-' : ''}£{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
+                                {isSuperAdmin && (
+                                  <>
+                                    <span className={`text-sm font-bold ${isCancelledView ? 'text-red-600' : 'text-green-700'}`}>
+                                      {isCancelledView ? '-' : ''}£{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">•</span>
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                  </>
+                                )}
                                 <span className="text-xs text-muted-foreground">{count} {isCancelledView ? 'refund' : 'sale'}{count !== 1 ? 's' : ''}</span>
-                                <span className="text-xs text-muted-foreground">•</span>
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
                               </div>
                             );
                           })()}
@@ -3042,15 +3034,12 @@ export const CustomersTab = () => {
                           const signupDate = new Date(c.signup_date || c.created_at || '');
                           return signupDate >= dateFrom && signupDate <= dateTo;
                         });
-                        const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
                         const count = myDeals.length;
-                        const avgValue = count > 0 ? totalValue / count : 0;
                         return (
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-primary">
-                              Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {count} deal{count !== 1 ? 's' : ''}
                             </span>
-                            <span className="text-xs text-muted-foreground">{count} deal{count !== 1 ? 's' : ''}</span>
                           </div>
                         );
                       })()}
