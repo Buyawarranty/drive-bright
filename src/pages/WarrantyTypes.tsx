@@ -523,6 +523,20 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
+              {/* Citroën Brand Card */}
+              <Link 
+                to="/warranty-types/citroen-warranty"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <span className="text-2xl font-bold text-gray-700">C</span>
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Citroën</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
               {/* MG Brand Card */}
               <Link 
                 to="/warranty-types/mg-warranty"
