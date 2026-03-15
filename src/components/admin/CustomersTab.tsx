@@ -374,6 +374,7 @@ export const CustomersTab = () => {
   const [showTotalSales, setShowTotalSales] = useState(true);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('today');
   const [myDealsDateFilter, setMyDealsDateFilter] = useState<string>('today');
+  const [agentDealCounts, setAgentDealCounts] = useState<Record<string, number>>({});
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
@@ -489,6 +490,7 @@ export const CustomersTab = () => {
     fetchPlans();
     fetchEmailStatuses();
     fetchAdminUsers();
+    fetchAgentDealCounts();
     getCurrentUser();
     fetchAvailableTags();
   }, []);
@@ -758,6 +760,46 @@ export const CustomersTab = () => {
       }
     } catch (error) {
       console.error('Error fetching admin users:', error);
+    }
+  };
+
+  const fetchAgentDealCounts = async () => {
+    try {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      // Active customers this month (same as scoreboard)
+      const { data: activeCustomers } = await supabase
+        .from('customers')
+        .select('id, assigned_to')
+        .eq('is_deleted', false)
+        .ilike('status', 'active')
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', monthEnd.toISOString());
+
+      // Approved commission claims this month (same as scoreboard)
+      const { data: approvedClaims } = await supabase
+        .from('commission_claims')
+        .select('id, agent_id')
+        .eq('status', 'approved')
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', monthEnd.toISOString());
+
+      const counts: Record<string, number> = {};
+      (activeCustomers || []).forEach(c => {
+        if (c.assigned_to) {
+          counts[c.assigned_to] = (counts[c.assigned_to] || 0) + 1;
+        }
+      });
+      (approvedClaims || []).forEach(c => {
+        if (c.agent_id) {
+          counts[c.agent_id] = (counts[c.agent_id] || 0) + 1;
+        }
+      });
+      setAgentDealCounts(counts);
+    } catch (error) {
+      console.error('Error fetching agent deal counts:', error);
     }
   };
 
@@ -2775,7 +2817,7 @@ export const CustomersTab = () => {
                       {adminUsers
                         .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
                         .map(user => {
-                          const dealCount = customers.filter(c => c.assigned_to === user.id && c.status?.toLowerCase() !== 'cancelled' && c.status?.toLowerCase() !== 'refunded').length;
+                          const dealCount = agentDealCounts[user.id] || 0;
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                           return (
                             <SelectItem key={user.id} value={user.id}>
