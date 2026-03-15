@@ -2826,11 +2826,11 @@ export const CustomersTab = () => {
                       {adminUsers
                         .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
                         .map(user => {
-                          const dealCount = agentDealCounts[user.id] || 0;
+                          const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                           return (
                             <SelectItem key={user.id} value={user.id}>
-                              {displayName} ({dealCount})
+                              {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
                             </SelectItem>
                           );
                         })}
