@@ -115,7 +115,7 @@ const DynamicLandingPage: React.FC = () => {
         'buy-a-used-car-warranty-reliable-warranties', 'van-warranty',
         'ev-warranty', 'motorbike-repair-warranty-uk-warranties',
         'motorcycle-warranty', 'car-extended-warranty', 'used-car-warranty-uk',
-        'home', 'warranty-types/bmw-warranty', 'warranty-types/mercedes-warranty', 'warranty-types/honda-warranty', 'warranty-types/toyota-warranty', 'warranty-types/ford-warranty', 'warranty-types/kia-warranty', 'warranty-types/hyundai-warranty', 'warranty-types/ev-warranty', 'warranty-types/vans-warranty', 'warranty-types/mg-warranty', 'warranty-types/skoda-warranty', 'warranty-types/audi-warranty', 'warranty-types/nissan-warranty', 'warranty-types/peugeot-warranty', 'warranty-types/vauxhall-warranty', 'warranty-types/volvo-warranty', 'warranty-types/hybrid-warranty', 'warranty-types/phev-warranty', 'warranty-types/volkswagen-warranty'
+        'home', 'warranty-types/bmw-warranty', 'warranty-types/mercedes-warranty', 'warranty-types/honda-warranty', 'warranty-types/toyota-warranty', 'warranty-types/ford-warranty', 'warranty-types/kia-warranty', 'warranty-types/hyundai-warranty', 'warranty-types/ev-warranty', 'warranty-types/vans-warranty', 'warranty-types/mg-warranty', 'warranty-types/skoda-warranty', 'warranty-types/audi-warranty', 'warranty-types/nissan-warranty', 'warranty-types/peugeot-warranty', 'warranty-types/vauxhall-warranty', 'warranty-types/volvo-warranty', 'warranty-types/hybrid-warranty', 'warranty-types/phev-warranty', 'warranty-types/volkswagen-warranty', 'warranty-types/citroen-warranty'
       ];
 
       // Clean slug for comparison
