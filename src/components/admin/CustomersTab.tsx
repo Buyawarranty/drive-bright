@@ -2872,25 +2872,8 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1 w-[160px]">
-                  <Label className="text-sm font-medium">Deals period</Label>
-                  <Select value={agentCountsPeriod} onValueChange={setAgentCountsPeriod}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="yesterday">Yesterday</SelectItem>
-                      <SelectItem value="last7">Last 7 Days</SelectItem>
-                      <SelectItem value="last14">Last 14 Days</SelectItem>
-                      <SelectItem value="last30">Last 30 Days</SelectItem>
-                      <SelectItem value="month">This Month</SelectItem>
-                      <SelectItem value="all">All Time</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 </>
-              )}
+              )
 
               {/* Inline Total Sales / My Deals */}
               {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
