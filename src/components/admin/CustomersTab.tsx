@@ -3040,9 +3040,8 @@ export const CustomersTab = () => {
                         return (
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-primary">
-                              Avg: £{avgValue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {count} deal{count !== 1 ? 's' : ''}
                             </span>
-                            <span className="text-xs text-muted-foreground">{count} deal{count !== 1 ? 's' : ''}</span>
                           </div>
                         );
                       })()}
