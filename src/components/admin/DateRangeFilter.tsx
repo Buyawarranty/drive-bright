@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
-import { format, subDays, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CalendarIcon, X } from 'lucide-react';
+import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 
@@ -13,248 +14,202 @@ interface DateRangeFilterProps {
   className?: string;
 }
 
-type PresetKey = 'today' | 'yesterday' | 'this_week' | 'last_7' | 'last_week' | 'last_14' | 'this_month' | 'last_30' | 'last_month' | 'all_time' | 'custom';
-
-interface Preset {
-  key: PresetKey;
+interface QuickFilter {
   label: string;
+  key: string;
   getRange: () => DateRange | undefined;
 }
 
-const presets: Preset[] = [
-  {
-    key: 'today',
-    label: 'Today',
-    getRange: () => {
-      const today = new Date();
-      return { from: today, to: today };
-    },
-  },
-  {
-    key: 'yesterday',
-    label: 'Yesterday',
-    getRange: () => {
-      const yesterday = subDays(new Date(), 1);
-      return { from: yesterday, to: yesterday };
-    },
-  },
-  {
-    key: 'this_week',
-    label: 'This week (Mon – Today)',
-    getRange: () => {
-      const today = new Date();
-      return { from: startOfWeek(today, { weekStartsOn: 1 }), to: today };
-    },
-  },
-  {
-    key: 'last_7',
-    label: 'Last 7 days',
-    getRange: () => ({ from: subDays(new Date(), 6), to: new Date() }),
-  },
-  {
-    key: 'last_week',
-    label: 'Last week (Mon – Sun)',
-    getRange: () => {
-      const lastWeekStart = startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 });
-      return { from: lastWeekStart, to: endOfWeek(lastWeekStart, { weekStartsOn: 1 }) };
-    },
-  },
-  {
-    key: 'last_14',
-    label: 'Last 14 days',
-    getRange: () => ({ from: subDays(new Date(), 13), to: new Date() }),
-  },
-  {
-    key: 'this_month',
-    label: 'This month',
-    getRange: () => ({ from: startOfMonth(new Date()), to: new Date() }),
-  },
-  {
-    key: 'last_30',
-    label: 'Last 30 days',
-    getRange: () => ({ from: subDays(new Date(), 29), to: new Date() }),
-  },
-  {
-    key: 'last_month',
-    label: 'Last month',
-    getRange: () => {
-      const lm = subMonths(new Date(), 1);
-      return { from: startOfMonth(lm), to: endOfMonth(lm) };
-    },
-  },
-  {
-    key: 'all_time',
-    label: 'All time',
-    getRange: () => undefined,
-  },
+const quickFilters: QuickFilter[] = [
+  { label: 'All Time', key: 'all_time', getRange: () => undefined },
+  { label: 'Today', key: 'today', getRange: () => { const t = new Date(); return { from: t, to: t }; } },
+  { label: 'Yesterday', key: 'yesterday', getRange: () => { const y = subDays(new Date(), 1); return { from: y, to: y }; } },
+  { label: 'Last 7 days', key: 'last_7', getRange: () => ({ from: subDays(new Date(), 6), to: new Date() }) },
+  { label: 'Last 30 days', key: 'last_30', getRange: () => ({ from: subDays(new Date(), 29), to: new Date() }) },
+  { label: 'Last 90 days', key: 'last_90', getRange: () => ({ from: subDays(new Date(), 89), to: new Date() }) },
 ];
 
-function getActivePreset(dateRange: DateRange | undefined): PresetKey {
+function getActiveQuickFilter(dateRange: DateRange | undefined): string | null {
   if (!dateRange?.from) return 'all_time';
-  for (const preset of presets) {
-    if (preset.key === 'all_time' || preset.key === 'custom') continue;
-    const r = preset.getRange();
+  for (const filter of quickFilters) {
+    if (filter.key === 'all_time') continue;
+    const r = filter.getRange();
     if (
       r?.from && r?.to && dateRange.to &&
       format(r.from, 'yyyy-MM-dd') === format(dateRange.from, 'yyyy-MM-dd') &&
       format(r.to, 'yyyy-MM-dd') === format(dateRange.to, 'yyyy-MM-dd')
-    ) {
-      return preset.key;
-    }
+    ) return filter.key;
   }
-  return 'custom';
+  return null;
 }
 
 function getDisplayLabel(dateRange: DateRange | undefined): string {
   if (!dateRange?.from) return 'All time';
-  const active = getActivePreset(dateRange);
-  const preset = presets.find(p => p.key === active);
-  if (preset && active !== 'custom') return preset.label;
+  const active = getActiveQuickFilter(dateRange);
+  const match = quickFilters.find(f => f.key === active);
+  if (match) return match.label;
   if (dateRange.to && format(dateRange.from, 'yyyy-MM-dd') === format(dateRange.to, 'yyyy-MM-dd')) {
     return format(dateRange.from, 'MMM d, yyyy');
   }
-  if (dateRange.to) {
-    return `${format(dateRange.from, 'MMM d, yyyy')} – ${format(dateRange.to, 'MMM d, yyyy')}`;
-  }
+  if (dateRange.to) return `${format(dateRange.from, 'MMM d')} – ${format(dateRange.to, 'MMM d, yyyy')}`;
   return format(dateRange.from, 'MMM d, yyyy');
 }
+
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
 export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   dateRange,
   onDateRangeChange,
-  className
+  className,
 }) => {
   const [open, setOpen] = useState(false);
 
-  const handlePreset = (preset: Preset) => {
-    const range = preset.getRange();
-    onDateRangeChange(range);
-    if (preset.key !== 'custom') {
-      setOpen(false);
+  const activeQuick = getActiveQuickFilter(dateRange);
+
+  // Determine selected month/year from dateRange
+  const selectedMonth = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) return '';
+    const from = dateRange.from;
+    const to = dateRange.to;
+    const monthStart = startOfMonth(from);
+    const monthEnd = endOfMonth(from);
+    if (
+      format(from, 'yyyy-MM-dd') === format(monthStart, 'yyyy-MM-dd') &&
+      format(to, 'yyyy-MM-dd') === format(monthEnd, 'yyyy-MM-dd')
+    ) {
+      return String(from.getMonth());
     }
+    return '';
+  }, [dateRange]);
+
+  const selectedYear = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) return '';
+    const from = dateRange.from;
+    const to = dateRange.to;
+    const yearStart = startOfYear(from);
+    const yearEnd = endOfYear(from);
+    if (
+      format(from, 'yyyy-MM-dd') === format(yearStart, 'yyyy-MM-dd') &&
+      format(to, 'yyyy-MM-dd') === format(yearEnd, 'yyyy-MM-dd')
+    ) {
+      return String(from.getFullYear());
+    }
+    return '';
+  }, [dateRange]);
+
+  // Generate year options (last 5 years + current)
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 6 }, (_, i) => currentYear - i);
+  }, []);
+
+  const handleQuickFilter = (filter: QuickFilter) => {
+    onDateRangeChange(filter.getRange());
   };
 
-  const navigateDay = (direction: -1 | 1) => {
-    if (!dateRange?.from || !dateRange?.to) return;
-    const diffMs = dateRange.to.getTime() - dateRange.from.getTime();
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-    const shift = diffDays === 0 ? 1 : diffDays + 1;
-    const newFrom = addDays(dateRange.from, direction * shift);
-    const newTo = addDays(dateRange.to, direction * shift);
-    // Don't navigate into the future
-    if (newTo > new Date()) return;
-    onDateRangeChange({ from: newFrom, to: newTo });
+  const handleMonthSelect = (monthIdx: string) => {
+    if (!monthIdx) { onDateRangeChange(undefined); return; }
+    const now = new Date();
+    const year = selectedYear ? parseInt(selectedYear) : now.getFullYear();
+    const monthDate = new Date(year, parseInt(monthIdx), 1);
+    onDateRangeChange({ from: startOfMonth(monthDate), to: endOfMonth(monthDate) });
   };
 
-  const handleQuickLast30 = () => {
-    const range = presets.find(p => p.key === 'last_30')!.getRange();
-    onDateRangeChange(range);
+  const handleYearSelect = (year: string) => {
+    if (!year) { onDateRangeChange(undefined); return; }
+    const yearDate = new Date(parseInt(year), 0, 1);
+    onDateRangeChange({ from: startOfYear(yearDate), to: endOfYear(yearDate) });
   };
-
-  const activePreset = getActivePreset(dateRange);
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
-      {/* Main date display with dropdown */}
+    <div className={cn('', className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             className={cn(
-              "justify-between text-left font-normal h-9 px-3 min-w-[180px]",
-              !dateRange && "text-muted-foreground"
+              'justify-between text-left font-normal h-9 px-3 min-w-[180px]',
+              !dateRange && 'text-muted-foreground'
             )}
           >
+            <CalendarIcon className="mr-2 h-4 w-4" />
             <span className="truncate text-sm">{getDisplayLabel(dateRange)}</span>
-            <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
+            {dateRange && (
+              <X
+                className="ml-2 h-3.5 w-3.5 opacity-50 hover:opacity-100"
+                onClick={(e) => { e.stopPropagation(); onDateRangeChange(undefined); }}
+              />
+            )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0 z-50"
-          align="start"
-          side="bottom"
-          sideOffset={4}
-          avoidCollisions
-        >
-          <div className="flex">
-            {/* Presets sidebar */}
-            <div className="w-[180px] border-r py-1">
-              <button
-                className={cn(
-                  "w-full text-left px-4 py-2 text-sm hover:bg-accent transition-colors",
-                  activePreset === 'custom' && "text-primary font-medium bg-accent"
-                )}
-                onClick={() => {/* just keep popover open for manual selection */}}
-              >
-                Custom
-              </button>
-              {presets.map(preset => (
-                <button
-                  key={preset.key}
-                  className={cn(
-                    "w-full text-left px-4 py-2 text-sm hover:bg-accent transition-colors",
-                    activePreset === preset.key && "text-primary font-medium bg-accent"
-                  )}
-                  onClick={() => handlePreset(preset)}
+        <PopoverContent className="w-auto p-4 z-50 space-y-4" align="start" sideOffset={4}>
+          {/* Quick Filters */}
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-2">Quick filters</p>
+            <div className="flex flex-wrap gap-2">
+              {quickFilters.map((filter) => (
+                <Button
+                  key={filter.key}
+                  variant={activeQuick === filter.key ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => handleQuickFilter(filter)}
                 >
-                  {preset.label}
-                </button>
+                  {filter.label}
+                </Button>
               ))}
             </div>
-            {/* Calendar */}
-            <div className="p-0">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
-                selected={dateRange}
-                onSelect={(range) => {
-                  onDateRangeChange(range);
-                }}
-                numberOfMonths={2}
-                className="pointer-events-auto"
-                disabled={(date) => date > new Date()}
-              />
+          </div>
+
+          {/* By Month / By Year */}
+          <div className="flex gap-4">
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">By Month</p>
+              <Select value={selectedMonth} onValueChange={handleMonthSelect}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month, i) => (
+                    <SelectItem key={i} value={String(i)}>{month}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">By Year</p>
+              <Select value={selectedYear} onValueChange={handleYearSelect}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Custom Range Calendar */}
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-2">Custom Range</p>
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
+              selected={dateRange}
+              onSelect={(range) => onDateRangeChange(range)}
+              numberOfMonths={2}
+              className="pointer-events-auto"
+              disabled={(date) => date > new Date()}
+            />
           </div>
         </PopoverContent>
       </Popover>
-
-      {/* Prev / Next navigation arrows */}
-      {dateRange?.from && (
-        <>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            onClick={() => navigateDay(-1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            onClick={() => navigateDay(1)}
-            disabled={dateRange?.to ? dateRange.to >= new Date() : true}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </>
-      )}
-
-
-      {/* Clear button */}
-      {dateRange && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => onDateRangeChange(undefined)}
-        >
-          <X className="h-3.5 w-3.5" />
-        </Button>
-      )}
     </div>
   );
 };
