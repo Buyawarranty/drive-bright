@@ -764,37 +764,62 @@ export const CustomersTab = () => {
     }
   };
 
+  const getAgentCountsDateRange = (period: string) => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    switch (period) {
+      case 'today':
+        return { start: todayStart, end: todayEnd };
+      case 'yesterday': {
+        const y = new Date(todayStart); y.setDate(y.getDate() - 1);
+        const ye = new Date(y); ye.setHours(23, 59, 59, 999);
+        return { start: y, end: ye };
+      }
+      case 'last7':
+        return { start: new Date(todayStart.getTime() - 6 * 86400000), end: todayEnd };
+      case 'last14':
+        return { start: new Date(todayStart.getTime() - 13 * 86400000), end: todayEnd };
+      case 'last30':
+        return { start: new Date(todayStart.getTime() - 29 * 86400000), end: todayEnd };
+      case 'month':
+        return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
+      case 'all':
+      default:
+        return null;
+    }
+  };
+
   const fetchAgentDealCounts = async () => {
     try {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const range = getAgentCountsDateRange(agentCountsPeriod);
 
-      // Active customers this month (same as scoreboard)
-      const { data: activeCustomers } = await supabase
+      let activeQuery = supabase
         .from('customers')
         .select('id, assigned_to')
         .eq('is_deleted', false)
-        .ilike('status', 'active')
-        .gte('created_at', monthStart.toISOString())
-        .lte('created_at', monthEnd.toISOString());
+        .ilike('status', 'active');
 
-      // Cancelled/refunded customers this month (same as scoreboard)
-      const { data: cancelledCustomers } = await supabase
+      let cancelledQuery = supabase
         .from('customers')
         .select('id, assigned_to')
         .eq('is_deleted', false)
-        .or('status.ilike.cancelled,status.ilike.refunded')
-        .gte('updated_at', monthStart.toISOString())
-        .lte('updated_at', monthEnd.toISOString());
+        .or('status.ilike.cancelled,status.ilike.refunded');
 
-      // Approved commission claims this month (same as scoreboard)
-      const { data: approvedClaims } = await supabase
+      let claimsQuery = supabase
         .from('commission_claims')
         .select('id, agent_id')
-        .eq('status', 'approved')
-        .gte('created_at', monthStart.toISOString())
-        .lte('created_at', monthEnd.toISOString());
+        .eq('status', 'approved');
+
+      if (range) {
+        activeQuery = activeQuery.gte('created_at', range.start.toISOString()).lte('created_at', range.end.toISOString());
+        cancelledQuery = cancelledQuery.gte('updated_at', range.start.toISOString()).lte('updated_at', range.end.toISOString());
+        claimsQuery = claimsQuery.gte('created_at', range.start.toISOString()).lte('created_at', range.end.toISOString());
+      }
+
+      const { data: activeCustomers } = await activeQuery;
+      const { data: cancelledCustomers } = await cancelledQuery;
+      const { data: approvedClaims } = await claimsQuery;
 
       const counts: Record<string, { sales: number; cancelled: number }> = {};
       const ensure = (id: string) => { if (!counts[id]) counts[id] = { sales: 0, cancelled: 0 }; };
