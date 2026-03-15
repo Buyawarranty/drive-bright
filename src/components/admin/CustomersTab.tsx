@@ -2817,7 +2817,7 @@ export const CustomersTab = () => {
                       {adminUsers
                         .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
                         .map(user => {
-                          const dealCount = customers.filter(c => c.assigned_to === user.id && c.status?.toLowerCase() !== 'cancelled' && c.status?.toLowerCase() !== 'refunded').length;
+                          const dealCount = agentDealCounts[user.id] || 0;
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                           return (
                             <SelectItem key={user.id} value={user.id}>
