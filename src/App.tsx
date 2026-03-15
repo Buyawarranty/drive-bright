@@ -97,6 +97,7 @@ const NissanWarrantyLanding = lazy(() => import("./pages/warranty-types/NissanWa
 const PeugeotWarrantyLanding = lazy(() => import("./pages/warranty-types/PeugeotWarrantyLanding"));
 const VauxhallWarrantyLanding = lazy(() => import("./pages/warranty-types/VauxhallWarrantyLanding"));
 const VolvoWarrantyLanding = lazy(() => import("./pages/warranty-types/VolvoWarrantyLanding"));
+const CitroenWarrantyLanding = lazy(() => import("./pages/warranty-types/CitroenWarrantyLanding"));
 const EVWarrantyLanding = lazy(() => import("./pages/warranty-types/EVWarrantyLanding"));
 const ClaimUpdateForm = lazy(() => import("./pages/ClaimUpdateForm"));
 const HybridWarrantyLanding = lazy(() => import("./pages/warranty-types/HybridWarrantyLanding"));
