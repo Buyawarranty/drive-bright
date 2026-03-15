@@ -3034,9 +3034,7 @@ export const CustomersTab = () => {
                           const signupDate = new Date(c.signup_date || c.created_at || '');
                           return signupDate >= dateFrom && signupDate <= dateTo;
                         });
-                        const totalValue = myDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
                         const count = myDeals.length;
-                        const avgValue = count > 0 ? totalValue / count : 0;
                         return (
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-primary">
