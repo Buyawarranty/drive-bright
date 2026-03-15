@@ -2841,6 +2841,7 @@ export const CustomersTab = () => {
             <div className="flex items-end gap-4 flex-wrap">
               {/* Filter by Agent */}
               {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
+                <>
                 <div className="space-y-1 w-[220px]">
                   <Label className="text-sm font-medium">Sales by Agent</Label>
                   <Select value={filterByAgent} onValueChange={setFilterByAgent}>
@@ -2885,6 +2886,7 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                </>
               )}
 
               {/* Inline Total Sales / My Deals */}
