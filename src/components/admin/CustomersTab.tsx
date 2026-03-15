@@ -800,7 +800,7 @@ export const CustomersTab = () => {
 
   const fetchAgentDealCounts = async () => {
     try {
-      const range = getAgentCountsDateRange(agentCountsPeriod);
+      const range = getAgentCountsDateRange(totalSalesDateFilter);
 
       let activeQuery = supabase
         .from('customers')
