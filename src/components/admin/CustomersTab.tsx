@@ -374,6 +374,7 @@ export const CustomersTab = () => {
   const [showTotalSales, setShowTotalSales] = useState(true);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('today');
   const [myDealsDateFilter, setMyDealsDateFilter] = useState<string>('today');
+  const [agentDealCounts, setAgentDealCounts] = useState<Record<string, number>>({});
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
