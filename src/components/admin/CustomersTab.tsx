@@ -2873,7 +2873,7 @@ export const CustomersTab = () => {
                   </Select>
                 </div>
                 </>
-              )
+              )}
 
               {/* Inline Total Sales / My Deals */}
               {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && (
