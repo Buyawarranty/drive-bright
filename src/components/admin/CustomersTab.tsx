@@ -373,7 +373,6 @@ export const CustomersTab = () => {
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
-  const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
