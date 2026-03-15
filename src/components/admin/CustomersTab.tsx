@@ -374,7 +374,7 @@ export const CustomersTab = () => {
   const [showTotalSales, setShowTotalSales] = useState(true);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('today');
   const [myDealsDateFilter, setMyDealsDateFilter] = useState<string>('today');
-  const [agentDealCounts, setAgentDealCounts] = useState<Record<string, number>>({});
+  const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
@@ -778,6 +778,15 @@ export const CustomersTab = () => {
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString());
 
+      // Cancelled/refunded customers this month (same as scoreboard)
+      const { data: cancelledCustomers } = await supabase
+        .from('customers')
+        .select('id, assigned_to')
+        .eq('is_deleted', false)
+        .or('status.ilike.cancelled,status.ilike.refunded')
+        .gte('updated_at', monthStart.toISOString())
+        .lte('updated_at', monthEnd.toISOString());
+
       // Approved commission claims this month (same as scoreboard)
       const { data: approvedClaims } = await supabase
         .from('commission_claims')
@@ -786,16 +795,16 @@ export const CustomersTab = () => {
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString());
 
-      const counts: Record<string, number> = {};
+      const counts: Record<string, { sales: number; cancelled: number }> = {};
+      const ensure = (id: string) => { if (!counts[id]) counts[id] = { sales: 0, cancelled: 0 }; };
       (activeCustomers || []).forEach(c => {
-        if (c.assigned_to) {
-          counts[c.assigned_to] = (counts[c.assigned_to] || 0) + 1;
-        }
+        if (c.assigned_to) { ensure(c.assigned_to); counts[c.assigned_to].sales++; }
       });
       (approvedClaims || []).forEach(c => {
-        if (c.agent_id) {
-          counts[c.agent_id] = (counts[c.agent_id] || 0) + 1;
-        }
+        if (c.agent_id) { ensure(c.agent_id); counts[c.agent_id].sales++; }
+      });
+      (cancelledCustomers || []).forEach(c => {
+        if (c.assigned_to) { ensure(c.assigned_to); counts[c.assigned_to].cancelled++; }
       });
       setAgentDealCounts(counts);
     } catch (error) {
@@ -2817,11 +2826,11 @@ export const CustomersTab = () => {
                       {adminUsers
                         .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
                         .map(user => {
-                          const dealCount = agentDealCounts[user.id] || 0;
+                          const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                           return (
                             <SelectItem key={user.id} value={user.id}>
-                              {displayName} ({dealCount})
+                              {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
                             </SelectItem>
                           );
                         })}
