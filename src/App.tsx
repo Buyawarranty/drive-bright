@@ -269,6 +269,8 @@ const App = () => {
                     <Route path="/warranty-types/hybrid-warranty/" element={<HybridWarrantyLanding />} />
                     <Route path="/warranty-types/phev-warranty" element={<PHEVWarrantyLanding />} />
                     <Route path="/warranty-types/phev-warranty/" element={<PHEVWarrantyLanding />} />
+                    <Route path="/warranty-types/citroen-warranty" element={<CitroenWarrantyLanding />} />
+                    <Route path="/warranty-types/citroen-warranty/" element={<CitroenWarrantyLanding />} />
                     <Route path="/warranty-types/volkswagen-warranty" element={<VolkswagenWarrantyLanding />} />
                     <Route path="/warranty-types/volkswagen-warranty/" element={<VolkswagenWarrantyLanding />} />
                     
