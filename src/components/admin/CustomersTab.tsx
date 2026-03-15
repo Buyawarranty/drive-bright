@@ -495,10 +495,10 @@ export const CustomersTab = () => {
     fetchAvailableTags();
   }, []);
 
-  // Re-fetch agent deal counts when period changes
+  // Re-fetch agent deal counts when Total Sales date filter changes
   useEffect(() => {
     fetchAgentDealCounts();
-  }, [agentCountsPeriod]);
+  }, [totalSalesDateFilter]);
 
   // Fetch tag assignments after tags and customers are loaded
   useEffect(() => {
