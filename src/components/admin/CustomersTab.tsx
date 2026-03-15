@@ -490,6 +490,7 @@ export const CustomersTab = () => {
     fetchPlans();
     fetchEmailStatuses();
     fetchAdminUsers();
+    fetchAgentDealCounts();
     getCurrentUser();
     fetchAvailableTags();
   }, []);
