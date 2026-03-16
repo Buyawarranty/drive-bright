@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -31,6 +31,21 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [leadCount, setLeadCount] = useState<number | null>(null);
   const [step, setStep] = useState<'select' | 'confirm'>('select');
+  const [allAgents, setAllAgents] = useState<AdminUser[]>([]);
+
+  // Fetch all agents (including inactive) when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    const fetchAll = async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('id, user_id, first_name, last_name, email, is_active, role')
+        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+        .order('first_name');
+      setAllAgents((data as AdminUser[]) || []);
+    };
+    fetchAll();
+  }, [open]);
 
   const getInitials = (user: AdminUser) => {
     if (user.first_name || user.last_name) {
