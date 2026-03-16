@@ -71,13 +71,22 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (!fromAgent) return;
     setLoading(true);
     try {
-      const { count, error } = await supabase
-        .from('sales_leads')
-        .select('*', { count: 'exact', head: true })
-        .eq('assigned_to', fromAgent);
+      const [leadsResult, customersResult] = await Promise.all([
+        supabase
+          .from('sales_leads')
+          .select('*', { count: 'exact', head: true })
+          .eq('assigned_to', fromAgent),
+        supabase
+          .from('customers')
+          .select('*', { count: 'exact', head: true })
+          .eq('assigned_to', fromAgent)
+          .eq('is_deleted', false),
+      ]);
 
-      if (error) throw error;
-      setLeadCount(count || 0);
+      if (leadsResult.error) throw leadsResult.error;
+      if (customersResult.error) throw customersResult.error;
+
+      setLeadCount((leadsResult.count || 0) + (customersResult.count || 0));
       setStep('confirm');
     } catch (err) {
       console.error('Error checking lead count:', err);
