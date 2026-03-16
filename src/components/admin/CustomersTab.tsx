@@ -4304,7 +4304,7 @@ Please log in and change your password after first login.`;
                       <Badge variant="outline" className={customer.bumper_order_id ? 'bg-purple-50 text-purple-700 border-purple-200 text-[10px]' : 'bg-blue-50 text-blue-700 border-blue-200 text-[10px]'}>
                         {customer.bumper_order_id ? 'Bumper' : 'Stripe'}
                       </Badge>
-                      {!(currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && customer.final_amount ? (
+                      {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && customer.final_amount ? (
                         <span className="text-xs font-semibold text-foreground">£{Number(customer.final_amount).toFixed(2)}</span>
                       ) : null}
                     </div>
