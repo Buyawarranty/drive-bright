@@ -307,6 +307,7 @@ export const CustomersTab = () => {
   const [filteredIncompleteCustomers, setFilteredIncompleteCustomers] = useState<IncompleteCustomer[]>([]);
   const [selectedIncompleteCustomers, setSelectedIncompleteCustomers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [deletedLoading, setDeletedLoading] = useState(true);
   const [incompleteLoading, setIncompleteLoading] = useState(true);
   // Initialize search term from URL parameter if present
@@ -956,8 +957,10 @@ export const CustomersTab = () => {
 
   const fetchCustomers = async () => {
     try {
-      console.log('🔍 Starting customer fetch process...');
-      setLoading(true);
+      // Only show full loading spinner on initial load
+      if (!initialLoadDone) {
+        setLoading(true);
+      }
       setDebugInfo('Starting fetch...');
 
       // Check current user
@@ -1206,6 +1209,7 @@ export const CustomersTab = () => {
       toast.error('Unexpected error occurred while fetching customers');
     } finally {
       setLoading(false);
+      if (!initialLoadDone) setInitialLoadDone(true);
     }
   };
 
