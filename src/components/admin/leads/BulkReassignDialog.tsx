@@ -71,13 +71,22 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (!fromAgent) return;
     setLoading(true);
     try {
-      const { count, error } = await supabase
-        .from('sales_leads')
-        .select('*', { count: 'exact', head: true })
-        .eq('assigned_to', fromAgent);
+      const [leadsResult, customersResult] = await Promise.all([
+        supabase
+          .from('sales_leads')
+          .select('*', { count: 'exact', head: true })
+          .eq('assigned_to', fromAgent),
+        supabase
+          .from('customers')
+          .select('*', { count: 'exact', head: true })
+          .eq('assigned_to', fromAgent)
+          .eq('is_deleted', false),
+      ]);
 
-      if (error) throw error;
-      setLeadCount(count || 0);
+      if (leadsResult.error) throw leadsResult.error;
+      if (customersResult.error) throw customersResult.error;
+
+      setLeadCount((leadsResult.count || 0) + (customersResult.count || 0));
       setStep('confirm');
     } catch (err) {
       console.error('Error checking lead count:', err);
@@ -91,18 +100,30 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (!fromAgent || !toAgent) return;
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('sales_leads')
-        .update({ 
-          assigned_to: toAgent,
-          assigned_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('assigned_to', fromAgent);
+      const now = new Date().toISOString();
 
-      if (error) throw error;
+      const [leadsResult, customersResult] = await Promise.all([
+        supabase
+          .from('sales_leads')
+          .update({ 
+            assigned_to: toAgent,
+            assigned_at: now,
+            updated_at: now,
+          })
+          .eq('assigned_to', fromAgent),
+        supabase
+          .from('customers')
+          .update({ 
+            assigned_to: toAgent,
+            updated_at: now,
+          })
+          .eq('assigned_to', fromAgent),
+      ]);
 
-      toast.success(`Successfully reassigned ${leadCount} lead${leadCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
+      if (leadsResult.error) throw leadsResult.error;
+      if (customersResult.error) throw customersResult.error;
+
+      toast.success(`Successfully reassigned ${leadCount} record${leadCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
       setOpen(false);
       resetState();
       onComplete();
@@ -141,7 +162,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             Bulk Reassign Leads
           </DialogTitle>
           <DialogDescription>
-            Transfer all leads from one agent to another. Statuses, notes, and other data will not be changed.
+            Transfer all leads and customer records from one agent to another. Statuses, notes, and other data will not be changed.
           </DialogDescription>
         </DialogHeader>
 
@@ -233,7 +254,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             </div>
             <div className="bg-muted/50 rounded-lg p-4 text-center border-2 border-border">
               <p className="text-2xl font-bold text-foreground">{leadCount}</p>
-              <p className="text-sm text-muted-foreground">lead{leadCount !== 1 ? 's' : ''} will be transferred</p>
+              <p className="text-sm text-muted-foreground">record{leadCount !== 1 ? 's' : ''} (leads + customers) will be transferred</p>
             </div>
             <p className="text-xs text-muted-foreground text-center">
               ⚠️ This will only change the assigned agent. All statuses, notes, call counts, and other data remain untouched.
