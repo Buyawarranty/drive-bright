@@ -534,6 +534,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
+          {/* Bulk Reassign - Admin/Super Admin/Sales Lead only */}
+          {isAdmin && (
+            <BulkReassignDialog salesUsers={salesUsers} onComplete={fetchLeads} />
+          )}
+
           {/* Archive Button */}
           {canDelete && selectedLeads.size > 0 && (
             <AlertDialog>
