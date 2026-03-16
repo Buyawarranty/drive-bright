@@ -3132,7 +3132,7 @@ export const CustomersTab = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCustomers.map((customer) => (
+              customersPagination.paginatedData.map((customer) => (
                 <TableRow key={customer.id} className={isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}>
                   <TableCell>
                     <Checkbox
@@ -4871,6 +4871,18 @@ Please log in and change your password after first login.`;
         </Table>
           </div>
         </div>
+        <PaginationControls
+          currentPage={customersPagination.currentPage}
+          totalPages={customersPagination.totalPages}
+          totalItems={customersPagination.totalItems}
+          startIndex={customersPagination.startIndex}
+          endIndex={customersPagination.endIndex}
+          pageSize={customersPagination.pageSize}
+          onPageChange={customersPagination.goToPage}
+          onPageSizeChange={customersPagination.setPageSize}
+          canGoNext={customersPagination.canGoNext}
+          canGoPrev={customersPagination.canGoPrev}
+        />
         </TabsContent>
 
         <TabsContent value="deleted" className="space-y-4">
