@@ -100,18 +100,30 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (!fromAgent || !toAgent) return;
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('sales_leads')
-        .update({ 
-          assigned_to: toAgent,
-          assigned_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('assigned_to', fromAgent);
+      const now = new Date().toISOString();
 
-      if (error) throw error;
+      const [leadsResult, customersResult] = await Promise.all([
+        supabase
+          .from('sales_leads')
+          .update({ 
+            assigned_to: toAgent,
+            assigned_at: now,
+            updated_at: now,
+          })
+          .eq('assigned_to', fromAgent),
+        supabase
+          .from('customers')
+          .update({ 
+            assigned_to: toAgent,
+            updated_at: now,
+          })
+          .eq('assigned_to', fromAgent),
+      ]);
 
-      toast.success(`Successfully reassigned ${leadCount} lead${leadCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
+      if (leadsResult.error) throw leadsResult.error;
+      if (customersResult.error) throw customersResult.error;
+
+      toast.success(`Successfully reassigned ${leadCount} record${leadCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
       setOpen(false);
       resetState();
       onComplete();
