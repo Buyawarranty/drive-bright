@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 export interface AdminNotification {
   id: string;
-  type: 'contact' | 'claim' | 'customer';
+  type: 'contact' | 'claim' | 'customer' | 'lead_resubmission';
   title: string;
   message: string;
   created_at: string;
@@ -16,11 +16,12 @@ interface CountState {
   contacts: number;
   claims: number;
   customers: number;
+  resubmissions: number;
 }
 
 export const useAdminNotifications = () => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [counts, setCounts] = useState<CountState>({ contacts: 0, claims: 0, customers: 0 });
+  const [counts, setCounts] = useState<CountState>({ contacts: 0, claims: 0, customers: 0, resubmissions: 0 });
   const [loading, setLoading] = useState(true);
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     const stored = localStorage.getItem('admin_read_notifications');
@@ -52,6 +53,17 @@ export const useAdminNotifications = () => {
         .select('id, name, email, created_at')
         .gte('created_at', twentyFourHoursAgo)
         .order('created_at', { ascending: false })
+        .limit(20);
+
+      // Fetch lead resubmissions (last 48 hours, resubmission_count > 0)
+      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const { data: resubmissions } = await supabase
+        .from('sales_leads')
+        .select('id, first_name, last_name, email, last_resubmitted_at, resubmission_count, vehicle_reg')
+        .gt('resubmission_count', 0)
+        .not('last_resubmitted_at', 'is', null)
+        .gte('last_resubmitted_at', fortyEightHoursAgo)
+        .order('last_resubmitted_at', { ascending: false })
         .limit(20);
 
       const allNotifications: AdminNotification[] = [];
@@ -92,6 +104,20 @@ export const useAdminNotifications = () => {
         });
       });
 
+      resubmissions?.forEach(r => {
+        const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || r.email;
+        const regInfo = r.vehicle_reg ? ` — ${r.vehicle_reg}` : '';
+        allNotifications.push({
+          id: `resub-${r.id}-${r.resubmission_count}`,
+          type: 'lead_resubmission',
+          title: '🔥 Lead Came Back!',
+          message: `${name}${regInfo} resubmitted (×${r.resubmission_count})`,
+          created_at: r.last_resubmitted_at!,
+          is_read: readIds.has(`resub-${r.id}-${r.resubmission_count}`),
+          reference_id: r.id,
+        });
+      });
+
       // Sort by created_at descending
       allNotifications.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -102,6 +128,7 @@ export const useAdminNotifications = () => {
         contacts: contacts?.length || 0,
         claims: claims?.length || 0,
         customers: customers?.length || 0,
+        resubmissions: resubmissions?.length || 0,
       });
     } catch (error) {
       console.error('Error fetching admin notifications:', error);
@@ -162,10 +189,43 @@ export const useAdminNotifications = () => {
       })
       .subscribe();
 
+    // Listen for lead resubmissions (UPDATE on sales_leads where resubmission_count changes)
+    const resubChannel = supabase
+      .channel('admin-lead-resubmissions')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'sales_leads',
+      }, (payload) => {
+        const oldData = payload.old as { resubmission_count?: number };
+        const newData = payload.new as { 
+          resubmission_count?: number; 
+          first_name?: string; 
+          last_name?: string; 
+          email?: string;
+          vehicle_reg?: string;
+        };
+        
+        // Only fire when resubmission_count actually increased
+        if ((newData.resubmission_count || 0) > (oldData.resubmission_count || 0)) {
+          const name = [newData.first_name, newData.last_name].filter(Boolean).join(' ') || newData.email || 'Unknown';
+          const regInfo = newData.vehicle_reg ? ` (${newData.vehicle_reg})` : '';
+          
+          toast('🔥 Lead Came Back!', {
+            description: `${name}${regInfo} resubmitted — act fast!`,
+            duration: 10000,
+            className: '!bg-purple-600 !text-white !border-purple-700',
+          });
+          fetchNotifications();
+        }
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(contactChannel);
       supabase.removeChannel(claimsChannel);
       supabase.removeChannel(customersChannel);
+      supabase.removeChannel(resubChannel);
     };
   }, [fetchNotifications]);
 
