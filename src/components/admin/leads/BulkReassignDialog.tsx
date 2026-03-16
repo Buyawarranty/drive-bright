@@ -151,7 +151,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">From agent</label>
               <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                {salesUsers.map((user) => (
+                {allAgents.map((user) => (
                   <button
                     key={user.id}
                     onClick={() => { setFromAgent(user.id); setToAgent(null); setLeadCount(null); }}
