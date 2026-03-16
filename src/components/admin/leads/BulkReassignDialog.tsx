@@ -162,7 +162,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             Bulk Reassign Leads
           </DialogTitle>
           <DialogDescription>
-            Transfer all leads from one agent to another. Statuses, notes, and other data will not be changed.
+            Transfer all leads and customer records from one agent to another. Statuses, notes, and other data will not be changed.
           </DialogDescription>
         </DialogHeader>
 
