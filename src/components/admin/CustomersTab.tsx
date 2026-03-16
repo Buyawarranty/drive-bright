@@ -1756,6 +1756,9 @@ export const CustomersTab = () => {
           const policyId = editingCustomer.customer_policies[0].id;
           
           const policyUpdateData: any = {
+            plan_type: editingCustomer.plan_type,
+            email: editingCustomer.email?.toLowerCase()?.trim(),
+            customer_full_name: `${(editingCustomer.first_name || '').trim()} ${(editingCustomer.last_name || '').trim()}`.trim() || editingCustomer.name,
             voluntary_excess: editingCustomer.voluntary_excess,
             claim_limit: editingCustomer.claim_limit,
             payment_type: editingCustomer.payment_type,
