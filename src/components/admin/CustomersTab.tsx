@@ -2914,7 +2914,7 @@ export const CustomersTab = () => {
                   const selectedItems = filteredCustomers.filter(c => selectedCustomers.has(c.id));
                   const selectedTotal = selectedItems.reduce((sum, c) => sum + (c.final_amount || 0), 0);
                   const selectedAvg = selectedItems.length > 0 ? selectedTotal / selectedItems.length : 0;
-                  const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+                  const canViewFinancials = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
                   return (
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="bg-blue-50 text-blue-700">
