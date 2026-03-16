@@ -1819,7 +1819,7 @@ export const CustomersTab = () => {
   };
 
   const handleExport = (format: 'csv' | 'xlsx') => {
-    const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+    const canViewFinancials = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
     const exportData = filteredCustomers.map(customer => {
       const row: Record<string, any> = {
         'Name': customer.name,
