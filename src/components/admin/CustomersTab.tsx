@@ -1835,7 +1835,7 @@ export const CustomersTab = () => {
         'Voluntary Excess': customer.voluntary_excess || 0,
         'Status': customer.status,
       };
-      if (!isSalesRole) {
+      if (canViewFinancials) {
         row['Final Amount'] = customer.final_amount || 0;
       }
       return row;
