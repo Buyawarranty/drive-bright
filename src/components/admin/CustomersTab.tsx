@@ -3132,7 +3132,7 @@ export const CustomersTab = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCustomers.map((customer) => (
+              customersPagination.currentItems.map((customer) => (
                 <TableRow key={customer.id} className={isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}>
                   <TableCell>
                     <Checkbox
