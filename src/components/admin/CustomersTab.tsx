@@ -307,6 +307,7 @@ export const CustomersTab = () => {
   const [filteredIncompleteCustomers, setFilteredIncompleteCustomers] = useState<IncompleteCustomer[]>([]);
   const [selectedIncompleteCustomers, setSelectedIncompleteCustomers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [deletedLoading, setDeletedLoading] = useState(true);
   const [incompleteLoading, setIncompleteLoading] = useState(true);
   // Initialize search term from URL parameter if present
