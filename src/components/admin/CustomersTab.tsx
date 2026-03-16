@@ -957,8 +957,10 @@ export const CustomersTab = () => {
 
   const fetchCustomers = async () => {
     try {
-      console.log('🔍 Starting customer fetch process...');
-      setLoading(true);
+      // Only show full loading spinner on initial load
+      if (!initialLoadDone) {
+        setLoading(true);
+      }
       setDebugInfo('Starting fetch...');
 
       // Check current user
