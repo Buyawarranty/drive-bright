@@ -254,7 +254,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             </div>
             <div className="bg-muted/50 rounded-lg p-4 text-center border-2 border-border">
               <p className="text-2xl font-bold text-foreground">{leadCount}</p>
-              <p className="text-sm text-muted-foreground">lead{leadCount !== 1 ? 's' : ''} will be transferred</p>
+              <p className="text-sm text-muted-foreground">record{leadCount !== 1 ? 's' : ''} (leads + customers) will be transferred</p>
             </div>
             <p className="text-xs text-muted-foreground text-center">
               ⚠️ This will only change the assigned agent. All statuses, notes, call counts, and other data remain untouched.
