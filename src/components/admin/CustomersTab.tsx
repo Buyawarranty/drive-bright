@@ -1209,6 +1209,7 @@ export const CustomersTab = () => {
       toast.error('Unexpected error occurred while fetching customers');
     } finally {
       setLoading(false);
+      if (!initialLoadDone) setInitialLoadDone(true);
     }
   };
 
