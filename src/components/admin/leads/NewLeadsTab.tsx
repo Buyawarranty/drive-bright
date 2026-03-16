@@ -15,6 +15,7 @@ import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
+import { BulkReassignDialog } from './BulkReassignDialog';
 import { LostLeadsSection } from './LostLeadsSection';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -531,6 +532,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          )}
+
+          {/* Bulk Reassign - Admin/Super Admin/Sales Lead only */}
+          {isAdmin && (
+            <BulkReassignDialog salesUsers={salesUsers} onComplete={fetchLeads} />
           )}
 
           {/* Archive Button */}
