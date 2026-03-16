@@ -4573,7 +4573,7 @@ Please log in and change your password after first login.`;
                              <span className="text-red-500" title="Payment not verified">✗</span>
                            )}
                          </div>
-                         {customer.final_amount && customer.final_amount > 0 && currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && (
+                         {customer.final_amount && customer.final_amount > 0 && (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && (
                             <span className="text-xs font-medium text-green-700">
                               £{customer.final_amount.toFixed(2)}
                             </span>
