@@ -2920,7 +2920,7 @@ export const CustomersTab = () => {
                       <Badge variant="secondary" className="bg-blue-50 text-blue-700">
                         {selectedCustomers.size} selected
                       </Badge>
-                      {!isSalesRole && (
+                      {canViewFinancials && (
                         <Badge variant="secondary" className="bg-green-50 text-green-700 font-semibold">
                           Total: £{selectedTotal.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           {' · '}Avg: £{selectedAvg.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
