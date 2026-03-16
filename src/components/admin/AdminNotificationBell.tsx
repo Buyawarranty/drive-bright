@@ -1,4 +1,4 @@
-import { Bell, X, Mail, FileText, UserPlus } from 'lucide-react';
+import { Bell, X, Mail, FileText, UserPlus, RotateCw } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,8 @@ const getIcon = (type: AdminNotification['type']) => {
       return <FileText className="h-4 w-4 text-orange-500" />;
     case 'customer':
       return <UserPlus className="h-4 w-4 text-green-500" />;
+    case 'lead_resubmission':
+      return <RotateCw className="h-4 w-4 text-purple-500" />;
   }
 };
 
@@ -39,6 +41,8 @@ const getTabFromType = (type: AdminNotification['type']) => {
       return 'claims';
     case 'customer':
       return 'customers';
+    case 'lead_resubmission':
+      return 'new-leads';
   }
 };
 
@@ -92,7 +96,7 @@ export const AdminNotificationBell = ({
             <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
               <Bell className="h-12 w-12 mb-2 opacity-50" />
               <p>No new notifications</p>
-              <p className="text-xs mt-1">New contacts, claims & customers will appear here</p>
+              <p className="text-xs mt-1">New contacts, claims, customers & resubmissions will appear here</p>
             </div>
           ) : (
             <div className="divide-y">
@@ -101,7 +105,11 @@ export const AdminNotificationBell = ({
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
                   className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
-                    !notification.is_read ? 'bg-orange-50' : ''
+                    !notification.is_read 
+                      ? notification.type === 'lead_resubmission' 
+                        ? 'bg-purple-50' 
+                        : 'bg-orange-50' 
+                      : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
