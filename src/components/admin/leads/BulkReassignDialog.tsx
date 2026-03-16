@@ -61,10 +61,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     return user.email;
   };
 
-  const fromUser = useMemo(() => salesUsers.find(u => u.id === fromAgent), [salesUsers, fromAgent]);
+  const fromUser = useMemo(() => allAgents.find(u => u.id === fromAgent), [allAgents, fromAgent]);
   const toUser = useMemo(() => salesUsers.find(u => u.id === toAgent), [salesUsers, toAgent]);
 
-  // Available "to" agents (exclude the "from" agent)
+  // "To" agents: only active users, excluding the "from" agent
   const toAgents = useMemo(() => salesUsers.filter(u => u.id !== fromAgent), [salesUsers, fromAgent]);
 
   const handleCheckCount = async () => {
