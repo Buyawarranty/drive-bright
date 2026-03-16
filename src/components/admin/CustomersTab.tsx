@@ -1819,7 +1819,7 @@ export const CustomersTab = () => {
   };
 
   const handleExport = (format: 'csv' | 'xlsx') => {
-    const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+    const canViewFinancials = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
     const exportData = filteredCustomers.map(customer => {
       const row: Record<string, any> = {
         'Name': customer.name,
@@ -1835,7 +1835,7 @@ export const CustomersTab = () => {
         'Voluntary Excess': customer.voluntary_excess || 0,
         'Status': customer.status,
       };
-      if (!isSalesRole) {
+      if (canViewFinancials) {
         row['Final Amount'] = customer.final_amount || 0;
       }
       return row;
@@ -2914,13 +2914,13 @@ export const CustomersTab = () => {
                   const selectedItems = filteredCustomers.filter(c => selectedCustomers.has(c.id));
                   const selectedTotal = selectedItems.reduce((sum, c) => sum + (c.final_amount || 0), 0);
                   const selectedAvg = selectedItems.length > 0 ? selectedTotal / selectedItems.length : 0;
-                  const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+                  const canViewFinancials = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
                   return (
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="bg-blue-50 text-blue-700">
                         {selectedCustomers.size} selected
                       </Badge>
-                      {!isSalesRole && (
+                      {canViewFinancials && (
                         <Badge variant="secondary" className="bg-green-50 text-green-700 font-semibold">
                           Total: £{selectedTotal.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           {' · '}Avg: £{selectedAvg.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -4304,7 +4304,7 @@ Please log in and change your password after first login.`;
                       <Badge variant="outline" className={customer.bumper_order_id ? 'bg-purple-50 text-purple-700 border-purple-200 text-[10px]' : 'bg-blue-50 text-blue-700 border-blue-200 text-[10px]'}>
                         {customer.bumper_order_id ? 'Bumper' : 'Stripe'}
                       </Badge>
-                      {!(currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') && customer.final_amount ? (
+                      {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && customer.final_amount ? (
                         <span className="text-xs font-semibold text-foreground">£{Number(customer.final_amount).toFixed(2)}</span>
                       ) : null}
                     </div>
@@ -4573,7 +4573,7 @@ Please log in and change your password after first login.`;
                              <span className="text-red-500" title="Payment not verified">✗</span>
                            )}
                          </div>
-                         {customer.final_amount && customer.final_amount > 0 && currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && (
+                         {customer.final_amount && customer.final_amount > 0 && (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && (
                             <span className="text-xs font-medium text-green-700">
                               £{customer.final_amount.toFixed(2)}
                             </span>
