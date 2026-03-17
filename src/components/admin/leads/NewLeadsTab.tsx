@@ -655,9 +655,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
+            recoveredLeadsSlot={<LostLeadsSection onRecovered={fetchLeads} compact />}
           />
-
-          {/* Recovered Leads moved inline with search */}
           
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
