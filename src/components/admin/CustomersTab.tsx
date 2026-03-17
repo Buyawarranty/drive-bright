@@ -2666,6 +2666,10 @@ export const CustomersTab = () => {
                   <FileSpreadsheet className="h-4 w-4 mr-2" />
                   Export as Excel
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <Printer className="h-4 w-4 mr-2" />
+                  Save as PDF
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
