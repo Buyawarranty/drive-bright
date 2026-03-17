@@ -130,38 +130,14 @@ const getRowUrgencyClass = (lead: Lead): string => {
 
 // Memoized copy text component
 const PhoneCopyText = memo<{ phone: string }>(({ phone }) => {
-  const [copied, setCopied] = useState(false);
-  
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(phone);
-      setCopied(true);
-      toast.success('Phone number copied', { duration: 1500 });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast.error('Failed to copy');
-    }
-  }, [phone]);
-  
   return (
-    <Tooltip delayDuration={100}>
-      <TooltipTrigger asChild>
-        <span 
-          className={cn(
-            "text-xs font-medium cursor-pointer hover:text-primary select-all truncate max-w-[100px] transition-colors",
-            copied && "text-green-600"
-          )}
-          onClick={handleCopy}
-          role="button"
-          tabIndex={0}
-        >
-          {copied ? 'Copied ✓' : formatUKPhone(phone)}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="text-xs">
-        {copied ? 'Copied ✓' : 'Click to copy'}
-      </TooltipContent>
-    </Tooltip>
+    <a
+      href={`tel:${phone}`}
+      className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 hover:underline text-xs font-semibold whitespace-nowrap"
+    >
+      <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+      {formatUKPhone(phone)}
+    </a>
   );
 });
 PhoneCopyText.displayName = 'PhoneCopyText';
@@ -595,25 +571,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Phone */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.phone ? (
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             <PhoneCopyText phone={lead.phone} />
             <div className="flex items-center">
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
-                    onClick={() => {
-                      window.open(`tel:${lead.phone}`);
-                      if (!lead.is_from_abandoned_cart) onLogActivity('call', 'Made phone call');
-                    }}
-                  >
-                    <Phone className="h-3 w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">Call</TooltipContent>
-              </Tooltip>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button 
