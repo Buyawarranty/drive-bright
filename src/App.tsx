@@ -107,6 +107,10 @@ const SmartWarrantyLanding = lazy(() => import("./pages/warranty-types/SmartWarr
 const PorscheWarrantyLanding = lazy(() => import("./pages/warranty-types/PorscheWarrantyLanding"));
 const AlfaRomeoWarrantyLanding = lazy(() => import("./pages/warranty-types/AlfaRomeoWarrantyLanding"));
 const LexusWarrantyLanding = lazy(() => import("./pages/warranty-types/LexusWarrantyLanding"));
+const DaciaWarrantyLanding = lazy(() => import("./pages/warranty-types/DaciaWarrantyLanding"));
+const JeepWarrantyLanding = lazy(() => import("./pages/warranty-types/JeepWarrantyLanding"));
+const SubaruWarrantyLanding = lazy(() => import("./pages/warranty-types/SubaruWarrantyLanding"));
+const SsangYongWarrantyLanding = lazy(() => import("./pages/warranty-types/SsangYongWarrantyLanding"));
 const HyundaiWarranty = lazy(() => import("./pages/HyundaiWarranty"));
 const AudiWarranty = lazy(() => import("./pages/AudiWarranty"));
 const MercedesWarranty = lazy(() => import("./pages/MercedesWarranty"));
