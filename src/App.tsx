@@ -289,8 +289,15 @@ const App = () => {
                     <Route path="/warranty-types/alfa-romeo-warranty/" element={<AlfaRomeoWarrantyLanding />} />
                     <Route path="/warranty-types/lexus-warranty" element={<LexusWarrantyLanding />} />
                     <Route path="/warranty-types/lexus-warranty/" element={<LexusWarrantyLanding />} />
+                    <Route path="/warranty-types/dacia-warranty" element={<DaciaWarrantyLanding />} />
+                    <Route path="/warranty-types/dacia-warranty/" element={<DaciaWarrantyLanding />} />
+                    <Route path="/warranty-types/jeep-warranty" element={<JeepWarrantyLanding />} />
+                    <Route path="/warranty-types/jeep-warranty/" element={<JeepWarrantyLanding />} />
+                    <Route path="/warranty-types/subaru-warranty" element={<SubaruWarrantyLanding />} />
+                    <Route path="/warranty-types/subaru-warranty/" element={<SubaruWarrantyLanding />} />
+                    <Route path="/warranty-types/ssangyong-warranty" element={<SsangYongWarrantyLanding />} />
+                    <Route path="/warranty-types/ssangyong-warranty/" element={<SsangYongWarrantyLanding />} />
                     
-                    {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
                     <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
