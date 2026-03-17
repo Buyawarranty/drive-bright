@@ -374,7 +374,10 @@ export const CustomersTab = () => {
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
-  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(undefined);
+  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    return { from: today, to: today };
+  });
 
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
