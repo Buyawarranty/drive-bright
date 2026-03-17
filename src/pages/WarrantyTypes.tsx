@@ -703,6 +703,34 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
+              {/* Hybrid Brand Card */}
+              <Link 
+                to="/warranty-types/hybrid-warranty"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-100 to-teal-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-emerald-100">
+                  <Battery className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Hybrid Vehicles</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* PHEV Brand Card */}
+              <Link 
+                to="/warranty-types/phev-warranty"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-sky-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-sky-100">
+                  <Plug className="h-8 w-8 text-sky-600" />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Plug-in Hybrids</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
               <Link 
                 to="/warranty-types/motorbike-motorcycle-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
