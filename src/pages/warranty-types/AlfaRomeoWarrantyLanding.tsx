@@ -20,7 +20,7 @@ const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleC
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 
-import heroImage from '@/assets/alfa-romeo-extended-warranty-uk.webp';
+import heroImage from '@/assets/alfa-romeo-extended-warranty-uk.png';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 
