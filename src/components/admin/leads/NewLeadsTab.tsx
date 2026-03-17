@@ -620,7 +620,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Sales Executive Header - Non-Admin with view permissions */}
           {!isAdmin && canSeeMyDashboard && (
             <SalesExecutiveHeader
@@ -628,16 +628,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             />
           )}
 
-          <div className="flex items-start gap-3">
-            {/* Recovered Leads Section - Inline, Only for super_admin and sales_lead */}
-            {(userRole === 'super_admin' || userRole === 'sales_lead') && (
-              <div className="flex-shrink-0">
-                <LostLeadsSection onRecovered={fetchLeads} />
-              </div>
-            )}
-
-            <div className="flex-1 min-w-0">
-              <LeadsFilters
+          {/* Search & Filters — full width, search is hero */}
+          <div className="space-y-2">
+            <LeadsFilters
                 filter={filter}
                 onFilterChange={setFilter}
                 searchTerm={searchTerm}
