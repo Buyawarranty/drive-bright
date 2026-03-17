@@ -24,7 +24,7 @@ import { EditCustomerDetailsDialog } from '../EditCustomerDetailsDialog';
 import { InlineWarrantyUpgrade } from '../InlineWarrantyUpgrade';
 import { InlineUpgradeCell } from '../InlineUpgradeCell';
 import { 
-  Search, RefreshCw, Plus, AlertCircle, Edit, ExternalLink, Sparkles, Send, CheckCircle, Clock, Mail
+  Search, RefreshCw, Plus, AlertCircle, Edit, ExternalLink, Sparkles, Send, CheckCircle, Clock, Mail, Phone
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
