@@ -302,6 +302,16 @@ const App = () => {
                     <Route path="/warranty-types/subaru-warranty/" element={<SubaruWarrantyLanding />} />
                     <Route path="/warranty-types/ssangyong-warranty" element={<SsangYongWarrantyLanding />} />
                     <Route path="/warranty-types/ssangyong-warranty/" element={<SsangYongWarrantyLanding />} />
+                    <Route path="/warranty-types/mini-warranty" element={<MiniWarrantyLanding />} />
+                    <Route path="/warranty-types/mini-warranty/" element={<MiniWarrantyLanding />} />
+                    <Route path="/warranty-types/dodge-warranty" element={<DodgeWarrantyLanding />} />
+                    <Route path="/warranty-types/dodge-warranty/" element={<DodgeWarrantyLanding />} />
+                    <Route path="/warranty-types/chevrolet-warranty" element={<ChevroletWarrantyLanding />} />
+                    <Route path="/warranty-types/chevrolet-warranty/" element={<ChevroletWarrantyLanding />} />
+                    <Route path="/warranty-types/byd-warranty" element={<BYDWarrantyLanding />} />
+                    <Route path="/warranty-types/byd-warranty/" element={<BYDWarrantyLanding />} />
+                    <Route path="/warranty-types/chrysler-warranty" element={<ChryslerWarrantyLanding />} />
+                    <Route path="/warranty-types/chrysler-warranty/" element={<ChryslerWarrantyLanding />} />
                     
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
