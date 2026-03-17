@@ -374,6 +374,43 @@ export const CustomersTab = () => {
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
+  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(undefined);
+
+  // Compute today's sales and date-filtered revenue (super_admin only)
+  const isSuperAdmin = currentAdminUser?.role === 'super_admin';
+
+  const todaySalesStats = useMemo(() => {
+    if (!isSuperAdmin) return { count: 0, revenue: 0 };
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayCustomers = customers.filter(c => {
+      const status = (c.status || '').toLowerCase();
+      if (status === 'cancelled' || status === 'refunded') return false;
+      const created = c.created_at ? format(new Date(c.created_at), 'yyyy-MM-dd') : '';
+      return created === todayStr;
+    });
+    return {
+      count: todayCustomers.length,
+      revenue: todayCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0),
+    };
+  }, [customers, isSuperAdmin]);
+
+  const filteredRevenueStats = useMemo(() => {
+    if (!isSuperAdmin || !revenueDateRange?.from) return null;
+    const from = new Date(revenueDateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
+    to.setHours(23, 59, 59, 999);
+    const filtered = customers.filter(c => {
+      const status = (c.status || '').toLowerCase();
+      if (status === 'cancelled' || status === 'refunded') return false;
+      const created = c.created_at ? new Date(c.created_at) : null;
+      return created && created >= from && created <= to;
+    });
+    return {
+      count: filtered.length,
+      revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
+    };
+  }, [customers, revenueDateRange, isSuperAdmin]);
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
