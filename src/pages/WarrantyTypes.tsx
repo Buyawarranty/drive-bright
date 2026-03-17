@@ -745,7 +745,7 @@ const WarrantyTypes: React.FC = () => {
               </Link>
 
               {dynamicPages
-                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw'].includes(page.brand_name.toLowerCase()))
+                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw', 'smart', 'porsche', 'alfa romeo', 'lexus'].includes(page.brand_name.toLowerCase()))
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
