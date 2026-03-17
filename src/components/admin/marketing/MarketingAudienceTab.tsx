@@ -479,10 +479,10 @@ export const MarketingAudienceTab: React.FC = () => {
                               </div>
                             )}
                             {member.phone && (
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
+                              <a href={`tel:${member.phone}`} className="flex items-center gap-1 text-sm text-emerald-600 hover:underline">
                                 <Phone className="h-3 w-3" />
                                 {member.phone}
-                              </div>
+                              </a>
                             )}
                           </div>
                         </TableCell>
