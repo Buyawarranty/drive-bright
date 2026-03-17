@@ -2588,6 +2588,52 @@ export const CustomersTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Super Admin Daily Sales Banner */}
+      {isSuperAdmin && (
+        <div className="space-y-3">
+          <Card className="border-emerald-300 bg-emerald-50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 text-white">
+                  <PoundSterling className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-emerald-700">Today's Sales</p>
+                  <p className="text-2xl font-bold text-emerald-800">
+                    £{todaySalesStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+              <Badge className="bg-emerald-600 text-white text-sm px-3 py-1">
+                {todaySalesStats.count} {todaySalesStats.count === 1 ? 'sale' : 'sales'}
+              </Badge>
+            </div>
+          </Card>
+
+          <Card className="border p-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Revenue by Date:</span>
+              </div>
+              <DateRangeFilter
+                dateRange={revenueDateRange}
+                onDateRangeChange={setRevenueDateRange}
+              />
+              {filteredRevenueStats && (
+                <div className="flex items-center gap-3 ml-auto">
+                  <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 font-semibold text-sm px-3 py-1">
+                    £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Badge>
+                  <Badge variant="outline" className="text-sm">
+                    {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
