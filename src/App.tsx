@@ -316,6 +316,14 @@ const App = () => {
                     <Route path="/warranty-types/byd-warranty/" element={<BYDWarrantyLanding />} />
                     <Route path="/warranty-types/chrysler-warranty" element={<ChryslerWarrantyLanding />} />
                     <Route path="/warranty-types/chrysler-warranty/" element={<ChryslerWarrantyLanding />} />
+                    <Route path="/warranty-types/suzuki-warranty" element={<SuzukiWarrantyLanding />} />
+                    <Route path="/warranty-types/suzuki-warranty/" element={<SuzukiWarrantyLanding />} />
+                    <Route path="/warranty-types/infiniti-warranty" element={<InfinitiWarrantyLanding />} />
+                    <Route path="/warranty-types/infiniti-warranty/" element={<InfinitiWarrantyLanding />} />
+                    <Route path="/warranty-types/mitsubishi-warranty" element={<MitsubishiWarrantyLanding />} />
+                    <Route path="/warranty-types/mitsubishi-warranty/" element={<MitsubishiWarrantyLanding />} />
+                    <Route path="/warranty-types/cadillac-warranty" element={<CadillacWarrantyLanding />} />
+                    <Route path="/warranty-types/cadillac-warranty/" element={<CadillacWarrantyLanding />} />
                     
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
