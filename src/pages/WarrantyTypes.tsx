@@ -807,8 +807,36 @@ const WarrantyTypes: React.FC = () => {
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
+              {/* Suzuki Brand Card */}
+              <Link to="/warranty-types/suzuki-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Suzuki</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
+              {/* Infiniti Brand Card */}
+              <Link to="/warranty-types/infiniti-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Infiniti</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
+              {/* Mitsubishi Brand Card */}
+              <Link to="/warranty-types/mitsubishi-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-red-100"><Car className="h-8 w-8 text-red-600" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Mitsubishi</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
+              {/* Cadillac Brand Card */}
+              <Link to="/warranty-types/cadillac-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-700" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Cadillac</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
               {dynamicPages
-                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw', 'smart', 'porsche', 'alfa romeo', 'lexus', 'dacia', 'jeep', 'subaru', 'ssangyong', 'mini', 'dodge', 'chevrolet', 'byd', 'chrysler'].includes(page.brand_name.toLowerCase()))
+                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw', 'smart', 'porsche', 'alfa romeo', 'lexus', 'dacia', 'jeep', 'subaru', 'ssangyong', 'mini', 'dodge', 'chevrolet', 'byd', 'chrysler', 'suzuki', 'infiniti', 'mitsubishi', 'cadillac'].includes(page.brand_name.toLowerCase()))
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
