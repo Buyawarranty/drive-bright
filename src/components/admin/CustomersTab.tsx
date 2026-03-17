@@ -1843,9 +1843,9 @@ export const CustomersTab = () => {
     }
   };
 
-  const handleExport = (format: 'csv' | 'xlsx') => {
+  const getExportData = useCallback(() => {
     const canViewFinancials = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
-    const exportData = filteredCustomers.map(customer => {
+    return filteredCustomers.map(customer => {
       const row: Record<string, any> = {
         'Name': customer.name,
         'Email': customer.email,
@@ -1855,8 +1855,8 @@ export const CustomersTab = () => {
         'Vehicle': `${customer.vehicle_make || ''} ${customer.vehicle_model || ''} ${customer.vehicle_year || ''}`.trim(),
         'Plan Type': customer.plan_type,
         'Payment Type': customer.payment_type || '',
-        'Signup Date': format === 'csv' ? customer.signup_date : new Date(customer.signup_date).toLocaleDateString(),
-        'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString() : 'N/A',
+        'Signup Date': new Date(customer.signup_date).toLocaleDateString('en-GB'),
+        'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString('en-GB') : 'N/A',
         'Voluntary Excess': customer.voluntary_excess || 0,
         'Status': customer.status,
       };
@@ -1865,12 +1865,44 @@ export const CustomersTab = () => {
       }
       return row;
     });
+  }, [filteredCustomers, currentAdminUser?.role]);
 
+  const handleExport = (format: 'csv' | 'xlsx') => {
+    const exportData = getExportData();
     if (format === 'csv') {
       exportDataToCSV(exportData, { filename: 'customers', format: 'csv' });
     } else {
       exportToExcel(exportData, { filename: 'customers', format: 'xlsx' });
     }
+  };
+
+  const handleExportPDF = () => {
+    const exportData = getExportData();
+    if (!exportData.length) {
+      toast.error('No data to export');
+      return;
+    }
+    const headers = Object.keys(exportData[0]);
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Customers Report</title>
+      <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:20px;font-size:11px;color:#1a1a1a}
+        h1{font-size:18px;margin-bottom:4px}
+        p.meta{color:#666;font-size:12px;margin-bottom:16px}
+        table{width:100%;border-collapse:collapse}
+        th,td{border:1px solid #ddd;padding:5px 8px;text-align:left;white-space:nowrap}
+        th{background:#f97316;color:#fff;font-size:10px;text-transform:uppercase}
+        tr:nth-child(even){background:#f9f9f9}
+        @media print{body{margin:10px}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+      </style></head><body>
+      <h1>Customers Report</h1>
+      <p class="meta">Generated: ${new Date().toLocaleString('en-GB')} &bull; ${exportData.length} records</p>
+      <table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${exportData.map(row=>`<tr>${headers.map(h=>`<td>${row[h]??''}</td>`).join('')}</tr>`).join('')}</tbody></table>
+      <script>window.onload=function(){window.print();setTimeout(function(){window.close()},100)}<\/script>
+    </body></html>`);
+    printWindow.document.close();
   };
 
   const fetchCustomerCredentials = async (customerEmail: string) => {
