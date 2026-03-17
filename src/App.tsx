@@ -107,6 +107,10 @@ const SmartWarrantyLanding = lazy(() => import("./pages/warranty-types/SmartWarr
 const PorscheWarrantyLanding = lazy(() => import("./pages/warranty-types/PorscheWarrantyLanding"));
 const AlfaRomeoWarrantyLanding = lazy(() => import("./pages/warranty-types/AlfaRomeoWarrantyLanding"));
 const LexusWarrantyLanding = lazy(() => import("./pages/warranty-types/LexusWarrantyLanding"));
+const DaciaWarrantyLanding = lazy(() => import("./pages/warranty-types/DaciaWarrantyLanding"));
+const JeepWarrantyLanding = lazy(() => import("./pages/warranty-types/JeepWarrantyLanding"));
+const SubaruWarrantyLanding = lazy(() => import("./pages/warranty-types/SubaruWarrantyLanding"));
+const SsangYongWarrantyLanding = lazy(() => import("./pages/warranty-types/SsangYongWarrantyLanding"));
 const HyundaiWarranty = lazy(() => import("./pages/HyundaiWarranty"));
 const AudiWarranty = lazy(() => import("./pages/AudiWarranty"));
 const MercedesWarranty = lazy(() => import("./pages/MercedesWarranty"));
@@ -285,8 +289,15 @@ const App = () => {
                     <Route path="/warranty-types/alfa-romeo-warranty/" element={<AlfaRomeoWarrantyLanding />} />
                     <Route path="/warranty-types/lexus-warranty" element={<LexusWarrantyLanding />} />
                     <Route path="/warranty-types/lexus-warranty/" element={<LexusWarrantyLanding />} />
+                    <Route path="/warranty-types/dacia-warranty" element={<DaciaWarrantyLanding />} />
+                    <Route path="/warranty-types/dacia-warranty/" element={<DaciaWarrantyLanding />} />
+                    <Route path="/warranty-types/jeep-warranty" element={<JeepWarrantyLanding />} />
+                    <Route path="/warranty-types/jeep-warranty/" element={<JeepWarrantyLanding />} />
+                    <Route path="/warranty-types/subaru-warranty" element={<SubaruWarrantyLanding />} />
+                    <Route path="/warranty-types/subaru-warranty/" element={<SubaruWarrantyLanding />} />
+                    <Route path="/warranty-types/ssangyong-warranty" element={<SsangYongWarrantyLanding />} />
+                    <Route path="/warranty-types/ssangyong-warranty/" element={<SsangYongWarrantyLanding />} />
                     
-                    {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
                     <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
