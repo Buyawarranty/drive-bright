@@ -420,12 +420,12 @@ serve(async (req) => {
           if (meta.fbclid) {
             detectedAdSource = 'facebook';
             // Also update purchase_source for Facebook attribution
-            customerInsertData.purchase_source = 'facebook_ads';
+            customerRecord.purchase_source = 'facebook_ads';
           } else {
             const utmSrc = (meta.utm_source || '').toLowerCase();
             if (utmSrc === 'facebook' || utmSrc === 'fb' || utmSrc === 'ig') {
               detectedAdSource = 'facebook';
-              customerInsertData.purchase_source = 'facebook_ads';
+              customerRecord.purchase_source = 'facebook_ads';
             }
           }
         }
