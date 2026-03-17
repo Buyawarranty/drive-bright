@@ -716,9 +716,36 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
-              {/* Dynamic Pages from Database - exclude hardcoded brands */}
+              {/* Smart Brand Card */}
+              <Link to="/warranty-types/smart-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Smart</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
+              {/* Porsche Brand Card */}
+              <Link to="/warranty-types/porsche-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Porsche</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
+              {/* Alfa Romeo Brand Card */}
+              <Link to="/warranty-types/alfa-romeo-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-red-100"><Car className="h-8 w-8 text-red-500" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Alfa Romeo</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
+              {/* Lexus Brand Card */}
+              <Link to="/warranty-types/lexus-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Lexus</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
               {dynamicPages
-                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw'].includes(page.brand_name.toLowerCase()))
+                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw', 'smart', 'porsche', 'alfa romeo', 'lexus'].includes(page.brand_name.toLowerCase()))
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
