@@ -29,9 +29,10 @@ interface OrphanedLead {
 
 interface LostLeadsSectionProps {
   onRecovered?: () => void;
+  compact?: boolean;
 }
 
-export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered }) => {
+export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -181,6 +182,49 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered 
   }, []);
 
   if (loading) return null;
+
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "rounded-xl border-2 h-12 flex items-center justify-between px-3 cursor-pointer hover:bg-muted/20 transition-colors",
+          orphanedLeads.length > 0 ? 'border-amber-400 bg-amber-50/40' : 'border-green-400 bg-green-50/40'
+        )}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {orphanedLeads.length > 0 ? (
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+          )}
+          <span className="text-xs font-semibold truncate">
+            {orphanedLeads.length > 0 ? 'Recovered Leads' : 'All Synced'}
+          </span>
+          {orphanedLeads.length > 0 && (
+            <Badge variant="destructive" className="h-5 px-1.5 text-[10px] shrink-0">{orphanedLeads.length}</Badge>
+          )}
+          {rejectedLeads.length > 0 && (
+            <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0">{rejectedLeads.length} rejected</Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {orphanedLeads.length > 0 && (
+            <Button
+              onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
+              disabled={syncing}
+              size="sm"
+              className="h-6 px-2 text-[10px] gap-1"
+            >
+              {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
+              {syncing ? 'Syncing...' : 'Recover'}
+            </Button>
+          )}
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
