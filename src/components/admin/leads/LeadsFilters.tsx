@@ -62,6 +62,7 @@ interface LeadsFiltersProps {
   agentFilter?: string;
   onAgentFilterChange?: (agentId: string) => void;
   agentLeadCounts?: Record<string, number>;
+  recoveredLeadsSlot?: React.ReactNode;
 }
 
 // Status pill configuration — compact, color-coded for instant recognition
