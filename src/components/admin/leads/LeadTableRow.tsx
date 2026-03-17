@@ -128,16 +128,17 @@ const getRowUrgencyClass = (lead: Lead): string => {
   return 'hover:bg-muted/50';
 };
 
-// Memoized copy text component
+// Memoized phone text component
+// Keep the number as plain visible text so Zoiper Click2Dial can detect and convert it,
+// while preserving the requested green styling on any injected link.
 const PhoneCopyText = memo<{ phone: string }>(({ phone }) => {
   return (
-    <a
-      href={`tel:${phone}`}
-      className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 hover:underline text-xs font-semibold whitespace-nowrap"
-    >
+    <span className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-xs font-semibold whitespace-nowrap [&_a]:text-inherit [&_a]:font-inherit [&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-current">
       <Phone className="h-3.5 w-3.5 flex-shrink-0" />
-      {formatUKPhone(phone)}
-    </a>
+      <span className="underline underline-offset-2 decoration-current select-text">
+        {formatUKPhone(phone)}
+      </span>
+    </span>
   );
 });
 PhoneCopyText.displayName = 'PhoneCopyText';
