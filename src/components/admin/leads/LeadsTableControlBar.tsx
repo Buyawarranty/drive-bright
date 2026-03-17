@@ -56,27 +56,28 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-20 bg-background border-b px-4 py-3 flex items-center justify-between gap-4">
+    <div className="sticky top-0 z-20 bg-background border-b px-3 py-1.5 flex items-center justify-between gap-3">
       {/* Left side - Results summary and bulk selection */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {/* Bulk selection checkbox */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Checkbox
             checked={allSelected && totalVisible > 0}
             onCheckedChange={onSelectAll}
             aria-label="Select all leads"
+            className="h-3.5 w-3.5"
           />
           {selectedCount > 0 && (
-            <span className="text-sm font-medium text-primary">
+            <span className="text-[11px] font-medium text-primary">
               {selectedCount} selected
             </span>
           )}
         </div>
         
-        {/* Results summary */}
-        <div className="text-sm text-muted-foreground">
+        {/* Results summary — tiny */}
+        <div className="text-[11px] text-muted-foreground">
           <span className="font-semibold text-foreground">{totalItems.toLocaleString()}</span>
-          {' '}leads found
+          {' '}leads
         </div>
 
         {/* Bulk Assign Dropdown - Only show when leads are selected */}
