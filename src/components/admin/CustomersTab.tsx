@@ -4365,7 +4365,14 @@ Please log in and change your password after first login.`;
                     </div>
                   </TableCell>
                   <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.phone || 'N/A'}</TableCell>
+                  <TableCell>
+                    {customer.phone ? (
+                      <a href={`tel:${customer.phone}`} className="text-emerald-600 hover:underline flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {customer.phone}
+                      </a>
+                    ) : 'N/A'}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       <NumberPlate plateNumber={customer.registration_plate} />
