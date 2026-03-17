@@ -629,30 +629,32 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           )}
 
           {/* Search & Filters — full width, search is hero */}
-          <div className="space-y-2">
-            <LeadsFilters
-                filter={filter}
-                onFilterChange={setFilter}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                onRefresh={fetchLeads}
-                onMigrate={migrateFromAbandonedCarts}
-                onExport={handleExport}
-                leadCounts={leadCounts}
-                dateRange={dateRange}
-                onDateRangeChange={setDateRange}
-                assignmentFilter={assignmentFilter}
-                onAssignmentFilterChange={setAssignmentFilter}
-                assignmentCounts={assignmentCounts}
-                sortOption={sortOption}
-                onSortChange={setSortOption}
-                salesUsers={salesUsers}
-                agentFilter={agentFilter}
-                onAgentFilterChange={setAgentFilter}
-                agentLeadCounts={agentLeadCounts}
-              />
-            </div>
-          </div>
+          <LeadsFilters
+            filter={filter}
+            onFilterChange={setFilter}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onRefresh={fetchLeads}
+            onMigrate={migrateFromAbandonedCarts}
+            onExport={handleExport}
+            leadCounts={leadCounts}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            assignmentFilter={assignmentFilter}
+            onAssignmentFilterChange={setAssignmentFilter}
+            assignmentCounts={assignmentCounts}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+            salesUsers={salesUsers}
+            agentFilter={agentFilter}
+            onAgentFilterChange={setAgentFilter}
+            agentLeadCounts={agentLeadCounts}
+          />
+
+          {/* Recovered Leads — compact, secondary */}
+          {(userRole === 'super_admin' || userRole === 'sales_lead') && (
+            <LostLeadsSection onRecovered={fetchLeads} />
+          )}
           
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
