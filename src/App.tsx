@@ -277,6 +277,14 @@ const App = () => {
                     <Route path="/warranty-types/citroen-warranty/" element={<CitroenWarrantyLanding />} />
                     <Route path="/warranty-types/volkswagen-warranty" element={<VolkswagenWarrantyLanding />} />
                     <Route path="/warranty-types/volkswagen-warranty/" element={<VolkswagenWarrantyLanding />} />
+                    <Route path="/warranty-types/smart-warranty" element={<SmartWarrantyLanding />} />
+                    <Route path="/warranty-types/smart-warranty/" element={<SmartWarrantyLanding />} />
+                    <Route path="/warranty-types/porsche-warranty" element={<PorscheWarrantyLanding />} />
+                    <Route path="/warranty-types/porsche-warranty/" element={<PorscheWarrantyLanding />} />
+                    <Route path="/warranty-types/alfa-romeo-warranty" element={<AlfaRomeoWarrantyLanding />} />
+                    <Route path="/warranty-types/alfa-romeo-warranty/" element={<AlfaRomeoWarrantyLanding />} />
+                    <Route path="/warranty-types/lexus-warranty" element={<LexusWarrantyLanding />} />
+                    <Route path="/warranty-types/lexus-warranty/" element={<LexusWarrantyLanding />} />
                     
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
