@@ -130,38 +130,14 @@ const getRowUrgencyClass = (lead: Lead): string => {
 
 // Memoized copy text component
 const PhoneCopyText = memo<{ phone: string }>(({ phone }) => {
-  const [copied, setCopied] = useState(false);
-  
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(phone);
-      setCopied(true);
-      toast.success('Phone number copied', { duration: 1500 });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast.error('Failed to copy');
-    }
-  }, [phone]);
-  
   return (
-    <Tooltip delayDuration={100}>
-      <TooltipTrigger asChild>
-        <span 
-          className={cn(
-            "text-xs font-medium cursor-pointer hover:text-primary select-all truncate max-w-[100px] transition-colors",
-            copied && "text-green-600"
-          )}
-          onClick={handleCopy}
-          role="button"
-          tabIndex={0}
-        >
-          {copied ? 'Copied ✓' : formatUKPhone(phone)}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="text-xs">
-        {copied ? 'Copied ✓' : 'Click to copy'}
-      </TooltipContent>
-    </Tooltip>
+    <a
+      href={`tel:${phone}`}
+      className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 hover:underline text-xs font-semibold whitespace-nowrap"
+    >
+      <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+      {formatUKPhone(phone)}
+    </a>
   );
 });
 PhoneCopyText.displayName = 'PhoneCopyText';
