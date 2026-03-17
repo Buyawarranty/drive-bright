@@ -29,6 +29,7 @@ interface OrphanedLead {
 
 interface LostLeadsSectionProps {
   onRecovered?: () => void;
+  compact?: boolean;
 }
 
 export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered }) => {
