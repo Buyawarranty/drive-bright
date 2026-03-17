@@ -56,27 +56,28 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-20 bg-background border-b px-4 py-3 flex items-center justify-between gap-4">
+    <div className="sticky top-0 z-20 bg-background border-b px-3 py-1.5 flex items-center justify-between gap-3">
       {/* Left side - Results summary and bulk selection */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {/* Bulk selection checkbox */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Checkbox
             checked={allSelected && totalVisible > 0}
             onCheckedChange={onSelectAll}
             aria-label="Select all leads"
+            className="h-3.5 w-3.5"
           />
           {selectedCount > 0 && (
-            <span className="text-sm font-medium text-primary">
+            <span className="text-[11px] font-medium text-primary">
               {selectedCount} selected
             </span>
           )}
         </div>
         
-        {/* Results summary */}
-        <div className="text-sm text-muted-foreground">
+        {/* Results summary — tiny */}
+        <div className="text-[11px] text-muted-foreground">
           <span className="font-semibold text-foreground">{totalItems.toLocaleString()}</span>
-          {' '}leads found
+          {' '}leads
         </div>
 
         {/* Bulk Assign Dropdown - Only show when leads are selected */}
@@ -126,16 +127,16 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
         )}
       </div>
 
-      {/* Right side - Page size control */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">Leads per page</span>
-        <div className="inline-flex items-center rounded-lg border bg-muted/30 p-1">
+      {/* Right side - Page size control — compact */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground">Per page</span>
+        <div className="inline-flex items-center rounded-md border bg-muted/30 p-0.5">
           {pageSizeOptions.map((size) => (
             <button
               key={size}
               onClick={() => onPageSizeChange(size)}
               className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                "px-2 py-1 text-[10px] font-medium rounded transition-all",
                 pageSize === size
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"

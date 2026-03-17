@@ -495,9 +495,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     <div className="space-y-4">
       {/* Header — compact, action-dense */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold tracking-tight">Leads</h1>
-          <Badge variant="secondary" className="text-xs font-mono tabular-nums">{leads.length} total</Badge>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold tracking-tight">Leads</h1>
+          <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
         </div>
         
         <div className="flex items-center gap-2">
@@ -620,7 +620,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Sales Executive Header - Non-Admin with view permissions */}
           {!isAdmin && canSeeMyDashboard && (
             <SalesExecutiveHeader
@@ -628,38 +628,33 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             />
           )}
 
-          <div className="flex items-start gap-3">
-            {/* Recovered Leads Section - Inline, Only for super_admin and sales_lead */}
-            {(userRole === 'super_admin' || userRole === 'sales_lead') && (
-              <div className="flex-shrink-0">
-                <LostLeadsSection onRecovered={fetchLeads} />
-              </div>
-            )}
+          {/* Search & Filters — full width, search is hero */}
+          <LeadsFilters
+            filter={filter}
+            onFilterChange={setFilter}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onRefresh={fetchLeads}
+            onMigrate={migrateFromAbandonedCarts}
+            onExport={handleExport}
+            leadCounts={leadCounts}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            assignmentFilter={assignmentFilter}
+            onAssignmentFilterChange={setAssignmentFilter}
+            assignmentCounts={assignmentCounts}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+            salesUsers={salesUsers}
+            agentFilter={agentFilter}
+            onAgentFilterChange={setAgentFilter}
+            agentLeadCounts={agentLeadCounts}
+          />
 
-            <div className="flex-1 min-w-0">
-              <LeadsFilters
-                filter={filter}
-                onFilterChange={setFilter}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                onRefresh={fetchLeads}
-                onMigrate={migrateFromAbandonedCarts}
-                onExport={handleExport}
-                leadCounts={leadCounts}
-                dateRange={dateRange}
-                onDateRangeChange={setDateRange}
-                assignmentFilter={assignmentFilter}
-                onAssignmentFilterChange={setAssignmentFilter}
-                assignmentCounts={assignmentCounts}
-                sortOption={sortOption}
-                onSortChange={setSortOption}
-                salesUsers={salesUsers}
-                agentFilter={agentFilter}
-                onAgentFilterChange={setAgentFilter}
-                agentLeadCounts={agentLeadCounts}
-              />
-            </div>
-          </div>
+          {/* Recovered Leads — compact, secondary */}
+          {(userRole === 'super_admin' || userRole === 'sales_lead') && (
+            <LostLeadsSection onRecovered={fetchLeads} />
+          )}
           
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
