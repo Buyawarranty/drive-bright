@@ -237,23 +237,30 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* HERO: Search box — large, prominent, the primary interaction point */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search leads — name, email, phone, vehicle reg..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="h-12 pl-12 pr-10 text-base font-medium bg-background border-2 border-border rounded-xl shadow-sm focus-visible:ring-primary/30 focus-visible:border-primary focus-visible:shadow-md transition-shadow"
-          autoComplete="off"
-        />
-        {searchTerm && (
-          <button 
-            onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+      {/* Row 1: Search (75%) + Recovered Leads (25%) */}
+      <div className="flex items-stretch gap-3">
+        <div className="relative flex-[3]">
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search leads — name, email, phone, vehicle reg..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="h-12 pl-12 pr-10 text-base font-medium bg-background border-2 border-border rounded-xl shadow-sm focus-visible:ring-primary/30 focus-visible:border-primary focus-visible:shadow-md transition-shadow"
+            autoComplete="off"
+          />
+          {searchTerm && (
+            <button 
+              onClick={() => onSearchChange('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {recoveredLeadsSlot && (
+          <div className="flex-1 min-w-0">
+            {recoveredLeadsSlot}
+          </div>
         )}
       </div>
 
