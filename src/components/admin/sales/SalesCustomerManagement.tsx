@@ -805,7 +805,12 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                     
                     {/* Phone */}
                     <TableCell className="whitespace-nowrap">
-                      {customer.phone || 'N/A'}
+                      {customer.phone ? (
+                        <a href={`tel:${customer.phone}`} className="text-emerald-600 hover:underline flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {customer.phone}
+                        </a>
+                      ) : 'N/A'}
                     </TableCell>
                     
                     {/* RegNum */}
