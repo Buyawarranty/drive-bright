@@ -108,6 +108,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   agentFilter = 'all',
   onAgentFilterChange,
   agentLeadCounts,
+  recoveredLeadsSlot,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
