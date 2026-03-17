@@ -21,7 +21,7 @@ const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleC
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 
-import smartHeroImage from '@/assets/smart-car-extended-warranty-uk.webp';
+import smartHeroImage from '@/assets/smart-car-extended-warranty-uk.png';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 
