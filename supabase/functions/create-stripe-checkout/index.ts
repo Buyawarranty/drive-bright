@@ -331,6 +331,7 @@ serve(async (req) => {
         }
       })))}`,
       metadata: {
+        plan_id: planType, // plan_id key used by stripe-webhook to pass to handle-successful-payment
         plan_type: planType,
         payment_type: paymentType,
         vehicle_reg: vehicleData?.regNumber || customerData?.vehicle_reg || '',
