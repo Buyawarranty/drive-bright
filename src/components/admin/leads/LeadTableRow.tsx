@@ -571,25 +571,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Phone */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.phone ? (
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             <PhoneCopyText phone={lead.phone} />
             <div className="flex items-center">
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
-                    onClick={() => {
-                      window.open(`tel:${lead.phone}`);
-                      if (!lead.is_from_abandoned_cart) onLogActivity('call', 'Made phone call');
-                    }}
-                  >
-                    <Phone className="h-3 w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">Call</TooltipContent>
-              </Tooltip>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button 
