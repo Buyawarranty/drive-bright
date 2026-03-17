@@ -4334,7 +4334,7 @@ Please log in and change your password after first login.`;
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
                     {customer.phone ? (
-                      <a href={`tel:${customer.phone}`} className="text-emerald-600 hover:underline flex items-center gap-1">
+                      <span className="text-foreground text-sm flex items-center gap-1">
                         <Phone className="h-3 w-3" />
                         {customer.phone}
                       </a>
