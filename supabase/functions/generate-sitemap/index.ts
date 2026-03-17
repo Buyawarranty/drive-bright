@@ -11,7 +11,6 @@ interface BlogPost {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -35,30 +34,76 @@ Deno.serve(async (req) => {
       console.error('Error fetching blog posts:', error);
     }
 
-    // Static pages with priority and change frequency
+    // All static pages from the provided sitemap
     const staticPages = [
-      { url: '/', priority: '1.0', changefreq: 'daily' },
-      { url: '/what-is-covered/', priority: '0.9', changefreq: 'weekly' },
-      { url: '/make-a-claim/', priority: '0.9', changefreq: 'weekly' },
-      { url: '/faq/', priority: '0.8', changefreq: 'weekly' },
-      { url: '/contact-us/', priority: '0.7', changefreq: 'monthly' },
-      { url: '/customer-dashboard/', priority: '0.7', changefreq: 'weekly' },
-      { url: '/thewarrantyhub/', priority: '0.8', changefreq: 'daily' },
-      { url: '/terms/', priority: '0.5', changefreq: 'monthly' },
-      { url: '/privacy/', priority: '0.5', changefreq: 'monthly' },
-      { url: '/cookies/', priority: '0.5', changefreq: 'monthly' },
-      { url: '/complaints/', priority: '0.5', changefreq: 'monthly' },
-      { url: '/business-warranties/', priority: '0.8', changefreq: 'weekly' },
-      { url: '/buy-a-used-car-warranty-reliable-warranties/', priority: '0.8', changefreq: 'weekly' },
-      { url: '/van-warranty-companies-uk-warranties/', priority: '0.8', changefreq: 'weekly' },
-      { url: '/best-warranty-on-ev-cars-uk-warranties/', priority: '0.8', changefreq: 'weekly' },
-      { url: '/motorbike-repair-warranty-uk-warranties/', priority: '0.8', changefreq: 'weekly' },
+      { url: '/', priority: '1.0' },
+      { url: '/what-is-covered/', priority: '0.9' },
+      { url: '/make-a-claim/', priority: '0.9' },
+      { url: '/faq/', priority: '0.9' },
+      { url: '/contact-us/', priority: '0.9' },
+      { url: '/?step=1', priority: '1.0' },
+      { url: '/customer-dashboard/', priority: '0.9' },
+      { url: '/buy-a-used-car-warranty-reliable-warranties/', priority: '0.9' },
+      { url: '/van-warranty/', priority: '0.9' },
+      { url: '/ev-warranty/', priority: '0.9' },
+      { url: '/motorcycle-warranty/', priority: '0.9' },
+      { url: '/car-extended-warranty/', priority: '0.9' },
+      { url: '/warranty-types/', priority: '0.9' },
+      { url: '/privacy/', priority: '0.9' },
+      { url: '/terms/', priority: '0.9' },
+      { url: '/cookies/', priority: '0.9' },
+      { url: '/complaints/', priority: '0.9' },
+      { url: '/thewarrantyhub/', priority: '0.9' },
+      { url: '/used-car-warranty-uk/', priority: '0.9' },
+      { url: '/cancel-warranty', priority: '0.9' },
+      { url: '/what-is-covered', priority: '0.9' },
+      { url: '/cancel-warranty/', priority: '0.9' },
+      { url: '/contact-us', priority: '0.9' },
+      { url: '/warranty-plan', priority: '0.9' },
+      { url: '/car-extended-warranty', priority: '0.9' },
+      { url: '/warranty-types/vans-warranty', priority: '0.8' },
+      { url: '/warranty-types/ev-warranty', priority: '0.8' },
+      { url: '/warranty-types/hybrid-warranty', priority: '0.8' },
+      { url: '/warranty-types/phev-warranty', priority: '0.8' },
+      { url: '/motorcycle-warranty', priority: '0.9' },
+      { url: '/warranty-types/bmw-warranty', priority: '0.8' },
+      { url: '/warranty-types/mercedes-warranty', priority: '0.8' },
+      { url: '/warranty-types/honda-warranty', priority: '0.8' },
+      { url: '/warranty-types/toyota-warranty', priority: '0.8' },
+      { url: '/warranty-types/ford-warranty', priority: '0.8' },
+      { url: '/warranty-types/kia-warranty', priority: '0.8' },
+      { url: '/warranty-types/hyundai-warranty', priority: '0.8' },
+      { url: '/warranty-types/citroen-warranty', priority: '0.8' },
+      { url: '/warranty-types/mg-warranty', priority: '0.8' },
+      { url: '/warranty-types/skoda-warranty', priority: '0.8' },
+      { url: '/warranty-types/audi-warranty', priority: '0.8' },
+      { url: '/warranty-types/nissan-warranty', priority: '0.8' },
+      { url: '/warranty-types/peugeot-warranty', priority: '0.8' },
+      { url: '/warranty-types/vauxhall-warranty', priority: '0.8' },
+      { url: '/warranty-types/volvo-warranty', priority: '0.8' },
+      { url: '/warranty-types/volkswagen-warranty', priority: '0.8' },
+      { url: '/warranty-types/motorbike-motorcycle-warranty', priority: '0.8' },
+      { url: '/car-extended-warranty/audi/', priority: '0.8' },
+      { url: '/car-extended-warranty/bmw/', priority: '0.8' },
+      { url: '/car-extended-warranty/ford/', priority: '0.8' },
+      { url: '/car-extended-warranty/hyundai/', priority: '0.8' },
+      { url: '/car-extended-warranty/jaguar/', priority: '0.8' },
+      { url: '/car-extended-warranty/land-rover/', priority: '0.8' },
+      { url: '/car-extended-warranty/mercedes-benz/', priority: '0.8' },
+      { url: '/car-extended-warranty/nissan/', priority: '0.8' },
+      { url: '/car-extended-warranty/skoda/', priority: '0.8' },
+      { url: '/car-extended-warranty/volkswagen/', priority: '0.8' },
+      { url: '/warranty-types/bmw', priority: '0.8' },
+      { url: '/make-a-claim', priority: '0.9' },
+      { url: '/faq', priority: '0.9' },
+      { url: '/cookies', priority: '0.9' },
+      { url: '/terms', priority: '0.9' },
+      { url: '/privacy', priority: '0.9' },
     ];
 
     const baseUrl = 'https://buyawarranty.co.uk';
-    const currentDate = new Date().toISOString();
+    const lastmod = '2026-03-17';
 
-    // Build XML sitemap
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
@@ -66,19 +111,17 @@ Deno.serve(async (req) => {
     staticPages.forEach(page => {
       xml += '  <url>\n';
       xml += `    <loc>${baseUrl}${page.url}</loc>\n`;
-      xml += `    <lastmod>${currentDate}</lastmod>\n`;
-      xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
+      xml += `    <lastmod>${lastmod}</lastmod>\n`;
       xml += `    <priority>${page.priority}</priority>\n`;
       xml += '  </url>\n';
     });
 
-    // Add blog posts
+    // Add blog posts dynamically
     if (posts && posts.length > 0) {
       posts.forEach((post: BlogPost) => {
         xml += '  <url>\n';
         xml += `    <loc>${baseUrl}/blog/${post.slug}/</loc>\n`;
-        xml += `    <lastmod>${post.updated_at || currentDate}</lastmod>\n`;
-        xml += '    <changefreq>weekly</changefreq>\n';
+        xml += `    <lastmod>${post.updated_at ? post.updated_at.split('T')[0] : lastmod}</lastmod>\n`;
         xml += '    <priority>0.7</priority>\n';
         xml += '  </url>\n';
       });
@@ -92,7 +135,7 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+        'Cache-Control': 'public, max-age=3600',
       },
     });
   } catch (error) {
