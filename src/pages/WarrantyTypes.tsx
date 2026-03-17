@@ -529,7 +529,7 @@ const WarrantyTypes: React.FC = () => {
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
-                  <span className="text-2xl font-bold text-gray-700">C</span>
+                  <img src="/logos/citroen-logo.png" alt="Citroën logo" className="max-h-12 max-w-12 object-contain" loading="lazy" />
                 </div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Citroën</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
@@ -718,119 +718,119 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Smart Brand Card */}
               <Link to="/warranty-types/smart-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/smart-logo.png" alt="Smart logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Smart</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Porsche Brand Card */}
               <Link to="/warranty-types/porsche-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/porsche-logo.png" alt="Porsche logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Porsche</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Alfa Romeo Brand Card */}
               <Link to="/warranty-types/alfa-romeo-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-red-100"><Car className="h-8 w-8 text-red-500" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/alfa-romeo-logo.png" alt="Alfa Romeo logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Alfa Romeo</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Lexus Brand Card */}
               <Link to="/warranty-types/lexus-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/lexus-logo.png" alt="Lexus logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Lexus</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Dacia Brand Card */}
               <Link to="/warranty-types/dacia-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/dacia-logo.png" alt="Dacia logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Dacia</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Jeep Brand Card */}
               <Link to="/warranty-types/jeep-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-green-100"><Car className="h-8 w-8 text-green-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/jeep-logo.png" alt="Jeep logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Jeep</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Subaru Brand Card */}
               <Link to="/warranty-types/subaru-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/subaru-logo.png" alt="Subaru logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Subaru</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* SsangYong Brand Card */}
               <Link to="/warranty-types/ssangyong-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-200"><Car className="h-8 w-8 text-gray-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/ssangyong-logo.png" alt="SsangYong logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">SsangYong</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* MINI Brand Card */}
               <Link to="/warranty-types/mini-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/mini-logo.png" alt="MINI logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">MINI</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Dodge Brand Card */}
               <Link to="/warranty-types/dodge-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-red-100"><Car className="h-8 w-8 text-red-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/dodge-logo.png" alt="Dodge logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Dodge</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Chevrolet Brand Card */}
               <Link to="/warranty-types/chevrolet-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-yellow-100"><Car className="h-8 w-8 text-yellow-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/chevrolet-logo.png" alt="Chevrolet logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Chevrolet</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* BYD Brand Card */}
               <Link to="/warranty-types/byd-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-green-100"><Battery className="h-8 w-8 text-green-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/byd-logo.png" alt="BYD logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">BYD</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Chrysler Brand Card */}
               <Link to="/warranty-types/chrysler-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/chrysler-logo.png" alt="Chrysler logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Chrysler</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Suzuki Brand Card */}
               <Link to="/warranty-types/suzuki-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-blue-100"><Car className="h-8 w-8 text-blue-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/suzuki-logo.png" alt="Suzuki logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Suzuki</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Infiniti Brand Card */}
               <Link to="/warranty-types/infiniti-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/infiniti-logo.png" alt="Infiniti logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Infiniti</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Mitsubishi Brand Card */}
               <Link to="/warranty-types/mitsubishi-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-red-100"><Car className="h-8 w-8 text-red-600" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/mitsubishi-logo.png" alt="Mitsubishi logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Mitsubishi</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
               {/* Cadillac Brand Card */}
               <Link to="/warranty-types/cadillac-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-gray-100"><Car className="h-8 w-8 text-gray-700" /></div>
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="/logos/cadillac-logo.png" alt="Cadillac logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Cadillac</h3>
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
