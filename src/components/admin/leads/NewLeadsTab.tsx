@@ -657,10 +657,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLeadCounts={agentLeadCounts}
           />
 
-          {/* Recovered Leads — compact, secondary */}
-          {(userRole === 'super_admin' || userRole === 'sales_lead') && (
-            <LostLeadsSection onRecovered={fetchLeads} />
-          )}
+          {/* Recovered Leads moved inline with search */}
           
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
