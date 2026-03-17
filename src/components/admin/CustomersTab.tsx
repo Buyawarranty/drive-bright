@@ -4337,7 +4337,7 @@ Please log in and change your password after first login.`;
                       <span className="text-foreground text-sm flex items-center gap-1">
                         <Phone className="h-3 w-3" />
                         {customer.phone}
-                      </a>
+                      </span>
                     ) : 'N/A'}
                   </TableCell>
                   <TableCell>
