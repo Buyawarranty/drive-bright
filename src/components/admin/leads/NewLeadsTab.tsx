@@ -495,9 +495,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     <div className="space-y-4">
       {/* Header — compact, action-dense */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold tracking-tight">Leads</h1>
-          <Badge variant="secondary" className="text-xs font-mono tabular-nums">{leads.length} total</Badge>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold tracking-tight">Leads</h1>
+          <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
         </div>
         
         <div className="flex items-center gap-2">
