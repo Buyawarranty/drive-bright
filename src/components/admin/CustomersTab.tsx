@@ -382,21 +382,6 @@ export const CustomersTab = () => {
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
 
-  const todaySalesStats = useMemo(() => {
-    if (!isSuperAdmin) return { count: 0, revenue: 0 };
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const todayCustomers = customers.filter(c => {
-      const status = (c.status || '').toLowerCase();
-      if (status === 'cancelled' || status === 'refunded') return false;
-      const created = c.created_at ? format(new Date(c.created_at), 'yyyy-MM-dd') : '';
-      return created === todayStr;
-    });
-    return {
-      count: todayCustomers.length,
-      revenue: todayCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0),
-    };
-  }, [customers, isSuperAdmin]);
-
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin || !revenueDateRange?.from) return null;
     const from = new Date(revenueDateRange.from);
