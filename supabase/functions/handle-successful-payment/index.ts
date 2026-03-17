@@ -959,7 +959,7 @@ serve(async (req) => {
         await resend.emails.send({
           from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale${detectedAdSource === 'google' ? ' G' : detectedAdSource === 'facebook' ? ' F' : ''}: ${regPlate} - ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
+          subject: `New Sale ${detectedAdSource === 'google' ? 'G' : detectedAdSource === 'facebook' ? 'F' : 'Web'}: ${regPlate} - ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
           html: salesEmailHtml
         });
 
