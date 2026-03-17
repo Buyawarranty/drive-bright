@@ -235,9 +235,29 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Row 1: Status pills — compact, color-coded, scannable */}
+      {/* HERO: Search box — large, prominent, the primary interaction point */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search leads — name, email, phone, vehicle reg..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="h-12 pl-12 pr-10 text-base font-medium bg-background border-2 border-border rounded-xl shadow-sm focus-visible:ring-primary/30 focus-visible:border-primary focus-visible:shadow-md transition-shadow"
+          autoComplete="off"
+        />
+        {searchTerm && (
+          <button 
+            onClick={() => onSearchChange('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Row 2: Status pills — small, compact, secondary */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="h-auto p-1 bg-muted/50 border-2 border-border rounded-xl flex flex-wrap gap-0.5">
+        <TabsList className="h-auto p-0.5 bg-muted/40 border border-border rounded-lg flex flex-wrap gap-0">
           {STATUS_PILLS.map(pill => {
             const count = getCount(pill);
             const isActive = effectiveTabValue === pill.value;
@@ -246,15 +266,15 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 key={pill.value} 
                 value={pill.value}
                 className={cn(
-                  "h-8 px-3 rounded-lg text-xs font-semibold transition-all duration-150 gap-1.5",
+                  "h-6 px-2 rounded-md text-[10px] font-semibold transition-all duration-150 gap-1",
                   "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/80",
                   pill.colorClass
                 )}
               >
-                {pill.icon && <span className="text-[11px]">{pill.icon}</span>}
+                {pill.icon && <span className="text-[9px]">{pill.icon}</span>}
                 <span>{pill.label}</span>
                 <span className={cn(
-                  "inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded-full text-[10px] font-bold tabular-nums",
+                  "inline-flex items-center justify-center h-3.5 min-w-[14px] px-0.5 rounded-full text-[8px] font-bold tabular-nums",
                   isActive 
                     ? "bg-white/25 text-inherit" 
                     : count > 0 
@@ -269,26 +289,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         </TabsList>
       </Tabs>
 
-      {/* Row 2: Search + Filters + Actions — single compact row */}
+      {/* Row 3: Filters + Actions — tiny, compact row */}
       <div className="flex items-center gap-2">
-        {/* Search — wider, with clear button */}
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Name, email, phone, reg..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="h-8 pl-8 pr-8 text-sm bg-background border-2 border-border rounded-lg"
-          />
-          {searchTerm && (
-            <button 
-              onClick={() => onSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
 
         {/* Assignment filter */}
         {onAssignmentFilterChange && (

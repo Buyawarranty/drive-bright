@@ -127,16 +127,16 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
         )}
       </div>
 
-      {/* Right side - Page size control */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">Leads per page</span>
-        <div className="inline-flex items-center rounded-lg border bg-muted/30 p-1">
+      {/* Right side - Page size control — compact */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground">Per page</span>
+        <div className="inline-flex items-center rounded-md border bg-muted/30 p-0.5">
           {pageSizeOptions.map((size) => (
             <button
               key={size}
               onClick={() => onPageSizeChange(size)}
               className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                "px-2 py-1 text-[10px] font-medium rounded transition-all",
                 pageSize === size
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
