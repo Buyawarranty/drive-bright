@@ -374,25 +374,13 @@ export const CustomersTab = () => {
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
-  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(undefined);
+  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    return { from: today, to: today };
+  });
 
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
-
-  const todaySalesStats = useMemo(() => {
-    if (!isSuperAdmin) return { count: 0, revenue: 0 };
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const todayCustomers = customers.filter(c => {
-      const status = (c.status || '').toLowerCase();
-      if (status === 'cancelled' || status === 'refunded') return false;
-      const created = c.created_at ? format(new Date(c.created_at), 'yyyy-MM-dd') : '';
-      return created === todayStr;
-    });
-    return {
-      count: todayCustomers.length,
-      revenue: todayCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0),
-    };
-  }, [customers, isSuperAdmin]);
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin || !revenueDateRange?.from) return null;
@@ -2590,49 +2578,28 @@ export const CustomersTab = () => {
     <div className="space-y-6">
       {/* Super Admin Daily Sales Banner */}
       {isSuperAdmin && (
-        <div className="space-y-3">
-          <Card className="border-emerald-300 bg-emerald-50 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 text-white">
-                  <PoundSterling className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-emerald-700">Today's Sales</p>
-                  <p className="text-2xl font-bold text-emerald-800">
-                    £{todaySalesStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                </div>
-              </div>
-              <Badge className="bg-emerald-600 text-white text-sm px-3 py-1">
-                {todaySalesStats.count} {todaySalesStats.count === 1 ? 'sale' : 'sales'}
-              </Badge>
+        <Card className="border p-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Revenue by Date:</span>
             </div>
-          </Card>
-
-          <Card className="border p-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Revenue by Date:</span>
+            <DateRangeFilter
+              dateRange={revenueDateRange}
+              onDateRangeChange={setRevenueDateRange}
+            />
+            {filteredRevenueStats && (
+              <div className="flex items-center gap-3 ml-auto">
+                <span className="text-emerald-600 font-bold text-sm">
+                  £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <Badge variant="outline" className="text-sm">
+                  {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                </Badge>
               </div>
-              <DateRangeFilter
-                dateRange={revenueDateRange}
-                onDateRangeChange={setRevenueDateRange}
-              />
-              {filteredRevenueStats && (
-                <div className="flex items-center gap-3 ml-auto">
-                  <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 font-semibold text-sm px-3 py-1">
-                    £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Badge>
-                  <Badge variant="outline" className="text-sm">
-                    {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
-                  </Badge>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
+            )}
+          </div>
+        </Card>
       )}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
