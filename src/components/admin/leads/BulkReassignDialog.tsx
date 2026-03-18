@@ -2,19 +2,18 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { ArrowRight, RefreshCw, UserRoundCog } from 'lucide-react';
 import { AdminUser } from '@/hooks/useLeads';
+import { AgentSelector, getDisplayName } from './bulk-reassign/AgentSelector';
+import { ConfirmationStep } from './bulk-reassign/ConfirmationStep';
+import { ModeSelector, ReassignMode } from './bulk-reassign/ModeSelector';
 
 interface BulkReassignDialogProps {
   salesUsers: AdminUser[];
@@ -32,8 +31,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [leadCount, setLeadCount] = useState<number | null>(null);
   const [step, setStep] = useState<'select' | 'confirm'>('select');
   const [allAgents, setAllAgents] = useState<AdminUser[]>([]);
+  const [mode, setMode] = useState<ReassignMode>('all');
+  const [percentage, setPercentage] = useState(50);
+  const [moveCount, setMoveCount] = useState(10);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
-  // Fetch all agents (including inactive) when dialog opens
   useEffect(() => {
     if (!open) return;
     const fetchAll = async () => {
@@ -47,46 +50,35 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     fetchAll();
   }, [open]);
 
-  const getInitials = (user: AdminUser) => {
-    if (user.first_name || user.last_name) {
-      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
-    }
-    return user.email[0].toUpperCase();
-  };
-
-  const getDisplayName = (user: AdminUser) => {
-    if (user.first_name || user.last_name) {
-      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    }
-    return user.email;
-  };
-
   const fromUser = useMemo(() => allAgents.find(u => u.id === fromAgent), [allAgents, fromAgent]);
   const toUser = useMemo(() => salesUsers.find(u => u.id === toAgent), [salesUsers, toAgent]);
-
-  // "To" agents: only active users, excluding the "from" agent
   const toAgents = useMemo(() => salesUsers.filter(u => u.id !== fromAgent), [salesUsers, fromAgent]);
 
   const handleCheckCount = async () => {
     if (!fromAgent) return;
     setLoading(true);
     try {
-      const [leadsResult, customersResult] = await Promise.all([
-        supabase
-          .from('sales_leads')
-          .select('*', { count: 'exact', head: true })
-          .eq('assigned_to', fromAgent),
-        supabase
-          .from('customers')
-          .select('*', { count: 'exact', head: true })
-          .eq('assigned_to', fromAgent)
-          .eq('is_deleted', false),
-      ]);
-
-      if (leadsResult.error) throw leadsResult.error;
-      if (customersResult.error) throw customersResult.error;
-
-      setLeadCount((leadsResult.count || 0) + (customersResult.count || 0));
+      if (mode === 'all') {
+        const [leadsResult, customersResult] = await Promise.all([
+          supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent),
+          supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent).eq('is_deleted', false),
+        ]);
+        if (leadsResult.error) throw leadsResult.error;
+        if (customersResult.error) throw customersResult.error;
+        setLeadCount((leadsResult.count || 0) + (customersResult.count || 0));
+      } else {
+        // For percentage/count modes, count only sales_leads with optional date filter
+        let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent);
+        if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
+        if (dateTo) {
+          const endDate = new Date(dateTo);
+          endDate.setHours(23, 59, 59, 999);
+          query = query.lte('created_at', endDate.toISOString());
+        }
+        const { count, error } = await query;
+        if (error) throw error;
+        setLeadCount(count || 0);
+      }
       setStep('confirm');
     } catch (err) {
       console.error('Error checking lead count:', err);
@@ -96,34 +88,50 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     }
   };
 
+  const actualMoveCount = useMemo(() => {
+    if (leadCount === null) return 0;
+    if (mode === 'all') return leadCount;
+    if (mode === 'percentage') return Math.ceil((leadCount * percentage) / 100);
+    return Math.min(moveCount, leadCount);
+  }, [leadCount, mode, percentage, moveCount]);
+
   const handleReassign = async () => {
     if (!fromAgent || !toAgent) return;
     setLoading(true);
     try {
       const now = new Date().toISOString();
 
-      const [leadsResult, customersResult] = await Promise.all([
-        supabase
-          .from('sales_leads')
-          .update({ 
-            assigned_to: toAgent,
-            assigned_at: now,
-            updated_at: now,
-          })
-          .eq('assigned_to', fromAgent),
-        supabase
-          .from('customers')
-          .update({ 
-            assigned_to: toAgent,
-            updated_at: now,
-          })
-          .eq('assigned_to', fromAgent),
-      ]);
+      if (mode === 'all') {
+        const [leadsResult, customersResult] = await Promise.all([
+          supabase.from('sales_leads').update({ assigned_to: toAgent, assigned_at: now, updated_at: now }).eq('assigned_to', fromAgent),
+          supabase.from('customers').update({ assigned_to: toAgent, updated_at: now }).eq('assigned_to', fromAgent),
+        ]);
+        if (leadsResult.error) throw leadsResult.error;
+        if (customersResult.error) throw customersResult.error;
+      } else {
+        // Fetch IDs of leads to move (newest first), with optional date filter
+        let query = supabase.from('sales_leads').select('id').eq('assigned_to', fromAgent).order('created_at', { ascending: false });
+        if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
+        if (dateTo) {
+          const endDate = new Date(dateTo);
+          endDate.setHours(23, 59, 59, 999);
+          query = query.lte('created_at', endDate.toISOString());
+        }
+        query = query.limit(actualMoveCount);
+        const { data: leadIds, error: fetchErr } = await query;
+        if (fetchErr) throw fetchErr;
 
-      if (leadsResult.error) throw leadsResult.error;
-      if (customersResult.error) throw customersResult.error;
+        if (leadIds && leadIds.length > 0) {
+          const ids = leadIds.map(l => l.id);
+          const { error: updateErr } = await supabase
+            .from('sales_leads')
+            .update({ assigned_to: toAgent, assigned_at: now, updated_at: now })
+            .in('id', ids);
+          if (updateErr) throw updateErr;
+        }
+      }
 
-      toast.success(`Successfully reassigned ${leadCount} record${leadCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
+      toast.success(`Successfully reassigned ${actualMoveCount} record${actualMoveCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
       setOpen(false);
       resetState();
       onComplete();
@@ -140,6 +148,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setToAgent(null);
     setLeadCount(null);
     setStep('select');
+    setMode('all');
+    setPercentage(50);
+    setMoveCount(10);
+    setDateFrom('');
+    setDateTo('');
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -152,7 +165,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
           <UserRoundCog className="h-3.5 w-3.5" />
-          Reassign All
+          Reassign
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -162,104 +175,93 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             Bulk Reassign Leads
           </DialogTitle>
           <DialogDescription>
-            Transfer all leads and customer records from one agent to another. Statuses, notes, and other data will not be changed.
+            Transfer leads from one agent to another. Choose a mode below.
           </DialogDescription>
         </DialogHeader>
 
         {step === 'select' && (
           <div className="space-y-4 py-2">
-            {/* FROM agent */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">From agent</label>
-              <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                {allAgents.map((user) => (
-                  <button
-                    key={user.id}
-                    onClick={() => { setFromAgent(user.id); setToAgent(null); setLeadCount(null); }}
-                    className={`flex items-center gap-3 p-2.5 rounded-lg border-2 text-left transition-colors ${
-                      fromAgent === user.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
-                    }`}
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {getInitials(user)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{getDisplayName(user)}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user.role}</p>
-                    </div>
-                    {!user.is_active && (
-                      <Badge variant="outline" className="text-[10px] border-destructive/30 text-destructive">Inactive</Badge>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ModeSelector mode={mode} onSelect={(m) => { setMode(m); setLeadCount(null); }} />
 
-            {/* TO agent */}
+            <AgentSelector
+              label="From agent"
+              agents={allAgents}
+              selectedId={fromAgent}
+              onSelect={(id) => { setFromAgent(id); setToAgent(null); setLeadCount(null); }}
+            />
+
             {fromAgent && (
+              <AgentSelector
+                label="To agent"
+                agents={toAgents}
+                selectedId={toAgent}
+                onSelect={setToAgent}
+              />
+            )}
+
+            {/* Date range filter for percentage/count modes */}
+            {mode !== 'all' && fromAgent && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">To agent</label>
-                <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                  {toAgents.map((user) => (
-                    <button
-                      key={user.id}
-                      onClick={() => setToAgent(user.id)}
-                      className={`flex items-center gap-3 p-2.5 rounded-lg border-2 text-left transition-colors ${
-                        toAgent === user.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
-                      }`}
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                          {getInitials(user)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{getDisplayName(user)}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user.role}</p>
-                      </div>
-                    </button>
-                  ))}
+                <label className="text-sm font-medium text-muted-foreground">Date range (optional)</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground">From</Label>
+                    <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 text-xs" />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground">To</Label>
+                    <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 text-xs" />
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {/* Percentage slider */}
+            {mode === 'percentage' && fromAgent && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-muted-foreground">Percentage to move</label>
+                  <span className="text-sm font-bold text-primary">{percentage}%</span>
+                </div>
+                <Slider
+                  value={[percentage]}
+                  onValueChange={([v]) => setPercentage(v)}
+                  min={10}
+                  max={90}
+                  step={5}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">Newest leads will be moved first</p>
+              </div>
+            )}
+
+            {/* Count input */}
+            {mode === 'count' && fromAgent && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Number of leads to move</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={moveCount}
+                  onChange={e => setMoveCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="h-8 text-sm"
+                />
+                <p className="text-xs text-muted-foreground">Newest leads will be moved first</p>
               </div>
             )}
           </div>
         )}
 
-        {step === 'confirm' && fromUser && toUser && (
-          <div className="space-y-4 py-2">
-            <div className="flex items-center justify-center gap-4 py-4">
-              <div className="text-center">
-                <Avatar className="h-12 w-12 mx-auto mb-2">
-                  <AvatarFallback className="bg-destructive/10 text-destructive font-semibold">
-                    {getInitials(fromUser)}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="text-sm font-medium">{getDisplayName(fromUser)}</p>
-              </div>
-              <ArrowRight className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-              <div className="text-center">
-                <Avatar className="h-12 w-12 mx-auto mb-2">
-                  <AvatarFallback className="bg-green-100 text-green-700 font-semibold">
-                    {getInitials(toUser)}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="text-sm font-medium">{getDisplayName(toUser)}</p>
-              </div>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-4 text-center border-2 border-border">
-              <p className="text-2xl font-bold text-foreground">{leadCount}</p>
-              <p className="text-sm text-muted-foreground">record{leadCount !== 1 ? 's' : ''} (leads + customers) will be transferred</p>
-            </div>
-            <p className="text-xs text-muted-foreground text-center">
-              ⚠️ This will only change the assigned agent. All statuses, notes, call counts, and other data remain untouched.
-            </p>
-          </div>
+        {step === 'confirm' && fromUser && toUser && leadCount !== null && (
+          <ConfirmationStep
+            fromUser={fromUser}
+            toUser={toUser}
+            leadCount={leadCount}
+            mode={mode}
+            percentage={percentage}
+            moveCount={moveCount}
+          />
         )}
 
         <DialogFooter>
@@ -280,11 +282,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               </Button>
               <Button
                 onClick={handleReassign}
-                disabled={loading || leadCount === 0}
+                disabled={loading || actualMoveCount === 0}
                 className="flex-1 bg-primary hover:bg-primary/90 gap-2"
               >
                 {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
-                Reassign {leadCount} Lead{leadCount !== 1 ? 's' : ''}
+                Reassign {actualMoveCount} Lead{actualMoveCount !== 1 ? 's' : ''}
               </Button>
             </div>
           )}
