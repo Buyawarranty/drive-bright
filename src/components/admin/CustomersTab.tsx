@@ -2797,6 +2797,7 @@ export const CustomersTab = () => {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                     <SelectItem value="refunded">Refunded</SelectItem>
+                    <SelectItem value="cancelled_and_refunded">Cancelled & Refunded</SelectItem>
                     {currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && (
                       <SelectItem value="claim_made">Claim Made</SelectItem>
                     )}
