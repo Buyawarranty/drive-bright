@@ -111,7 +111,8 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
         <head>
           <title>${policy.customerName} - ${policy.warrantyNumber || policy.policyNumber}</title>
           <style>
-            @page { size: A4; margin: 15mm 18mm; }
+            @page { size: A4; margin: 15mm 18mm; margin-top: 0; margin-bottom: 0; }
+            @media print { @page { margin-top: 0; margin-bottom: 0; } body { margin-top: 15mm; margin-bottom: 15mm; } }
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; color: #1a1a1a; line-height: 1.45; background: white; font-size: 10.5px; }
             .page { max-width: 210mm; margin: 0 auto; }
