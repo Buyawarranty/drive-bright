@@ -331,9 +331,10 @@ const CustomerDashboard = () => {
         console.error("Login failed:", data.error);
         toast({
           title: "Login Failed",
-          description: data.error || "Invalid email or password. Please check your credentials and try again.",
+          description: "Invalid email or password. Please check your credentials or reset your password below.",
           variant: "destructive",
         });
+        setLoginFailed(true);
         return;
       }
 
