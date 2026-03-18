@@ -225,9 +225,15 @@ export const CancellationsTab: React.FC<{
   };
 
   const agentOptions = useMemo(() => {
-    const agentIds = new Set(records.map(r => r.assigned_to).filter(Boolean));
-    return adminUsers.filter(u => agentIds.has(u.id));
-  }, [records, adminUsers]);
+    const salesRoles = ['sales', 'sales_lead', 'sales_manager', 'super_admin', 'admin'];
+    return adminUsers
+      .filter(u => salesRoles.includes(u.role))
+      .sort((a, b) => {
+        const nameA = [a.first_name, a.last_name].filter(Boolean).join(' ') || a.email;
+        const nameB = [b.first_name, b.last_name].filter(Boolean).join(' ') || b.email;
+        return nameA.localeCompare(nameB);
+      });
+  }, [adminUsers]);
 
   return (
     <div className="space-y-4">
