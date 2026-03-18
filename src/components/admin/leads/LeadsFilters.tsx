@@ -24,8 +24,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -85,6 +85,7 @@ const STATUS_PILLS: {
   { value: 'paid', label: 'Paid', colorClass: 'data-[state=active]:bg-emerald-600 data-[state=active]:text-white', countKey: 'paid' },
   { value: 'converted', label: 'Won', icon: '✅', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'converted' },
   { value: 'high_priority', label: 'Hot', icon: '🔥', colorClass: 'data-[state=active]:bg-orange-600 data-[state=active]:text-white', countKey: 'high_priority' },
+  { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
   { value: 'fake', label: 'Fake', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
 ];
 
