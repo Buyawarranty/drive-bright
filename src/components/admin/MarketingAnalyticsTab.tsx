@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, Facebook } from 'lucide-react';
+import { MarketingOverviewCards } from './marketing/MarketingOverviewCards';
 
 const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 const FacebookAdsTab = lazy(() => import('@/components/admin/FacebookAdsTab').then(m => ({ default: m.FacebookAdsTab })));
@@ -20,6 +21,9 @@ export const MarketingAnalyticsTab: React.FC = () => {
           Track conversions, ROAS, and ad performance across all marketing channels
         </p>
       </div>
+
+      {/* Overview cards — deals & revenue by channel */}
+      <MarketingOverviewCards />
 
       <Tabs defaultValue="google" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
