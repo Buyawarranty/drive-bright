@@ -153,6 +153,7 @@ const CustomerDashboard = () => {
   const [password, setPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginFailed, setLoginFailed] = useState(false);
 
   // Notification system
   const { 
@@ -295,6 +296,7 @@ const CustomerDashboard = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
+    setLoginFailed(false);
 
     console.log("=== LOGIN ATTEMPT ===", { email: email.trim().toLowerCase() });
 
@@ -320,6 +322,7 @@ const CustomerDashboard = () => {
           description: "Unable to connect to the login service. Please try again in a moment.",
           variant: "destructive",
         });
+        setLoginFailed(true);
         return;
       }
 
@@ -328,9 +331,10 @@ const CustomerDashboard = () => {
         console.error("Login failed:", data.error);
         toast({
           title: "Login Failed",
-          description: data.error || "Invalid email or password. Please check your credentials and try again.",
+          description: "Invalid email or password. Please check your credentials or reset your password below.",
           variant: "destructive",
         });
+        setLoginFailed(true);
         return;
       }
 
@@ -378,6 +382,7 @@ const CustomerDashboard = () => {
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
+      setLoginFailed(true);
     } finally {
       setLoginLoading(false);
     }
@@ -1172,6 +1177,29 @@ const CustomerDashboard = () => {
                     <span>Secure Login</span>
                   </div>
                 </form>
+
+                {/* Login Failed - Prominent Reset Prompt */}
+                {loginFailed && (
+                  <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-red-100 rounded-full p-2 mt-0.5">
+                        <Lock className="w-4 h-4 text-red-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-red-800 text-sm">Can't log in?</h4>
+                        <p className="text-sm text-red-700 mt-1">
+                          Your password may have been updated. Click below to reset it — we'll email you a link to set a new one.
+                        </p>
+                        <Button 
+                          className="mt-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg h-10 px-6"
+                          onClick={() => navigate('/forgot-password')}
+                        >
+                          Reset My Password
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Help Section */}
                 <div className="mt-8 pt-6 border-t border-gray-100 space-y-4">
