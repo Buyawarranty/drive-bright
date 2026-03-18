@@ -199,10 +199,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               />
             )}
 
-            {/* Date range filter for percentage/count modes */}
+            {/* Date range filter for percentage/count modes — required */}
             {mode !== 'all' && fromAgent && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Date range (optional)</label>
+                <label className="text-sm font-medium text-muted-foreground">Date range <span className="text-destructive">*</span></label>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">From</Label>
@@ -213,6 +213,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                     <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 text-xs" />
                   </div>
                 </div>
+                {(!dateFrom || !dateTo) && (
+                  <p className="text-xs text-destructive">Both dates are required</p>
+                )}
               </div>
             )}
 
