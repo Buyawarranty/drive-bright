@@ -4994,6 +4994,10 @@ Please log in and change your password after first login.`;
         />
         </TabsContent>
 
+        <TabsContent value="cancellations" className="space-y-4">
+          <CancellationsTab adminUsers={adminUsers} currentAdminUser={currentAdminUser} />
+        </TabsContent>
+
         <TabsContent value="deleted" className="space-y-4">
           {/* Info Banner for Deleted Orders */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
