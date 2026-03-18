@@ -2741,6 +2741,13 @@ export const CustomersTab = () => {
               Active Orders
             </TabsTrigger>
             <TabsTrigger 
+              value="cancellations"
+              className="h-9 px-3 bg-red-50 text-red-700 border border-red-200 rounded-md text-xs data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
+            >
+              <Ban className="h-3.5 w-3.5" />
+              Cancellations
+            </TabsTrigger>
+            <TabsTrigger 
               value="deleted"
               className="h-9 px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-xs data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
             >
