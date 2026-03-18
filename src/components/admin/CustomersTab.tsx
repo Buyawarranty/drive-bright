@@ -1841,7 +1841,9 @@ export const CustomersTab = () => {
         }
       
       fetchCustomers();
-      setEditingCustomer(null);
+      // Keep the dialog open with updated data so Print Letter / Send Update still work
+      // Don't reset editingCustomer - just update it with the saved values
+      
     } catch (error) {
       console.error('Error updating customer:', error);
       toast.error('Failed to update customer');
