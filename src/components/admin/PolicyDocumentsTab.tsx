@@ -207,7 +207,7 @@ export const PolicyDocumentsTab: React.FC = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Policy Documents - ${selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || ''}</title>
+          <title>${selectedCustomer?.name || ''} - ${selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || ''}</title>
           <style>
             @page { size: A4; margin: 15mm 18mm; }
             * { box-sizing: border-box; margin: 0; padding: 0; }
