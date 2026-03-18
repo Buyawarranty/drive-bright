@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -14,6 +14,10 @@ import { AdminUser } from '@/hooks/useLeads';
 import { AgentSelector, getDisplayName } from './bulk-reassign/AgentSelector';
 import { ConfirmationStep } from './bulk-reassign/ConfirmationStep';
 import { ModeSelector, ReassignMode } from './bulk-reassign/ModeSelector';
+import { LeadPickerList } from './bulk-reassign/LeadPickerList';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 interface BulkReassignDialogProps {
   salesUsers: AdminUser[];
@@ -27,6 +31,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [open, setOpen] = useState(false);
   const [fromAgent, setFromAgent] = useState<string | null>(null);
   const [toAgent, setToAgent] = useState<string | null>(null);
+  const [toAgentIds, setToAgentIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [leadCount, setLeadCount] = useState<number | null>(null);
   const [step, setStep] = useState<'select' | 'confirm'>('select');
@@ -36,6 +41,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [moveCount, setMoveCount] = useState(10);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +58,27 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
   const fromUser = useMemo(() => allAgents.find(u => u.id === fromAgent), [allAgents, fromAgent]);
   const toUser = useMemo(() => salesUsers.find(u => u.id === toAgent), [salesUsers, toAgent]);
-  const toAgents = useMemo(() => salesUsers.filter(u => u.id !== fromAgent), [salesUsers, fromAgent]);
+  const toAgentsList = useMemo(() => salesUsers.filter(u => u.id !== fromAgent), [salesUsers, fromAgent]);
+
+  // For cherry_pick multi-select: resolved user objects
+  const selectedToUsers = useMemo(() => salesUsers.filter(u => toAgentIds.has(u.id)), [salesUsers, toAgentIds]);
+
+  // Effective "to" users depending on mode
+  const effectiveToUsers = useMemo(() => {
+    if (mode === 'cherry_pick') return selectedToUsers;
+    return toUser ? [toUser] : [];
+  }, [mode, selectedToUsers, toUser]);
+
+  const isCherryPick = mode === 'cherry_pick';
+
+  const toggleToAgent = useCallback((id: string) => {
+    setToAgentIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const handleCheckCount = async () => {
     if (!fromAgent) return;
@@ -66,8 +92,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         if (leadsResult.error) throw leadsResult.error;
         if (customersResult.error) throw customersResult.error;
         setLeadCount((leadsResult.count || 0) + (customersResult.count || 0));
+      } else if (mode === 'cherry_pick') {
+        setLeadCount(selectedLeadIds.size);
       } else {
-        // For percentage/count modes, count only sales_leads with optional date filter
         let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent);
         if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
         if (dateTo) {
@@ -90,26 +117,50 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
   const actualMoveCount = useMemo(() => {
     if (leadCount === null) return 0;
-    if (mode === 'all') return leadCount;
+    if (mode === 'all' || mode === 'cherry_pick') return leadCount;
     if (mode === 'percentage') return Math.ceil((leadCount * percentage) / 100);
     return Math.min(moveCount, leadCount);
   }, [leadCount, mode, percentage, moveCount]);
 
   const handleReassign = async () => {
-    if (!fromAgent || !toAgent) return;
+    if (!fromAgent || effectiveToUsers.length === 0) return;
     setLoading(true);
     try {
       const now = new Date().toISOString();
 
       if (mode === 'all') {
+        const target = effectiveToUsers[0].id;
         const [leadsResult, customersResult] = await Promise.all([
-          supabase.from('sales_leads').update({ assigned_to: toAgent, assigned_at: now, updated_at: now }).eq('assigned_to', fromAgent),
-          supabase.from('customers').update({ assigned_to: toAgent, updated_at: now }).eq('assigned_to', fromAgent),
+          supabase.from('sales_leads').update({ assigned_to: target, assigned_at: now, updated_at: now }).eq('assigned_to', fromAgent),
+          supabase.from('customers').update({ assigned_to: target, updated_at: now }).eq('assigned_to', fromAgent),
         ]);
         if (leadsResult.error) throw leadsResult.error;
         if (customersResult.error) throw customersResult.error;
+      } else if (mode === 'cherry_pick') {
+        const ids = Array.from(selectedLeadIds);
+        const agents = effectiveToUsers.map(u => u.id);
+
+        // Distribute round-robin across selected agents
+        const batches: Record<string, string[]> = {};
+        agents.forEach(a => { batches[a] = []; });
+        ids.forEach((id, i) => {
+          const agentId = agents[i % agents.length];
+          batches[agentId].push(id);
+        });
+
+        const updates = Object.entries(batches)
+          .filter(([, leadIds]) => leadIds.length > 0)
+          .map(([agentId, leadIds]) =>
+            supabase.from('sales_leads')
+              .update({ assigned_to: agentId, assigned_at: now, updated_at: now })
+              .in('id', leadIds)
+          );
+        const results = await Promise.all(updates);
+        for (const r of results) {
+          if (r.error) throw r.error;
+        }
       } else {
-        // Fetch IDs of leads to move (newest first), with optional date filter
+        const target = effectiveToUsers[0].id;
         let query = supabase.from('sales_leads').select('id').eq('assigned_to', fromAgent).order('created_at', { ascending: false });
         if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
         if (dateTo) {
@@ -120,18 +171,18 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         query = query.limit(actualMoveCount);
         const { data: leadIds, error: fetchErr } = await query;
         if (fetchErr) throw fetchErr;
-
         if (leadIds && leadIds.length > 0) {
           const ids = leadIds.map(l => l.id);
           const { error: updateErr } = await supabase
             .from('sales_leads')
-            .update({ assigned_to: toAgent, assigned_at: now, updated_at: now })
+            .update({ assigned_to: target, assigned_at: now, updated_at: now })
             .in('id', ids);
           if (updateErr) throw updateErr;
         }
       }
 
-      toast.success(`Successfully reassigned ${actualMoveCount} record${actualMoveCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${getDisplayName(toUser!)}`);
+      const toNames = effectiveToUsers.map(u => getDisplayName(u)).join(', ');
+      toast.success(`Successfully reassigned ${actualMoveCount} record${actualMoveCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}`);
       setOpen(false);
       resetState();
       onComplete();
@@ -146,6 +197,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const resetState = () => {
     setFromAgent(null);
     setToAgent(null);
+    setToAgentIds(new Set());
     setLeadCount(null);
     setStep('select');
     setMode('all');
@@ -153,11 +205,27 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setMoveCount(10);
     setDateFrom('');
     setDateTo('');
+    setSelectedLeadIds(new Set());
   };
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) resetState();
+  };
+
+  const canContinue = useMemo(() => {
+    if (!fromAgent || loading) return false;
+    if (mode === 'cherry_pick') return selectedLeadIds.size > 0 && toAgentIds.size > 0;
+    if (!toAgent) return false;
+    if (mode !== 'all' && (!dateFrom || !dateTo)) return false;
+    return true;
+  }, [fromAgent, toAgent, loading, mode, dateFrom, dateTo, selectedLeadIds, toAgentIds]);
+
+  const getInitials = (user: AdminUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
   };
 
   return (
@@ -168,7 +236,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           Reassign
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={isCherryPick ? 'sm:max-w-2xl' : 'sm:max-w-md'}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserRoundCog className="h-5 w-5" />
@@ -181,26 +249,81 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
         {step === 'select' && (
           <div className="space-y-4 py-2">
-            <ModeSelector mode={mode} onSelect={(m) => { setMode(m); setLeadCount(null); }} />
+            <ModeSelector mode={mode} onSelect={(m) => { setMode(m); setLeadCount(null); setSelectedLeadIds(new Set()); setToAgentIds(new Set()); }} />
 
             <AgentSelector
               label="From agent"
               agents={allAgents}
               selectedId={fromAgent}
-              onSelect={(id) => { setFromAgent(id); setToAgent(null); setLeadCount(null); }}
+              onSelect={(id) => { setFromAgent(id); setToAgent(null); setToAgentIds(new Set()); setLeadCount(null); setSelectedLeadIds(new Set()); }}
             />
 
-            {fromAgent && (
+            {/* Cherry-pick: show lead list + multi-agent selector */}
+            {isCherryPick && fromAgent && (
+              <>
+                <LeadPickerList
+                  fromAgentId={fromAgent}
+                  selectedIds={selectedLeadIds}
+                  onToggle={(id) => {
+                    setSelectedLeadIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(id)) next.delete(id);
+                      else next.add(id);
+                      return next;
+                    });
+                  }}
+                  onSelectAll={(ids) => setSelectedLeadIds(new Set(ids))}
+                  onDeselectAll={() => setSelectedLeadIds(new Set())}
+                />
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Assign to <span className="text-xs">(select one or more)</span>
+                  </label>
+                  <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                    {toAgentsList.map((user) => (
+                      <label
+                        key={user.id}
+                        className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
+                          toAgentIds.has(user.id)
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+                        }`}
+                      >
+                        <Checkbox
+                          checked={toAgentIds.has(user.id)}
+                          onCheckedChange={() => toggleToAgent(user.id)}
+                        />
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                            {getInitials(user)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium truncate">{getDisplayName(user)}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {toAgentIds.size > 1 && (
+                    <p className="text-xs text-muted-foreground">
+                      Leads will be split evenly (round-robin) across {toAgentIds.size} agents
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Single "To" agent for non-cherry-pick modes */}
+            {!isCherryPick && fromAgent && (
               <AgentSelector
                 label="To agent"
-                agents={toAgents}
+                agents={toAgentsList}
                 selectedId={toAgent}
                 onSelect={setToAgent}
               />
             )}
 
             {/* Date range filter for percentage/count modes — required */}
-            {mode !== 'all' && fromAgent && (
+            {(mode === 'percentage' || mode === 'count') && fromAgent && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Date range <span className="text-destructive">*</span></label>
                 <div className="flex gap-2">
@@ -256,10 +379,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           </div>
         )}
 
-        {step === 'confirm' && fromUser && toUser && leadCount !== null && (
+        {step === 'confirm' && fromUser && effectiveToUsers.length > 0 && leadCount !== null && (
           <ConfirmationStep
             fromUser={fromUser}
-            toUser={toUser}
+            toUsers={effectiveToUsers}
             leadCount={leadCount}
             mode={mode}
             percentage={percentage}
@@ -271,7 +394,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           {step === 'select' && (
             <Button
               onClick={handleCheckCount}
-              disabled={!fromAgent || !toAgent || loading || (mode !== 'all' && (!dateFrom || !dateTo))}
+              disabled={!canContinue}
               className="w-full gap-2"
             >
               {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
