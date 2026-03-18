@@ -271,7 +271,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           {step === 'select' && (
             <Button
               onClick={handleCheckCount}
-              disabled={!fromAgent || !toAgent || loading}
+              disabled={!fromAgent || !toAgent || loading || (mode !== 'all' && (!dateFrom || !dateTo))}
               className="w-full gap-2"
             >
               {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
