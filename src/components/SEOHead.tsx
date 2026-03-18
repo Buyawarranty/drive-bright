@@ -120,18 +120,20 @@ export const SEOHead = ({
     updateMetaTag('audience', 'all');
     updateMetaTag('rating', 'general');
 
-    // Canonical URL
-    if (canonical) {
-      let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-      if (link) {
-        link.href = canonical;
-      } else {
-        link = document.createElement('link');
-        link.rel = 'canonical';
-        link.href = canonical;
-        document.head.appendChild(link);
-      }
+    // Canonical URL — always set to avoid duplicate content issues
+    const canonicalUrl = canonical || `https://buyawarranty.co.uk${window.location.pathname}`;
+    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (link) {
+      link.href = canonicalUrl;
+    } else {
+      link = document.createElement('link');
+      link.rel = 'canonical';
+      link.href = canonicalUrl;
+      document.head.appendChild(link);
     }
+
+    // Also set og:url to match canonical
+    updateMetaTag('og:url', canonicalUrl, true);
 
     // Viewport meta tag (ensure it exists)
     if (!document.querySelector('meta[name="viewport"]')) {
