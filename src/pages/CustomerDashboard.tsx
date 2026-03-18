@@ -382,6 +382,7 @@ const CustomerDashboard = () => {
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
+      setLoginFailed(true);
     } finally {
       setLoginLoading(false);
     }
