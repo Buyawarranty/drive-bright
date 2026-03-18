@@ -153,6 +153,7 @@ const CustomerDashboard = () => {
   const [password, setPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginFailed, setLoginFailed] = useState(false);
 
   // Notification system
   const { 
