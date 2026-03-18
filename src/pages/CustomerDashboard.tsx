@@ -296,6 +296,7 @@ const CustomerDashboard = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
+    setLoginFailed(false);
 
     console.log("=== LOGIN ATTEMPT ===", { email: email.trim().toLowerCase() });
 
