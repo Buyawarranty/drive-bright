@@ -252,14 +252,15 @@ export const useLeads = () => {
 
       // Apply filter to sales leads client-side (avoids a second full fetch for dedup)
       let salesLeadsData = allSalesLeadsData || [];
-      if (filter === 'all_leads') {
-        // Show ALL leads — no exclusions
-      } else if (filter === 'all' || filter === 'live') {
+      if (filter === 'all_leads' || filter === 'all' || filter === 'live') {
+        // Exclude lost and fake from all main views — they have their own tabs
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
       } else if (filter === 'high_priority') {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.priority === 'high' || lead.priority === 'urgent');
       } else if (filter === 'fake') {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === 'fake_lead');
+      } else if (filter === 'lost') {
+        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === 'lost');
       } else {
         salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === filter);
       }
