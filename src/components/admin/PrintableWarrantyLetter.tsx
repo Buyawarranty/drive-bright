@@ -109,7 +109,7 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Policy Documents - ${policy.warrantyNumber || policy.policyNumber}</title>
+          <title>${policy.customerName} - ${policy.warrantyNumber || policy.policyNumber}</title>
           <style>
             @page { size: A4; margin: 15mm 18mm; }
             * { box-sizing: border-box; margin: 0; padding: 0; }
