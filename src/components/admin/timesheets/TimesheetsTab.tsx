@@ -14,6 +14,7 @@ import { TimesheetComments } from './TimesheetComments';
 import { AdditionalBonuses } from './AdditionalBonuses';
 import { CommissionClaimsSection } from './CommissionClaimsSection';
 import { StaffTimesheetSelector } from './StaffTimesheetSelector';
+import { UnwindsSection } from './UnwindsSection';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
