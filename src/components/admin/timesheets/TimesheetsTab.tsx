@@ -267,6 +267,9 @@ export function TimesheetsTab() {
           <TabsContent value="commissions" className="mt-4">
             <CommissionClaimsSection currentMonth={currentMonth} />
             <div className="mt-4">
+              <UnwindsSection currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
+            </div>
+            <div className="mt-4">
               <CommissionsSection commissions={commissions} />
             </div>
             <div className="mt-4">
