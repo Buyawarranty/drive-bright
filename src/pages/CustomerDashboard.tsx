@@ -322,6 +322,7 @@ const CustomerDashboard = () => {
           description: "Unable to connect to the login service. Please try again in a moment.",
           variant: "destructive",
         });
+        setLoginFailed(true);
         return;
       }
 
