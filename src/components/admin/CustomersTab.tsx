@@ -622,6 +622,10 @@ export const CustomersTab = () => {
     if (filterByStatus !== 'all') {
       if (filterByStatus === 'refunded') {
         filtered = filtered.filter(customer => refundedCustomerIds.has(customer.id));
+      } else if (filterByStatus === 'cancelled_and_refunded') {
+        filtered = filtered.filter(customer =>
+          refundedCustomerIds.has(customer.id) || customer.status?.toLowerCase() === 'cancelled'
+        );
       } else {
         filtered = filtered.filter(customer =>
           customer.status?.toLowerCase() === filterByStatus.toLowerCase()
