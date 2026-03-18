@@ -252,7 +252,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [leads, dateRange]);
 
   const leadCounts = useMemo(() => ({
-    all_leads: dateFilteredLeadsForCounts.length,
+    all_leads: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
     all: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
     live: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
     total: dateFilteredLeadsForCounts.length,
