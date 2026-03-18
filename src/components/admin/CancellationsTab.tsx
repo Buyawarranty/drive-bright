@@ -45,7 +45,7 @@ interface AdminUser {
   role: string;
 }
 
-const months = [
+const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
@@ -65,7 +65,7 @@ export const CancellationsTab: React.FC<{
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
-  const [filterByStatus, setFilterByStatus] = useState('all'); // all, cancelled, refunded
+  const [filterByStatus, setFilterByStatus] = useState('all');
 
   // Default to current month
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -81,7 +81,6 @@ export const CancellationsTab: React.FC<{
     return Array.from({ length: 6 }, (_, i) => currentYear - i);
   }, []);
 
-  // Fetch cancellations from customers table (source of truth)
   const fetchCancellations = useCallback(async () => {
     try {
       if (!initialLoadDone) setLoading(true);
@@ -108,7 +107,6 @@ export const CancellationsTab: React.FC<{
     fetchCancellations();
   }, []);
 
-  // Handle month selector
   const handleMonthSelect = (monthIdx: string) => {
     setSelectedMonth(monthIdx);
     const year = selectedYear ? parseInt(selectedYear) : new Date().getFullYear();
@@ -116,7 +114,6 @@ export const CancellationsTab: React.FC<{
     setDateRange({ from: startOfMonth(monthDate), to: endOfMonth(monthDate) });
   };
 
-  // Handle year selector
   const handleYearSelect = (year: string) => {
     setSelectedYear(year);
     if (selectedMonth) {
@@ -160,12 +157,10 @@ export const CancellationsTab: React.FC<{
       });
     }
 
-    // Status filter
     if (filterByStatus !== 'all') {
       filtered = filtered.filter(r => r.status?.toLowerCase() === filterByStatus);
     }
 
-    // Agent filter
     if (filterByAgent !== 'all') {
       if (filterByAgent === 'unassigned') {
         filtered = filtered.filter(r => !r.assigned_to);
@@ -174,7 +169,6 @@ export const CancellationsTab: React.FC<{
       }
     }
 
-    // Search
     if (debouncedSearch) {
       const term = debouncedSearch.toLowerCase();
       filtered = filtered.filter(r =>
@@ -191,11 +185,7 @@ export const CancellationsTab: React.FC<{
     return filtered;
   }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch]);
 
-  const pagination = usePagination({ totalItems: filteredRecords.length, defaultPageSize: 50 });
-  const paginatedRecords = filteredRecords.slice(
-    (pagination.currentPage - 1) * pagination.pageSize,
-    pagination.currentPage * pagination.pageSize
-  );
+  const pagination = usePagination(filteredRecords, { initialPageSize: 50 });
 
   const getAgentName = (agentId?: string) => {
     if (!agentId) return 'Unassigned';
@@ -204,7 +194,6 @@ export const CancellationsTab: React.FC<{
     return [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
   };
 
-  // Summary stats
   const totalCancelled = filteredRecords.filter(r => r.status?.toLowerCase() === 'cancelled').length;
   const totalRefunded = filteredRecords.filter(r => r.status?.toLowerCase() === 'refunded').length;
   const totalValue = isFinancialRole ? filteredRecords.reduce((sum, r) => sum + (r.final_amount || 0), 0) : 0;
@@ -232,10 +221,9 @@ export const CancellationsTab: React.FC<{
       'Cancelled/Refunded Date': format(new Date(r.updated_at), 'dd/MM/yyyy'),
       Agent: getAgentName(r.assigned_to),
     }));
-    exportDataToCSV(exportData, `cancellations-${format(new Date(), 'yyyy-MM-dd')}`);
+    exportDataToCSV(exportData, { filename: `cancellations-${format(new Date(), 'yyyy-MM-dd')}`, format: 'csv' });
   };
 
-  // Agent options for the dropdown — only show agents who have cancellations
   const agentOptions = useMemo(() => {
     const agentIds = new Set(records.map(r => r.assigned_to).filter(Boolean));
     return adminUsers.filter(u => agentIds.has(u.id));
@@ -244,31 +232,30 @@ export const CancellationsTab: React.FC<{
   return (
     <div className="space-y-4">
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3')}>
         <Card className="p-3">
           <p className="text-xs text-muted-foreground">Total</p>
           <p className="text-2xl font-bold">{filteredRecords.length}</p>
         </Card>
-        <Card className="p-3">
+        <Card className="p-3 border-orange-200">
           <p className="text-xs text-muted-foreground">Cancelled</p>
-          <p className="text-2xl font-bold text-orange-600">{totalCancelled}</p>
+          <p className="text-2xl font-bold text-destructive">{totalCancelled}</p>
         </Card>
-        <Card className="p-3">
+        <Card className="p-3 border-red-200">
           <p className="text-xs text-muted-foreground">Refunded</p>
-          <p className="text-2xl font-bold text-red-600">{totalRefunded}</p>
+          <p className="text-2xl font-bold text-destructive">{totalRefunded}</p>
         </Card>
         {isFinancialRole && (
-          <Card className="p-3">
+          <Card className="p-3 border-red-200">
             <p className="text-xs text-muted-foreground">Total Value</p>
-            <p className="text-2xl font-bold text-red-600">£{totalValue.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-destructive">£{totalValue.toFixed(2)}</p>
           </Card>
         )}
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border space-y-4">
+      <div className="bg-card p-4 rounded-lg border space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Search */}
           <div className="space-y-1 lg:col-span-2">
             <Label className="text-sm font-medium">Search</Label>
             <div className="relative">
@@ -282,13 +269,10 @@ export const CancellationsTab: React.FC<{
             </div>
           </div>
 
-          {/* Status */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Status</Label>
             <Select value={filterByStatus} onValueChange={setFilterByStatus}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All (Cancelled & Refunded)</SelectItem>
                 <SelectItem value="cancelled">Cancelled Only</SelectItem>
@@ -297,27 +281,21 @@ export const CancellationsTab: React.FC<{
             </Select>
           </div>
 
-          {/* Agent */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Sales Agent</Label>
             <Select value={filterByAgent} onValueChange={setFilterByAgent}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
                 {agentOptions.map(agent => {
                   const name = [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
-                  return (
-                    <SelectItem key={agent.id} value={agent.id}>{name}</SelectItem>
-                  );
+                  return <SelectItem key={agent.id} value={agent.id}>{name}</SelectItem>;
                 })}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Actions */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">&nbsp;</Label>
             <div className="flex gap-2">
@@ -326,8 +304,7 @@ export const CancellationsTab: React.FC<{
               </Button>
               {canExport && (
                 <Button variant="outline" size="sm" onClick={handleExport} className="h-10">
-                  <Download className="h-4 w-4 mr-1" />
-                  Export
+                  <Download className="h-4 w-4 mr-1" /> Export
                 </Button>
               )}
             </div>
@@ -336,28 +313,22 @@ export const CancellationsTab: React.FC<{
 
         {/* Date selectors row */}
         <div className="flex flex-wrap items-end gap-4">
-          {/* Month selector */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">By Month</Label>
             <Select value={selectedMonth} onValueChange={handleMonthSelect}>
-              <SelectTrigger className="w-[160px] h-9">
-                <SelectValue placeholder="Select month" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Select month" /></SelectTrigger>
               <SelectContent>
-                {months.map((month, i) => (
+                {monthNames.map((month, i) => (
                   <SelectItem key={i} value={String(i)}>{month}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Year selector */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Year</Label>
             <Select value={selectedYear} onValueChange={handleYearSelect}>
-              <SelectTrigger className="w-[120px] h-9">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[120px] h-9"><SelectValue placeholder="Year" /></SelectTrigger>
               <SelectContent>
                 {yearOptions.map(year => (
                   <SelectItem key={year} value={String(year)}>{year}</SelectItem>
@@ -366,7 +337,6 @@ export const CancellationsTab: React.FC<{
             </Select>
           </div>
 
-          {/* Custom date range picker */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Custom Date Range</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
@@ -391,7 +361,6 @@ export const CancellationsTab: React.FC<{
             </Popover>
           </div>
 
-          {/* Clear filters */}
           <Button
             variant="ghost"
             size="sm"
@@ -417,7 +386,7 @@ export const CancellationsTab: React.FC<{
       ) : (
         <>
           <div className="text-sm text-muted-foreground">
-            Showing {paginatedRecords.length} of {filteredRecords.length} records · {displayDateLabel}
+            Showing {pagination.startIndex + 1}–{pagination.endIndex} of {filteredRecords.length} records · {displayDateLabel}
           </div>
           <div className="rounded-md border">
             <Table>
@@ -434,7 +403,7 @@ export const CancellationsTab: React.FC<{
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedRecords.length === 0 ? (
+                {pagination.paginatedData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isFinancialRole ? 8 : 7} className="text-center py-8 text-muted-foreground">
                       <Ban className="h-8 w-8 mx-auto mb-2 opacity-40" />
@@ -442,7 +411,7 @@ export const CancellationsTab: React.FC<{
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedRecords.map(record => (
+                  pagination.paginatedData.map(record => (
                     <TableRow key={record.id}>
                       <TableCell>
                         <div>
@@ -453,9 +422,9 @@ export const CancellationsTab: React.FC<{
                       </TableCell>
                       <TableCell>
                         {record.registration_plate ? (
-                          <div className="inline-flex items-center bg-white border-2 border-black rounded-sm overflow-hidden font-mono text-xs font-bold shadow-sm">
-                            <div className="bg-blue-600 text-white px-1.5 py-0.5 text-[10px] font-normal">GB</div>
-                            <div className="bg-yellow-400 text-black px-2 py-0.5 tracking-wider">{record.registration_plate.toUpperCase()}</div>
+                          <div className="inline-flex items-center border-2 border-foreground rounded-sm overflow-hidden font-mono text-xs font-bold shadow-sm">
+                            <div className="bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-normal">GB</div>
+                            <div className="bg-accent text-accent-foreground px-2 py-0.5 tracking-wider">{record.registration_plate.toUpperCase()}</div>
                           </div>
                         ) : (
                           <span className="text-muted-foreground text-xs">N/A</span>
@@ -468,15 +437,7 @@ export const CancellationsTab: React.FC<{
                         <Badge variant="outline" className="text-xs">{record.plan_type}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="destructive"
-                          className={cn(
-                            'text-xs',
-                            record.status?.toLowerCase() === 'cancelled'
-                              ? 'bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-300'
-                              : 'bg-red-100 text-red-800 hover:bg-red-200 border-red-300'
-                          )}
-                        >
+                        <Badge variant="destructive" className="text-xs">
                           {record.status}
                         </Badge>
                       </TableCell>
@@ -502,9 +463,13 @@ export const CancellationsTab: React.FC<{
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPages}
             pageSize={pagination.pageSize}
-            totalItems={filteredRecords.length}
-            onPageChange={pagination.setCurrentPage}
+            totalItems={pagination.totalItems}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            onPageChange={pagination.goToPage}
             onPageSizeChange={pagination.setPageSize}
+            canGoNext={pagination.canGoNext}
+            canGoPrev={pagination.canGoPrev}
           />
         </>
       )}
