@@ -848,18 +848,6 @@ Additional Information: ${formData.additionalInfo}
               </div>
             </div>
             
-            <div className="mt-12 text-center">
-              <p className="text-gray-600 text-lg mb-6 max-w-2xl mx-auto">
-                If approved, we will pay the repairer directly. In some cases, we will make the pay-out to you after we have made our checks.
-              </p>
-              
-              {/* Payout Time Box */}
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-8 max-w-md mx-auto">
-                <p className="text-lg font-semibold text-gray-900">
-                  ⏱️ We aim to pay out within 90 minutes of final approval
-                </p>
-              </div>
-            </div>
           </div>
         </section>
 
