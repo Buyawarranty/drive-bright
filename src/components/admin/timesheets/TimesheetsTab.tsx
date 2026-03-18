@@ -290,6 +290,7 @@ export function TimesheetsTab() {
         <div className="space-y-6">
           <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} />
           <CommissionClaimsSection currentMonth={currentMonth} />
+          <UnwindsSection currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
           <CommissionsSection commissions={commissions} />
           <AdditionalBonuses currentMonth={currentMonth} />
           <TimesheetComments currentMonth={currentMonth} />
