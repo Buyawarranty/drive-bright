@@ -57,6 +57,7 @@ import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
 import { PurchaseSourceBadge } from './PurchaseSourceBadge';
 import { PrintableWarrantyLetter } from './PrintableWarrantyLetter';
 import { PaymentDueDatePicker } from './PaymentDueDatePicker';
+import { CancellationsTab } from './CancellationsTab';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { format } from 'date-fns';
