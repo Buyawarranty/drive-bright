@@ -41,18 +41,7 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 1600,
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info'],
-        passes: 2
-      },
-      mangle: {
-        safari10: true
-      }
-    },
+    minify: 'esbuild',
     cssMinify: true
   },
   esbuild: {
