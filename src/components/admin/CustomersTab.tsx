@@ -4271,6 +4271,7 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
 
+                                {!isSalesRole && (
                                 <TabsContent value="claims">
                                   {selectedCustomer && (
                                     <CustomerClaimsSummary
@@ -4282,6 +4283,7 @@ Please log in and change your password after first login.`;
                                     />
                                   )}
                                 </TabsContent>
+                                )}
 
                                 <TabsContent value="tags">
                                   {selectedCustomer && (
