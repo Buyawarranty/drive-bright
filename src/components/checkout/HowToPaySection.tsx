@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
+import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 
 interface HowToPaySectionProps {
   selectedPayment: 'monthly' | 'full' | null;
@@ -323,6 +324,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <span>Secure checkout processing</span>
         </div>
       )}
+
+      {/* Trustpilot Slider Widget */}
+      <TrustpilotSliderWidget className="mt-4" />
 
       {/* Divider */}
       <div className="h-px bg-border mt-6 mb-5" />
