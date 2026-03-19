@@ -141,17 +141,43 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
+    switch (filter) {
+      case 'all':
+      case 'all_leads':
+        return inputLeads.filter(lead => lead.status !== 'fake_lead');
+      case 'live':
+        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
+      case 'high_priority':
+        return inputLeads.filter(lead => (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead');
+      case 'fake':
+        return inputLeads.filter(lead => lead.status === 'fake_lead');
+      case 'lost':
+        return inputLeads.filter(lead => lead.status === 'lost');
+      case 'urgent_callback':
+      case 'quote_sent':
+      case 'contacted':
+      case 'follow_up':
+      case 'new':
+      case 'converted':
+        return inputLeads.filter(lead => lead.status === filter);
+      default:
+        return inputLeads.filter(lead => lead.status === filter);
+    }
+  }, [filter]);
+
+  const statusFilteredLeads = useMemo(() => applyStatusFilter(leads), [leads, applyStatusFilter]);
+
   const filteredLeads = useMemo(() => {
-    let result = leads;
-    
+    let result = statusFilteredLeads;
+
     // Apply assignment filter
     if (assignmentFilter === 'awaiting_contact') {
       result = result.filter(lead => !lead.assigned_to);
     } else if (assignmentFilter === 'assigned') {
       result = result.filter(lead => !!lead.assigned_to);
     }
-    // 'all' and 'total' show all leads (total is same as all, just labeled differently)
-    
+
     // Apply agent filter
     if (agentFilter !== 'all') {
       if (agentFilter === 'unassigned') {
@@ -160,34 +186,32 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         result = result.filter(lead => lead.assigned_to === agentFilter);
       }
     }
-    
+
     // Apply date range filter — but skip it when actively searching so leads are always findable
     if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
       result = result.filter(lead => {
         const leadDate = new Date(lead.created_at);
-        
-        // Compare using start of day for 'from' date
+
         if (dateRange.from) {
           const fromStart = new Date(dateRange.from);
           fromStart.setHours(0, 0, 0, 0);
           if (leadDate < fromStart) return false;
         }
-        
-        // Compare using end of day for 'to' date
+
         if (dateRange.to) {
           const toEnd = new Date(dateRange.to);
           toEnd.setHours(23, 59, 59, 999);
           if (leadDate > toEnd) return false;
         }
-        
+
         return true;
       });
     }
-    
+
     // Apply search filter
     if (debouncedSearchTerm) {
       const term = debouncedSearchTerm.toLowerCase();
-      result = result.filter(lead => 
+      result = result.filter(lead =>
         lead.email.toLowerCase().includes(term) ||
         (lead.first_name?.toLowerCase().includes(term)) ||
         (lead.last_name?.toLowerCase().includes(term)) ||
@@ -196,8 +220,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         (lead.plan_interest?.toLowerCase().includes(term))
       );
     }
-    
-    // Apply sorting
+
     result = [...result].sort((a, b) => {
       switch (sortOption) {
         case 'newest':
@@ -222,14 +245,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
       }
     });
-    
+
     return result;
-  }, [leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption]);
+  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption]);
 
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
 
-  // Apply date range filter to leads for accurate counts
+  // Date-filter the raw source-of-truth dataset for accurate counts.
   const dateFilteredLeadsForCounts = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return leads;
     return leads.filter(lead => {
@@ -248,9 +271,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
   }, [leads, dateRange]);
 
+  const dateAndStatusFilteredLeads = useMemo(
+    () => applyStatusFilter(dateFilteredLeadsForCounts),
+    [dateFilteredLeadsForCounts, applyStatusFilter]
+  );
+
   const leadCounts = useMemo(() => ({
-    all_leads: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
-    all: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
+    all_leads: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead').length,
+    all: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead').length,
     live: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
     total: dateFilteredLeadsForCounts.length,
     new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
@@ -265,42 +293,25 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
   }), [dateFilteredLeadsForCounts]);
 
-  // Assignment counts for the filter dropdown - also respects date range
+  // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
-    total: dateFilteredLeadsForCounts.length,
-    awaiting_contact: dateFilteredLeadsForCounts.filter(l => !l.assigned_to).length,
-    assigned: dateFilteredLeadsForCounts.filter(l => !!l.assigned_to).length,
-  }), [dateFilteredLeadsForCounts]);
+    total: dateAndStatusFilteredLeads.length,
+    awaiting_contact: dateAndStatusFilteredLeads.filter(l => !l.assigned_to).length,
+    assigned: dateAndStatusFilteredLeads.filter(l => !!l.assigned_to).length,
+  }), [dateAndStatusFilteredLeads]);
 
-  // Agent lead counts - respects date range filter
+  // Agent lead counts - respects date + active status filter.
   const agentLeadCounts = useMemo(() => {
-    let dateFilteredLeads = leads;
-    if (dateRange.from || dateRange.to) {
-      dateFilteredLeads = leads.filter(lead => {
-        const leadDate = new Date(lead.created_at);
-        if (dateRange.from) {
-          const fromStart = new Date(dateRange.from);
-          fromStart.setHours(0, 0, 0, 0);
-          if (leadDate < fromStart) return false;
-        }
-        if (dateRange.to) {
-          const toEnd = new Date(dateRange.to);
-          toEnd.setHours(23, 59, 59, 999);
-          if (leadDate > toEnd) return false;
-        }
-        return true;
-      });
-    }
     const counts: Record<string, number> = { unassigned: 0 };
-    dateFilteredLeads.forEach(lead => {
+    dateAndStatusFilteredLeads.forEach(lead => {
       if (!lead.assigned_to) {
-        counts['unassigned'] = (counts['unassigned'] || 0) + 1;
+        counts.unassigned] = (counts.unassigned || 0) + 1;
       } else {
         counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
       }
     });
     return counts;
-  }, [leads, dateRange]);
+  }, [dateAndStatusFilteredLeads]);
 
   // Memoize handlers to prevent re-renders
   const handleSelectLead = useCallback((leadId: string) => {
