@@ -734,6 +734,33 @@ export const useLeads = () => {
     }
   }, []);
 
+  // Add a system-generated note to lead_quick_notes (for tracking assignments, calls, etc.)
+  const addSystemNote = useCallback(async (leadId: string, noteText: string) => {
+    try {
+      const isAbandonedCart = leadId.startsWith('cart_');
+      if (isAbandonedCart) return; // FK constraint: lead_quick_notes only links to sales_leads
+
+      const adminUser = await getCachedAdminUser();
+      if (!adminUser) return;
+
+      const timestamp = new Date().toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      await supabase
+        .from('lead_quick_notes')
+        .insert({
+          lead_id: leadId,
+          note_text: `[${timestamp}] ${noteText}`,
+          created_by: adminUser.id,
+          is_pinned: false
+        });
+    } catch (error) {
+      console.error('Error adding system note:', error);
+    }
+  }, [getCachedAdminUser]);
+
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity
   // Includes a freshness check to prevent two agents assigning the same lead
