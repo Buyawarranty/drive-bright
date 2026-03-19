@@ -815,8 +815,23 @@ export const useLeads = () => {
         throw new Error(assignResult.error || 'Assignment failed');
       }
 
-      if (userId && user && !isAbandonedCart) {
-        logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
+      if (!isAbandonedCart) {
+        const previousAgent = previousLeadSnapshot?.assigned_user;
+        const previousAgentName = previousAgent ? (previousAgent.first_name || previousAgent.email || 'Unknown') : null;
+        const adminUser = await getCachedAdminUser();
+        const actionBy = adminUser?.firstName || 'System';
+
+        if (userId && user) {
+          logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
+          if (previousAgentName) {
+            addSystemNote(leadId, `Agent changed from ${previousAgentName} to ${user.first_name || user.email || 'Unknown'} by ${actionBy}`);
+          } else {
+            addSystemNote(leadId, `Assigned to ${user.first_name || user.email || 'Unknown'} by ${actionBy}`);
+          }
+        } else if (!userId && previousAgentName) {
+          logActivity(leadId, 'assignment', `Unassigned from ${previousAgentName}`);
+          addSystemNote(leadId, `Unassigned from ${previousAgentName} by ${actionBy}`);
+        }
       }
 
       toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
