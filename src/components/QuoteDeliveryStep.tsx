@@ -6,7 +6,7 @@ import { getStoredFbclid } from '@/utils/fbclidCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import trustpilotStars from '@/assets/trustpilot-stars.png';
+
 import TrustpilotMiniWidget from '@/components/TrustpilotMiniWidget';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
@@ -603,14 +603,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <PhoneCall className="w-5 h-5 text-brand-orange" />
               <span>Request Call-Back</span>
             </button>
-            <a 
-              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
-            >
-              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-10 w-auto" />
-            </a>
           </div>
         </div>
       </div>
