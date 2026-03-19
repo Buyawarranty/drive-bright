@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { EmailBlockButton } from '../email/EmailBlockButton';
 import { Lead } from '@/hooks/useLeads';
+import { addSystemNote } from '@/utils/leadSystemNotes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
