@@ -375,6 +375,7 @@ export const CustomersTab = () => {
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
+  const [revenueQuickFilter, setRevenueQuickFilter] = useState<string>('today');
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
@@ -383,9 +384,46 @@ export const CustomersTab = () => {
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
   const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+  const canViewRevenue = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'accounts_manager';
+
+  // Quick filter helper for revenue
+  const applyRevenueQuickFilter = useCallback((filter: string) => {
+    setRevenueQuickFilter(filter);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    switch (filter) {
+      case 'today':
+        setRevenueDateRange({ from: today, to: today });
+        break;
+      case 'yesterday': {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        setRevenueDateRange({ from: yesterday, to: yesterday });
+        break;
+      }
+      case 'this_month':
+        setRevenueDateRange({ from: new Date(today.getFullYear(), today.getMonth(), 1), to: today });
+        break;
+      case 'last_month': {
+        const firstLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        setRevenueDateRange({ from: firstLastMonth, to: lastLastMonth });
+        break;
+      }
+    }
+  }, []);
+
+  const navigateRevenueDay = useCallback((direction: 1 | -1) => {
+    setRevenueDateRange(prev => {
+      const current = prev?.from ? new Date(prev.from) : new Date();
+      current.setDate(current.getDate() + direction);
+      return { from: current, to: current };
+    });
+    setRevenueQuickFilter('custom');
+  }, []);
 
   const filteredRevenueStats = useMemo(() => {
-    if (!isSuperAdmin || !revenueDateRange?.from) return null;
+    if (!canViewRevenue || !revenueDateRange?.from) return null;
     const from = new Date(revenueDateRange.from);
     from.setHours(0, 0, 0, 0);
     const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
@@ -400,7 +438,7 @@ export const CustomersTab = () => {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
     };
-  }, [customers, revenueDateRange, isSuperAdmin]);
+  }, [customers, revenueDateRange, canViewRevenue]);
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
