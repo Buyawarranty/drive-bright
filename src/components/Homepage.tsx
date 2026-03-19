@@ -555,7 +555,22 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     >
                       Request a callback
                     </button>
+                </div>
+
+                {/* TrustBox Widget - Horizontal */}
+                <div className="mt-4">
+                  <div 
+                    className="trustpilot-widget" 
+                    data-locale="en-US" 
+                    data-template-id="5406e65db0d04a09e042d5fc" 
+                    data-businessunit-id="6586c764848940568d554a08" 
+                    data-style-height="28px" 
+                    data-style-width="100%" 
+                    data-token="9427810b-06b1-4a24-8c08-42260ef98c76"
+                  >
+                    <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
                   </div>
+                </div>
                 </div>
               </div>
             </div>
