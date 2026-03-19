@@ -382,6 +382,7 @@ export const CustomersTab = () => {
 
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
+  const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin || !revenueDateRange?.from) return null;
@@ -3206,8 +3207,8 @@ export const CustomersTab = () => {
               <TableHead className="bg-purple-50">Source</TableHead>
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
-              <TableHead>Claims Made</TableHead>
-              <TableHead>Claims Paid</TableHead>
+              {!isSalesRole && <TableHead>Claims Made</TableHead>}
+              {!isSalesRole && <TableHead>Claims Paid</TableHead>}
               <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
               <TableHead className="text-center bg-blue-50">Google</TableHead>
               <TableHead>Labour Rate</TableHead>
@@ -3424,10 +3425,10 @@ Please log in and change your password after first login.`;
                               </Collapsible>
 
                               <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="grid w-full grid-cols-8">
+                                <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${isSalesRole ? 7 : 8}, minmax(0, 1fr))` }}>
                                   <TabsTrigger value="details">Customer Details</TabsTrigger>
                                   <TabsTrigger value="warranty">Warranty Details</TabsTrigger>
-                                  <TabsTrigger value="claims">Claims</TabsTrigger>
+                                  {!isSalesRole && <TabsTrigger value="claims">Claims</TabsTrigger>}
                                   <TabsTrigger value="tags">Tags</TabsTrigger>
                                   <TabsTrigger value="notes">Notes</TabsTrigger>
                                   <TabsTrigger value="actions">Warranty Actions</TabsTrigger>
@@ -4270,6 +4271,7 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
 
+                                {!isSalesRole && (
                                 <TabsContent value="claims">
                                   {selectedCustomer && (
                                     <CustomerClaimsSummary
@@ -4281,6 +4283,7 @@ Please log in and change your password after first login.`;
                                     />
                                   )}
                                 </TabsContent>
+                                )}
 
                                 <TabsContent value="tags">
                                   {selectedCustomer && (
@@ -4511,7 +4514,7 @@ Please log in and change your password after first login.`;
                        {customer.status?.toLowerCase() === 'refunded' && '💰 '}
                        {customer.status}
                      </Badge>
-                     <CommissionClaimedBadge customerId={customer.id} />
+                     {!isSalesRole && <CommissionClaimedBadge customerId={customer.id} />}
                     </div>
                    </TableCell>
                     <TableCell>
@@ -4727,21 +4730,25 @@ Please log in and change your password after first login.`;
                            )}
                          </div>
                        </TableCell>
-                       <TableCell>
-                         <CustomerClaimsSummary
-                           customerEmail={customer.email}
-                           customerName={customer.name}
-                           vehicleReg={customer.registration_plate}
-                           showOnly="claimsMade"
-                         />
-                       </TableCell>
-                       <TableCell>
-                         <CustomerClaimsSummary
-                           customerEmail={customer.email}
-                           vehicleReg={customer.registration_plate}
-                           showOnly="claimsPaid"
-                         />
-                       </TableCell>
+                       {!isSalesRole && (
+                        <TableCell>
+                          <CustomerClaimsSummary
+                            customerEmail={customer.email}
+                            customerName={customer.name}
+                            vehicleReg={customer.registration_plate}
+                            showOnly="claimsMade"
+                          />
+                        </TableCell>
+                       )}
+                       {!isSalesRole && (
+                        <TableCell>
+                          <CustomerClaimsSummary
+                            customerEmail={customer.email}
+                            vehicleReg={customer.registration_plate}
+                            showOnly="claimsPaid"
+                          />
+                        </TableCell>
+                       )}
                        <TableCell className="text-center">
                          <DropdownMenu>
                            <DropdownMenuTrigger asChild>
