@@ -325,6 +325,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         </div>
       )}
 
+      {/* Trustpilot Slider Widget */}
+      <TrustpilotSliderWidget className="mt-4" />
+
       {/* Divider */}
       <div className="h-px bg-border mt-6 mb-5" />
 
