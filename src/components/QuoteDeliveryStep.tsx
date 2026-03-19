@@ -7,7 +7,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 
-import TrustpilotMiniWidget from '@/components/TrustpilotMiniWidget';
+import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface QuoteDeliveryStepProps {
@@ -568,11 +568,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </p>
         </div>
 
-        {/* Trustpilot Mini Widget - Mobile only */}
-        <div className="md:hidden mt-4 flex justify-center">
-          <div className="w-1/2">
-            <TrustpilotMiniWidget />
-          </div>
+        {/* Trustpilot Badge - Mobile only */}
+        <div className="md:hidden mt-3 flex justify-center">
+          <img src={trustpilotLogo} alt="Trustpilot 5 stars" className="h-auto w-20 object-contain" />
         </div>
 
         {/* Spacer for sticky footer on desktop */}
