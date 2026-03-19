@@ -3428,7 +3428,7 @@ Please log in and change your password after first login.`;
                                 <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${isSalesRole ? 7 : 8}, minmax(0, 1fr))` }}>
                                   <TabsTrigger value="details">Customer Details</TabsTrigger>
                                   <TabsTrigger value="warranty">Warranty Details</TabsTrigger>
-                                  <TabsTrigger value="claims">Claims</TabsTrigger>
+                                  {!isSalesRole && <TabsTrigger value="claims">Claims</TabsTrigger>}
                                   <TabsTrigger value="tags">Tags</TabsTrigger>
                                   <TabsTrigger value="notes">Notes</TabsTrigger>
                                   <TabsTrigger value="actions">Warranty Actions</TabsTrigger>
