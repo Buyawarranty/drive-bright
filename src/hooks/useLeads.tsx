@@ -847,7 +847,7 @@ export const useLeads = () => {
       }
       recentOptimisticUpdatesRef.current.delete(leadId);
     }
-  }, []);
+  }, [getCachedAdminUser, addSystemNote]);
 
   const autoAssignLead = useCallback(async (leadId: string) => {
     try {
