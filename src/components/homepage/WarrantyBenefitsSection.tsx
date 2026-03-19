@@ -56,16 +56,16 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
   return (
     <section className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Trustpilot Carousel */}
+        {/* Trustpilot Slider */}
         <div className="mb-6">
           <div
             className="trustpilot-widget"
             data-locale="en-US"
-            data-template-id="53aa8912dec7e10d38f59f36"
+            data-template-id="54ad5defc6454f065c28af8b"
             data-businessunit-id="6586c764848940568d554a08"
-            data-style-height="140px"
+            data-style-height="240px"
             data-style-width="100%"
-            data-token="996f397e-163a-4501-a0a5-d63b63d051b1"
+            data-token="b77adbdc-2cd7-415f-8dd8-492fd8043a51"
             data-stars="4,5"
             data-review-languages="en"
           >
