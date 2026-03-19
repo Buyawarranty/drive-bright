@@ -110,11 +110,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-1">
                       Activity
-                      {sortOption === 'activity_newest' ? (
-                        <ArrowDown className="h-3 w-3 text-primary" />
-                      ) : sortOption === 'activity_oldest' ? (
+                      {sortOption === 'activity_oldest' ? (
                         <ArrowUp className="h-3 w-3 text-primary" />
-                      ) : null}
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-primary" />
+                      )}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
