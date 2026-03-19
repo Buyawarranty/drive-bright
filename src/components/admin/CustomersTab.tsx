@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy } from 'lucide-react';
 import { CommissionClaimedBadge } from './CommissionClaimedBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -375,6 +375,7 @@ export const CustomersTab = () => {
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
+  const [revenueQuickFilter, setRevenueQuickFilter] = useState<string>('today');
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
@@ -383,9 +384,46 @@ export const CustomersTab = () => {
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
   const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+  const canViewRevenue = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'accounts_manager';
+
+  // Quick filter helper for revenue
+  const applyRevenueQuickFilter = useCallback((filter: string) => {
+    setRevenueQuickFilter(filter);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    switch (filter) {
+      case 'today':
+        setRevenueDateRange({ from: today, to: today });
+        break;
+      case 'yesterday': {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        setRevenueDateRange({ from: yesterday, to: yesterday });
+        break;
+      }
+      case 'this_month':
+        setRevenueDateRange({ from: new Date(today.getFullYear(), today.getMonth(), 1), to: today });
+        break;
+      case 'last_month': {
+        const firstLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        setRevenueDateRange({ from: firstLastMonth, to: lastLastMonth });
+        break;
+      }
+    }
+  }, []);
+
+  const navigateRevenueDay = useCallback((direction: 1 | -1) => {
+    setRevenueDateRange(prev => {
+      const current = prev?.from ? new Date(prev.from) : new Date();
+      current.setDate(current.getDate() + direction);
+      return { from: current, to: current };
+    });
+    setRevenueQuickFilter('custom');
+  }, []);
 
   const filteredRevenueStats = useMemo(() => {
-    if (!isSuperAdmin || !revenueDateRange?.from) return null;
+    if (!canViewRevenue || !revenueDateRange?.from) return null;
     const from = new Date(revenueDateRange.from);
     from.setHours(0, 0, 0, 0);
     const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
@@ -400,7 +438,7 @@ export const CustomersTab = () => {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
     };
-  }, [customers, revenueDateRange, isSuperAdmin]);
+  }, [customers, revenueDateRange, canViewRevenue]);
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
@@ -2616,31 +2654,6 @@ export const CustomersTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Super Admin Daily Sales Banner */}
-      {isSuperAdmin && (
-        <Card className="border p-4">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Revenue by Date:</span>
-            </div>
-            <DateRangeFilter
-              dateRange={revenueDateRange}
-              onDateRangeChange={setRevenueDateRange}
-            />
-            {filteredRevenueStats && (
-              <div className="flex items-center gap-3 ml-auto">
-                <span className="text-emerald-600 font-bold text-sm">
-                  £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <Badge variant="outline" className="text-sm">
-                  {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
-                </Badge>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
@@ -3008,7 +3021,61 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-            {/* Results Summary and Bulk Actions */}
+            {/* Revenue by Date - below Sales by Agent */}
+            {canViewRevenue && (
+              <Card className="border p-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Revenue by Date:</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {[
+                      { key: 'today', label: 'Today' },
+                      { key: 'yesterday', label: 'Yesterday' },
+                      { key: 'this_month', label: 'This Month' },
+                      { key: 'last_month', label: 'Last Month' },
+                    ].map(opt => (
+                      <Button
+                        key={opt.key}
+                        variant={revenueQuickFilter === opt.key ? 'default' : 'outline'}
+                        size="sm"
+                        className={`h-7 text-xs px-3 ${revenueQuickFilter === opt.key ? 'bg-brand-orange hover:bg-orange-600 text-white' : ''}`}
+                        onClick={() => applyRevenueQuickFilter(opt.key)}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1 ml-1">
+                    <span className="text-xs text-muted-foreground">
+                      {revenueDateRange?.from ? revenueDateRange.from.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                      {revenueDateRange?.to && revenueDateRange.from?.getTime() !== revenueDateRange.to?.getTime()
+                        ? ` – ${revenueDateRange.to.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                        : ''}
+                    </span>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => navigateRevenueDay(-1)}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => navigateRevenueDay(1)}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {filteredRevenueStats && (
+                    <div className="flex items-center gap-3 ml-auto">
+                      <span className="text-emerald-600 font-bold text-sm">
+                        £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <Badge variant="outline" className="text-sm">
+                        {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+
             <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
               <div className="flex items-center gap-4">
                 {selectedCustomers.size > 0 && (() => {
