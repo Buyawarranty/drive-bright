@@ -3207,8 +3207,8 @@ export const CustomersTab = () => {
               <TableHead className="bg-purple-50">Source</TableHead>
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
-              <TableHead>Claims Made</TableHead>
-              <TableHead>Claims Paid</TableHead>
+              {!isSalesRole && <TableHead>Claims Made</TableHead>}
+              {!isSalesRole && <TableHead>Claims Paid</TableHead>}
               <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
               <TableHead className="text-center bg-blue-50">Google</TableHead>
               <TableHead>Labour Rate</TableHead>
