@@ -131,7 +131,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   }, []);
 
-
+  const formatRegNumber = (value: string) => {
     const formatted = value.replace(/\s/g, '').toUpperCase();
     if (formatted.length > 3) {
       return formatted.slice(0, -3) + ' ' + formatted.slice(-3);
