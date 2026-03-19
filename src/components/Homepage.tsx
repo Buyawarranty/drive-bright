@@ -439,8 +439,22 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       )}
 
       {/* Hero Section */}
-
-
+      {/* TrustBox Widget - Horizontal */}
+      <div className="w-full bg-white pt-2 sm:pt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div 
+            className="trustpilot-widget" 
+            data-locale="en-US" 
+            data-template-id="5406e65db0d04a09e042d5fc" 
+            data-businessunit-id="6586c764848940568d554a08" 
+            data-style-height="28px" 
+            data-style-width="100%" 
+            data-token="9427810b-06b1-4a24-8c08-42260ef98c76"
+          >
+            <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
+          </div>
+        </div>
+      </div>
 
       <section id="quote-form" className="bg-white pt-3 sm:pt-8 lg:pt-16 pb-2 sm:pb-4 lg:pb-8 px-3 sm:px-0">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
@@ -555,22 +569,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     >
                       Request a callback
                     </button>
-                </div>
-
-                {/* TrustBox Widget - Horizontal */}
-                <div className="mt-4">
-                  <div 
-                    className="trustpilot-widget" 
-                    data-locale="en-US" 
-                    data-template-id="5406e65db0d04a09e042d5fc" 
-                    data-businessunit-id="6586c764848940568d554a08" 
-                    data-style-height="28px" 
-                    data-style-width="100%" 
-                    data-token="9427810b-06b1-4a24-8c08-42260ef98c76"
-                  >
-                    <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
                   </div>
-                </div>
                 </div>
               </div>
             </div>
