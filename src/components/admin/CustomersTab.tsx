@@ -382,6 +382,7 @@ export const CustomersTab = () => {
 
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
+  const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin || !revenueDateRange?.from) return null;
