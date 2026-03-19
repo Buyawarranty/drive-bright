@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Lock, Check, Tag, ChevronDown, ChevronUp, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -323,6 +323,31 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <span>Secure checkout processing</span>
         </div>
       )}
+
+      {/* Trustpilot Slider Widget */}
+      <div className="mt-6">
+        <div
+          className="trustpilot-widget"
+          data-locale="en-US"
+          data-template-id="54ad5defc6454f065c28af8b"
+          data-businessunit-id="6586c764848940568d554a08"
+          data-style-height="240px"
+          data-style-width="100%"
+          data-token="b77adbdc-2cd7-415f-8dd8-492fd8043a51"
+          data-stars="4,5"
+          data-review-languages="en"
+          ref={(el) => {
+            if (el) {
+              const win = window as any;
+              if (win.Trustpilot) {
+                win.Trustpilot.loadFromElement(el, true);
+              }
+            }
+          }}
+        >
+          <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
+        </div>
+      </div>
 
       {/* Divider */}
       <div className="h-px bg-border mt-6 mb-5" />
