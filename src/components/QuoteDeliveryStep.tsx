@@ -567,6 +567,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </p>
         </div>
 
+        {/* Trustpilot Mini Widget - Mobile only */}
+        <div className="md:hidden mt-4">
+          <TrustpilotMiniWidget />
+        </div>
 
         {/* Spacer for sticky footer on desktop */}
         <div className="hidden md:block h-20"></div>
