@@ -106,21 +106,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
-    // Sales agents and sales leads default to "All Time", admins/super_admins default to "Today"
-    const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
-    if (isAdminRole) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const endOfToday = new Date();
-      endOfToday.setHours(23, 59, 59, 999);
-      return { from: today, to: endOfToday };
-    }
-    // Sales agents and sales leads: All Time (no date filter)
-    return { from: undefined, to: undefined };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    return { from: today, to: endOfToday };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
-  const [sortOption, setSortOption] = useState<SortOption>('activity_newest');
+  const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
@@ -227,10 +221,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           if (a.status === 'quote_sent' && b.status !== 'quote_sent') return -1;
           if (a.status !== 'quote_sent' && b.status === 'quote_sent') return 1;
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
-        case 'activity_newest':
-          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
-        case 'activity_oldest':
-          return new Date(a.last_activity_date || a.created_at).getTime() - new Date(b.last_activity_date || b.created_at).getTime();
         default:
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
       }
@@ -705,8 +695,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateCallCount={updateCallCount}
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
-                sortOption={sortOption}
-                onSortChange={setSortOption}
               />
               
               {/* Lightweight Footer Pagination */}

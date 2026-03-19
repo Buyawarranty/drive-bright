@@ -122,15 +122,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     };
   }, []);
 
-  // Load Trustpilot TrustBox widget after React renders
-  useEffect(() => {
-    const win = window as any;
-    if (win.Trustpilot) {
-      const trustboxes = document.querySelectorAll('.trustpilot-widget');
-      trustboxes.forEach((el) => win.Trustpilot.loadFromElement(el, true));
-    }
-  }, []);
-
   const formatRegNumber = (value: string) => {
     const formatted = value.replace(/\s/g, '').toUpperCase();
     if (formatted.length > 3) {
@@ -445,19 +436,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
-              {/* TrustBox Widget - Micro TrustScore */}
-              <div 
-                className="trustpilot-widget" 
-                data-locale="en-US" 
-                data-template-id="5419b637fa0340045cd0c936" 
-                data-businessunit-id="6586c764848940568d554a08" 
-                data-style-height="20px" 
-                data-style-width="100%" 
-                data-token="97d44e2a-ad44-496c-a3e6-87b91547df1f"
-              >
-                <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
-              </div>
-
               {/* Main Headline */}
               <div className="space-y-2 mb-2 sm:mb-4">
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
@@ -581,7 +559,24 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 height={434}
                 sizes="(max-width: 768px) 100vw, 651px"
               />
-              
+              {/* Trustpilot Logo positioned to the right */}
+              <div className="absolute top-4 right-4 z-10">
+                <a 
+                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <OptimizedImage 
+                    src={trustpilotLogo} 
+                    alt="Trustpilot Excellent Rating" 
+                    className="h-auto w-24 sm:w-40 object-contain"
+                    priority={false}
+                    width={160}
+                    height={68}
+                  />
+                </a>
+              </div>
               
               {/* Vehicle Types positioned directly below the image on desktop */}
               <div className="hidden lg:block w-full mt-4">

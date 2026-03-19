@@ -13,7 +13,7 @@ import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
-export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'activity_newest' | 'activity_oldest';
+export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
 
 interface SalesUser {
   id: string;

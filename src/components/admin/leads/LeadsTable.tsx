@@ -4,12 +4,10 @@ import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { TableCell } from '@/components/ui/table';
-import { ArrowUp, ArrowDown } from 'lucide-react';
-import { SortOption } from './LeadsFilters';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -33,8 +31,6 @@ interface LeadsTableProps {
   onRefresh?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
-  sortOption?: SortOption;
-  onSortChange?: (sort: SortOption) => void;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -59,8 +55,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onRefresh,
   hideAssignedColumn,
   canAssignLeads = true,
-  sortOption,
-  onSortChange,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -88,42 +82,14 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               </TableHead>
               {!hideAssignedColumn && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</TableHead>}
               <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-              <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
               <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>
               <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
               <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
+              <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
               <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
               <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>
               <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>
-              <TableHead 
-                className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors"
-                onClick={() => {
-                  if (!onSortChange) return;
-                  if (sortOption === 'activity_newest') {
-                    onSortChange('activity_oldest');
-                  } else {
-                    onSortChange('activity_newest');
-                  }
-                }}
-              >
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1">
-                      Activity
-                      {sortOption === 'activity_oldest' ? (
-                        <ArrowUp className="h-3 w-3 text-primary" />
-                      ) : (
-                        <ArrowDown className="h-3 w-3 text-primary" />
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    {sortOption === 'activity_newest' ? 'Showing newest contacted first — click for oldest' : 
-                     sortOption === 'activity_oldest' ? 'Showing oldest contacted first — click for newest' : 
-                     'Click to sort by activity'}
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
+              <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Activity</TableHead>
               <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Created</TableHead>
             </TableRow>
           </TableHeader>

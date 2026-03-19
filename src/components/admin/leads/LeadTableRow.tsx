@@ -448,39 +448,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </Select>
       </TableCell>
 
-      {/* Phone - positioned next to Calls */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        {lead.phone ? (
-          <div className="flex items-center gap-1" onClick={(e) => {
-            // Detect Zoiper-injected tel:/sip:/callto: links being clicked and auto-increment call count
-            const target = e.target as HTMLElement;
-            const anchor = target.closest('a[href^="tel:"], a[href^="sip:"], a[href^="callto:"]');
-            if (anchor) {
-              onUpdateCallCount(1);
-            }
-          }}>
-            <PhoneCopyText phone={lead.phone} />
-            <div className="flex items-center">
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
-                    onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`)}
-                  >
-                    <MessageSquare className="h-3 w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">WhatsApp</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-
       {/* Call Count - Enhanced with dialog and guardrails */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <CallCountCell
@@ -602,6 +569,31 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </div>
       </TableCell>
 
+      {/* Phone */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {lead.phone ? (
+          <div className="flex items-center gap-1">
+            <PhoneCopyText phone={lead.phone} />
+            <div className="flex items-center">
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`)}
+                  >
+                    <MessageSquare className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">WhatsApp</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
 
       {/* Email */}
       <TableCell onClick={(e) => e.stopPropagation()}>

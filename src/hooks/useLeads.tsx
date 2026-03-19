@@ -734,33 +734,6 @@ export const useLeads = () => {
     }
   }, []);
 
-  // Add a system-generated note to lead_quick_notes (for tracking assignments, calls, etc.)
-  const addSystemNote = useCallback(async (leadId: string, noteText: string) => {
-    try {
-      const isAbandonedCart = leadId.startsWith('cart_');
-      if (isAbandonedCart) return; // FK constraint: lead_quick_notes only links to sales_leads
-
-      const adminUser = await getCachedAdminUser();
-      if (!adminUser) return;
-
-      const timestamp = new Date().toLocaleString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-
-      await supabase
-        .from('lead_quick_notes')
-        .insert({
-          lead_id: leadId,
-          note_text: `[${timestamp}] ${noteText}`,
-          created_by: adminUser.id,
-          is_pinned: false
-        });
-    } catch (error) {
-      console.error('Error adding system note:', error);
-    }
-  }, [getCachedAdminUser]);
-
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity
   // Includes a freshness check to prevent two agents assigning the same lead
@@ -842,23 +815,8 @@ export const useLeads = () => {
         throw new Error(assignResult.error || 'Assignment failed');
       }
 
-      if (!isAbandonedCart) {
-        const previousAgent = previousLeadSnapshot?.assigned_user;
-        const previousAgentName = previousAgent ? (previousAgent.first_name || previousAgent.email || 'Unknown') : null;
-        const adminUser = await getCachedAdminUser();
-        const actionBy = adminUser?.firstName || 'System';
-
-        if (userId && user) {
-          logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
-          if (previousAgentName) {
-            addSystemNote(leadId, `Agent changed from ${previousAgentName} to ${user.first_name || user.email || 'Unknown'} by ${actionBy}`);
-          } else {
-            addSystemNote(leadId, `Assigned to ${user.first_name || user.email || 'Unknown'} by ${actionBy}`);
-          }
-        } else if (!userId && previousAgentName) {
-          logActivity(leadId, 'assignment', `Unassigned from ${previousAgentName}`);
-          addSystemNote(leadId, `Unassigned from ${previousAgentName} by ${actionBy}`);
-        }
+      if (userId && user && !isAbandonedCart) {
+        logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
       }
 
       toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
@@ -874,7 +832,7 @@ export const useLeads = () => {
       }
       recentOptimisticUpdatesRef.current.delete(leadId);
     }
-  }, [getCachedAdminUser, addSystemNote]);
+  }, []);
 
   const autoAssignLead = useCallback(async (leadId: string) => {
     try {
@@ -1049,7 +1007,7 @@ export const useLeads = () => {
     }
   }, [getCachedAdminUser]);
 
-
+  // ATOMIC UPDATE: Update notes - APPENDS new notes to history, does not replace
   // Returns Promise to allow callers to handle success/failure
   const updateLeadNotes = useCallback(async (leadId: string, newNoteText: string, replaceAll: boolean = false): Promise<void> => {
     const now = new Date().toISOString();
@@ -1233,10 +1191,9 @@ export const useLeads = () => {
 
         if (error) throw error;
 
-        // Log activity and add system note for call tracking
+        // Log activity for call tracking
         if (increment > 0) {
           logActivity(leadId, 'call', `Call attempt #${newCount}`);
-          addSystemNote(leadId, `Call attempt #${newCount} made`);
         }
       }
     } catch (error) {
@@ -1244,7 +1201,7 @@ export const useLeads = () => {
       toast.error('Failed to update call count');
       fetchLeads();
     }
-  }, [logActivity, addSystemNote, fetchLeads]);
+  }, [logActivity, fetchLeads]);
 
   const migrateFromAbandonedCarts = useCallback(async () => {
     try {
