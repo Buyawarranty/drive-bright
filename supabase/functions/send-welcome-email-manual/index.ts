@@ -578,6 +578,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload = {
       from: resendFrom,
       to: [customer.email],
+      bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'],
       subject: emailSubject,
       ...(attachments.length > 0 && { attachments }),
       html: `
