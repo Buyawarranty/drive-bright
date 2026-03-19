@@ -139,14 +139,13 @@ serve(async (req: Request) => {
       end: endDate.toISOString(),
     });
 
-    // Get active policies in the window — exclude cancelled/refunded
+    // Get active policies in the window
     const { data: candidatePolicies, error: policiesError } = await supabase
       .from("customer_policies")
       .select("id, email, customer_id, created_at, policy_number, status")
       .gte("created_at", startDate.toISOString())
       .lte("created_at", endDate.toISOString())
-      .not("status", "in", '("cancelled","refunded","canceled")')
-      .eq("status", "active")
+      .in("status", ["active", "scheduled"])
       .not("email", "is", null);
 
     if (policiesError) {
