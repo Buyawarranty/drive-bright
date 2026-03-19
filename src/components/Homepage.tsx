@@ -15,6 +15,7 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 import TrustpilotMicroWidget from './TrustpilotMicroWidget';
+import TrustpilotSliderWidget from './TrustpilotSliderWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -621,6 +622,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                  
+                  {/* Trustpilot Slider Widget - Desktop */}
+                  <TrustpilotSliderWidget className="mt-4 w-full" />
                 </div>
               </div>
             </div>
@@ -664,6 +668,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+                
+                {/* Trustpilot Slider Widget - Mobile */}
+                <TrustpilotSliderWidget className="mt-2 w-full" />
               </div>
             </div>
           </div>
