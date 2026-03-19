@@ -825,6 +825,15 @@ export const useLeads = () => {
         logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
       }
 
+      // Add automated system note for assignment change (fire-and-forget)
+      const adminUser = await getCachedAdminUser();
+      const previousUser = previousLeadSnapshot?.assigned_user;
+      const previousName = previousUser ? (previousUser.first_name || previousUser.email || 'Unknown') : 'Unassigned';
+      const newName = user ? (user.first_name || user.email || 'Unknown') : 'Unassigned (Website)';
+      if (previousName !== newName) {
+        addSystemNote(leadId, `Lead reassigned from ${previousName} → ${newName}`, adminUser?.id);
+      }
+
       toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
     } catch (error) {
       console.error('Error assigning lead:', error);
