@@ -705,6 +705,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateCallCount={updateCallCount}
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
+                sortOption={sortOption}
+                onSortChange={setSortOption}
               />
               
               {/* Lightweight Footer Pagination */}
