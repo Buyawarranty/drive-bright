@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check, ArrowRight, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-react';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
-import TrustpilotHeader from '@/components/TrustpilotHeader';
 
 interface WarrantyBenefitsSectionProps {
   headline?: string;
@@ -46,9 +45,34 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
     }
   ];
 
+  useEffect(() => {
+    const win = window as any;
+    if (win.Trustpilot) {
+      const trustboxes = document.querySelectorAll('.trustpilot-widget');
+      trustboxes.forEach((el) => win.Trustpilot.loadFromElement(el, true));
+    }
+  }, []);
+
   return (
     <section className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Trustpilot Carousel */}
+        <div className="mb-6">
+          <div
+            className="trustpilot-widget"
+            data-locale="en-US"
+            data-template-id="53aa8912dec7e10d38f59f36"
+            data-businessunit-id="6586c764848940568d554a08"
+            data-style-height="140px"
+            data-style-width="100%"
+            data-token="996f397e-163a-4501-a0a5-d63b63d051b1"
+            data-stars="4,5"
+            data-review-languages="en"
+          >
+            <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
+          </div>
+        </div>
+
         {/* Main Content */}
         <div>
           <div>
@@ -138,7 +162,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                     
                     {/* Trustpilot + Security text */}
                     <div className="flex flex-col items-end gap-2">
-                      <TrustpilotHeader className="flex-shrink-0" />
+                      {/* Trustpilot removed - using carousel widget above */}
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Lock className="w-4 h-4 text-green-600" />
                         <span>Your details are encrypted and safe.</span>
@@ -172,7 +196,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                 
                 {/* Trust & Reassurance */}
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <TrustpilotHeader className="flex-shrink-0 scale-90 sm:scale-100" />
+                  {/* Trustpilot removed - using carousel widget above */}
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Lock className="w-4 h-4 text-green-600" />
                     <span>Your details are encrypted and safe.</span>
