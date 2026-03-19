@@ -59,6 +59,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onRefresh,
   hideAssignedColumn,
   canAssignLeads = true,
+  sortOption,
+  onSortChange,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
