@@ -3280,7 +3280,7 @@ export const CustomersTab = () => {
               <TableHead className="text-center bg-blue-50">Google</TableHead>
               <TableHead>Labour Rate</TableHead>
               <TableHead>Mileage</TableHead>
-              <TableHead>Tags</TableHead>
+              {canViewRevenue && <TableHead>Sale Source</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -4908,9 +4908,16 @@ Please log in and change your password after first login.`;
                        <TableCell className="text-center">
                          {customer.mileage || 'N/A'}
                        </TableCell>
-                       <TableCell>
-                         <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
-                       </TableCell>
+                       {canViewRevenue && (
+                        <TableCell>
+                          {(() => {
+                            const src = customer.purchase_source?.toLowerCase();
+                            if (src === 'google_ads') return <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs">Sale G</Badge>;
+                            if (src === 'facebook_ads') return <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs">Sale F</Badge>;
+                            return <Badge variant="outline" className="text-xs">Sale Web</Badge>;
+                          })()}
+                        </TableCell>
+                       )}
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
