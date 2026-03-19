@@ -142,10 +142,10 @@ serve(async (req: Request) => {
     // Get active policies in the window
     const { data: candidatePolicies, error: policiesError } = await supabase
       .from("customer_policies")
-      .select("id, email, customer_id, created_at, policy_number")
+      .select("id, email, customer_id, created_at, policy_number, status")
       .gte("created_at", startDate.toISOString())
       .lte("created_at", endDate.toISOString())
-      .eq("status", "active")
+      .in("status", ["active", "scheduled"])
       .not("email", "is", null);
 
     if (policiesError) {
@@ -170,12 +170,20 @@ serve(async (req: Request) => {
         try {
           const { data: customer } = await supabase
             .from("customers")
-            .select("first_name, trustpilot_review_completed")
+            .select("first_name, trustpilot_review_completed, status")
             .eq("id", policy.customer_id)
             .single();
 
+          // Skip if customer has already left a review
           if (customer?.trustpilot_review_completed) {
             console.log(`[TRUSTPILOT-REVIEW] Skipping ${policy.email} - review already completed`);
+            continue;
+          }
+
+          // Skip if customer has been cancelled or refunded
+          const customerStatus = (customer?.status || '').toLowerCase();
+          if (customerStatus === 'cancelled' || customerStatus === 'refunded' || customerStatus === 'canceled') {
+            console.log(`[TRUSTPILOT-REVIEW] Skipping ${policy.email} - customer status: ${customerStatus}`);
             continue;
           }
 
