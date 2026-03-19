@@ -170,12 +170,20 @@ serve(async (req: Request) => {
         try {
           const { data: customer } = await supabase
             .from("customers")
-            .select("first_name, trustpilot_review_completed")
+            .select("first_name, trustpilot_review_completed, status")
             .eq("id", policy.customer_id)
             .single();
 
+          // Skip if customer has already left a review
           if (customer?.trustpilot_review_completed) {
             console.log(`[TRUSTPILOT-REVIEW] Skipping ${policy.email} - review already completed`);
+            continue;
+          }
+
+          // Skip if customer has been cancelled or refunded
+          const customerStatus = (customer?.status || '').toLowerCase();
+          if (customerStatus === 'cancelled' || customerStatus === 'refunded' || customerStatus === 'canceled') {
+            console.log(`[TRUSTPILOT-REVIEW] Skipping ${policy.email} - customer status: ${customerStatus}`);
             continue;
           }
 
