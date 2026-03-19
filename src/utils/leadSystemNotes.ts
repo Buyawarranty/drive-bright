@@ -71,7 +71,7 @@ export const addSystemNote = async (
         .insert({
           lead_id: actualId,
           note_text: formattedNote,
-          created_by: adminUserId || '00000000-0000-0000-0000-000000000000',
+          created_by: resolvedAdminId || '00000000-0000-0000-0000-000000000000',
           is_pinned: false,
         });
     }
