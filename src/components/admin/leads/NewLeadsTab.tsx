@@ -305,7 +305,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const counts: Record<string, number> = { unassigned: 0 };
     dateAndStatusFilteredLeads.forEach(lead => {
       if (!lead.assigned_to) {
-        counts.unassigned] = (counts.unassigned || 0) + 1;
+        counts.unassigned = (counts.unassigned || 0) + 1;
       } else {
         counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
       }
