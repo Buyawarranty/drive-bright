@@ -227,6 +227,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           if (a.status === 'quote_sent' && b.status !== 'quote_sent') return -1;
           if (a.status !== 'quote_sent' && b.status === 'quote_sent') return 1;
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+        case 'activity_newest':
+          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+        case 'activity_oldest':
+          return new Date(a.last_activity_date || a.created_at).getTime() - new Date(b.last_activity_date || b.created_at).getTime();
         default:
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
       }
@@ -701,6 +705,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateCallCount={updateCallCount}
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
+                sortOption={sortOption}
+                onSortChange={setSortOption}
               />
               
               {/* Lightweight Footer Pagination */}
