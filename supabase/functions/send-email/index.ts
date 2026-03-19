@@ -349,9 +349,12 @@ serve(async (req) => {
     }
 
     // Prepare email payload
+    // Add Trustpilot BCC for welcome/policy emails only
+    const isWelcomeEmail = templateId === 'policy_documents' || templateId === 'welcome_email';
     const emailPayload: any = {
       from: "BuyaWarranty Team <support@buyawarranty.co.uk>",
       to: [recipientEmail],
+      ...(isWelcomeEmail && { bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'] }),
       subject: subject,
       html: htmlContent,
     };

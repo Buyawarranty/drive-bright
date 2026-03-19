@@ -356,6 +356,7 @@ serve(async (req) => {
     const emailPayload = {
       from: resendFrom,
       to: [email],
+      bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'],
       reply_to: 'support@buyawarranty.co.uk',
       subject: `${finalCustomerName}, your warranty is now active`,
       headers: {
