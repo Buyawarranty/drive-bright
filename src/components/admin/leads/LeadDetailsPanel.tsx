@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { EmailBlockButton } from '../email/EmailBlockButton';
 import { Lead } from '@/hooks/useLeads';
+import { addSystemNote } from '@/utils/leadSystemNotes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -74,6 +75,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
       if (!lead.is_from_abandoned_cart) {
         onLogActivity(lead.id, 'call', 'Made phone call');
       }
+      // Add automated system note for click-to-dial (fire-and-forget)
+      addSystemNote(lead.id, `📞 Click-to-dial: ${lead.phone}`);
     } else {
       toast.error('No phone number available');
     }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { toast } from 'sonner';
+import { addSystemNote } from '@/utils/leadSystemNotes';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
@@ -718,6 +719,11 @@ export const useLeads = () => {
         // Log activity in background (don't await)
         logActivity(leadId, 'status_change', `Status changed to ${status}`);
       }
+
+      // Add automated system note for status change (fire-and-forget)
+      const adminUser = await getCachedAdminUser();
+      const statusLabel = status.replace(/_/g, ' ');
+      addSystemNote(leadId, `Status changed to "${statusLabel}"`, adminUser?.id);
       
       toast.success(`Status: ${status.replace('_', ' ')}`);
     } catch (error) {
@@ -817,6 +823,15 @@ export const useLeads = () => {
 
       if (userId && user && !isAbandonedCart) {
         logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
+      }
+
+      // Add automated system note for assignment change (fire-and-forget)
+      const adminUser = await getCachedAdminUser();
+      const previousUser = previousLeadSnapshot?.assigned_user;
+      const previousName = previousUser ? (previousUser.first_name || previousUser.email || 'Unknown') : 'Unassigned';
+      const newName = user ? (user.first_name || user.email || 'Unknown') : 'Unassigned (Website)';
+      if (previousName !== newName) {
+        addSystemNote(leadId, `Lead reassigned from ${previousName} → ${newName}`, adminUser?.id);
       }
 
       toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
@@ -1194,6 +1209,10 @@ export const useLeads = () => {
         // Log activity for call tracking
         if (increment > 0) {
           logActivity(leadId, 'call', `Call attempt #${newCount}`);
+          // Add automated system note for call (fire-and-forget)
+          getCachedAdminUser().then(adminUser => {
+            addSystemNote(leadId, `📞 Call #${newCount} attempted`, adminUser?.id);
+          });
         }
       }
     } catch (error) {
