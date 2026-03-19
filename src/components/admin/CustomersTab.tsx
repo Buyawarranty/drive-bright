@@ -3021,7 +3021,61 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-            {/* Results Summary and Bulk Actions */}
+            {/* Revenue by Date - below Sales by Agent */}
+            {canViewRevenue && (
+              <Card className="border p-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Revenue by Date:</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {[
+                      { key: 'today', label: 'Today' },
+                      { key: 'yesterday', label: 'Yesterday' },
+                      { key: 'this_month', label: 'This Month' },
+                      { key: 'last_month', label: 'Last Month' },
+                    ].map(opt => (
+                      <Button
+                        key={opt.key}
+                        variant={revenueQuickFilter === opt.key ? 'default' : 'outline'}
+                        size="sm"
+                        className={`h-7 text-xs px-3 ${revenueQuickFilter === opt.key ? 'bg-brand-orange hover:bg-orange-600 text-white' : ''}`}
+                        onClick={() => applyRevenueQuickFilter(opt.key)}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1 ml-1">
+                    <span className="text-xs text-muted-foreground">
+                      {revenueDateRange?.from ? revenueDateRange.from.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                      {revenueDateRange?.to && revenueDateRange.from?.getTime() !== revenueDateRange.to?.getTime()
+                        ? ` – ${revenueDateRange.to.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                        : ''}
+                    </span>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => navigateRevenueDay(-1)}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => navigateRevenueDay(1)}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {filteredRevenueStats && (
+                    <div className="flex items-center gap-3 ml-auto">
+                      <span className="text-emerald-600 font-bold text-sm">
+                        £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <Badge variant="outline" className="text-sm">
+                        {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+
             <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
               <div className="flex items-center gap-4">
                 {selectedCustomers.size > 0 && (() => {
