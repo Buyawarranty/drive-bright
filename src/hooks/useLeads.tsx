@@ -208,12 +208,9 @@ export const useLeads = () => {
           initialLoadDoneRef.current = true;
         }, 8000);
       }
-      
-      // PERFORMANCE: Fetch sales leads and abandoned carts in parallel
-      // We fetch ALL sales_leads (unfiltered) first for dedup, then filter client-side
-      // This eliminates the separate dedup query that was previously a redundant full-table scan
+
+      // PERFORMANCE: Fetch one raw source-of-truth dataset, then let the UI handle view filtering.
       const [allSalesLeadsResult, abandonedCartsResult] = await Promise.all([
-        // Fetch ALL sales_leads (unfiltered) — needed for dedup AND display
         fetchAllRows(() =>
           supabase
             .from('sales_leads')
@@ -228,8 +225,7 @@ export const useLeads = () => {
             `)
             .order('created_at', { ascending: false })
         ),
-        // Fetch ALL abandoned carts
-        fetchAllRows(() => 
+        fetchAllRows(() =>
           supabase
             .from('abandoned_carts')
             .select(`
@@ -248,25 +244,10 @@ export const useLeads = () => {
 
       const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
       if (cartsError) throw cartsError;
-      
+
       console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads, ${abandonedCartsData?.length || 0} abandoned carts`);
 
-      // Apply filter to sales leads client-side (avoids a second full fetch for dedup)
-      let salesLeadsData = allSalesLeadsData || [];
-      if (filter === 'all_leads' || filter === 'all' || filter === 'live') {
-        // Exclude lost and fake from all main views — they have their own tabs
-        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
-      } else if (filter === 'high_priority') {
-        salesLeadsData = salesLeadsData.filter((lead: any) => lead.priority === 'high' || lead.priority === 'urgent');
-      } else if (filter === 'fake') {
-        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === 'fake_lead');
-      } else if (filter === 'lost') {
-        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === 'lost');
-      } else {
-        salesLeadsData = salesLeadsData.filter((lead: any) => lead.status === filter);
-      }
-
-      // Build dedup sets from ALL (unfiltered) sales leads — prevents carts reappearing
+      // Build dedup sets from ALL sales leads — prevents carts reappearing.
       const linkedCartIds = new Set(
         (allSalesLeadsData || [])
           .filter((lead: any) => lead.abandoned_cart_id)
@@ -285,14 +266,14 @@ export const useLeads = () => {
       const contactedByIds = (abandonedCartsData || [])
         .filter((cart: any) => cart.contacted_by)
         .map((cart: any) => cart.contacted_by);
-      
+
       let adminUsersByAuthId: Record<string, any> = {};
       if (contactedByIds.length > 0) {
         const { data: adminUsersForCarts } = await supabase
           .from('admin_users')
           .select('id, user_id, first_name, last_name, email')
           .in('user_id', contactedByIds);
-        
+
         (adminUsersForCarts || []).forEach((user: any) => {
           if (user.user_id) {
             adminUsersByAuthId[user.user_id] = user;
@@ -300,7 +281,6 @@ export const useLeads = () => {
         });
       }
 
-      // Helper function to map contact_status to LeadStatus
       const mapContactStatusToLeadStatus = (contactStatus: string | null, isFakeLead: boolean): LeadStatus => {
         if (isFakeLead) return 'fake_lead';
         switch (contactStatus) {
@@ -312,31 +292,25 @@ export const useLeads = () => {
           case 'lost': return 'lost';
           case 'fake_lead': return 'fake_lead';
           case 'urgent_callback': return 'urgent_callback';
-          case 'special_pricing_request': return 'urgent_callback'; // Map legacy status
+          case 'special_pricing_request': return 'urgent_callback';
           default: return 'new';
         }
       };
 
-      // Convert abandoned carts to lead format (only those not already linked by id, email, or phone)
       const cartsAsLeads = (abandonedCartsData || [])
-        .filter((cart: any) => 
-          !linkedCartIds.has(cart.id) && 
+        .filter((cart: any) =>
+          !linkedCartIds.has(cart.id) &&
           !existingEmails.has(cart.email?.toLowerCase()) &&
           !(cart.phone && existingPhones.has(cart.phone.replace(/\s/g, ''))) &&
-          // Only include step 2 carts as leads - step 3 carts are duplicates
-          // of existing sales_leads created during quote delivery
+          // Step 3 carts are duplicates of existing quote-delivery sales leads.
           cart.step_abandoned !== 3
         )
         .map((cart: any) => {
           const fullName = cart.full_name || '';
           const isFakeLead = isTestLead(fullName, cart.phone) || cart.contact_status === 'fake_lead';
-          
-          // Get the admin user from the contacted_by auth.user_id
           const assignedAdminUser = cart.contacted_by ? adminUsersByAuthId[cart.contacted_by] : null;
-          
-          // Map contact_status to proper LeadStatus
           const derivedStatus = mapContactStatusToLeadStatus(cart.contact_status, isFakeLead);
-          
+
           return {
             id: `cart_${cart.id}`,
             first_name: fullName.split(' ')[0] || null,
@@ -357,7 +331,6 @@ export const useLeads = () => {
             vehicle_year: cart.vehicle_year,
             vehicle_type: cart.vehicle_type,
             mileage: cart.mileage,
-            // Use admin_users.id for assigned_to (consistent with sales_leads)
             assigned_to: assignedAdminUser?.id || null,
             assigned_at: cart.last_contacted_at,
             next_action_type: null,
@@ -384,30 +357,27 @@ export const useLeads = () => {
             step_two_completed_at: null,
             call_count: cart.call_count || 0,
             cart_metadata: cart.cart_metadata || null,
-            // Set the assigned_user from our lookup
             assigned_user: assignedAdminUser ? {
               id: assignedAdminUser.id,
               first_name: assignedAdminUser.first_name,
               last_name: assignedAdminUser.last_name,
-              email: assignedAdminUser.email
+              email: assignedAdminUser.email,
             } : null,
             tags: [],
             resubmission_count: 0,
-            last_resubmitted_at: null
+            last_resubmitted_at: null,
           };
         });
 
-      // Merge sales leads with abandoned carts
-      const salesLeadsWithFlags = (salesLeadsData || []).map((lead: any) => {
-        const fullName = lead.first_name || lead.last_name 
-          ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim() 
+      const salesLeadsWithFlags = (allSalesLeadsData || []).map((lead: any) => {
+        const fullName = lead.first_name || lead.last_name
+          ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
           : lead.full_name || null;
         const isFakeLead = isTestLead(fullName, lead.phone);
-        
+
         return {
           ...lead,
           full_name: fullName,
-          // Auto-detect fake leads but don't override if already set to a different status
           status: isFakeLead && lead.status === 'new' ? 'fake_lead' : lead.status,
           plan_name: lead.plan_interest,
           payment_type: null,
@@ -417,30 +387,13 @@ export const useLeads = () => {
           call_count: lead.call_count || 0,
           cart_metadata: null,
           resubmission_count: lead.resubmission_count || 0,
-          last_resubmitted_at: lead.last_resubmitted_at || null
+          last_resubmitted_at: lead.last_resubmitted_at || null,
         };
       });
 
-      // Filter cartsAsLeads to match the same filter applied to sales leads
-      let filteredCartsAsLeads = cartsAsLeads;
-      if (filter === 'all_leads' || filter === 'all' || filter === 'live') {
-        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status !== 'lost' && lead.status !== 'fake_lead');
-      } else if (filter === 'high_priority') {
-        // Keep all carts for high priority (they don't have priority scores)
-      } else if (filter === 'fake') {
-        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === 'fake_lead');
-      } else if (filter === 'lost') {
-        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === 'lost');
-      } else {
-        filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === filter);
-      }
-
-      // Combine and sort by created_at (newest first)
-      // Sales leads are already filtered client-side above; carts are filtered here
-      let allLeads = [...salesLeadsWithFlags, ...filteredCartsAsLeads]
+      const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      // Calculate application count per email (how many times this email has applied)
       const emailCounts: Record<string, number> = {};
       allLeads.forEach((lead: any) => {
         const email = lead.email?.toLowerCase();
@@ -449,24 +402,22 @@ export const useLeads = () => {
         }
       });
 
-      // Add application count to each lead
       const leadsWithCounts = allLeads.map((lead: any) => ({
         ...lead,
-        application_count: emailCounts[lead.email?.toLowerCase()] || 1
+        application_count: emailCounts[lead.email?.toLowerCase()] || 1,
       }));
 
-      // Fetch tag assignments — wrapped in try-catch so tag fetch failure doesn't block leads loading
       const salesLeadIds = leadsWithCounts
         .filter((lead: any) => !lead.is_from_abandoned_cart)
         .map((lead: any) => lead.id);
 
       let tagsByLeadId: Record<string, any[]> = {};
-      
+
       try {
         if (salesLeadIds.length > 0) {
           const BATCH_SIZE = 300;
           const allTagData: any[] = [];
-          
+
           const batchPromises = [];
           for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
             const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
@@ -495,14 +446,11 @@ export const useLeads = () => {
         console.warn('[Leads] Tag fetch failed, continuing without tags:', tagError);
       }
 
-      // Assign tags to leads without additional queries
       const leadsWithTags = leadsWithCounts.map((lead: any) => ({
         ...lead,
-        tags: lead.is_from_abandoned_cart ? [] : (tagsByLeadId[lead.id] || [])
+        tags: lead.is_from_abandoned_cart ? [] : (tagsByLeadId[lead.id] || []),
       }));
 
-      // Preserve optimistic updates for recently changed leads
-      // This prevents realtime refetches from reverting status/assignment changes mid-flight
       if (recentOptimisticUpdatesRef.current.size > 0) {
         setLeads(prev => {
           const protectedLeads = new Map<string, Lead>();
@@ -511,19 +459,17 @@ export const useLeads = () => {
               protectedLeads.set(lead.id, lead);
             }
           });
-          
-          // Merge: use fetched data but override with protected leads
-          const merged = (leadsWithTags as Lead[]).map(lead => 
+
+          const merged = (leadsWithTags as Lead[]).map(lead =>
             protectedLeads.has(lead.id) ? protectedLeads.get(lead.id)! : lead
           );
-          
-          // Add any protected leads that were filtered out by the query (e.g., "lost" leads in "all" view)
+
           protectedLeads.forEach((lead, id) => {
             if (!merged.find(l => l.id === id)) {
               merged.push(lead);
             }
           });
-          
+
           return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         });
       } else {
@@ -537,7 +483,7 @@ export const useLeads = () => {
       setLoading(false);
       initialLoadDoneRef.current = true;
     }
-  }, [filter]);
+  }, []);
 
   const fetchTags = useCallback(async () => {
     const { data, error } = await supabase
