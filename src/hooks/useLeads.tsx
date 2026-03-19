@@ -1232,9 +1232,10 @@ export const useLeads = () => {
 
         if (error) throw error;
 
-        // Log activity for call tracking
+        // Log activity and add system note for call tracking
         if (increment > 0) {
           logActivity(leadId, 'call', `Call attempt #${newCount}`);
+          addSystemNote(leadId, `Call attempt #${newCount} made`);
         }
       }
     } catch (error) {
@@ -1242,7 +1243,7 @@ export const useLeads = () => {
       toast.error('Failed to update call count');
       fetchLeads();
     }
-  }, [logActivity, fetchLeads]);
+  }, [logActivity, addSystemNote, fetchLeads]);
 
   const migrateFromAbandonedCarts = useCallback(async () => {
     try {
