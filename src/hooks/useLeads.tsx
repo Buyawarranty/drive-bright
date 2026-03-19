@@ -234,7 +234,6 @@ export const useLeads = () => {
               contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
               call_count, created_at, updated_at
             `)
-            .eq('is_converted', false)
             .order('created_at', { ascending: false })
         ),
       ]);
