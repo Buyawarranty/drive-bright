@@ -623,8 +623,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </Tooltip>
                   </TooltipProvider>
                   
-                  {/* Trustpilot Slider Widget - Desktop */}
-                  <TrustpilotSliderWidget className="mt-4 w-full" />
                 </div>
               </div>
             </div>
@@ -669,8 +667,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </Tooltip>
                 </TooltipProvider>
                 
-                {/* Trustpilot Slider Widget - Mobile */}
-                <TrustpilotSliderWidget className="mt-2 w-full" />
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, ArrowRight, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-react';
+import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 
@@ -49,6 +50,9 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
   return (
     <section className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Trustpilot Slider Widget */}
+        <TrustpilotSliderWidget className="mb-8" />
+        
         {/* Main Content */}
         <div>
           <div>
