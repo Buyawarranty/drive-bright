@@ -164,8 +164,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
     }
     
-    // Apply date range filter
-    if (dateRange.from || dateRange.to) {
+    // Apply date range filter — but skip it when actively searching so leads are always findable
+    if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
       result = result.filter(lead => {
         const leadDate = new Date(lead.created_at);
         
