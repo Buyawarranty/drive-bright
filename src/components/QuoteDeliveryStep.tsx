@@ -7,6 +7,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import trustpilotStars from '@/assets/trustpilot-stars.png';
+import TrustpilotMiniWidget from '@/components/TrustpilotMiniWidget';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface QuoteDeliveryStepProps {
