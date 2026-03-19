@@ -33,6 +33,8 @@ interface LeadsTableProps {
   onRefresh?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
+  sortOption?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
