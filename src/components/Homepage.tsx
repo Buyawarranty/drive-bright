@@ -14,6 +14,7 @@ import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
+import TrustpilotMicroWidget from './TrustpilotMicroWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
