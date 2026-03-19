@@ -106,11 +106,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
-    return { from: today, to: endOfToday };
+    // Sales agents and sales leads default to "All Time", admins/super_admins default to "Today"
+    const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+    if (isAdminRole) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+      return { from: today, to: endOfToday };
+    }
+    // Sales agents and sales leads: All Time (no date filter)
+    return { from: undefined, to: undefined };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
