@@ -14,6 +14,7 @@ import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
+import TrustpilotMicroWidget from './TrustpilotMicroWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -436,13 +437,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
-              {/* Main Headline */}
-              <div className="space-y-2 mb-2 sm:mb-4">
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
-                <span className="text-[#333]">Affordable warranty you can trust </span>
-                <span className="text-brand-orange">in 60 seconds!</span>
-              </h1>
-              </div>
+               {/* Trustpilot Micro TrustScore */}
+               <TrustpilotMicroWidget className="mb-2" />
+
+               {/* Main Headline */}
+               <div className="space-y-2 mb-2 sm:mb-4">
+               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
+                 <span className="text-[#333]">Affordable warranty you can trust </span>
+                 <span className="text-brand-orange">in 60 seconds!</span>
+               </h1>
+               </div>
 
               {/* Benefits */}
               <div className="mb-3 sm:mb-8 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
