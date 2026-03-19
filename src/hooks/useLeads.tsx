@@ -719,6 +719,11 @@ export const useLeads = () => {
         // Log activity in background (don't await)
         logActivity(leadId, 'status_change', `Status changed to ${status}`);
       }
+
+      // Add automated system note for status change (fire-and-forget)
+      const adminUser = await getCachedAdminUser();
+      const statusLabel = status.replace(/_/g, ' ');
+      addSystemNote(leadId, `Status changed to "${statusLabel}"`, adminUser?.id);
       
       toast.success(`Status: ${status.replace('_', ' ')}`);
     } catch (error) {
