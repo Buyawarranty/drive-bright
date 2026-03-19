@@ -451,19 +451,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Phone - positioned next to Calls */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.phone ? (
-          <div className="flex items-center gap-1" ref={(el) => {
-            if (!el) return;
-            // Detect Zoiper-injected tel: links being clicked and auto-increment call count
-            const handleClick = (e: MouseEvent) => {
-              const target = e.target as HTMLElement;
-              const anchor = target.closest('a[href^="tel:"], a[href^="sip:"], a[href^="callto:"]');
-              if (anchor) {
-                onUpdateCallCount(1);
-              }
-            };
-            el.addEventListener('click', handleClick);
-            // Store cleanup reference
-            (el as any).__zoiperCleanup = () => el.removeEventListener('click', handleClick);
+          <div className="flex items-center gap-1" onClick={(e) => {
+            // Detect Zoiper-injected tel:/sip:/callto: links being clicked and auto-increment call count
+            const target = e.target as HTMLElement;
+            const anchor = target.closest('a[href^="tel:"], a[href^="sip:"], a[href^="callto:"]');
+            if (anchor) {
+              onUpdateCallCount(1);
+            }
           }}>
             <PhoneCopyText phone={lead.phone} />
             <div className="flex items-center">
