@@ -1209,6 +1209,10 @@ export const useLeads = () => {
         // Log activity for call tracking
         if (increment > 0) {
           logActivity(leadId, 'call', `Call attempt #${newCount}`);
+          // Add automated system note for call (fire-and-forget)
+          getCachedAdminUser().then(adminUser => {
+            addSystemNote(leadId, `📞 Call #${newCount} attempted`, adminUser?.id);
+          });
         }
       }
     } catch (error) {
