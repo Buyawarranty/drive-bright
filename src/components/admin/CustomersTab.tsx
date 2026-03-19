@@ -3280,7 +3280,7 @@ export const CustomersTab = () => {
               <TableHead className="text-center bg-blue-50">Google</TableHead>
               <TableHead>Labour Rate</TableHead>
               <TableHead>Mileage</TableHead>
-              <TableHead>Tags</TableHead>
+              {canViewRevenue && <TableHead>Sale Source</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
