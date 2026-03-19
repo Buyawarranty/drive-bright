@@ -308,7 +308,8 @@ export const useLeads = () => {
           const fullName = cart.full_name || '';
           const isFakeLead = isTestLead(fullName, cart.phone) || cart.contact_status === 'fake_lead';
           const assignedAdminUser = cart.contacted_by ? adminUsersByAuthId[cart.contacted_by] : null;
-          const derivedStatus = mapContactStatusToLeadStatus(cart.contact_status, isFakeLead);
+          // If cart is_converted, treat as converted regardless of contact_status
+          const derivedStatus = cart.is_converted ? 'converted' as LeadStatus : mapContactStatusToLeadStatus(cart.contact_status, isFakeLead);
 
           return {
             id: `cart_${cart.id}`,
