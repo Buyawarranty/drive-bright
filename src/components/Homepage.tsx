@@ -122,7 +122,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     };
   }, []);
 
-  const formatRegNumber = (value: string) => {
+  // Load Trustpilot TrustBox widget after React renders
+  useEffect(() => {
+    const win = window as any;
+    if (win.Trustpilot) {
+      const trustboxes = document.querySelectorAll('.trustpilot-widget');
+      trustboxes.forEach((el) => win.Trustpilot.loadFromElement(el, true));
+    }
+  }, []);
+
+
     const formatted = value.replace(/\s/g, '').toUpperCase();
     if (formatted.length > 3) {
       return formatted.slice(0, -3) + ' ' + formatted.slice(-3);
