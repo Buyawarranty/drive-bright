@@ -122,6 +122,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     };
   }, []);
 
+  // Load Trustpilot TrustBox widget after React renders
+  useEffect(() => {
+    const win = window as any;
+    if (win.Trustpilot) {
+      const trustboxes = document.querySelectorAll('.trustpilot-widget');
+      trustboxes.forEach((el) => win.Trustpilot.loadFromElement(el, true));
+    }
+  }, []);
+
   const formatRegNumber = (value: string) => {
     const formatted = value.replace(/\s/g, '').toUpperCase();
     if (formatted.length > 3) {
@@ -430,6 +439,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       )}
 
       {/* Hero Section */}
+      {/* TrustBox Widget - Horizontal */}
+      <div className="w-full bg-white pt-2 sm:pt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div 
+            className="trustpilot-widget" 
+            data-locale="en-US" 
+            data-template-id="5406e65db0d04a09e042d5fc" 
+            data-businessunit-id="6586c764848940568d554a08" 
+            data-style-height="28px" 
+            data-style-width="100%" 
+            data-token="9427810b-06b1-4a24-8c08-42260ef98c76"
+          >
+            <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer">Trustpilot</a>
+          </div>
+        </div>
+      </div>
+
       <section id="quote-form" className="bg-white pt-3 sm:pt-8 lg:pt-16 pb-2 sm:pb-4 lg:pb-8 px-3 sm:px-0">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-center">
@@ -559,24 +585,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 height={434}
                 sizes="(max-width: 768px) 100vw, 651px"
               />
-              {/* Trustpilot Logo positioned to the right */}
-              <div className="absolute top-4 right-4 z-10">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  <OptimizedImage 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating" 
-                    className="h-auto w-24 sm:w-40 object-contain"
-                    priority={false}
-                    width={160}
-                    height={68}
-                  />
-                </a>
-              </div>
+              
               
               {/* Vehicle Types positioned directly below the image on desktop */}
               <div className="hidden lg:block w-full mt-4">
