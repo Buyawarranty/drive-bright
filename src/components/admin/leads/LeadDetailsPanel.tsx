@@ -75,6 +75,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
       if (!lead.is_from_abandoned_cart) {
         onLogActivity(lead.id, 'call', 'Made phone call');
       }
+      // Add automated system note for click-to-dial (fire-and-forget)
+      addSystemNote(lead.id, `📞 Click-to-dial: ${lead.phone}`);
     } else {
       toast.error('No phone number available');
     }
