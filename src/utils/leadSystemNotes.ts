@@ -18,13 +18,29 @@ export const addSystemNote = async (
       hour: '2-digit', minute: '2-digit',
     });
 
-    // Resolve author name
+    // Resolve author name — if no adminUserId provided, try to get current user
     let authorLabel = '🤖 System';
-    if (adminUserId) {
+    let resolvedAdminId = adminUserId;
+    
+    if (!resolvedAdminId) {
+      // Try to resolve from current auth session
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id, first_name, email')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (adminUser) {
+          resolvedAdminId = adminUser.id;
+          authorLabel = adminUser.first_name || adminUser.email?.split('@')[0] || 'Agent';
+        }
+      }
+    } else {
       const { data: adminUser } = await supabase
         .from('admin_users')
         .select('first_name, email')
-        .eq('id', adminUserId)
+        .eq('id', resolvedAdminId)
         .maybeSingle();
       if (adminUser) {
         authorLabel = adminUser.first_name || adminUser.email?.split('@')[0] || 'Agent';
