@@ -120,7 +120,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
-  const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
+  const [sortOption, setSortOption] = useState<SortOption>('activity_newest');
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
