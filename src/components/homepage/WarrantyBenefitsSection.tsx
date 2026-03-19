@@ -196,7 +196,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                 
                 {/* Trust & Reassurance */}
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <TrustpilotHeader className="flex-shrink-0 scale-90 sm:scale-100" />
+                  {/* Trustpilot removed - using carousel widget above */}
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Lock className="w-4 h-4 text-green-600" />
                     <span>Your details are encrypted and safe.</span>
