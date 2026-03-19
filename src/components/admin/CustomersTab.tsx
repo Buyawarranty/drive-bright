@@ -4730,21 +4730,25 @@ Please log in and change your password after first login.`;
                            )}
                          </div>
                        </TableCell>
-                       <TableCell>
-                         <CustomerClaimsSummary
-                           customerEmail={customer.email}
-                           customerName={customer.name}
-                           vehicleReg={customer.registration_plate}
-                           showOnly="claimsMade"
-                         />
-                       </TableCell>
-                       <TableCell>
-                         <CustomerClaimsSummary
-                           customerEmail={customer.email}
-                           vehicleReg={customer.registration_plate}
-                           showOnly="claimsPaid"
-                         />
-                       </TableCell>
+                       {!isSalesRole && (
+                        <TableCell>
+                          <CustomerClaimsSummary
+                            customerEmail={customer.email}
+                            customerName={customer.name}
+                            vehicleReg={customer.registration_plate}
+                            showOnly="claimsMade"
+                          />
+                        </TableCell>
+                       )}
+                       {!isSalesRole && (
+                        <TableCell>
+                          <CustomerClaimsSummary
+                            customerEmail={customer.email}
+                            vehicleReg={customer.registration_plate}
+                            showOnly="claimsPaid"
+                          />
+                        </TableCell>
+                       )}
                        <TableCell className="text-center">
                          <DropdownMenu>
                            <DropdownMenuTrigger asChild>
