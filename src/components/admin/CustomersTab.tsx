@@ -4514,7 +4514,7 @@ Please log in and change your password after first login.`;
                        {customer.status?.toLowerCase() === 'refunded' && '💰 '}
                        {customer.status}
                      </Badge>
-                     <CommissionClaimedBadge customerId={customer.id} />
+                     {!isSalesRole && <CommissionClaimedBadge customerId={customer.id} />}
                     </div>
                    </TableCell>
                     <TableCell>
