@@ -2,30 +2,36 @@
 
 ## Problem
 
-The canonical tag is not visible in the production site's page source. Two root causes:
+When a sales agent assigns a lead to themselves in the **New Leads** tab, it only updates the `sales_leads` table. If that lead has already purchased (has a matching customer record), the **Customer Management** dashboard still shows them as unassigned or assigned to someone else. The two dashboards are out of sync.
 
-1. **`SEOHead` component uses raw DOM manipulation** (`document.createElement` in `useEffect`) instead of `react-helmet-async`. Tags injected this way don't appear in "View Source" and are less reliably crawled by search engines.
+## Solution
 
-2. **Dual system conflict**: Brand warranty pages use `<Helmet>` from `react-helmet-async` (correct approach), while ~39 other pages use the old `SEOHead` component (broken approach). The `HelmetProvider` is already wrapping the app in `main.tsx`.
+Extend the `assign_lead_to_agent` database function to also update the matching `customers` record when a lead assignment changes. The match is by email (the shared identifier between `sales_leads` and `customers`).
 
-## Plan
+### Step 1: Update the `assign_lead_to_agent` RPC
 
-### Step 1: Rewrite `SEOHead` to use `react-helmet-async`
+Add a customer sync block after the `sales_leads` update succeeds. It will:
 
-Convert the component from raw DOM manipulation (`useEffect` + `document.createElement`) to rendering a `<Helmet>` component with all the same meta tags, canonical link, and OG tags as JSX children. This is the single change that fixes every page using `SEOHead`.
+1. Look up the lead's email from `sales_leads`
+2. Find any matching `customers` record by that email
+3. Update `customers.assigned_to` to the same agent
+4. Update the warranty number prefix: `BAW-` to `BAW-S-` when assigning to an agent, or `BAW-S-` back to `BAW-` when unassigning (Website)
 
-**Key change**: Replace the entire `useEffect` body with a `return <Helmet>...</Helmet>` containing all the meta tags, the canonical `<link>`, and the `<title>`.
+This follows the exact same logic already used in the Customer Management tab's assignment dropdown (per the memory note on purchase attribution).
 
-### Step 2: Remove the hardcoded canonical from `index.html`
+### Step 2: Fix duplicate/irrelevant users in the assignment dropdown
 
-Remove line 20 (`<link rel="canonical" href="https://buyawarranty.co.uk/" />`) from `index.html` to avoid conflicts with the dynamic canonical set by `SEOHead` via Helmet. The React component will now be the single source of truth for all pages including the homepage.
+The screenshot shows "Prajwal Chauhan" listed twice and non-sales email addresses (`support@`, `info@`) in the agent dropdown. The `fetchSalesUsers` query currently fetches ALL active `admin_users` regardless of role.
+
+Filter it to only include roles that should appear in the assignment dropdown: `sales`, `sales_lead`, `admin`, `super_admin` — excluding support/info accounts and deduplicating by `user_id`.
 
 ### What stays unchanged
-- All 39+ pages that use `<SEOHead />` — no changes needed, they'll automatically benefit from the fix
-- All brand warranty pages that already use `<Helmet>` directly — untouched
-- All props and API of `SEOHead` — identical interface, just different internal implementation
-- No changes to any page component files
+- All existing lead flow, notes, status changes, APIs untouched
+- The `assignLead` function in `useLeads.tsx` stays identical — the sync happens at the database level
+- Customer Management assignment dropdown remains independent
+- No changes to any UI components
 
 ### Technical detail
-`react-helmet-async` manages `<head>` tags through React's rendering pipeline rather than imperative DOM manipulation. This means tags appear in the rendered DOM immediately (not after a useEffect tick) and are properly visible to Google's crawler. Since `HelmetProvider` already wraps the app, this is a drop-in fix.
+
+The RPC change is a single migration adding ~10 lines to the existing function, right after the `sales_leads` UPDATE block. The dropdown fix is a one-line filter addition to `fetchSalesUsers` in `useLeads.tsx`.
 
