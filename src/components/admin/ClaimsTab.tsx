@@ -46,6 +46,10 @@ interface ClaimSubmission {
   priority?: string;
   follow_up_date?: string;
   last_contacted_at?: string;
+  purchase_mileage?: number;
+  mileage_driven?: number;
+  days_on_risk?: number;
+  warranty_start_date?: string;
 }
 
 export const ClaimsTab = () => {

@@ -292,6 +292,42 @@ export const ClaimDetailDialog: React.FC<ClaimDetailDialogProps> = ({ claim, ope
                 </div>
               </div>
 
+              {/* Risk Assessment Banner */}
+              {(claim.days_on_risk !== null || claim.mileage_driven !== null) && (
+                <>
+                  <Separator />
+                  <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold mb-3 text-amber-800">⚠️ Risk Assessment</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {claim.days_on_risk !== null && claim.days_on_risk !== undefined && (
+                        <div className="text-center bg-white rounded-lg p-3 border border-amber-200">
+                          <p className="text-2xl font-bold text-amber-700">{claim.days_on_risk.toLocaleString()}</p>
+                          <p className="text-xs text-amber-600 font-medium">Days on Risk</p>
+                        </div>
+                      )}
+                      {claim.mileage_driven !== null && claim.mileage_driven !== undefined && (
+                        <div className="text-center bg-white rounded-lg p-3 border border-amber-200">
+                          <p className="text-2xl font-bold text-amber-700">{claim.mileage_driven.toLocaleString()}</p>
+                          <p className="text-xs text-amber-600 font-medium">Miles Since Purchase</p>
+                        </div>
+                      )}
+                      {claim.purchase_mileage && (
+                        <div className="text-center bg-white rounded-lg p-3 border border-amber-200">
+                          <p className="text-2xl font-bold text-gray-700">{claim.purchase_mileage.toLocaleString()}</p>
+                          <p className="text-xs text-gray-500 font-medium">Mileage at Purchase</p>
+                        </div>
+                      )}
+                      {claim.warranty_start_date && (
+                        <div className="text-center bg-white rounded-lg p-3 border border-amber-200">
+                          <p className="text-lg font-bold text-gray-700">{new Date(claim.warranty_start_date).toLocaleDateString('en-GB')}</p>
+                          <p className="text-xs text-gray-500 font-medium">Warranty Started</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
               <Separator />
 
               {/* Claim Details */}
@@ -321,7 +357,7 @@ export const ClaimDetailDialog: React.FC<ClaimDetailDialogProps> = ({ claim, ope
                   )}
                   {claim.mileage_at_claim && (
                     <div>
-                      <Label className="text-sm text-gray-600">Mileage</Label>
+                      <Label className="text-sm text-gray-600">Mileage at Claim</Label>
                       <p className="font-medium">{claim.mileage_at_claim.toLocaleString()} miles</p>
                     </div>
                   )}

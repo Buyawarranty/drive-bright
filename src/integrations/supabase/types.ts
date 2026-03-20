@@ -1391,6 +1391,7 @@ export type Database = {
           claim_reason: string | null
           created_at: string
           date_of_incident: string | null
+          days_on_risk: number | null
           email: string
           file_name: string | null
           file_size: number | null
@@ -1401,17 +1402,20 @@ export type Database = {
           last_contacted_at: string | null
           message: string | null
           mileage_at_claim: number | null
+          mileage_driven: number | null
           name: string
           paid_at: string | null
           payment_amount: number | null
           phone: string | null
           priority: string | null
+          purchase_mileage: number | null
           rejected_at: string | null
           rejection_reason: string | null
           status: string
           tag_id: string | null
           updated_at: string
           vehicle_registration: string | null
+          warranty_start_date: string | null
           warranty_type: string | null
         }
         Insert: {
@@ -1420,6 +1424,7 @@ export type Database = {
           claim_reason?: string | null
           created_at?: string
           date_of_incident?: string | null
+          days_on_risk?: number | null
           email: string
           file_name?: string | null
           file_size?: number | null
@@ -1430,17 +1435,20 @@ export type Database = {
           last_contacted_at?: string | null
           message?: string | null
           mileage_at_claim?: number | null
+          mileage_driven?: number | null
           name: string
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
           priority?: string | null
+          purchase_mileage?: number | null
           rejected_at?: string | null
           rejection_reason?: string | null
           status?: string
           tag_id?: string | null
           updated_at?: string
           vehicle_registration?: string | null
+          warranty_start_date?: string | null
           warranty_type?: string | null
         }
         Update: {
@@ -1449,6 +1457,7 @@ export type Database = {
           claim_reason?: string | null
           created_at?: string
           date_of_incident?: string | null
+          days_on_risk?: number | null
           email?: string
           file_name?: string | null
           file_size?: number | null
@@ -1459,17 +1468,20 @@ export type Database = {
           last_contacted_at?: string | null
           message?: string | null
           mileage_at_claim?: number | null
+          mileage_driven?: number | null
           name?: string
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
           priority?: string | null
+          purchase_mileage?: number | null
           rejected_at?: string | null
           rejection_reason?: string | null
           status?: string
           tag_id?: string | null
           updated_at?: string
           vehicle_registration?: string | null
+          warranty_start_date?: string | null
           warranty_type?: string | null
         }
         Relationships: [
