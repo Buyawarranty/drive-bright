@@ -505,6 +505,7 @@ export const useLeads = () => {
       .from('admin_users')
       .select('id, user_id, first_name, last_name, email, is_active, role')
       .eq('is_active', true)
+      .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
       .order('first_name');
 
     if (error) {
