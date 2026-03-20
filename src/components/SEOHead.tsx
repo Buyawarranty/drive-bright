@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 
 interface SEOHeadProps {
   title?: string;
@@ -33,116 +33,68 @@ export const SEOHead = ({
   geoRegion = 'GB',
   geoPlacename = 'United Kingdom',
   geoPosition,
-  ICBM,
+  ICBM: icbm,
   author = 'Buy A Warranty',
   publisher = 'BUY A WARRANTY LIMITED'
 }: SEOHeadProps) => {
-  useEffect(() => {
-    // Update document title
-    document.title = title;
+  const canonicalUrl = canonical || `https://buyawarranty.co.uk${window.location.pathname}`;
 
-    // Update or create meta tags
-    const updateMetaTag = (property: string, content: string, isProperty = false) => {
-      const attribute = isProperty ? 'property' : 'name';
-      let meta = document.querySelector(`meta[${attribute}="${property}"]`) as HTMLMetaElement;
-      
-      if (meta) {
-        meta.content = content;
-      } else {
-        meta = document.createElement('meta');
-        meta.setAttribute(attribute, property);
-        meta.content = content;
-        document.head.appendChild(meta);
-      }
-    };
+  return (
+    <Helmet>
+      <title>{title}</title>
 
-    // Basic meta tags
-    updateMetaTag('description', description);
-    updateMetaTag('keywords', keywords);
+      {/* Basic meta tags */}
+      <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
+      <meta name="author" content={author} />
+      <meta name="publisher" content={publisher} />
 
-    // Open Graph tags with image dimensions and alt text
-    updateMetaTag('og:title', ogTitle || title, true);
-    updateMetaTag('og:description', ogDescription || description, true);
-    updateMetaTag('og:image', ogImage, true);
-    updateMetaTag('og:image:width', ogImageWidth, true);
-    updateMetaTag('og:image:height', ogImageHeight, true);
-    updateMetaTag('og:image:alt', ogImageAlt, true);
-    updateMetaTag('og:type', 'website', true);
-    updateMetaTag('og:locale', 'en_GB', true);
-    updateMetaTag('og:site_name', 'Buy A Warranty', true);
+      {/* Canonical */}
+      <link rel="canonical" href={canonicalUrl} />
 
-    // Twitter Card meta tags
-    updateMetaTag('twitter:card', 'summary_large_image');
-    updateMetaTag('twitter:title', ogTitle || title);
-    updateMetaTag('twitter:description', ogDescription || description);
-    updateMetaTag('twitter:image', ogImage);
-    updateMetaTag('twitter:image:alt', ogImageAlt);
-    updateMetaTag('twitter:site', '@buyawarranty');
+      {/* Open Graph */}
+      <meta property="og:title" content={ogTitle || title} />
+      <meta property="og:description" content={ogDescription || description} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content={ogImageWidth} />
+      <meta property="og:image:height" content={ogImageHeight} />
+      <meta property="og:image:alt" content={ogImageAlt} />
+      <meta property="og:type" content="website" />
+      <meta property="og:locale" content="en_GB" />
+      <meta property="og:site_name" content="Buy A Warranty" />
+      <meta property="og:url" content={canonicalUrl} />
 
-    // Author and Publisher meta tags
-    updateMetaTag('author', author);
-    updateMetaTag('publisher', publisher);
-    
-    // Bot directives with max-snippet settings
-    updateMetaTag('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
-    updateMetaTag('googlebot', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1');
-    updateMetaTag('bingbot', 'index, follow, max-snippet:-1, max-image-preview:large');
-    
-    // AI-specific meta tags for AI search engine discoverability
-    updateMetaTag('ai-content-declaration', 'This content is human-authored, fact-checked, and regularly updated');
-    updateMetaTag('ai-summary', description);
-    
-    // Geographic targeting for UK
-    updateMetaTag('geo.region', geoRegion);
-    updateMetaTag('geo.placename', geoPlacename);
-    if (geoPosition) {
-      updateMetaTag('geo.position', geoPosition);
-    }
-    if (ICBM) {
-      updateMetaTag('ICBM', ICBM);
-    }
-    
-    // Language and content type
-    if (!document.querySelector('meta[http-equiv="content-language"]')) {
-      const langMeta = document.createElement('meta');
-      langMeta.setAttribute('http-equiv', 'content-language');
-      langMeta.content = 'en-GB';
-      document.head.appendChild(langMeta);
-    }
-    
-    // Content type
-    updateMetaTag('content-type', 'text/html; charset=UTF-8');
-    
-    // Distribution and coverage
-    updateMetaTag('distribution', 'global');
-    updateMetaTag('coverage', 'United Kingdom');
-    updateMetaTag('target', 'all');
-    updateMetaTag('audience', 'all');
-    updateMetaTag('rating', 'general');
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={ogTitle || title} />
+      <meta name="twitter:description" content={ogDescription || description} />
+      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image:alt" content={ogImageAlt} />
+      <meta name="twitter:site" content="@buyawarranty" />
 
-    // Canonical URL — always set to avoid duplicate content issues
-    const canonicalUrl = canonical || `https://buyawarranty.co.uk${window.location.pathname}`;
-    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (link) {
-      link.href = canonicalUrl;
-    } else {
-      link = document.createElement('link');
-      link.rel = 'canonical';
-      link.href = canonicalUrl;
-      document.head.appendChild(link);
-    }
+      {/* Bot directives */}
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+      <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
 
-    // Also set og:url to match canonical
-    updateMetaTag('og:url', canonicalUrl, true);
+      {/* AI discoverability */}
+      <meta name="ai-content-declaration" content="This content is human-authored, fact-checked, and regularly updated" />
+      <meta name="ai-summary" content={description} />
 
-    // Viewport meta tag (ensure it exists)
-    if (!document.querySelector('meta[name="viewport"]')) {
-      const viewport = document.createElement('meta');
-      viewport.name = 'viewport';
-      viewport.content = 'width=device-width, initial-scale=1.0';
-      document.head.appendChild(viewport);
-    }
-  }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogImageWidth, ogImageHeight, ogImageAlt, canonical, geoRegion, geoPlacename, geoPosition, ICBM, author, publisher]);
+      {/* Geographic targeting */}
+      <meta name="geo.region" content={geoRegion} />
+      <meta name="geo.placename" content={geoPlacename} />
+      {geoPosition && <meta name="geo.position" content={geoPosition} />}
+      {icbm && <meta name="ICBM" content={icbm} />}
 
-  return null;
+      {/* Distribution */}
+      <meta name="distribution" content="global" />
+      <meta name="coverage" content="United Kingdom" />
+      <meta name="target" content="all" />
+      <meta name="audience" content="all" />
+      <meta name="rating" content="general" />
+      <meta name="content-type" content="text/html; charset=UTF-8" />
+      <meta httpEquiv="content-language" content="en-GB" />
+    </Helmet>
+  );
 };
