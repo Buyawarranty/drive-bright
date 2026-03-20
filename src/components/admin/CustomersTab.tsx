@@ -2615,31 +2615,7 @@ export const CustomersTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Super Admin Daily Sales Banner */}
-      {isSuperAdmin && (
-        <Card className="border p-4">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Revenue by Date:</span>
-            </div>
-            <DateRangeFilter
-              dateRange={revenueDateRange}
-              onDateRangeChange={setRevenueDateRange}
-            />
-            {filteredRevenueStats && (
-              <div className="flex items-center gap-3 ml-auto">
-                <span className="text-emerald-600 font-bold text-sm">
-                  £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <Badge variant="outline" className="text-sm">
-                  {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
-                </Badge>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
+      {/* Revenue by Date is now inline in the filter row below */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
