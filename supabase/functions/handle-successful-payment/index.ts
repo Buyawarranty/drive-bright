@@ -397,7 +397,7 @@ serve(async (req) => {
       // Google Ads attribution tracking
       gclid: trackingData?.gclid || metadata?.gclid || null,
       ga_client_id: trackingData?.clientId || metadata?.ga_client_id || null,
-      purchase_source: (trackingData?.gclid || metadata?.gclid) ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : null))
+      purchase_source: (trackingData?.gclid || metadata?.gclid) ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : 'website'))
     };
 
     // Detect Facebook Ads attribution from abandoned cart metadata
