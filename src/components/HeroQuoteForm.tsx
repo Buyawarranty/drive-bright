@@ -250,24 +250,6 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
               height={434}
               sizes="(max-width: 768px) 100vw, 651px"
             />
-            {/* Trustpilot Logo positioned to the right */}
-            <div className="absolute top-4 right-4 z-10">
-              <a 
-                href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity"
-              >
-                <OptimizedImage 
-                  src={trustpilotLogo} 
-                  alt="Trustpilot Excellent Rating" 
-                  className="h-auto w-40 object-contain"
-                  priority={false}
-                  width={160}
-                  height={68}
-                />
-              </a>
-            </div>
             
             {/* Vehicle Types positioned underneath */}
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-16 w-full px-4">
