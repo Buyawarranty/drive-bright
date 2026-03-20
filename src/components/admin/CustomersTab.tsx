@@ -2921,7 +2921,7 @@ export const CustomersTab = () => {
                </div>
             </div>
 
-             {/* Row 3: Sales by Agent + Deals Period */}
+             {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
             <div className="flex items-end gap-4 flex-wrap">
               {/* Filter by Agent */}
               {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
@@ -2973,6 +2973,32 @@ export const CustomersTab = () => {
                   </Select>
                 </div>
                 </>
+              )}
+
+              {/* Revenue by Date - inline */}
+              {isSuperAdmin && (
+                <div className="flex items-end gap-3 border-l pl-4">
+                  <div className="flex items-center gap-2 pb-1.5">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium whitespace-nowrap">Revenue:</span>
+                  </div>
+                  <div className="pb-0.5">
+                    <DateRangeFilter
+                      dateRange={revenueDateRange}
+                      onDateRangeChange={setRevenueDateRange}
+                    />
+                  </div>
+                  {filteredRevenueStats && (
+                    <div className="flex items-center gap-2 pb-1.5">
+                      <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                        £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Activity summary */}
