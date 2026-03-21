@@ -8,9 +8,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
-import { format, subDays, addDays, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
+import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { getLeadFeedDayRange, getTodayLeadFeedSelectionDate, isTodayLeadFeedRange, isYesterdayLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
@@ -128,7 +129,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   }, []);
 
   const yearOptions = useMemo(() => {
-    const currentYear = new Date().getFullYear();
+    const currentYear = getTodayLeadFeedSelectionDate().getFullYear();
     const options = [];
     for (let i = 0; i <= 5; i++) {
       const year = currentYear - i;
@@ -137,7 +138,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         label: year.toString(),
         value: `year_${year}`,
         from: startOfYear(yearDate),
-        to: i === 0 ? endOfDay(new Date()) : endOfYear(yearDate)
+        to: i === 0 ? getTodayLeadFeedSelectionDate() : endOfYear(yearDate)
       });
     }
     return options;
@@ -152,10 +153,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   const handleQuickFilter = (days: number, exactDay = false) => {
     if (onDateRangeChange) {
       if (exactDay) {
-        const targetDay = subDays(new Date(), days);
-        onDateRangeChange({ from: startOfDay(targetDay), to: endOfDay(targetDay) });
+        const targetDay = shiftLeadFeedSelectionDate(getTodayLeadFeedSelectionDate(), -days);
+        onDateRangeChange({ from: targetDay, to: targetDay });
       } else {
-        onDateRangeChange({ from: startOfDay(subDays(new Date(), days)), to: endOfDay(new Date()) });
+        const today = getTodayLeadFeedSelectionDate();
+        const fromDay = shiftLeadFeedSelectionDate(today, -days);
+        onDateRangeChange({ from: fromDay, to: today });
       }
       setIsCalendarOpen(false);
     }
@@ -163,22 +166,23 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   const handleDayNav = (direction: 'prev' | 'next') => {
     if (!onDateRangeChange) return;
-    const baseDate = dateRange?.from ?? new Date();
-    const newDate = direction === 'prev' ? subDays(baseDate, 1) : addDays(baseDate, 1);
-    if (startOfDay(newDate) > startOfDay(new Date())) return;
-    onDateRangeChange({ from: startOfDay(newDate), to: endOfDay(newDate) });
+    const baseDate = dateRange?.from ?? getTodayLeadFeedSelectionDate();
+    const newDate = shiftLeadFeedSelectionDate(baseDate, direction === 'prev' ? -1 : 1);
+    const today = getTodayLeadFeedSelectionDate();
+    if (newDate > today) return;
+    onDateRangeChange({ from: newDate, to: newDate });
   };
 
   const handleAllTime = () => {
     if (onDateRangeChange) {
-      onDateRangeChange({ from: new Date(2020, 0, 1), to: endOfDay(new Date()) });
+      onDateRangeChange({ from: new Date(2020, 0, 1), to: getTodayLeadFeedSelectionDate() });
       setIsCalendarOpen(false);
     }
   };
 
   const handleMonthSelect = (monthIndex: number) => {
     if (onDateRangeChange) {
-      const date = subMonths(new Date(), monthIndex);
+      const date = subMonths(getTodayLeadFeedSelectionDate(), monthIndex);
       onDateRangeChange({ from: startOfMonth(date), to: endOfMonth(date) });
       setIsCalendarOpen(false);
     }
@@ -187,8 +191,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   const handleYearSelect = (year: number) => {
     if (onDateRangeChange) {
       const yearDate = new Date(year, 0, 1);
-      const isCurrentYear = year === new Date().getFullYear();
-      onDateRangeChange({ from: startOfYear(yearDate), to: isCurrentYear ? endOfDay(new Date()) : endOfYear(yearDate) });
+      const isCurrentYear = year === getTodayLeadFeedSelectionDate().getFullYear();
+      onDateRangeChange({ from: startOfYear(yearDate), to: isCurrentYear ? getTodayLeadFeedSelectionDate() : endOfYear(yearDate) });
       setIsCalendarOpen(false);
     }
   };
@@ -206,7 +210,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       const fromStart = startOfYear(dateRange.from);
       const toEnd = endOfYear(dateRange.to);
       if (dateRange.from.getTime() === fromStart.getTime() && 
-          (dateRange.to.getTime() === toEnd.getTime() || dateRange.to.toDateString() === new Date().toDateString())) {
+          (dateRange.to.getTime() === toEnd.getTime() || dateRange.to.toDateString() === getTodayLeadFeedSelectionDate().toDateString())) {
         return format(dateRange.from, 'yyyy');
       }
       const monthStart = startOfMonth(dateRange.from);
@@ -354,9 +358,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Quick date buttons */}
         <div className="flex items-center gap-0.5">
           <Button
-            variant={dateRange?.from && dateRange?.to && 
-              dateRange.from.toDateString() === startOfDay(new Date()).toDateString() && 
-              dateRange.to.toDateString() === endOfDay(new Date()).toDateString() ? "default" : "ghost"}
+            variant={isTodayLeadFeedRange(dateRange) ? "default" : "ghost"}
             size="sm"
             onClick={() => handleQuickFilter(0)}
             className="h-7 px-2.5 text-[11px] font-medium rounded-md"
@@ -364,9 +366,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             Today
           </Button>
           <Button
-            variant={dateRange?.from && dateRange?.to && 
-              dateRange.from.toDateString() === startOfDay(subDays(new Date(), 1)).toDateString() && 
-              dateRange.to.toDateString() === endOfDay(subDays(new Date(), 1)).toDateString() ? "default" : "ghost"}
+            variant={isYesterdayLeadFeedRange(dateRange) ? "default" : "ghost"}
             size="sm"
             onClick={() => handleQuickFilter(1, true)}
             className="h-7 px-2.5 text-[11px] font-medium rounded-md"
@@ -455,7 +455,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             variant="ghost" size="sm"
             onClick={() => handleDayNav('next')}
             className="h-7 w-7 p-0 rounded-md"
-            disabled={dateRange?.from && startOfDay(dateRange.from) >= startOfDay(new Date())}
+            disabled={dateRange?.from && dateRange.from >= getTodayLeadFeedSelectionDate()}
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>

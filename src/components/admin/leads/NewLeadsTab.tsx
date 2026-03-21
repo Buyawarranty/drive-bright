@@ -26,6 +26,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
 interface LeadForQuote {
@@ -111,8 +112,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
+    from: getTodayLeadFeedSelectionDate(),
+    to: getTodayLeadFeedSelectionDate(),
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
@@ -194,23 +195,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     // Apply date range filter — but skip it when actively searching so leads are always findable
     if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => {
-        const leadDate = new Date(lead.created_at);
-
-        if (dateRange.from) {
-          const fromStart = new Date(dateRange.from);
-          fromStart.setHours(0, 0, 0, 0);
-          if (leadDate < fromStart) return false;
-        }
-
-        if (dateRange.to) {
-          const toEnd = new Date(dateRange.to);
-          toEnd.setHours(23, 59, 59, 999);
-          if (leadDate > toEnd) return false;
-        }
-
-        return true;
-      });
+      result = result.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
     }
 
     // Apply search filter
@@ -260,20 +245,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Date-filter the raw source-of-truth dataset for accurate counts.
   const dateFilteredLeadsForCounts = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return leads;
-    return leads.filter(lead => {
-      const leadDate = new Date(lead.created_at);
-      if (dateRange.from) {
-        const fromStart = new Date(dateRange.from);
-        fromStart.setHours(0, 0, 0, 0);
-        if (leadDate < fromStart) return false;
-      }
-      if (dateRange.to) {
-        const toEnd = new Date(dateRange.to);
-        toEnd.setHours(23, 59, 59, 999);
-        if (leadDate > toEnd) return false;
-      }
-      return true;
-    });
+    return leads.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
   }, [leads, dateRange]);
 
   const dateAndStatusFilteredLeads = useMemo(
