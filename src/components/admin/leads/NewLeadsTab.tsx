@@ -195,23 +195,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     // Apply date range filter — but skip it when actively searching so leads are always findable
     if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => {
-        const leadDate = new Date(lead.created_at);
-
-        if (dateRange.from) {
-          const fromStart = new Date(dateRange.from);
-          fromStart.setHours(0, 0, 0, 0);
-          if (leadDate < fromStart) return false;
-        }
-
-        if (dateRange.to) {
-          const toEnd = new Date(dateRange.to);
-          toEnd.setHours(23, 59, 59, 999);
-          if (leadDate > toEnd) return false;
-        }
-
-        return true;
-      });
+      result = result.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
     }
 
     // Apply search filter
