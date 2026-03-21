@@ -391,7 +391,10 @@ export const useLeads = () => {
         };
       });
 
-      const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
+      // SOURCE OF TRUTH: Only sales_leads count as leads.
+      // Orphaned abandoned_carts are recovered via LostLeadsSection / recover_orphaned_leads RPC.
+      // Mixing carts into this array caused unstable lead counts due to fragile dedup logic.
+      const allLeads = [...salesLeadsWithFlags]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       const emailCounts: Record<string, number> = {};
