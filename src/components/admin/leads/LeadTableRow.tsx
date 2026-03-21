@@ -359,27 +359,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     );
                   })()
                 ) : (
-                  // Unassigned state - Check if this is a callback request lead
-                  (() => {
-                    // Check cart_metadata for callback request indicators
-                    const metadata = lead.cart_metadata as { request_type?: string; source?: string } | null;
-                    const isCallbackRequest = metadata?.request_type === 'urgent_callback' || 
-                                              metadata?.source === 'homepage_callback' ||
-                                              metadata?.source === 'navigation_callback' ||
-                                              metadata?.source === 'step3_price_help';
-                    
-                    return isCallbackRequest ? (
-                      <>
-                        <Phone className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="font-semibold">Call back</span>
-                      </>
-                    ) : (
-                      <>
-                        <User className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="font-semibold">Assign lead</span>
-                      </>
-                    );
-                  })()
+                  <>
+                    <Globe className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span>Website</span>
+                  </>
                 )}
               </div>
             </SelectTrigger>
