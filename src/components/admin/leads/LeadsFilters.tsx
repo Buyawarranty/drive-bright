@@ -182,7 +182,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   const handleMonthSelect = (monthIndex: number) => {
     if (onDateRangeChange) {
-      const date = subMonths(new Date(), monthIndex);
+      const date = subMonths(getTodayLeadFeedSelectionDate(), monthIndex);
       onDateRangeChange({ from: startOfMonth(date), to: endOfMonth(date) });
       setIsCalendarOpen(false);
     }
@@ -191,8 +191,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   const handleYearSelect = (year: number) => {
     if (onDateRangeChange) {
       const yearDate = new Date(year, 0, 1);
-      const isCurrentYear = year === new Date().getFullYear();
-      onDateRangeChange({ from: startOfYear(yearDate), to: isCurrentYear ? endOfDay(new Date()) : endOfYear(yearDate) });
+      const isCurrentYear = year === getTodayLeadFeedSelectionDate().getFullYear();
+      onDateRangeChange({ from: startOfYear(yearDate), to: isCurrentYear ? getTodayLeadFeedSelectionDate() : endOfYear(yearDate) });
       setIsCalendarOpen(false);
     }
   };
