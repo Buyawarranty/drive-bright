@@ -358,9 +358,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Quick date buttons */}
         <div className="flex items-center gap-0.5">
           <Button
-            variant={dateRange?.from && dateRange?.to && 
-              dateRange.from.toDateString() === startOfDay(new Date()).toDateString() && 
-              dateRange.to.toDateString() === endOfDay(new Date()).toDateString() ? "default" : "ghost"}
+            variant={isTodayLeadFeedRange(dateRange) ? "default" : "ghost"}
             size="sm"
             onClick={() => handleQuickFilter(0)}
             className="h-7 px-2.5 text-[11px] font-medium rounded-md"
@@ -368,9 +366,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             Today
           </Button>
           <Button
-            variant={dateRange?.from && dateRange?.to && 
-              dateRange.from.toDateString() === startOfDay(subDays(new Date(), 1)).toDateString() && 
-              dateRange.to.toDateString() === endOfDay(subDays(new Date(), 1)).toDateString() ? "default" : "ghost"}
+            variant={isYesterdayLeadFeedRange(dateRange) ? "default" : "ghost"}
             size="sm"
             onClick={() => handleQuickFilter(1, true)}
             className="h-7 px-2.5 text-[11px] font-medium rounded-md"
