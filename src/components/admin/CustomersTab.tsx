@@ -4410,9 +4410,12 @@ Please log in and change your password after first login.`;
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
-                      <Badge variant="outline" className={customer.bumper_order_id ? 'bg-purple-50 text-purple-700 border-purple-200 text-[10px]' : 'bg-blue-50 text-blue-700 border-blue-200 text-[10px]'}>
-                        {customer.bumper_order_id ? 'Bumper' : 'Stripe'}
-                      </Badge>
+                      <PurchaseSourceBadge 
+                        source={customer.purchase_source} 
+                        bumperOrderId={customer.bumper_order_id}
+                        stripeSessionId={customer.stripe_session_id}
+                        className="text-[10px]"
+                      />
                       {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && customer.final_amount ? (
                         <span className="text-xs font-semibold text-foreground">£{Number(customer.final_amount).toFixed(2)}</span>
                       ) : null}
