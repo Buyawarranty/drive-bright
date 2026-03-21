@@ -659,11 +659,11 @@ export const CustomersTab = () => {
                            customer.warranty_number || '';
         
         if (filterBySource === 'website') {
-          // BAW- prefix (but NOT BAW-S-) = website sale
-          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
+          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
         } else if (filterBySource === 'staff_purchase') {
-          // BAW-S- prefix = staff assigned purchase
-          return warrantyNum.startsWith('BAW-S-');
+          // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
+          return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
         } else if (filterBySource === 'quote_order') {
           // ADM- prefix = sales team confirmed / manual entry
           return warrantyNum.startsWith('ADM');
