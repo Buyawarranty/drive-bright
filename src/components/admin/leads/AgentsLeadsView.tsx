@@ -1379,6 +1379,31 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 </span>
               </div>
             )}
+
+            {(isFullAdmin || isSalesLead) && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Agents Own Leads Only</span>
+                <Switch
+                  checked={agentsOwnLeadsOnly === true}
+                  onCheckedChange={async (checked) => {
+                    const success = await updateAgentsOwnLeadsOnly(checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Restricted to own leads' : 'All leads visible',
+                        description: checked
+                          ? 'All sales agents can now only see their own assigned leads.'
+                          : 'Sales agents can see all leads (unless restricted individually).',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  {agentsOwnLeadsOnly === true ? 'Own leads only' : 'Per-user setting'}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
+                </span>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
