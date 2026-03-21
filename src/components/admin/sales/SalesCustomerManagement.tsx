@@ -296,6 +296,21 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         .update({ assigned_to: assignedTo })
         .eq('id', customerId);
       if (error) throw error;
+
+      // Reverse sync: update matching sales_leads record by email
+      const customer = customers.find(c => c.id === customerId);
+      if (customer?.email) {
+        const cleanEmail = customer.email.toLowerCase().trim();
+        await supabase
+          .from('sales_leads')
+          .update({ 
+            assigned_to: assignedTo, 
+            assigned_at: assignedTo ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString() 
+          })
+          .eq('email', cleanEmail);
+      }
+
       setCustomers(prev => prev.map(c => c.id === customerId ? { ...c, assigned_to: assignedTo } : c));
       toast.success('Customer assigned successfully');
     } catch (error: any) {

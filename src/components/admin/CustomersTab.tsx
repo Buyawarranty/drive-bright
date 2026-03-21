@@ -1603,7 +1603,19 @@ export const CustomersTab = () => {
         throw error;
       }
 
+      // Reverse sync: update matching sales_leads record by email
       const customer = customers.find(c => c.id === customerId);
+      if (customer?.email) {
+        const cleanEmail = customer.email.toLowerCase().trim();
+        await supabase
+          .from('sales_leads')
+          .update({ 
+            assigned_to: agentId, 
+            assigned_at: agentId ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString() 
+          })
+          .eq('email', cleanEmail);
+      }
       const policyWarrantyNum = customer?.customer_policies?.[0]?.warranty_number || '';
       const policyId = customer?.customer_policies?.[0]?.id;
 
