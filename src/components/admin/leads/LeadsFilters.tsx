@@ -129,7 +129,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   }, []);
 
   const yearOptions = useMemo(() => {
-    const currentYear = new Date().getFullYear();
+    const currentYear = getTodayLeadFeedSelectionDate().getFullYear();
     const options = [];
     for (let i = 0; i <= 5; i++) {
       const year = currentYear - i;
@@ -138,7 +138,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         label: year.toString(),
         value: `year_${year}`,
         from: startOfYear(yearDate),
-        to: i === 0 ? endOfDay(new Date()) : endOfYear(yearDate)
+        to: i === 0 ? getTodayLeadFeedSelectionDate() : endOfYear(yearDate)
       });
     }
     return options;
