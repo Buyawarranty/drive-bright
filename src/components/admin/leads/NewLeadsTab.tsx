@@ -245,20 +245,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Date-filter the raw source-of-truth dataset for accurate counts.
   const dateFilteredLeadsForCounts = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return leads;
-    return leads.filter(lead => {
-      const leadDate = new Date(lead.created_at);
-      if (dateRange.from) {
-        const fromStart = new Date(dateRange.from);
-        fromStart.setHours(0, 0, 0, 0);
-        if (leadDate < fromStart) return false;
-      }
-      if (dateRange.to) {
-        const toEnd = new Date(dateRange.to);
-        toEnd.setHours(23, 59, 59, 999);
-        if (leadDate > toEnd) return false;
-      }
-      return true;
-    });
+    return leads.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
   }, [leads, dateRange]);
 
   const dateAndStatusFilteredLeads = useMemo(

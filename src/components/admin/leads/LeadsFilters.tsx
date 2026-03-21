@@ -455,7 +455,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             variant="ghost" size="sm"
             onClick={() => handleDayNav('next')}
             className="h-7 w-7 p-0 rounded-md"
-            disabled={dateRange?.from && startOfDay(dateRange.from) >= startOfDay(new Date())}
+            disabled={dateRange?.from && dateRange.from >= getTodayLeadFeedSelectionDate()}
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
