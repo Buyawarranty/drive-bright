@@ -153,10 +153,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   const handleQuickFilter = (days: number, exactDay = false) => {
     if (onDateRangeChange) {
       if (exactDay) {
-        const targetDay = subDays(new Date(), days);
-        onDateRangeChange({ from: startOfDay(targetDay), to: endOfDay(targetDay) });
+        const targetDay = shiftLeadFeedSelectionDate(getTodayLeadFeedSelectionDate(), -days);
+        onDateRangeChange({ from: targetDay, to: targetDay });
       } else {
-        onDateRangeChange({ from: startOfDay(subDays(new Date(), days)), to: endOfDay(new Date()) });
+        const today = getTodayLeadFeedSelectionDate();
+        const fromDay = shiftLeadFeedSelectionDate(today, -days);
+        onDateRangeChange({ from: fromDay, to: today });
       }
       setIsCalendarOpen(false);
     }
@@ -164,15 +166,16 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   const handleDayNav = (direction: 'prev' | 'next') => {
     if (!onDateRangeChange) return;
-    const baseDate = dateRange?.from ?? new Date();
-    const newDate = direction === 'prev' ? subDays(baseDate, 1) : addDays(baseDate, 1);
-    if (startOfDay(newDate) > startOfDay(new Date())) return;
-    onDateRangeChange({ from: startOfDay(newDate), to: endOfDay(newDate) });
+    const baseDate = dateRange?.from ?? getTodayLeadFeedSelectionDate();
+    const newDate = shiftLeadFeedSelectionDate(baseDate, direction === 'prev' ? -1 : 1);
+    const today = getTodayLeadFeedSelectionDate();
+    if (newDate > today) return;
+    onDateRangeChange({ from: newDate, to: newDate });
   };
 
   const handleAllTime = () => {
     if (onDateRangeChange) {
-      onDateRangeChange({ from: new Date(2020, 0, 1), to: endOfDay(new Date()) });
+      onDateRangeChange({ from: new Date(2020, 0, 1), to: getTodayLeadFeedSelectionDate() });
       setIsCalendarOpen(false);
     }
   };
