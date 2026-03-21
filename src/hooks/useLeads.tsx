@@ -391,7 +391,10 @@ export const useLeads = () => {
         };
       });
 
-      const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
+      // SOURCE OF TRUTH: Only sales_leads count as leads.
+      // Orphaned abandoned_carts are recovered via LostLeadsSection / recover_orphaned_leads RPC.
+      // Mixing carts into this array caused unstable lead counts due to fragile dedup logic.
+      const allLeads = [...salesLeadsWithFlags]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       const emailCounts: Record<string, number> = {};
@@ -407,9 +410,7 @@ export const useLeads = () => {
         application_count: emailCounts[lead.email?.toLowerCase()] || 1,
       }));
 
-      const salesLeadIds = leadsWithCounts
-        .filter((lead: any) => !lead.is_from_abandoned_cart)
-        .map((lead: any) => lead.id);
+      const salesLeadIds = leadsWithCounts.map((lead: any) => lead.id);
 
       let tagsByLeadId: Record<string, any[]> = {};
 
@@ -448,7 +449,7 @@ export const useLeads = () => {
 
       const leadsWithTags = leadsWithCounts.map((lead: any) => ({
         ...lead,
-        tags: lead.is_from_abandoned_cart ? [] : (tagsByLeadId[lead.id] || []),
+        tags: tagsByLeadId[lead.id] || [],
       }));
 
       if (recentOptimisticUpdatesRef.current.size > 0) {
