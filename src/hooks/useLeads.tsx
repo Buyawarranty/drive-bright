@@ -410,9 +410,7 @@ export const useLeads = () => {
         application_count: emailCounts[lead.email?.toLowerCase()] || 1,
       }));
 
-      const salesLeadIds = leadsWithCounts
-        .filter((lead: any) => !lead.is_from_abandoned_cart)
-        .map((lead: any) => lead.id);
+      const salesLeadIds = leadsWithCounts.map((lead: any) => lead.id);
 
       let tagsByLeadId: Record<string, any[]> = {};
 
