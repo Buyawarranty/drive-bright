@@ -449,7 +449,7 @@ export const useLeads = () => {
 
       const leadsWithTags = leadsWithCounts.map((lead: any) => ({
         ...lead,
-        tags: lead.is_from_abandoned_cart ? [] : (tagsByLeadId[lead.id] || []),
+        tags: tagsByLeadId[lead.id] || [],
       }));
 
       if (recentOptimisticUpdatesRef.current.size > 0) {
