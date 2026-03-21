@@ -210,7 +210,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       const fromStart = startOfYear(dateRange.from);
       const toEnd = endOfYear(dateRange.to);
       if (dateRange.from.getTime() === fromStart.getTime() && 
-          (dateRange.to.getTime() === toEnd.getTime() || dateRange.to.toDateString() === new Date().toDateString())) {
+          (dateRange.to.getTime() === toEnd.getTime() || dateRange.to.toDateString() === getTodayLeadFeedSelectionDate().toDateString())) {
         return format(dateRange.from, 'yyyy');
       }
       const monthStart = startOfMonth(dateRange.from);
