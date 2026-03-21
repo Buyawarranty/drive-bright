@@ -79,6 +79,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Admin-controlled toggle: whether sales agents can self-assign (claim) leads
   const { value: allowAgentSelfAssign, updateConfig: updateAllowSelfAssign } = useAdminConfig('allow_agent_self_assign');
   
+  // Admin-controlled toggle: force all agents to only see their own leads
+  const { value: agentsOwnLeadsOnly, updateConfig: updateAgentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
+  
   // Sales leads can see distribution settings only if admin has granted access
   // Default to true if config not set (backwards compatible)
   const canSeeDistributionSettings = isFullAdmin || (isSalesLead && salesLeadDistributionAccess !== false);
