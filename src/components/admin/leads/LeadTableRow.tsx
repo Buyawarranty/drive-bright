@@ -367,6 +367,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
+              <SelectItem value="website" className="text-slate-600">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>Website</span>
+                </div>
+              </SelectItem>
               <SelectItem value="unassigned" className="text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <X className="h-3.5 w-3.5" />
