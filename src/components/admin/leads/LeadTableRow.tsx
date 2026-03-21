@@ -18,7 +18,7 @@ import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, AlertTriangle, FileText, StickyNote,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -310,12 +310,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Assigned To - Shows "Assign now" for unassigned leads */}
       {!hideAssignedColumn && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
-          value={lead.assigned_to || 'unassigned'}
+          value={lead.assigned_to || 'website'}
           onValueChange={(value) => {
             if (value === 'auto') {
               onAutoAssign();
             } else {
-              onAssign(value === 'unassigned' ? null : value);
+              onAssign(value === 'unassigned' || value === 'website' ? null : value);
             }
           }}
           disabled={!canAssignLeads}
@@ -324,7 +324,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
                 !lead.assigned_to 
-                  ? "border-2 border-dashed border-blue-500 bg-blue-50 text-blue-700 hover:border-blue-600 hover:bg-blue-100 animate-pulse" 
+                  ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
                   : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
               )}
             >
@@ -359,31 +359,20 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     );
                   })()
                 ) : (
-                  // Unassigned state - Check if this is a callback request lead
-                  (() => {
-                    // Check cart_metadata for callback request indicators
-                    const metadata = lead.cart_metadata as { request_type?: string; source?: string } | null;
-                    const isCallbackRequest = metadata?.request_type === 'urgent_callback' || 
-                                              metadata?.source === 'homepage_callback' ||
-                                              metadata?.source === 'navigation_callback' ||
-                                              metadata?.source === 'step3_price_help';
-                    
-                    return isCallbackRequest ? (
-                      <>
-                        <Phone className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="font-semibold">Call back</span>
-                      </>
-                    ) : (
-                      <>
-                        <User className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="font-semibold">Assign lead</span>
-                      </>
-                    );
-                  })()
+                  <>
+                    <Globe className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span>Website</span>
+                  </>
                 )}
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
+              <SelectItem value="website" className="text-slate-600">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>Website</span>
+                </div>
+              </SelectItem>
               <SelectItem value="unassigned" className="text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <X className="h-3.5 w-3.5" />
