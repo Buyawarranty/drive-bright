@@ -73,7 +73,7 @@ const GRANULAR_PERMISSIONS = {
     { key: 'assign', label: 'Assign Leads', description: 'Can assign or reassign leads to agents' },
     { key: 'export', label: 'Export', description: 'Can export lead data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete lead records' },
-    { key: 'all-leads', label: 'All Leads', description: 'Can view the All Leads section' },
+    { key: 'all-leads', label: 'See All Leads', description: 'Can see all leads (OFF = only their own assigned leads)' },
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },
   ],
