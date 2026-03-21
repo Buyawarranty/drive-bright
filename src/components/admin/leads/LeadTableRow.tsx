@@ -324,7 +324,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
                 !lead.assigned_to 
-                  ? "border-2 border-dashed border-blue-500 bg-blue-50 text-blue-700 hover:border-blue-600 hover:bg-blue-100 animate-pulse" 
+                  ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
                   : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
               )}
             >
