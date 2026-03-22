@@ -397,7 +397,9 @@ serve(async (req) => {
       // Google Ads attribution tracking
       gclid: trackingData?.gclid || metadata?.gclid || null,
       ga_client_id: trackingData?.clientId || metadata?.ga_client_id || null,
-      purchase_source: (trackingData?.gclid || metadata?.gclid) ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : 'website'))
+      purchase_source: (trackingData?.gclid || metadata?.gclid) ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : 'website')),
+      // Default all website sales to support@buyawarranty.co.uk
+      assigned_to: 'e39499b8-f88c-4963-9f0d-63e1addb3025'
     };
 
     // Detect Facebook Ads attribution from abandoned cart metadata
