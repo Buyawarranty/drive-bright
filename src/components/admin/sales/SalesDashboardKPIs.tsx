@@ -19,6 +19,7 @@ interface SalesDashboardKPIsProps {
     total: number;
     revenue: number;
     cancelled: number;
+    monthlyCount?: number;
   };
 }
 
