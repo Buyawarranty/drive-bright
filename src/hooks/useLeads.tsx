@@ -58,6 +58,8 @@ export interface Lead {
   is_from_abandoned_cart: boolean;
   // Call tracking
   call_count: number;
+  // Callback flag
+  is_callback: boolean;
   // Cart metadata for plan selections
   cart_metadata: {
     claim_limit?: number;
