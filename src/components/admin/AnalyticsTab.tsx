@@ -250,9 +250,9 @@ export const AnalyticsTab = () => {
         const warrantyNum = customer.warranty_reference_number || '';
         
         if (sourceFilter === 'website') {
-          // Website sales: BAW- prefix (not BAW-S-) OR legacy: not manual AND purchase_source is website/stripe/bumper/google_ads or empty
+          // Website sales: BAW- prefix (not BAW-S-) OR legacy: not manual AND purchase_source is website/stripe/bumper/bumper_portal/google_ads/facebook_ads or empty
           const isBawS = warrantyNum.startsWith('BAW-S-');
-          const isWebsite = !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
+          const isWebsite = !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '');
           if (!isWebsite) return false;
         } else if (sourceFilter === 'staff_purchase') {
           // Staff purchase: BAW-S- prefix (assigned by staff from website purchase)
