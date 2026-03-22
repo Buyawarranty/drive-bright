@@ -281,7 +281,7 @@ export const AnalyticsTab = () => {
     const warrantyNum = customer.warranty_reference_number || '';
     if (warrantyNum.startsWith('BAW-S-')) return 'staff_purchase';
     if (isManual || source === 'quote_link' || source === 'external' || source === 'admin_external') return 'sales_team';
-    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === 'payment_assist' || source === '') return 'website';
+    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '') return 'website';
     return 'unknown';
   };
 
