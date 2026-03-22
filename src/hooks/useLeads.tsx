@@ -4,6 +4,7 @@ import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { toast } from 'sonner';
 import { addSystemNote } from '@/utils/leadSystemNotes';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -716,7 +717,7 @@ export const useLeads = () => {
         if (freshError) throw freshError;
 
         const currentlyAssigned = freshLead?.[field];
-        if (currentlyAssigned && currentlyAssigned !== userId) {
+        if (currentlyAssigned && currentlyAssigned !== userId && currentlyAssigned !== WEBSITE_SALES_ACCOUNT_ID) {
           // Someone else already grabbed this lead — refresh the list and warn
           toast.error('This lead has already been assigned to another agent. Refreshing list...');
           fetchLeadsRef.current();
