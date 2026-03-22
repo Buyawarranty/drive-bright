@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { startOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
