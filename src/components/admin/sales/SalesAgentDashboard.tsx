@@ -207,6 +207,47 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
             trustpilotReviews={0} // TODO: Connect to actual Trustpilot review count
           />
 
+          {/* My Callbacks */}
+          {myCallbacks.length > 0 && (
+            <Card className="border-teal-200 bg-teal-50/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-teal-700">
+                  <Phone className="h-5 w-5" />
+                  My Callbacks ({myCallbacks.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {myCallbacks.slice(0, 5).map((lead) => (
+                    <div 
+                      key={lead.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border"
+                    >
+                      <div>
+                        <div className="font-medium">
+                          {lead.first_name || lead.email.split('@')[0]} {lead.last_name || ''}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {lead.phone || 'No phone'} • {lead.status}
+                        </div>
+                      </div>
+                      <Badge className="bg-teal-100 text-teal-800 border-teal-300">Callback</Badge>
+                    </div>
+                  ))}
+                  {myCallbacks.length > 5 && (
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-sm"
+                      onClick={() => setActiveTab('leads')}
+                    >
+                      View all {myCallbacks.length} callbacks →
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Today's Follow-ups */}
           {todayFollowUps.length > 0 && (
             <Card className="border-orange-200 bg-orange-50/30">
