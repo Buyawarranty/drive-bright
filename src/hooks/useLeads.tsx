@@ -788,9 +788,10 @@ export const useLeads = () => {
       }
 
       toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error assigning lead:', error);
-      toast.error('Failed to assign lead. Please try again.');
+      const errorMsg = error?.message || error?.details || 'Unknown error';
+      toast.error(`Failed to assign lead: ${errorMsg}`);
       // Revert to full previous state snapshot
       if (previousLeadSnapshot) {
         const snapshot = previousLeadSnapshot;
