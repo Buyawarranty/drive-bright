@@ -791,7 +791,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                     {/* Assigned To */}
                     <TableCell>
                       <Select
-                        value={customer.assigned_to || 'unassigned'}
+                        value={customer.assigned_to || WEBSITE_SALES_ACCOUNT_ID}
                         onValueChange={(val) => handleAssignCustomer(customer.id, val === 'unassigned' ? null : val)}
                       >
                         <SelectTrigger className="h-7 text-xs w-[130px]">
@@ -799,7 +799,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="unassigned">Unassigned</SelectItem>
-                          <SelectItem value="website">Website</SelectItem>
+                          <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
                           {salesUsers.map(u => (
                             <SelectItem key={u.id} value={u.id}>
                               {u.first_name || ''} {u.last_name || u.email}
