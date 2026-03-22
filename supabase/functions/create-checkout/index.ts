@@ -88,45 +88,76 @@ serve(async (req) => {
 
     logStep("Using customer email", { email: customerEmail, source: customerData?.email ? 'form' : (user?.email ? 'auth' : 'guest') });
 
-    // Use final amount if provided, otherwise calculate from pricing table
-    let totalAmount = finalAmount;
-    
-    if (!totalAmount) {
-      // Fallback to pricing calculation if finalAmount not provided
-      const pricingTable = {
-        yearly: {
-          0: { basic: 372, gold: 408, platinum: 437 },
-          50: { basic: 348, gold: 372, platinum: 384 },
-          100: { basic: 300, gold: 324, platinum: 348 },
-          150: { basic: 276, gold: 312, platinum: 324 },
-          200: { basic: 240, gold: 276, platinum: 300 }
-        },
-        two_yearly: {
-          0: { basic: 670, gold: 734, platinum: 786 },
-          50: { basic: 626, gold: 670, platinum: 691 },
-          100: { basic: 540, gold: 583, platinum: 626 },
-          150: { basic: 497, gold: 562, platinum: 583 },
-          200: { basic: 456, gold: 528, platinum: 552 }
-        },
-        three_yearly: {
-          0: { basic: 982, gold: 1077, platinum: 1153 },
-          50: { basic: 919, gold: 982, platinum: 1014 },
-          100: { basic: 792, gold: 855, platinum: 919 },
-          150: { basic: 729, gold: 824, platinum: 855 },
-          200: { basic: 672, gold: 792, platinum: 828 }
-        }
-      };
+    // SERVER-SIDE PRICING: Always calculate the expected price server-side
+    const pricingTable = {
+      yearly: {
+        0: { basic: 372, gold: 408, platinum: 437 },
+        50: { basic: 348, gold: 372, platinum: 384 },
+        100: { basic: 300, gold: 324, platinum: 348 },
+        150: { basic: 276, gold: 312, platinum: 324 },
+        200: { basic: 240, gold: 276, platinum: 300 }
+      },
+      two_yearly: {
+        0: { basic: 670, gold: 734, platinum: 786 },
+        50: { basic: 626, gold: 670, platinum: 691 },
+        100: { basic: 540, gold: 583, platinum: 626 },
+        150: { basic: 497, gold: 562, platinum: 583 },
+        200: { basic: 456, gold: 528, platinum: 552 }
+      },
+      three_yearly: {
+        0: { basic: 982, gold: 1077, platinum: 1153 },
+        50: { basic: 919, gold: 982, platinum: 1014 },
+        100: { basic: 792, gold: 855, platinum: 919 },
+        150: { basic: 729, gold: 824, platinum: 855 },
+        200: { basic: 672, gold: 792, platinum: 828 }
+      }
+    };
 
-      // Get pricing data
-      const periodData = pricingTable[paymentType as keyof typeof pricingTable] || pricingTable.yearly;
-      const excessData = periodData[voluntaryExcess as keyof typeof periodData] || periodData[0];
-      const baseAmount = excessData[planType as keyof typeof excessData] || excessData.basic;
-      
-      // Apply 5% discount for upfront Stripe payments (already applied in frontend)
-      totalAmount = baseAmount;
+    // Calculate the server-side expected base price
+    const periodData = pricingTable[paymentType as keyof typeof pricingTable] || pricingTable.yearly;
+    const excessData = periodData[voluntaryExcess as keyof typeof periodData] || periodData[0];
+    const serverBasePrice = excessData[planType as keyof typeof excessData] || excessData.basic;
+
+    // Set minimum allowed price: the base price minus maximum possible discounts
+    // Allow up to 30% discount (covers 5% Stripe discount + discount codes + add-on adjustments)
+    const minimumAllowedPrice = Math.floor(serverBasePrice * 0.50);
+    // Absolute floor: no warranty can be less than £50
+    const absoluteMinimumPrice = 50;
+
+    let totalAmount = finalAmount || serverBasePrice;
+
+    // CRITICAL: Server-side price validation to prevent manipulation
+    if (totalAmount < absoluteMinimumPrice) {
+      logStep("PRICE MANIPULATION DETECTED", { 
+        submittedAmount: totalAmount, 
+        serverBasePrice, 
+        minimumAllowed: absoluteMinimumPrice,
+        customerEmail,
+        planType,
+        paymentType
+      });
+      return new Response(
+        JSON.stringify({ error: `Invalid price detected. The minimum price for this plan is £${absoluteMinimumPrice}. Please try again or contact support.` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    logStep("Using total amount", { totalAmount, source: finalAmount ? 'provided' : 'calculated' });
+    if (totalAmount < minimumAllowedPrice) {
+      logStep("SUSPICIOUS PRICE - below expected range", { 
+        submittedAmount: totalAmount, 
+        serverBasePrice, 
+        minimumAllowed: minimumAllowedPrice,
+        customerEmail,
+        planType,
+        paymentType
+      });
+      return new Response(
+        JSON.stringify({ error: `The submitted price (£${totalAmount}) is significantly below the expected price (£${serverBasePrice}). Please refresh the page and try again.` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    logStep("Price validation passed", { totalAmount, serverBasePrice, minimumAllowed: minimumAllowedPrice });
     
     // Convert to pence for Stripe
     const amount = totalAmount * 100;
