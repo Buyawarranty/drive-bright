@@ -7,7 +7,7 @@ import { SentQuote } from '@/hooks/useLeadQuotes';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -388,7 +388,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   <span>Auto-assign (next available)</span>
                 </div>
               </SelectItem>
-              <div className="h-px bg-border my-1" />
+              <SelectSeparator />
               {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map((user, idx) => {
                 const AGENT_COLOR_MAP: Record<string, string> = {
                   'isobel': 'bg-emerald-600',
@@ -688,7 +688,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.lead.tags?.length === nextProps.lead.tags?.length &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.isExpanded === nextProps.isExpanded &&
-    prevProps.hideAssignedColumn === nextProps.hideAssignedColumn
+    prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
+    prevProps.canAssignLeads === nextProps.canAssignLeads &&
+    prevProps.salesUsers.length === nextProps.salesUsers.length
   );
 });
 
