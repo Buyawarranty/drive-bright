@@ -359,6 +359,7 @@ export const useLeads = () => {
             payment_date: null,
             step_two_completed_at: null,
             call_count: cart.call_count || 0,
+            is_callback: !!(cart.cart_metadata?.request_type === 'urgent_callback'),
             cart_metadata: cart.cart_metadata || null,
             assigned_user: assignedAdminUser ? {
               id: assignedAdminUser.id,
