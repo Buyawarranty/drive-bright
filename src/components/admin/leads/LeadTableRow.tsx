@@ -389,7 +389,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </div>
               </SelectItem>
               <div className="h-px bg-border my-1" />
-              {salesUsers.map((user, idx) => {
+              {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map((user, idx) => {
                 const AGENT_COLOR_MAP: Record<string, string> = {
                   'isobel': 'bg-emerald-600',
                   'james': 'bg-blue-600',
