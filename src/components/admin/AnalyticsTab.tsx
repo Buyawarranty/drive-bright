@@ -505,7 +505,7 @@ export const AnalyticsTab = () => {
       const warrantyNum = customer.warranty_reference_number || '';
       if (sourceFilter === 'website') {
         const isBawS = warrantyNum.startsWith('BAW-S-');
-        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
+        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '');
       } else if (sourceFilter === 'staff_purchase') {
         return warrantyNum.startsWith('BAW-S-');
       } else if (sourceFilter === 'sales_team') {
