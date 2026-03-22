@@ -314,8 +314,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           onValueChange={(value) => {
             if (value === 'auto') {
               onAutoAssign();
+            } else if (value === 'unassigned') {
+              onAssign(null);
             } else {
-              onAssign(value === 'unassigned' || value === 'website' ? null : value);
+              onAssign(value);
             }
           }}
           disabled={!canAssignLeads}
