@@ -281,8 +281,16 @@ export const AnalyticsTab = () => {
     const warrantyNum = customer.warranty_reference_number || '';
     if (warrantyNum.startsWith('BAW-S-')) return 'staff_purchase';
     if (isManual || source === 'quote_link' || source === 'external' || source === 'admin_external') return 'sales_team';
-    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '') return 'website';
+    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === 'payment_assist' || source === '') return 'website';
     return 'unknown';
+  };
+
+  // Sub-categorize website sales by ad channel
+  const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'pure' => {
+    const source = customer.purchase_source?.toLowerCase() || '';
+    if (source === 'google_ads') return 'google';
+    if (source === 'facebook_ads') return 'facebook';
+    return 'pure';
   };
 
   // Calculate metrics with safe defaults - EXCLUDING cancelled/refunded from revenue
