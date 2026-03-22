@@ -81,12 +81,20 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       
       const newLeads = leadsData.filter(l => l.status === 'new').length;
       const contactedLeads = leadsData.filter(l => l.status === 'contacted').length;
-      // Use is_paid for converted/revenue calculations
-      const convertedLeads = leadsData.filter(l => l.is_paid === true).length;
       const lostLeads = leadsData.filter(l => l.status === 'lost').length;
-      const totalRevenue = leadsData
-        .filter(l => l.is_paid === true)
-        .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
+
+      // Use customers table for real deal/revenue data (source of truth)
+      const { data: customerDeals } = await supabase
+        .from('customers')
+        .select('id, final_amount, status')
+        .eq('assigned_to', adminUserId)
+        .eq('is_deleted', false);
+
+      const activeDeals = (customerDeals || []).filter(c => 
+        !['cancelled', 'refunded'].includes((c.status || '').toLowerCase())
+      );
+      const convertedLeads = activeDeals.length;
+      const totalRevenue = activeDeals.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
       // Total calls made
       const totalCalls = leadsData.reduce((sum, l) => sum + (l.call_count || 0), 0);
