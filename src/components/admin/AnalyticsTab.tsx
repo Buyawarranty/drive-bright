@@ -334,21 +334,27 @@ export const AnalyticsTab = () => {
       Number(c.final_amount) > 0 &&
       !isRevenueLost(c.status)
     );
+
+    // Website channel breakdown
+    const googleCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'google');
+    const facebookCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'facebook');
+    const pureWebsiteCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'pure');
     
-    const websiteRevenue = websiteCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
-    const salesTeamRevenue = salesTeamCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const calcStats = (custs: Customer[]) => {
+      const revenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+      return {
+        count: custs.length,
+        revenue,
+        aov: custs.length > 0 ? Math.round(revenue / custs.length) : 0
+      };
+    };
     
     return {
-      website: {
-        count: websiteCustomers.length,
-        revenue: websiteRevenue,
-        aov: websiteCustomers.length > 0 ? Math.round(websiteRevenue / websiteCustomers.length) : 0
-      },
-      salesTeam: {
-        count: salesTeamCustomers.length,
-        revenue: salesTeamRevenue,
-        aov: salesTeamCustomers.length > 0 ? Math.round(salesTeamRevenue / salesTeamCustomers.length) : 0
-      }
+      website: calcStats(websiteCustomers),
+      salesTeam: calcStats(salesTeamCustomers),
+      google: calcStats(googleCustomers),
+      facebook: calcStats(facebookCustomers),
+      pureWebsite: calcStats(pureWebsiteCustomers),
     };
   }, [customers, effectiveDateRange]);
 
