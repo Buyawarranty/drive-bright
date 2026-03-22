@@ -4366,6 +4366,7 @@ export type Database = {
           first_name: string | null
           follow_up_status: string | null
           id: string
+          is_callback: boolean | null
           is_paid: boolean | null
           last_activity_date: string | null
           last_contacted_at: string | null
@@ -4408,6 +4409,7 @@ export type Database = {
           first_name?: string | null
           follow_up_status?: string | null
           id?: string
+          is_callback?: boolean | null
           is_paid?: boolean | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
@@ -4450,6 +4452,7 @@ export type Database = {
           first_name?: string | null
           follow_up_status?: string | null
           id?: string
+          is_callback?: boolean | null
           is_paid?: boolean | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
