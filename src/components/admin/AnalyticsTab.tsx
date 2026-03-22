@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
-import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
@@ -250,9 +250,9 @@ export const AnalyticsTab = () => {
         const warrantyNum = customer.warranty_reference_number || '';
         
         if (sourceFilter === 'website') {
-          // Website sales: BAW- prefix (not BAW-S-) OR legacy: not manual AND purchase_source is website/stripe/bumper/google_ads or empty
+          // Website sales: BAW- prefix (not BAW-S-) OR legacy: not manual AND purchase_source is website/stripe/bumper/bumper_portal/google_ads/facebook_ads or empty
           const isBawS = warrantyNum.startsWith('BAW-S-');
-          const isWebsite = !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
+          const isWebsite = !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '');
           if (!isWebsite) return false;
         } else if (sourceFilter === 'staff_purchase') {
           // Staff purchase: BAW-S- prefix (assigned by staff from website purchase)
@@ -281,8 +281,16 @@ export const AnalyticsTab = () => {
     const warrantyNum = customer.warranty_reference_number || '';
     if (warrantyNum.startsWith('BAW-S-')) return 'staff_purchase';
     if (isManual || source === 'quote_link' || source === 'external' || source === 'admin_external') return 'sales_team';
-    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '') return 'website';
+    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '') return 'website';
     return 'unknown';
+  };
+
+  // Sub-categorize website sales by ad channel
+  const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'pure' => {
+    const source = customer.purchase_source?.toLowerCase() || '';
+    if (source === 'google_ads') return 'google';
+    if (source === 'facebook_ads') return 'facebook';
+    return 'pure';
   };
 
   // Calculate metrics with safe defaults - EXCLUDING cancelled/refunded from revenue
@@ -326,21 +334,27 @@ export const AnalyticsTab = () => {
       Number(c.final_amount) > 0 &&
       !isRevenueLost(c.status)
     );
+
+    // Website channel breakdown
+    const googleCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'google');
+    const facebookCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'facebook');
+    const pureWebsiteCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'pure');
     
-    const websiteRevenue = websiteCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
-    const salesTeamRevenue = salesTeamCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const calcStats = (custs: Customer[]) => {
+      const revenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+      return {
+        count: custs.length,
+        revenue,
+        aov: custs.length > 0 ? Math.round(revenue / custs.length) : 0
+      };
+    };
     
     return {
-      website: {
-        count: websiteCustomers.length,
-        revenue: websiteRevenue,
-        aov: websiteCustomers.length > 0 ? Math.round(websiteRevenue / websiteCustomers.length) : 0
-      },
-      salesTeam: {
-        count: salesTeamCustomers.length,
-        revenue: salesTeamRevenue,
-        aov: salesTeamCustomers.length > 0 ? Math.round(salesTeamRevenue / salesTeamCustomers.length) : 0
-      }
+      website: calcStats(websiteCustomers),
+      salesTeam: calcStats(salesTeamCustomers),
+      google: calcStats(googleCustomers),
+      facebook: calcStats(facebookCustomers),
+      pureWebsite: calcStats(pureWebsiteCustomers),
     };
   }, [customers, effectiveDateRange]);
 
@@ -491,7 +505,7 @@ export const AnalyticsTab = () => {
       const warrantyNum = customer.warranty_reference_number || '';
       if (sourceFilter === 'website') {
         const isBawS = warrantyNum.startsWith('BAW-S-');
-        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
+        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '');
       } else if (sourceFilter === 'staff_purchase') {
         return warrantyNum.startsWith('BAW-S-');
       } else if (sourceFilter === 'sales_team') {
@@ -733,33 +747,104 @@ export const AnalyticsTab = () => {
         </Card>
       </div>
 
-      {/* AOV Breakdown by Source */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Globe className="h-4 w-4 text-blue-500" />
-              Website Sales (BAW)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Orders</span>
-                <span className="font-semibold">{sourceMetrics.website.count}</span>
+      {/* Website Sales Breakdown by Channel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-blue-500" />
+            Website Sales Breakdown
+          </CardTitle>
+          <CardDescription>
+            All website sales (Stripe &amp; Bumper) broken down by acquisition channel
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* All Website Sales */}
+            <div className="p-4 rounded-lg border-2 border-blue-300 bg-blue-50/40 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Globe className="h-4 w-4 text-blue-600" />
+                <span className="font-semibold text-sm text-blue-700">All Website Sales</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Revenue</span>
-                <span className="font-semibold">£{sourceMetrics.website.revenue.toLocaleString('en-GB')}</span>
+                <span className="text-xs text-muted-foreground">Orders</span>
+                <span className="font-bold text-lg">{sourceMetrics.website.count}</span>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t">
-                <span className="text-sm font-medium">Average Order Value</span>
-                <span className="text-xl font-bold text-blue-600">£{sourceMetrics.website.aov}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Revenue</span>
+                <span className="font-bold text-lg text-blue-600">£{sourceMetrics.website.revenue.toLocaleString('en-GB')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+                <span className="text-xs font-medium">AOV</span>
+                <span className="font-bold text-blue-700">£{sourceMetrics.website.aov}</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
+            {/* Website Google */}
+            <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Target className="h-4 w-4 text-emerald-600" />
+                <span className="font-semibold text-sm text-emerald-700">Website G (Google Ads)</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Orders</span>
+                <span className="font-bold text-lg">{sourceMetrics.google.count}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Revenue</span>
+                <span className="font-bold text-lg text-emerald-600">£{sourceMetrics.google.revenue.toLocaleString('en-GB')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-emerald-200">
+                <span className="text-xs font-medium">AOV</span>
+                <span className="font-bold text-emerald-700">£{sourceMetrics.google.aov}</span>
+              </div>
+            </div>
+
+            {/* Website Facebook */}
+            <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50/30 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Facebook className="h-4 w-4 text-indigo-600" />
+                <span className="font-semibold text-sm text-indigo-700">Website F (Facebook Ads)</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Orders</span>
+                <span className="font-bold text-lg">{sourceMetrics.facebook.count}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Revenue</span>
+                <span className="font-bold text-lg text-indigo-600">£{sourceMetrics.facebook.revenue.toLocaleString('en-GB')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-indigo-200">
+                <span className="text-xs font-medium">AOV</span>
+                <span className="font-bold text-indigo-700">£{sourceMetrics.facebook.aov}</span>
+              </div>
+            </div>
+
+            {/* Pure Website (Organic) */}
+            <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Globe className="h-4 w-4 text-sky-600" />
+                <span className="font-semibold text-sm text-sky-700">Pure Website (Organic)</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Orders</span>
+                <span className="font-bold text-lg">{sourceMetrics.pureWebsite.count}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Revenue</span>
+                <span className="font-bold text-lg text-sky-600">£{sourceMetrics.pureWebsite.revenue.toLocaleString('en-GB')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-sky-200">
+                <span className="text-xs font-medium">AOV</span>
+                <span className="font-bold text-sky-700">£{sourceMetrics.pureWebsite.aov}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sales Team Card */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         <Card className="border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -768,17 +853,17 @@ export const AnalyticsTab = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
+            <div className="flex gap-8">
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Orders</span>
                 <span className="font-semibold">{sourceMetrics.salesTeam.count}</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Revenue</span>
                 <span className="font-semibold">£{sourceMetrics.salesTeam.revenue.toLocaleString('en-GB')}</span>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t">
-                <span className="text-sm font-medium">Average Order Value</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">AOV</span>
                 <span className="text-xl font-bold text-orange-600">£{sourceMetrics.salesTeam.aov}</span>
               </div>
             </div>
