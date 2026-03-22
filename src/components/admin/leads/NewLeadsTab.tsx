@@ -160,6 +160,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return inputLeads.filter(lead => lead.status === 'fake_lead');
       case 'lost':
         return inputLeads.filter(lead => lead.status === 'lost');
+      case 'callbacks':
+        return inputLeads.filter(lead => lead.is_callback === true);
       case 'urgent_callback':
       case 'quote_sent':
       case 'contacted':
