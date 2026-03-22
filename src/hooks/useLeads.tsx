@@ -389,6 +389,7 @@ export const useLeads = () => {
           contact_status: null,
           is_from_abandoned_cart: false,
           call_count: lead.call_count || 0,
+          is_callback: lead.is_callback || false,
           cart_metadata: null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
