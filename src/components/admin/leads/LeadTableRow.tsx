@@ -311,7 +311,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Assigned To - Shows "Assign now" for unassigned leads */}
       {!hideAssignedColumn && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
-          value={lead.assigned_to || 'website'}
+          value={lead.assigned_to || WEBSITE_SALES_ACCOUNT_ID}
           onValueChange={(value) => {
             if (value === 'auto') {
               onAutoAssign();
