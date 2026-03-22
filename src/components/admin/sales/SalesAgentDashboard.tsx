@@ -112,7 +112,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
         isWithinInterval(new Date(c.created_at), { start: mStart, end: mEnd })
       );
       
-      const revenue = activeCustomers.reduce((sum, c) => sum + (c.payment_amount || 0), 0);
+      const revenue = activeCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
       
       return {
         total: activeCustomers.length,
