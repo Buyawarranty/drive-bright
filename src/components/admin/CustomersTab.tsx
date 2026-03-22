@@ -65,6 +65,7 @@ import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
