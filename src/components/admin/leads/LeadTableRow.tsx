@@ -332,7 +332,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               )}
             >
               <div className="flex items-center gap-1.5 w-full">
-                {lead.assigned_to ? (
+                {lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? (
                   // Assigned state - show initials avatar with per-agent color
                   (() => {
                     const AGENT_COLOR_MAP: Record<string, string> = {
