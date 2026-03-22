@@ -19,6 +19,7 @@ interface SalesDashboardKPIsProps {
     total: number;
     revenue: number;
     cancelled: number;
+    monthlyCount?: number;
   };
 }
 
@@ -60,21 +61,18 @@ export const SalesDashboardKPIs: React.FC<SalesDashboardKPIsProps> = ({
     };
   }, [leads, todayStart, todayEnd, weekStart, weekEnd, monthStart, monthEnd]);
 
-  // Sales This Month
+  // Sales This Month - use real customer data from paidDeals
   const salesStats = useMemo(() => {
-    const monthlyPaid = leads.filter(l => 
-      l.is_paid === true && 
-      isWithinInterval(new Date(l.updated_at), { start: monthStart, end: monthEnd })
-    );
     const monthlyTarget = 40;
-    const progress = Math.min((monthlyPaid.length / monthlyTarget) * 100, 100);
+    const monthlyCount = paidDeals.monthlyCount || 0;
+    const progress = Math.min((monthlyCount / monthlyTarget) * 100, 100);
 
     return {
-      count: monthlyPaid.length,
+      count: monthlyCount,
       target: monthlyTarget,
       progress
     };
-  }, [leads, monthStart, monthEnd]);
+  }, [paidDeals]);
 
   // Follow-ups Today
   const followUpStats = useMemo(() => {

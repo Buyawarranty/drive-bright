@@ -14,6 +14,7 @@ import {
   TrendingUp, Clock, AlertTriangle, Phone
 } from 'lucide-react';
 import { format, isToday, isPast, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 
 interface SalesAgentDashboardProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
@@ -82,38 +83,56 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead');
   }, [currentUserId, leads]);
 
-  // Calculate paid deals stats
-  const paidDealsStats = useMemo(() => {
-    const paidLeads = myLeads.filter(l => l.is_paid === true);
-    const revenue = paidLeads.reduce((sum, l) => 
-      sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0
-    );
-    // For cancelled, we'd need a status - using 'lost' as proxy for now
-    const cancelled = myLeads.filter(l => l.status === 'lost' && l.is_paid === true).length;
+  // Fetch REAL deal stats from customers table (source of truth)
+  const { data: realDealStats } = useQuery({
+    queryKey: ['agent-real-deals', currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return { total: 0, revenue: 0, cancelled: 0, monthlyCount: 0, totalCount: 0 };
+      
+      // Get all customers assigned to this agent
+      const { data: customers, error } = await supabase
+        .from('customers')
+        .select('id, status, final_amount, created_at, is_deleted')
+        .eq('assigned_to', currentUserId)
+        .eq('is_deleted', false);
+      
+      if (error || !customers) return { total: 0, revenue: 0, cancelled: 0, monthlyCount: 0, totalCount: 0 };
+      
+      const now = new Date();
+      const mStart = startOfMonth(now);
+      const mEnd = endOfMonth(now);
+      
+      const activeCustomers = customers.filter(c => 
+        !['cancelled', 'refunded'].includes((c.status || '').toLowerCase())
+      );
+      const cancelledCustomers = customers.filter(c => 
+        ['cancelled', 'refunded'].includes((c.status || '').toLowerCase())
+      );
+      const monthlyCustomers = activeCustomers.filter(c =>
+        isWithinInterval(new Date(c.created_at), { start: mStart, end: mEnd })
+      );
+      
+      const revenue = activeCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+      
+      return {
+        total: activeCustomers.length,
+        revenue,
+        cancelled: cancelledCustomers.length,
+        monthlyCount: monthlyCustomers.length,
+        totalCount: activeCustomers.length,
+      };
+    },
+    enabled: !!currentUserId,
+    refetchInterval: 30000, // refresh every 30s
+  });
 
-    return {
-      total: paidLeads.length,
-      revenue,
-      cancelled
-    };
-  }, [myLeads]);
+  const paidDealsStats = realDealStats || { total: 0, revenue: 0, cancelled: 0, monthlyCount: 0, totalCount: 0 };
 
-  // Monthly warranty count for badges
-  const monthlyWarrantyCount = useMemo(() => {
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
-    
-    return myLeads.filter(l => 
-      l.is_paid === true && 
-      isWithinInterval(new Date(l.updated_at), { start: monthStart, end: monthEnd })
-    ).length;
-  }, [myLeads]);
+  // Monthly warranty count for badges (from real customer data)
+  const monthlyWarrantyCount = paidDealsStats.monthlyCount || 0;
 
-  // Total warranty count for badges
-  const totalWarrantyCount = useMemo(() => {
-    return myLeads.filter(l => l.is_paid === true).length;
-  }, [myLeads]);
+  // Total warranty count for badges (from real customer data)
+  const totalWarrantyCount = paidDealsStats.totalCount || 0;
 
   const todayFollowUps = useMemo(() => 
     myLeads.filter(l => l.next_action_date && isToday(new Date(l.next_action_date))),
