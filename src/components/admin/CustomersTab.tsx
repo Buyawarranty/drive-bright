@@ -4540,7 +4540,7 @@ Please log in and change your password after first login.`;
                               ? 'website' : 'unassigned'
                           )}
                           onValueChange={(val) => {
-                            if (val === 'website') {
+                            if (val === WEBSITE_SALES_ACCOUNT_ID) {
                               assignCustomerToAgent(customer.id, WEBSITE_SALES_ACCOUNT_ID, true);
                             } else {
                               assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val);
