@@ -717,7 +717,7 @@ export const useLeads = () => {
         if (freshError) throw freshError;
 
         const currentlyAssigned = freshLead?.[field];
-        if (currentlyAssigned && currentlyAssigned !== userId) {
+        if (currentlyAssigned && currentlyAssigned !== userId && currentlyAssigned !== WEBSITE_SALES_ACCOUNT_ID) {
           // Someone else already grabbed this lead — refresh the list and warn
           toast.error('This lead has already been assigned to another agent. Refreshing list...');
           fetchLeadsRef.current();
