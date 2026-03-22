@@ -265,6 +265,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     follow_up: dateFilteredLeadsForCounts.filter(l => l.status === 'follow_up').length,
     quote_sent: dateFilteredLeadsForCounts.filter(l => l.status === 'quote_sent').length,
     urgent_callback: dateFilteredLeadsForCounts.filter(l => l.status === 'urgent_callback').length,
+    callbacks: dateFilteredLeadsForCounts.filter(l => l.is_callback === true).length,
     paid: dateFilteredLeadsForCounts.filter(l => l.is_paid === true).length,
     lost: dateFilteredLeadsForCounts.filter(l => l.status === 'lost').length,
     converted: dateFilteredLeadsForCounts.filter(l => l.status === 'converted').length,
