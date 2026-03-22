@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { startOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
@@ -111,9 +112,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>(getDefaultView());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: getTodayLeadFeedSelectionDate(),
-    to: getTodayLeadFeedSelectionDate(),
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
+    const today = getTodayLeadFeedSelectionDate();
+    return { from: startOfMonth(today), to: today };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
