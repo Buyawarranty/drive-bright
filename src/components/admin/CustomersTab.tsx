@@ -4537,7 +4537,7 @@ Please log in and change your password after first login.`;
                         <Select
                           value={customer.assigned_to ? customer.assigned_to : (
                             (customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-') && !(customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-S-')
-                              ? 'website' : 'unassigned'
+                              ? WEBSITE_SALES_ACCOUNT_ID : 'unassigned'
                           )}
                           onValueChange={(val) => {
                             if (val === WEBSITE_SALES_ACCOUNT_ID) {
