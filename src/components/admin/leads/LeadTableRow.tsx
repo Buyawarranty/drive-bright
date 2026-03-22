@@ -683,6 +683,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.lead.next_action_date === nextProps.lead.next_action_date &&
     prevProps.lead.next_action_type === nextProps.lead.next_action_type &&
     prevProps.lead.is_paid === nextProps.lead.is_paid &&
+    prevProps.lead.is_callback === nextProps.lead.is_callback &&
     prevProps.lead.call_count === nextProps.lead.call_count &&
     prevProps.lead.tags?.length === nextProps.lead.tags?.length &&
     prevProps.isSelected === nextProps.isSelected &&
