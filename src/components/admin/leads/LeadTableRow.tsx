@@ -688,7 +688,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.lead.tags?.length === nextProps.lead.tags?.length &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.isExpanded === nextProps.isExpanded &&
-    prevProps.hideAssignedColumn === nextProps.hideAssignedColumn
+    prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
+    prevProps.canAssignLeads === nextProps.canAssignLeads &&
+    prevProps.salesUsers.length === nextProps.salesUsers.length
   );
 });
 
