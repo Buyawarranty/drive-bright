@@ -14,6 +14,7 @@ import {
   TrendingUp, Clock, AlertTriangle, Phone
 } from 'lucide-react';
 import { format, isToday, isPast, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 
 interface SalesAgentDashboardProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
