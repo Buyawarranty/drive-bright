@@ -58,6 +58,8 @@ export interface Lead {
   is_from_abandoned_cart: boolean;
   // Call tracking
   call_count: number;
+  // Callback flag
+  is_callback: boolean;
   // Cart metadata for plan selections
   cart_metadata: {
     claim_limit?: number;
@@ -130,7 +132,7 @@ export const useLeads = () => {
   const initialLoadDoneRef = useRef(false);
   const initialLoadStartedRef = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback'>('all_leads');
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks'>('all_leads');
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -221,7 +223,7 @@ export const useLeads = () => {
               vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
               last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
               created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-              call_count,
+              call_count, is_callback,
               assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
             `)
             .order('created_at', { ascending: false })
@@ -357,6 +359,7 @@ export const useLeads = () => {
             payment_date: null,
             step_two_completed_at: null,
             call_count: cart.call_count || 0,
+            is_callback: !!(cart.cart_metadata?.request_type === 'urgent_callback'),
             cart_metadata: cart.cart_metadata || null,
             assigned_user: assignedAdminUser ? {
               id: assignedAdminUser.id,
@@ -386,6 +389,7 @@ export const useLeads = () => {
           contact_status: null,
           is_from_abandoned_cart: false,
           call_count: lead.call_count || 0,
+          is_callback: lead.is_callback || false,
           cart_metadata: null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,

@@ -440,6 +440,23 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </Select>
       </TableCell>
 
+      {/* Callback indicator */}
+      <TableCell className="text-center">
+        {lead.is_callback ? (
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <Badge className="text-[10px] px-1.5 py-0.5 bg-teal-100 text-teal-800 border-teal-300 cursor-default">
+                <Phone className="h-3 w-3 mr-0.5" />
+                CB
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">Callback requested from website</TooltipContent>
+          </Tooltip>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+
       {/* Call Count - Enhanced with dialog and guardrails */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <CallCountCell
@@ -666,6 +683,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.lead.next_action_date === nextProps.lead.next_action_date &&
     prevProps.lead.next_action_type === nextProps.lead.next_action_type &&
     prevProps.lead.is_paid === nextProps.lead.is_paid &&
+    prevProps.lead.is_callback === nextProps.lead.is_callback &&
     prevProps.lead.call_count === nextProps.lead.call_count &&
     prevProps.lead.tags?.length === nextProps.lead.tags?.length &&
     prevProps.isSelected === nextProps.isSelected &&
