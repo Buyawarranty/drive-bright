@@ -92,7 +92,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
       // Get all customers assigned to this agent
       const { data: customers, error } = await supabase
         .from('customers')
-        .select('id, status, payment_amount, created_at, is_deleted')
+        .select('id, status, final_amount, created_at, is_deleted')
         .eq('assigned_to', currentUserId)
         .eq('is_deleted', false);
       
