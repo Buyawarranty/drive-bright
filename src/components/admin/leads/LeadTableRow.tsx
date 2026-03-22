@@ -388,7 +388,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   <span>Auto-assign (next available)</span>
                 </div>
               </SelectItem>
-              <div className="h-px bg-border my-1" />
+              <SelectSeparator />
               {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map((user, idx) => {
                 const AGENT_COLOR_MAP: Record<string, string> = {
                   'isobel': 'bg-emerald-600',
