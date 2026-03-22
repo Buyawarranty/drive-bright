@@ -800,7 +800,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         <SelectContent>
                           <SelectItem value="unassigned">Unassigned</SelectItem>
                           <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
-                          {salesUsers.map(u => (
+                          {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map(u => (
                             <SelectItem key={u.id} value={u.id}>
                               {u.first_name || ''} {u.last_name || u.email}
                             </SelectItem>
