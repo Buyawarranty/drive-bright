@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -790,7 +791,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                     {/* Assigned To */}
                     <TableCell>
                       <Select
-                        value={customer.assigned_to || 'unassigned'}
+                        value={customer.assigned_to || WEBSITE_SALES_ACCOUNT_ID}
                         onValueChange={(val) => handleAssignCustomer(customer.id, val === 'unassigned' ? null : val)}
                       >
                         <SelectTrigger className="h-7 text-xs w-[130px]">
@@ -798,8 +799,8 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="unassigned">Unassigned</SelectItem>
-                          <SelectItem value="website">Website</SelectItem>
-                          {salesUsers.map(u => (
+                          <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
+                          {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map(u => (
                             <SelectItem key={u.id} value={u.id}>
                               {u.first_name || ''} {u.last_name || u.email}
                             </SelectItem>

@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
+import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
@@ -310,12 +311,14 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Assigned To - Shows "Assign now" for unassigned leads */}
       {!hideAssignedColumn && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
-          value={lead.assigned_to || 'website'}
+          value={lead.assigned_to || WEBSITE_SALES_ACCOUNT_ID}
           onValueChange={(value) => {
             if (value === 'auto') {
               onAutoAssign();
+            } else if (value === 'unassigned') {
+              onAssign(null);
             } else {
-              onAssign(value === 'unassigned' || value === 'website' ? null : value);
+              onAssign(value);
             }
           }}
           disabled={!canAssignLeads}
@@ -323,13 +326,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectTrigger 
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
-                !lead.assigned_to 
+                !lead.assigned_to || lead.assigned_to === WEBSITE_SALES_ACCOUNT_ID
                   ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
                   : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
               )}
             >
               <div className="flex items-center gap-1.5 w-full">
-                {lead.assigned_to ? (
+                {lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? (
                   // Assigned state - show initials avatar with per-agent color
                   (() => {
                     const AGENT_COLOR_MAP: Record<string, string> = {
@@ -367,7 +370,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
-              <SelectItem value="website" className="text-slate-600">
+              <SelectItem value={WEBSITE_SALES_ACCOUNT_ID} className="text-slate-600">
                 <div className="flex items-center gap-2">
                   <Globe className="h-3.5 w-3.5" />
                   <span>Website</span>
@@ -386,7 +389,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </div>
               </SelectItem>
               <div className="h-px bg-border my-1" />
-              {salesUsers.map((user, idx) => {
+              {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map((user, idx) => {
                 const AGENT_COLOR_MAP: Record<string, string> = {
                   'isobel': 'bg-emerald-600',
                   'james': 'bg-blue-600',
