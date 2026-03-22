@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
+import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
