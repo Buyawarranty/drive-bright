@@ -130,6 +130,12 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     [myLeads]
   );
 
+  // My callbacks - filtered to only this agent's assigned callback leads
+  const myCallbacks = useMemo(() =>
+    myLeads.filter(l => l.is_callback === true && l.status !== 'converted' && l.status !== 'lost'),
+    [myLeads]
+  );
+
   // Create handlers object for the table
   const leadHandlers = useMemo(() => ({
     updateLeadStatus: propHandlers?.updateLeadStatus || updateLeadStatus,
