@@ -42,6 +42,7 @@ interface LeadsFiltersProps {
     follow_up: number;
     quote_sent: number;
     urgent_callback: number;
+    callbacks: number;
     paid: number;
     lost: number;
     converted: number;
