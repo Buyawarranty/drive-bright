@@ -11,7 +11,7 @@ import { SalesDashboardKPIs } from './SalesDashboardKPIs';
 import { SalesBadges } from './SalesBadges';
 import { 
   LayoutDashboard, Users, ShoppingBag, Bell,
-  TrendingUp, Clock, AlertTriangle
+  TrendingUp, Clock, AlertTriangle, Phone
 } from 'lucide-react';
 import { format, isToday, isPast, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
