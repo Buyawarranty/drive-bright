@@ -1420,7 +1420,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                     .filter(u => u.role === 'sales')
                     .map(agent => {
                       const perms = (agent as any).permissions || {};
-                      const hasAllLeads = perms['tab_new-leads_all-leads'] === true;
+                      const hasAllLeads = agentVisibilityOverrides[agent.id] ?? perms['tab_new-leads_all-leads'] === true;
                       const agentName = `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email;
                       return (
                         <label key={agent.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/40 cursor-pointer">
@@ -1428,20 +1428,19 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                             type="checkbox"
                             checked={hasAllLeads}
                             onChange={async (e) => {
-                              const newPerms = { ...perms, 'tab_new-leads_all-leads': e.target.checked };
+                              const checked = e.target.checked;
+                              setAgentVisibilityOverrides(prev => ({ ...prev, [agent.id]: checked }));
+                              const newPerms = { ...perms, 'tab_new-leads_all-leads': checked };
                               const { error } = await supabase
                                 .from('admin_users')
                                 .update({ permissions: newPerms })
                                 .eq('id', agent.id);
                               if (!error) {
                                 toast({
-                                  title: e.target.checked ? `${agentName} can see all leads` : `${agentName} restricted to own leads`,
+                                  title: checked ? `${agentName} can see all leads` : `${agentName} restricted to own leads`,
                                 });
-                                // Force refresh by updating local state
-                                (agent as any).permissions = newPerms;
-                                // Trigger re-render
-                                setSelectedAgent(prev => prev);
                               } else {
+                                setAgentVisibilityOverrides(prev => ({ ...prev, [agent.id]: !checked }));
                                 toast({ title: 'Error saving permission', variant: 'destructive' });
                               }
                             }}
