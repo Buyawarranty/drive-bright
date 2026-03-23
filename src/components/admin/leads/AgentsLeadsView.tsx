@@ -96,6 +96,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Show all leads state per group
   const [showAllLeads, setShowAllLeads] = useState<Set<string>>(new Set());
   
+  // Track per-agent visibility overrides locally for immediate UI updates
+  const [agentVisibilityOverrides, setAgentVisibilityOverrides] = useState<Record<string, boolean>>({});
+  
   // Date filter state
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [quickDateFilter, setQuickDateFilter] = useState<string>('all');
@@ -1382,26 +1385,76 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
             {(isFullAdmin || isSalesLead) && (
               <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Agents can only see their own leads</span>
+                <Eye className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Let all agents see all leads</span>
                 <Switch
                   checked={agentsOwnLeadsOnly === true}
                   onCheckedChange={async (checked) => {
                     const success = await updateAgentsOwnLeadsOnly(checked);
                     if (success) {
                       toast({
-                        title: checked ? 'Restricted to own leads' : 'All leads visible',
+                        title: checked ? 'All leads visible to agents' : 'Agents see own leads only',
                         description: checked
-                          ? 'All sales agents can now only see their own assigned leads.'
-                          : 'Sales agents can see all leads (unless restricted individually).',
+                          ? 'All sales agents can now see all leads.'
+                          : 'Agents can only see their own assigned leads (unless individually allowed below).',
                       });
                     }
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {agentsOwnLeadsOnly === true ? 'Each agent sees only their assigned leads' : 'All agents can see all leads'}
+                  {agentsOwnLeadsOnly === true ? 'All agents can see all leads' : 'Agents see only their own leads'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
+              </div>
+            )}
+
+            {/* Per-agent visibility checkboxes - show when global toggle is OFF */}
+            {(isFullAdmin || isSalesLead) && agentsOwnLeadsOnly !== true && (
+              <div className="p-3 bg-muted/20 border rounded-lg space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Which agents can see all leads?</span>
+                </div>
+                <div className="grid gap-1.5">
+                  {salesUsers
+                    .filter(u => u.role === 'sales')
+                    .map(agent => {
+                      const perms = (agent as any).permissions || {};
+                      const hasAllLeads = agentVisibilityOverrides[agent.id] ?? perms['tab_new-leads_all-leads'] === true;
+                      const agentName = `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email;
+                      return (
+                        <label key={agent.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/40 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={hasAllLeads}
+                            onChange={async (e) => {
+                              const checked = e.target.checked;
+                              setAgentVisibilityOverrides(prev => ({ ...prev, [agent.id]: checked }));
+                              const newPerms = { ...perms, 'tab_new-leads_all-leads': checked };
+                              const { error } = await supabase
+                                .from('admin_users')
+                                .update({ permissions: newPerms })
+                                .eq('id', agent.id);
+                              if (!error) {
+                                toast({
+                                  title: checked ? `${agentName} can see all leads` : `${agentName} restricted to own leads`,
+                                });
+                              } else {
+                                setAgentVisibilityOverrides(prev => ({ ...prev, [agent.id]: !checked }));
+                                toast({ title: 'Error saving permission', variant: 'destructive' });
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">{agentName}</span>
+                          {hasAllLeads && <Check className="h-3.5 w-3.5 text-green-500" />}
+                        </label>
+                      );
+                    })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tick agents who should be able to see all leads, not just their own.
+                </p>
               </div>
             )}
           </div>
