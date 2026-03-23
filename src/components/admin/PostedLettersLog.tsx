@@ -540,7 +540,8 @@ export const PostedLettersLog: React.FC = () => {
                       />
                     </th>
                     <th className="py-2 px-2 font-medium text-muted-foreground w-10">Sent</th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground">Date Sent</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground">Date</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground">Type</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Reg Plate</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Customer</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Email</th>
