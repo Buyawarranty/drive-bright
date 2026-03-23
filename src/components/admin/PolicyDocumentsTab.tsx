@@ -127,6 +127,21 @@ export const PolicyDocumentsTab: React.FC = () => {
     setSearchQuery('');
     setShowPreview(false);
 
+    // Auto-log search selection to Posted Letters Log
+    try {
+      await supabase.from('posted_letters_log').insert({
+        customer_id: customer.id,
+        registration_plate: customer.registration_plate || 'N/A',
+        customer_name: customer.name,
+        customer_email: customer.email,
+        warranty_number: customer.warranty_number || customer.warranty_reference_number || null,
+        plan_type: customer.plan_type,
+        action_type: 'search',
+      });
+    } catch (err) {
+      console.error('Failed to log search to posted letters log:', err);
+    }
+
     // Fetch policies for this customer
     const { data: policies } = await supabase
       .from('customer_policies')
