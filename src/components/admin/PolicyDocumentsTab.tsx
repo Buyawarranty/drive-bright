@@ -366,8 +366,9 @@ export const PolicyDocumentsTab: React.FC = () => {
         plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || null,
         sent_at: new Date().toISOString(),
         marked_sent_by: null,
+        action_type: type === 'label' ? 'label' : 'print',
         notes: type === 'label' ? 'Address label printed' : 'Confirmation letter printed',
-      });
+      } as any);
     } catch (e) {
       // Silent fail - don't block the print action
     }
