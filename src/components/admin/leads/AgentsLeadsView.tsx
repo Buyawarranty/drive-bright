@@ -1382,24 +1382,24 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
             {(isFullAdmin || isSalesLead) && (
               <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Agents can only see their own leads</span>
+                <Eye className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Let all agents see all leads</span>
                 <Switch
                   checked={agentsOwnLeadsOnly === true}
                   onCheckedChange={async (checked) => {
                     const success = await updateAgentsOwnLeadsOnly(checked);
                     if (success) {
                       toast({
-                        title: checked ? 'Restricted to own leads' : 'All leads visible',
+                        title: checked ? 'All leads visible to agents' : 'Agents see own leads only',
                         description: checked
-                          ? 'All sales agents can now only see their own assigned leads.'
-                          : 'Sales agents can see all leads (unless restricted individually).',
+                          ? 'All sales agents can now see all leads.'
+                          : 'Agents can only see their own assigned leads (unless individually allowed below).',
                       });
                     }
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {agentsOwnLeadsOnly === true ? 'Each agent sees only their assigned leads' : 'All agents can see all leads'}
+                  {agentsOwnLeadsOnly === true ? 'All agents can see all leads' : 'Agents see only their own leads'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
