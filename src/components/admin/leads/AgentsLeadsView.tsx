@@ -1330,7 +1330,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 ) : (
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="text-sm font-medium">Agent Assignment Visibility</span>
+                <span className="text-sm font-medium">Show "Assigned To" column to agents</span>
                 <Switch
                   checked={showAssignmentsToAgents === false}
                   onCheckedChange={async (checked) => {
