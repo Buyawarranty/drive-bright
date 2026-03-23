@@ -482,7 +482,7 @@ export const useLeads = () => {
 
     return () => {
       leadsChannel.unsubscribe();
-      cartsChannel.unsubscribe();
+      
       clearInterval(pollingInterval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
