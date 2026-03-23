@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, User, Car, Mail, Phone, Tag } from 'lucide-react';
+import { Search, Printer, FileText, User, Car, Mail, Phone, Tag, Pencil, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
