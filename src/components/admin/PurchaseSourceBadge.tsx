@@ -65,6 +65,22 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           className: 'bg-green-100 text-green-800 hover:bg-green-100 border-green-200',
           tooltip: 'Bumper finance payment'
         };
+      case 'google_ads':
+        return {
+          label: 'Google Ads',
+          icon: Globe,
+          variant: 'default' as const,
+          className: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200',
+          tooltip: 'Google Ads acquisition'
+        };
+      case 'facebook_ads':
+        return {
+          label: 'Facebook Ads',
+          icon: Globe,
+          variant: 'default' as const,
+          className: 'bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200',
+          tooltip: 'Facebook Ads acquisition'
+        };
       case 'stripe':
       case 'stripe_dashboard':
         return {
