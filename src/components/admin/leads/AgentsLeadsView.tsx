@@ -96,6 +96,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Show all leads state per group
   const [showAllLeads, setShowAllLeads] = useState<Set<string>>(new Set());
   
+  // Track per-agent visibility overrides locally for immediate UI updates
+  const [agentVisibilityOverrides, setAgentVisibilityOverrides] = useState<Record<string, boolean>>({});
+  
   // Date filter state
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [quickDateFilter, setQuickDateFilter] = useState<string>('all');
