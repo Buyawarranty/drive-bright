@@ -132,6 +132,9 @@ export const useLeads = () => {
   const initialLoadDoneRef = useRef(false);
   const initialLoadStartedRef = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFetchingRef = useRef(false);
+  const pendingFetchRef = useRef(false);
+  const latestFetchTokenRef = useRef(0);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks'>('all_leads');
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
@@ -196,20 +199,33 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
+    if (isFetchingRef.current) {
+      pendingFetchRef.current = true;
+      return;
+    }
+
+    isFetchingRef.current = true;
+    const fetchToken = latestFetchTokenRef.current + 1;
+    latestFetchTokenRef.current = fetchToken;
+    const shouldShowBlockingLoader = !initialLoadDoneRef.current && leadsRef.current.length === 0;
+
     try {
-      // Only show loading spinner on the very first successful load
-      if (!initialLoadDoneRef.current) {
-        if (!initialLoadStartedRef.current) {
-          initialLoadStartedRef.current = true;
-          setLoading(true);
-        }
-        // Safety timeout: force loading off after 8s to prevent infinite loading
-        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+      // Only show loading spinner on the very first load when there is no data yet
+      if (shouldShowBlockingLoader && !initialLoadStartedRef.current) {
+        initialLoadStartedRef.current = true;
+        setLoading(true);
+      }
+
+      // Start one safety timeout for the initial blocking load; do not reset it on background refetches
+      if (shouldShowBlockingLoader && !loadingTimeoutRef.current) {
         loadingTimeoutRef.current = setTimeout(() => {
-          console.warn('[Leads] Loading safety timeout triggered after 8s');
+          if (latestFetchTokenRef.current !== fetchToken) return;
+          console.warn('[Leads] Loading safety timeout triggered after 12s');
           setLoading(false);
           initialLoadDoneRef.current = true;
-        }, 8000);
+          initialLoadStartedRef.current = false;
+          isFetchingRef.current = false;
+        }, 12000);
       }
 
       // PERFORMANCE: Fetch one raw source-of-truth dataset, then let the UI handle view filtering.
@@ -457,6 +473,10 @@ export const useLeads = () => {
         tags: tagsByLeadId[lead.id] || [],
       }));
 
+      if (fetchToken !== latestFetchTokenRef.current) {
+        return;
+      }
+
       if (recentOptimisticUpdatesRef.current.size > 0) {
         setLeads(prev => {
           const protectedLeads = new Map<string, Lead>();
@@ -482,12 +502,30 @@ export const useLeads = () => {
         setLeads(leadsWithTags as Lead[]);
       }
     } catch (error) {
+      if (fetchToken !== latestFetchTokenRef.current) {
+        return;
+      }
       console.error('Error fetching leads:', error);
       toast.error('Failed to load leads');
     } finally {
-      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
-      setLoading(false);
-      initialLoadDoneRef.current = true;
+      if (fetchToken === latestFetchTokenRef.current) {
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+          loadingTimeoutRef.current = null;
+        }
+        setLoading(false);
+        initialLoadDoneRef.current = true;
+        initialLoadStartedRef.current = false;
+      }
+
+      isFetchingRef.current = false;
+
+      if (pendingFetchRef.current) {
+        pendingFetchRef.current = false;
+        queueMicrotask(() => {
+          fetchLeadsRef.current();
+        });
+      }
     }
   }, []);
 
@@ -668,15 +706,14 @@ export const useLeads = () => {
         setLeads(prev => prev.filter(lead => lead.id !== leadId));
       }
 
-      if (!isAbandonedCart) {
-        // Log activity in background (don't await)
-        logActivity(leadId, 'status_change', `Status changed to ${status}`);
-      }
+        if (!isAbandonedCart) {
+          void logActivity(leadId, 'status_change', `Status changed to ${status}`);
+        }
 
-      // Add automated system note for status change (fire-and-forget)
-      const adminUser = await getCachedAdminUser();
       const statusLabel = status.replace(/_/g, ' ');
-      addSystemNote(leadId, `Status changed to "${statusLabel}"`, adminUser?.id);
+        void getCachedAdminUser().then((adminUser) => {
+          void addSystemNote(leadId, `Status changed to "${statusLabel}"`, adminUser?.id);
+        });
       
       toast.success(`Status: ${status.replace('_', ' ')}`);
     } catch (error) {
