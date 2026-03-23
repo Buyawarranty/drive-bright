@@ -1455,6 +1455,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 </p>
               </div>
             )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Active Status Info Box */}
