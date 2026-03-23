@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Globe, Mail, Phone, CreditCard, Banknote } from 'lucide-react';
 
-export type PurchaseSource = 'website' | 'quote_link' | 'external' | 'bumper' | 'stripe';
+export type PurchaseSource = 'website' | 'quote_link' | 'external' | 'bumper' | 'stripe' | 'google_ads' | 'facebook_ads';
 
 interface PurchaseSourceBadgeProps {
   source?: PurchaseSource | string | null;
