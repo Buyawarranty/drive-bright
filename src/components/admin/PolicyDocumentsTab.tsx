@@ -73,6 +73,9 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<Partial<CustomerData>>({});
+  const [isSaving, setIsSaving] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
