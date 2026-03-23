@@ -158,19 +158,6 @@ export const PolicyDocumentsTab: React.FC = () => {
       setSelectedPolicy(null);
     }
   };
-      .from('customer_policies')
-      .select('*')
-      .ilike('email', customer.email)
-      .or('is_deleted.is.null,is_deleted.eq.false')
-      .order('created_at', { ascending: false });
-
-    setCustomerPolicies(policies || []);
-    if (policies && policies.length > 0) {
-      setSelectedPolicy(policies[0]);
-    } else {
-      setSelectedPolicy(null);
-    }
-  };
 
   const getBonusMonths = () => Number(selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
 
