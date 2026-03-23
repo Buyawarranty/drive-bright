@@ -127,7 +127,7 @@ export const PolicyDocumentsTab: React.FC = () => {
     setSearchQuery('');
     setShowPreview(false);
 
-    // Auto-log search selection to Posted Letters Log
+    // Auto-log search selection to Posted Letters Log (timestamped)
     try {
       await supabase.from('posted_letters_log').insert({
         customer_id: customer.id,
@@ -137,13 +137,27 @@ export const PolicyDocumentsTab: React.FC = () => {
         warranty_number: customer.warranty_number || customer.warranty_reference_number || null,
         plan_type: customer.plan_type,
         action_type: 'search',
-      });
+        notes: 'Customer searched in Policy Documents',
+      } as any);
     } catch (err) {
       console.error('Failed to log search to posted letters log:', err);
     }
 
     // Fetch policies for this customer
     const { data: policies } = await supabase
+      .from('customer_policies')
+      .select('*')
+      .ilike('email', customer.email)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('created_at', { ascending: false });
+
+    setCustomerPolicies(policies || []);
+    if (policies && policies.length > 0) {
+      setSelectedPolicy(policies[0]);
+    } else {
+      setSelectedPolicy(null);
+    }
+  };
       .from('customer_policies')
       .select('*')
       .ilike('email', customer.email)
