@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, User, Car, Mail, Phone, Tag } from 'lucide-react';
+import { Search, Printer, FileText, User, Car, Mail, Phone, Tag, Pencil, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -73,6 +73,9 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<Partial<CustomerData>>({});
+  const [isSaving, setIsSaving] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -485,19 +488,85 @@ export const PolicyDocumentsTab: React.FC = () => {
                   <User className="h-4 w-4" />
                   Customer Details
                 </CardTitle>
-                <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setPrintMode('bw')}
-                    className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                  >
-                    B&W
-                  </button>
-                  <button
-                    onClick={() => setPrintMode('colour')}
-                    className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                  >
-                    Colour
-                  </button>
+                <div className="flex items-center gap-2">
+                  {!isEditing ? (
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      setIsEditing(true);
+                      setEditData({
+                        name: selectedCustomer.name,
+                        email: selectedCustomer.email,
+                        phone: selectedCustomer.phone || '',
+                        flat_number: selectedCustomer.flat_number || '',
+                        building_name: selectedCustomer.building_name || '',
+                        building_number: selectedCustomer.building_number || '',
+                        street: selectedCustomer.street || '',
+                        town: selectedCustomer.town || '',
+                        county: selectedCustomer.county || '',
+                        postcode: selectedCustomer.postcode || '',
+                        registration_plate: selectedCustomer.registration_plate || '',
+                        vehicle_make: selectedCustomer.vehicle_make || '',
+                        vehicle_model: selectedCustomer.vehicle_model || '',
+                        vehicle_year: selectedCustomer.vehicle_year || '',
+                      });
+                    }} className="gap-1 text-xs h-7">
+                      <Pencil className="h-3 w-3" />
+                      Edit
+                    </Button>
+                  ) : (
+                    <div className="flex gap-1">
+                      <Button size="sm" variant="default" disabled={isSaving} onClick={async () => {
+                        setIsSaving(true);
+                        try {
+                          const { error } = await supabase.from('customers').update({
+                            name: editData.name,
+                            email: editData.email,
+                            phone: editData.phone || null,
+                            flat_number: editData.flat_number || null,
+                            building_name: editData.building_name || null,
+                            building_number: editData.building_number || null,
+                            street: editData.street || null,
+                            town: editData.town || null,
+                            county: editData.county || null,
+                            postcode: editData.postcode || null,
+                            registration_plate: editData.registration_plate || null,
+                            vehicle_make: editData.vehicle_make || null,
+                            vehicle_model: editData.vehicle_model || null,
+                            vehicle_year: editData.vehicle_year || null,
+                          }).eq('id', selectedCustomer.id);
+                          if (error) throw error;
+                          const updated = { ...selectedCustomer, ...editData };
+                          setSelectedCustomer(updated as CustomerData);
+                          setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updated as CustomerData : c));
+                          setIsEditing(false);
+                          toast({ title: 'Customer updated', description: 'Details saved successfully.' });
+                        } catch (err: any) {
+                          toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' });
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      }} className="gap-1 text-xs h-7">
+                        <Save className="h-3 w-3" />
+                        Save
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-7 text-xs">
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setPrintMode('bw')}
+                      className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                    >
+                      B&W
+                    </button>
+                    <button
+                      onClick={() => setPrintMode('colour')}
+                      className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                    >
+                      Colour
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -516,10 +585,57 @@ export const PolicyDocumentsTab: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="text-sm space-y-1">
-              <p><span className="text-gray-500">Name:</span> <strong>{selectedCustomer.name}</strong></p>
-              <p><span className="text-gray-500">Email:</span> {selectedCustomer.email}</p>
-              {selectedCustomer.phone && <p><span className="text-gray-500">Phone:</span> {selectedCustomer.phone}</p>}
-              {address.length > 0 && <p><span className="text-gray-500">Address:</span> {address.join(', ')}</p>}
+              {isEditing ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="col-span-2">
+                    <Label className="text-xs text-muted-foreground">Full Name</Label>
+                    <Input value={editData.name || ''} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Email</Label>
+                    <Input value={editData.email || ''} onChange={e => setEditData(d => ({ ...d, email: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Phone</Label>
+                    <Input value={editData.phone || ''} onChange={e => setEditData(d => ({ ...d, phone: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Flat Number</Label>
+                    <Input value={editData.flat_number || ''} onChange={e => setEditData(d => ({ ...d, flat_number: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Building Name</Label>
+                    <Input value={editData.building_name || ''} onChange={e => setEditData(d => ({ ...d, building_name: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Building Number</Label>
+                    <Input value={editData.building_number || ''} onChange={e => setEditData(d => ({ ...d, building_number: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Street</Label>
+                    <Input value={editData.street || ''} onChange={e => setEditData(d => ({ ...d, street: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Town</Label>
+                    <Input value={editData.town || ''} onChange={e => setEditData(d => ({ ...d, town: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">County</Label>
+                    <Input value={editData.county || ''} onChange={e => setEditData(d => ({ ...d, county: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Postcode</Label>
+                    <Input value={editData.postcode || ''} onChange={e => setEditData(d => ({ ...d, postcode: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p><span className="text-muted-foreground">Name:</span> <strong>{selectedCustomer.name}</strong></p>
+                  <p><span className="text-muted-foreground">Email:</span> {selectedCustomer.email}</p>
+                  {selectedCustomer.phone && <p><span className="text-muted-foreground">Phone:</span> {selectedCustomer.phone}</p>}
+                  {address.length > 0 && <p><span className="text-muted-foreground">Address:</span> {address.join(', ')}</p>}
+                </>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -530,10 +646,33 @@ export const PolicyDocumentsTab: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-1">
-              <p><span className="text-gray-500">Reg:</span> <strong>{selectedCustomer.registration_plate || '—'}</strong></p>
-              <p><span className="text-gray-500">Vehicle:</span> {selectedCustomer.vehicle_make} {selectedCustomer.vehicle_model} {selectedCustomer.vehicle_year}</p>
-              <p><span className="text-gray-500">Plan:</span> {planType}</p>
-              <p><span className="text-gray-500">Warranty Ref:</span> {warrantyRef}</p>
+              {isEditing ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Registration</Label>
+                    <Input value={editData.registration_plate || ''} onChange={e => setEditData(d => ({ ...d, registration_plate: e.target.value }))} className="h-8 text-sm font-mono uppercase" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Make</Label>
+                    <Input value={editData.vehicle_make || ''} onChange={e => setEditData(d => ({ ...d, vehicle_make: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Model</Label>
+                    <Input value={editData.vehicle_model || ''} onChange={e => setEditData(d => ({ ...d, vehicle_model: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Year</Label>
+                    <Input value={editData.vehicle_year || ''} onChange={e => setEditData(d => ({ ...d, vehicle_year: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p><span className="text-muted-foreground">Reg:</span> <strong>{selectedCustomer.registration_plate || '—'}</strong></p>
+                  <p><span className="text-muted-foreground">Vehicle:</span> {selectedCustomer.vehicle_make} {selectedCustomer.vehicle_model} {selectedCustomer.vehicle_year}</p>
+                  <p><span className="text-muted-foreground">Plan:</span> {planType}</p>
+                  <p><span className="text-muted-foreground">Warranty Ref:</span> {warrantyRef}</p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
