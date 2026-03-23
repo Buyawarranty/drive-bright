@@ -92,12 +92,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
   
   // Default behavior:
-  // - Sales agents: default to OWN LEADS ONLY unless 'all-leads' is explicitly granted (true)
+  // - Sales agents: default to OWN LEADS ONLY unless granted access
   // - Admins/sales_lead: always see all leads
   // - my-dashboard: ALWAYS allowed (shows only user's own leads)
   // - team-view: must be explicitly granted OR sales_lead/admin role gets it automatically
-  // If global toggle 'agents_own_leads_only' is ON, override individual permissions for sales agents
-  const canSeeAllLeads = isAdmin ? true : (agentsOwnLeadsOnly === true ? false : hasAllLeadsPerm === true);
+  // Global toggle 'agents_own_leads_only' = true means ALL agents can see all leads
+  // Per-agent override: if agent has 'all-leads' permission, they can see all leads regardless
+  const canSeeAllLeads = isAdmin ? true : (agentsOwnLeadsOnly === true || hasAllLeadsPerm === true);
   const canSeeMyDashboard = true; // Always allow - shows only user's own leads
   const canSeeTeamView = hasTeamViewPerm === true || isAdmin; // Sales leads & admins always get team view
   
