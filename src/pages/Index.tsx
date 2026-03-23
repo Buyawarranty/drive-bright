@@ -1321,10 +1321,16 @@ const Index = () => {
       />
       <BreadcrumbSchema 
         items={[
-          { name: 'Home', url: 'https://buyawarranty.co.uk/' },
-          ...(currentStep === 2 ? [{ name: 'Get Quote', url: 'https://buyawarranty.co.uk/' }] : []),
-          ...(currentStep === 3 ? [{ name: 'Choose Plan', url: 'https://buyawarranty.co.uk/' }] : []),
-          ...(currentStep === 4 ? [{ name: 'Checkout', url: 'https://buyawarranty.co.uk/' }] : [])
+          { name: 'HOME PAGE', url: 'https://buyawarranty.co.uk/' },
+          { name: 'MAKE A CLAIM', url: 'https://buyawarranty.co.uk/make-a-claim/' },
+          { name: "WHAT'S COVERED", url: 'https://buyawarranty.co.uk/what-is-covered/' },
+          { name: "FAQ'S", url: 'https://buyawarranty.co.uk/faq/' },
+          { name: 'LOGIN', url: 'https://buyawarranty.co.uk/customer-dashboard/' },
+          { name: 'CAR WARRANTY', url: 'https://buyawarranty.co.uk/buy-a-used-car-warranty-reliable-warranties/' },
+          { name: 'VAN WARRANTY', url: 'https://buyawarranty.co.uk/van-warranty/' },
+          { name: 'EV WARRANTY', url: 'https://buyawarranty.co.uk/ev-warranty/' },
+          { name: 'MOTOR CYCLE WARRANTY', url: 'https://buyawarranty.co.uk/motorcycle-warranty/' },
+          { name: 'WARRANTY TYPES', url: 'https://buyawarranty.co.uk/warranty-types/' },
         ]}
       />
       
