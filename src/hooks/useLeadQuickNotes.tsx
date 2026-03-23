@@ -26,6 +26,7 @@ export const useLeadQuickNotes = (leadId: string) => {
   const [loading, setLoading] = useState(true);
   const hasFetchedRef = useRef(false);
   const notesRef = useRef<QuickNote[]>([]);
+  const isSavingRef = useRef(false);
   
   // Keep ref in sync - supports both direct value and updater function
   const updateNotes = useCallback((newNotesOrUpdater: QuickNote[] | ((prev: QuickNote[]) => QuickNote[])) => {
@@ -220,8 +221,8 @@ export const useLeadQuickNotes = (leadId: string) => {
   };
 
   const addNote = async (noteText: string) => {
-    
     try {
+      isSavingRef.current = true;
       const adminUser = await getAuthenticatedAdmin();
       
       if (isAbandonedCart) {
@@ -295,11 +296,14 @@ export const useLeadQuickNotes = (leadId: string) => {
     } catch (error: any) {
       console.error('[addNote] Error:', error?.message || error);
       throw error;
+    } finally {
+      isSavingRef.current = false;
     }
   };
 
   const updateNote = async (noteId: string, noteText: string) => {
     try {
+      isSavingRef.current = true;
       if (isAbandonedCart) {
         const { error } = await supabase
           .from('abandoned_carts')
@@ -323,6 +327,8 @@ export const useLeadQuickNotes = (leadId: string) => {
     } catch (error) {
       console.error('Error updating quick note:', error);
       toast.error('Failed to update note');
+    } finally {
+      isSavingRef.current = false;
     }
   };
 
@@ -362,6 +368,7 @@ export const useLeadQuickNotes = (leadId: string) => {
 
   const deleteNote = async (noteId: string) => {
     try {
+      isSavingRef.current = true;
       if (isAbandonedCart) {
         const { error } = await supabase
           .from('abandoned_carts')
@@ -386,6 +393,8 @@ export const useLeadQuickNotes = (leadId: string) => {
     } catch (error) {
       console.error('Error deleting quick note:', error);
       toast.error('Failed to delete note');
+    } finally {
+      isSavingRef.current = false;
     }
   };
 
@@ -397,6 +406,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     togglePin,
     deleteNote,
     refetch: () => fetchNotes(true),
-    isAbandonedCart
+    isAbandonedCart,
+    isSaving: isSavingRef.current
   };
 };

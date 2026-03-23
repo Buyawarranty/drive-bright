@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -21,7 +21,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   className,
   compact = false
 }) => {
-  const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart } = useLeadQuickNotes(leadId);
+  const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');
@@ -42,18 +42,53 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   // Track latest values in refs for cleanup
   const quickNoteRef = useRef(quickNoteValue);
   const addNoteRef = useRef(addNote);
+  const isSavingRef = useRef(isSaving);
   quickNoteRef.current = quickNoteValue;
   addNoteRef.current = addNote;
+  isSavingRef.current = isSaving;
+
+  const flushPendingNote = useCallback(async () => {
+    const pending = quickNoteRef.current?.trim();
+    if (!pending || isSavingRef.current || hookIsSaving) return;
+
+    setIsSaving(true);
+    try {
+      await addNoteRef.current(pending);
+      quickNoteRef.current = '';
+      setQuickNoteValue('');
+    } catch {
+      // keep draft intact if save fails
+    } finally {
+      setIsSaving(false);
+    }
+  }, [hookIsSaving]);
 
   // Auto-save unsaved note on unmount (e.g. collapsing the panel)
   useEffect(() => {
     return () => {
-      const pending = quickNoteRef.current?.trim();
-      if (pending) {
-        addNoteRef.current(pending).catch(() => {});
+      void flushPendingNote();
+    };
+  }, [leadId, flushPendingNote]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        void flushPendingNote();
       }
     };
-  }, [leadId]);
+
+    const handlePageHide = () => {
+      void flushPendingNote();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [flushPendingNote]);
 
   // Reset state when lead changes
   useEffect(() => {
@@ -84,7 +119,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   const handleSaveNote = async () => {
     const noteText = quickNoteValue.trim();
-    if (!noteText || isSaving) return;
+    if (!noteText || isSaving || hookIsSaving) return;
     
     setIsSaving(true);
     
@@ -309,14 +344,19 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 handleSaveNote();
               }
             }}
+             onBlur={() => {
+               if (quickNoteValue.trim()) {
+                 void flushPendingNote();
+               }
+             }}
             placeholder="Add a note..."
             className="w-full h-8 text-sm"
-            disabled={isSaving}
+             disabled={isSaving || hookIsSaving}
           />
           <Button 
             size="sm" 
             onClick={handleSaveNote} 
-            disabled={!quickNoteValue.trim() || isSaving}
+             disabled={!quickNoteValue.trim() || isSaving || hookIsSaving}
             className="h-8 w-full"
           >
             <Save className="h-4 w-4 mr-1" />
