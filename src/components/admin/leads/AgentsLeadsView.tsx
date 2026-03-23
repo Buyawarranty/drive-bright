@@ -1383,7 +1383,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {(isFullAdmin || isSalesLead) && (
               <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Agents Own Leads Only</span>
+                <span className="text-sm font-medium">Agents can only see their own leads</span>
                 <Switch
                   checked={agentsOwnLeadsOnly === true}
                   onCheckedChange={async (checked) => {
