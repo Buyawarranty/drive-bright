@@ -4142,6 +4142,7 @@ export type Database = {
       }
       posted_letters_log: {
         Row: {
+          action_type: string | null
           created_at: string
           customer_email: string | null
           customer_id: string | null
@@ -4155,6 +4156,7 @@ export type Database = {
           warranty_number: string | null
         }
         Insert: {
+          action_type?: string | null
           created_at?: string
           customer_email?: string | null
           customer_id?: string | null
@@ -4168,6 +4170,7 @@ export type Database = {
           warranty_number?: string | null
         }
         Update: {
+          action_type?: string | null
           created_at?: string
           customer_email?: string | null
           customer_id?: string | null
