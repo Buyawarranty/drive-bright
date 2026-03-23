@@ -1404,7 +1404,57 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 </span>
               </div>
             )}
-          </div>
+
+            {/* Per-agent visibility checkboxes - show when global toggle is OFF */}
+            {(isFullAdmin || isSalesLead) && agentsOwnLeadsOnly !== true && (
+              <div className="p-3 bg-muted/20 border rounded-lg space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Which agents can see all leads?</span>
+                </div>
+                <div className="grid gap-1.5">
+                  {salesUsers
+                    .filter(u => u.role === 'sales')
+                    .map(agent => {
+                      const perms = (agent as any).permissions || {};
+                      const hasAllLeads = perms['tab_new-leads_all-leads'] === true;
+                      const agentName = `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email;
+                      return (
+                        <label key={agent.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/40 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={hasAllLeads}
+                            onChange={async (e) => {
+                              const newPerms = { ...perms, 'tab_new-leads_all-leads': e.target.checked };
+                              const { error } = await supabase
+                                .from('admin_users')
+                                .update({ permissions: newPerms })
+                                .eq('id', agent.id);
+                              if (!error) {
+                                toast({
+                                  title: e.target.checked ? `${agentName} can see all leads` : `${agentName} restricted to own leads`,
+                                });
+                                // Force refresh by updating local state
+                                (agent as any).permissions = newPerms;
+                                // Trigger re-render
+                                setSelectedAgent(prev => prev);
+                              } else {
+                                toast({ title: 'Error saving permission', variant: 'destructive' });
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">{agentName}</span>
+                          {hasAllLeads && <Check className="h-3.5 w-3.5 text-green-500" />}
+                        </label>
+                      );
+                    })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tick agents who should be able to see all leads, not just their own.
+                </p>
+              </div>
+            )}
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Active Status Info Box */}
