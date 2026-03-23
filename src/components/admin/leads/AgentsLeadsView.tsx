@@ -1347,7 +1347,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {showAssignmentsToAgents === false ? 'Hidden from agents' : 'Visible to agents'}
+                  {showAssignmentsToAgents === false ? 'Agents can\'t see who\'s assigned' : 'Agents can see who\'s assigned'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
