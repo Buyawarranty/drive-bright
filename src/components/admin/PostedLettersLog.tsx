@@ -20,6 +20,7 @@ interface PostedLetterEntry {
   marked_sent_by: string | null;
   notes: string | null;
   created_at: string;
+  action_type: string | null;
 }
 
 interface CustomerMatch {
@@ -539,7 +540,8 @@ export const PostedLettersLog: React.FC = () => {
                       />
                     </th>
                     <th className="py-2 px-2 font-medium text-muted-foreground w-10">Sent</th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground">Date Sent</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground">Date</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground">Type</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Reg Plate</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Customer</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Email</th>
@@ -568,11 +570,24 @@ export const PostedLettersLog: React.FC = () => {
                       </td>
                       <td className="py-2 px-2">
                         <span className="text-foreground">
-                          {format(new Date(entry.sent_at), 'dd/MM/yyyy')}
+                          {format(new Date(entry.created_at), 'dd/MM/yyyy HH:mm')}
                         </span>
                         {entry.marked_sent_by && (
                           <CheckCircle2 className="inline-block ml-1 h-3.5 w-3.5 text-green-600" />
                         )}
+                      </td>
+                      <td className="py-2 px-2">
+                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                          entry.action_type === 'search' ? 'bg-blue-100 text-blue-700' :
+                          entry.action_type === 'label' ? 'bg-amber-100 text-amber-700' :
+                          entry.action_type === 'print' ? 'bg-green-100 text-green-700' :
+                          'bg-muted text-muted-foreground'
+                        }`}>
+                          {entry.action_type === 'search' ? 'Search' :
+                           entry.action_type === 'label' ? 'Label' :
+                           entry.action_type === 'print' ? 'Print' :
+                           entry.action_type || 'Manual'}
+                        </span>
                       </td>
                       <td className="py-2 px-2">
                         <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">

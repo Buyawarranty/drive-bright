@@ -127,6 +127,22 @@ export const PolicyDocumentsTab: React.FC = () => {
     setSearchQuery('');
     setShowPreview(false);
 
+    // Auto-log search selection to Posted Letters Log (timestamped)
+    try {
+      await supabase.from('posted_letters_log').insert({
+        customer_id: customer.id,
+        registration_plate: customer.registration_plate || 'N/A',
+        customer_name: customer.name,
+        customer_email: customer.email,
+        warranty_number: customer.warranty_number || customer.warranty_reference_number || null,
+        plan_type: customer.plan_type,
+        action_type: 'search',
+        notes: 'Customer searched in Policy Documents',
+      } as any);
+    } catch (err) {
+      console.error('Failed to log search to posted letters log:', err);
+    }
+
     // Fetch policies for this customer
     const { data: policies } = await supabase
       .from('customer_policies')
@@ -337,8 +353,9 @@ export const PolicyDocumentsTab: React.FC = () => {
         plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || null,
         sent_at: new Date().toISOString(),
         marked_sent_by: null,
+        action_type: type === 'label' ? 'label' : 'print',
         notes: type === 'label' ? 'Address label printed' : 'Confirmation letter printed',
-      });
+      } as any);
     } catch (e) {
       // Silent fail - don't block the print action
     }

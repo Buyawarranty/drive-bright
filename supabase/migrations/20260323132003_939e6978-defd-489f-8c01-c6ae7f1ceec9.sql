@@ -1,0 +1,1 @@
+ALTER TABLE public.posted_letters_log ADD COLUMN IF NOT EXISTS action_type text DEFAULT 'manual';
