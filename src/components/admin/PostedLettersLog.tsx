@@ -20,6 +20,7 @@ interface PostedLetterEntry {
   marked_sent_by: string | null;
   notes: string | null;
   created_at: string;
+  action_type: string | null;
 }
 
 interface CustomerMatch {
