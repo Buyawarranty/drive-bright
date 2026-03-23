@@ -297,23 +297,12 @@ export const useLeads = () => {
 
       try {
         if (salesLeadIds.length > 0) {
-          const BATCH_SIZE = 300;
-          const allTagData: any[] = [];
-
-          const batchPromises = [];
-          for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
-            const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
-            batchPromises.push(
-              supabase
-                .from('lead_tag_assignments')
-                .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-                .in('lead_id', batch)
-            );
-          }
-          const batchResults = await Promise.all(batchPromises);
-          batchResults.forEach(({ data: batchData }) => {
-            if (batchData) allTagData.push(...batchData);
-          });
+          // Fetch all tag assignments in one query (no .in filter needed — just get all)
+          // This is faster than batching 5000+ IDs across many requests
+          const { data: allTagData } = await supabase
+            .from('lead_tag_assignments')
+            .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+            .limit(10000);
 
           allTagData.forEach((assignment: any) => {
             if (!tagsByLeadId[assignment.lead_id]) {
