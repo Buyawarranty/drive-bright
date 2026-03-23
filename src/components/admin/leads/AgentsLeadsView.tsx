@@ -1399,7 +1399,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {agentsOwnLeadsOnly === true ? 'Own leads only' : 'Per-user setting'}
+                  {agentsOwnLeadsOnly === true ? 'Each agent sees only their assigned leads' : 'All agents can see all leads'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
