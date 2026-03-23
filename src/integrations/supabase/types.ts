@@ -6098,6 +6098,7 @@ export type Database = {
         Args: { permission_key: string; user_id: string }
         Returns: boolean
       }
+      has_all_leads_permission: { Args: { _user_id: string }; Returns: boolean }
       has_tab_permission: {
         Args: { p_action?: string; p_tab: string; p_user_id: string }
         Returns: boolean
