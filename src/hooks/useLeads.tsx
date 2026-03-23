@@ -304,7 +304,7 @@ export const useLeads = () => {
             .select('lead_id, tag_id, lead_tags(id, name, color, description)')
             .limit(10000);
 
-          allTagData.forEach((assignment: any) => {
+          (allTagData || []).forEach((assignment: any) => {
             if (!tagsByLeadId[assignment.lead_id]) {
               tagsByLeadId[assignment.lead_id] = [];
             }
