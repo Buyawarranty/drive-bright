@@ -1330,7 +1330,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 ) : (
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="text-sm font-medium">Agent Assignment Visibility</span>
+                <span className="text-sm font-medium">Show "Assigned To" column to agents</span>
                 <Switch
                   checked={showAssignmentsToAgents === false}
                   onCheckedChange={async (checked) => {
@@ -1347,7 +1347,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {showAssignmentsToAgents === false ? 'Hidden from agents' : 'Visible to agents'}
+                  {showAssignmentsToAgents === false ? 'Agents can\'t see who\'s assigned' : 'Agents can see who\'s assigned'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
@@ -1383,7 +1383,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {(isFullAdmin || isSalesLead) && (
               <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Agents Own Leads Only</span>
+                <span className="text-sm font-medium">Agents can only see their own leads</span>
                 <Switch
                   checked={agentsOwnLeadsOnly === true}
                   onCheckedChange={async (checked) => {
@@ -1399,7 +1399,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   }}
                 />
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {agentsOwnLeadsOnly === true ? 'Own leads only' : 'Per-user setting'}
+                  {agentsOwnLeadsOnly === true ? 'Each agent sees only their assigned leads' : 'All agents can see all leads'}
                   <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
                 </span>
               </div>
