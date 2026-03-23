@@ -453,13 +453,7 @@ export const useLeads = () => {
       )
       .subscribe();
 
-    const cartsChannel = supabase
-      .channel('carts-realtime-sync')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'abandoned_carts' },
-        () => debouncedRealtimeRefetch()
-      )
-      .subscribe();
+    // Note: abandoned_carts channel removed — leads are sourced only from sales_leads now
 
     // Polling fallback: refresh every 60s (realtime handles fast sync, this is a safety net)
     const pollingInterval = setInterval(() => {
