@@ -228,166 +228,27 @@ export const useLeads = () => {
         }, 12000);
       }
 
-      // PERFORMANCE: Fetch one raw source-of-truth dataset, then let the UI handle view filtering.
-      const [allSalesLeadsResult, abandonedCartsResult] = await Promise.all([
-        fetchAllRows(() =>
-          supabase
-            .from('sales_leads')
-            .select(`
-              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
-              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
-              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
-              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-              call_count, is_callback,
-              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
-            `)
-            .order('created_at', { ascending: false })
-        ),
-        fetchAllRows(() =>
-          supabase
-            .from('abandoned_carts')
-            .select(`
-              id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-              vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
-              contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
-              call_count, created_at, updated_at
-            `)
-            .order('created_at', { ascending: false })
-        ),
-      ]);
+      // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
+      // by LostLeadsSection / recover_orphaned_leads RPC.
+      const allSalesLeadsResult = await fetchAllRows(() =>
+        supabase
+          .from('sales_leads')
+          .select(`
+            id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+            plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+            vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+            last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+            created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+            call_count, is_callback,
+            assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
+          `)
+          .order('created_at', { ascending: false })
+      );
 
       const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;
 
-      const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
-      if (cartsError) throw cartsError;
-
-      console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads, ${abandonedCartsData?.length || 0} abandoned carts`);
-
-      // Build dedup sets from ALL sales leads — prevents carts reappearing.
-      const linkedCartIds = new Set(
-        (allSalesLeadsData || [])
-          .filter((lead: any) => lead.abandoned_cart_id)
-          .map((lead: any) => lead.abandoned_cart_id)
-      );
-      const existingEmails = new Set(
-        (allSalesLeadsData || []).map((lead: any) => lead.email?.toLowerCase()).filter(Boolean)
-      );
-      const existingPhones = new Set(
-        (allSalesLeadsData || [])
-          .map((lead: any) => lead.phone?.replace(/\s/g, ''))
-          .filter(Boolean)
-      );
-
-      // Build admin user lookup for abandoned cart assignments (contacted_by -> admin_users)
-      const contactedByIds = (abandonedCartsData || [])
-        .filter((cart: any) => cart.contacted_by)
-        .map((cart: any) => cart.contacted_by);
-
-      let adminUsersByAuthId: Record<string, any> = {};
-      if (contactedByIds.length > 0) {
-        const { data: adminUsersForCarts } = await supabase
-          .from('admin_users')
-          .select('id, user_id, first_name, last_name, email')
-          .in('user_id', contactedByIds);
-
-        (adminUsersForCarts || []).forEach((user: any) => {
-          if (user.user_id) {
-            adminUsersByAuthId[user.user_id] = user;
-          }
-        });
-      }
-
-      const mapContactStatusToLeadStatus = (contactStatus: string | null, isFakeLead: boolean): LeadStatus => {
-        if (isFakeLead) return 'fake_lead';
-        switch (contactStatus) {
-          case 'contacted': return 'contacted';
-          case 'follow_up': return 'follow_up';
-          case 'quote_sent': return 'quote_sent';
-          case 'negotiating': return 'negotiating';
-          case 'converted': return 'converted';
-          case 'lost': return 'lost';
-          case 'fake_lead': return 'fake_lead';
-          case 'urgent_callback': return 'urgent_callback';
-          case 'special_pricing_request': return 'urgent_callback';
-          default: return 'new';
-        }
-      };
-
-      const cartsAsLeads = (abandonedCartsData || [])
-        .filter((cart: any) =>
-          !linkedCartIds.has(cart.id) &&
-          !existingEmails.has(cart.email?.toLowerCase()) &&
-          !(cart.phone && existingPhones.has(cart.phone.replace(/\s/g, ''))) &&
-          // Step 3 carts are duplicates of existing quote-delivery sales leads.
-          cart.step_abandoned !== 3
-        )
-        .map((cart: any) => {
-          const fullName = cart.full_name || '';
-          const isFakeLead = isTestLead(fullName, cart.phone) || cart.contact_status === 'fake_lead';
-          const assignedAdminUser = cart.contacted_by ? adminUsersByAuthId[cart.contacted_by] : null;
-          // If cart is_converted, treat as converted regardless of contact_status
-          const derivedStatus = cart.is_converted ? 'converted' as LeadStatus : mapContactStatusToLeadStatus(cart.contact_status, isFakeLead);
-
-          return {
-            id: `cart_${cart.id}`,
-            first_name: fullName.split(' ')[0] || null,
-            last_name: fullName.split(' ').slice(1).join(' ') || null,
-            full_name: fullName || null,
-            email: cart.email,
-            phone: cart.phone,
-            lead_source: 'website' as LeadSource,
-            status: derivedStatus,
-            priority: 'medium' as LeadPriority,
-            priority_score: 0,
-            plan_interest: cart.plan_name,
-            cart_value: null,
-            quote_amount: null,
-            vehicle_reg: cart.vehicle_reg,
-            vehicle_make: cart.vehicle_make,
-            vehicle_model: cart.vehicle_model,
-            vehicle_year: cart.vehicle_year,
-            vehicle_type: cart.vehicle_type,
-            mileage: cart.mileage,
-            assigned_to: assignedAdminUser?.id || null,
-            assigned_at: cart.last_contacted_at,
-            next_action_type: null,
-            next_action_date: null,
-            follow_up_status: 'none',
-            last_activity_date: cart.updated_at,
-            last_contacted_at: cart.last_contacted_at,
-            notes: cart.contact_notes,
-            converted_at: null,
-            lost_at: null,
-            lost_reason: null,
-            abandoned_cart_id: cart.id,
-            created_at: cart.created_at,
-            updated_at: cart.updated_at,
-            plan_name: cart.plan_name,
-            payment_type: cart.payment_type,
-            step_abandoned: cart.step_abandoned,
-            contact_status: cart.contact_status,
-            is_from_abandoned_cart: true,
-            is_paid: false,
-            payment_amount: null,
-            payment_method: null,
-            payment_date: null,
-            step_two_completed_at: null,
-            call_count: cart.call_count || 0,
-            is_callback: !!(cart.cart_metadata?.request_type === 'urgent_callback'),
-            cart_metadata: cart.cart_metadata || null,
-            assigned_user: assignedAdminUser ? {
-              id: assignedAdminUser.id,
-              first_name: assignedAdminUser.first_name,
-              last_name: assignedAdminUser.last_name,
-              email: assignedAdminUser.email,
-            } : null,
-            tags: [],
-            resubmission_count: 0,
-            last_resubmitted_at: null,
-          };
-        });
+      console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads`);
 
       const salesLeadsWithFlags = (allSalesLeadsData || []).map((lead: any) => {
         const fullName = lead.first_name || lead.last_name
@@ -414,9 +275,8 @@ export const useLeads = () => {
 
       // SOURCE OF TRUTH: Only sales_leads count as leads.
       // Orphaned abandoned_carts are recovered via LostLeadsSection / recover_orphaned_leads RPC.
-      // Mixing carts into this array caused unstable lead counts due to fragile dedup logic.
-      const allLeads = [...salesLeadsWithFlags]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const allLeads = salesLeadsWithFlags
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       const emailCounts: Record<string, number> = {};
       allLeads.forEach((lead: any) => {
@@ -437,25 +297,14 @@ export const useLeads = () => {
 
       try {
         if (salesLeadIds.length > 0) {
-          const BATCH_SIZE = 300;
-          const allTagData: any[] = [];
+          // Fetch all tag assignments in one query (no .in filter needed — just get all)
+          // This is faster than batching 5000+ IDs across many requests
+          const { data: allTagData } = await supabase
+            .from('lead_tag_assignments')
+            .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+            .limit(10000);
 
-          const batchPromises = [];
-          for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
-            const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
-            batchPromises.push(
-              supabase
-                .from('lead_tag_assignments')
-                .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-                .in('lead_id', batch)
-            );
-          }
-          const batchResults = await Promise.all(batchPromises);
-          batchResults.forEach(({ data: batchData }) => {
-            if (batchData) allTagData.push(...batchData);
-          });
-
-          allTagData.forEach((assignment: any) => {
+          (allTagData || []).forEach((assignment: any) => {
             if (!tagsByLeadId[assignment.lead_id]) {
               tagsByLeadId[assignment.lead_id] = [];
             }
@@ -604,13 +453,7 @@ export const useLeads = () => {
       )
       .subscribe();
 
-    const cartsChannel = supabase
-      .channel('carts-realtime-sync')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'abandoned_carts' },
-        () => debouncedRealtimeRefetch()
-      )
-      .subscribe();
+    // Note: abandoned_carts channel removed — leads are sourced only from sales_leads now
 
     // Polling fallback: refresh every 60s (realtime handles fast sync, this is a safety net)
     const pollingInterval = setInterval(() => {
@@ -639,7 +482,7 @@ export const useLeads = () => {
 
     return () => {
       leadsChannel.unsubscribe();
-      cartsChannel.unsubscribe();
+      
       clearInterval(pollingInterval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
