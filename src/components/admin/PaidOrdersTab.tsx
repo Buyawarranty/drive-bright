@@ -211,15 +211,26 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   };
 
   const filteredOrders = useMemo(() => {
-    if (!searchTerm.trim()) return paidOrders;
+    let orders = paidOrders;
     
-    const term = searchTerm.toLowerCase();
-    return paidOrders.filter(order => 
-      order.customer_name?.toLowerCase().includes(term) ||
-      order.customer_email?.toLowerCase().includes(term) ||
-      order.vehicle_reg?.toLowerCase().includes(term) ||
-      order.policy_number?.toLowerCase().includes(term)
-    );
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      orders = orders.filter(order => 
+        order.customer_name?.toLowerCase().includes(term) ||
+        order.customer_email?.toLowerCase().includes(term) ||
+        order.vehicle_reg?.toLowerCase().includes(term) ||
+        order.policy_number?.toLowerCase().includes(term)
+      );
+    }
+    
+    // Sort: unprocessed orders (no policy_number) first
+    return orders.sort((a, b) => {
+      const aNeeds = !a.policy_number ? 0 : 1;
+      const bNeeds = !b.policy_number ? 0 : 1;
+      if (aNeeds !== bNeeds) return aNeeds - bNeeds;
+      // Within same group, sort by date descending
+      return new Date(b.paid_at || 0).getTime() - new Date(a.paid_at || 0).getTime();
+    });
   }, [paidOrders, searchTerm]);
 
   const getPaymentMethodBadge = (order: PaidOrder) => {
@@ -234,6 +245,11 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   };
 
   const getStatusBadge = (order: PaidOrder) => {
+    // If paid but no policy created yet — needs processing
+    if (!order.policy_number && !order.policy_id) {
+      return <Badge className="bg-amber-500 text-white animate-pulse">⚠️ Needs Processing</Badge>;
+    }
+    
     const status = order.policy_status || order.customer_status || order.status || 'active';
     switch (status.toLowerCase()) {
       case 'active':

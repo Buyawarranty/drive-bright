@@ -75,7 +75,24 @@ serve(async (req) => {
       upfrontPrice: quote.upfront_price
     });
 
-    // Update quote status to paid
+    // Use the exact customer details submitted on the quote page when available
+    const customerName = quote.customer_name || '';
+    const nameParts = customerName.split(' ').filter(Boolean);
+    const firstName = url.searchParams.get('first_name') || nameParts[0] || '';
+    const lastName = url.searchParams.get('last_name') || nameParts.slice(1).join(' ') || '';
+    const submittedPhone = url.searchParams.get('mobile') || quote.customer_phone || '';
+    const submittedStreet = url.searchParams.get('street') || '';
+    const submittedTown = url.searchParams.get('town') || '';
+    const submittedPostcode = url.searchParams.get('postcode') || '';
+    const submittedEmail = url.searchParams.get('email') || quote.customer_email;
+
+    // Calculate total amount for thank-you page display
+    const totalAmount = quote.monthly_price * 12;
+    const totalMonths = quote.duration_months + (quote.bonus_months || 0);
+    const bumperOrderId = `LQ-${quote.id.substring(0, 8)}-${Date.now()}`;
+
+    // Update quote status to paid — NO warranty/customer creation
+    // Sales agent will manually complete the order from the Paid Orders tab
     const { error: updateError } = await supabaseClient
       .from('live_quotes')
       .update({ 
@@ -90,168 +107,31 @@ serve(async (req) => {
       throw new Error(`Failed to update quote status: ${updateError.message}`);
     }
 
-    logStep("Quote marked as paid, now creating warranty...");
+    logStep("Quote marked as paid. Warranty creation deferred to sales agent manual completion.");
 
-    // Calculate total amount (Bumper = 12 months of monthly payments)
-    const totalAmount = quote.monthly_price * 12;
-    const totalMonths = quote.duration_months + (quote.bonus_months || 0);
-
-    // Use the exact customer details submitted on the quote page when available
-    const customerName = quote.customer_name || '';
-    const nameParts = customerName.split(' ').filter(Boolean);
-    const firstName = url.searchParams.get('first_name') || nameParts[0] || '';
-    const lastName = url.searchParams.get('last_name') || nameParts.slice(1).join(' ') || '';
-    const submittedPhone = url.searchParams.get('mobile') || quote.customer_phone || '';
-    const submittedStreet = url.searchParams.get('street') || '';
-    const submittedTown = url.searchParams.get('town') || '';
-    const submittedPostcode = url.searchParams.get('postcode') || '';
-    const submittedEmail = url.searchParams.get('email') || quote.customer_email;
-
-    // Build customer data for handle-successful-payment
+    // Build customer/vehicle data for thank-you URL only
     const customerData = {
       email: submittedEmail,
       first_name: firstName,
       last_name: lastName,
-      fullName: customerName,
       phone: submittedPhone,
-      mobile: submittedPhone,
-      street: submittedStreet,
-      town: submittedTown,
       address_line1: submittedStreet,
       city: submittedTown,
       postcode: submittedPostcode,
-      final_amount: totalAmount,
-      claimLimit: quote.claim_limit || 1250,
     };
 
-    // Build vehicle data
     const vehicleData = {
       regNumber: quote.vehicle_reg,
       make: quote.vehicle_make,
       model: quote.vehicle_model,
       year: quote.vehicle_year,
       mileage: quote.vehicle_mileage || '',
-      fuelType: quote.vehicle_fuel_type || '',
-      transmission: quote.vehicle_transmission || ''
     };
 
-    // Map duration to payment type format
-    const paymentType = `${totalMonths}months`;
-
-    // Build add-ons from quote
-    const protectionAddOns = {
-      breakdown: quote.breakdown_included || false,
-      rental: quote.rental_included || false,
-      tyre: false,
-      wearAndTear: false,
-      european: false,
-      transfer: false,
-      motRepair: false,
-      motFee: false
-    };
-
-    // Generate bumper order ID
-    const bumperOrderId = `LQ-${quote.id.substring(0, 8)}-${Date.now()}`;
-
-    logStep("Invoking handle-successful-payment", {
-      customerEmail: customerData.email,
-      planId: quote.plan_type,
-      paymentType,
-      finalAmount: totalAmount,
-      vehicleReg: vehicleData.regNumber,
-      bumperOrderId,
-      claimLimit: quote.claim_limit,
-      labourRate: quote.labour_rate,
-      excessAmount: quote.excess_amount
-    });
-
-    // Call handle-successful-payment to create the warranty
-    // CRITICAL: userEmail is REQUIRED by handle-successful-payment
-    const { data: paymentResult, error: paymentError } = await supabaseClient.functions.invoke('handle-successful-payment', {
-      body: {
-        userEmail: submittedEmail,
-        customerData,
-        vehicleData,
-        planId: quote.plan_type,
-        paymentType,
-        finalAmount: totalAmount,
-        discountCode: null,
-        protectionAddOns,
-        source: 'bumper',
-        bumperOrderId,
-        labourRate: quote.labour_rate || 70,
-        claimLimit: quote.claim_limit || 1250,
-        voluntaryExcess: quote.excess_amount || 75,
-        metadata: {
-          source: 'bumper',
-          bumper_order_id: bumperOrderId,
-          vehicle_reg: quote.vehicle_reg,
-          vehicle_make: quote.vehicle_make,
-          vehicle_model: quote.vehicle_model,
-          vehicle_year: quote.vehicle_year,
-          vehicle_fuel_type: quote.vehicle_fuel_type || '',
-          vehicle_transmission: quote.vehicle_transmission || '',
-          claim_limit: (quote.claim_limit || 1250).toString(),
-          labour_rate: (quote.labour_rate || 70).toString(),
-          final_amount: totalAmount.toString(),
-        }
-      }
-    });
-
-    if (paymentError) {
-      logStep("Error from handle-successful-payment (network)", { error: paymentError.message });
-      throw new Error(`Failed to create warranty: ${paymentError.message}`);
-    }
-
-    // CRITICAL: Also check for application-level errors in the response
-    // supabase.functions.invoke may not set paymentError for HTTP 4xx/5xx responses
-    if (paymentResult?.error) {
-      logStep("Error from handle-successful-payment (application)", { error: paymentResult.error });
-      throw new Error(`Failed to create warranty: ${paymentResult.error}`);
-    }
-
-    if (!paymentResult?.success && !paymentResult?.policyNumber && !paymentResult?.warrantyNumber) {
-      logStep("Warning: handle-successful-payment returned unexpected result", { paymentResult });
-    }
-
-    logStep("Warranty created successfully", { 
-      policyNumber: paymentResult?.policyNumber,
-      warrantyNumber: paymentResult?.warrantyNumber 
-    });
-
-    // Update quote with policy number
-    const policyNumber = paymentResult?.policyNumber || paymentResult?.warrantyNumber;
-    if (policyNumber) {
-      await supabaseClient
-        .from('live_quotes')
-        .update({ policy_number: policyNumber })
-        .eq('id', quote.id);
-    }
-
-    // Send welcome email
-    try {
-      logStep("Sending welcome email...");
-      
-      const { error: emailError } = await supabaseClient.functions.invoke('send-welcome-email-manual', {
-        body: {
-          policyId: paymentResult?.policyId,
-          customerEmail: customerData.email
-        }
-      });
-
-      if (emailError) {
-        logStep("Warning: Welcome email failed", { error: emailError.message });
-      } else {
-        logStep("Welcome email sent successfully");
-      }
-    } catch (emailErr) {
-      logStep("Warning: Welcome email error", { error: String(emailErr) });
-    }
-
-    // Build thank you URL with all parameters
-    const thankYouUrl = buildThankYouUrl(quote, policyNumber, totalAmount, customerData, vehicleData);
+    // Build thank you URL with all parameters (no policy number yet — will be created later by sales)
+    const thankYouUrl = buildThankYouUrl(quote, undefined, totalAmount, customerData, vehicleData);
     
-    logStep("Redirecting to thank you page", { url: thankYouUrl });
+    logStep("Redirecting to thank you page (no warranty created yet)", { url: thankYouUrl });
 
     return new Response(null, {
       status: 302,

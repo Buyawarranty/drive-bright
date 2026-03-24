@@ -88,6 +88,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [isCompletingOrder, setIsCompletingOrder] = useState(false);
   
   // Customer details
   const [customerName, setCustomerName] = useState('');
@@ -321,6 +322,88 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleCompleteOrder = async () => {
+    if (!order) return;
+    
+    setIsCompletingOrder(true);
+    try {
+      // Parse name
+      const nameParts = customerName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      const totalMonths = (order.duration_months || 12) + (order.bonus_months || 0);
+      const paymentType = `${totalMonths}months`;
+      const finalAmount = order.upfront_price || (order.monthly_price * 12);
+
+      // Call confirm-external-payment — handles dedup, customer creation, policy, and email
+      const { data, error } = await supabase.functions.invoke('confirm-external-payment', {
+        body: {
+          customerEmail: customerEmail,
+          customerName: customerName,
+          firstName: firstName,
+          lastName: lastName,
+          phone: customerPhone,
+          street: street,
+          town: town,
+          county: county,
+          postcode: postcode,
+          buildingNumber: buildingNumber,
+          vehicleReg: vehicleReg.toUpperCase(),
+          vehicleMake: vehicleMake,
+          vehicleModel: vehicleModel,
+          vehicleMileage: vehicleMileage,
+          vehicleYear: vehicleYear,
+          planType: 'Platinum',
+          paymentType: paymentType,
+          finalAmount: finalAmount,
+          claimLimit: claimLimit,
+          labourRate: labourRate,
+          voluntaryExcess: excessAmount,
+          breakdownRecovery: breakdownIncluded,
+          vehicleRental: rentalIncluded,
+          boostAddon: boostAddon,
+          paymentMethod: order.payment_method || order.payment_source || 'external',
+          agentId: selectedAgentId || null,
+          sendEmail: true,
+          source: 'live_quote',
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Update live_quotes with the policy number
+      const policyNumber = data?.warrantyNumber || data?.policyNumber;
+      if (policyNumber) {
+        await supabase
+          .from('live_quotes')
+          .update({ 
+            policy_number: policyNumber,
+            payment_confirmed_by: selectedAgentId 
+              ? adminUsers.find(a => a.id === selectedAgentId)?.user_id || null 
+              : null,
+          })
+          .eq('id', order.id);
+      }
+
+      toast({
+        title: "Order Completed ✅",
+        description: `Warranty ${policyNumber || ''} created and welcome email sent to ${customerEmail}.`,
+      });
+
+      onSave();
+    } catch (error: any) {
+      console.error('Error completing order:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to complete order",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCompletingOrder(false);
     }
   };
 
@@ -672,6 +755,28 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
               <CardTitle className="text-base sm:text-lg">Actions</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Primary action: Complete Order (only shown when no policy exists yet) */}
+              {!order.policy_number && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-2">⚠️ This order needs processing</p>
+                  <p className="text-xs text-amber-700 mb-3">
+                    Review the details above, then click below to create the warranty, customer record, and send the welcome email.
+                  </p>
+                  <Button
+                    onClick={handleCompleteOrder}
+                    disabled={isCompletingOrder || isSaving}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {isCompletingOrder ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Complete Order & Send Welcome Email
+                  </Button>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
