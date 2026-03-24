@@ -915,6 +915,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             payment_type: paymentType || '',
             step_abandoned: 4,
             ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
+            ...(getStoredGclid() ? { gclid: getStoredGclid() } : {}),
           }
         });
       } catch (error) {
