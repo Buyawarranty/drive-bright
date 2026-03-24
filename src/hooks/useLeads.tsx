@@ -501,6 +501,8 @@ export const useLeads = () => {
 
   // Track recently updated lead IDs to prevent realtime from overwriting optimistic updates
   const recentOptimisticUpdatesRef = useRef<Set<string>>(new Set());
+  // Track recently deleted lead IDs to prevent them from re-appearing after background fetch
+  const recentlyDeletedRef = useRef<Set<string>>(new Set());
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   // Uses functional state updates to avoid stale closure issues
