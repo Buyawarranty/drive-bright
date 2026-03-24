@@ -250,9 +250,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
-            ...(storedFbclid || utmSource ? {
+            ...(storedFbclid || storedGclid || utmSource ? {
               cart_metadata: {
                 ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                ...(storedGclid ? { gclid: storedGclid } : {}),
                 ...(utmSource ? { utm_source: utmSource } : {}),
               }
             } : {})
