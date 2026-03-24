@@ -193,6 +193,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       const normalizedEmail = email.trim().toLowerCase();
       const regNumber = vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || '';
       const storedFbclid = getStoredFbclid();
+      const storedGclid = getStoredGclid();
       const utmSource = new URLSearchParams(window.location.search).get('utm_source');
       
       let cartUpdated = false;
