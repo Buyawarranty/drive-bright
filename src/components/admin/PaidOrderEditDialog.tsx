@@ -88,6 +88,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [isCompletingOrder, setIsCompletingOrder] = useState(false);
   
   // Customer details
   const [customerName, setCustomerName] = useState('');

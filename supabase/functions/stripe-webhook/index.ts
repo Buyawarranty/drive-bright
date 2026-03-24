@@ -271,53 +271,67 @@ serve(async (req) => {
               protectionAddOns, claimLimit, seasonalBonusMonths, labourRate, startDate 
             });
 
-            // Call handle-successful-payment directly
-            const { data: processData, error: processError } = await supabaseClient.functions.invoke('handle-successful-payment', {
-              body: {
-                planId: fullSession.metadata?.plan_id || planId,
-                paymentType: fullSession.metadata?.payment_type || paymentType,
-                userEmail: vehicleData.email,
-                userId: fullSession.metadata?.user_id || null,
-                stripeSessionId: session.id,
-                vehicleData: vehicleData,
-                customerData: customerData,
-                protectionAddOns: protectionAddOns,
-                claimLimit: claimLimit,
-                seasonalBonusMonths: seasonalBonusMonths,
-                labourRate: labourRate,
-                startDate: startDate,
-                metadata: fullSession.metadata || {},
-                skipEmail: false // Allow email sending
-              }
-            });
-
-          if (processError) {
-            logStep("Error processing payment via handle-successful-payment", processError);
-            throw new Error(`Payment processing failed: ${processError.message}`);
-          }
-
-            logStep("Payment processed successfully via webhook", processData);
-            
-            // If this is from a live quote, update the quote status
+            // Check if this is from a live quote — defer warranty creation to sales agent
             if (fullSession.metadata?.source === 'live_quote' && fullSession.metadata?.quote_id) {
-              logStep("Updating live quote status to paid", { quoteId: fullSession.metadata.quote_id });
+              logStep("Live quote payment — deferring warranty creation to sales agent", { 
+                quoteId: fullSession.metadata.quote_id 
+              });
+              
+              // Only update the quote status to paid — NO customer/policy creation
               await supabaseClient
                 .from('live_quotes')
                 .update({ 
                   status: 'paid',
                   paid_at: new Date().toISOString(),
-                  policy_number: processData?.warrantyNumber || processData?.policyNumber
+                  payment_method: 'stripe',
                 })
                 .eq('id', fullSession.metadata.quote_id);
+              
+              logStep("Live quote marked as paid. Sales agent will complete order manually.");
+              
+              // Still fire Google Ads conversion for tracking
+              await fireServerSideConversion(
+                fullSession,
+                vehicleData.email,
+                parseFloat(fullSession.metadata?.final_amount || '0'),
+                ''
+              );
+            } else {
+              // Non-quote payment (direct website checkout) — process normally
+              const { data: processData, error: processError } = await supabaseClient.functions.invoke('handle-successful-payment', {
+                body: {
+                  planId: fullSession.metadata?.plan_id || planId,
+                  paymentType: fullSession.metadata?.payment_type || paymentType,
+                  userEmail: vehicleData.email,
+                  userId: fullSession.metadata?.user_id || null,
+                  stripeSessionId: session.id,
+                  vehicleData: vehicleData,
+                  customerData: customerData,
+                  protectionAddOns: protectionAddOns,
+                  claimLimit: claimLimit,
+                  seasonalBonusMonths: seasonalBonusMonths,
+                  labourRate: labourRate,
+                  startDate: startDate,
+                  metadata: fullSession.metadata || {},
+                  skipEmail: false
+                }
+              });
+
+              if (processError) {
+                logStep("Error processing payment via handle-successful-payment", processError);
+                throw new Error(`Payment processing failed: ${processError.message}`);
+              }
+
+              logStep("Payment processed successfully via webhook", processData);
+              
+              // Fire server-side Google Ads conversion
+              await fireServerSideConversion(
+                fullSession,
+                vehicleData.email,
+                parseFloat(fullSession.metadata?.final_amount || '0'),
+                processData?.warrantyNumber || processData?.policyNumber || ''
+              );
             }
-            
-            // Fire server-side Google Ads conversion
-            await fireServerSideConversion(
-              fullSession,
-              vehicleData.email,
-              parseFloat(fullSession.metadata?.final_amount || '0'),
-              processData?.warrantyNumber || processData?.policyNumber || ''
-            );
           } else {
             logStep("Warning: Missing plan_id or payment_type in session metadata", {
               planId,
