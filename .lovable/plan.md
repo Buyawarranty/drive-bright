@@ -1,37 +1,64 @@
 
 
-## Problem
+## Plan: Stop Auto-Creating Warranty on Payment — Let Sales Complete Orders Manually
 
-When a sales agent assigns a lead to themselves in the **New Leads** tab, it only updates the `sales_leads` table. If that lead has already purchased (has a matching customer record), the **Customer Management** dashboard still shows them as unassigned or assigned to someone else. The two dashboards are out of sync.
+### Problem
+When a customer pays via a quote link (Stripe or Bumper), the system automatically:
+1. Creates a customer record (often a duplicate)
+2. Creates a warranty/policy
+3. Sends a welcome email with incorrect details
 
-## Solution
+The sales agent should instead review the paid order, correct any details, and manually trigger the customer record + email.
 
-Extend the `assign_lead_to_agent` database function to also update the matching `customers` record when a lead assignment changes. The match is by email (the shared identifier between `sales_leads` and `customers`).
+### Current Flow
+```text
+Customer pays → stripe-webhook / process-quote-bumper-success
+  → handle-successful-payment (creates customer + policy + sends email)
+  → Paid order appears in "Paid Orders" tab (but damage already done)
+```
 
-### Step 1: Update the `assign_lead_to_agent` RPC
+### New Flow
+```text
+Customer pays → stripe-webhook / process-quote-bumper-success
+  → Only update live_quotes status to "paid" (NO customer/policy creation)
+  → Redirect to thank-you page with quote details
+  → Order appears in "Paid Orders" tab with "⚠️ Needs Processing" badge
+  → Sales agent opens order → reviews/edits details → clicks "Complete Order"
+  → System creates customer (or links to existing) + policy + sends welcome email
+```
 
-Add a customer sync block after the `sales_leads` update succeeds. It will:
+### Changes Required
 
-1. Look up the lead's email from `sales_leads`
-2. Find any matching `customers` record by that email
-3. Update `customers.assigned_to` to the same agent
-4. Update the warranty number prefix: `BAW-` to `BAW-S-` when assigning to an agent, or `BAW-S-` back to `BAW-` when unassigning (Website)
+**1. Stripe Webhook (`supabase/functions/stripe-webhook/index.ts`)**
+- For live_quote-sourced payments (`metadata.source === 'live_quote'`): instead of calling `handle-successful-payment`, just update the `live_quotes` record to `status: 'paid'` with the payment details (Stripe session ID, amount). Skip warranty creation and email entirely.
+- Non-quote payments (direct website checkout) remain unchanged.
 
-This follows the exact same logic already used in the Customer Management tab's assignment dropdown (per the memory note on purchase attribution).
+**2. Bumper Success Handler (`supabase/functions/process-quote-bumper-success/index.ts`)**
+- Remove the call to `handle-successful-payment` and the welcome email send.
+- Only update `live_quotes` to `status: 'paid'` with `payment_method: 'bumper'`.
+- Still redirect to the thank-you page with quote details (from `live_quotes` data, not from a newly created policy).
 
-### Step 2: Fix duplicate/irrelevant users in the assignment dropdown
+**3. Paid Orders Tab — Add "Complete Order" Action (`src/components/admin/PaidOrderEditDialog.tsx`)**
+- Add a new "Complete Order & Send Email" button that:
+  - Calls `confirm-external-payment` (which already handles customer creation, duplicate detection, policy creation, and welcome email)
+  - Passes all the edited details from the dialog form
+  - On success, updates the `live_quotes` record with the policy number
+  - Shows success confirmation
+- Add visual distinction: orders without a `customer_id` or `policy_id` show a prominent "Needs Processing" status badge instead of "Paid"
 
-The screenshot shows "Prajwal Chauhan" listed twice and non-sales email addresses (`support@`, `info@`) in the agent dropdown. The `fetchSalesUsers` query currently fetches ALL active `admin_users` regardless of role.
+**4. Paid Orders Tab — Status Indicators (`src/components/admin/PaidOrdersTab.tsx`)**
+- Update `getStatusBadge` to show amber "Needs Processing" for paid orders that have no `customer_id` or `policy_id`
+- Sort unprocessed orders to the top
 
-Filter it to only include roles that should appear in the assignment dropdown: `sales`, `sales_lead`, `admin`, `super_admin` — excluding support/info accounts and deduplicating by `user_id`.
+### Technical Details
 
-### What stays unchanged
-- All existing lead flow, notes, status changes, APIs untouched
-- The `assignLead` function in `useLeads.tsx` stays identical — the sync happens at the database level
-- Customer Management assignment dropdown remains independent
-- No changes to any UI components
+- The `confirm-external-payment` edge function already has full duplicate detection logic (matches by email + reg plate), creates or updates customers, creates policies, and optionally sends welcome emails. This is the ideal function for the sales agent to trigger manually.
+- The thank-you page continues to work because it reads from URL params (populated from `live_quotes` data), not from the customer/policy tables.
+- No database migration needed — `live_quotes` already has the `status`, `paid_at`, `payment_method`, and `policy_number` columns.
 
-### Technical detail
-
-The RPC change is a single migration adding ~10 lines to the existing function, right after the `sales_leads` UPDATE block. The dropdown fix is a one-line filter addition to `fetchSalesUsers` in `useLeads.tsx`.
+### Files to Edit
+1. `supabase/functions/stripe-webhook/index.ts` — Skip `handle-successful-payment` for live_quote payments
+2. `supabase/functions/process-quote-bumper-success/index.ts` — Remove warranty creation, keep redirect
+3. `src/components/admin/PaidOrderEditDialog.tsx` — Add "Complete Order & Send Email" button
+4. `src/components/admin/PaidOrdersTab.tsx` — Add "Needs Processing" status, sort unprocessed first
 
