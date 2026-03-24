@@ -353,20 +353,26 @@ export const useLeads = () => {
       }
     } catch (error) {
       if (fetchToken !== latestFetchTokenRef.current) {
+        // Even on stale token, ensure loading is cleared to prevent infinite spinner
+        if (!initialLoadDoneRef.current) {
+          setLoading(false);
+          initialLoadDoneRef.current = true;
+          initialLoadStartedRef.current = false;
+        }
+        isFetchingRef.current = false;
         return;
       }
       console.error('Error fetching leads:', error);
       toast.error('Failed to load leads');
     } finally {
-      if (fetchToken === latestFetchTokenRef.current) {
-        if (loadingTimeoutRef.current) {
-          clearTimeout(loadingTimeoutRef.current);
-          loadingTimeoutRef.current = null;
-        }
-        setLoading(false);
-        initialLoadDoneRef.current = true;
-        initialLoadStartedRef.current = false;
+      // ALWAYS clear loading state — never leave spinner stuck
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
       }
+      setLoading(false);
+      initialLoadDoneRef.current = true;
+      initialLoadStartedRef.current = false;
 
       isFetchingRef.current = false;
 
