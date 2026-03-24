@@ -216,15 +216,16 @@ export const useLeads = () => {
         setLoading(true);
       }
 
-      // Start one safety timeout for the initial blocking load; do not reset it on background refetches
+      // Start one safety timeout for the initial blocking load
+      // CRITICAL: Do NOT check fetchToken — always force loading off after 12s
       if (shouldShowBlockingLoader && !loadingTimeoutRef.current) {
         loadingTimeoutRef.current = setTimeout(() => {
-          if (latestFetchTokenRef.current !== fetchToken) return;
           console.warn('[Leads] Loading safety timeout triggered after 12s');
           setLoading(false);
           initialLoadDoneRef.current = true;
           initialLoadStartedRef.current = false;
           isFetchingRef.current = false;
+          loadingTimeoutRef.current = null;
         }, 12000);
       }
 
@@ -297,12 +298,12 @@ export const useLeads = () => {
 
       try {
         if (salesLeadIds.length > 0) {
-          // Fetch all tag assignments in one query (no .in filter needed — just get all)
-          // This is faster than batching 5000+ IDs across many requests
-          const { data: allTagData } = await supabase
-            .from('lead_tag_assignments')
-            .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-            .limit(10000);
+          // Fetch all tag assignments using batch pagination to avoid 1000-row limit
+          const { data: allTagData } = await fetchAllRows(() =>
+            supabase
+              .from('lead_tag_assignments')
+              .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+          );
 
           (allTagData || []).forEach((assignment: any) => {
             if (!tagsByLeadId[assignment.lead_id]) {
@@ -352,20 +353,26 @@ export const useLeads = () => {
       }
     } catch (error) {
       if (fetchToken !== latestFetchTokenRef.current) {
+        // Even on stale token, ensure loading is cleared to prevent infinite spinner
+        if (!initialLoadDoneRef.current) {
+          setLoading(false);
+          initialLoadDoneRef.current = true;
+          initialLoadStartedRef.current = false;
+        }
+        isFetchingRef.current = false;
         return;
       }
       console.error('Error fetching leads:', error);
       toast.error('Failed to load leads');
     } finally {
-      if (fetchToken === latestFetchTokenRef.current) {
-        if (loadingTimeoutRef.current) {
-          clearTimeout(loadingTimeoutRef.current);
-          loadingTimeoutRef.current = null;
-        }
-        setLoading(false);
-        initialLoadDoneRef.current = true;
-        initialLoadStartedRef.current = false;
+      // ALWAYS clear loading state — never leave spinner stuck
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
       }
+      setLoading(false);
+      initialLoadDoneRef.current = true;
+      initialLoadStartedRef.current = false;
 
       isFetchingRef.current = false;
 
