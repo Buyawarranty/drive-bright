@@ -216,15 +216,16 @@ export const useLeads = () => {
         setLoading(true);
       }
 
-      // Start one safety timeout for the initial blocking load; do not reset it on background refetches
+      // Start one safety timeout for the initial blocking load
+      // CRITICAL: Do NOT check fetchToken — always force loading off after 12s
       if (shouldShowBlockingLoader && !loadingTimeoutRef.current) {
         loadingTimeoutRef.current = setTimeout(() => {
-          if (latestFetchTokenRef.current !== fetchToken) return;
           console.warn('[Leads] Loading safety timeout triggered after 12s');
           setLoading(false);
           initialLoadDoneRef.current = true;
           initialLoadStartedRef.current = false;
           isFetchingRef.current = false;
+          loadingTimeoutRef.current = null;
         }, 12000);
       }
 
