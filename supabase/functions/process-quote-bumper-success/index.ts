@@ -192,8 +192,19 @@ serve(async (req) => {
     });
 
     if (paymentError) {
-      logStep("Error from handle-successful-payment", { error: paymentError.message });
+      logStep("Error from handle-successful-payment (network)", { error: paymentError.message });
       throw new Error(`Failed to create warranty: ${paymentError.message}`);
+    }
+
+    // CRITICAL: Also check for application-level errors in the response
+    // supabase.functions.invoke may not set paymentError for HTTP 4xx/5xx responses
+    if (paymentResult?.error) {
+      logStep("Error from handle-successful-payment (application)", { error: paymentResult.error });
+      throw new Error(`Failed to create warranty: ${paymentResult.error}`);
+    }
+
+    if (!paymentResult?.success && !paymentResult?.policyNumber && !paymentResult?.warrantyNumber) {
+      logStep("Warning: handle-successful-payment returned unexpected result", { paymentResult });
     }
 
     logStep("Warranty created successfully", { 
