@@ -20,7 +20,7 @@ import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspe
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
-import { captureGclid } from '@/utils/gclidCapture';
+import { captureGclid, getStoredGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
