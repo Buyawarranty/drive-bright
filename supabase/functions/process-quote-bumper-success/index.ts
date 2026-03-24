@@ -96,23 +96,28 @@ serve(async (req) => {
     const totalAmount = quote.monthly_price * 12;
     const totalMonths = quote.duration_months + (quote.bonus_months || 0);
 
-    // Parse customer name
+    // Use the exact customer details submitted on the quote page when available
     const customerName = quote.customer_name || '';
-    const nameParts = customerName.split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const nameParts = customerName.split(' ').filter(Boolean);
+    const firstName = url.searchParams.get('first_name') || nameParts[0] || '';
+    const lastName = url.searchParams.get('last_name') || nameParts.slice(1).join(' ') || '';
+    const submittedPhone = url.searchParams.get('mobile') || quote.customer_phone || '';
+    const submittedStreet = url.searchParams.get('street') || '';
+    const submittedTown = url.searchParams.get('town') || '';
+    const submittedPostcode = url.searchParams.get('postcode') || '';
+    const submittedEmail = url.searchParams.get('email') || quote.customer_email;
 
     // Build customer data for handle-successful-payment
     const customerData = {
-      email: quote.customer_email,
+      email: submittedEmail,
       first_name: firstName,
       last_name: lastName,
       fullName: customerName,
-      phone: quote.customer_phone || '',
-      mobile: quote.customer_phone || '',
-      address_line1: quote.customer_address?.street || '',
-      city: quote.customer_address?.town || '',
-      postcode: quote.customer_address?.postcode || '',
+      phone: submittedPhone,
+      mobile: submittedPhone,
+      address_line1: submittedStreet,
+      city: submittedTown,
+      postcode: submittedPostcode,
       final_amount: totalAmount,
       claimLimit: quote.claim_limit || 1250,
     };
@@ -162,7 +167,7 @@ serve(async (req) => {
     // CRITICAL: userEmail is REQUIRED by handle-successful-payment
     const { data: paymentResult, error: paymentError } = await supabaseClient.functions.invoke('handle-successful-payment', {
       body: {
-        userEmail: quote.customer_email,
+        userEmail: submittedEmail,
         customerData,
         vehicleData,
         planId: quote.plan_type,
@@ -307,6 +312,7 @@ function buildThankYouUrl(
     params.set('last_name', customerData.last_name || '');
     params.set('mobile', customerData.phone || quote.customer_phone || '');
     params.set('street', customerData.address_line1 || '');
+    params.set('town', customerData.city || '');
     params.set('postcode', customerData.postcode || '');
   } else {
     params.set('email', quote.customer_email || '');
