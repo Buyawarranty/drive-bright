@@ -172,19 +172,63 @@ serve(async (req) => {
       }
     }
 
-    logStep("Creating customer record", { email: customerData.email });
-
-    const { data: customer, error: customerError } = await supabase
+    // CRITICAL: Check if customer already exists by email before inserting
+    // This prevents duplicate customer profiles for returning customers
+    const existingEmail = customerData.email.toLowerCase().trim();
+    const { data: existingCustomerByEmail } = await supabase
       .from('customers')
-      .insert(customerInsertData)
-      .select()
-      .single();
+      .select('id, email, warranty_reference_number')
+      .ilike('email', existingEmail)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (customerError) {
-      logStep("Failed to create customer", { error: customerError.message });
-      // Continue anyway - redirect to thank you page
+    let customer: any = null;
+    let customerError: any = null;
+
+    if (existingCustomerByEmail) {
+      // UPDATE existing customer instead of creating a duplicate
+      logStep("Existing customer found - updating instead of creating new", { 
+        existingId: existingCustomerByEmail.id 
+      });
+      
+      const { data: updatedCustomer, error: updateError } = await supabase
+        .from('customers')
+        .update({
+          ...customerInsertData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingCustomerByEmail.id)
+        .select()
+        .single();
+      
+      customer = updatedCustomer;
+      customerError = updateError;
+      
+      if (updateError) {
+        logStep("Failed to update existing customer", { error: updateError.message });
+      } else {
+        logStep("Customer updated successfully (existing customer)", { customerId: customer?.id });
+      }
     } else {
-      logStep("Customer created successfully", { customerId: customer?.id });
+      // No existing customer - create new record
+      logStep("No existing customer found - creating new record", { email: customerData.email });
+
+      const { data: newCustomer, error: insertError } = await supabase
+        .from('customers')
+        .insert(customerInsertData)
+        .select()
+        .single();
+
+      customer = newCustomer;
+      customerError = insertError;
+
+      if (insertError) {
+        logStep("Failed to create customer", { error: insertError.message });
+      } else {
+        logStep("Customer created successfully (new customer)", { customerId: customer?.id });
+      }
     }
 
     // TODO: Call Warranties 2000 registration (same as Bumper flow)
