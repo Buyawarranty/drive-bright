@@ -755,6 +755,28 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
               <CardTitle className="text-base sm:text-lg">Actions</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Primary action: Complete Order (only shown when no policy exists yet) */}
+              {!order.policy_number && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-2">⚠️ This order needs processing</p>
+                  <p className="text-xs text-amber-700 mb-3">
+                    Review the details above, then click below to create the warranty, customer record, and send the welcome email.
+                  </p>
+                  <Button
+                    onClick={handleCompleteOrder}
+                    disabled={isCompletingOrder || isSaving}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {isCompletingOrder ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Complete Order & Send Welcome Email
+                  </Button>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"

@@ -245,6 +245,11 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   };
 
   const getStatusBadge = (order: PaidOrder) => {
+    // If paid but no policy created yet — needs processing
+    if (!order.policy_number && !order.policy_id) {
+      return <Badge className="bg-amber-500 text-white animate-pulse">⚠️ Needs Processing</Badge>;
+    }
+    
     const status = order.policy_status || order.customer_status || order.status || 'active';
     switch (status.toLowerCase()) {
       case 'active':
