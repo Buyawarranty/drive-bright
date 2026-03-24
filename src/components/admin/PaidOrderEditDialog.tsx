@@ -325,6 +325,88 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
     }
   };
 
+  const handleCompleteOrder = async () => {
+    if (!order) return;
+    
+    setIsCompletingOrder(true);
+    try {
+      // Parse name
+      const nameParts = customerName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      const totalMonths = (order.duration_months || 12) + (order.bonus_months || 0);
+      const paymentType = `${totalMonths}months`;
+      const finalAmount = order.upfront_price || (order.monthly_price * 12);
+
+      // Call confirm-external-payment — handles dedup, customer creation, policy, and email
+      const { data, error } = await supabase.functions.invoke('confirm-external-payment', {
+        body: {
+          customerEmail: customerEmail,
+          customerName: customerName,
+          firstName: firstName,
+          lastName: lastName,
+          phone: customerPhone,
+          street: street,
+          town: town,
+          county: county,
+          postcode: postcode,
+          buildingNumber: buildingNumber,
+          vehicleReg: vehicleReg.toUpperCase(),
+          vehicleMake: vehicleMake,
+          vehicleModel: vehicleModel,
+          vehicleMileage: vehicleMileage,
+          vehicleYear: vehicleYear,
+          planType: 'Platinum',
+          paymentType: paymentType,
+          finalAmount: finalAmount,
+          claimLimit: claimLimit,
+          labourRate: labourRate,
+          voluntaryExcess: excessAmount,
+          breakdownRecovery: breakdownIncluded,
+          vehicleRental: rentalIncluded,
+          boostAddon: boostAddon,
+          paymentMethod: order.payment_method || order.payment_source || 'external',
+          agentId: selectedAgentId || null,
+          sendEmail: true,
+          source: 'live_quote',
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Update live_quotes with the policy number
+      const policyNumber = data?.warrantyNumber || data?.policyNumber;
+      if (policyNumber) {
+        await supabase
+          .from('live_quotes')
+          .update({ 
+            policy_number: policyNumber,
+            payment_confirmed_by: selectedAgentId 
+              ? adminUsers.find(a => a.id === selectedAgentId)?.user_id || null 
+              : null,
+          })
+          .eq('id', order.id);
+      }
+
+      toast({
+        title: "Order Completed ✅",
+        description: `Warranty ${policyNumber || ''} created and welcome email sent to ${customerEmail}.`,
+      });
+
+      onSave();
+    } catch (error: any) {
+      console.error('Error completing order:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to complete order",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCompletingOrder(false);
+    }
+  };
+
   const handleResendLoginEmail = async () => {
     if (!order?.customer_email) return;
     
