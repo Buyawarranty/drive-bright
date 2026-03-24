@@ -217,9 +217,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               phone: phone.trim() || null,
               step_abandoned: 2,
               updated_at: new Date().toISOString(),
-              ...(storedFbclid || utmSource ? {
+              ...(storedFbclid || storedGclid || utmSource ? {
                 cart_metadata: {
                   ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                  ...(storedGclid ? { gclid: storedGclid } : {}),
                   ...(utmSource ? { utm_source: utmSource } : {}),
                 }
               } : {})
