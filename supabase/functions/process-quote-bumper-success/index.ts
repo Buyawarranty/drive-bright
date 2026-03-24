@@ -112,7 +112,9 @@ serve(async (req) => {
       mobile: quote.customer_phone || '',
       address_line1: quote.customer_address?.street || '',
       city: quote.customer_address?.town || '',
-      postcode: quote.customer_address?.postcode || ''
+      postcode: quote.customer_address?.postcode || '',
+      final_amount: totalAmount,
+      claimLimit: quote.claim_limit || 1250,
     };
 
     // Build vehicle data
@@ -150,12 +152,17 @@ serve(async (req) => {
       paymentType,
       finalAmount: totalAmount,
       vehicleReg: vehicleData.regNumber,
-      bumperOrderId
+      bumperOrderId,
+      claimLimit: quote.claim_limit,
+      labourRate: quote.labour_rate,
+      excessAmount: quote.excess_amount
     });
 
     // Call handle-successful-payment to create the warranty
+    // CRITICAL: userEmail is REQUIRED by handle-successful-payment
     const { data: paymentResult, error: paymentError } = await supabaseClient.functions.invoke('handle-successful-payment', {
       body: {
+        userEmail: quote.customer_email,
         customerData,
         vehicleData,
         planId: quote.plan_type,
@@ -167,7 +174,20 @@ serve(async (req) => {
         bumperOrderId,
         labourRate: quote.labour_rate || 70,
         claimLimit: quote.claim_limit || 1250,
-        voluntaryExcess: quote.excess_amount || 75
+        voluntaryExcess: quote.excess_amount || 75,
+        metadata: {
+          source: 'bumper',
+          bumper_order_id: bumperOrderId,
+          vehicle_reg: quote.vehicle_reg,
+          vehicle_make: quote.vehicle_make,
+          vehicle_model: quote.vehicle_model,
+          vehicle_year: quote.vehicle_year,
+          vehicle_fuel_type: quote.vehicle_fuel_type || '',
+          vehicle_transmission: quote.vehicle_transmission || '',
+          claim_limit: (quote.claim_limit || 1250).toString(),
+          labour_rate: (quote.labour_rate || 70).toString(),
+          final_amount: totalAmount.toString(),
+        }
       }
     });
 
