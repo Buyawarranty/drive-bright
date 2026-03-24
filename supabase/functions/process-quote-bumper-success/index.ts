@@ -115,6 +115,8 @@ serve(async (req) => {
       fullName: customerName,
       phone: submittedPhone,
       mobile: submittedPhone,
+      street: submittedStreet,
+      town: submittedTown,
       address_line1: submittedStreet,
       city: submittedTown,
       postcode: submittedPostcode,
