@@ -149,6 +149,30 @@ serve(async (req) => {
 
     logStep("Quote found", { quoteId: quote.id, status: quote.status });
 
+    const submittedCustomerData = providedCustomerData || {};
+    const submittedFullName = submittedCustomerData.fullName?.trim() ||
+      `${submittedCustomerData.firstName || ''} ${submittedCustomerData.lastName || ''}`.trim();
+    const resolvedCustomerName = submittedFullName || quote.customer_name || '';
+    const nameParts = resolvedCustomerName.split(' ').filter(Boolean);
+    const resolvedFirstName = submittedCustomerData.firstName || nameParts[0] || '';
+    const resolvedLastName = submittedCustomerData.lastName || nameParts.slice(1).join(' ') || '';
+    const resolvedEmail = submittedCustomerData.email || quote.customer_email || '';
+    const resolvedPhone = submittedCustomerData.phone || quote.customer_phone || '';
+    const resolvedStreet = submittedCustomerData.addressLine1 || '';
+    const resolvedAddressLine2 = submittedCustomerData.addressLine2 || '';
+    const resolvedTown = submittedCustomerData.city || '';
+    const resolvedPostcode = submittedCustomerData.postcode || '';
+    const resolvedStartDate = submittedCustomerData.startDate || null;
+
+    await supabaseClient
+      .from('live_quotes')
+      .update({
+        customer_name: resolvedCustomerName || quote.customer_name,
+        customer_email: resolvedEmail || quote.customer_email,
+        customer_phone: resolvedPhone || quote.customer_phone || null,
+      })
+      .eq('id', quote.id);
+
     const origin = "https://buyawarranty.co.uk";
 
     if (paymentMethod === 'stripe') {
@@ -168,12 +192,6 @@ serve(async (req) => {
       // Calculate total months for display
       const totalMonths = quote.duration_months + (quote.bonus_months || 0);
       
-      // Parse customer name
-      const customerName = quote.customer_name || '';
-      const nameParts = customerName.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
       // Build thank you URL with all parameters for conversion tracking and display
       const thankYouParams = new URLSearchParams({
         source: 'stripe',
@@ -181,10 +199,13 @@ serve(async (req) => {
         duration: `${totalMonths}months`,
         payment: 'full',
         final_amount: quote.upfront_price.toString(),
-        email: quote.customer_email || '',
-        first_name: firstName,
-        last_name: lastName,
-        mobile: quote.customer_phone || '',
+        email: resolvedEmail,
+        first_name: resolvedFirstName,
+        last_name: resolvedLastName,
+        mobile: resolvedPhone,
+        street: resolvedStreet,
+        town: resolvedTown,
+        postcode: resolvedPostcode,
         vehicle_reg: quote.vehicle_reg || '',
         vehicle_make: quote.vehicle_make || '',
         vehicle_model: quote.vehicle_model || '',
@@ -211,7 +232,7 @@ serve(async (req) => {
           },
         ],
         mode: 'payment',
-        customer_email: quote.customer_email,
+        customer_email: resolvedEmail,
         success_url: `${origin}/thank-you?${thankYouParams.toString()}`,
         cancel_url: `${origin}/quote/${accessToken}?cancelled=1`,
         metadata: {
@@ -222,9 +243,17 @@ serve(async (req) => {
           plan_type: quote.plan_type,
           payment_type: `${totalMonths}months`,
           final_amount: quote.upfront_price.toString(),
-          customer_email: quote.customer_email,
-          customer_name: customerName,
-          customer_phone: quote.customer_phone || '',
+          customer_email: resolvedEmail,
+          customer_name: resolvedCustomerName,
+          customer_first_name: resolvedFirstName,
+          customer_last_name: resolvedLastName,
+          customer_phone: resolvedPhone,
+          customer_street: resolvedStreet,
+          customer_town: resolvedTown,
+          customer_postcode: resolvedPostcode,
+          customer_country: 'United Kingdom',
+          customer_building_name: resolvedAddressLine2,
+          start_date: resolvedStartDate || '',
           vehicle_make: quote.vehicle_make,
           vehicle_model: quote.vehicle_model,
           vehicle_year: quote.vehicle_year,
@@ -261,43 +290,27 @@ serve(async (req) => {
       const totalAmount = quote.monthly_price * 12; // Total for Bumper finance
       const transactionId = `LQ-${quote.id.substring(0, 8)}-${Date.now()}`;
 
-      // Parse customer name from quote or provided data
-      const customerName = providedCustomerData?.fullName || quote.customer_name || '';
-      const nameParts = customerName.split(' ');
-      const firstName = providedCustomerData?.firstName || nameParts[0] || '';
-      const lastName = providedCustomerData?.lastName || nameParts.slice(1).join(' ') || '';
-
-      // Get address from provided customer data (from LiveQuotePage form)
-      const street = providedCustomerData?.addressLine1 || '';
-      const addressLine2 = providedCustomerData?.addressLine2 || '';
-      const town = providedCustomerData?.city || '';
-      const postcode = providedCustomerData?.postcode || '';
-      const phone = providedCustomerData?.phone || quote.customer_phone || '';
-
       logStep("Customer data for Bumper", {
-        firstName,
-        lastName,
-        street,
-        town,
-        postcode,
+        firstName: resolvedFirstName,
+        lastName: resolvedLastName,
+        street: resolvedStreet,
+        town: resolvedTown,
+        postcode: resolvedPostcode,
         hasProvidedData: !!providedCustomerData
       });
 
-      // Store customer address data in the quote for later processing
-      await supabaseClient
-        .from('live_quotes')
-        .update({ 
-          customer_address: {
-            street: street,
-            town: town,
-            postcode: postcode,
-            addressLine2: addressLine2
-          },
-          customer_phone: phone
-        })
-        .eq('id', quote.id);
+      const bumperSuccessParams = new URLSearchParams({
+        quote_token: accessToken,
+        email: resolvedEmail,
+        first_name: resolvedFirstName,
+        last_name: resolvedLastName,
+        mobile: resolvedPhone,
+        street: resolvedStreet,
+        town: resolvedTown,
+        postcode: resolvedPostcode,
+      });
 
-      const successUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/process-quote-bumper-success?quote_token=${accessToken}`;
+      const successUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/process-quote-bumper-success?${bumperSuccessParams.toString()}`;
       const failureUrl = `${origin}/quote/${accessToken}?failed=1`;
 
       // Build signature payload - must include ALL fields that will be in the request
@@ -307,18 +320,18 @@ serve(async (req) => {
         failure_url: failureUrl,
         currency: "GBP",
         order_reference: transactionId,
-        first_name: firstName,
-        last_name: lastName,
-        email: quote.customer_email || '',
-        mobile: phone,
+        first_name: resolvedFirstName,
+        last_name: resolvedLastName,
+        email: resolvedEmail,
+        mobile: resolvedPhone,
         vehicle_reg: quote.vehicle_reg || '',
         flat_number: "",
-        building_name: addressLine2,
+        building_name: resolvedAddressLine2,
         building_number: "",
-        street: street,
-        town: town,
+        street: resolvedStreet,
+        town: resolvedTown,
         county: "",
-        postcode: postcode,
+        postcode: resolvedPostcode,
         country: "UK",
         product_id: "4",
         send_sms: false,
