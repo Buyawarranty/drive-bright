@@ -277,6 +277,7 @@ export const useLeads = () => {
       // SOURCE OF TRUTH: Only sales_leads count as leads.
       // Orphaned abandoned_carts are recovered via LostLeadsSection / recover_orphaned_leads RPC.
       const allLeads = salesLeadsWithFlags
+        .filter((lead: any) => !recentlyDeletedRef.current.has(lead.id))
         .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       const emailCounts: Record<string, number> = {};
