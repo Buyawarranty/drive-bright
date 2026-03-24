@@ -3,6 +3,7 @@ import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban,
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid } from '@/utils/fbclidCapture';
+import { getStoredGclid } from '@/utils/gclidCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
@@ -192,6 +193,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       const normalizedEmail = email.trim().toLowerCase();
       const regNumber = vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || '';
       const storedFbclid = getStoredFbclid();
+      const storedGclid = getStoredGclid();
       const utmSource = new URLSearchParams(window.location.search).get('utm_source');
       
       let cartUpdated = false;
@@ -215,9 +217,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               phone: phone.trim() || null,
               step_abandoned: 2,
               updated_at: new Date().toISOString(),
-              ...(storedFbclid || utmSource ? {
+              ...(storedFbclid || storedGclid || utmSource ? {
                 cart_metadata: {
                   ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                  ...(storedGclid ? { gclid: storedGclid } : {}),
                   ...(utmSource ? { utm_source: utmSource } : {}),
                 }
               } : {})
@@ -247,9 +250,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
-            ...(storedFbclid || utmSource ? {
+            ...(storedFbclid || storedGclid || utmSource ? {
               cart_metadata: {
                 ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                ...(storedGclid ? { gclid: storedGclid } : {}),
                 ...(utmSource ? { utm_source: utmSource } : {}),
               }
             } : {})

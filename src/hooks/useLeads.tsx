@@ -277,6 +277,7 @@ export const useLeads = () => {
       // SOURCE OF TRUTH: Only sales_leads count as leads.
       // Orphaned abandoned_carts are recovered via LostLeadsSection / recover_orphaned_leads RPC.
       const allLeads = salesLeadsWithFlags
+        .filter((lead: any) => !recentlyDeletedRef.current.has(lead.id))
         .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       const emailCounts: Record<string, number> = {};
@@ -501,6 +502,8 @@ export const useLeads = () => {
 
   // Track recently updated lead IDs to prevent realtime from overwriting optimistic updates
   const recentOptimisticUpdatesRef = useRef<Set<string>>(new Set());
+  // Track recently deleted lead IDs to prevent them from re-appearing after background fetch
+  const recentlyDeletedRef = useRef<Set<string>>(new Set());
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   // Uses functional state updates to avoid stale closure issues
@@ -1127,6 +1130,9 @@ export const useLeads = () => {
     // Store previous state for potential rollback using ref to avoid stale closure
     const previousLeads = leadsRef.current;
     
+    // Mark as recently deleted to prevent re-appearing after background fetch
+    leadIds.forEach(id => recentlyDeletedRef.current.add(id));
+    
     // Optimistic update - remove from UI immediately
     setLeads(prev => prev.filter(lead => !leadIds.includes(lead.id)));
 
@@ -1142,15 +1148,23 @@ export const useLeads = () => {
       const deletedCount = data?.length || 0;
       if (deletedCount === 0) {
         toast.error('Unable to delete leads. You may not have permission.');
-        setLeads(previousLeads); // Rollback
+        // Clear from deleted set and rollback
+        leadIds.forEach(id => recentlyDeletedRef.current.delete(id));
+        setLeads(previousLeads);
         return;
       }
 
       toast.success(`Deleted ${deletedCount} lead${deletedCount > 1 ? 's' : ''}`);
+      // Keep in deleted set for 30s to prevent re-appearing from background fetches
+      setTimeout(() => {
+        leadIds.forEach(id => recentlyDeletedRef.current.delete(id));
+      }, 30000);
     } catch (error) {
       console.error('Error deleting leads:', error);
       toast.error('Failed to delete leads');
-      setLeads(previousLeads); // Rollback
+      // Clear from deleted set and rollback
+      leadIds.forEach(id => recentlyDeletedRef.current.delete(id));
+      setLeads(previousLeads);
     }
   }, []);
 

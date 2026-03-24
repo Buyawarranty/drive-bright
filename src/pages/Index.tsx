@@ -20,7 +20,7 @@ import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspe
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
-import { captureGclid } from '@/utils/gclidCapture';
+import { captureGclid, getStoredGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
@@ -1242,6 +1242,7 @@ const Index = () => {
       }
       
       const fbclid = getStoredFbclid();
+      const gclid = getStoredGclid();
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
@@ -1258,6 +1259,7 @@ const Index = () => {
           payment_type: paymentType,
           step_abandoned: step,
           ...(fbclid ? { fbclid } : {}),
+          ...(gclid ? { gclid } : {}),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);
