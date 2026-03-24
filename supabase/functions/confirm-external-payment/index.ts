@@ -404,18 +404,14 @@ serve(async (req) => {
 
     // Always send welcome email and create dashboard login for external payments
     // This ensures external payment customers get the same experience as website buyers
+    // CRITICAL: Use send-welcome-email-manual which reads from DB for accurate data
     let emailSent = false;
     try {
-      logStep("Sending welcome email with dashboard credentials");
-      const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+      logStep("Sending welcome email with dashboard credentials via send-welcome-email-manual");
+      const { error: emailError } = await supabase.functions.invoke('send-welcome-email-manual', {
         body: {
-          email: customerEmail,
-          planType: 'Platinum',
-          paymentType: paymentTypeLabel,
-          policyNumber: warrantyReference,
-          registrationPlate: vehicleReg?.toUpperCase(),
-          customerName,
-          labourRate,
+          policyId,
+          customerId,
         }
       });
       
