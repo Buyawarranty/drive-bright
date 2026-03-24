@@ -1242,6 +1242,7 @@ const Index = () => {
       }
       
       const fbclid = getStoredFbclid();
+      const gclid = getStoredGclid();
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
@@ -1258,6 +1259,7 @@ const Index = () => {
           payment_type: paymentType,
           step_abandoned: step,
           ...(fbclid ? { fbclid } : {}),
+          ...(gclid ? { gclid } : {}),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);

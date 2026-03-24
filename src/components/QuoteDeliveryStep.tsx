@@ -3,6 +3,7 @@ import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban,
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid } from '@/utils/fbclidCapture';
+import { getStoredGclid } from '@/utils/gclidCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
