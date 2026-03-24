@@ -466,18 +466,75 @@ serve(async (req) => {
       }
     });
 
-    logStep("Creating customer record", customerRecord);
+    logStep("Preparing customer record", customerRecord);
 
-    const { data: customerData2, error: customerError } = await supabaseClient
+    // CRITICAL: Check if customer already exists by email before inserting
+    // This prevents duplicate customer profiles for returning customers
+    const normalizedEmailForLookup = userEmail.toLowerCase().trim();
+    const { data: existingCustomerByEmail } = await supabaseClient
       .from('customers')
-      .insert(customerRecord)
-      .select()
-      .single();
+      .select('id, email, warranty_reference_number')
+      .ilike('email', normalizedEmailForLookup)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (customerError) {
-      logStep("Warning: Customer record creation failed", customerError);
+    let customerData2: any = null;
+    let customerError: any = null;
+
+    if (existingCustomerByEmail) {
+      // UPDATE existing customer record instead of creating a new one
+      logStep("Existing customer found - updating instead of creating new", { 
+        existingId: existingCustomerByEmail.id, 
+        existingEmail: existingCustomerByEmail.email 
+      });
+      
+      // Preserve the existing warranty_reference_number if it's a BAW-S- prefix (staff-attributed)
+      const existingRef = existingCustomerByEmail.warranty_reference_number || '';
+      const newRef = customerRecord.warranty_reference_number;
+      const preserveRef = existingRef.startsWith('BAW-S-') ? existingRef : newRef;
+      
+      const { data: updatedCustomer, error: updateError } = await supabaseClient
+        .from('customers')
+        .update({
+          ...customerRecord,
+          warranty_reference_number: preserveRef,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingCustomerByEmail.id)
+        .select()
+        .single();
+      
+      customerData2 = updatedCustomer;
+      customerError = updateError;
+      
+      if (updateError) {
+        logStep("Warning: Customer record update failed", updateError);
+      } else {
+        logStep("Customer record updated successfully (existing customer)", { customerId: customerData2.id });
+      }
     } else {
-      logStep("Customer record created successfully", { customerId: customerData2.id });
+      // No existing customer - create new record
+      logStep("No existing customer found - creating new record");
+      
+      const { data: newCustomer, error: insertError } = await supabaseClient
+        .from('customers')
+        .insert(customerRecord)
+        .select()
+        .single();
+
+      customerData2 = newCustomer;
+      customerError = insertError;
+      
+      if (insertError) {
+        logStep("Warning: Customer record creation failed", insertError);
+      } else {
+        logStep("Customer record created successfully (new customer)", { customerId: customerData2.id });
+      }
+    }
+
+    if (!customerError && customerData2) {
       
       // Backfill vehicle data from mot_history if missing
       if (customerData2.vehicle_make === 'Unknown' || !customerData2.vehicle_make) {
