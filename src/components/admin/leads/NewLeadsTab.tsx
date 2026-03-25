@@ -718,6 +718,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
                 showFbBadge={isDigitalAccess}
+                showSourceColumn={isAdminOrSuperAdmin}
                 isPaidLocked={isPaidLocked}
                 paidLeadAccessCheck={paidLeadAccessCheck}
                 onRequestPaidAccess={handleRequestPaidAccess}

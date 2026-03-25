@@ -50,6 +50,7 @@ interface LeadTableRowProps {
   canAssignLeads?: boolean;
   noteCount?: number;
   showFbBadge?: boolean;
+  showSourceColumn?: boolean;
   isPaidLocked?: boolean;
   hasPendingAccessRequest?: boolean;
   hasApprovedAccess?: boolean;
@@ -271,6 +272,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   canAssignLeads = true,
   noteCount = 0,
   showFbBadge = false,
+  showSourceColumn = false,
   isPaidLocked = false,
   hasPendingAccessRequest = false,
   hasApprovedAccess = false,
@@ -432,6 +434,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </SelectContent>
           </Select>
       </TableCell>}
+
+      {/* Source indicator — O/F/G — admin/super_admin only */}
+      {showSourceColumn && (
+        <TableCell className="text-center">
+          {(() => {
+            const src = lead.lead_source;
+            if (src === 'google_ad') return <span className="text-[11px] font-bold text-emerald-700" title="Google Ads">G</span>;
+            if (src === 'social_ad') return <span className="text-[11px] font-bold text-blue-700" title="Facebook Ads">F</span>;
+            return <span className="text-[11px] font-medium text-muted-foreground" title="Organic">O</span>;
+          })()}
+        </TableCell>
+      )}
 
       {/* Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -720,6 +734,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.canAssignLeads === nextProps.canAssignLeads &&
     prevProps.salesUsers.length === nextProps.salesUsers.length &&
     prevProps.isPaidLocked === nextProps.isPaidLocked &&
+    prevProps.showSourceColumn === nextProps.showSourceColumn &&
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
     prevProps.hasApprovedAccess === nextProps.hasApprovedAccess
   );
