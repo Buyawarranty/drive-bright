@@ -72,7 +72,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
   // Exclude fake_lead status - they should only appear in the Fake tab
   const myLeads = useMemo(() => {
     if (!currentUserId) return [];
-    return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead');
+    return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead' && l.status !== 'lost');
   }, [currentUserId, leads]);
 
   const todayFollowUps = useMemo(() => 
