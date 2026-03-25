@@ -137,7 +137,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
-                {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && !accessStatus.hasApproved) && (
+                {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && lead.lead_source === 'google_ad' && !accessStatus.hasApproved) && (
                   <TableRow>
                     <TableCell colSpan={20} className="p-0 bg-muted/20">
                       <LeadDetailsPanel

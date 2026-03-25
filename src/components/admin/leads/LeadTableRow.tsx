@@ -291,8 +291,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
   
-  // Paid lead lock: if paid and user doesn't have access, lock all interactions
-  const isLocked = isPaidLocked && lead.is_paid && !hasApprovedAccess;
+  // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
+  const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
+  const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
 
   const getNextActionLabel = () => {
     if (!lead.next_action_type) return 'Schedule';
