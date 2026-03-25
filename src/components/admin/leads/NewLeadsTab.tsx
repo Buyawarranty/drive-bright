@@ -683,6 +683,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
               />
               
+              {/* Admin: Show pending paid lead access requests */}
+              {isAdminOrSuperAdmin && currentAdminId && (
+                <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
+              )}
+              
               <LeadsTable
                 leads={pagination.paginatedData}
                 tags={tags}
@@ -705,6 +710,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
                 showFbBadge={isDigitalAccess}
+                isPaidLocked={isPaidLocked}
+                paidLeadAccessCheck={paidLeadAccessCheck}
+                onRequestPaidAccess={handleRequestPaidAccess}
               />
               
               {/* Lightweight Footer Pagination */}
