@@ -198,8 +198,8 @@ export const FacebookAdsTab: React.FC = () => {
   }, [fbAllTimePaid]);
 
   // Summary stats
-  const totalPageViews = fbPageViews?.length || 0;
-  const uniqueVisitors = new Set(fbPageViews?.map(pv => pv.visitor_id)).size;
+  const totalPageViews = fbPageViews?.totalCount || 0;
+  const uniqueVisitors = new Set(fbPageViews?.rows?.map(pv => pv.visitor_id)).size;
   const totalLeads = fbLeads?.length || 0;
   const totalConversions = fbConvertedLeads.length;
   const conversionRate = uniqueVisitors > 0 ? ((totalLeads / uniqueVisitors) * 100).toFixed(1) : '0';
@@ -207,9 +207,10 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Page breakdown
   const pageBreakdown = useMemo(() => {
-    if (!fbPageViews) return [];
+    const rows = fbPageViews?.rows;
+    if (!rows) return [];
     const counts: Record<string, number> = {};
-    fbPageViews.forEach(pv => {
+    rows.forEach(pv => {
       const path = pv.page_path || '/';
       counts[path] = (counts[path] || 0) + 1;
     });
@@ -221,9 +222,10 @@ export const FacebookAdsTab: React.FC = () => {
 
   // UTM breakdown
   const utmBreakdown = useMemo(() => {
-    if (!fbPageViews) return [];
+    const rows = fbPageViews?.rows;
+    if (!rows) return [];
     const campaigns: Record<string, { views: number; campaign: string; medium: string; content: string }> = {};
-    fbPageViews.forEach(pv => {
+    rows.forEach(pv => {
       const campaign = pv.utm_campaign || '(none)';
       const key = campaign;
       if (!campaigns[key]) {
@@ -241,10 +243,11 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Daily breakdown for funnel
   const dailyFunnel = useMemo(() => {
-    if (!fbPageViews) return [];
+    const rows = fbPageViews?.rows;
+    if (!rows) return [];
     const days: Record<string, { visitors: Set<string>; views: number; leads: number; conversions: number; revenue: number }> = {};
     
-    fbPageViews.forEach(pv => {
+    rows.forEach(pv => {
       const day = format(new Date(pv.created_at), 'yyyy-MM-dd');
       if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0, revenue: 0 };
       days[day].views++;
