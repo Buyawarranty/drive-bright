@@ -3,11 +3,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Edit, Send, Paperclip, AlertTriangle, ArrowUp, ArrowDown, Minus, User, Mail, Phone, FileSpreadsheet } from 'lucide-react';
+import { Eye, Edit, Send, Paperclip, FileSpreadsheet } from 'lucide-react';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
 import { ClaimInlineNote } from './ClaimInlineNote';
-import { getReadinessState, readinessColor } from './ClaimsFilterBar';
 import { cn } from '@/lib/utils';
 
 interface ClaimSubmission {
@@ -60,26 +58,6 @@ interface ClaimsEnhancedTableProps {
   loading: boolean;
 }
 
-const getSlaInfo = (createdAt: string, status: string) => {
-  if (['paid', 'resolved', 'rejected'].includes(status)) return null;
-  const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(((Date.now() - new Date(createdAt).getTime()) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  
-  let bgColor = 'bg-green-600';
-  if (days >= 7) bgColor = 'bg-red-600';
-  else if (days >= 5) bgColor = 'bg-orange-500';
-  else if (days >= 3) bgColor = 'bg-amber-500';
-  
-  return { days, hours, bgColor };
-};
-
-const priorityConfig: Record<string, { label: string; color: string; dot: string }> = {
-  urgent: { label: 'High', color: 'text-red-700', dot: 'bg-red-500' },
-  high: { label: 'High', color: 'text-orange-700', dot: 'bg-orange-500' },
-  normal: { label: 'Medium', color: 'text-blue-700', dot: 'bg-blue-500' },
-  low: { label: 'Low', color: 'text-slate-600', dot: 'bg-slate-400' },
-};
-
 export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
   groupedClaims,
   filteredClaimsCount,
@@ -115,24 +93,23 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                 onCheckedChange={onSelectAll}
               />
             </TableHead>
-            <TableHead className="w-16 text-center font-semibold text-xs uppercase tracking-wider">SLA</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider">Priority</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider">Customer</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider">Claim Details</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider">Readiness</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider">Status</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider text-right">Cost</TableHead>
-            <TableHead className="w-20"></TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Claim Date</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Reg #</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Customer Name</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Email</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Phone #</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Issue</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Notes</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Status</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap text-right">Amount</TableHead>
+            <TableHead className="w-24"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {groupedClaims.map((claimGroup) => {
             const claim = claimGroup;
-            const sla = getSlaInfo(claim.created_at, claim.status);
             const isGroupSelected = claimGroup.relatedClaims.every(c => selectedClaimIds.has(c.id));
             const totalPayment = claimGroup.relatedClaims.reduce((sum, c) => sum + (c.payment_amount || 0), 0);
-            const readiness = getReadinessState(claim);
-            const prio = priorityConfig[claim.priority || 'normal'] || priorityConfig.normal;
 
             return (
               <TableRow
@@ -143,101 +120,82 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                 )}
               >
                 {/* Checkbox */}
-                <TableCell>
+                <TableCell className="py-2">
                   <Checkbox
                     checked={isGroupSelected}
                     onCheckedChange={(checked) => onSelectClaim(claimGroup, checked as boolean)}
                   />
                 </TableCell>
 
-                {/* SLA Countdown */}
-                <TableCell className="text-center">
-                  {sla ? (
-                    <div className="flex flex-col items-center">
-                      <div className={cn('text-white font-bold text-sm rounded-lg w-11 h-11 flex items-center justify-center', sla.bgColor)}>
-                        {sla.days}
-                      </div>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">{sla.hours}h</span>
-                    </div>
+                {/* Claim Date */}
+                <TableCell className="py-2 whitespace-nowrap text-sm">
+                  {new Date(claim.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}
+                </TableCell>
+
+                {/* Reg # */}
+                <TableCell className="py-2">
+                  {claim.vehicle_registration ? (
+                    <span className="font-mono font-semibold text-sm bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded">
+                      {claim.vehicle_registration.toUpperCase()}
+                    </span>
                   ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <span className="text-muted-foreground text-xs">—</span>
                   )}
                 </TableCell>
 
-                {/* Priority */}
-                <TableCell>
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn('h-2 w-2 rounded-full', prio.dot)} />
-                      <span className={cn('text-xs font-semibold', prio.color)}>
-                        {claim.priority === 'urgent' ? 'Urgent' : prio.label}
-                      </span>
-                    </div>
-                    <Select
-                      value={claim.priority || 'normal'}
-                      onValueChange={(value) => onPriorityChange(claim.id, value)}
-                    >
-                      <SelectTrigger className="w-[80px] h-5 text-[10px] border-0 bg-transparent p-0 shadow-none text-muted-foreground">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border shadow-lg z-50">
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </TableCell>
-
-                {/* Customer */}
-                <TableCell>
-                  <div className="space-y-0.5 min-w-[160px]">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-sm">{claim.name}</span>
-                      {claimGroup.relatedClaimsCount > 1 && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          {claimGroup.relatedClaimsCount}×
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate max-w-[200px]">
-                      {claim.vehicle_registration && (
-                        <span className="font-mono bg-muted px-1 rounded mr-1">{claim.vehicle_registration}</span>
-                      )}
-                    </div>
-                    <a href={`mailto:${claim.email}`} className="text-xs text-blue-600 hover:underline truncate block max-w-[200px]">
-                      {claim.email}
-                    </a>
-                  </div>
-                </TableCell>
-
-                {/* Claim Details */}
-                <TableCell>
-                  <div className="space-y-0.5 min-w-[140px]">
-                    <span className="text-sm text-foreground block truncate max-w-[200px]" title={claim.claim_reason || '-'}>
-                      {claim.claim_reason || '—'}
-                    </span>
-                    {claim.warranty_type && (
-                      <Badge variant="outline" className="text-[10px] font-normal">
-                        {claim.warranty_type}
+                {/* Customer Name */}
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-sm">{claim.name}</span>
+                    {claimGroup.relatedClaimsCount > 1 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {claimGroup.relatedClaimsCount}×
                       </Badge>
                     )}
-                    <div className="text-[10px] text-muted-foreground">
-                      {new Date(claim.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}
-                    </div>
                   </div>
                 </TableCell>
 
-                {/* Readiness */}
-                <TableCell>
-                  <Badge variant="outline" className={cn('text-[11px] font-medium border', readinessColor(readiness))}>
-                    {readiness}
-                  </Badge>
+                {/* Email */}
+                <TableCell className="py-2">
+                  <a href={`mailto:${claim.email}`} className="text-sm text-blue-600 hover:underline truncate block max-w-[200px]">
+                    {claim.email}
+                  </a>
+                </TableCell>
+
+                {/* Phone # */}
+                <TableCell className="py-2">
+                  {claim.phone ? (
+                    <a href={`tel:${claim.phone}`} className="text-sm text-foreground hover:text-blue-600 whitespace-nowrap">
+                      {claim.phone}
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </TableCell>
+
+                {/* Issue */}
+                <TableCell className="py-2">
+                  <span className="text-sm text-foreground block truncate max-w-[180px]" title={claim.claim_reason || ''}>
+                    {claim.claim_reason || '—'}
+                  </span>
+                </TableCell>
+
+                {/* Notes */}
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-1">
+                    {claim.internal_notes ? (
+                      <span className="text-xs text-muted-foreground truncate max-w-[140px] block" title={claim.internal_notes}>
+                        {claim.internal_notes}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                    <ClaimInlineNote claimId={claim.id} />
+                  </div>
                 </TableCell>
 
                 {/* Status */}
-                <TableCell>
+                <TableCell className="py-2">
                   <ClaimStatusDropdown
                     claimId={claim.id}
                     currentTagId={claim.tag_id}
@@ -246,8 +204,8 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                   />
                 </TableCell>
 
-                {/* Cost */}
-                <TableCell className="text-right">
+                {/* Amount */}
+                <TableCell className="py-2 text-right">
                   <div className="flex items-center justify-end gap-1">
                     {totalPayment > 0 ? (
                       <span className="font-semibold text-sm text-green-700">
@@ -265,26 +223,26 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                       <Edit className="h-3 w-3 text-muted-foreground" />
                     </Button>
                   </div>
-                  {claim.file_url && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDownloadFile(claim.file_url!, claim.file_name!)}
-                      className="h-5 p-0 text-[10px] text-blue-600 gap-0.5"
-                    >
-                      <Paperclip className="h-3 w-3" /> File
-                    </Button>
-                  )}
                 </TableCell>
 
                 {/* Actions */}
-                <TableCell>
+                <TableCell className="py-2">
                   <div className="flex items-center gap-0.5">
-                    <ClaimInlineNote claimId={claim.id} />
-                    <Button variant="ghost" size="sm" onClick={() => onViewClaim(claim)} className="h-7 w-7 p-0">
+                    {claim.file_url && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDownloadFile(claim.file_url!, claim.file_name!)}
+                        className="h-7 w-7 p-0"
+                        title="Download file"
+                      >
+                        <Paperclip className="h-3.5 w-3.5 text-blue-600" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={() => onViewClaim(claim)} className="h-7 w-7 p-0" title="View claim">
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => onEmailClaim(claim)} className="h-7 w-7 p-0">
+                    <Button variant="ghost" size="sm" onClick={() => onEmailClaim(claim)} className="h-7 w-7 p-0" title="Send email">
                       <Send className="h-3.5 w-3.5 text-blue-600" />
                     </Button>
                   </div>
