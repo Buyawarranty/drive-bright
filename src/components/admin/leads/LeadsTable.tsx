@@ -31,6 +31,7 @@ interface LeadsTableProps {
   onRefresh?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
+  showFbBadge?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -55,6 +56,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onRefresh,
   hideAssignedColumn,
   canAssignLeads = true,
+  showFbBadge = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -119,6 +121,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   hideAssignedColumn={hideAssignedColumn}
                   canAssignLeads={canAssignLeads}
                   noteCount={noteCounts[lead.id] || 0}
+                  showFbBadge={showFbBadge}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel */}
