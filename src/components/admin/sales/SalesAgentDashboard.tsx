@@ -53,9 +53,11 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     fetchLeads,
   } = useLeads();
 
-  // Use fetched data or props
-  const leads = propLeads?.length ? propLeads : fetchedLeads;
-  const tags = propTags?.length ? propTags : fetchedTags;
+  // Use props if provided, fallback to fetched data
+  // CRITICAL: Use ?? (not ?.length) so empty arrays from parent don't cause
+  // a switch to fetchedLeads (which lacks the parent's optimistic updates)
+  const leads = propLeads ?? fetchedLeads;
+  const tags = propTags ?? fetchedTags;
 
   useEffect(() => {
     const getCurrentUser = async () => {
