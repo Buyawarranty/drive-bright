@@ -265,6 +265,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   hideAssignedColumn,
   canAssignLeads = true,
   noteCount = 0,
+  showFbBadge = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');

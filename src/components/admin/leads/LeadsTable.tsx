@@ -31,6 +31,7 @@ interface LeadsTableProps {
   onRefresh?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
+  showFbBadge?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
