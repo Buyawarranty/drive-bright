@@ -1,4 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { startOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
