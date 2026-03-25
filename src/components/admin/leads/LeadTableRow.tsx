@@ -717,7 +717,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isExpanded === nextProps.isExpanded &&
     prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
     prevProps.canAssignLeads === nextProps.canAssignLeads &&
-    prevProps.salesUsers.length === nextProps.salesUsers.length
+    prevProps.salesUsers.length === nextProps.salesUsers.length &&
+    prevProps.isPaidLocked === nextProps.isPaidLocked &&
+    prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
+    prevProps.hasApprovedAccess === nextProps.hasApprovedAccess
   );
 });
 
