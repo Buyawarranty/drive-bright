@@ -385,17 +385,21 @@ export const CustomersTab = () => {
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
 
   const filteredRevenueStats = useMemo(() => {
-    if (!isSuperAdmin || !revenueDateRange?.from) return null;
-    const from = new Date(revenueDateRange.from);
-    from.setHours(0, 0, 0, 0);
-    const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
-    to.setHours(23, 59, 59, 999);
-    const filtered = customers.filter(c => {
+    if (!isSuperAdmin) return null;
+    let filtered = customers.filter(c => {
       const status = (c.status || '').toLowerCase();
-      if (status === 'cancelled' || status === 'refunded') return false;
-      const created = c.created_at ? new Date(c.created_at) : null;
-      return created && created >= from && created <= to;
+      return status !== 'cancelled' && status !== 'refunded';
     });
+    if (revenueDateRange?.from) {
+      const from = new Date(revenueDateRange.from);
+      from.setHours(0, 0, 0, 0);
+      const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
+      to.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(c => {
+        const created = c.created_at ? new Date(c.created_at) : null;
+        return created && created >= from && created <= to;
+      });
+    }
     return {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
