@@ -120,6 +120,7 @@ const SuzukiWarrantyLanding = lazy(() => import("./pages/warranty-types/SuzukiWa
 const InfinitiWarrantyLanding = lazy(() => import("./pages/warranty-types/InfinitiWarrantyLanding"));
 const MitsubishiWarrantyLanding = lazy(() => import("./pages/warranty-types/MitsubishiWarrantyLanding"));
 const CadillacWarrantyLanding = lazy(() => import("./pages/warranty-types/CadillacWarrantyLanding"));
+const TeslaWarrantyLanding = lazy(() => import("./pages/warranty-types/TeslaWarrantyLanding"));
 const HyundaiWarranty = lazy(() => import("./pages/HyundaiWarranty"));
 const AudiWarranty = lazy(() => import("./pages/AudiWarranty"));
 const MercedesWarranty = lazy(() => import("./pages/MercedesWarranty"));
@@ -324,6 +325,8 @@ const App = () => {
                     <Route path="/warranty-types/mitsubishi-warranty/" element={<MitsubishiWarrantyLanding />} />
                     <Route path="/warranty-types/cadillac-warranty" element={<CadillacWarrantyLanding />} />
                     <Route path="/warranty-types/cadillac-warranty/" element={<CadillacWarrantyLanding />} />
+                    <Route path="/warranty-types/tesla-warranty" element={<TeslaWarrantyLanding />} />
+                    <Route path="/warranty-types/tesla-warranty/" element={<TeslaWarrantyLanding />} />
                     
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
