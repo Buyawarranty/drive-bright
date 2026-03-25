@@ -3048,7 +3048,7 @@ export const CustomersTab = () => {
                         £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                       <Badge variant="outline" className="text-xs">
-                        {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                        {filteredRevenueStats.count} {filteredRevenueStats.label}
                       </Badge>
                     </div>
                   )}
