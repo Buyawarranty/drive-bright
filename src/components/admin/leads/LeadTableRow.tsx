@@ -482,6 +482,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
       {/* Call Count - Enhanced with dialog and guardrails */}
       <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <span className="text-muted-foreground text-xs">🔒</span>
+        ) : (
         <CallCountCell
           lead={lead}
           onUpdateCallCount={onUpdateCallCount}
@@ -489,6 +492,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           onScheduleFollowUp={onScheduleFollowUp}
           onLogActivity={onLogActivity}
         />
+        )}
       </TableCell>
 
       {/* Quick Actions */}
