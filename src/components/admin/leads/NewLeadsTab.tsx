@@ -276,23 +276,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [dateFilteredLeadsForCounts, applyStatusFilter]
   );
 
-  const leadCounts = useMemo(() => ({
-    all_leads: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead' && l.status !== 'lost').length,
-    all: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead' && l.status !== 'lost').length,
-    live: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
-    total: dateFilteredLeadsForCounts.length,
-    new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
-    contacted: dateFilteredLeadsForCounts.filter(l => l.status === 'contacted').length,
-    follow_up: dateFilteredLeadsForCounts.filter(l => l.status === 'follow_up').length,
-    quote_sent: dateFilteredLeadsForCounts.filter(l => l.status === 'quote_sent').length,
-    urgent_callback: dateFilteredLeadsForCounts.filter(l => l.status === 'urgent_callback').length,
-    callbacks: dateFilteredLeadsForCounts.filter(l => l.is_callback === true).length,
-    paid: dateFilteredLeadsForCounts.filter(l => l.is_paid === true).length,
-    lost: dateFilteredLeadsForCounts.filter(l => l.status === 'lost').length,
-    converted: dateFilteredLeadsForCounts.filter(l => l.status === 'converted').length,
-    high_priority: dateFilteredLeadsForCounts.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
-    fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
-  }), [dateFilteredLeadsForCounts]);
+  const leadCounts = useMemo(() => {
+    // "All Leads" uses a STABLE count: all leads created on that date, excluding only fake leads.
+    // This prevents historical day counts from fluctuating when agents change a lead's status later.
+    const stableAll = dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead').length;
+    const liveCount = dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length;
+
+    return {
+      all_leads: stableAll,
+      all: stableAll,
+      live: liveCount,
+      total: dateFilteredLeadsForCounts.length,
+      new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
+      contacted: dateFilteredLeadsForCounts.filter(l => l.status === 'contacted').length,
+      follow_up: dateFilteredLeadsForCounts.filter(l => l.status === 'follow_up').length,
+      quote_sent: dateFilteredLeadsForCounts.filter(l => l.status === 'quote_sent').length,
+      urgent_callback: dateFilteredLeadsForCounts.filter(l => l.status === 'urgent_callback').length,
+      callbacks: dateFilteredLeadsForCounts.filter(l => l.is_callback === true).length,
+      paid: dateFilteredLeadsForCounts.filter(l => l.is_paid === true).length,
+      lost: dateFilteredLeadsForCounts.filter(l => l.status === 'lost').length,
+      converted: dateFilteredLeadsForCounts.filter(l => l.status === 'converted').length,
+      high_priority: dateFilteredLeadsForCounts.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
+    };
+  }, [dateFilteredLeadsForCounts]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
