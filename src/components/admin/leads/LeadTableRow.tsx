@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
+import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
@@ -49,6 +50,10 @@ interface LeadTableRowProps {
   canAssignLeads?: boolean;
   noteCount?: number;
   showFbBadge?: boolean;
+  isPaidLocked?: boolean;
+  hasPendingAccessRequest?: boolean;
+  hasApprovedAccess?: boolean;
+  onRequestAccess?: (reason: string) => void;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -266,6 +271,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   canAssignLeads = true,
   noteCount = 0,
   showFbBadge = false,
+  isPaidLocked = false,
+  hasPendingAccessRequest = false,
+  hasApprovedAccess = false,
+  onRequestAccess,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -281,6 +290,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
+  
+  // Paid lead lock: if paid and user doesn't have access, lock all interactions
+  const isLocked = isPaidLocked && lead.is_paid && !hasApprovedAccess;
 
   const getNextActionLabel = () => {
     if (!lead.next_action_type) return 'Schedule';
@@ -299,7 +311,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     <TableRow className={cn(
       "transition-colors border-b border-border/30 group", 
       getRowUrgencyClass(lead),
-      isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60"
+      isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60",
+      isLocked && "opacity-70"
     )}>
       {/* Selection Checkbox */}
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -323,7 +336,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onAssign(value);
             }
           }}
-          disabled={!canAssignLeads}
+          disabled={!canAssignLeads || isLocked}
         >
             <SelectTrigger 
               className={cn(
@@ -421,6 +434,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
       {/* Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <PaidLeadLockOverlay
+            hasPendingRequest={hasPendingAccessRequest}
+            hasApprovedAccess={hasApprovedAccess}
+            onRequestAccess={onRequestAccess || (() => {})}
+          />
+        ) : (
         <Select
           value={lead.status}
           onValueChange={(value) => onUpdateStatus(value as LeadStatus)}
@@ -440,6 +460,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="fake_lead">Fake Lead</SelectItem>
           </SelectContent>
         </Select>
+        )}
       </TableCell>
 
       {/* Callback indicator */}
@@ -461,6 +482,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
       {/* Call Count - Enhanced with dialog and guardrails */}
       <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <span className="text-muted-foreground text-xs">🔒</span>
+        ) : (
         <CallCountCell
           lead={lead}
           onUpdateCallCount={onUpdateCallCount}
@@ -468,6 +492,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           onScheduleFollowUp={onScheduleFollowUp}
           onLogActivity={onLogActivity}
         />
+        )}
       </TableCell>
 
       {/* Quick Actions */}
@@ -692,7 +717,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isExpanded === nextProps.isExpanded &&
     prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
     prevProps.canAssignLeads === nextProps.canAssignLeads &&
-    prevProps.salesUsers.length === nextProps.salesUsers.length
+    prevProps.salesUsers.length === nextProps.salesUsers.length &&
+    prevProps.isPaidLocked === nextProps.isPaidLocked &&
+    prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
+    prevProps.hasApprovedAccess === nextProps.hasApprovedAccess
   );
 });
 

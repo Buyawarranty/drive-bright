@@ -1,4 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { startOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
@@ -66,8 +69,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Role-based restrictions
   const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
+  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
+  
+  // Paid lead lock system — only admin/super_admin bypass the lock
+  const isPaidLocked = !isAdminOrSuperAdmin;
+  const currentAdminId = useCurrentAdminId();
+  const { hasApprovedAccess, hasPendingRequest, requestAccess } = useLeadAccessRequests([], currentAdminId);
+  
+  const paidLeadAccessCheck = useCallback((leadId: string) => ({
+    hasPending: hasPendingRequest(leadId),
+    hasApproved: hasApprovedAccess(leadId),
+  }), [hasPendingRequest, hasApprovedAccess]);
+  
+  const handleRequestPaidAccess = useCallback((leadId: string, reason: string) => {
+    requestAccess.mutate({ leadId, reason });
+  }, [requestAccess]);
   
   // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
   const { value: showAssignmentsToAgents } = useAdminConfig('show_assignments_to_agents');
@@ -665,6 +683,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
               />
               
+              {/* Admin: Show pending paid lead access requests */}
+              {isAdminOrSuperAdmin && currentAdminId && (
+                <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
+              )}
+              
               <LeadsTable
                 leads={pagination.paginatedData}
                 tags={tags}
@@ -687,6 +710,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
                 showFbBadge={isDigitalAccess}
+                isPaidLocked={isPaidLocked}
+                paidLeadAccessCheck={paidLeadAccessCheck}
+                onRequestPaidAccess={handleRequestPaidAccess}
               />
               
               {/* Lightweight Footer Pagination */}

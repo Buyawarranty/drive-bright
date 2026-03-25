@@ -32,6 +32,9 @@ interface LeadsTableProps {
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
   showFbBadge?: boolean;
+  isPaidLocked?: boolean;
+  paidLeadAccessCheck?: (leadId: string) => { hasPending: boolean; hasApproved: boolean };
+  onRequestPaidAccess?: (leadId: string, reason: string) => void;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -57,6 +60,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   hideAssignedColumn,
   canAssignLeads = true,
   showFbBadge = false,
+  isPaidLocked = false,
+  paidLeadAccessCheck,
+  onRequestPaidAccess,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -97,7 +103,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {leads.map((lead) => (
+            {leads.map((lead) => {
+              const accessStatus = paidLeadAccessCheck?.(lead.id) || { hasPending: false, hasApproved: false };
+              return (
               <React.Fragment key={lead.id}>
                 <LeadTableRow
                   lead={lead}
@@ -122,10 +130,14 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   canAssignLeads={canAssignLeads}
                   noteCount={noteCounts[lead.id] || 0}
                   showFbBadge={showFbBadge}
+                  isPaidLocked={isPaidLocked}
+                  hasPendingAccessRequest={accessStatus.hasPending}
+                  hasApprovedAccess={accessStatus.hasApproved}
+                  onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
                 />
                 
-                {/* Expanded row with LeadDetailsPanel */}
-                {expandedLead === lead.id && (
+                {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
+                {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && !accessStatus.hasApproved) && (
                   <TableRow>
                     <TableCell colSpan={20} className="p-0 bg-muted/20">
                       <LeadDetailsPanel
@@ -140,7 +152,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   </TableRow>
                 )}
               </React.Fragment>
-            ))}
+              );
+            })}
             
             {leads.length === 0 && (
               <TableRow>
