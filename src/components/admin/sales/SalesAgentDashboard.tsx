@@ -39,28 +39,25 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   const [activeTab, setActiveTab] = useState('dashboard');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
-  // Only use own data fetching when NO props are provided
-  // CRITICAL: When props are provided, skip useLeads() to avoid a second realtime
-  // subscription whose refetch can overwrite the parent's optimistic updates
-  const hasPropsData = !!(propLeads && propHandlers);
-  
+  // Use own data fetching for sales agents
   const {
     leads: fetchedLeads,
     tags: fetchedTags,
     salesUsers: fetchedSalesUsers,
-    loading: fetchedLoading,
+    loading,
     updateLeadStatus,
     scheduleFollowUp,
     updateLeadNotes,
     markContactedAt,
     logActivity,
     fetchLeads,
-  } = useLeads({ enabled: !hasPropsData });
+  } = useLeads();
 
-  // Use fetched data or props — use ?? to avoid switching on empty arrays
+  // Use props if provided, fallback to fetched data
+  // CRITICAL: Use ?? (not ?.length) so empty arrays from parent don't cause
+  // a switch to fetchedLeads (which lacks the parent's optimistic updates)
   const leads = propLeads ?? fetchedLeads;
   const tags = propTags ?? fetchedTags;
-  const loading = hasPropsData ? false : fetchedLoading;
 
   useEffect(() => {
     const getCurrentUser = async () => {
