@@ -49,6 +49,10 @@ interface LeadTableRowProps {
   canAssignLeads?: boolean;
   noteCount?: number;
   showFbBadge?: boolean;
+  isPaidLocked?: boolean;
+  hasPendingAccessRequest?: boolean;
+  hasApprovedAccess?: boolean;
+  onRequestAccess?: (reason: string) => void;
 }
 
 const statusColors: Record<LeadStatus, string> = {
