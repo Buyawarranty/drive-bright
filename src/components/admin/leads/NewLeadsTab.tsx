@@ -278,16 +278,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   );
 
   const leadCounts = useMemo(() => {
-    // "All Leads" uses a STABLE count: all leads created on that date, excluding only fake leads.
-    // This prevents historical day counts from fluctuating when agents change a lead's status later.
-    const stableAll = dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead').length;
+    // "All Leads" = absolute total of every lead created on that date — never changes once the day ends.
+    const absoluteTotal = dateFilteredLeadsForCounts.length;
+    // "Live" = active leads excluding lost & fake — the working count agents care about.
     const liveCount = dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length;
 
     return {
-      all_leads: stableAll,
-      all: stableAll,
+      all_leads: absoluteTotal,
+      all: absoluteTotal,
       live: liveCount,
-      total: dateFilteredLeadsForCounts.length,
+      total: absoluteTotal,
       new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
       contacted: dateFilteredLeadsForCounts.filter(l => l.status === 'contacted').length,
       follow_up: dateFilteredLeadsForCounts.filter(l => l.status === 'follow_up').length,
