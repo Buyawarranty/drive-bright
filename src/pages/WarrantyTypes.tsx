@@ -863,8 +863,15 @@ const WarrantyTypes: React.FC = () => {
                 <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
               </Link>
 
+              {/* Tesla Brand Card */}
+              <Link to="/warranty-types/tesla-warranty" className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Tesla_logo.png/120px-Tesla_logo.png" alt="Tesla logo" className="max-h-12 max-w-12 object-contain" loading="lazy" /></div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Tesla</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">View <ChevronRight className="h-3 w-3 ml-0.5" /></span>
+              </Link>
+
               {dynamicPages
-                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw', 'smart', 'porsche', 'alfa romeo', 'lexus', 'dacia', 'jeep', 'subaru', 'ssangyong', 'mini', 'dodge', 'chevrolet', 'byd', 'chrysler', 'suzuki', 'infiniti', 'mitsubishi', 'cadillac'].includes(page.brand_name.toLowerCase()))
+                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo', 'volkswagen', 'vw', 'smart', 'porsche', 'alfa romeo', 'lexus', 'dacia', 'jeep', 'subaru', 'ssangyong', 'mini', 'dodge', 'chevrolet', 'byd', 'chrysler', 'suzuki', 'infiniti', 'mitsubishi', 'cadillac', 'tesla'].includes(page.brand_name.toLowerCase()))
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
