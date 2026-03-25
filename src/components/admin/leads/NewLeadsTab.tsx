@@ -172,7 +172,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     switch (filter) {
       case 'all':
       case 'all_leads':
-        return inputLeads.filter(lead => lead.status !== 'fake_lead' && lead.status !== 'lost');
+        // Include lost leads so the count stays stable for historical dates
+        return inputLeads.filter(lead => lead.status !== 'fake_lead');
       case 'live':
         return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'high_priority':
