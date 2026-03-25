@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
+import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
@@ -270,6 +271,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   canAssignLeads = true,
   noteCount = 0,
   showFbBadge = false,
+  isPaidLocked = false,
+  hasPendingAccessRequest = false,
+  hasApprovedAccess = false,
+  onRequestAccess,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
