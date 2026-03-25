@@ -3079,6 +3079,64 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_access_requests: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          reason: string | null
+          requested_by: string
+          reviewed_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          reason?: string | null
+          requested_by: string
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          reason?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_access_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_access_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_access_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_activities: {
         Row: {
           activity_type: string
