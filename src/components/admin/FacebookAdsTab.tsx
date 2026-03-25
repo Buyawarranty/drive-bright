@@ -53,19 +53,40 @@ export const FacebookAdsTab: React.FC = () => {
     setLastRefresh(new Date());
   };
 
-  // Fetch Facebook page views
+  // Fetch Facebook page views - use server-side count + paginated fetch for breakdowns
   const { data: fbPageViews, isLoading: pvLoading } = useQuery({
     queryKey: ['fb-page-views', dateRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get accurate total count via server
+      const { count: totalCount, error: countError } = await supabase
         .from('page_views')
-        .select('*')
+        .select('*', { count: 'exact', head: true })
         .eq('is_facebook_ads', true)
         .gte('created_at', dateFrom.toISOString())
-        .lte('created_at', dateTo.toISOString())
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+        .lte('created_at', dateTo.toISOString());
+      if (countError) throw countError;
+
+      // Fetch all rows in batches for breakdowns (visitor_id, utm, page_path)
+      const allRows: any[] = [];
+      const batchSize = 1000;
+      let from = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const { data: batch, error } = await supabase
+          .from('page_views')
+          .select('visitor_id, page_path, utm_source, utm_medium, utm_campaign, utm_content, created_at')
+          .eq('is_facebook_ads', true)
+          .gte('created_at', dateFrom.toISOString())
+          .lte('created_at', dateTo.toISOString())
+          .range(from, from + batchSize - 1)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        allRows.push(...(batch || []));
+        hasMore = (batch?.length || 0) === batchSize;
+        from += batchSize;
+      }
+
+      return { totalCount: totalCount || 0, rows: allRows };
     },
   });
 
