@@ -460,6 +460,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="fake_lead">Fake Lead</SelectItem>
           </SelectContent>
         </Select>
+        )}
       </TableCell>
 
       {/* Callback indicator */}
