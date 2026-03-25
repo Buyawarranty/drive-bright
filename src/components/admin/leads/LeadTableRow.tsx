@@ -311,7 +311,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     <TableRow className={cn(
       "transition-colors border-b border-border/30 group", 
       getRowUrgencyClass(lead),
-      isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60"
+      isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60",
+      isLocked && "opacity-70"
     )}>
       {/* Selection Checkbox */}
       <TableCell onClick={(e) => e.stopPropagation()}>
