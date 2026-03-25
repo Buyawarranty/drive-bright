@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
 import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook } from 'lucide-react';
@@ -87,16 +88,18 @@ export const AnalyticsTab = () => {
     try {
       console.log('Fetching analytics data...');
       
-      // Match CustomersTab filtering exactly
-      const { data, error } = await supabase
-        .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at')
-        .not('email', 'ilike', '%@test.com%')
-        .not('email', 'ilike', '%testuser%')
-        .not('email', 'ilike', '%guest@%')
-        .not('name', 'eq', 'Test Customer')
-        .not('name', 'eq', 'Guest Customer')
-        .eq('is_deleted', false);
+      // Match CustomersTab filtering exactly — use batch fetch to avoid 1000-row limit
+      const { data, error } = await fetchAllRows(() =>
+        supabase
+          .from('customers')
+          .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at')
+          .not('email', 'ilike', '%@test.com%')
+          .not('email', 'ilike', '%testuser%')
+          .not('email', 'ilike', '%guest@%')
+          .not('name', 'eq', 'Test Customer')
+          .not('name', 'eq', 'Guest Customer')
+          .eq('is_deleted', false)
+      );
 
       if (error) {
         console.error('Error fetching customers:', error);
