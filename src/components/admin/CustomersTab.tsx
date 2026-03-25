@@ -388,8 +388,8 @@ export const CustomersTab = () => {
     if (!isSuperAdmin) return null;
     // Use filteredCustomers which already respects status, agent, source, tag, and other filters
     let filtered = [...filteredCustomers];
-    // When no specific status is selected, exclude cancelled/refunded from revenue
-    if (filterByStatus === 'all') {
+    // Only exclude cancelled/refunded when viewing 'all' status AND not specifically looking at cancelled_refunded source
+    if (filterByStatus === 'all' && filterBySource !== 'cancelled_refunded') {
       filtered = filtered.filter(c => {
         const status = (c.status || '').toLowerCase();
         return status !== 'cancelled' && status !== 'refunded';
@@ -405,16 +405,27 @@ export const CustomersTab = () => {
         return created && created >= from && created <= to;
       });
     }
-    // Dynamic label based on status filter
-    const statusLabel = filterByStatus === 'all' ? 'sales' 
-      : filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds'
-      : filterByStatus;
+    // Dynamic label based on active filters
+    let statusLabel = 'sales';
+    if (filterBySource === 'cancelled_refunded') {
+      statusLabel = 'cancellations/refunds';
+    } else if (filterBySource === 'website') {
+      statusLabel = 'website sales';
+    } else if (filterBySource === 'staff_purchase') {
+      statusLabel = 'staff sales';
+    } else if (filterBySource === 'quote_order') {
+      statusLabel = 'quote/order sales';
+    } else if (filterBySource === 'agent_sales') {
+      statusLabel = 'agent sales';
+    } else if (filterByStatus !== 'all') {
+      statusLabel = filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds' : filterByStatus;
+    }
     return {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
       label: statusLabel,
     };
-  }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus]);
+  }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
