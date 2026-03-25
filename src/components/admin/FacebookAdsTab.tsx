@@ -53,19 +53,40 @@ export const FacebookAdsTab: React.FC = () => {
     setLastRefresh(new Date());
   };
 
-  // Fetch Facebook page views
+  // Fetch Facebook page views - use server-side count + paginated fetch for breakdowns
   const { data: fbPageViews, isLoading: pvLoading } = useQuery({
     queryKey: ['fb-page-views', dateRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get accurate total count via server
+      const { count: totalCount, error: countError } = await supabase
         .from('page_views')
-        .select('*')
+        .select('*', { count: 'exact', head: true })
         .eq('is_facebook_ads', true)
         .gte('created_at', dateFrom.toISOString())
-        .lte('created_at', dateTo.toISOString())
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+        .lte('created_at', dateTo.toISOString());
+      if (countError) throw countError;
+
+      // Fetch all rows in batches for breakdowns (visitor_id, utm, page_path)
+      const allRows: any[] = [];
+      const batchSize = 1000;
+      let from = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const { data: batch, error } = await supabase
+          .from('page_views')
+          .select('visitor_id, page_path, utm_source, utm_medium, utm_campaign, utm_content, created_at')
+          .eq('is_facebook_ads', true)
+          .gte('created_at', dateFrom.toISOString())
+          .lte('created_at', dateTo.toISOString())
+          .range(from, from + batchSize - 1)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        allRows.push(...(batch || []));
+        hasMore = (batch?.length || 0) === batchSize;
+        from += batchSize;
+      }
+
+      return { totalCount: totalCount || 0, rows: allRows };
     },
   });
 
@@ -177,8 +198,8 @@ export const FacebookAdsTab: React.FC = () => {
   }, [fbAllTimePaid]);
 
   // Summary stats
-  const totalPageViews = fbPageViews?.length || 0;
-  const uniqueVisitors = new Set(fbPageViews?.map(pv => pv.visitor_id)).size;
+  const totalPageViews = fbPageViews?.totalCount || 0;
+  const uniqueVisitors = new Set(fbPageViews?.rows?.map(pv => pv.visitor_id)).size;
   const totalLeads = fbLeads?.length || 0;
   const totalConversions = fbConvertedLeads.length;
   const conversionRate = uniqueVisitors > 0 ? ((totalLeads / uniqueVisitors) * 100).toFixed(1) : '0';
@@ -186,9 +207,10 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Page breakdown
   const pageBreakdown = useMemo(() => {
-    if (!fbPageViews) return [];
+    const rows = fbPageViews?.rows;
+    if (!rows) return [];
     const counts: Record<string, number> = {};
-    fbPageViews.forEach(pv => {
+    rows.forEach(pv => {
       const path = pv.page_path || '/';
       counts[path] = (counts[path] || 0) + 1;
     });
@@ -200,9 +222,10 @@ export const FacebookAdsTab: React.FC = () => {
 
   // UTM breakdown
   const utmBreakdown = useMemo(() => {
-    if (!fbPageViews) return [];
+    const rows = fbPageViews?.rows;
+    if (!rows) return [];
     const campaigns: Record<string, { views: number; campaign: string; medium: string; content: string }> = {};
-    fbPageViews.forEach(pv => {
+    rows.forEach(pv => {
       const campaign = pv.utm_campaign || '(none)';
       const key = campaign;
       if (!campaigns[key]) {
@@ -220,10 +243,11 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Daily breakdown for funnel
   const dailyFunnel = useMemo(() => {
-    if (!fbPageViews) return [];
+    const rows = fbPageViews?.rows;
+    if (!rows) return [];
     const days: Record<string, { visitors: Set<string>; views: number; leads: number; conversions: number; revenue: number }> = {};
     
-    fbPageViews.forEach(pv => {
+    rows.forEach(pv => {
       const day = format(new Date(pv.created_at), 'yyyy-MM-dd');
       if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0, revenue: 0 };
       days[day].views++;
