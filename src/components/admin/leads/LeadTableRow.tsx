@@ -50,6 +50,7 @@ interface LeadTableRowProps {
   canAssignLeads?: boolean;
   noteCount?: number;
   showFbBadge?: boolean;
+  showSourceColumn?: boolean;
   isPaidLocked?: boolean;
   hasPendingAccessRequest?: boolean;
   hasApprovedAccess?: boolean;
@@ -271,6 +272,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   canAssignLeads = true,
   noteCount = 0,
   showFbBadge = false,
+  showSourceColumn = false,
   isPaidLocked = false,
   hasPendingAccessRequest = false,
   hasApprovedAccess = false,
