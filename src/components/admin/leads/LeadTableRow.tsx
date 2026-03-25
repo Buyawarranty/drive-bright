@@ -434,6 +434,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
       {/* Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <PaidLeadLockOverlay
+            hasPendingRequest={hasPendingAccessRequest}
+            hasApprovedAccess={hasApprovedAccess}
+            onRequestAccess={onRequestAccess || (() => {})}
+          />
+        ) : (
         <Select
           value={lead.status}
           onValueChange={(value) => onUpdateStatus(value as LeadStatus)}
