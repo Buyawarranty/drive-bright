@@ -336,7 +336,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onAssign(value);
             }
           }}
-          disabled={!canAssignLeads}
+          disabled={!canAssignLeads || isLocked}
         >
             <SelectTrigger 
               className={cn(
