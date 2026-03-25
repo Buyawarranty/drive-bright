@@ -69,8 +69,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Role-based restrictions
   const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
+  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
+  
+  // Paid lead lock system — only admin/super_admin bypass the lock
+  const isPaidLocked = !isAdminOrSuperAdmin;
+  const currentAdminId = useCurrentAdminId();
+  const { hasApprovedAccess, hasPendingRequest, requestAccess } = useLeadAccessRequests([], currentAdminId);
+  
+  const paidLeadAccessCheck = useCallback((leadId: string) => ({
+    hasPending: hasPendingRequest(leadId),
+    hasApproved: hasApprovedAccess(leadId),
+  }), [hasPendingRequest, hasApprovedAccess]);
+  
+  const handleRequestPaidAccess = useCallback((leadId: string, reason: string) => {
+    requestAccess.mutate({ leadId, reason });
+  }, [requestAccess]);
   
   // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
   const { value: showAssignmentsToAgents } = useAdminConfig('show_assignments_to_agents');
