@@ -435,6 +435,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </Select>
       </TableCell>}
 
+      {/* Source indicator — O/F/G — admin/super_admin only */}
+      {showSourceColumn && (
+        <TableCell className="text-center">
+          {(() => {
+            const src = lead.lead_source;
+            if (src === 'google_ad') return <span className="text-[11px] font-bold text-emerald-700" title="Google Ads">G</span>;
+            if (src === 'social_ad') return <span className="text-[11px] font-bold text-blue-700" title="Facebook Ads">F</span>;
+            return <span className="text-[11px] font-medium text-muted-foreground" title="Organic">O</span>;
+          })()}
+        </TableCell>
+      )}
+
       {/* Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {isLocked ? (
