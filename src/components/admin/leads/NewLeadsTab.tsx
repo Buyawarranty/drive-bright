@@ -66,6 +66,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Role-based restrictions
   const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
+  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   
   // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
@@ -685,6 +686,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateCallCount={updateCallCount}
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
+                showFbBadge={isDigitalAccess}
               />
               
               {/* Lightweight Footer Pagination */}
