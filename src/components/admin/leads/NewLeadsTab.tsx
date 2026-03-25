@@ -153,7 +153,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     switch (filter) {
       case 'all':
       case 'all_leads':
-        return inputLeads.filter(lead => lead.status !== 'fake_lead');
+        return inputLeads.filter(lead => lead.status !== 'fake_lead' && lead.status !== 'lost');
       case 'live':
         return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'high_priority':
@@ -258,8 +258,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   );
 
   const leadCounts = useMemo(() => ({
-    all_leads: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead').length,
-    all: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead').length,
+    all_leads: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead' && l.status !== 'lost').length,
+    all: dateFilteredLeadsForCounts.filter(l => l.status !== 'fake_lead' && l.status !== 'lost').length,
     live: dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length,
     total: dateFilteredLeadsForCounts.length,
     new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
