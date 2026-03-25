@@ -386,10 +386,15 @@ export const CustomersTab = () => {
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin) return null;
-    let filtered = customers.filter(c => {
-      const status = (c.status || '').toLowerCase();
-      return status !== 'cancelled' && status !== 'refunded';
-    });
+    // Use filteredCustomers which already respects status, agent, source, tag, and other filters
+    let filtered = [...filteredCustomers];
+    // When no specific status is selected, exclude cancelled/refunded from revenue
+    if (filterByStatus === 'all') {
+      filtered = filtered.filter(c => {
+        const status = (c.status || '').toLowerCase();
+        return status !== 'cancelled' && status !== 'refunded';
+      });
+    }
     if (revenueDateRange?.from) {
       const from = new Date(revenueDateRange.from);
       from.setHours(0, 0, 0, 0);
@@ -400,11 +405,16 @@ export const CustomersTab = () => {
         return created && created >= from && created <= to;
       });
     }
+    // Dynamic label based on status filter
+    const statusLabel = filterByStatus === 'all' ? 'sales' 
+      : filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds'
+      : filterByStatus;
     return {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
+      label: statusLabel,
     };
-  }, [customers, revenueDateRange, isSuperAdmin]);
+  }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus]);
 
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
@@ -3038,7 +3048,7 @@ export const CustomersTab = () => {
                         £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                       <Badge variant="outline" className="text-xs">
-                        {filteredRevenueStats.count} {filteredRevenueStats.count === 1 ? 'sale' : 'sales'}
+                        {filteredRevenueStats.count} {filteredRevenueStats.label}
                       </Badge>
                     </div>
                   )}
