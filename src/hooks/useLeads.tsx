@@ -301,23 +301,6 @@ export const useLeads = () => {
     return pendingStatusFlushRef.current;
   }, [clearPendingStatusUpdate]);
 
-  // Helper to detect test/fake leads based on known test data
-  const isTestLead = (name: string | null, phone: string | null): boolean => {
-    const testNames = ['kamran', 'prajwal', 'praj', 'test'];
-    const testPhones = ['07960111131'];
-    
-    const nameLower = (name || '').toLowerCase();
-    const phoneClean = (phone || '').replace(/\s+/g, '');
-    
-    // Check if name contains any test name
-    const isTestName = testNames.some(testName => nameLower.includes(testName));
-    
-    // Check if phone matches test phone
-    const isTestPhone = testPhones.includes(phoneClean);
-    
-    return isTestName || isTestPhone;
-  };
-
   const fetchLeads = useCallback(async () => {
     if (isFetchingRef.current) {
       pendingFetchRef.current = true;
@@ -375,12 +358,10 @@ export const useLeads = () => {
         const fullName = lead.first_name || lead.last_name
           ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
           : lead.full_name || null;
-        const isFakeLead = isTestLead(fullName, lead.phone);
-
         return {
           ...lead,
           full_name: fullName,
-          status: isFakeLead && lead.status === 'new' ? 'fake_lead' : lead.status,
+          status: lead.status,
           plan_name: lead.plan_interest,
           payment_type: null,
           step_abandoned: null,
