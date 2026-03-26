@@ -401,8 +401,8 @@ export const CustomersTab = () => {
       const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
       to.setHours(23, 59, 59, 999);
       filtered = filtered.filter(c => {
-        const created = c.created_at ? new Date(c.created_at) : null;
-        return created && created >= from && created <= to;
+        const signupDate = c.signup_date ? new Date(c.signup_date) : (c.created_at ? new Date(c.created_at) : null);
+        return signupDate && signupDate >= from && signupDate <= to;
       });
     }
     // Dynamic label based on active filters
