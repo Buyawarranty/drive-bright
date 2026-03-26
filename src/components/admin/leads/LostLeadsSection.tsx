@@ -185,44 +185,126 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
 
   if (compact) {
     return (
-      <div
-        className={cn(
-          "rounded-xl border-2 h-12 flex items-center justify-between px-3 cursor-pointer hover:bg-muted/20 transition-colors",
-          orphanedLeads.length > 0 ? 'border-amber-400 bg-amber-50/40' : 'border-green-400 bg-green-50/40'
-        )}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          {orphanedLeads.length > 0 ? (
-            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-          )}
-          <span className="text-xs font-semibold truncate">
-            {orphanedLeads.length > 0 ? 'Recovered Leads' : 'All Synced'}
-          </span>
-          {orphanedLeads.length > 0 && (
-            <Badge variant="destructive" className="h-5 px-1.5 text-[10px] shrink-0">{orphanedLeads.length}</Badge>
-          )}
-          {rejectedLeads.length > 0 && (
-            <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0">{rejectedLeads.length} rejected</Badge>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {orphanedLeads.length > 0 && (
-            <Button
-              onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
-              disabled={syncing}
-              size="sm"
-              className="h-6 px-2 text-[10px] gap-1"
-            >
-              {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
-              {syncing ? 'Syncing...' : 'Recover'}
-            </Button>
-          )}
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-        </div>
-      </div>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <div
+            className={cn(
+              "rounded-xl border-2 h-12 flex items-center justify-between px-3 cursor-pointer hover:bg-muted/20 transition-colors",
+              orphanedLeads.length > 0 ? 'border-amber-400 bg-amber-50/40' : 'border-green-400 bg-green-50/40'
+            )}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              {orphanedLeads.length > 0 ? (
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+              )}
+              <span className="text-xs font-semibold truncate">
+                {orphanedLeads.length > 0 ? 'Recovered Leads' : 'All Synced'}
+              </span>
+              {orphanedLeads.length > 0 && (
+                <Badge variant="destructive" className="h-5 px-1.5 text-[10px] shrink-0">{orphanedLeads.length}</Badge>
+              )}
+              {rejectedLeads.length > 0 && (
+                <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0">{rejectedLeads.length} rejected</Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {orphanedLeads.length > 0 && (
+                <Button
+                  onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
+                  disabled={syncing}
+                  size="sm"
+                  className="h-6 px-2 text-[10px] gap-1"
+                >
+                  {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
+                  {syncing ? 'Syncing...' : 'Recover'}
+                </Button>
+              )}
+              {isOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+            </div>
+          </div>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="mt-2 rounded-lg border bg-background p-3 space-y-4">
+            {orphanedLeads.length > 0 && (
+              <LeadTable
+                leads={orphanedLeads}
+                actionColumn={(lead) => (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        disabled={dismissingId === lead.id}
+                        title="Reject this lead"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <strong>{lead.email}</strong> will be marked as rejected. You can restore it later.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDismissLead(lead)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Reject Lead
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              />
+            )}
+
+            {/* Rejected leads */}
+            {rejectedLeads.length > 0 && (
+              <Collapsible open={isRejectedOpen} onOpenChange={setIsRejectedOpen}>
+                <div className="border rounded-md bg-muted/10">
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <XCircle className="h-4 w-4" />
+                        <span>Rejected Leads</span>
+                        <Badge variant="secondary" className="ml-1">{rejectedLeads.length}</Badge>
+                      </div>
+                      {isRejectedOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="px-4 pb-4">
+                      <LeadTable
+                        leads={rejectedLeads}
+                        actionColumn={(lead) => (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                            onClick={() => handleRestoreLead(lead)}
+                            disabled={restoringId === lead.id}
+                            title="Restore this lead"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                        )}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     );
   }
 
