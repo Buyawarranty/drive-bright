@@ -16,6 +16,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 import TrustpilotMicroWidget from './TrustpilotMicroWidget';
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
+import TrustpilotMicroStarWidget from './TrustpilotMicroStarWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -694,15 +695,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
                   Unlimited Claims
                 </div>
-                <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text leading-tight">
-                  Complete <span className="text-brand-orange">vehicle protection</span>
-                </h2>
+                <TrustpilotMicroStarWidget className="mb-2" />
               </div>
               
               <div className="space-y-4">
-                <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text">
-                  Transparent Pricing. Trusted Protection.
-                </h3>
                 <p className="text-base md:text-lg text-brand-dark-text leading-relaxed">
                   No hidden fees. No confusing jargon. Just clear cover options tailored to your vehicle and budget.
                 </p>
@@ -840,11 +836,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
                   High Mileage, No Problem!
                 </div>
-                <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text leading-tight">
-                  Drive With Confidence –
-                  <br />
-                  <span className="text-brand-orange">You're Covered</span>
-                </h2>
+                <TrustpilotMicroStarWidget className="mb-2" />
               </div>
               
               <p className="text-base md:text-lg text-brand-dark-text leading-relaxed">

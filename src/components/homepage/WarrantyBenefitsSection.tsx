@@ -3,6 +3,7 @@ import { Check, ArrowRight, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-reac
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 
 interface WarrantyBenefitsSectionProps {
   headline?: string;
@@ -59,12 +60,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
             {/* Section Header */}
             <div className="mb-6">
               <div className="text-center lg:text-left">
-                <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-1">
-                  {headline}
-                </h2>
-                <h2 className="text-2xl md:text-4xl font-bold text-brand-orange mb-3">
-                  Peace of Mind.
-                </h2>
+                <TrustpilotMicroStarWidget className="mb-3" />
                 <p className="text-base md:text-lg text-gray-500">
                   Superior Protection. Affordable Prices. Instant Cover.
                 </p>
