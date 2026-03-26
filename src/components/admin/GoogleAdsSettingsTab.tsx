@@ -153,6 +153,58 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   }, [allSalesData]);
 
 
+  // Date range for Google Ads leads
+  const leadsDateFrom = useMemo(() => {
+    const now = new Date();
+    switch (leadsDateRange) {
+      case 'today': return startOfDay(now);
+      case 'yesterday': return startOfDay(subDays(now, 1));
+      case 'last7': return startOfDay(subDays(now, 7));
+      case 'last30': return startOfDay(subDays(now, 30));
+      case 'last90': return startOfDay(subDays(now, 90));
+      default: return startOfDay(subDays(now, 7));
+    }
+  }, [leadsDateRange]);
+
+  const leadsDateTo = useMemo(() => {
+    if (leadsDateRange === 'yesterday') return endOfDay(subDays(new Date(), 1));
+    return endOfDay(new Date());
+  }, [leadsDateRange]);
+
+  // Fetch Google Ads leads from sales_leads (lead_source = google_ad) with GCLID from abandoned_carts
+  const { data: googleAdsLeads, isLoading: gLeadsLoading } = useQuery({
+    queryKey: ['google-ads-leads', leadsDateRange],
+    queryFn: async () => {
+      // Get leads with google_ad source
+      const { data: leads, error } = await supabase
+        .from('sales_leads')
+        .select('id, first_name, last_name, email, phone, status, vehicle_reg, vehicle_make, vehicle_model, created_at, abandoned_cart_id, lead_source')
+        .eq('lead_source', 'google_ad')
+        .gte('created_at', leadsDateFrom.toISOString())
+        .lte('created_at', leadsDateTo.toISOString())
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      
+      // Get the GCLIDs from abandoned_carts for these leads
+      const cartIds = (leads || []).map(l => l.abandoned_cart_id).filter(Boolean);
+      let gclidMap: Record<string, string> = {};
+      if (cartIds.length > 0) {
+        const { data: carts } = await supabase
+          .from('abandoned_carts')
+          .select('id, cart_metadata')
+          .in('id', cartIds);
+        (carts || []).forEach(c => {
+          const meta = c.cart_metadata as Record<string, any> | null;
+          if (meta?.gclid) gclidMap[c.id] = meta.gclid;
+        });
+      }
+      
+      return (leads || []).map(l => ({
+        ...l,
+        gclid: l.abandoned_cart_id ? (gclidMap[l.abandoned_cart_id] || '') : '',
+      }));
+    },
+  });
 
   const triggerUpload = async () => {
     setIsUploading(true);
