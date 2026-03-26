@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
@@ -15,6 +15,7 @@ import { getLeadFeedDayRange, getTodayLeadFeedSelectionDate, isTodayLeadFeedRang
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
+export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'website';
 
 interface SalesUser {
   id: string;
@@ -65,6 +66,8 @@ interface LeadsFiltersProps {
   onAgentFilterChange?: (agentId: string) => void;
   agentLeadCounts?: Record<string, number>;
   recoveredLeadsSlot?: React.ReactNode;
+  sourceFilter?: SourceFilter;
+  onSourceFilterChange?: (source: SourceFilter) => void;
 }
 
 // Status pill configuration — compact, color-coded for instant recognition
@@ -113,6 +116,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onAgentFilterChange,
   agentLeadCounts,
   recoveredLeadsSlot,
+  sourceFilter = 'all',
+  onSourceFilterChange,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
