@@ -58,6 +58,7 @@ const ConditionalFooter = () => {
 const FAQ = lazy(() => import("./pages/FAQ"));
 const LiveQuotePage = lazy(() => import("./pages/LiveQuotePage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
+const PaymentReceived = lazy(() => import("./pages/PaymentReceived"));
 const PaymentFallback = lazy(() => import("./pages/PaymentFallback"));
 const StripePayment = lazy(() => import("./pages/StripePayment"));
 const Cart = lazy(() => import("./pages/Cart"));
