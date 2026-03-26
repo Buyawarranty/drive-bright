@@ -564,24 +564,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 height={434}
                 sizes="(max-width: 768px) 100vw, 651px"
               />
-              {/* Trustpilot Logo positioned to the right */}
-              <div className="absolute top-4 right-4 z-10">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  <OptimizedImage 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating" 
-                    className="h-auto w-24 sm:w-40 object-contain"
-                    priority={false}
-                    width={160}
-                    height={68}
-                  />
-                </a>
-              </div>
               
               {/* Vehicle Types positioned directly below the image on desktop */}
               <div className="hidden lg:block w-full mt-4">
