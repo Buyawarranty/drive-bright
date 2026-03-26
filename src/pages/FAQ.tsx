@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import pandaSavingsFaq from '@/assets/panda-savings-faq.png';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotBadge from '@/assets/trustpilot-badge.png';
+import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 
 const FAQ = () => {
   const navigate = useNavigate();
@@ -913,18 +914,7 @@ const FAQ = () => {
                       {category.category}
                     </h2>
                     {category.category === 'Getting Started' && (
-                      <a 
-                        href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block hover:opacity-80 transition-opacity"
-                      >
-                        <img 
-                          src={trustpilotBadge} 
-                          alt="Trustpilot Excellent Rating - 5 Stars"
-                          className="h-12 w-auto object-contain"
-                        />
-                      </a>
+                      <TrustpilotMicroStarWidget className="max-w-[200px]" />
                     )}
                   </div>
                   
