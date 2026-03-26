@@ -362,7 +362,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = getVisibleTabs();
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen') {
       setTabs(visibleTabs);
       return;
     }
