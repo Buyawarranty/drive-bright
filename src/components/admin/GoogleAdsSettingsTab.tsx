@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import {
   CheckCircle2, XCircle, AlertTriangle, Upload, RefreshCw, Zap,
-  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon
+  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon, Users
 } from 'lucide-react';
 
 // Required secrets for the upload-google-conversions edge function
@@ -33,6 +33,7 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   const [salesSearch, setSalesSearch] = useState('');
   const [salesFilter, setSalesFilter] = useState<'all' | 'with_gclid' | 'no_gclid' | 'uploaded' | 'pending'>('all');
   const [salesPage, setSalesPage] = useState(0);
+  const [leadsDateRange, setLeadsDateRange] = useState<string>('last7');
   const SALES_PER_PAGE = 25;
 
 
@@ -152,6 +153,58 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   }, [allSalesData]);
 
 
+  // Date range for Google Ads leads
+  const leadsDateFrom = useMemo(() => {
+    const now = new Date();
+    switch (leadsDateRange) {
+      case 'today': return startOfDay(now);
+      case 'yesterday': return startOfDay(subDays(now, 1));
+      case 'last7': return startOfDay(subDays(now, 7));
+      case 'last30': return startOfDay(subDays(now, 30));
+      case 'last90': return startOfDay(subDays(now, 90));
+      default: return startOfDay(subDays(now, 7));
+    }
+  }, [leadsDateRange]);
+
+  const leadsDateTo = useMemo(() => {
+    if (leadsDateRange === 'yesterday') return endOfDay(subDays(new Date(), 1));
+    return endOfDay(new Date());
+  }, [leadsDateRange]);
+
+  // Fetch Google Ads leads from sales_leads (lead_source = google_ad) with GCLID from abandoned_carts
+  const { data: googleAdsLeads, isLoading: gLeadsLoading } = useQuery({
+    queryKey: ['google-ads-leads', leadsDateRange],
+    queryFn: async () => {
+      // Get leads with google_ad source
+      const { data: leads, error } = await supabase
+        .from('sales_leads')
+        .select('id, first_name, last_name, email, phone, status, vehicle_reg, vehicle_make, vehicle_model, created_at, abandoned_cart_id, lead_source')
+        .eq('lead_source', 'google_ad')
+        .gte('created_at', leadsDateFrom.toISOString())
+        .lte('created_at', leadsDateTo.toISOString())
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      
+      // Get the GCLIDs from abandoned_carts for these leads
+      const cartIds = (leads || []).map(l => l.abandoned_cart_id).filter(Boolean);
+      let gclidMap: Record<string, string> = {};
+      if (cartIds.length > 0) {
+        const { data: carts } = await supabase
+          .from('abandoned_carts')
+          .select('id, cart_metadata')
+          .in('id', cartIds);
+        (carts || []).forEach(c => {
+          const meta = c.cart_metadata as Record<string, any> | null;
+          if (meta?.gclid) gclidMap[c.id] = meta.gclid;
+        });
+      }
+      
+      return (leads || []).map(l => ({
+        ...l,
+        gclid: l.abandoned_cart_id ? (gclidMap[l.abandoned_cart_id] || '') : '',
+      }));
+    },
+  });
 
   const triggerUpload = async () => {
     setIsUploading(true);
@@ -277,7 +330,77 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
         </Card>
       </div>
 
-      {/* Required Secrets Configuration */}
+      {/* Google Ads Leads — Full Detail Table */}
+      <Card className="border-emerald-200">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4 text-emerald-700" />
+                Google Ads Leads — Full Details
+              </CardTitle>
+              <CardDescription>Every lead from Google Ads with name, phone, date & GCLID tracking code</CardDescription>
+            </div>
+            <Select value={leadsDateRange} onValueChange={setLeadsDateRange}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
+                <SelectItem value="last7">Last 7 days</SelectItem>
+                <SelectItem value="last30">Last 30 days</SelectItem>
+                <SelectItem value="last90">Last 90 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {gLeadsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+              <span className="text-sm text-muted-foreground">Loading Google Ads leads...</span>
+            </div>
+          ) : (googleAdsLeads?.length || 0) === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No Google Ads leads in this period</p>
+          ) : (
+            <div className="overflow-auto">
+              <p className="text-xs text-muted-foreground mb-2">{googleAdsLeads?.length} leads found</p>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="text-[11px] font-semibold uppercase">Date & Time</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Name</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Phone</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Email</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Vehicle</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Status</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">GCLID</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {googleAdsLeads?.map((lead) => (
+                    <TableRow key={lead.id}>
+                      <TableCell className="text-xs whitespace-nowrap">{format(new Date(lead.created_at), 'dd/MM/yy HH:mm')}</TableCell>
+                      <TableCell className="text-sm font-medium">{`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || '-'}</TableCell>
+                      <TableCell className="text-sm">{lead.phone || '-'}</TableCell>
+                      <TableCell className="text-sm">{lead.email}</TableCell>
+                      <TableCell className="text-sm">{lead.vehicle_reg || `${lead.vehicle_make || ''} ${lead.vehicle_model || ''}`.trim() || '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">{lead.status || 'new'}</Badge>
+                      </TableCell>
+                      <TableCell className="text-[10px] font-mono text-muted-foreground max-w-[200px] truncate" title={lead.gclid}>
+                        {lead.gclid ? lead.gclid.substring(0, 25) + '…' : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
