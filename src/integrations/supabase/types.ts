@@ -6130,6 +6130,10 @@ export type Database = {
         Args: { p_admin_user_id: string }
         Returns: undefined
       }
+      derive_lead_source: {
+        Args: { p_cart_metadata: Json }
+        Returns: Database["public"]["Enums"]["lead_source"]
+      }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
       generate_admin_warranty_number: { Args: never; Returns: string }
       generate_policy_number: { Args: never; Returns: string }
