@@ -449,19 +449,40 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            Edit Order: {order.policy_number || order.vehicle_reg}
+            {!order.policy_number ? (
+              <>
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+                <span className="text-amber-800">Review & Confirm Order</span>
+              </>
+            ) : (
+              <>Edit Order: {order.policy_number || order.vehicle_reg}</>
+            )}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Alert if no customer record exists */}
-        {!order.customer_id && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        {/* Prominent alert for unprocessed orders */}
+        {!order.policy_number && (
+          <div className="bg-amber-100 border-2 border-amber-400 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-amber-800">Customer record missing</p>
-              <p className="text-sm text-amber-700">
-                This order has no customer dashboard record. Click "Save & Update Dashboard" to create one, 
-                enabling the customer to log in and access their policy.
+              <p className="font-bold text-amber-900 text-base">Payment received. Confirm all details below.</p>
+              <p className="text-sm text-amber-800 mt-1">
+                The customer has paid but NO warranty has been created yet. Review and update ALL information below, 
+                then click <strong>"Confirm Details & Create Warranty"</strong> at the bottom. The customer will receive their 
+                welcome email and warranty details only after you confirm.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Alert if customer record exists but no policy */}
+        {order.customer_id && !order.policy_number && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+            <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-blue-800">Existing customer found</p>
+              <p className="text-sm text-blue-700">
+                A customer record already exists for this email. The warranty will be linked to the existing customer.
               </p>
             </div>
           </div>
@@ -762,73 +783,85 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
             <CardContent>
               {/* Primary action: Complete Order (only shown when no policy exists yet) */}
               {!order.policy_number && (
-                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800 mb-2">⚠️ This order needs processing</p>
-                  <p className="text-xs text-amber-700 mb-3">
-                    Review the details above, then click below to create the warranty, customer record, and send the welcome email.
+                <div className="mb-4 p-4 bg-green-50 border-2 border-green-400 rounded-lg">
+                  <p className="text-base font-bold text-green-900 mb-2">Ready to confirm?</p>
+                  <p className="text-sm text-green-800 mb-4">
+                    Once you click below, the system will create the customer record, generate the warranty, 
+                    and send the welcome email to <strong>{customerEmail}</strong>.
                   </p>
                   <Button
                     onClick={handleCompleteOrder}
-                    disabled={isCompletingOrder || isSaving}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    disabled={isCompletingOrder || isSaving || !selectedAgentId}
+                    size="lg"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white text-base py-6"
                   >
                     {isCompletingOrder ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                     ) : (
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="h-5 w-5 mr-2" />
                     )}
-                    Complete Order & Send Welcome Email
+                    Confirm Details & Create Warranty
                   </Button>
+                  {!selectedAgentId && (
+                    <p className="text-xs text-red-600 mt-2 font-medium">
+                      Please select a sales agent above before confirming.
+                    </p>
+                  )}
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => handleSaveChanges(false)}
-                  disabled={isSaving}
-                  className="flex-1"
-                >
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Save Changes
-                </Button>
-                
-                <Button
-                  onClick={() => handleSaveChanges(true)}
-                  disabled={isSaving}
-                  className="flex-1"
-                >
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                  )}
-                  Save & Update Dashboard
-                </Button>
-                
-                <Button
-                  variant="secondary"
-                  onClick={handleResendLoginEmail}
-                  disabled={isResendingEmail}
-                  className="flex-1"
-                >
-                  {isResendingEmail ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Mail className="h-4 w-4 mr-2" />
-                  )}
-                  Resend Login Email
-                </Button>
-              </div>
+              {/* Secondary actions (for already-processed orders) */}
+              {order.policy_number && (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSaveChanges(false)}
+                    disabled={isSaving}
+                    className="flex-1"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save Changes
+                  </Button>
+                  
+                  <Button
+                    onClick={() => handleSaveChanges(true)}
+                    disabled={isSaving}
+                    className="flex-1"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                    )}
+                    Save & Update Dashboard
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    onClick={handleResendLoginEmail}
+                    disabled={isResendingEmail}
+                    className="flex-1"
+                  >
+                    {isResendingEmail ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Mail className="h-4 w-4 mr-2" />
+                    )}
+                    Resend Login Email
+                  </Button>
+                </div>
+              )}
               
-              <p className="text-xs text-muted-foreground mt-3">
-                <AlertCircle className="h-3 w-3 inline mr-1" />
-                "Save Changes" updates records internally. "Save & Update Dashboard" pushes changes to the customer's dashboard.
-              </p>
+              {order.policy_number && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  <AlertCircle className="h-3 w-3 inline mr-1" />
+                  "Save Changes" updates records internally. "Save & Update Dashboard" pushes changes to the customer's dashboard.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
