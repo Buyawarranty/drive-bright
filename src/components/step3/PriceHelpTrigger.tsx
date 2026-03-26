@@ -27,7 +27,7 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
               Price Beat Guarantee
             </h3>
             <p className="text-sm md:text-base text-gray-700 mt-0.5">
-              Got a cheaper quote? We'll beat it — <span className="font-semibold">guaranteed.</span>
+              Got a cheaper quote? We'll beat it - <span className="font-semibold">guaranteed.</span>
             </p>
           </div>
         </div>
