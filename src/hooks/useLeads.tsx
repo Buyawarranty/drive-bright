@@ -181,7 +181,12 @@ export interface AdminUser {
   role?: string;
 }
 
-export const useLeads = () => {
+interface UseLeadsOptions {
+  /** Server-side date filter applied to the Supabase query. Reduces row count dramatically. */
+  serverDateFilter?: { from?: Date; to?: Date };
+}
+
+export const useLeads = (options?: UseLeadsOptions) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
@@ -193,6 +198,10 @@ export const useLeads = () => {
   const pendingFetchRef = useRef(false);
   const latestFetchTokenRef = useRef(0);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks'>('all_leads');
+
+  // Store server date filter as a ref so fetchLeads doesn't re-create on every date change
+  const serverDateFilterRef = useRef(options?.serverDateFilter);
+  serverDateFilterRef.current = options?.serverDateFilter;
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -334,8 +343,8 @@ export const useLeads = () => {
 
       // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
       // by LostLeadsSection / recover_orphaned_leads RPC.
-      const allSalesLeadsResult = await fetchAllRows(() =>
-        supabase
+      const allSalesLeadsResult = await fetchAllRows(() => {
+        let query = supabase
           .from('sales_leads')
           .select(`
             id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
@@ -346,8 +355,19 @@ export const useLeads = () => {
             call_count, is_callback,
             assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
           `)
-          .order('created_at', { ascending: false })
-      );
+          .order('created_at', { ascending: false });
+
+        // Apply server-side date filter to reduce dataset size
+        const dateFilter = serverDateFilterRef.current;
+        if (dateFilter?.from) {
+          query = query.gte('created_at', dateFilter.from.toISOString());
+        }
+        if (dateFilter?.to) {
+          query = query.lte('created_at', dateFilter.to.toISOString());
+        }
+
+        return query;
+      });
 
       const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;

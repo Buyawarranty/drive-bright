@@ -167,11 +167,25 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     migrateFromAbandonedCarts,
     deleteLeads,
     updateCallCount
-  } = useLeads();
+  } = useLeads({
+    serverDateFilter: useMemo(() => {
+      if (!dateRange.from && !dateRange.to) return undefined;
+      const boundaries = getLeadFeedRangeBoundaries(dateRange);
+      return { from: boundaries.from, to: boundaries.to };
+    }, [dateRange]),
+  });
 
+  // Set default filter on mount
   useEffect(() => {
     setFilter('live');
   }, [setFilter]);
+
+  // Refetch when date range changes (server-side filter changed)
+  useEffect(() => {
+    if (dateRange.from || dateRange.to) {
+      fetchLeads();
+    }
+  }, [dateRange, fetchLeads]);
 
   // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
