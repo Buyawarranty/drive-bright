@@ -16,6 +16,10 @@ const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 export const FacebookAdsTab: React.FC = () => {
   const [dateRange, setDateRange] = useState<string>('last7');
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
   const queryClient = useQueryClient();
 
   const dateFrom = useMemo(() => {
