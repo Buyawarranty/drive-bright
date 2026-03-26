@@ -49,29 +49,62 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
-      logStep("Auth failed", { error: authError });
+      logStep("Auth failed", { error: authError, tokenPrefix: token.substring(0, 20) });
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check if user is an admin
+    logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Check if user is an admin - use maybeSingle to avoid PGRST116 crash
     const { data: adminUser, error: adminError } = await supabaseClient
       .from('admin_users')
       .select('id, email, first_name, last_name, is_active')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (adminError || !adminUser?.is_active) {
-      logStep("Not an admin user", { error: adminError });
+    if (adminError) {
+      logStep("Admin lookup error", { error: adminError, userId: user.id });
       return new Response(
-        JSON.stringify({ error: "Admin access required" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Admin lookup failed" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    logStep("Admin verified", { adminEmail: adminUser.email });
+    if (!adminUser) {
+      // Fallback: check by email
+      logStep("No admin by user_id, trying email fallback", { userId: user.id, email: user.email });
+      const { data: adminByEmail } = await supabaseClient
+        .from('admin_users')
+        .select('id, email, first_name, last_name, is_active, user_id')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      if (adminByEmail?.is_active) {
+        // Fix the user_id mapping for future calls
+        await supabaseClient
+          .from('admin_users')
+          .update({ user_id: user.id })
+          .eq('id', adminByEmail.id);
+        logStep("Admin found by email, updated user_id mapping", { adminEmail: adminByEmail.email });
+      } else {
+        logStep("Not an admin user", { userId: user.id, email: user.email });
+        return new Response(
+          JSON.stringify({ error: "Admin access required" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else if (!adminUser.is_active) {
+      logStep("Admin user inactive", { adminEmail: adminUser.email });
+      return new Response(
+        JSON.stringify({ error: "Admin account is inactive" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } else {
+      logStep("Admin verified", { adminEmail: adminUser.email });
+    }
 
     const body = await req.json();
     const {
