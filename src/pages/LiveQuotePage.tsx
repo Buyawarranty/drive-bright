@@ -497,10 +497,7 @@ export default function LiveQuotePage() {
     );
   }
 
-  // State for paid confirmation flow
-  const [confirmationStep, setConfirmationStep] = useState<'review' | 'confirmed' | 'flagged'>('review');
-  const [flagMessage, setFlagMessage] = useState('');
-  const [flagging, setFlagging] = useState(false);
+
 
   const handleFlagDetails = async () => {
     setFlagging(true);
