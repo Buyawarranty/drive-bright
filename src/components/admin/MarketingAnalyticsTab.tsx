@@ -26,12 +26,12 @@ export const MarketingAnalyticsTab: React.FC = () => {
       <MarketingOverviewCards />
 
       <Tabs defaultValue="google" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="google" className="flex items-center gap-2">
+        <TabsList className="grid w-full max-w-md grid-cols-2 gap-2 bg-transparent p-1">
+          <TabsTrigger value="google" className="flex items-center gap-2 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-700">
             <Target className="h-4 w-4" />
             Google Ads
           </TabsTrigger>
-          <TabsTrigger value="facebook" className="flex items-center gap-2">
+          <TabsTrigger value="facebook" className="flex items-center gap-2 border-2 border-blue-500 bg-blue-50 text-blue-700 font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-700">
             <Facebook className="h-4 w-4" />
             Facebook Ads
           </TabsTrigger>
