@@ -271,11 +271,12 @@ export const useLeads = () => {
       for (const item of pending) {
         try {
           const { data: result, error } = await withTimeout(
-            supabase.rpc('update_lead_status', {
-              p_lead_id: item.isAbandonedCart ? item.leadId.replace('cart_', '') : item.leadId,
-              p_status: item.status,
-              p_is_abandoned_cart: item.isAbandonedCart,
-            }),
+            (async () =>
+              await supabase.rpc('update_lead_status', {
+                p_lead_id: item.isAbandonedCart ? item.leadId.replace('cart_', '') : item.leadId,
+                p_status: item.status,
+                p_is_abandoned_cart: item.isAbandonedCart,
+              }))(),
             8000,
             'Pending status sync timed out'
           );
@@ -425,8 +426,8 @@ export const useLeads = () => {
           }
 
           const tagBatchResults = await Promise.all(
-            leadIdBatches.map(batch =>
-              supabase
+            leadIdBatches.map(async (batch) =>
+              await supabase
                 .from('lead_tag_assignments')
                 .select('lead_id, tag_id, lead_tags(id, name, color, description)')
                 .in('lead_id', batch)
@@ -680,11 +681,12 @@ export const useLeads = () => {
     try {
       // Use SECURITY DEFINER RPC to bypass RLS — ensures all agents can update status
       const { data: result, error: rpcError } = await withTimeout(
-        supabase.rpc('update_lead_status', {
-          p_lead_id: actualId,
-          p_status: status,
-          p_is_abandoned_cart: isAbandonedCart
-        }),
+        (async () =>
+          await supabase.rpc('update_lead_status', {
+            p_lead_id: actualId,
+            p_status: status,
+            p_is_abandoned_cart: isAbandonedCart
+          }))(),
         8000,
         'Status update timeout'
       );
