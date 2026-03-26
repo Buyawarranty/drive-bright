@@ -697,7 +697,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 </div>
                 <TrustpilotMicroStarWidget className="mb-2" />
               </div>
+              
+              <div className="space-y-4">
                 <p className="text-base md:text-lg text-brand-dark-text leading-relaxed">
+                  No hidden fees. No confusing jargon. Just clear cover options tailored to your vehicle and budget.
+                </p>
                   No hidden fees. No confusing jargon. Just clear cover options tailored to your vehicle and budget.
                 </p>
                 
