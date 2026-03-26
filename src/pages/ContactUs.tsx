@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { OptimizedImage } from '@/components/OptimizedImage';
-import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 
 const ContactUs = () => {
   const { toast } = useToast();
@@ -236,21 +236,7 @@ const ContactUs = () => {
                 />
                 
                 {/* Trustpilot Section */}
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block hover:opacity-80 transition-opacity"
-                >
-                  <OptimizedImage 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating - 5 Stars"
-                    className="h-12 w-auto object-contain"
-                    priority={false}
-                    width={160}
-                    height={50}
-                  />
-                </a>
+                <TrustpilotMicroStarWidget className="max-w-xs" />
               </div>
               
               {/* Contact Information */}
