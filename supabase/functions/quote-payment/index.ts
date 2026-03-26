@@ -233,7 +233,7 @@ serve(async (req) => {
         ],
         mode: 'payment',
         customer_email: resolvedEmail,
-        success_url: `${origin}/thank-you?${thankYouParams.toString()}`,
+        success_url: `${origin}/payment-received?${thankYouParams.toString()}`,
         cancel_url: `${origin}/quote/${accessToken}?cancelled=1`,
         metadata: {
           quote_id: quote.id,

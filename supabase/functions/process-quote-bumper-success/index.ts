@@ -168,7 +168,7 @@ function buildThankYouUrl(
   customerData?: any,
   vehicleData?: any
 ): string {
-  const baseUrl = 'https://buyawarranty.co.uk/thank-you';
+  const baseUrl = 'https://buyawarranty.co.uk/payment-received';
   const params = new URLSearchParams();
   
   // Source and payment info
