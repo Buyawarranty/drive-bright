@@ -659,48 +659,57 @@ export const FacebookAdsTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Facebook Leads */}
-      <Card>
+      {/* Facebook Leads — Full Detail Table */}
+      <Card className="border-blue-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Recent Facebook Leads</CardTitle>
-          <CardDescription>Leads captured from Facebook/Instagram ad traffic</CardDescription>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Facebook className="h-4 w-4 text-blue-600" />
+            Facebook Leads — Full Details
+          </CardTitle>
+          <CardDescription>Every lead from Facebook/Instagram ads with name, phone, date & FBCLID tracking code</CardDescription>
         </CardHeader>
         <CardContent>
           {(fbLeads?.length || 0) === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No Facebook leads in this period</p>
           ) : (
-            <div className="max-h-[400px] overflow-auto">
+            <div className="overflow-auto">
+              <p className="text-xs text-muted-foreground mb-2">{fbLeads?.length} leads found</p>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Vehicle</TableHead>
-                    <TableHead>Step</TableHead>
-                    <TableHead>Campaign</TableHead>
-                    <TableHead>Status</TableHead>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="text-[11px] font-semibold uppercase">Date & Time</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Name</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Phone</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Email</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Vehicle</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Step</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Status</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">FBCLID</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fbLeads?.slice(0, 50).map((lead) => {
+                  {fbLeads?.map((lead) => {
                     const meta = lead.cart_metadata as Record<string, any> | null;
+                    const fbclid = meta?.fbclid || '';
                     return (
                       <TableRow key={lead.id}>
-                        <TableCell className="text-xs">{format(new Date(lead.created_at), 'dd/MM/yy HH:mm')}</TableCell>
+                        <TableCell className="text-xs whitespace-nowrap">{format(new Date(lead.created_at), 'dd/MM/yy HH:mm')}</TableCell>
+                        <TableCell className="text-sm font-medium">{lead.full_name || '-'}</TableCell>
+                        <TableCell className="text-sm">{lead.phone || '-'}</TableCell>
                         <TableCell className="text-sm">{lead.email}</TableCell>
-                        <TableCell className="text-sm">{lead.full_name || '-'}</TableCell>
-                        <TableCell className="text-sm">{lead.vehicle_reg || '-'}</TableCell>
+                        <TableCell className="text-sm">{lead.vehicle_reg || `${lead.vehicle_make || ''} ${lead.vehicle_model || ''}`.trim() || '-'}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">Step {lead.step_abandoned}</Badge>
                         </TableCell>
-                        <TableCell className="text-xs">{meta?.utm_campaign || '-'}</TableCell>
                         <TableCell>
                           {lead.is_converted ? (
                             <Badge className="bg-green-100 text-green-800 border-green-300 text-xs">Converted</Badge>
                           ) : (
                             <Badge variant="secondary" className="text-xs">{lead.contact_status || 'New'}</Badge>
                           )}
+                        </TableCell>
+                        <TableCell className="text-[10px] font-mono text-muted-foreground max-w-[200px] truncate" title={fbclid}>
+                          {fbclid ? fbclid.substring(0, 20) + '…' : '-'}
                         </TableCell>
                       </TableRow>
                     );
