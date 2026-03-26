@@ -6,6 +6,63 @@ import { addSystemNote } from '@/utils/leadSystemNotes';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 
+const LEAD_TAG_BATCH_SIZE = 300;
+const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
+
+type PendingStatusUpdate = {
+  leadId: string;
+  status: LeadStatus;
+  updatedAt: string;
+  isAbandonedCart: boolean;
+};
+
+const readPendingStatusUpdates = (): Record<string, PendingStatusUpdate> => {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    const raw = window.localStorage.getItem(PENDING_STATUS_UPDATES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const writePendingStatusUpdates = (updates: Record<string, PendingStatusUpdate>) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(PENDING_STATUS_UPDATES_STORAGE_KEY, JSON.stringify(updates));
+  } catch {
+    // Ignore storage failures
+  }
+};
+
+const withTimeout = async <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(message)), ms);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
+const isRetryableMutationError = (error: unknown) => {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  return (
+    message.includes('timeout') ||
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('aborterror') ||
+    message.includes('load failed')
+  );
+};
+
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'phone' | 'email' | 'partner' | 'other';
@@ -146,6 +203,7 @@ export const useLeads = () => {
   // Cache admin user ID to avoid repeated auth lookups
   const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string; role: string } | null>(null);
   const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string; role: string } | null> | null>(null);
+  const pendingStatusFlushRef = useRef<Promise<void> | null>(null);
 
   const getCachedAdminUser = useCallback(async () => {
     if (cachedAdminUserRef.current) return cachedAdminUserRef.current;
@@ -180,6 +238,68 @@ export const useLeads = () => {
     adminUserPromiseRef.current = null;
     return result;
   }, []);
+
+  const queuePendingStatusUpdate = useCallback((leadId: string, status: LeadStatus, isAbandonedCart: boolean) => {
+    const pending = readPendingStatusUpdates();
+    pending[leadId] = {
+      leadId,
+      status,
+      updatedAt: new Date().toISOString(),
+      isAbandonedCart,
+    };
+    writePendingStatusUpdates(pending);
+  }, []);
+
+  const clearPendingStatusUpdate = useCallback((leadId: string) => {
+    const pending = readPendingStatusUpdates();
+    if (!pending[leadId]) return;
+
+    delete pending[leadId];
+    writePendingStatusUpdates(pending);
+  }, []);
+
+  const flushPendingStatusUpdates = useCallback(async () => {
+    if (pendingStatusFlushRef.current) return pendingStatusFlushRef.current;
+
+    pendingStatusFlushRef.current = (async () => {
+      const pending = Object.values(readPendingStatusUpdates()).sort(
+        (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+      );
+
+      if (pending.length === 0) return;
+
+      for (const item of pending) {
+        try {
+          const { data: result, error } = await withTimeout(
+            (async () =>
+              await supabase.rpc('update_lead_status', {
+                p_lead_id: item.isAbandonedCart ? item.leadId.replace('cart_', '') : item.leadId,
+                p_status: item.status,
+                p_is_abandoned_cart: item.isAbandonedCart,
+              }))(),
+            8000,
+            'Pending status sync timed out'
+          );
+
+          if (error) throw error;
+
+          const statusResult = result as { success: boolean; error?: string };
+          if (!statusResult?.success) {
+            throw new Error(statusResult?.error || 'Pending status sync failed');
+          }
+
+          clearPendingStatusUpdate(item.leadId);
+        } catch (error) {
+          console.warn('[Leads] Pending status sync will retry later:', error);
+          break;
+        }
+      }
+    })().finally(() => {
+      pendingStatusFlushRef.current = null;
+    });
+
+    return pendingStatusFlushRef.current;
+  }, [clearPendingStatusUpdate]);
 
   // Helper to detect test/fake leads based on known test data
   const isTestLead = (name: string | null, phone: string | null): boolean => {
@@ -299,20 +419,32 @@ export const useLeads = () => {
 
       try {
         if (salesLeadIds.length > 0) {
-          // Fetch all tag assignments using batch pagination to avoid 1000-row limit
-          const { data: allTagData } = await fetchAllRows(() =>
-            supabase
-              .from('lead_tag_assignments')
-              .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+          const leadIdBatches: string[][] = [];
+
+          for (let i = 0; i < salesLeadIds.length; i += LEAD_TAG_BATCH_SIZE) {
+            leadIdBatches.push(salesLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
+          }
+
+          const tagBatchResults = await Promise.all(
+            leadIdBatches.map(async (batch) =>
+              await supabase
+                .from('lead_tag_assignments')
+                .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+                .in('lead_id', batch)
+            )
           );
 
-          (allTagData || []).forEach((assignment: any) => {
-            if (!tagsByLeadId[assignment.lead_id]) {
-              tagsByLeadId[assignment.lead_id] = [];
-            }
-            if (assignment.lead_tags) {
-              tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
-            }
+          tagBatchResults.forEach(({ data, error }) => {
+            if (error) throw error;
+
+            (data || []).forEach((assignment: any) => {
+              if (!tagsByLeadId[assignment.lead_id]) {
+                tagsByLeadId[assignment.lead_id] = [];
+              }
+              if (assignment.lead_tags) {
+                tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
+              }
+            });
           });
         }
       } catch (tagError) {
@@ -447,6 +579,12 @@ export const useLeads = () => {
     fetchLeads();
   }, [fetchLeads]);
 
+  useEffect(() => {
+    void flushPendingStatusUpdates().then(() => {
+      fetchLeadsRef.current();
+    });
+  }, [flushPendingStatusUpdates]);
+
   // One-time setup for realtime, polling, and visibility listeners
   useEffect(() => {
     fetchTags();
@@ -473,6 +611,7 @@ export const useLeads = () => {
       const now = Date.now();
       if (now - lastRefetchTimeRef.current < 5000) return;
       lastRefetchTimeRef.current = now;
+      void flushPendingStatusUpdates();
       fetchLeadsRef.current();
     };
 
@@ -498,7 +637,7 @@ export const useLeads = () => {
         clearTimeout(realtimeRefetchTimerRef.current);
       }
     };
-  }, [fetchTags, fetchSalesUsers, debouncedRealtimeRefetch]);
+  }, [fetchTags, fetchSalesUsers, debouncedRealtimeRefetch, flushPendingStatusUpdates]);
 
   // Track recently updated lead IDs to prevent realtime from overwriting optimistic updates
   const recentOptimisticUpdatesRef = useRef<Set<string>>(new Set());
@@ -530,6 +669,7 @@ export const useLeads = () => {
     // Mark this lead as recently updated to protect from realtime overwrites
     recentOptimisticUpdatesRef.current.add(leadId);
     setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 30000);
+    queuePendingStatusUpdate(leadId, status, isAbandonedCart);
 
     // Optimistic update - instant UI response, capture previous state
     setLeads(prev => prev.map(lead => {
@@ -540,12 +680,16 @@ export const useLeads = () => {
 
     try {
       // Use SECURITY DEFINER RPC to bypass RLS — ensures all agents can update status
-      const { data: result, error: rpcError } = await supabase
-        .rpc('update_lead_status', {
-          p_lead_id: actualId,
-          p_status: status,
-          p_is_abandoned_cart: isAbandonedCart
-        });
+      const { data: result, error: rpcError } = await withTimeout(
+        (async () =>
+          await supabase.rpc('update_lead_status', {
+            p_lead_id: actualId,
+            p_status: status,
+            p_is_abandoned_cart: isAbandonedCart
+          }))(),
+        8000,
+        'Status update timeout'
+      );
 
       if (rpcError) throw rpcError;
 
@@ -567,10 +711,18 @@ export const useLeads = () => {
         void getCachedAdminUser().then((adminUser) => {
           void addSystemNote(leadId, `Status changed to "${statusLabel}"`, adminUser?.id);
         });
+
+      clearPendingStatusUpdate(leadId);
       
       toast.success(`Status: ${status.replace('_', ' ')}`);
     } catch (error) {
       console.error('Error updating lead status:', error);
+      if (isRetryableMutationError(error)) {
+        toast.info('Status is syncing in the background');
+        return;
+      }
+
+      clearPendingStatusUpdate(leadId);
       toast.error('Failed to update lead status');
       // Revert to full previous state snapshot (not just status)
       if (previousLeadSnapshot) {
@@ -581,7 +733,7 @@ export const useLeads = () => {
       }
       recentOptimisticUpdatesRef.current.delete(leadId);
     }
-  }, []);
+  }, [clearPendingStatusUpdate, getCachedAdminUser, queuePendingStatusUpdate]);
 
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity

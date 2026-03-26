@@ -10,6 +10,37 @@ import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
 
+const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
+const PENDING_NOTE_QUEUE_STORAGE_KEY = 'lead-quick-note-pending-queue';
+
+type PendingQueuedNote = {
+  id: string;
+  leadId: string;
+  noteText: string;
+  createdAt: string;
+};
+
+const readPendingQueuedNotes = (): PendingQueuedNote[] => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = window.localStorage.getItem(PENDING_NOTE_QUEUE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writePendingQueuedNotes = (notes: PendingQueuedNote[]) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(PENDING_NOTE_QUEUE_STORAGE_KEY, JSON.stringify(notes));
+  } catch {
+    // Ignore storage failures
+  }
+};
+
 interface UnifiedNotesPanelProps {
   leadId: string;
   className?: string;
@@ -22,14 +53,12 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   compact = false
 }) => {
   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
+  const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const savingTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Optimistic notes
-  const [optimisticNotes, setOptimisticNotes] = useState<QuickNote[]>([]);
   
   // Edit state
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -43,25 +72,82 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const quickNoteRef = useRef(quickNoteValue);
   const addNoteRef = useRef(addNote);
   const isSavingRef = useRef(isSaving);
+  const pendingDraftIdRef = useRef<string | null>(null);
   quickNoteRef.current = quickNoteValue;
   addNoteRef.current = addNote;
   isSavingRef.current = isSaving;
 
-  const flushPendingNote = useCallback(async () => {
-    const pending = quickNoteRef.current?.trim();
-    if (!pending || isSavingRef.current || hookIsSaving) return;
+  const queuePendingNote = useCallback((noteText: string) => {
+    const trimmed = noteText.trim();
+    if (!trimmed) return null;
 
+    const queueId = pendingDraftIdRef.current || `${leadId}:${Date.now()}`;
+    pendingDraftIdRef.current = queueId;
+
+    const nextQueue = [
+      ...readPendingQueuedNotes().filter(note => note.id !== queueId),
+      {
+        id: queueId,
+        leadId,
+        noteText: trimmed,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    writePendingQueuedNotes(nextQueue);
+    return queueId;
+  }, [leadId]);
+
+  const clearQueuedPendingNote = useCallback((queueId: string | null) => {
+    if (!queueId) return;
+
+    writePendingQueuedNotes(readPendingQueuedNotes().filter(note => note.id !== queueId));
+    if (pendingDraftIdRef.current === queueId) {
+      pendingDraftIdRef.current = null;
+    }
+  }, []);
+
+  const persistDraft = useCallback((value: string) => {
+    if (typeof window === 'undefined') return;
+
+    const trimmed = value.trim();
+    if (trimmed) {
+      window.sessionStorage.setItem(draftStorageKey, value);
+    } else {
+      window.sessionStorage.removeItem(draftStorageKey);
+    }
+  }, [draftStorageKey]);
+
+  const commitNote = useCallback(async (noteText: string, options?: { silent?: boolean }) => {
+    const pending = noteText.trim();
+    if (!pending || isSavingRef.current || hookIsSaving) return false;
+
+    const queueId = queuePendingNote(pending);
     setIsSaving(true);
+
     try {
       await addNoteRef.current(pending);
       quickNoteRef.current = '';
       setQuickNoteValue('');
-    } catch {
-      // keep draft intact if save fails
+      persistDraft('');
+      clearQueuedPendingNote(queueId);
+      if (!options?.silent) {
+        toast.success('Note saved');
+      }
+      return true;
+    } catch (error: any) {
+      if (!options?.silent) {
+        toast.error(error?.message === 'Session expired' ? 'Session expired — please log in again' : 'Failed to save note');
+      }
+      return false;
     } finally {
       setIsSaving(false);
     }
-  }, [hookIsSaving]);
+  }, [hookIsSaving, queuePendingNote, persistDraft, clearQueuedPendingNote]);
+
+  const flushPendingNote = useCallback(async () => {
+    await commitNote(quickNoteRef.current, { silent: true });
+  }, [commitNote]);
 
   // Auto-save unsaved note on unmount (e.g. collapsing the panel)
   useEffect(() => {
@@ -92,12 +178,28 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   // Reset state when lead changes
   useEffect(() => {
-    setQuickNoteValue('');
+    const savedDraft = typeof window !== 'undefined'
+      ? window.sessionStorage.getItem(draftStorageKey) || ''
+      : '';
+
+    setQuickNoteValue(savedDraft);
     setIsSaving(false);
     setEditingNoteId(null);
-    setOptimisticNotes([]);
     if (savingTimerRef.current) clearTimeout(savingTimerRef.current);
-  }, [leadId]);
+  }, [draftStorageKey, leadId]);
+
+  useEffect(() => {
+    persistDraft(quickNoteValue);
+  }, [quickNoteValue, persistDraft]);
+
+  useEffect(() => {
+    const pendingQueueItem = readPendingQueuedNotes().find(note => note.leadId === leadId);
+    if (!pendingQueueItem) return;
+
+    pendingDraftIdRef.current = pendingQueueItem.id;
+    setQuickNoteValue(prev => prev || pendingQueueItem.noteText);
+    void commitNote(pendingQueueItem.noteText, { silent: true });
+  }, [leadId, commitNote]);
 
   // Safety reset: if isSaving is stuck for >10s, auto-reset
   useEffect(() => {
@@ -118,38 +220,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   }, [isSaving]);
 
   const handleSaveNote = async () => {
-    const noteText = quickNoteValue.trim();
-    if (!noteText || isSaving || hookIsSaving) return;
-    
-    setIsSaving(true);
-    
-    // Optimistic: add a temporary note to the list immediately
-    const tempNote: QuickNote = {
-      id: `temp_${Date.now()}`,
-      lead_id: leadId,
-      note_text: noteText,
-      is_pinned: false,
-      created_by: '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      author: null,
-    };
-    setOptimisticNotes(prev => [tempNote, ...prev]);
-    setQuickNoteValue('');
-    
-    try {
-      await addNote(noteText);
-      // Remove optimistic note (real data will come from refetch)
-      setOptimisticNotes(prev => prev.filter(n => n.id !== tempNote.id));
-      toast.success('Note saved');
-    } catch (error: any) {
-      // Remove optimistic note on failure, restore input
-      setOptimisticNotes(prev => prev.filter(n => n.id !== tempNote.id));
-      setQuickNoteValue(noteText);
-      toast.error(error?.message === 'Session expired' ? 'Session expired — please log in again' : 'Failed to save note');
-    } finally {
-      setIsSaving(false);
-    }
+    if (isSaving || hookIsSaving) return;
+    await commitNote(quickNoteValue);
   };
 
   const handleStartEdit = (note: QuickNote) => {
@@ -216,10 +288,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   // Combine real notes + optimistic notes, filter out deleted
   const visibleNotes = useMemo(() => {
-    const real = notes.filter(note => !(deletedNote && note.id === deletedNote.id));
-    // Prepend optimistic notes (they appear at top)
-    return [...optimisticNotes, ...real];
-  }, [notes, deletedNote, optimisticNotes]);
+    return notes.filter(note => !(deletedNote && note.id === deletedNote.id));
+  }, [notes, deletedNote]);
 
   if (loading) {
     return (
