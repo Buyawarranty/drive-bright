@@ -739,23 +739,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 height={600}
               />
               
-              {/* Trustpilot Logo */}
-              <div className="mt-6 flex justify-center">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block hover:opacity-80 transition-opacity"
-                >
-                  <OptimizedImage 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating - 5 Stars"
-                    className="h-auto w-40 object-contain"
-                    priority={false}
-                    width={320}
-                    height={100}
-                  />
-                </a>
+              <div className="mt-4 max-w-xs mx-auto">
+                <TrustpilotMicroStarWidget />
               </div>
             </div>
           </div>
@@ -846,24 +831,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 We want to get you back on the road as soon as possible.
               </p>
 
-              {/* Trustpilot Section */}
-              <div className="py-4">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block hover:opacity-80 transition-opacity"
-                >
-                  <OptimizedImage 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating - 5 Stars"
-                    className="h-auto w-40 object-contain"
-                    priority={false}
-                    width={320}
-                    height={100}
-                  />
-                </a>
-              </div>
 
               <button 
                 onClick={scrollToQuoteForm}
@@ -884,6 +851,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 width={600}
                 height={600}
               />
+              <div className="mt-4 max-w-xs mx-auto">
+                <TrustpilotMicroStarWidget />
+              </div>
             </div>
           </div>
         </div>
