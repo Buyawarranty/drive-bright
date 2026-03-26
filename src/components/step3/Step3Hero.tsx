@@ -1,6 +1,7 @@
 import React from 'react';
-import { Car, Gauge, Calendar, Fuel, Edit, Star, Shield, CheckCircle } from 'lucide-react';
+import { Car, Gauge, Calendar, Fuel, Edit, Shield, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import TrustpilotHeader from '@/components/TrustpilotHeader';
 
 interface Step3HeroProps {
   vehicleData: {
@@ -34,15 +35,7 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
           <CheckCircle className="w-5 h-5 text-success fill-success/20" />
           <span className="font-medium text-foreground">Easy Claims, Fast Payout</span>
         </div>
-        <div className="flex items-center gap-1.5 text-sm">
-          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          <span className="font-medium text-foreground">Rated Excellent</span>
-          <div className="flex">
-            {[1,2,3,4,5].map(i => (
-              <Star key={i} className="w-3 h-3 fill-success text-success" />
-            ))}
-          </div>
-        </div>
+        <TrustpilotHeader className="flex-shrink-0" />
         <div className="flex items-center gap-1.5 text-sm">
           <Shield className="w-5 h-5 text-amber-500 fill-amber-500/20" />
           <span className="font-medium text-foreground">14-day money-back guarantee</span>
@@ -50,9 +43,9 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
       </div>
 
       {/* Pricing Banner */}
-      <div className="bg-foreground text-background rounded-xl px-4 py-3 text-center mb-6">
-        <p className="text-sm sm:text-base font-medium">
-          From <span className="text-lg sm:text-xl font-bold">£19/month</span> - most customers choose <span className="font-bold">£30-£40/month</span> for higher claim limits and labour rates
+      <div className="bg-muted border border-border rounded-xl px-4 py-3 text-center mb-6">
+        <p className="text-sm sm:text-base font-medium text-foreground">
+          From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - most customers choose <span className="font-bold">£30-£40/month</span> for higher claim limits and labour rates
         </p>
       </div>
       
