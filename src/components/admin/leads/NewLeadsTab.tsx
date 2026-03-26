@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
-import { LeadsFilters, AssignmentFilter, SortOption } from './LeadsFilters';
+import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -139,6 +139,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  
+  // Source filter visibility: admin, super_admin, and lead_gen only
+  const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
@@ -226,6 +230,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
     }
 
+    // Apply source filter
+    if (sourceFilter !== 'all') {
+      result = result.filter(lead => lead.lead_source === sourceFilter);
+    }
+
     // Apply date range filter — but skip it when actively searching so leads are always findable
     if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
       result = result.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
@@ -270,7 +279,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption]);
+  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter]);
 
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
