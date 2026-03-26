@@ -58,7 +58,7 @@ serve(async (req) => {
 
     // Check if already paid
     if (quote.status === 'paid') {
-      logStep("Quote already paid, redirecting to thank you page");
+      logStep("Quote already paid, redirecting to payment received page");
       
       const thankYouUrl = buildThankYouUrl(quote);
       return new Response(null, {
@@ -131,7 +131,7 @@ serve(async (req) => {
     // Build thank you URL with all parameters (no policy number yet — will be created later by sales)
     const thankYouUrl = buildThankYouUrl(quote, undefined, totalAmount, customerData, vehicleData);
     
-    logStep("Redirecting to thank you page (no warranty created yet)", { url: thankYouUrl });
+    logStep("Redirecting to payment received page (no warranty created yet)", { url: thankYouUrl });
 
     return new Response(null, {
       status: 302,
