@@ -97,6 +97,11 @@ export default function LiveQuotePage() {
   const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [postcodeLookupError, setPostcodeLookupError] = useState<string | null>(null);
   const postcodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Paid confirmation flow state (must be before early returns)
+  const [confirmationStep, setConfirmationStep] = useState<'review' | 'confirmed' | 'flagged'>('review');
+  const [flagMessage, setFlagMessage] = useState('');
+  const [flagging, setFlagging] = useState(false);
   
   // UK postcode regex for validation
   const postcodeRegexForLookup = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
