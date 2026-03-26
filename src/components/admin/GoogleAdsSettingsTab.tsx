@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, startOfMonth } from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { DateRangeFilter } from './DateRangeFilter';
 import {
   CheckCircle2, XCircle, AlertTriangle, Upload, RefreshCw, Zap,
   Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon, Users
@@ -33,7 +35,10 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   const [salesSearch, setSalesSearch] = useState('');
   const [salesFilter, setSalesFilter] = useState<'all' | 'with_gclid' | 'no_gclid' | 'uploaded' | 'pending'>('all');
   const [salesPage, setSalesPage] = useState(0);
-  const [leadsDateRange, setLeadsDateRange] = useState<string>('last7');
+  const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
   const SALES_PER_PAGE = 25;
 
 
@@ -155,25 +160,18 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
 
   // Date range for Google Ads leads
   const leadsDateFrom = useMemo(() => {
-    const now = new Date();
-    switch (leadsDateRange) {
-      case 'today': return startOfDay(now);
-      case 'yesterday': return startOfDay(subDays(now, 1));
-      case 'last7': return startOfDay(subDays(now, 7));
-      case 'last30': return startOfDay(subDays(now, 30));
-      case 'last90': return startOfDay(subDays(now, 90));
-      default: return startOfDay(subDays(now, 7));
-    }
+    if (!leadsDateRange?.from) return startOfDay(subDays(new Date(), 365 * 5));
+    return startOfDay(leadsDateRange.from);
   }, [leadsDateRange]);
 
   const leadsDateTo = useMemo(() => {
-    if (leadsDateRange === 'yesterday') return endOfDay(subDays(new Date(), 1));
-    return endOfDay(new Date());
+    if (!leadsDateRange?.to) return endOfDay(new Date());
+    return endOfDay(leadsDateRange.to);
   }, [leadsDateRange]);
 
   // Fetch Google Ads leads from sales_leads (lead_source = google_ad) with GCLID from abandoned_carts
   const { data: googleAdsLeads, isLoading: gLeadsLoading } = useQuery({
-    queryKey: ['google-ads-leads', leadsDateRange],
+    queryKey: ['google-ads-leads', leadsDateFrom.toISOString(), leadsDateTo.toISOString()],
     queryFn: async () => {
       // Get leads with google_ad source
       const { data: leads, error } = await supabase
@@ -341,18 +339,10 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
               </CardTitle>
               <CardDescription>Every lead from Google Ads with name, phone, date & GCLID tracking code</CardDescription>
             </div>
-            <Select value={leadsDateRange} onValueChange={setLeadsDateRange}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="yesterday">Yesterday</SelectItem>
-                <SelectItem value="last7">Last 7 days</SelectItem>
-                <SelectItem value="last30">Last 30 days</SelectItem>
-                <SelectItem value="last90">Last 90 days</SelectItem>
-              </SelectContent>
-            </Select>
+            <DateRangeFilter
+              dateRange={leadsDateRange}
+              onDateRangeChange={setLeadsDateRange}
+            />
           </div>
         </CardHeader>
         <CardContent>

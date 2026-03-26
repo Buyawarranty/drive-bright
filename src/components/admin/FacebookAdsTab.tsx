@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DateRange } from 'react-day-picker';
+import { DateRangeFilter } from './DateRangeFilter';
 
 const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 
@@ -662,11 +664,19 @@ export const FacebookAdsTab: React.FC = () => {
       {/* Facebook Leads — Full Detail Table */}
       <Card className="border-blue-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Facebook className="h-4 w-4 text-blue-600" />
-            Facebook Leads — Full Details
-          </CardTitle>
-          <CardDescription>Every lead from Facebook/Instagram ads with name, phone, date & FBCLID tracking code</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Facebook className="h-4 w-4 text-blue-600" />
+                Facebook Leads — Full Details
+              </CardTitle>
+              <CardDescription>Every lead from Facebook/Instagram ads with name, phone, date & FBCLID tracking code</CardDescription>
+            </div>
+            <DateRangeFilter
+              dateRange={leadsDateRange}
+              onDateRangeChange={setLeadsDateRange}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {(fbLeads?.length || 0) === 0 ? (
