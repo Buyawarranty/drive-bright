@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, Eye, RefreshCw, CreditCard, Users, Accessibility, Flag, KeyRound, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Search, Eye, RefreshCw, CreditCard, Users, Accessibility, Flag, KeyRound, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { PaidOrderEditDialog } from './PaidOrderEditDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
