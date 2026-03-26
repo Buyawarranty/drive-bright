@@ -492,39 +492,222 @@ export default function LiveQuotePage() {
     );
   }
 
+  // State for paid confirmation flow
+  const [confirmationStep, setConfirmationStep] = useState<'review' | 'confirmed' | 'flagged'>('review');
+  const [flagMessage, setFlagMessage] = useState('');
+  const [flagging, setFlagging] = useState(false);
+
+  const handleFlagDetails = async () => {
+    setFlagging(true);
+    try {
+      await supabase.functions.invoke('flag-quote-details', {
+        body: {
+          quoteId: quote.id,
+          customerName: quote.customerName,
+          customerEmail: quote.customerEmail,
+          vehicleReg: quote.vehicle.reg,
+          issueMessage: flagMessage || 'Customer flagged details as incorrect',
+        }
+      });
+      setConfirmationStep('flagged');
+    } catch (err) {
+      console.error('Error flagging details:', err);
+      toast.error('Failed to report issue. Please call us on 0330 229 5045.');
+    } finally {
+      setFlagging(false);
+    }
+  };
+
+  const handleConfirmDetails = () => {
+    setConfirmationStep('confirmed');
+  };
+
   if (quote.isPaid) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4">
-        <Card className="max-w-md w-full border-green-200">
-          <CardContent className="pt-8 text-center">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Thanks, Your Cover is Active!</h2>
-            <p className="text-gray-600 mb-4">
-              We've emailed your documents to {quote.customerEmail}
-            </p>
-            {quote.policyNumber && (
-              <p className="text-sm font-medium text-green-700 mb-6">
-                Policy Number: {quote.policyNumber}
+    // Step: Customer flagged details as incorrect — show thank you + we'll fix it
+    if (confirmationStep === 'flagged') {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
+          <Card className="max-w-md w-full border-orange-200">
+            <CardContent className="pt-8 text-center">
+              <AlertCircle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Thank You for Letting Us Know</h2>
+              <p className="text-gray-600 mb-4">
+                Our team has been notified and will review your details as soon as possible. 
+                A member of our team will be in touch shortly.
               </p>
-            )}
-            <div className="space-y-3 text-left bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-orange-800">
+                  <strong>Reference:</strong> {quote.vehicle.reg}
+                </p>
+                <p className="text-sm text-orange-700 mt-1">
+                  We've sent an alert to our sales team. No further action is needed from you right now.
+                </p>
+              </div>
+              <div className="text-sm text-gray-500 space-y-1">
+                <p>Need urgent help? Contact us:</p>
+                <p className="font-medium">0330 229 5045</p>
+                <p>support@buyawarranty.co.uk</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    // Step: Customer confirmed — show standard thank you (no policy yet, pending agent review)
+    if (confirmationStep === 'confirmed') {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4">
+          <Card className="max-w-md w-full border-green-200">
+            <CardContent className="pt-8 text-center">
+              <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Thank You! Payment Received</h2>
+              <p className="text-gray-600 mb-4">
+                Your warranty details are being processed. You'll receive your policy documents via email shortly.
+              </p>
+              <div className="space-y-3 text-left bg-gray-50 rounded-lg p-4 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Vehicle</span>
+                  <span className="font-medium">{quote.vehicle.make} {quote.vehicle.model}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Registration</span>
+                  <span className="font-medium">{quote.vehicle.reg}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Cover Duration</span>
+                  <span className="font-medium">{quote.cover.durationMonths} months {quote.cover.bonusMonths > 0 && `(+${quote.cover.bonusMonths} bonus)`}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Claim Limit</span>
+                  <span className="font-medium">£{quote.cover.claimLimit.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="text-sm text-gray-500 space-y-1">
+                <p>Need help? Contact us:</p>
+                <p className="font-medium">0330 229 5045</p>
+                <p>support@buyawarranty.co.uk</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    // Step: Review — customer must confirm or flag details
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
+        <Card className="max-w-lg w-full border-blue-200">
+          <CardContent className="pt-8">
+            <div className="text-center mb-6">
+              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
+              <h2 className="text-xl font-semibold mb-1">Payment Received — Thank You!</h2>
+              <p className="text-gray-600 text-sm">
+                Please review your warranty details below and confirm everything is correct.
+              </p>
+            </div>
+
+            <div className="space-y-3 bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-sm text-gray-800 border-b pb-2">Your Warranty Details</h3>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Name</span>
+                <span className="font-medium">{quote.customerName}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Email</span>
+                <span className="font-medium">{quote.customerEmail}</span>
+              </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Vehicle</span>
-                <span className="font-medium">{quote.vehicle.make} {quote.vehicle.model}</span>
+                <span className="font-medium">{quote.vehicle.make} {quote.vehicle.model} ({quote.vehicle.year})</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Registration</span>
+                <span className="font-medium font-mono">{quote.vehicle.reg}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Mileage</span>
+                <span className="font-medium">{quote.vehicle.mileage ? `${Number(quote.vehicle.mileage).toLocaleString()} miles` : 'N/A'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Cover Duration</span>
-                <span className="font-medium">{quote.cover.durationMonths} months {quote.cover.bonusMonths > 0 && `(+${quote.cover.bonusMonths} bonus)`}</span>
+                <span className="font-medium">
+                  {quote.cover.durationMonths} months
+                  {quote.cover.bonusMonths > 0 && ` (+${quote.cover.bonusMonths} FREE)`}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Claim Limit</span>
                 <span className="font-medium">£{quote.cover.claimLimit.toLocaleString()}</span>
               </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Labour Rate</span>
+                <span className="font-medium">£{quote.cover.labourRate}/hr</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Excess</span>
+                <span className="font-medium">£{quote.cover.excessAmount}</span>
+              </div>
+              {quote.cover.boostAddon && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Boost Add-on</span>
+                  <span className="font-medium text-green-700">Included ✓</span>
+                </div>
+              )}
+              {quote.cover.breakdownIncluded && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Vehicle Recovery</span>
+                  <span className="font-medium text-green-700">Included ✓</span>
+                </div>
+              )}
             </div>
-            <div className="text-sm text-gray-500 space-y-1">
-              <p>Need help? Contact us:</p>
-              <p className="font-medium">0330 229 5045</p>
-              <p>support@buyawarranty.co.uk</p>
+
+            <div className="space-y-3">
+              <Button
+                onClick={handleConfirmDetails}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-5 text-base font-bold"
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                All Details Are Correct — Confirm
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-400">or</span>
+                </div>
+              </div>
+
+              <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                <p className="text-sm font-medium text-orange-800 mb-2">
+                  Something not right? Let us know:
+                </p>
+                <textarea
+                  className="w-full border border-orange-300 rounded-md p-2 text-sm mb-3 bg-white"
+                  placeholder="Please describe what's incorrect (e.g., wrong name, wrong mileage, etc.)"
+                  rows={3}
+                  value={flagMessage}
+                  onChange={(e) => setFlagMessage(e.target.value)}
+                />
+                <Button
+                  onClick={handleFlagDetails}
+                  disabled={flagging}
+                  variant="outline"
+                  className="w-full border-orange-400 text-orange-700 hover:bg-orange-100"
+                >
+                  {flagging ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</>
+                  ) : (
+                    <><AlertCircle className="w-4 h-4 mr-2" /> My Details Are Incorrect</>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-center mt-4 text-sm text-gray-500 space-y-1">
+              <p>Need help? Call us: <strong>0330 229 5045</strong></p>
             </div>
           </CardContent>
         </Card>
