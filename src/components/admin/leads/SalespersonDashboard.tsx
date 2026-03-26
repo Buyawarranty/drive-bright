@@ -69,10 +69,12 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
   }, []);
 
   // Memoize filtered leads to prevent recalculation
-  // Exclude fake_lead status - they should only appear in the Fake tab
+  // Exclude fake, lost, and hidden leads from the active salesperson workspace
   const myLeads = useMemo(() => {
     if (!currentUserId) return [];
-    return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead' && l.status !== 'lost');
+    return leads.filter(
+      l => l.assigned_to === currentUserId && l.status !== 'fake_lead' && l.status !== 'lost' && (l.status as string) !== 'archived'
+    );
   }, [currentUserId, leads]);
 
   const todayFollowUps = useMemo(() => 

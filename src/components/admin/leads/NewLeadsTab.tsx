@@ -200,7 +200,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [filter]);
 
-  const statusFilteredLeads = useMemo(() => applyStatusFilter(leads), [leads, applyStatusFilter]);
+  const visibleLeads = useMemo(
+    () => leads.filter(lead => (lead.status as string) !== 'archived'),
+    [leads]
+  );
+
+  const statusFilteredLeads = useMemo(() => applyStatusFilter(visibleLeads), [visibleLeads, applyStatusFilter]);
 
   const filteredLeads = useMemo(() => {
     let result = statusFilteredLeads;
@@ -270,6 +275,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
 
+  const dateFilteredVisibleLeadsForFilters = useMemo(() => {
+    if (!dateRange.from && !dateRange.to) return visibleLeads;
+    return visibleLeads.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
+  }, [visibleLeads, dateRange]);
+
   // Date-filter the raw source-of-truth dataset for accurate counts.
   const dateFilteredLeadsForCounts = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return leads;
@@ -277,15 +287,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [leads, dateRange]);
 
   const dateAndStatusFilteredLeads = useMemo(
-    () => applyStatusFilter(dateFilteredLeadsForCounts),
-    [dateFilteredLeadsForCounts, applyStatusFilter]
+    () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
+    [dateFilteredVisibleLeadsForFilters, applyStatusFilter]
   );
 
   const leadCounts = useMemo(() => {
     // "All Leads" = absolute total of every lead created on that date — never changes once the day ends.
     const absoluteTotal = dateFilteredLeadsForCounts.length;
-    // "Live" = active leads excluding lost & fake — the working count agents care about.
-    const liveCount = dateFilteredLeadsForCounts.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length;
+    // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
+    const liveCount = dateFilteredLeadsForCounts.filter(
+      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
+    ).length;
 
     return {
       all_leads: absoluteTotal,
@@ -301,7 +313,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       paid: dateFilteredLeadsForCounts.filter(l => l.is_paid === true).length,
       lost: dateFilteredLeadsForCounts.filter(l => l.status === 'lost').length,
       converted: dateFilteredLeadsForCounts.filter(l => l.status === 'converted').length,
-      high_priority: dateFilteredLeadsForCounts.filter(l => (l.priority === 'high' || l.priority === 'urgent') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      high_priority: dateFilteredLeadsForCounts.filter(
+        l =>
+          (l.priority === 'high' || l.priority === 'urgent') &&
+          l.status !== 'lost' &&
+          l.status !== 'fake_lead' &&
+          (l.status as string) !== 'archived'
+      ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
     };
   }, [dateFilteredLeadsForCounts]);
