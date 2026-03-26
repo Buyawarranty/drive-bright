@@ -8,12 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DateRange } from 'react-day-picker';
+import { DateRangeFilter } from './DateRangeFilter';
 
 const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 
 export const FacebookAdsTab: React.FC = () => {
   const [dateRange, setDateRange] = useState<string>('last7');
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
   const queryClient = useQueryClient();
 
   const dateFrom = useMemo(() => {
@@ -662,18 +668,34 @@ export const FacebookAdsTab: React.FC = () => {
       {/* Facebook Leads — Full Detail Table */}
       <Card className="border-blue-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Facebook className="h-4 w-4 text-blue-600" />
-            Facebook Leads — Full Details
-          </CardTitle>
-          <CardDescription>Every lead from Facebook/Instagram ads with name, phone, date & FBCLID tracking code</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Facebook className="h-4 w-4 text-blue-600" />
+                Facebook Leads — Full Details
+              </CardTitle>
+              <CardDescription>Every lead from Facebook/Instagram ads with name, phone, date & FBCLID tracking code</CardDescription>
+            </div>
+            <DateRangeFilter
+              dateRange={leadsDateRange}
+              onDateRangeChange={setLeadsDateRange}
+            />
+          </div>
         </CardHeader>
         <CardContent>
-          {(fbLeads?.length || 0) === 0 ? (
+          {(() => {
+            const filteredLeads = (fbLeads || []).filter(lead => {
+              if (!leadsDateRange?.from) return true;
+              const d = new Date(lead.created_at);
+              if (d < startOfDay(leadsDateRange.from)) return false;
+              if (leadsDateRange.to && d > endOfDay(leadsDateRange.to)) return false;
+              return true;
+            });
+            return filteredLeads.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No Facebook leads in this period</p>
           ) : (
             <div className="overflow-auto">
-              <p className="text-xs text-muted-foreground mb-2">{fbLeads?.length} leads found</p>
+              <p className="text-xs text-muted-foreground mb-2">{filteredLeads.length} leads found</p>
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
@@ -688,7 +710,7 @@ export const FacebookAdsTab: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fbLeads?.map((lead) => {
+                  {filteredLeads.map((lead) => {
                     const meta = lead.cart_metadata as Record<string, any> | null;
                     const fbclid = meta?.fbclid || '';
                     return (
@@ -717,7 +739,8 @@ export const FacebookAdsTab: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
-          )}
+          );
+          })()}
         </CardContent>
       </Card>
 
