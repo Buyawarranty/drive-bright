@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit3, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench, Lock } from 'lucide-react';
+import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit3, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench, Lock, Star } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -1295,6 +1295,45 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
       {/* Configuration Sections */}
       <div className="max-w-6xl mx-auto px-4 py-3 space-y-6">
+
+        {/* Hero Section - Trust Badges & Pricing */}
+        <div className="text-center space-y-3">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground italic">
+            One complete warranty. Tailored to you.
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            All plans include <strong>full comprehensive cover</strong> - choose your length of cover
+            and level of protection
+          </p>
+
+          {/* Trust Badges */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
+            <div className="flex items-center gap-1.5 text-sm">
+              <CheckCircle className="w-5 h-5 text-success fill-success/20" />
+              <span className="font-medium text-foreground">Easy Claims, Fast Payout</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="font-medium text-foreground">Rated Excellent</span>
+              <div className="flex">
+                {[1,2,3,4,5].map(i => (
+                  <Star key={i} className="w-3 h-3 fill-success text-success" />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <Shield className="w-5 h-5 text-amber-500 fill-amber-500/20" />
+              <span className="font-medium text-foreground">14-day money-back guarantee</span>
+            </div>
+          </div>
+
+          {/* Pricing Banner */}
+          <div className="bg-foreground text-background rounded-xl px-4 py-3 text-center">
+            <p className="text-sm sm:text-base font-medium">
+              From <span className="text-lg sm:text-xl font-bold">£19/month</span> - most customers choose <span className="font-bold">£30-£40/month</span> for higher claim limits and labour rates
+            </p>
+          </div>
+        </div>
         
         {/* Vehicle Information - Simplified */}
         <div className="bg-gray-50 rounded-lg p-4">
