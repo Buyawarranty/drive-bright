@@ -80,7 +80,7 @@ export const getLeadFeedDayRange = (date: Date) => {
   const { year, month, day } = getSelectionParts(date);
 
   return {
-    from: londonLocalDateTimeToUtc(year, month, day, 0, 1, 0, 0),
+    from: londonLocalDateTimeToUtc(year, month, day, 0, 0, 0, 0),
     to: londonLocalDateTimeToUtc(year, month, day, 23, 59, 59, 999),
   };
 };

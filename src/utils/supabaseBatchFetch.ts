@@ -1,6 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
-
 const BATCH_SIZE = 1000;
+const MAX_RETRIES = 2;
 
 /**
  * Fetches all rows from a Supabase query by paginating with .range().
@@ -21,7 +20,26 @@ export async function fetchAllRows<T = any>(
     const { data, error } = await query.range(offset, offset + BATCH_SIZE - 1);
     
     if (error) {
-      return { data: allData, error };
+      // Retry this batch before giving up
+      let retrySuccess = false;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        console.warn(`[BatchFetch] Retrying batch at offset ${offset} (attempt ${attempt}/${MAX_RETRIES})`);
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+        const retryQuery = buildQuery();
+        const retryResult = await retryQuery.range(offset, offset + BATCH_SIZE - 1);
+        if (!retryResult.error && retryResult.data) {
+          allData.push(...retryResult.data);
+          offset += retryResult.data.length;
+          hasMore = retryResult.data.length === BATCH_SIZE;
+          retrySuccess = true;
+          break;
+        }
+      }
+      if (!retrySuccess) {
+        console.error(`[BatchFetch] All retries failed at offset ${offset}`, error);
+        return { data: allData, error };
+      }
+      continue;
     }
 
     if (data && data.length > 0) {
