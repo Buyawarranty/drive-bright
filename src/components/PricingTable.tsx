@@ -1246,9 +1246,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
             {/* Mobile: Centered heading */}
             <div className="flex items-center justify-center gap-2 sm:hidden">
-              <Zap className="w-6 h-6 text-primary" />
               <h1 className="text-xl font-bold text-foreground">
-                Get Covered in 60 Seconds
+                One complete warranty. Tailored to you.
               </h1>
             </div>
             
@@ -1280,9 +1279,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </button>
 
             <div className="hidden sm:flex items-center gap-2">
-              <Zap className="w-6 h-6 text-primary" />
               <h1 className="text-2xl font-bold text-foreground">
-                Get Covered in 60 Seconds
+                One complete warranty. Tailored to you.
               </h1>
             </div>
 
@@ -1321,8 +1319,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
           {/* Pricing Banner */}
           <div className="bg-muted border border-border rounded-xl px-4 py-3 text-center">
-            <p className="text-sm sm:text-base font-medium text-foreground">
-              From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - most customers choose <span className="font-bold">£30-£40/month</span> for higher claim limits and labour rates
+            <p className="text-sm sm:text-base text-foreground">
+              From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - <strong>your price depends on your claim limit, labour rate and excess</strong>
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Longer plans offer <strong>better overall value,</strong> paid over 12 monthly instalments
             </p>
           </div>
         </div>

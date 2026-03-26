@@ -44,8 +44,11 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
 
       {/* Pricing Banner */}
       <div className="bg-muted border border-border rounded-xl px-4 py-3 text-center mb-6">
-        <p className="text-sm sm:text-base font-medium text-foreground">
-          From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - most customers choose <span className="font-bold">£30-£40/month</span> for higher claim limits and labour rates
+        <p className="text-sm sm:text-base text-foreground">
+          From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - <strong>your price depends on your claim limit, labour rate and excess</strong>
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Longer plans offer <strong>better overall value,</strong> paid over 12 monthly instalments
         </p>
       </div>
       
