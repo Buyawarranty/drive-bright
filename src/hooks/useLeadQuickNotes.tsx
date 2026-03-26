@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const quickNotesCache = new Map<string, QuickNote[]>();
+
 // Cache admin user to avoid repeated lookups
 let cachedAdminUser: { id: string; first_name: string | null; last_name: string | null; email: string } | null = null;
 let cacheExpiry = 0;
@@ -34,22 +36,34 @@ export const useLeadQuickNotes = (leadId: string) => {
       setNotes(prev => {
         const result = newNotesOrUpdater(prev);
         notesRef.current = result;
+        if (leadId) quickNotesCache.set(leadId, result);
         return result;
       });
     } else {
       notesRef.current = newNotesOrUpdater;
+      if (leadId) quickNotesCache.set(leadId, newNotesOrUpdater);
       setNotes(newNotesOrUpdater);
     }
-  }, []);
+  }, [leadId]);
 
   const isAbandonedCart = leadId?.startsWith('cart_');
   const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
 
   // Reset when lead changes
   useEffect(() => {
-    hasFetchedRef.current = false;
-    setLoading(true);
-    updateNotes([]);
+    if (!leadId) {
+      hasFetchedRef.current = false;
+      setLoading(false);
+      updateNotes([]);
+      return;
+    }
+
+    const cachedNotes = quickNotesCache.get(leadId);
+    const hasCachedNotes = quickNotesCache.has(leadId);
+
+    hasFetchedRef.current = hasCachedNotes;
+    setLoading(!hasCachedNotes);
+    updateNotes(cachedNotes || []);
   }, [leadId, updateNotes]);
 
   // Session validation removed — RLS policies handle authorization, and
@@ -62,8 +76,8 @@ export const useLeadQuickNotes = (leadId: string) => {
       return;
     }
     
-    // CRITICAL: Only show loading spinner on initial load, NOT on refetch
-    if (!isRefetch) {
+    // Only show loading spinner when nothing is cached yet for this lead
+    if (!isRefetch && !quickNotesCache.has(leadId)) {
       setLoading(true);
     }
     
