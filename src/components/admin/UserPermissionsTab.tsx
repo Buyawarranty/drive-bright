@@ -135,7 +135,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen',
     permissions: {} as Record<string, boolean>
   });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -233,7 +233,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer'] as const;
+      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -522,6 +522,7 @@ export const UserPermissionsTab = () => {
     if (role === 'super_admin') return 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600';
     if (role === 'sales_lead') return 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600';
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
+    if (role === 'lead_gen') return 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
     return '';
   };
@@ -781,6 +782,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                   </SelectContent>
                 </Select>
@@ -969,6 +971,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                   </SelectContent>
                 </Select>
