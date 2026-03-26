@@ -330,7 +330,77 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
         </Card>
       </div>
 
-      {/* Required Secrets Configuration */}
+      {/* Google Ads Leads — Full Detail Table */}
+      <Card className="border-emerald-200">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4 text-emerald-700" />
+                Google Ads Leads — Full Details
+              </CardTitle>
+              <CardDescription>Every lead from Google Ads with name, phone, date & GCLID tracking code</CardDescription>
+            </div>
+            <Select value={leadsDateRange} onValueChange={setLeadsDateRange}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
+                <SelectItem value="last7">Last 7 days</SelectItem>
+                <SelectItem value="last30">Last 30 days</SelectItem>
+                <SelectItem value="last90">Last 90 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {gLeadsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+              <span className="text-sm text-muted-foreground">Loading Google Ads leads...</span>
+            </div>
+          ) : (googleAdsLeads?.length || 0) === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No Google Ads leads in this period</p>
+          ) : (
+            <div className="overflow-auto">
+              <p className="text-xs text-muted-foreground mb-2">{googleAdsLeads?.length} leads found</p>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="text-[11px] font-semibold uppercase">Date & Time</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Name</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Phone</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Email</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Vehicle</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">Status</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase">GCLID</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {googleAdsLeads?.map((lead) => (
+                    <TableRow key={lead.id}>
+                      <TableCell className="text-xs whitespace-nowrap">{format(new Date(lead.created_at), 'dd/MM/yy HH:mm')}</TableCell>
+                      <TableCell className="text-sm font-medium">{`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || '-'}</TableCell>
+                      <TableCell className="text-sm">{lead.phone || '-'}</TableCell>
+                      <TableCell className="text-sm">{lead.email}</TableCell>
+                      <TableCell className="text-sm">{lead.vehicle_reg || `${lead.vehicle_make || ''} ${lead.vehicle_model || ''}`.trim() || '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">{lead.status || 'new'}</Badge>
+                      </TableCell>
+                      <TableCell className="text-[10px] font-mono text-muted-foreground max-w-[200px] truncate" title={lead.gclid}>
+                        {lead.gclid ? lead.gclid.substring(0, 25) + '…' : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
