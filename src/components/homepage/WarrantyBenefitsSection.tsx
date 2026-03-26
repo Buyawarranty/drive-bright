@@ -136,14 +136,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                       <ArrowRight className="w-6 h-6" />
                     </button>
                     
-                    {/* Trustpilot + Security text */}
-                    <div className="flex flex-col items-end gap-2">
-                      <TrustpilotHeader className="flex-shrink-0" />
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Lock className="w-4 h-4 text-green-600" />
-                        <span>Your details are encrypted and safe.</span>
-                      </div>
-                    </div>
+                    <TrustpilotMicroStarWidget className="max-w-[200px]" />
                   </div>
                 </div>
               </div>
@@ -170,14 +163,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
                   <ArrowRight className="w-7 h-7" />
                 </button>
                 
-                {/* Trust & Reassurance */}
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <TrustpilotHeader className="flex-shrink-0 scale-90 sm:scale-100" />
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Lock className="w-4 h-4 text-green-600" />
-                    <span>Your details are encrypted and safe.</span>
-                  </div>
-                </div>
+                <TrustpilotMicroStarWidget className="max-w-[200px]" />
               </div>
             </div>
           </div>
