@@ -704,6 +704,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
             recoveredLeadsSlot={<LostLeadsSection onRecovered={fetchLeads} compact />}
+            sourceFilter={sourceFilter}
+            onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
           />
           
           <Card className="overflow-hidden border-2 border-border">
