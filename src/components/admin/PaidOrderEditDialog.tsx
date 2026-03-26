@@ -449,19 +449,40 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            Edit Order: {order.policy_number || order.vehicle_reg}
+            {!order.policy_number ? (
+              <>
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+                <span className="text-amber-800">Review & Confirm Order</span>
+              </>
+            ) : (
+              <>Edit Order: {order.policy_number || order.vehicle_reg}</>
+            )}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Alert if no customer record exists */}
-        {!order.customer_id && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        {/* Prominent alert for unprocessed orders */}
+        {!order.policy_number && (
+          <div className="bg-amber-100 border-2 border-amber-400 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-amber-800">Customer record missing</p>
-              <p className="text-sm text-amber-700">
-                This order has no customer dashboard record. Click "Save & Update Dashboard" to create one, 
-                enabling the customer to log in and access their policy.
+              <p className="font-bold text-amber-900 text-base">Payment received. Confirm all details below.</p>
+              <p className="text-sm text-amber-800 mt-1">
+                The customer has paid but NO warranty has been created yet. Review and update ALL information below, 
+                then click <strong>"Confirm Details & Create Warranty"</strong> at the bottom. The customer will receive their 
+                welcome email and warranty details only after you confirm.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Alert if customer record exists but no policy */}
+        {order.customer_id && !order.policy_number && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+            <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-blue-800">Existing customer found</p>
+              <p className="text-sm text-blue-700">
+                A customer record already exists for this email. The warranty will be linked to the existing customer.
               </p>
             </div>
           </div>
