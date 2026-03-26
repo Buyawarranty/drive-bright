@@ -1410,10 +1410,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
-        {/* Price Help Trigger - All devices */}
-        <div>
-          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
-        </div>
+        {/* Price Help Trigger moved to above Comprehensive Cover */}
 
         {/* Choose Warranty Duration - Moved to top */}
         <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
