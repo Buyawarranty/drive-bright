@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
@@ -15,6 +15,7 @@ import { getLeadFeedDayRange, getTodayLeadFeedSelectionDate, isTodayLeadFeedRang
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
+export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'website';
 
 interface SalesUser {
   id: string;
@@ -65,6 +66,8 @@ interface LeadsFiltersProps {
   onAgentFilterChange?: (agentId: string) => void;
   agentLeadCounts?: Record<string, number>;
   recoveredLeadsSlot?: React.ReactNode;
+  sourceFilter?: SourceFilter;
+  onSourceFilterChange?: (source: SourceFilter) => void;
 }
 
 // Status pill configuration — compact, color-coded for instant recognition
@@ -113,6 +116,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onAgentFilterChange,
   agentLeadCounts,
   recoveredLeadsSlot,
+  sourceFilter = 'all',
+  onSourceFilterChange,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -350,6 +355,28 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                   <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.[user.id] || 0}</Badge>
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Lead Source filter */}
+        {onSourceFilterChange && (
+          <Select value={sourceFilter} onValueChange={(v) => onSourceFilterChange(v as SourceFilter)}>
+            <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg border-2 border-border">
+              <Globe className="h-3 w-3 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="All Sources" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="google_ad">
+                <span className="text-emerald-700 font-bold">G</span> Google Ads
+              </SelectItem>
+              <SelectItem value="social_ad">
+                <span className="text-blue-700 font-bold">F</span> Facebook Ads
+              </SelectItem>
+              <SelectItem value="website">
+                <span className="text-muted-foreground font-medium">O</span> Organic
+              </SelectItem>
             </SelectContent>
           </Select>
         )}
