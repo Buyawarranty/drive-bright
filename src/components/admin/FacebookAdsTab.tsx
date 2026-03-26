@@ -683,11 +683,19 @@ export const FacebookAdsTab: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {(fbLeads?.length || 0) === 0 ? (
+          {(() => {
+            const filteredLeads = (fbLeads || []).filter(lead => {
+              if (!leadsDateRange?.from) return true;
+              const d = new Date(lead.created_at);
+              if (d < startOfDay(leadsDateRange.from)) return false;
+              if (leadsDateRange.to && d > endOfDay(leadsDateRange.to)) return false;
+              return true;
+            });
+            return filteredLeads.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No Facebook leads in this period</p>
           ) : (
             <div className="overflow-auto">
-              <p className="text-xs text-muted-foreground mb-2">{fbLeads?.length} leads found</p>
+              <p className="text-xs text-muted-foreground mb-2">{filteredLeads.length} leads found</p>
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
