@@ -395,11 +395,6 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           </div>
         )}
 
-        {/* Price Help Trigger */}
-        <div className="px-4 mb-4">
-          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
-        </div>
-
         <TermSelector
           selectedTerm={paymentType}
           onTermChange={(term) => setPaymentType(term)}
