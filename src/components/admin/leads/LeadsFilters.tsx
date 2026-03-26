@@ -359,6 +359,28 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
           </Select>
         )}
 
+        {/* Lead Source filter */}
+        {onSourceFilterChange && (
+          <Select value={sourceFilter} onValueChange={(v) => onSourceFilterChange(v as SourceFilter)}>
+            <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg border-2 border-border">
+              <Globe className="h-3 w-3 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="All Sources" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="google_ad">
+                <span className="text-emerald-700 font-bold">G</span> Google Ads
+              </SelectItem>
+              <SelectItem value="social_ad">
+                <span className="text-blue-700 font-bold">F</span> Facebook Ads
+              </SelectItem>
+              <SelectItem value="website">
+                <span className="text-muted-foreground font-medium">O</span> Organic
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
         {/* Separator */}
         <div className="h-5 w-px bg-border" />
 
