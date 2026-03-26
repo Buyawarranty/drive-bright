@@ -404,6 +404,11 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           hasAddOnsSelected={hasAddOnsSelected}
         />
 
+        {/* Price Help Trigger */}
+        <div className="px-4 mb-4 mt-4">
+          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
+        </div>
+
         <ExcessSelector
           selectedExcess={voluntaryExcess}
           onExcessChange={setVoluntaryExcess}
