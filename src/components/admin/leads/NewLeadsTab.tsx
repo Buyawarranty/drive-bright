@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
@@ -164,6 +164,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     deleteLeads,
     updateCallCount
   } = useLeads();
+
+  useEffect(() => {
+    setFilter('live');
+  }, [setFilter]);
 
   // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);

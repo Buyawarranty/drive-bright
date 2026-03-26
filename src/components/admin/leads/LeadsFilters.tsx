@@ -76,8 +76,8 @@ const STATUS_PILLS: {
   countKey: keyof LeadsFiltersProps['leadCounts'];
   isAssignment?: boolean;
 }[] = [
-  { value: 'all_leads', label: 'All Leads', colorClass: 'data-[state=active]:bg-foreground data-[state=active]:text-background', countKey: 'all_leads' },
-  { value: 'live', label: 'Live', icon: '🟢', colorClass: 'data-[state=active]:bg-emerald-700 data-[state=active]:text-white', countKey: 'live' },
+  { value: 'all_leads', label: 'Total Leads', colorClass: 'data-[state=active]:bg-foreground data-[state=active]:text-background', countKey: 'all_leads' },
+  { value: 'live', label: 'Live Leads', icon: '🟢', colorClass: 'data-[state=active]:bg-emerald-700 data-[state=active]:text-white', countKey: 'live' },
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
   { value: 'new', label: 'New', colorClass: 'data-[state=active]:bg-blue-600 data-[state=active]:text-white', countKey: 'new' },
@@ -313,14 +313,14 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
           <Select value={assignmentFilter} onValueChange={(v) => onAssignmentFilterChange(v as AssignmentFilter)}>
             <SelectTrigger className="w-[150px] h-8 text-xs rounded-lg border-2 border-border">
               <Filter className="h-3 w-3 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="All Leads" />
+              <SelectValue placeholder="Total Leads" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                All Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all_leads}</Badge>
+                Total Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all_leads}</Badge>
               </SelectItem>
               <SelectItem value="total">
-                Live <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-green-100">{leadCounts.live}</Badge>
+                Live Leads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-green-100">{leadCounts.live}</Badge>
               </SelectItem>
               <SelectItem value="awaiting_contact">
                 Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-amber-100">{assignmentCounts?.awaiting_contact}</Badge>
