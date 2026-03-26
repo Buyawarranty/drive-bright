@@ -21,6 +21,7 @@ import { AdminNotificationBell, AdminNotification } from '@/components/admin/Adm
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 import { LostLeadsSection } from './LostLeadsSection';
+import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -746,6 +747,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
               )}
               
+              {/* Quote detail issues flagged by customers */}
+              <div className="px-4 pt-3">
+                <QuoteDetailIssuesAlert />
+              </div>
+
               <LeadsTable
                 leads={pagination.paginatedData}
                 tags={tags}
