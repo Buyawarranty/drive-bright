@@ -20,10 +20,7 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
     <div className="px-4 py-6">
       {/* Hero Text */}
       <div className="text-center mb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          One complete warranty. Tailored to you.
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-2">
+        <p className="text-sm sm:text-base text-muted-foreground">
           All plans include <strong>full comprehensive cover</strong> - choose your length of cover
           and level of protection
         </p>
