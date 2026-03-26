@@ -747,6 +747,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
               )}
               
+              {/* Quote detail issues flagged by customers */}
+              <div className="px-4 pt-3">
+                <QuoteDetailIssuesAlert />
+              </div>
+
               <LeadsTable
                 leads={pagination.paginatedData}
                 tags={tags}
