@@ -1298,7 +1298,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Hero Section - Trust Badges & Pricing */}
         <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground italic">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
             One complete warranty. Tailored to you.
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground">
