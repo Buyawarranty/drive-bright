@@ -395,18 +395,32 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
                       {getStatusBadge(order)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setIsEditDialogOpen(true);
-                        }}
-                        className="gap-1"
-                      >
-                        <Eye className="h-3 w-3" />
-                        <span className="hidden sm:inline">View & Edit</span>
-                      </Button>
+                      {!order.policy_number ? (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsEditDialogOpen(true);
+                          }}
+                          className="gap-1 bg-amber-600 hover:bg-amber-700 text-white"
+                        >
+                          <AlertCircle className="h-3 w-3" />
+                          <span className="hidden sm:inline">Review & Confirm</span>
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsEditDialogOpen(true);
+                          }}
+                          className="gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          <span className="hidden sm:inline">View & Edit</span>
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
