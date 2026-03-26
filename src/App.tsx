@@ -200,6 +200,7 @@ const App = () => {
                     <Route path="/home/" element={<Index />} />
                     <Route path="/faq/" element={<FAQ />} />
                     <Route path="/thank-you/" element={<ThankYou />} />
+                    <Route path="/payment-received/" element={<PaymentReceived />} />
                     <Route path="/payment-fallback/" element={<PaymentFallback />} />
                     <Route path="/checkout/payment/" element={<StripePayment />} />
                     <Route path="/cart/" element={<Cart />} />
