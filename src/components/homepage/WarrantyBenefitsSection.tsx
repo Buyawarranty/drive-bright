@@ -60,7 +60,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
             {/* Section Header */}
             <div className="mb-6">
               <div className="text-center lg:text-left">
-                <TrustpilotMicroStarWidget className="mb-3" />
+                
                 <p className="text-base md:text-lg text-gray-500">
                   Superior Protection. Affordable Prices. Instant Cover.
                 </p>
