@@ -710,7 +710,7 @@ export const FacebookAdsTab: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fbLeads?.map((lead) => {
+                  {filteredLeads.map((lead) => {
                     const meta = lead.cart_metadata as Record<string, any> | null;
                     const fbclid = meta?.fbclid || '';
                     return (
@@ -739,7 +739,8 @@ export const FacebookAdsTab: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
-          )}
+          );
+          })()}
         </CardContent>
       </Card>
 
