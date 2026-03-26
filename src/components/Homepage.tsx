@@ -739,23 +739,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 height={600}
               />
               
-              {/* Trustpilot Logo */}
-              <div className="mt-6 flex justify-center">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block hover:opacity-80 transition-opacity"
-                >
-                  <OptimizedImage 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating - 5 Stars"
-                    className="h-auto w-40 object-contain"
-                    priority={false}
-                    width={320}
-                    height={100}
-                  />
-                </a>
+              <div className="mt-4 max-w-xs mx-auto">
+                <TrustpilotMicroStarWidget />
               </div>
             </div>
           </div>
