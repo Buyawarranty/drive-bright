@@ -337,16 +337,16 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
               </TableHeader>
               <TableBody>
                 {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className={!order.customer_id ? 'bg-amber-50/50' : ''}>
+                  <TableRow key={order.id} className={!order.policy_number ? 'bg-amber-50 border-l-4 border-l-amber-400' : ''}>
                     <TableCell>
                       <div className="text-sm font-medium">{order.customer_name}</div>
                       <div className="text-xs text-muted-foreground truncate max-w-[180px]">{order.customer_email}</div>
                       {order.customer_phone && (
                         <div className="text-xs text-muted-foreground">{order.customer_phone}</div>
                       )}
-                      {!order.customer_id && (
-                        <Badge variant="outline" className="mt-1 text-[10px] bg-amber-100 text-amber-800 border-amber-300">
-                          ⚠️ No dashboard record
+                      {!order.policy_number && (
+                        <Badge variant="outline" className="mt-1 text-[10px] bg-amber-100 text-amber-800 border-amber-300 animate-pulse">
+                          Action Required
                         </Badge>
                       )}
                     </TableCell>
