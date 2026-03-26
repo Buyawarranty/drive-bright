@@ -695,7 +695,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
                   Unlimited Claims
                 </div>
-                <TrustpilotMicroStarWidget className="mb-2" />
               </div>
               
               <div className="space-y-4">
