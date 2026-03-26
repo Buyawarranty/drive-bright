@@ -1807,6 +1807,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
+        {/* Price Help Trigger - Above Comprehensive Cover */}
+        <div>
+          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
+        </div>
+
         <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
             {/* Header row with title and button */}
