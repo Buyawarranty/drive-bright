@@ -2,7 +2,6 @@ import React from 'react';
 import { Car, Gauge, Calendar, Fuel, Edit, Shield, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-import { Button } from '@/components/ui/button';
 
 interface Step3HeroProps {
   vehicleData: {
