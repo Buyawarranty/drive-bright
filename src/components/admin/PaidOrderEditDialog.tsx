@@ -339,36 +339,41 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       const finalAmount = order.upfront_price || (order.monthly_price * 12);
 
       // Call confirm-external-payment — handles dedup, customer creation, policy, and email
+      // Calculate duration months from the order data
+      const durationMonths = order.duration_months || 12;
+      const bonusMonths = order.bonus_months || 0;
+
       const { data, error } = await supabase.functions.invoke('confirm-external-payment', {
         body: {
           customerEmail: customerEmail,
           customerName: customerName,
-          firstName: firstName,
-          lastName: lastName,
-          phone: customerPhone,
-          street: street,
-          town: town,
-          county: county,
-          postcode: postcode,
-          buildingNumber: buildingNumber,
+          customerFirstName: firstName,
+          customerLastName: lastName,
+          customerPhone: customerPhone,
           vehicleReg: vehicleReg.toUpperCase(),
           vehicleMake: vehicleMake,
           vehicleModel: vehicleModel,
-          vehicleMileage: vehicleMileage,
           vehicleYear: vehicleYear,
+          mileage: vehicleMileage,
           planType: 'Platinum',
           paymentType: paymentType,
+          durationMonths: durationMonths,
+          bonusMonths: bonusMonths,
           finalAmount: finalAmount,
           claimLimit: claimLimit,
           labourRate: labourRate,
-          voluntaryExcess: excessAmount,
-          breakdownRecovery: breakdownIncluded,
-          vehicleRental: rentalIncluded,
+          excessAmount: excessAmount,
           boostAddon: boostAddon,
-          paymentMethod: order.payment_method || order.payment_source || 'external',
-          agentId: selectedAgentId || null,
-          sendEmail: true,
-          source: 'live_quote',
+          paymentSource: order.payment_method || order.payment_source || 'external',
+          assigneeId: selectedAgentId || null,
+          sendWelcomeEmail: true,
+          address: {
+            buildingNumber: buildingNumber,
+            street: street,
+            town: town,
+            county: county,
+            postcode: postcode,
+          },
         }
       });
 
