@@ -272,6 +272,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return result;
   }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption]);
 
+  // Pagination for leads table
+  const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
+
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
     return visibleLeads.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
