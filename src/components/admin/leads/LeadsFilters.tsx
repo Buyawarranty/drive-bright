@@ -49,6 +49,9 @@ interface LeadsFiltersProps {
     converted: number;
     high_priority: number;
     fake: number;
+    source_google?: number;
+    source_facebook?: number;
+    source_organic?: number;
   };
   dateRange?: { from: Date | undefined; to: Date | undefined };
   onDateRangeChange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
