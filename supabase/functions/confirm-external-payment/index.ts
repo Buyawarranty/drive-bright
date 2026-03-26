@@ -76,6 +76,7 @@ serve(async (req) => {
       sendWelcomeEmail,
       skipAddressDetails,
       address,
+      liveQuoteId,
     } = body;
 
     logStep("Request data", { 
@@ -319,36 +320,52 @@ serve(async (req) => {
       logStep("New policy created", { policyId });
     }
 
-    // Create live_quotes record for tracking
-    const { error: quoteError } = await supabase
-      .from('live_quotes')
-      .insert({
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
-        vehicle_reg: vehicleReg?.toUpperCase(),
-        vehicle_make: vehicleMake,
-        vehicle_model: vehicleModel,
-        vehicle_year: vehicleYear,
-        vehicle_mileage: mileage,
-        claim_limit: effectiveClaimLimit,
-        labour_rate: labourRate,
-        excess_amount: excessAmount,
-        boost_addon: boostAddon,
-        upfront_price: finalAmount,
-        monthly_price: Math.round(finalAmount / durationMonths * 100) / 100,
-        duration_months: durationMonths,
-        bonus_months: bonusMonths,
-        payment_method: 'external',
-        payment_source: paymentSource,
-        status: 'paid_externally',
-        paid_at: new Date().toISOString(),
-        policy_number: policyNumber,
-        payment_confirmed_by: assigneeId,
-      });
+    const liveQuotePayload = {
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      vehicle_reg: vehicleReg?.toUpperCase(),
+      vehicle_make: vehicleMake,
+      vehicle_model: vehicleModel,
+      vehicle_year: vehicleYear,
+      vehicle_mileage: mileage,
+      claim_limit: effectiveClaimLimit,
+      labour_rate: labourRate,
+      excess_amount: excessAmount,
+      boost_addon: boostAddon,
+      upfront_price: finalAmount,
+      monthly_price: Math.round(finalAmount / durationMonths * 100) / 100,
+      duration_months: durationMonths,
+      bonus_months: bonusMonths,
+      payment_method: liveQuoteId ? paymentSource : 'external',
+      payment_source: paymentSource,
+      status: 'paid_externally',
+      paid_at: new Date().toISOString(),
+      payment_confirmed_at: new Date().toISOString(),
+      policy_number: policyNumber,
+      payment_confirmed_by: assigneeId,
+      additional_notes: body.additionalNotes || null,
+    };
 
-    if (quoteError) {
-      logStep("Warning: Failed to create live_quotes record", quoteError);
+    if (liveQuoteId) {
+      const { error: quoteUpdateError } = await supabase
+        .from('live_quotes')
+        .update(liveQuotePayload)
+        .eq('id', liveQuoteId);
+
+      if (quoteUpdateError) {
+        logStep("Warning: Failed to update existing live quote", quoteUpdateError);
+      } else {
+        logStep("Existing live quote finalized after manual confirmation", { liveQuoteId });
+      }
+    } else {
+      const { error: quoteError } = await supabase
+        .from('live_quotes')
+        .insert(liveQuotePayload);
+
+      if (quoteError) {
+        logStep("Warning: Failed to create live_quotes record", quoteError);
+      }
     }
 
     // Send to Warranties 2000 if requested

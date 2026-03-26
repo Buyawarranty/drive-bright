@@ -345,6 +345,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
 
       const { data, error } = await supabase.functions.invoke('confirm-external-payment', {
         body: {
+          liveQuoteId: order.id,
           customerEmail: customerEmail,
           customerName: customerName,
           customerFirstName: firstName,
@@ -367,6 +368,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
           paymentSource: order.payment_method || order.payment_source || 'external',
           assigneeId: selectedAgentId || null,
           sendWelcomeEmail: true,
+          additionalNotes: notes,
           address: {
             buildingNumber: buildingNumber,
             street: street,
@@ -380,12 +382,29 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      // Update live_quotes with the policy number
+      // Update live_quotes with the final confirmation details
       const policyNumber = data?.warrantyReference || data?.warrantyNumber || data?.policyNumber;
       if (policyNumber) {
         await supabase
           .from('live_quotes')
           .update({ 
+            customer_name: customerName,
+            customer_email: customerEmail,
+            customer_phone: customerPhone,
+            vehicle_reg: vehicleReg.toUpperCase(),
+            vehicle_make: vehicleMake,
+            vehicle_model: vehicleModel,
+            vehicle_mileage: vehicleMileage,
+            vehicle_year: vehicleYear,
+            claim_limit: boostAddon ? claimLimit + 1000 : claimLimit,
+            labour_rate: labourRate,
+            excess_amount: excessAmount,
+            boost_addon: boostAddon,
+            breakdown_included: breakdownIncluded,
+            rental_included: rentalIncluded,
+            additional_notes: notes,
+            status: 'paid_externally',
+            payment_confirmed_at: new Date().toISOString(),
             policy_number: policyNumber,
             payment_confirmed_by: selectedAgentId 
               ? adminUsers.find(a => a.id === selectedAgentId)?.user_id || null 

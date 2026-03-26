@@ -436,40 +436,68 @@ serve(async (req) => {
           protectionAddOns, claimLimit, labourRate, seasonalBonusMonths, startDate 
         });
 
-        // Call handle-successful-payment
-        const { data: processData, error: processError } = await supabaseClient.functions.invoke('handle-successful-payment', {
-          body: {
-            planId: metadata.plan_id || metadata.plan_type,
-            paymentType: metadata.payment_type,
-            userEmail: vehicleData.email,
-            userId: metadata.user_id || null,
-            stripeSessionId: paymentIntent.id, // Use PaymentIntent ID as session ID
-            vehicleData: vehicleData,
-            customerData: customerData,
-            protectionAddOns: protectionAddOns,
-            claimLimit: claimLimit,
-            labourRate: labourRate,
-            seasonalBonusMonths: seasonalBonusMonths,
-            startDate: startDate,
-            metadata: metadata,
-            skipEmail: false
+        if (metadata.source === 'live_quote' && metadata.quote_id) {
+          logStep("Embedded live quote payment — deferring warranty creation to sales agent", {
+            quoteId: metadata.quote_id,
+            paymentIntentId: paymentIntent.id,
+          });
+
+          const { error: quoteUpdateError } = await supabaseClient
+            .from('live_quotes')
+            .update({
+              status: 'paid',
+              paid_at: new Date().toISOString(),
+              payment_method: 'stripe',
+            })
+            .eq('id', metadata.quote_id);
+
+          if (quoteUpdateError) {
+            logStep("Error updating embedded live quote status", quoteUpdateError);
+            throw new Error(`Failed to update live quote: ${quoteUpdateError.message}`);
           }
-        });
 
-        if (processError) {
-          logStep("Error processing embedded payment via handle-successful-payment", processError);
-          throw new Error(`Embedded payment processing failed: ${processError.message}`);
+          await fireServerSideConversion(
+            { id: paymentIntent.id, metadata },
+            vehicleData.email,
+            parseFloat(metadata.final_amount || '0'),
+            ''
+          );
+        } else {
+          // Call handle-successful-payment
+          const { data: processData, error: processError } = await supabaseClient.functions.invoke('handle-successful-payment', {
+            body: {
+              planId: metadata.plan_id || metadata.plan_type,
+              paymentType: metadata.payment_type,
+              userEmail: vehicleData.email,
+              userId: metadata.user_id || null,
+              stripeSessionId: paymentIntent.id, // Use PaymentIntent ID as session ID
+              vehicleData: vehicleData,
+              customerData: customerData,
+              protectionAddOns: protectionAddOns,
+              claimLimit: claimLimit,
+              labourRate: labourRate,
+              seasonalBonusMonths: seasonalBonusMonths,
+              startDate: startDate,
+              metadata: metadata,
+              skipEmail: false
+            }
+          });
+
+          if (processError) {
+            logStep("Error processing embedded payment via handle-successful-payment", processError);
+            throw new Error(`Embedded payment processing failed: ${processError.message}`);
+          }
+
+          logStep("Embedded payment processed successfully via webhook", processData);
+          
+          // Fire server-side Google Ads conversion
+          await fireServerSideConversion(
+            { id: paymentIntent.id, metadata }, // Mock session object structure
+            vehicleData.email,
+            parseFloat(metadata.final_amount || '0'),
+            processData?.warrantyNumber || processData?.policyNumber || ''
+          );
         }
-
-        logStep("Embedded payment processed successfully via webhook", processData);
-        
-        // Fire server-side Google Ads conversion
-        await fireServerSideConversion(
-          { id: paymentIntent.id, metadata }, // Mock session object structure
-          vehicleData.email,
-          parseFloat(metadata.final_amount || '0'),
-          processData?.warrantyNumber || processData?.policyNumber || ''
-        );
       } else {
         logStep("PaymentIntent succeeded but not from embedded checkout, skipping", { 
           paymentIntentId: paymentIntent.id 
