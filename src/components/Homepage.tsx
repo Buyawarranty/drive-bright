@@ -702,8 +702,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <p className="text-base md:text-lg text-brand-dark-text leading-relaxed">
                   No hidden fees. No confusing jargon. Just clear cover options tailored to your vehicle and budget.
                 </p>
-                  No hidden fees. No confusing jargon. Just clear cover options tailored to your vehicle and budget.
-                </p>
                 
                 <div className="space-y-3">
                   <div className="flex items-center">
