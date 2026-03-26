@@ -381,7 +381,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       if (data?.error) throw new Error(data.error);
 
       // Update live_quotes with the policy number
-      const policyNumber = data?.warrantyNumber || data?.policyNumber;
+      const policyNumber = data?.warrantyReference || data?.warrantyNumber || data?.policyNumber;
       if (policyNumber) {
         await supabase
           .from('live_quotes')
