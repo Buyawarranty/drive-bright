@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import {
   CheckCircle2, XCircle, AlertTriangle, Upload, RefreshCw, Zap,
-  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon
+  Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon, Users
 } from 'lucide-react';
 
 // Required secrets for the upload-google-conversions edge function
@@ -33,6 +33,7 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   const [salesSearch, setSalesSearch] = useState('');
   const [salesFilter, setSalesFilter] = useState<'all' | 'with_gclid' | 'no_gclid' | 'uploaded' | 'pending'>('all');
   const [salesPage, setSalesPage] = useState(0);
+  const [leadsDateRange, setLeadsDateRange] = useState<string>('last7');
   const SALES_PER_PAGE = 25;
 
 
