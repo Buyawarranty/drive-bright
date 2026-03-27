@@ -73,7 +73,7 @@ const DiscountsOffers: React.FC = () => {
     // Store the selected code so the homepage can auto-apply it
     localStorage.setItem('baw_promo_code', code.code);
     toast.success(`"${code.code}" selected! Redirecting to get your quote...`, {
-      description: formatDiscountShort(code.type, code.value),
+      description: formatDiscountShort(code.type, code.value, code.code),
     });
     setShowSelectModal(false);
     setTimeout(() => {
