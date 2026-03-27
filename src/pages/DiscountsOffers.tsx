@@ -247,14 +247,25 @@ const DiscountsOffers: React.FC = () => {
                 </div>
               </div>
 
-              <Button
-                onClick={navigateToQuoteForm}
-                size="lg"
-                className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
-              >
-                Get Your Warranty Quote
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={navigateToQuoteForm}
+                  size="lg"
+                  className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
+                >
+                  Get Your Warranty Quote
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button
+                  onClick={scrollToCodes}
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-[#1e40af] text-[#1e40af] hover:bg-[#1e40af] hover:text-white text-lg px-8 py-6"
+                >
+                  See Promo Codes
+                  <ChevronDown className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             <div className="relative">
