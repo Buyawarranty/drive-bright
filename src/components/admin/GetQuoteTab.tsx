@@ -1547,7 +1547,10 @@ Questions? Call 0330 229 5040`;
         vehicle_transmission: vehicleData.transmission || null,
         mileage: finalMileage || null,
         plan_type: 'Platinum',
-        payment_type: paymentType,
+        payment_type: paymentType === '12months' ? 'yearly' 
+          : paymentType === '24months' ? '2-Year'
+          : paymentType === '36months' ? '3-Year'
+          : paymentType,
         status: 'Active',
         warranty_reference_number: finalWarrantyReference,
         voluntary_excess: excessAmount,
