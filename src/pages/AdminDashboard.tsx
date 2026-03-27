@@ -341,35 +341,16 @@ const AdminDashboard = () => {
     );
   }
 
-  // Use ViewAs context to get effective role/permissions for rendering
-  const ViewAwareContent = () => {
-    const { effectiveRole, effectivePermissions, isImpersonating } = useViewAs();
-    const activeRole = isImpersonating ? effectiveRole : userRole;
-    const activePerms = isImpersonating ? effectivePermissions : userPermissions;
-    return renderContentInner(activeRole, activePerms);
-  };
-
-  const renderContentInner = (activeRole: string | null, activePerms: Record<string, boolean> | null) => {
-    return renderContent(activeRole, activePerms);
-  };
-
-  const renderContent = (activeRoleOverride?: string | null, activePermsOverride?: Record<string, boolean> | null) => {
-    const effectiveUserRole = activeRoleOverride ?? userRole;
-    const effectiveUserPermissions = activePermsOverride ?? userPermissions;
+  const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
       case 'customers':
-        // Check if user has "own customers only" permission explicitly set
-        const hasOwnOnlyPermission = userPermissions && userPermissions['tab_customers_own-only'] === true;
-        const hasFullAccessPermission = userPermissions && userPermissions['tab_customers_own-only'] === false;
-        const isNonAdminRole = userRole !== 'admin' && userRole !== 'super_admin';
+        const hasOwnOnlyPermission = effectiveUserPermissions && effectiveUserPermissions['tab_customers_own-only'] === true;
+        const hasFullAccessPermission = effectiveUserPermissions && effectiveUserPermissions['tab_customers_own-only'] === false;
         
-        // Priority: explicit permission setting > role-based default
-        // If user explicitly has own-only = false, they get full access regardless of role
-        // If user has own-only = true OR (is sales role AND no explicit permission set), show restricted view
         if (hasFullAccessPermission) {
           return <CustomersTab />;
         }
-        if (hasOwnOnlyPermission || (userRole === 'sales' && !hasFullAccessPermission)) {
+        if (hasOwnOnlyPermission || (effectiveUserRole === 'sales' && !hasFullAccessPermission)) {
           return <SalesCustomerManagement />;
         }
         return <CustomersTab />;
