@@ -68,11 +68,17 @@ const DiscountsOffers: React.FC = () => {
     return `£${value} OFF`;
   };
 
-  const structuredData = {
+  const formatDiscountShort = (type: string, value: number) => {
+    if (type === 'percentage') return `${value}% off your warranty`;
+    return `£${value} off your warranty`;
+  };
+
+  // OfferCatalog schema
+  const offerCatalogSchema = {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
-    "name": "Buy A Warranty Discount Codes & Offers",
-    "description": "Active discount codes and special offers for vehicle warranty plans from Buy A Warranty UK.",
+    "name": "Buy A Warranty Discount Codes & Offers 2026",
+    "description": "Active discount codes, promo codes and special offers for vehicle warranty plans from Buy A Warranty UK. Save on car, van, EV and motorbike warranties.",
     "url": "https://buyawarranty.co.uk/discounts-offers/",
     "provider": {
       "@type": "Organization",
@@ -85,24 +91,107 @@ const DiscountsOffers: React.FC = () => {
       "name": `${code.code} - ${formatDiscount(code.type, code.value)}`,
       "description": code.public_description || `Save ${formatDiscount(code.type, code.value)} on your vehicle warranty`,
       "validThrough": code.valid_to,
+      "priceCurrency": "GBP",
       "eligibleRegion": { "@type": "Country", "name": "GB" }
     }))
+  };
+
+  // LocalBusiness schema
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Buy A Warranty",
+    "alternateName": "Buyawarranty",
+    "url": "https://buyawarranty.co.uk",
+    "logo": "https://buyawarranty.co.uk/lovable-uploads/buyawarranty-logo.webp",
+    "image": "https://buyawarranty.co.uk/lovable-uploads/buyawarranty-logo.webp",
+    "description": "UK's trusted vehicle warranty provider offering comprehensive mechanical and electrical protection for cars, vans, EVs and motorbikes. Discount codes and special offers available.",
+    "telephone": "+443302295040",
+    "email": "support@buyawarranty.co.uk",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Warranty House, 62 Berkhamsted Ave",
+      "addressLocality": "Wembley",
+      "addressRegion": "Greater London",
+      "postalCode": "HA9 6DT",
+      "addressCountry": "GB"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "51.5565",
+      "longitude": "-0.2958"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "10:00",
+        "closes": "16:00"
+      }
+    ],
+    "priceRange": "From £19/month",
+    "areaServed": {
+      "@type": "Country",
+      "name": "United Kingdom"
+    },
+    "sameAs": [
+      "https://www.trustpilot.com/review/buyawarranty.co.uk"
+    ]
+  };
+
+  // WebPage schema for AI/search discoverability
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Buy A Warranty Discount Codes & Promo Offers 2026",
+    "description": "Find active Buy A Warranty discount codes and promo offers. Save on car, van, EV and motorbike warranty plans. Codes updated regularly.",
+    "url": "https://buyawarranty.co.uk/discounts-offers/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Buy A Warranty",
+      "url": "https://buyawarranty.co.uk"
+    },
+    "about": {
+      "@type": "Thing",
+      "name": "Vehicle Warranty Discount Codes"
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": codes.length,
+      "itemListElement": codes.map((code, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": `${code.code} — ${formatDiscountShort(code.type, code.value)}`
+      }))
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
+        { "@type": "ListItem", "position": 2, "name": "Discounts & Offers", "item": "https://buyawarranty.co.uk/discounts-offers/" }
+      ]
+    }
   };
 
   return (
     <>
       <SEOHead
-        title="Discount Codes & Offers - Save on Vehicle Warranties | Buy A Warranty"
-        description="Find the latest Buy A Warranty discount codes and special offers. Save on car, van, EV and motorbike warranty plans with our active promo codes. Updated regularly."
-        keywords="buy a warranty discount code, car warranty promo code, vehicle warranty offer, buy a warranty voucher, warranty discount UK, car warranty deal, buyawarranty promo code"
+        title="Buy A Warranty Discount Codes & Promo Offers 2026 | Save on Warranties"
+        description="Active Buy A Warranty discount codes for 2026. Save up to £50 on car, van, EV & motorbike warranties. Copy a promo code and apply at checkout — limited availability."
+        keywords="buy a warranty discount code, buyawarranty promo code, car warranty discount code UK, buy a warranty voucher code, vehicle warranty promo code, warranty coupon code, buy a warranty offers, car warranty deal UK, buyawarranty discount, warranty promo code 2026"
         canonical="https://buyawarranty.co.uk/discounts-offers/"
       />
 
       {/* JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offerCatalogSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }} />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 via-white to-orange-50 py-12 md:py-20">
@@ -114,11 +203,11 @@ const DiscountsOffers: React.FC = () => {
               </div>
 
               <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-                Exclusive <span className="text-[#eb4b00]">Discount Codes</span> & Offers
+                Buy A Warranty <span className="text-[#eb4b00]">Discount Codes</span> & Promo Offers
               </h1>
 
               <p className="text-xl text-gray-700">
-                Save on your vehicle warranty with our latest promo codes
+                Save on your vehicle warranty with our latest promo codes — copy, paste & save at checkout.
               </p>
 
               <div className="space-y-3">
@@ -128,7 +217,7 @@ const DiscountsOffers: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">One code per purchase – automatically applied</span>
+                  <span className="text-gray-700">One code per purchase — automatically applied</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
@@ -149,8 +238,9 @@ const DiscountsOffers: React.FC = () => {
             <div className="relative">
               <img
                 src={pandaCarWarranty}
-                alt="Buy A Warranty discount codes and special offers"
+                alt="Buy A Warranty discount codes — save on car, van and EV warranties in the UK"
                 className="w-full h-auto"
+                loading="eager"
               />
             </div>
           </div>
@@ -158,13 +248,13 @@ const DiscountsOffers: React.FC = () => {
       </section>
 
       {/* Active Promo Codes Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white" id="codes">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Active <span className="text-[#1e40af]">Promo Codes</span>
           </h2>
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Grab one of our active codes below and use it at checkout to save on your warranty.
+            Copy a code below and paste it at checkout to save on your warranty.
           </p>
 
           {loading ? (
@@ -182,73 +272,80 @@ const DiscountsOffers: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {codes.map((code) => {
-                const isAlmostGone = code.usage_limit && (code.usage_limit - code.used_count) <= 10;
-                return (
+            <div className="max-w-3xl mx-auto">
+              {/* Promo code table */}
+              <div className="border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                {/* Table header */}
+                <div className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[1fr_1fr_auto] bg-gray-50 border-b border-gray-200 px-4 md:px-6 py-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Code</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 hidden md:block">Offer</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Action</span>
+                </div>
+
+                {/* Code rows */}
+                {codes.map((code, idx) => (
                   <div
                     key={code.id}
-                    className="relative bg-gradient-to-br from-blue-50 to-white border-2 border-dashed border-[#1e40af]/30 rounded-xl p-6 hover:border-[#eb4b00]/50 transition-all hover:shadow-lg group"
+                    className={`grid grid-cols-[1fr_auto] md:grid-cols-[1fr_1fr_auto] items-center px-4 md:px-6 py-4 gap-3 ${
+                      idx < codes.length - 1 ? 'border-b border-gray-100' : ''
+                    } hover:bg-blue-50/40 transition-colors`}
                   >
-                    {/* Discount badge */}
-                    <div className="absolute -top-3 -right-3 bg-[#eb4b00] text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
-                      {formatDiscount(code.type, code.value)}
+                    {/* Code + offer (mobile: stacked) */}
+                    <div className="space-y-1">
+                      <code className="text-lg md:text-xl font-mono font-bold text-[#1e40af] tracking-wider select-all">
+                        {code.code}
+                      </code>
+                      <p className="text-sm text-gray-600 md:hidden">
+                        {formatDiscountShort(code.type, code.value)}
+                      </p>
                     </div>
 
-                    {/* Code display */}
-                    <div className="mb-4 mt-2">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Promo Code</p>
-                      <div className="flex items-center gap-2">
-                        <code className="text-2xl font-mono font-bold text-[#1e40af] tracking-widest">
-                          {code.code}
-                        </code>
-                        <button
-                          onClick={() => copyCode(code.code)}
-                          className="p-2 rounded-lg bg-[#1e40af]/10 hover:bg-[#1e40af]/20 transition-colors"
-                          title="Copy code"
-                        >
-                          {copiedCode === code.code ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Copy className="h-4 w-4 text-[#1e40af]" />
-                          )}
-                        </button>
-                      </div>
+                    {/* Offer description (desktop) */}
+                    <div className="hidden md:block">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                        <Tag className="h-3.5 w-3.5 text-[#eb4b00]" />
+                        {formatDiscountShort(code.type, code.value)}
+                      </span>
                     </div>
 
-                    {/* Description */}
-                    {code.public_description && (
-                      <p className="text-gray-700 text-sm mb-4">{code.public_description}</p>
-                    )}
-
-                    {/* Expiry & scarcity */}
-                    <div className="space-y-2 text-sm text-gray-500">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>Valid until {format(new Date(code.valid_to), 'dd MMM yyyy')}</span>
-                      </div>
-                      {isAlmostGone && (
-                        <div className="flex items-center gap-1.5 text-[#eb4b00] font-semibold">
-                          <Tag className="h-3.5 w-3.5" />
-                          <span>Only {code.usage_limit! - code.used_count} left!</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* CTA */}
-                    <Button
-                      onClick={() => {
-                        copyCode(code.code);
-                        navigateToQuoteForm();
-                      }}
-                      className="w-full mt-4 bg-[#eb4b00] hover:bg-[#d44400] text-white group-hover:shadow-md transition-all"
+                    {/* Copy button */}
+                    <button
+                      onClick={() => copyCode(code.code)}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                        copiedCode === code.code
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-[#1e40af] text-white hover:bg-[#1a3590] shadow-sm hover:shadow-md'
+                      }`}
+                      aria-label={`Copy code ${code.code}`}
                     >
-                      Use Code & Get Quote
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                      {copiedCode === code.code ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          Copy
+                        </>
+                      )}
+                    </button>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+
+              {/* CTA below table */}
+              <div className="text-center mt-8">
+                <Button
+                  onClick={navigateToQuoteForm}
+                  size="lg"
+                  className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
+                >
+                  Get Your Quote & Apply Code
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <p className="text-xs text-gray-400 mt-3">One promo code per transaction. Cannot be combined with other offers.</p>
+              </div>
             </div>
           )}
         </div>
