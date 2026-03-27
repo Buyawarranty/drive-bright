@@ -604,6 +604,7 @@ serve(async (req) => {
               .insert({
                 discount_code_id: discountCodeData.id,
                 customer_email: userEmail,
+                vehicle_reg: (vehicleData?.regNumber || vehicleData?.registration_plate || metadata?.vehicle_reg || '').toUpperCase().replace(/\s/g, '') || null,
                 discount_amount: customerData.discount_amount || 0,
                 order_amount: customerData.final_amount || 0,
                 stripe_session_id: stripeSessionId

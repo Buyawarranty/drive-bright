@@ -1160,7 +1160,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     try {
       const { data, error } = await supabase.functions.invoke('validate-discount-code', {
-        body: { code: promoCodeInput.toUpperCase(), vehicleReg: vehicleData.regNumber }
+        body: { 
+          code: promoCodeInput.toUpperCase(), 
+          vehicleReg: vehicleData.regNumber,
+          customerEmail: customerData.email?.trim().toLowerCase() || undefined
+        }
       });
       
       if (error || !data?.valid) {
