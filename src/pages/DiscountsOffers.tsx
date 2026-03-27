@@ -28,6 +28,8 @@ const DiscountsOffers: React.FC = () => {
   const [codes, setCodes] = useState<PublicDiscountCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showSelectModal, setShowSelectModal] = useState(false);
+  const codesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchCodes = async () => {
