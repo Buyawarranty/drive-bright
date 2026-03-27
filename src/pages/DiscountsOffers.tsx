@@ -90,8 +90,9 @@ const DiscountsOffers: React.FC = () => {
     return `£${value} OFF`;
   };
 
-  const formatDiscountShort = (type: string, value: number) => {
+  const formatDiscountShort = (type: string, value: number, code?: string) => {
     if (type === 'percentage') return `${value}% off your warranty`;
+    if (code === 'BUS') return `£${value} off your warranty (orders over £300)`;
     return `£${value} off your warranty`;
   };
 
@@ -329,7 +330,7 @@ const DiscountsOffers: React.FC = () => {
                         {code.code}
                       </code>
                       <p className="text-sm text-gray-600 md:hidden">
-                        {formatDiscountShort(code.type, code.value)}
+                        {formatDiscountShort(code.type, code.value, code.code)}
                       </p>
                     </div>
 
@@ -337,7 +338,7 @@ const DiscountsOffers: React.FC = () => {
                     <div className="hidden md:block">
                       <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700">
                         <Tag className="h-3.5 w-3.5 text-[#eb4b00]" />
-                        {formatDiscountShort(code.type, code.value)}
+                        {formatDiscountShort(code.type, code.value, code.code)}
                       </span>
                     </div>
 
