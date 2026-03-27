@@ -1527,9 +1527,16 @@ Questions? Call 0330 229 5040`;
       const finalRegNumber = (editableRegNumber || vehicleData.regNumber)?.toUpperCase();
       const finalMileage = editableMileage || vehicleData.mileage;
       
+      // Parse name into first/last for customer record
+      const nameParts = finalName.trim().split(' ');
+      const parsedFirstName = nameParts[0] || '';
+      const parsedLastName = nameParts.slice(1).join(' ') || '';
+      
       // 2. Customer record data with payment confirmation details
       const customerData: Record<string, any> = {
         name: finalName,
+        first_name: parsedFirstName,
+        last_name: parsedLastName,
         email: finalEmail.toLowerCase(),
         phone: finalPhone || null,
         registration_plate: finalRegNumber || null,
@@ -1590,9 +1597,11 @@ Questions? Call 0330 229 5040`;
       }
 
       // 4. Calculate policy dates using warrantyStartDate
-      const startDate = startOfDay(warrantyStartDate);
+      // CRITICAL: Use UTC midnight to avoid BST/GMT timezone offset causing wrong date
+      const startDateLocal = startOfDay(warrantyStartDate);
+      const startDate = new Date(Date.UTC(startDateLocal.getFullYear(), startDateLocal.getMonth(), startDateLocal.getDate()));
       const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + durationMonths);
+      endDate.setUTCMonth(endDate.getUTCMonth() + durationMonths);
       
       // Check if this is a future start date for W2000 scheduling
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
