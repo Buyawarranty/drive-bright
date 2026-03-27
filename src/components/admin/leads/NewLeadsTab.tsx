@@ -721,7 +721,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
-            recoveredLeadsSlot={<LostLeadsSection onRecovered={fetchLeads} compact />}
+            recoveredLeadsSlot={isAdminOrSuperAdmin ? <LostLeadsSection onRecovered={fetchLeads} compact /> : undefined}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
           />
@@ -747,10 +747,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
               )}
               
-              {/* Quote detail issues flagged by customers */}
-              <div className="px-4 pt-3">
-                <QuoteDetailIssuesAlert />
-              </div>
+              {/* Quote detail issues flagged by customers — admin only */}
+              {isAdminOrSuperAdmin && (
+                <div className="px-4 pt-3">
+                  <QuoteDetailIssuesAlert />
+                </div>
+              )}
 
               <LeadsTable
                 leads={pagination.paginatedData}
