@@ -281,7 +281,7 @@ const DiscountsOffers: React.FC = () => {
       </section>
 
       {/* Active Promo Codes Section */}
-      <section className="py-16 bg-white" id="codes">
+      <section className="py-16 bg-white" id="codes" ref={codesRef}>
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Active <span className="text-[#1e40af]">Promo Codes</span>
@@ -370,7 +370,7 @@ const DiscountsOffers: React.FC = () => {
               {/* CTA below table */}
               <div className="text-center mt-8">
                 <Button
-                  onClick={navigateToQuoteForm}
+                  onClick={() => setShowSelectModal(true)}
                   size="lg"
                   className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
                 >
