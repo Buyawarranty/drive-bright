@@ -883,6 +883,59 @@ export default function LiveQuotePage() {
           </div>
         </RadioGroup>
 
+        {/* Promo Code Section */}
+        <div className="mt-4">
+          {!showPromoField && !promoApplied ? (
+            <button
+              type="button"
+              onClick={() => setShowPromoField(true)}
+              className="text-sm text-[#FF6B00] hover:text-[#e56000] font-medium underline underline-offset-2"
+            >
+              Have a promo code?
+            </button>
+          ) : promoApplied && promoDiscount ? (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">
+                  {promoCode.toUpperCase()} — {promoDiscount.label}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemovePromo}
+                className="text-xs text-red-500 hover:text-red-700 font-medium"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                  placeholder="Enter promo code"
+                  className="flex-1 h-11 uppercase font-medium"
+                  disabled={validatingPromo}
+                />
+                <Button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  disabled={validatingPromo || !promoCode.trim()}
+                  variant="outline"
+                  className="h-11 px-5 border-[#FF6B00] text-[#FF6B00] hover:bg-orange-50 font-semibold"
+                >
+                  {validatingPromo ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                </Button>
+              </div>
+              {promoError && (
+                <p className="text-xs text-red-500">{promoError}</p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* CTA Button */}
         <div className="mt-6">
           <Button
