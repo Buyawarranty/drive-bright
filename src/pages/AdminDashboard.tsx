@@ -265,7 +265,7 @@ const AdminDashboard = () => {
       // Parallel fetch: roles and permissions at the same time for speed
       const [rolesResult, permissionsResult] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
-        supabase.from('admin_users').select('permissions').eq('user_id', currentUser.id).maybeSingle()
+        supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle()
       ]);
 
       const { data, error } = rolesResult;
@@ -287,6 +287,10 @@ const AdminDashboard = () => {
       setUserRole(primaryRole);
       setHasAdminAccess(true);
       hasCheckedAccessRef.current = true;
+      
+      if (adminUserData?.id) {
+        setAdminUserId(adminUserData.id);
+      }
       
       if (adminUserData?.permissions) {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
