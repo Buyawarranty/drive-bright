@@ -235,7 +235,8 @@ const App = () => {
                     <Route path="/quote/:token/success" element={<LiveQuotePage />} />
                     <Route path="/warranty-plan/" element={<WarrantyPlan />} />
                     <Route path="/buy-a-used-car-warranty-reliable-warranties/" element={<BuyCarWarranty />} />
-                    <Route path="/discounts-offers/" element={<DiscountsOffers />} />
+                    <Route path="/discount-promo-offers/" element={<DiscountsOffers />} />
+                    <Route path="/discounts-offers/" element={<Navigate to="/discount-promo-offers/" replace />} />
                     <Route path="/van-warranty/" element={<VanWarrantyNew />} />
                     <Route path="/ev-warranty/" element={<EVWarranty />} />
                     <Route path="/motorbike-repair-warranty-uk-warranties/" element={<MotorbikeWarranty />} />
