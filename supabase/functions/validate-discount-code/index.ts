@@ -25,7 +25,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { code, customerEmail, orderAmount } = await req.json();
+    const { code, customerEmail, orderAmount, vehicleReg } = await req.json();
     if (!code) throw new Error("Discount code is required");
 
     logStep("Validating discount code", { code, customerEmail, orderAmount });
@@ -82,7 +82,7 @@ serve(async (req) => {
       });
     }
 
-    // Check if customer has already used this code (if email provided)
+    // Check if customer has already used this code (by email)
     if (customerEmail) {
       const { data: existingUsage } = await supabaseClient
         .from('discount_code_usage')
@@ -96,6 +96,27 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           valid: false,
           error: "You have already used this discount code"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+
+    // Check if vehicle has already used this code (by vehicle reg)
+    if (vehicleReg) {
+      const { data: existingVehicleUsage } = await supabaseClient
+        .from('discount_code_usage')
+        .select('id')
+        .eq('discount_code_id', discountCode.id)
+        .eq('vehicle_reg', vehicleReg.toUpperCase())
+        .single();
+
+      if (existingVehicleUsage) {
+        logStep("Vehicle has already used this discount code", { code, vehicleReg });
+        return new Response(JSON.stringify({
+          valid: false,
+          error: "This discount code has already been used for this vehicle"
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
