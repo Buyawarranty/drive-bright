@@ -36,6 +36,8 @@ interface DiscountCode {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  is_public: boolean;
+  public_description: string | null;
 }
 
 interface DiscountCodeFormData {
