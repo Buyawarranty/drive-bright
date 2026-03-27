@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Tag, Clock, Copy, Check, Shield, Star, Percent } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
-import TrustpilotHeader from '@/components/TrustpilotHeader';
+import TrustpilotMicroComboWidget from '@/components/TrustpilotMicroComboWidget';
 import HomepageFAQ from '@/components/HomepageFAQ';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -109,8 +109,8 @@ const DiscountsOffers: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6">
-              <div className="inline-block">
-                <TrustpilotHeader />
+              <div className="inline-block w-full max-w-xs">
+                <TrustpilotMicroComboWidget />
               </div>
 
               <h1 className="text-3xl md:text-5xl font-bold leading-tight">
