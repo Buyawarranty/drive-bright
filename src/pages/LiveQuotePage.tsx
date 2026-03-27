@@ -70,6 +70,12 @@ export default function LiveQuotePage() {
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<'stripe' | 'bumper' | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'bumper' | 'stripe'>('bumper');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [validatingPromo, setValidatingPromo] = useState(false);
+  const [promoDiscount, setPromoDiscount] = useState<{type: string; value: number; label: string} | null>(null);
+  const [showPromoField, setShowPromoField] = useState(false);
 
   // Customer form state
   const [customerData, setCustomerData] = useState({
@@ -334,6 +340,7 @@ export default function LiveQuotePage() {
         body: { 
           accessToken: token, 
           paymentMethod: method,
+          discountCode: promoApplied ? promoCode.trim().toUpperCase() : undefined,
           customerData: {
             ...customerData,
             fullName: `${customerData.firstName} ${customerData.lastName}`.trim(),
