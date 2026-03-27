@@ -11,6 +11,8 @@ import { Menu } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useUserPresence } from '@/hooks/useUserPresence';
+import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
+import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -118,6 +120,7 @@ const AdminDashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
+  const [adminUserId, setAdminUserId] = useState<string | null>(null);
   const [hasSetInitialTab, setHasSetInitialTab] = useState(!!urlTab);
   const [selectedLeadForQuote, setSelectedLeadForQuote] = useState<LeadForQuote | null>(null);
   const navigate = useNavigate();
@@ -262,7 +265,7 @@ const AdminDashboard = () => {
       // Parallel fetch: roles and permissions at the same time for speed
       const [rolesResult, permissionsResult] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
-        supabase.from('admin_users').select('permissions').eq('user_id', currentUser.id).maybeSingle()
+        supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle()
       ]);
 
       const { data, error } = rolesResult;
@@ -284,6 +287,10 @@ const AdminDashboard = () => {
       setUserRole(primaryRole);
       setHasAdminAccess(true);
       hasCheckedAccessRef.current = true;
+      
+      if (adminUserData?.id) {
+        setAdminUserId(adminUserData.id);
+      }
       
       if (adminUserData?.permissions) {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
@@ -334,21 +341,16 @@ const AdminDashboard = () => {
     );
   }
 
-  const renderContent = () => {
+  const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
       case 'customers':
-        // Check if user has "own customers only" permission explicitly set
-        const hasOwnOnlyPermission = userPermissions && userPermissions['tab_customers_own-only'] === true;
-        const hasFullAccessPermission = userPermissions && userPermissions['tab_customers_own-only'] === false;
-        const isNonAdminRole = userRole !== 'admin' && userRole !== 'super_admin';
+        const hasOwnOnlyPermission = effectiveUserPermissions && effectiveUserPermissions['tab_customers_own-only'] === true;
+        const hasFullAccessPermission = effectiveUserPermissions && effectiveUserPermissions['tab_customers_own-only'] === false;
         
-        // Priority: explicit permission setting > role-based default
-        // If user explicitly has own-only = false, they get full access regardless of role
-        // If user has own-only = true OR (is sales role AND no explicit permission set), show restricted view
         if (hasFullAccessPermission) {
           return <CustomersTab />;
         }
-        if (hasOwnOnlyPermission || (userRole === 'sales' && !hasFullAccessPermission)) {
+        if (hasOwnOnlyPermission || (effectiveUserRole === 'sales' && !hasFullAccessPermission)) {
           return <SalesCustomerManagement />;
         }
         return <CustomersTab />;
@@ -401,7 +403,7 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
       case 'new-leads':
-        if (userRole === 'sales_lead') {
+        if (effectiveUserRole === 'sales_lead') {
           return <SalesLeadDashboard onNavigateToTab={handleTabChange} />;
         }
         return (
@@ -411,7 +413,7 @@ const AdminDashboard = () => {
             onMarkAsRead={markAsRead}
             onMarkAllAsRead={markAllAsRead}
             onNavigateToTab={handleTabChange}
-            userRole={userRole}
+            userRole={effectiveUserRole}
           />
         );
       case 'selling-tips':
@@ -440,26 +442,64 @@ const AdminDashboard = () => {
   };
 
   return (
+    <ViewAsProvider realRole={userRole} realPermissions={userPermissions} realAdminUserId={adminUserId}>
+      <AdminDashboardInner
+        activeTab={activeTab}
+        handleTabChange={handleTabChange}
+        userRole={userRole}
+        userPermissions={userPermissions}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        navigateToQuoteForm={() => {
+          navigate('/');
+          setTimeout(() => {
+            const element = document.getElementById('quote-form');
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+        renderContent={renderContent}
+        navigate={navigate}
+      />
+    </ViewAsProvider>
+  );
+};
+
+/** Inner component that reads ViewAs context */
+const AdminDashboardInner: React.FC<{
+  activeTab: string;
+  handleTabChange: (tab: string) => void;
+  userRole: string | null;
+  userPermissions: Record<string, boolean> | null;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
+  navigateToQuoteForm: () => void;
+  renderContent: (role: string | null, perms: Record<string, boolean> | null) => React.ReactNode;
+  navigate: (path: string, options?: any) => void;
+}> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate }) => {
+  const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
+  const isSuperAdmin = userRole === 'super_admin';
+
+  // Use effective (impersonated) role for sidebar and content
+  const displayRole = isImpersonating ? effectiveRole : userRole;
+  const displayPermissions = isImpersonating ? effectivePermissions : userPermissions;
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <SEOHead 
         title="Admin Dashboard | BuyAWarranty Management"
-        description="Administrative dashboard for managing warranties, customers, and business operations. Secure access for authorized personnel only."
-        keywords="admin, dashboard, warranty management, customer management"
+        description="Administrative dashboard for managing warranties, customers, and business operations."
+        keywords="admin, dashboard, warranty management"
       />
       
-      {/* Header with same navigation as homepage */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* First line - Standard navigation */}
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-80 transition-opacity">
                 <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" />
               </Link>
             </div>
             
-            {/* Navigation - Hidden on mobile, visible on lg+ */}
             <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
               <Link to="/what-is-covered/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">What's Covered</Link>
               <Link to="/make-a-claim/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">Make a Claim</Link>
@@ -467,8 +507,10 @@ const AdminDashboard = () => {
               <Link to="/contact-us/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">Contact Us</Link>
             </nav>
 
-            {/* Desktop CTA Buttons - Show on desktop */}
             <div className="hidden lg:flex items-center space-x-3">
+              {/* View As dropdown - super_admin only */}
+              {isSuperAdmin && <ViewAsDropdown />}
+              
               <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
                 <Button 
                   variant="outline" 
@@ -487,121 +529,58 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
             <div className="lg:hidden flex items-center space-x-2">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-2"
-                  >
+                  <Button variant="ghost" size="sm" className="p-2">
                     <Menu className="h-8 w-8" />
                   </Button>
                 </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col h-full">
-                  {/* Header with logo */}
-                  <div className="flex items-center justify-between pb-6">
-                    <Link to="/" className="hover:opacity-80 transition-opacity">
-                      <img 
-                        src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" 
-                        alt="Buy a Warranty" 
-                        className="h-8 w-auto"
-                      />
-                    </Link>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between pb-6">
+                      <Link to="/" className="hover:opacity-80 transition-opacity">
+                        <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-8 w-auto" />
+                      </Link>
+                    </div>
+                    <nav className="flex flex-col space-y-6 flex-1">
+                      <Link to="/what-is-covered/" className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200" onClick={() => setIsMobileMenuOpen(false)}>What's Covered</Link>
+                      <Link to="/make-a-claim/" className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200" onClick={() => setIsMobileMenuOpen(false)}>Make a Claim</Link>
+                      <Link to="/faq/" className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200" onClick={() => setIsMobileMenuOpen(false)}>FAQs</Link>
+                      <Link to="/contact-us" className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+                      <Link to="/customer-dashboard" className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200" onClick={() => setIsMobileMenuOpen(false)}>Customer Dashboard</Link>
+                      <span className="text-orange-500 font-semibold text-sm py-2 border-b border-gray-200">Admin Dashboard</span>
+                    </nav>
+                    <div className="space-y-4 pt-6 mt-auto">
+                      <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3" onClick={() => setIsMobileMenuOpen(false)}>WhatsApp Us</Button>
+                      </a>
+                      <Button className="w-full bg-orange-500 text-white hover:bg-orange-600 text-lg py-3" onClick={() => { setIsMobileMenuOpen(false); navigateToQuoteForm(); }}>Get my quote</Button>
+                      <button onClick={async () => { await supabase.auth.signOut(); navigate('/auth'); setIsMobileMenuOpen(false); }} className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors text-lg">Sign Out</button>
+                    </div>
                   </div>
-
-                  {/* Navigation Links */}
-                  <nav className="flex flex-col space-y-6 flex-1">
-                    <Link 
-                      to="/what-is-covered/"
-                      className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      What's Covered
-                    </Link>
-                    <Link 
-                      to="/make-a-claim/" 
-                      className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Make a Claim
-                    </Link>
-                    <Link 
-                      to="/faq/" 
-                      className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                       FAQs
-                    </Link>
-                    <Link 
-                      to="/contact-us" 
-                      className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Contact Us
-                    </Link>
-                    <Link 
-                      to="/customer-dashboard" 
-                      className="text-gray-700 hover:text-gray-900 font-medium text-sm py-2 border-b border-gray-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Customer Dashboard
-                    </Link>
-                    <span className="text-orange-500 font-semibold text-sm py-2 border-b border-gray-200">
-                      Admin Dashboard
-                    </span>
-                  </nav>
-
-                  {/* CTA Buttons */}
-                  <div className="space-y-4 pt-6 mt-auto">
-                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
-                      <Button 
-                        variant="outline" 
-                        className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        WhatsApp Us
-                      </Button>
-                    </a>
-                    <Button 
-                      className="w-full bg-orange-500 text-white hover:bg-orange-600 text-lg py-3"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        navigateToQuoteForm();
-                      }}
-                    >
-                      Get my quote
-                    </Button>
-                    <button
-                      onClick={async () => {
-                        await supabase.auth.signOut();
-                        navigate('/auth');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors text-lg"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
-          
         </div>
       </header>
+
+      {/* Impersonation banner */}
+      {isImpersonating && (
+        <div className="bg-amber-500 text-white text-center py-1.5 text-sm font-medium shadow-md z-40">
+          👁️ Viewing dashboard as <strong>{viewAsAgent?.firstName} {viewAsAgent?.lastName}</strong> ({effectiveRole?.replace('_', ' ')}) — This is read-only simulation mode
+        </div>
+      )}
       
       <div className="flex-1 flex flex-col lg:flex-row">
-        <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={userRole} userPermissions={userPermissions} />
+        <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
         <div className="flex-1 lg:ml-64 overflow-hidden">
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             <TabErrorBoundary onRetry={() => window.location.reload()}>
               <Suspense fallback={<TabFallback />}>
-                {renderContent()}
+                {renderContent(displayRole, displayPermissions)}
               </Suspense>
             </TabErrorBoundary>
           </main>
