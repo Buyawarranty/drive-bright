@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Tag, Clock, Copy, Check, Shield, Star, Percent } from 'lucide-react';
+import { ArrowRight, Tag, Clock, Copy, Check, Shield, Star, Percent, ChevronDown, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import TrustpilotMicroComboWidget from '@/components/TrustpilotMicroComboWidget';
