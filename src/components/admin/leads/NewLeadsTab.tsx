@@ -721,7 +721,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
-            recoveredLeadsSlot={isAdminOrSuperAdmin ? <LostLeadsSection onRecovered={fetchLeads} compact /> : undefined}
+            recoveredLeadsSlot={isDigitalAccess ? <LostLeadsSection onRecovered={fetchLeads} compact /> : undefined}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
           />
@@ -748,7 +748,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               )}
               
               {/* Quote detail issues flagged by customers — admin only */}
-              {isAdminOrSuperAdmin && (
+              {isDigitalAccess && (
                 <div className="px-4 pt-3">
                   <QuoteDetailIssuesAlert />
                 </div>
