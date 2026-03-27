@@ -1607,12 +1607,18 @@ Questions? Call 0330 229 5040`;
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
       // 5. Create or update policy record with payment confirmation metadata
+      // Convert paymentType ID to human-readable label for consistency
+      const paymentTypeLabel = paymentType === '12months' ? 'yearly' 
+        : paymentType === '24months' ? '2-Year'
+        : paymentType === '36months' ? '3-Year'
+        : paymentType;
+      
       const policyData: Record<string, any> = {
         customer_id: customerId,
         email: finalEmail.toLowerCase(),
         customer_full_name: finalName,
-        plan_type: 'platinum',
-        payment_type: paymentType,
+        plan_type: 'Platinum',
+        payment_type: paymentTypeLabel,
         policy_number: existingPolicyRecord?.policy_number || finalWarrantyReference,
         warranty_number: finalWarrantyReference,
         policy_start_date: startDate.toISOString(),
@@ -1620,6 +1626,7 @@ Questions? Call 0330 229 5040`;
         status: isFutureStartDate ? 'scheduled' : 'active',
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
+        labour_rate: labourRate,
         payment_amount: confirmedAmount,
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
