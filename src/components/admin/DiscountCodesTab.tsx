@@ -989,16 +989,21 @@ export function DiscountCodesTab() {
                           />
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold">{code.code}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyCode(code.code)}
-                              className="h-6 w-6 p-0"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-semibold">{code.code}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyCode(code.code)}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            {code.code === 'BUS' && (
+                              <span className="text-xs text-amber-600 font-medium">Min. order £300</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>

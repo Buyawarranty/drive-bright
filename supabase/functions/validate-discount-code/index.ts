@@ -124,6 +124,18 @@ serve(async (req) => {
       }
     }
 
+    // Check minimum order requirement for specific codes
+    if (discountCode.code === 'BUS' && orderAmount < 300) {
+      logStep("Order below minimum for BUS code", { code, orderAmount, minimumRequired: 300 });
+      return new Response(JSON.stringify({
+        valid: false,
+        error: "The BUS code is only applicable to orders over £300"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // Calculate discount amount with minimum price floor (£1 minimum for Stripe)
     const MINIMUM_FINAL_AMOUNT = 1; // £1 minimum - Stripe requires at least £0.50 GBP
     
