@@ -362,6 +362,46 @@ export default function LiveQuotePage() {
     }
   };
 
+  const handleApplyPromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) return;
+    setValidatingPromo(true);
+    setPromoError('');
+    try {
+      const orderAmount = quote?.pricing.upfrontPrice || 0;
+      const { data, error: fnError } = await supabase.functions.invoke('validate-discount-code', {
+        body: { code, orderAmount }
+      });
+      if (fnError) throw fnError;
+      if (data?.valid) {
+        setPromoApplied(true);
+        setPromoDiscount({
+          type: data.discount_type,
+          value: data.discount_value,
+          label: data.discount_type === 'percentage' ? `${data.discount_value}% off` : `£${data.discount_value} off`
+        });
+        toast.success(`Promo code applied: ${data.discount_type === 'percentage' ? data.discount_value + '% off' : '£' + data.discount_value + ' off'}`);
+      } else {
+        setPromoError(data?.error || 'Invalid promo code');
+        setPromoApplied(false);
+        setPromoDiscount(null);
+      }
+    } catch (err: any) {
+      setPromoError('Unable to validate code');
+      setPromoApplied(false);
+      setPromoDiscount(null);
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode('');
+    setPromoApplied(false);
+    setPromoError('');
+    setPromoDiscount(null);
+  };
+
   // Validation patterns (same as validateForm)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?1\d{3}|\(?01\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?2\d{2}|\(?02\d{2}\)?)\s?\d{3}\s?\d{4}$/;
