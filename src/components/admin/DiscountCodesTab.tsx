@@ -36,6 +36,8 @@ interface DiscountCode {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  is_public: boolean;
+  public_description: string | null;
 }
 
 interface DiscountCodeFormData {
@@ -965,13 +967,14 @@ export function DiscountCodesTab() {
                     <TableHead>Valid Until</TableHead>
                     <TableHead>Usage</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Public</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCodes.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                         No discount codes found matching your filters
                       </TableCell>
                     </TableRow>
@@ -1022,6 +1025,21 @@ export function DiscountCodesTab() {
                           </div>
                         </TableCell>
                         <TableCell>{getStatusBadge(code)}</TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={code.is_public || false}
+                            onCheckedChange={async (checked) => {
+                              const { error } = await supabase
+                                .from('discount_codes')
+                                .update({ is_public: checked } as any)
+                                .eq('id', code.id);
+                              if (!error) {
+                                setDiscountCodes(prev => prev.map(c => c.id === code.id ? { ...c, is_public: checked } : c));
+                                toast({ title: checked ? "Code is now public" : "Code hidden from public page" });
+                              }
+                            }}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <Button

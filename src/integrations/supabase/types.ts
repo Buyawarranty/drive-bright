@@ -2528,7 +2528,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_public: boolean
           is_referral_code: boolean | null
+          public_description: string | null
           referrer_email: string | null
           stripe_coupon_id: string | null
           stripe_promo_code_id: string | null
@@ -2551,7 +2553,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_public?: boolean
           is_referral_code?: boolean | null
+          public_description?: string | null
           referrer_email?: string | null
           stripe_coupon_id?: string | null
           stripe_promo_code_id?: string | null
@@ -2574,7 +2578,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_public?: boolean
           is_referral_code?: boolean | null
+          public_description?: string | null
           referrer_email?: string | null
           stripe_coupon_id?: string | null
           stripe_promo_code_id?: string | null
