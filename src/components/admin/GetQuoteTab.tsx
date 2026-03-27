@@ -1659,6 +1659,17 @@ Questions? Call 0330 229 5040`;
 
       let policyId: string;
       
+      console.log('[CONFIRM-EXTERNAL] Policy data being saved:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        warrantyStartDate: warrantyStartDate.toISOString(),
+        paymentType: policyData.payment_type,
+        labourRate: policyData.labour_rate,
+        claimLimit: policyData.claim_limit,
+        customerName: finalName,
+        email: finalEmail,
+      });
+      
       if (existingPolicyRecord) {
         // Update existing policy instead of creating duplicate
         const { error: policyUpdateError } = await supabase
