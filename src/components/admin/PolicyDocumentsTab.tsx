@@ -345,6 +345,59 @@ export const PolicyDocumentsTab: React.FC = () => {
     setTimeout(() => { printWindow.print(); }, 250);
   };
 
+  const handlePrintBrotherLabel = () => {
+    if (!selectedCustomer) return;
+    const addr = formatAddress();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow pop-ups to print the label');
+      return;
+    }
+
+    const lines = [selectedCustomer.name, ...addr].filter(Boolean);
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Brother Label - ${selectedCustomer.name}</title>
+          <style>
+            @page { size: 90mm 29mm; margin: 0; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+              width: 90mm;
+              height: 29mm;
+              display: flex;
+              align-items: center;
+              background: white;
+              overflow: hidden;
+            }
+            .label {
+              padding: 1.5mm 3mm;
+              font-size: 7pt;
+              line-height: 1.35;
+              font-weight: 600;
+              color: #000;
+              text-align: left;
+              width: 100%;
+            }
+            .label p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          </style>
+        </head>
+        <body>
+          <div class="label">
+            ${lines.map(l => `<p>${l}</p>`).join('')}
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); }, 250);
+  };
+
   const logLetterToPostedLog = async (type: 'letter' | 'label') => {
     if (!selectedCustomer) return;
     try {
@@ -580,7 +633,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => { handlePrintLabel(); logLetterToPostedLog('label'); }} className="gap-1 bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300">
                   <Tag className="h-3.5 w-3.5" />
-                  🏷️ Print Envelope Label
+                  🏷️ Envelope Label
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => { handlePrintBrotherLabel(); logLetterToPostedLog('label'); }} className="gap-1 bg-purple-100 text-purple-900 hover:bg-purple-200 border border-purple-300">
+                  <Tag className="h-3.5 w-3.5" />
+                  🖨️ Brother QL Label
                 </Button>
               </div>
             </CardHeader>

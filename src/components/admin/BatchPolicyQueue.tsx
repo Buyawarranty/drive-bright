@@ -202,6 +202,32 @@ export const BatchPolicyQueue: React.FC = () => {
     logBatchAction('label');
   };
 
+  // Batch print Brother QL labels (29mm x 90mm, one per page)
+  const handleBatchPrintBrotherLabels = () => {
+    if (queue.length === 0) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) { alert('Allow pop-ups'); return; }
+
+    const labels = queue.map(c => {
+      const lines = [c.name, ...formatAddress(c)].filter(Boolean);
+      return `<div class="label">${lines.map(l => `<p>${l}</p>`).join('')}</div>`;
+    });
+
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Brother QL Labels</title><style>
+      @page { size: 90mm 29mm; margin: 0; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Segoe UI', Arial, sans-serif; }
+      .label { width: 90mm; height: 29mm; padding: 1.5mm 3mm; display: flex; flex-direction: column; justify-content: center; font-size: 7pt; line-height: 1.35; font-weight: 600; page-break-after: always; overflow: hidden; }
+      .label:last-child { page-break-after: auto; }
+      .label p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    </style></head><body>${labels.join('')}</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 300);
+
+    logBatchAction('label');
+  };
+
   // Batch print letters
   const handleBatchPrintLetters = () => {
     if (queue.length === 0) return;
@@ -377,7 +403,11 @@ export const BatchPolicyQueue: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button onClick={handleBatchPrintLabels} variant="secondary" className="gap-2 bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300">
               <Tag className="h-4 w-4" />
-              🏷️ Print All Labels ({queue.length})
+              🏷️ Envelope Labels ({queue.length})
+            </Button>
+            <Button onClick={handleBatchPrintBrotherLabels} variant="secondary" className="gap-2 bg-purple-100 text-purple-900 hover:bg-purple-200 border border-purple-300">
+              <Tag className="h-4 w-4" />
+              🖨️ Brother QL Labels ({queue.length})
             </Button>
             <Button onClick={handleBatchPrintLetters} className="gap-2">
               <FileText className="h-4 w-4" />
