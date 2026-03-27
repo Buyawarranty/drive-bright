@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import {
   DndContext,
   closestCenter,
@@ -414,6 +417,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     setIsOpen(false);
   };
 
+  const [jumpOpen, setJumpOpen] = useState(false);
+  const sortedTabs = useMemo(() => [...tabs].sort((a, b) => a.label.localeCompare(b.label)), [tabs]);
+  const activeLabel = tabs.find(t => t.id === activeTab)?.label || 'Select tab...';
+
   return (
     <>
       {/* Mobile menu button */}
@@ -443,16 +450,42 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
             <p className="text-sm text-gray-600">Manage your warranty business</p>
           </div>
-          {/* Quick jump dropdown */}
-          <select
-            value={activeTab}
-            onChange={(e) => handleTabClick(e.target.value)}
-            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-          >
-            {tabs.map((tab) => (
-              <option key={tab.id} value={tab.id}>{tab.label}</option>
-            ))}
-          </select>
+          {/* Searchable quick-jump dropdown */}
+          <Popover open={jumpOpen} onOpenChange={setJumpOpen}>
+            <PopoverTrigger asChild>
+              <button
+                role="combobox"
+                aria-expanded={jumpOpen}
+                className="w-full flex items-center justify-between text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              >
+                <span className="truncate">{activeLabel}</span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[232px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search tabs..." />
+                <CommandList>
+                  <CommandEmpty>No tab found.</CommandEmpty>
+                  <CommandGroup>
+                    {sortedTabs.map((tab) => (
+                      <CommandItem
+                        key={tab.id}
+                        value={tab.label}
+                        onSelect={() => {
+                          handleTabClick(tab.id);
+                          setJumpOpen(false);
+                        }}
+                      >
+                        <Check className={cn("mr-2 h-4 w-4", activeTab === tab.id ? "opacity-100" : "opacity-0")} />
+                        {tab.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         
         <DndContext
