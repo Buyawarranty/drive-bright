@@ -403,7 +403,7 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
       case 'new-leads':
-        if (userRole === 'sales_lead') {
+        if (effectiveUserRole === 'sales_lead') {
           return <SalesLeadDashboard onNavigateToTab={handleTabChange} />;
         }
         return (
@@ -413,7 +413,7 @@ const AdminDashboard = () => {
             onMarkAsRead={markAsRead}
             onMarkAllAsRead={markAllAsRead}
             onNavigateToTab={handleTabChange}
-            userRole={userRole}
+            userRole={effectiveUserRole}
           />
         );
       case 'selling-tips':
