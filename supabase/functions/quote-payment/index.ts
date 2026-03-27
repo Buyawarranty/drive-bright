@@ -216,7 +216,23 @@ serve(async (req) => {
         session_id: '{CHECKOUT_SESSION_ID}'
       });
 
-      const session = await stripe.checkout.sessions.create({
+      // Look up Stripe coupon if discount code provided
+      let stripeCoupon = null;
+      if (discountCode) {
+        try {
+          const coupons = await stripe.coupons.list({ limit: 100 });
+          stripeCoupon = coupons.data.find((c: any) => c.name === discountCode && c.valid);
+          if (stripeCoupon) {
+            logStep("Found Stripe coupon for discount code", { discountCode, couponId: stripeCoupon.id });
+          } else {
+            logStep("No matching Stripe coupon found", { discountCode });
+          }
+        } catch (couponErr) {
+          logStep("Error looking up coupon", { discountCode, error: couponErr });
+        }
+      }
+
+      const sessionConfig: any = {
         payment_method_types: ['card'],
         line_items: [
           {
@@ -260,9 +276,16 @@ serve(async (req) => {
           vehicle_mileage: quote.vehicle_mileage || '',
           claim_limit: (quote.claim_limit || 1250).toString(),
           excess_amount: (quote.excess_amount || 75).toString(),
-          labour_rate: (quote.labour_rate || 70).toString()
+          labour_rate: (quote.labour_rate || 70).toString(),
+          discount_code: discountCode || ''
         }
-      });
+      };
+
+      if (stripeCoupon) {
+        sessionConfig.discounts = [{ coupon: stripeCoupon.id }];
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionConfig);
 
       logStep("Stripe session created", { sessionId: session.id });
 
