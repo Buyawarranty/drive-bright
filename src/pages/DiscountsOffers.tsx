@@ -440,6 +440,62 @@ const DiscountsOffers: React.FC = () => {
 
       {/* FAQ */}
       <HomepageFAQ />
+
+      {/* Select Offer Modal */}
+      {showSelectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowSelectModal(false)}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-orange-50">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Select an Offer</h3>
+                <p className="text-sm text-gray-500">Choose a code to auto-apply to your quote</p>
+              </div>
+              <button
+                onClick={() => setShowSelectModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-200 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Offer cards */}
+            <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+              {codes.map((code) => (
+                <button
+                  key={code.id}
+                  onClick={() => applyCodeAndNavigate(code)}
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[#eb4b00] hover:bg-orange-50/50 transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <code className="text-lg font-mono font-bold text-[#1e40af] tracking-wider">{code.code}</code>
+                      <p className="text-sm text-gray-600 mt-0.5">{formatDiscountShort(code.type, code.value)}</p>
+                    </div>
+                    <div className="bg-[#eb4b00] text-white px-3 py-1.5 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                      Apply →
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Modal footer */}
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+              <button
+                onClick={() => { setShowSelectModal(false); navigateToQuoteForm(); }}
+                className="w-full text-center text-sm text-gray-500 hover:text-[#1e40af] transition-colors"
+              >
+                Skip — get a quote without a code
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
