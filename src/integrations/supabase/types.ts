@@ -2484,6 +2484,7 @@ export type Database = {
           order_amount: number
           stripe_session_id: string | null
           used_at: string
+          vehicle_reg: string | null
         }
         Insert: {
           customer_email: string
@@ -2493,6 +2494,7 @@ export type Database = {
           order_amount: number
           stripe_session_id?: string | null
           used_at?: string
+          vehicle_reg?: string | null
         }
         Update: {
           customer_email?: string
@@ -2502,6 +2504,7 @@ export type Database = {
           order_amount?: number
           stripe_session_id?: string | null
           used_at?: string
+          vehicle_reg?: string | null
         }
         Relationships: [
           {

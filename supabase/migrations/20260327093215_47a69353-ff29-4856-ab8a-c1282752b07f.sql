@@ -1,0 +1,1 @@
+ALTER TABLE public.discount_code_usage ADD COLUMN IF NOT EXISTS vehicle_reg TEXT;
