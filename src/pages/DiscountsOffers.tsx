@@ -65,6 +65,26 @@ const DiscountsOffers: React.FC = () => {
     }, 100);
   };
 
+  const scrollToCodes = () => {
+    codesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const applyCodeAndNavigate = (code: PublicDiscountCode) => {
+    // Store the selected code so the homepage can auto-apply it
+    localStorage.setItem('baw_promo_code', code.code);
+    toast.success(`"${code.code}" selected! Redirecting to get your quote...`, {
+      description: formatDiscountShort(code.type, code.value),
+    });
+    setShowSelectModal(false);
+    setTimeout(() => {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('quote-form');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }, 600);
+  };
+
   const formatDiscount = (type: string, value: number) => {
     if (type === 'percentage') return `${value}% OFF`;
     return `£${value} OFF`;
