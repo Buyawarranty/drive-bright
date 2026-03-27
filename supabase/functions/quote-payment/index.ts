@@ -101,7 +101,7 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { accessToken, paymentMethod, customerData: providedCustomerData } = body;
+    const { accessToken, paymentMethod, customerData: providedCustomerData, discountCode } = body;
 
     logStep("Request data", { 
       accessToken: accessToken?.substring(0, 8) + '...', 
