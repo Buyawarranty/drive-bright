@@ -3872,7 +3872,8 @@ Please log in and change your password after first login.`;
                                               selected={editingCustomer.signup_date ? new Date(editingCustomer.signup_date) : undefined}
                                               onSelect={(date) => date && setEditingCustomer({ ...editingCustomer, signup_date: date.toISOString() })}
                                               initialFocus
-                                            />
+                                            className="p-3 pointer-events-auto"
+                                           />
                                           </PopoverContent>
                                         </Popover>
                                       </div>
@@ -3900,49 +3901,88 @@ Please log in and change your password after first login.`;
                                       </div>
                                       <div>
                                         <Label htmlFor="edit-start-date">Warranty Start Date</Label>
-                                        <Input
-                                          id="edit-start-date"
-                                          type="date"
-                                          value={editingCustomer.customer_policies?.[0]?.policy_start_date 
-                                            ? new Date(editingCustomer.customer_policies[0].policy_start_date).toISOString().split('T')[0]
-                                            : ''}
-                                          onChange={(e) => {
-                                            if (editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
-                                              const startDate = new Date(e.target.value);
-                                              const months = getWarrantyDurationInMonths(editingCustomer.payment_type || '12months');
-                                              const expiry = new Date(startDate);
-                                              expiry.setMonth(expiry.getMonth() + months);
-                                              
-                                              const updatedPolicies = [...editingCustomer.customer_policies];
-                                              updatedPolicies[0] = {
-                                                ...updatedPolicies[0],
-                                                policy_start_date: e.target.value,
-                                                policy_end_date: expiry.toISOString()
-                                              };
-                                              setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
-                                            }
-                                          }}
-                                        />
+                                        <Popover>
+                                          <PopoverTrigger asChild>
+                                            <Button
+                                              id="edit-start-date"
+                                              variant="outline"
+                                              className={cn(
+                                                "w-full justify-start text-left font-normal",
+                                                !editingCustomer.customer_policies?.[0]?.policy_start_date && "text-muted-foreground"
+                                              )}
+                                            >
+                                              <CalendarIcon className="mr-2 h-4 w-4" />
+                                              {editingCustomer.customer_policies?.[0]?.policy_start_date ? (
+                                                format(new Date(editingCustomer.customer_policies[0].policy_start_date), 'dd/MM/yyyy')
+                                              ) : (
+                                                <span>Pick a date</span>
+                                              )}
+                                            </Button>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                              mode="single"
+                                              selected={editingCustomer.customer_policies?.[0]?.policy_start_date ? new Date(editingCustomer.customer_policies[0].policy_start_date) : undefined}
+                                              onSelect={(date) => {
+                                                if (date && editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
+                                                  const months = getWarrantyDurationInMonths(editingCustomer.payment_type || '12months');
+                                                  const expiry = new Date(date);
+                                                  expiry.setMonth(expiry.getMonth() + months);
+                                                  
+                                                  const updatedPolicies = [...editingCustomer.customer_policies];
+                                                  updatedPolicies[0] = {
+                                                    ...updatedPolicies[0],
+                                                    policy_start_date: date.toISOString(),
+                                                    policy_end_date: expiry.toISOString()
+                                                  };
+                                                  setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
+                                                }
+                                              }}
+                                              initialFocus
+                                              className="p-3 pointer-events-auto"
+                                            />
+                                          </PopoverContent>
+                                        </Popover>
                                       </div>
                                       <div>
                                         <Label htmlFor="edit-expiry-date">Warranty Expiry Date</Label>
-                                        <Input
-                                          id="edit-expiry-date"
-                                          type="date"
-                                          value={editingCustomer.customer_policies?.[0]?.policy_end_date 
-                                            ? new Date(editingCustomer.customer_policies[0].policy_end_date).toISOString().split('T')[0]
-                                            : ''}
-                                          onChange={(e) => {
-                                            if (editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
-                                              const updatedPolicies = [...editingCustomer.customer_policies];
-                                              updatedPolicies[0] = {
-                                                ...updatedPolicies[0],
-                                                policy_end_date: e.target.value
-                                              };
-                                              setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
-                                            }
-                                          }}
-                                        />
+                                        <Popover>
+                                          <PopoverTrigger asChild>
+                                            <Button
+                                              id="edit-expiry-date"
+                                              variant="outline"
+                                              className={cn(
+                                                "w-full justify-start text-left font-normal",
+                                                !editingCustomer.customer_policies?.[0]?.policy_end_date && "text-muted-foreground"
+                                              )}
+                                            >
+                                              <CalendarIcon className="mr-2 h-4 w-4" />
+                                              {editingCustomer.customer_policies?.[0]?.policy_end_date ? (
+                                                format(new Date(editingCustomer.customer_policies[0].policy_end_date), 'dd/MM/yyyy')
+                                              ) : (
+                                                <span>Pick a date</span>
+                                              )}
+                                            </Button>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                              mode="single"
+                                              selected={editingCustomer.customer_policies?.[0]?.policy_end_date ? new Date(editingCustomer.customer_policies[0].policy_end_date) : undefined}
+                                              onSelect={(date) => {
+                                                if (date && editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
+                                                  const updatedPolicies = [...editingCustomer.customer_policies];
+                                                  updatedPolicies[0] = {
+                                                    ...updatedPolicies[0],
+                                                    policy_end_date: date.toISOString()
+                                                  };
+                                                  setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
+                                                }
+                                              }}
+                                              initialFocus
+                                              className="p-3 pointer-events-auto"
+                                            />
+                                          </PopoverContent>
+                                        </Popover>
                                       </div>
                                     </div>
                                   </div>

@@ -1107,7 +1107,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             setIsStartDateCalendarOpen(false);
                           }}
                           disabled={(date) => date < new Date()}
-                        />
+                        className="p-3 pointer-events-auto"
+                       />
                       </PopoverContent>
                     </Popover>
                   </div>
