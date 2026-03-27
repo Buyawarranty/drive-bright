@@ -70,6 +70,12 @@ export default function LiveQuotePage() {
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<'stripe' | 'bumper' | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'bumper' | 'stripe'>('bumper');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [validatingPromo, setValidatingPromo] = useState(false);
+  const [promoDiscount, setPromoDiscount] = useState<{type: string; value: number; label: string} | null>(null);
+  const [showPromoField, setShowPromoField] = useState(false);
 
   // Customer form state
   const [customerData, setCustomerData] = useState({
@@ -334,6 +340,7 @@ export default function LiveQuotePage() {
         body: { 
           accessToken: token, 
           paymentMethod: method,
+          discountCode: promoApplied ? promoCode.trim().toUpperCase() : undefined,
           customerData: {
             ...customerData,
             fullName: `${customerData.firstName} ${customerData.lastName}`.trim(),
@@ -353,6 +360,46 @@ export default function LiveQuotePage() {
       toast.error(err.message || 'Failed to start payment');
       setProcessingPayment(null);
     }
+  };
+
+  const handleApplyPromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) return;
+    setValidatingPromo(true);
+    setPromoError('');
+    try {
+      const orderAmount = quote?.pricing.upfrontPrice || 0;
+      const { data, error: fnError } = await supabase.functions.invoke('validate-discount-code', {
+        body: { code, orderAmount }
+      });
+      if (fnError) throw fnError;
+      if (data?.valid) {
+        setPromoApplied(true);
+        setPromoDiscount({
+          type: data.discount_type,
+          value: data.discount_value,
+          label: data.discount_type === 'percentage' ? `${data.discount_value}% off` : `£${data.discount_value} off`
+        });
+        toast.success(`Promo code applied: ${data.discount_type === 'percentage' ? data.discount_value + '% off' : '£' + data.discount_value + ' off'}`);
+      } else {
+        setPromoError(data?.error || 'Invalid promo code');
+        setPromoApplied(false);
+        setPromoDiscount(null);
+      }
+    } catch (err: any) {
+      setPromoError('Unable to validate code');
+      setPromoApplied(false);
+      setPromoDiscount(null);
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode('');
+    setPromoApplied(false);
+    setPromoError('');
+    setPromoDiscount(null);
   };
 
   // Validation patterns (same as validateForm)
@@ -835,6 +882,59 @@ export default function LiveQuotePage() {
             </div>
           </div>
         </RadioGroup>
+
+        {/* Promo Code Section */}
+        <div className="mt-4">
+          {!showPromoField && !promoApplied ? (
+            <button
+              type="button"
+              onClick={() => setShowPromoField(true)}
+              className="text-sm text-[#FF6B00] hover:text-[#e56000] font-medium underline underline-offset-2"
+            >
+              Have a promo code?
+            </button>
+          ) : promoApplied && promoDiscount ? (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">
+                  {promoCode.toUpperCase()} — {promoDiscount.label}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemovePromo}
+                className="text-xs text-red-500 hover:text-red-700 font-medium"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                  placeholder="Enter promo code"
+                  className="flex-1 h-11 uppercase font-medium"
+                  disabled={validatingPromo}
+                />
+                <Button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  disabled={validatingPromo || !promoCode.trim()}
+                  variant="outline"
+                  className="h-11 px-5 border-[#FF6B00] text-[#FF6B00] hover:bg-orange-50 font-semibold"
+                >
+                  {validatingPromo ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                </Button>
+              </div>
+              {promoError && (
+                <p className="text-xs text-red-500">{promoError}</p>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* CTA Button */}
         <div className="mt-6">
