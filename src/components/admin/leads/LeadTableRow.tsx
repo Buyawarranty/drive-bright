@@ -440,9 +440,22 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         <TableCell className="text-center">
           {(() => {
             const src = lead.lead_source;
-            if (src === 'google_ad') return <span className="text-[11px] font-bold text-emerald-700" title="Google Ads">G</span>;
-            if (src === 'social_ad') return <span className="text-[11px] font-bold text-blue-700" title="Facebook Ads">F</span>;
-            return <span className="text-[11px] font-medium text-muted-foreground" title="Organic">O</span>;
+            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string } | null;
+            if (src === 'google_ad') {
+              const gclid = metadata?.gclid;
+              const tip = gclid ? `Google Ads\nGCLID: ${gclid}` : 'Google Ads (no GCLID captured)';
+              return <span className="text-[11px] font-bold text-emerald-700 cursor-help" title={tip}>G</span>;
+            }
+            if (src === 'social_ad') {
+              const fbclid = metadata?.fbclid;
+              const utmSrc = metadata?.utm_source;
+              const parts = ['Facebook Ads'];
+              if (fbclid) parts.push(`FBCLID: ${fbclid}`);
+              if (utmSrc) parts.push(`UTM Source: ${utmSrc}`);
+              if (!fbclid && !utmSrc) parts.push('(no FBCLID captured)');
+              return <span className="text-[11px] font-bold text-blue-700 cursor-help" title={parts.join('\n')}>F</span>;
+            }
+            return <span className="text-[11px] font-medium text-muted-foreground cursor-help" title="Organic">O</span>;
           })()}
         </TableCell>
       )}

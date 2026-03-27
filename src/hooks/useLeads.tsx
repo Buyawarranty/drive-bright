@@ -353,7 +353,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
             last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
             created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
             call_count, is_callback,
-            assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
+            assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
+            abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
           `)
           .order('created_at', { ascending: false });
 
@@ -389,7 +390,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           is_from_abandoned_cart: false,
           call_count: lead.call_count || 0,
           is_callback: lead.is_callback || false,
-          cart_metadata: null,
+          cart_metadata: lead.abandoned_cart?.cart_metadata || null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
         };
