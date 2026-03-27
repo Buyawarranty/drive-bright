@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Tag, Clock, Copy, Check, Shield, Star, Percent } from 'lucide-react';
+import { ArrowRight, Tag, Clock, Copy, Check, Shield, Star, Percent, ChevronDown, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import TrustpilotMicroComboWidget from '@/components/TrustpilotMicroComboWidget';
@@ -28,6 +28,8 @@ const DiscountsOffers: React.FC = () => {
   const [codes, setCodes] = useState<PublicDiscountCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showSelectModal, setShowSelectModal] = useState(false);
+  const codesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchCodes = async () => {
@@ -61,6 +63,26 @@ const DiscountsOffers: React.FC = () => {
       const element = document.getElementById('quote-form');
       if (element) element.scrollIntoView({ behavior: 'smooth' });
     }, 100);
+  };
+
+  const scrollToCodes = () => {
+    codesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const applyCodeAndNavigate = (code: PublicDiscountCode) => {
+    // Store the selected code so the homepage can auto-apply it
+    localStorage.setItem('baw_promo_code', code.code);
+    toast.success(`"${code.code}" selected! Redirecting to get your quote...`, {
+      description: formatDiscountShort(code.type, code.value),
+    });
+    setShowSelectModal(false);
+    setTimeout(() => {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('quote-form');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }, 600);
   };
 
   const formatDiscount = (type: string, value: number) => {
@@ -225,14 +247,25 @@ const DiscountsOffers: React.FC = () => {
                 </div>
               </div>
 
-              <Button
-                onClick={navigateToQuoteForm}
-                size="lg"
-                className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
-              >
-                Get Your Warranty Quote
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={navigateToQuoteForm}
+                  size="lg"
+                  className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
+                >
+                  Get Your Warranty Quote
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button
+                  onClick={scrollToCodes}
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-[#1e40af] text-[#1e40af] hover:bg-[#1e40af] hover:text-white text-lg px-8 py-6"
+                >
+                  See Promo Codes
+                  <ChevronDown className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             <div className="relative">
@@ -248,7 +281,7 @@ const DiscountsOffers: React.FC = () => {
       </section>
 
       {/* Active Promo Codes Section */}
-      <section className="py-16 bg-white" id="codes">
+      <section className="py-16 bg-white" id="codes" ref={codesRef}>
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Active <span className="text-[#1e40af]">Promo Codes</span>
@@ -337,7 +370,7 @@ const DiscountsOffers: React.FC = () => {
               {/* CTA below table */}
               <div className="text-center mt-8">
                 <Button
-                  onClick={navigateToQuoteForm}
+                  onClick={() => setShowSelectModal(true)}
                   size="lg"
                   className="bg-[#eb4b00] hover:bg-[#d44400] text-white text-lg px-8 py-6"
                 >
@@ -407,6 +440,62 @@ const DiscountsOffers: React.FC = () => {
 
       {/* FAQ */}
       <HomepageFAQ />
+
+      {/* Select Offer Modal */}
+      {showSelectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowSelectModal(false)}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-orange-50">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Select an Offer</h3>
+                <p className="text-sm text-gray-500">Choose a code to auto-apply to your quote</p>
+              </div>
+              <button
+                onClick={() => setShowSelectModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-200 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Offer cards */}
+            <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+              {codes.map((code) => (
+                <button
+                  key={code.id}
+                  onClick={() => applyCodeAndNavigate(code)}
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[#eb4b00] hover:bg-orange-50/50 transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <code className="text-lg font-mono font-bold text-[#1e40af] tracking-wider">{code.code}</code>
+                      <p className="text-sm text-gray-600 mt-0.5">{formatDiscountShort(code.type, code.value)}</p>
+                    </div>
+                    <div className="bg-[#eb4b00] text-white px-3 py-1.5 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                      Apply →
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Modal footer */}
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+              <button
+                onClick={() => { setShowSelectModal(false); navigateToQuoteForm(); }}
+                className="w-full text-center text-sm text-gray-500 hover:text-[#1e40af] transition-colors"
+              >
+                Skip — get a quote without a code
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
