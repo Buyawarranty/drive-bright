@@ -82,6 +82,7 @@ const WebsiteFooter = () => {
               <h3 className="text-lg font-bold text-gray-900 mb-6">Quick Links</h3>
               <ul className="space-y-3 text-gray-600">
                 <li><a href="/" className="hover:text-[#eb4b00] transition-colors">Home</a></li>
+                <li><a href="/discounts-offers/" className="hover:text-[#eb4b00] transition-colors font-semibold text-[#eb4b00]">🏷️ Discounts & Offers</a></li>
                 <li><a href="/customer-dashboard/" className="hover:text-[#eb4b00] transition-colors font-semibold">Customer Login</a></li>
                 <li><a href="/make-a-claim/" className="hover:text-[#eb4b00] transition-colors">Make a Claim</a></li>
                 <li><a href="/contact-us/" className="hover:text-[#eb4b00] transition-colors">Contact Us</a></li>
@@ -91,7 +92,6 @@ const WebsiteFooter = () => {
                 <li><a href="/motorcycle-warranty/" className="hover:text-[#eb4b00] transition-colors">Motorbike Warranty</a></li>
                 <li><a href="/car-extended-warranty/" className="hover:text-[#eb4b00] transition-colors">Extended Warranty</a></li>
                 <li><a href="/warranty-types/" className="hover:text-[#eb4b00] transition-colors">Warranty Types</a></li>
-                <li><a href="/discounts-offers/" className="hover:text-[#eb4b00] transition-colors font-semibold text-[#eb4b00]">Discounts & Offers</a></li>
               </ul>
             </div>
 
