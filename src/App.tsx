@@ -82,6 +82,7 @@ const MotorbikeWarranty = lazy(() => import("./pages/MotorbikeWarranty"));
 const MotorcycleWarranty = lazy(() => import("./pages/MotorcycleWarranty"));
 const CarExtendedWarranty = lazy(() => import("./pages/CarExtendedWarranty"));
 const WarrantyTypes = lazy(() => import("./pages/WarrantyTypes"));
+const DiscountsOffers = lazy(() => import("./pages/DiscountsOffers"));
 const BMWWarrantyLanding = lazy(() => import("./pages/warranty-types/BMWWarrantyLanding"));
 const MercedesWarrantyLanding = lazy(() => import("./pages/warranty-types/MercedesWarrantyLanding"));
 const VanWarrantyLanding = lazy(() => import("./pages/warranty-types/VanWarrantyLanding"));
@@ -234,6 +235,7 @@ const App = () => {
                     <Route path="/quote/:token/success" element={<LiveQuotePage />} />
                     <Route path="/warranty-plan/" element={<WarrantyPlan />} />
                     <Route path="/buy-a-used-car-warranty-reliable-warranties/" element={<BuyCarWarranty />} />
+                    <Route path="/discounts-offers/" element={<DiscountsOffers />} />
                     <Route path="/van-warranty/" element={<VanWarrantyNew />} />
                     <Route path="/ev-warranty/" element={<EVWarranty />} />
                     <Route path="/motorbike-repair-warranty-uk-warranties/" element={<MotorbikeWarranty />} />
