@@ -341,7 +341,21 @@ const AdminDashboard = () => {
     );
   }
 
-  const renderContent = () => {
+  // Use ViewAs context to get effective role/permissions for rendering
+  const ViewAwareContent = () => {
+    const { effectiveRole, effectivePermissions, isImpersonating } = useViewAs();
+    const activeRole = isImpersonating ? effectiveRole : userRole;
+    const activePerms = isImpersonating ? effectivePermissions : userPermissions;
+    return renderContentInner(activeRole, activePerms);
+  };
+
+  const renderContentInner = (activeRole: string | null, activePerms: Record<string, boolean> | null) => {
+    return renderContent(activeRole, activePerms);
+  };
+
+  const renderContent = (activeRoleOverride?: string | null, activePermsOverride?: Record<string, boolean> | null) => {
+    const effectiveUserRole = activeRoleOverride ?? userRole;
+    const effectiveUserPermissions = activePermsOverride ?? userPermissions;
     switch (activeTab) {
       case 'customers':
         // Check if user has "own customers only" permission explicitly set
