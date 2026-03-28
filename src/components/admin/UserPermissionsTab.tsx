@@ -127,6 +127,8 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   },
   lead_gen: {
     'tab_google-ads': true,
+    'tab_new-leads': true,
+    'tab_new-leads_view': true,
   },
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: {},
