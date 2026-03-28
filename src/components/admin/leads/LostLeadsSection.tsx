@@ -92,6 +92,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [loading, setLoading] = useState(true);
   const initialLoadDone = React.useRef(false);
   const [dismissingId, setDismissingId] = useState<string | null>(null);
+  const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
 
   // Agent distribution caps for correct sort_order
   const [agentCaps, setAgentCaps] = useState<{ admin_user_id: string; sort_order: number; daily_cap: number; assigned_today: number; paused: boolean }[]>([]);
