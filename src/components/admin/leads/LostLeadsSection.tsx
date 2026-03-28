@@ -81,9 +81,10 @@ interface OrphanedLead {
 interface LostLeadsSectionProps {
   onRecovered?: () => void;
   compact?: boolean;
+  inline?: boolean;
 }
 
-export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false }) => {
+export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -377,7 +378,155 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     }
   }, []);
 
-  if (loading) return null;
+  if (loading) {
+    if (inline) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  // Inline mode — renders inside the existing Card, no overlay/collapsible
+  if (inline) {
+    return (
+      <div className="p-4 space-y-4">
+        {/* Header row with actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <span className="text-sm font-semibold">Recovery Queue</span>
+            <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">
+              {orphanedLeads.length} lead{orphanedLeads.length !== 1 ? 's' : ''}
+            </Badge>
+            {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length > 0 && (
+              <Badge className="h-5 px-1.5 text-[10px] bg-green-100 text-green-800 border-green-300">
+                {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length} genuine
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSyncToMarketing}
+              size="sm"
+              variant="outline"
+              className="h-7 px-2.5 text-xs gap-1.5"
+              title="Sync valid contacts to marketing audience"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Sync to Marketing
+            </Button>
+            <Button
+              onClick={handleSyncToSales}
+              disabled={syncing || orphanedLeads.length === 0}
+              size="sm"
+              className="h-7 px-2.5 text-xs gap-1.5"
+            >
+              {syncing ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <ArrowRightCircle className="h-3.5 w-3.5" />}
+              {syncing ? 'Recovering...' : 'Recover All'}
+            </Button>
+            <Button
+              onClick={fetchOrphanedLeads}
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              title="Refresh"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        {orphanedLeads.length > 0 ? (
+          <LeadTable
+            leads={orphanedLeads}
+            actionColumn={(lead) => (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={dismissingId === lead.id}
+                    title="Mark as fake / reject"
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <strong>{lead.email}</strong> will be marked as fake/rejected and removed from the recovery queue. Valid contact info is preserved for marketing.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDismissLead(lead)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Reject Lead
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
+            <p className="text-sm font-medium">All caught up!</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              No orphaned leads to recover. All abandoned carts are synced to the sales pipeline.
+            </p>
+          </div>
+        )}
+
+        {/* Rejected leads section */}
+        {rejectedLeads.length > 0 && (
+          <Collapsible open={isRejectedOpen} onOpenChange={setIsRejectedOpen}>
+            <div className="border rounded-md bg-muted/10">
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <XCircle className="h-4 w-4" />
+                    <span>Rejected Leads</span>
+                    <Badge variant="secondary" className="ml-1">{rejectedLeads.length}</Badge>
+                  </div>
+                  {isRejectedOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Previously rejected leads. Click restore to move them back to the recovery queue.
+                  </p>
+                  <LeadTable
+                    leads={rejectedLeads}
+                    actionColumn={(lead) => (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        onClick={() => handleRestoreLead(lead)}
+                        disabled={restoringId === lead.id}
+                        title="Restore this lead"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    )}
+                  />
+                </div>
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
+        )}
+      </div>
+    );
+  }
 
   if (compact) {
     return (

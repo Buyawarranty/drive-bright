@@ -26,8 +26,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovery';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovery') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -69,6 +69,7 @@ interface LeadsFiltersProps {
   onAgentFilterChange?: (agentId: string) => void;
   agentLeadCounts?: Record<string, number>;
   recoveredLeadsSlot?: React.ReactNode;
+  recoveryCount?: number;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
 }
@@ -96,6 +97,7 @@ const STATUS_PILLS: {
   { value: 'high_priority', label: 'Hot', icon: '🔥', colorClass: 'data-[state=active]:bg-orange-600 data-[state=active]:text-white', countKey: 'high_priority' },
   { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
   { value: 'fake', label: 'Fake', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
+  { value: 'recovery', label: 'Recovery', icon: '🔄', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'recovery' as any },
 ];
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
@@ -119,6 +121,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onAgentFilterChange,
   agentLeadCounts,
   recoveredLeadsSlot,
+  recoveryCount = 0,
   sourceFilter = 'all',
   onSourceFilterChange,
 }) => {
@@ -240,13 +243,14 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks');
+    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovery');
   };
 
   const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
 
   const getCount = (pill: typeof STATUS_PILLS[0]) => {
     if (pill.isAssignment) return assignmentCounts?.awaiting_contact ?? 0;
+    if (pill.value === 'recovery') return recoveryCount;
     return leadCounts[pill.countKey] ?? 0;
   };
 
