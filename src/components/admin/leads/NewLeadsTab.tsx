@@ -181,6 +181,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Set default filter on mount
   useEffect(() => {
     setFilter('live');
+    setActiveFilter('live');
+  }, [setFilter]);
+
+  // Handle filter change — 'recovery' is local-only, others pass through to useLeads
+  const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
+    setActiveFilter(newFilter);
+    if (newFilter !== 'recovery') {
+      setFilter(newFilter as any);
+    }
   }, [setFilter]);
 
   // Refetch when date range changes (server-side filter changed)
@@ -704,8 +713,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
-            filter={filter}
-            onFilterChange={setFilter}
+            filter={activeFilter}
+            onFilterChange={handleFilterChange}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             onRefresh={fetchLeads}
@@ -723,7 +732,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
-            recoveredLeadsSlot={isDigitalAccess ? <LostLeadsSection onRecovered={fetchLeads} compact /> : undefined}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
           />
