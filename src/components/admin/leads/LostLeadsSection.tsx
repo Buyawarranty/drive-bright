@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -78,13 +79,22 @@ interface OrphanedLead {
   quality_score?: number; // 0-100
 }
 
+interface SalesUser {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role?: string;
+}
+
 interface LostLeadsSectionProps {
   onRecovered?: () => void;
   compact?: boolean;
   inline?: boolean;
+  salesUsers?: SalesUser[];
 }
 
-export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false }) => {
+export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [] }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -378,6 +388,75 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     }
   }, []);
 
+  /** Recover a single lead into the sales pipeline with auto round-robin or specific agent */
+  const handleRecoverSingle = useCallback(async (lead: OrphanedLead, agentId?: string) => {
+    setDismissingId(lead.id);
+    try {
+      const { data, error } = await supabase.rpc('recover_single_lead', {
+        p_cart_id: lead.id,
+        p_agent_id: agentId || null,
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (!result?.success) {
+        toast.error(result?.error || 'Recovery failed');
+        return;
+      }
+      const agentName = agentId 
+        ? salesUsers.find(u => u.id === agentId)?.first_name || 'agent'
+        : 'auto-assigned';
+      toast.success(`✅ Recovered "${lead.email}" → ${agentName}`);
+      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+      onRecovered?.();
+    } catch (err: any) {
+      console.error('Single recovery error:', err);
+      toast.error(`Recovery failed: ${err.message}`);
+    } finally {
+      setDismissingId(null);
+    }
+  }, [salesUsers, onRecovered]);
+
+  /** Change status of an orphaned lead (fake/lost/duplicate → vanish from list) */
+  const handleStatusChange = useCallback(async (lead: OrphanedLead, status: string) => {
+    setDismissingId(lead.id);
+    try {
+      const { error } = await supabase
+        .from('abandoned_carts')
+        .update({ contact_status: status })
+        .eq('id', lead.id);
+      if (error) throw error;
+
+      // Preserve contact in marketing if valid
+      if (lead.email_status?.valid || lead.phone_status?.valid) {
+        await supabase
+          .from('marketing_audience')
+          .upsert({
+            lead_id: lead.id,
+            email: lead.email?.toLowerCase().trim() || null,
+            phone: lead.phone?.trim() || null,
+            full_name: lead.full_name || null,
+            source: 'orphaned_cart',
+            source_type: 'abandoned_cart',
+            lead_status: status,
+            step_abandoned: lead.step_abandoned,
+            synced_at: new Date().toISOString(),
+          }, { onConflict: 'email' });
+      }
+
+      const label = status === 'fake_lead' ? 'fake' : status === 'duplicate' ? 'duplicate' : 'lost';
+      toast.success(`Marked "${lead.email}" as ${label}`);
+      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+      if (status === 'fake_lead') {
+        setRejectedLeads(prev => [{ ...lead, contact_status: status }, ...prev]);
+      }
+    } catch (err: any) {
+      console.error('Status change error:', err);
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setDismissingId(null);
+    }
+  }, []);
+
   if (loading) {
     if (inline) {
       return (
@@ -442,38 +521,11 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         {orphanedLeads.length > 0 ? (
           <LeadTable
             leads={orphanedLeads}
-            actionColumn={(lead) => (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    disabled={dismissingId === lead.id}
-                    title="Mark as fake / reject"
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      <strong>{lead.email}</strong> will be marked as fake/rejected and removed from the recovery queue. Valid contact info is preserved for marketing.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDismissLead(lead)}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Reject Lead
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            salesUsers={salesUsers}
+            onStatusChange={handleStatusChange}
+            onRecover={handleRecoverSingle}
+            onAssign={(lead, agentId) => handleRecoverSingle(lead, agentId)}
+            disabledId={dismissingId}
           />
         ) : (
           <div className="text-center py-12">
@@ -875,73 +927,143 @@ const QualityDot: React.FC<{ score: number }> = ({ score }) => {
 /** Shared lead table used for both orphaned and rejected leads */
 const LeadTable: React.FC<{
   leads: OrphanedLead[];
-  actionColumn: (lead: OrphanedLead) => React.ReactNode;
-}> = ({ leads, actionColumn }) => (
-  <div className="rounded-md border overflow-x-auto max-h-[400px] overflow-y-auto">
-    <Table>
-      <TableHeader>
-        <TableRow className="bg-muted/30">
-          <TableHead className="w-[30px]">Q</TableHead>
-          <TableHead className="w-[130px]">Reason</TableHead>
-          <TableHead className="w-[120px]">Name</TableHead>
-          <TableHead className="w-[170px]">Email</TableHead>
-          <TableHead className="w-[120px]">Phone</TableHead>
-          <TableHead className="w-[80px]">Reg</TableHead>
-          <TableHead className="w-[100px]">Vehicle</TableHead>
-          <TableHead className="w-[80px]">Plan</TableHead>
-          <TableHead className="w-[90px]">Date</TableHead>
-          <TableHead className="w-[60px] text-center">Action</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {leads.map((lead) => (
-          <TableRow key={lead.id} className={cn(
-            lead.orphan_reason?.startsWith('Genuine') && 'bg-green-50/30',
-            lead.orphan_reason?.startsWith('Suspicious') && 'bg-red-50/20',
-          )}>
-            <TableCell>{lead.quality_score !== undefined ? <QualityDot score={lead.quality_score} /> : null}</TableCell>
-            <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
-            <TableCell className={cn("font-medium text-sm", isSpamName(lead.full_name) && "line-through text-muted-foreground")}>{lead.full_name || '—'}</TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1">
-                {lead.email_status?.valid ? (
-                  <Mail className="h-3 w-3 text-green-600 shrink-0" />
-                ) : (
-                  <MailX className="h-3 w-3 text-red-500 shrink-0" />
-                )}
-                <span className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${lead.email} — ${lead.email_status?.reason || ''}`}>
-                  {lead.email}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1">
-                {lead.phone ? (
-                  lead.phone_status?.valid ? (
-                    <Phone className="h-3 w-3 text-green-600 shrink-0" />
-                  ) : (
-                    <PhoneOff className="h-3 w-3 text-red-500 shrink-0" />
-                  )
-                ) : null}
-                <span className="text-sm" title={lead.phone_status?.reason || ''}>
-                  {lead.phone || '—'}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell>
-              {lead.vehicle_reg ? (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
-                  {lead.vehicle_reg}
-                </Badge>
-              ) : '—'}
-            </TableCell>
-            <TableCell className="text-sm">{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</TableCell>
-            <TableCell className="text-sm">{lead.plan_name || '—'}</TableCell>
-            <TableCell className="text-sm text-muted-foreground">{format(new Date(lead.created_at), 'MMM d, HH:mm')}</TableCell>
-            <TableCell className="text-center">{actionColumn(lead)}</TableCell>
+  actionColumn?: (lead: OrphanedLead) => React.ReactNode;
+  salesUsers?: SalesUser[];
+  onStatusChange?: (lead: OrphanedLead, status: string) => void;
+  onRecover?: (lead: OrphanedLead, agentId?: string) => void;
+  onAssign?: (lead: OrphanedLead, agentId: string) => void;
+  disabledId?: string | null;
+}> = ({ leads, actionColumn, salesUsers, onStatusChange, onRecover, onAssign, disabledId }) => {
+  const hasFullActions = !!(onStatusChange || onRecover);
+
+  return (
+    <div className="rounded-md border overflow-x-auto max-h-[500px] overflow-y-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/30">
+            <TableHead className="w-[30px]">Q</TableHead>
+            <TableHead className="w-[130px]">Reason</TableHead>
+            <TableHead className="w-[120px]">Name</TableHead>
+            <TableHead className="w-[170px]">Email</TableHead>
+            <TableHead className="w-[120px]">Phone</TableHead>
+            <TableHead className="w-[80px]">Reg</TableHead>
+            <TableHead className="w-[80px]">Plan</TableHead>
+            <TableHead className="w-[90px]">Date</TableHead>
+            {hasFullActions && <TableHead className="w-[100px]">Status</TableHead>}
+            {hasFullActions && salesUsers && salesUsers.length > 0 && <TableHead className="w-[120px]">Assign & Recover</TableHead>}
+            {hasFullActions && <TableHead className="w-[60px] text-center">Recover</TableHead>}
+            {actionColumn && !hasFullActions && <TableHead className="w-[60px] text-center">Action</TableHead>}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </div>
-);
+        </TableHeader>
+        <TableBody>
+          {leads.map((lead) => (
+            <TableRow key={lead.id} className={cn(
+              lead.orphan_reason?.startsWith('Genuine') && 'bg-green-50/30',
+              lead.orphan_reason?.startsWith('Suspicious') && 'bg-red-50/20',
+              disabledId === lead.id && 'opacity-50 pointer-events-none',
+            )}>
+              <TableCell>{lead.quality_score !== undefined ? <QualityDot score={lead.quality_score} /> : null}</TableCell>
+              <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
+              <TableCell className={cn("font-medium text-sm", isSpamName(lead.full_name) && "line-through text-muted-foreground")}>{lead.full_name || '—'}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1">
+                  {lead.email_status?.valid ? (
+                    <Mail className="h-3 w-3 text-green-600 shrink-0" />
+                  ) : (
+                    <MailX className="h-3 w-3 text-red-500 shrink-0" />
+                  )}
+                  <span className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${lead.email} — ${lead.email_status?.reason || ''}`}>
+                    {lead.email}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1">
+                  {lead.phone ? (
+                    lead.phone_status?.valid ? (
+                      <Phone className="h-3 w-3 text-green-600 shrink-0" />
+                    ) : (
+                      <PhoneOff className="h-3 w-3 text-red-500 shrink-0" />
+                    )
+                  ) : null}
+                  <span className="text-sm" title={lead.phone_status?.reason || ''}>
+                    {lead.phone || '—'}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                {lead.vehicle_reg ? (
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
+                    {lead.vehicle_reg}
+                  </Badge>
+                ) : '—'}
+              </TableCell>
+              <TableCell className="text-sm">{lead.plan_name || '—'}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{format(new Date(lead.created_at), 'MMM d, HH:mm')}</TableCell>
+
+              {/* Status dropdown — fake/lost/duplicate → vanish from list */}
+              {hasFullActions && (
+                <TableCell>
+                  <Select
+                    onValueChange={(value) => onStatusChange?.(lead, value)}
+                  >
+                    <SelectTrigger className="h-7 w-[90px] text-[10px] border-border">
+                      <SelectValue placeholder="Mark as..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fake_lead">🚫 Fake</SelectItem>
+                      <SelectItem value="lost">💀 Lost</SelectItem>
+                      <SelectItem value="duplicate">📋 Duplicate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+              )}
+
+              {/* Agent assignment + recover to specific agent */}
+              {hasFullActions && salesUsers && salesUsers.length > 0 && (
+                <TableCell>
+                  <Select
+                    onValueChange={(agentId) => onAssign?.(lead, agentId)}
+                  >
+                    <SelectTrigger className="h-7 w-[110px] text-[10px] border-border">
+                      <SelectValue placeholder="Assign to..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {salesUsers.filter(u => u.role !== 'admin').map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.first_name} {user.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+              )}
+
+              {/* Quick recover button — auto round-robin */}
+              {hasFullActions && (
+                <TableCell className="text-center">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="h-7 px-2 text-[10px] gap-1"
+                    onClick={() => onRecover?.(lead)}
+                    disabled={disabledId === lead.id}
+                    title="Recover to pipeline (auto-assigned via round-robin)"
+                  >
+                    <ArrowRightCircle className="h-3.5 w-3.5" />
+                    Recover
+                  </Button>
+                </TableCell>
+              )}
+
+              {/* Legacy action column for compact/non-inline modes */}
+              {actionColumn && !hasFullActions && (
+                <TableCell className="text-center">{actionColumn(lead)}</TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
