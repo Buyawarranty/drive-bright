@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { cn } from '@/lib/utils';
@@ -6,14 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert, UserPlus } from 'lucide-react';
+import { AlertTriangle, RefreshCw, CheckCircle2, Phone, PhoneOff, Mail, MailX, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
-// Disposable/throwaway email domains commonly used for fake signups
+// Disposable/throwaway email domains
 const DISPOSABLE_DOMAINS = new Set([
   'mailinator.com','guerrillamail.com','tempmail.com','throwaway.email','yopmail.com',
   'sharklasers.com','guerrillamailblock.com','grr.la','dispostable.com','mailnesia.com',
@@ -22,39 +20,29 @@ const DISPOSABLE_DOMAINS = new Set([
   'getnada.com','tmail.ws','harakirimail.com','33mail.com','spam4.me',
 ]);
 
-// Known test/spam name patterns
 const SPAM_NAME_PATTERNS = [/^test\b/i, /^asdf/i, /^xxx/i, /^aaa+$/i, /^qwer/i, /^fake/i, /^sample/i, /^demo\b/i];
 
-/** Validate UK phone number format (admin-side only, not blocking customers) */
 const validatePhone = (phone: string | null): { valid: boolean; reason: string } => {
   if (!phone || phone.trim() === '') return { valid: false, reason: 'Missing' };
   const digits = phone.replace(/[^0-9]/g, '');
   if (digits.length < 10) return { valid: false, reason: `Too short (${digits.length} digits)` };
   if (digits.length > 15) return { valid: false, reason: 'Too long' };
-  // UK mobile: 07xxx or +447xxx
   const isUkMobile = /^(0|44|440)7\d{8,9}$/.test(digits);
-  // UK landline: 01xxx, 02xxx, 03xxx
   const isUkLandline = /^(0|44|440)[123]\d{8,9}$/.test(digits);
-  // International: starts with valid country code
-  const isInternational = /^(1|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7,13}$/.test(digits);
   if (isUkMobile) return { valid: true, reason: 'UK Mobile' };
   if (isUkLandline) return { valid: true, reason: 'UK Landline' };
-  if (isInternational) return { valid: true, reason: 'International' };
-  // Has enough digits but unknown format
   return { valid: true, reason: 'Unknown format' };
 };
 
-/** Validate email format (admin-side only) */
 const validateEmail = (email: string | null): { valid: boolean; reason: string } => {
   if (!email || email.trim() === '') return { valid: false, reason: 'Missing' };
   const em = email.toLowerCase().trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return { valid: false, reason: 'Invalid format' };
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(em)) return { valid: false, reason: 'Invalid format' };
   const domain = em.split('@')[1];
   if (DISPOSABLE_DOMAINS.has(domain)) return { valid: false, reason: 'Disposable email' };
   return { valid: true, reason: 'Valid' };
 };
 
-/** Check name for spam patterns */
 const isSpamName = (name: string | null): boolean => {
   if (!name) return false;
   return SPAM_NAME_PATTERNS.some(p => p.test(name.trim()));
@@ -73,10 +61,11 @@ interface OrphanedLead {
   contact_status: string | null;
   contacted_by: string | null;
   created_at: string;
-  orphan_reason?: string;
+  total_price: number | null;
   phone_status?: { valid: boolean; reason: string };
   email_status?: { valid: boolean; reason: string };
-  quality_score?: number; // 0-100
+  quality_score?: number;
+  preAssignedTo?: string; // round-robin pre-assignment
 }
 
 interface SalesUser {
@@ -96,55 +85,46 @@ interface LostLeadsSectionProps {
 
 export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [] }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
-  const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
   const initialLoadDone = React.useRef(false);
-  const [syncing, setSyncing] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isRejectedOpen, setIsRejectedOpen] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [dismissingId, setDismissingId] = useState<string | null>(null);
-  const [restoringId, setRestoringId] = useState<string | null>(null);
+
+  // Get active sales agents for round-robin display
+  const activeAgents = useMemo(() => {
+    return salesUsers
+      .filter(u => u.role === 'sales' || u.role === 'sales_lead')
+      .sort((a, b) => {
+        // James first (sort_order 1), Ash second (sort_order 2)
+        const nameA = a.first_name?.toLowerCase() || '';
+        const nameB = b.first_name?.toLowerCase() || '';
+        if (nameA === 'james') return -1;
+        if (nameB === 'james') return 1;
+        return 0;
+      });
+  }, [salesUsers]);
 
   const fetchOrphanedLeads = useCallback(async () => {
     if (!initialLoadDone.current) {
       setLoading(true);
     }
     try {
-      const [cartsRes, rejectedCartsRes, leadsRes, terminalLeadsRes] = await Promise.all([
+      const [cartsRes, leadsRes] = await Promise.all([
         fetchAllRows(() =>
           supabase
             .from('abandoned_carts')
-            .select('id, email, phone, full_name, vehicle_reg, vehicle_make, vehicle_model, plan_name, step_abandoned, contact_status, contacted_by, created_at, is_converted')
-            .gte('step_abandoned', 2)
-            .order('created_at', { ascending: false })
-        ),
-        fetchAllRows(() =>
-          supabase
-            .from('abandoned_carts')
-            .select('id, email, phone, full_name, vehicle_reg, vehicle_make, vehicle_model, plan_name, step_abandoned, contact_status, contacted_by, created_at')
-            .eq('contact_status', 'fake_lead')
+            .select('id, email, phone, full_name, vehicle_reg, vehicle_make, vehicle_model, plan_name, step_abandoned, contact_status, contacted_by, created_at, is_converted, total_price')
             .gte('step_abandoned', 2)
             .order('created_at', { ascending: false })
         ),
         fetchAllRows(() =>
           supabase
             .from('sales_leads')
-            .select('id, email, abandoned_cart_id, status')
-        ),
-        // Fetch terminal leads to classify orphan reasons
-        fetchAllRows(() =>
-          supabase
-            .from('sales_leads')
-            .select('email, status, phone')
-            .in('status', ['converted', 'lost', 'fake_lead'])
+            .select('id, email, abandoned_cart_id, status, phone')
         ),
       ]);
 
       const carts = cartsRes.data || [];
       const leads = leadsRes.data || [];
-      const rejected = rejectedCartsRes.data || [];
-      const terminalLeads = terminalLeadsRes.data || [];
 
       const linkedCartIds = new Set(
         leads.filter((l: any) => l.abandoned_cart_id).map((l: any) => l.abandoned_cart_id)
@@ -153,67 +133,12 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         leads.map((l: any) => l.email?.toLowerCase()).filter(Boolean)
       );
 
-      // Build terminal status lookup by email
-      const terminalByEmail = new Map<string, string>();
-      terminalLeads.forEach((tl: any) => {
-        const em = tl.email?.toLowerCase();
-        if (em) terminalByEmail.set(em, tl.status);
-      });
-      // Build terminal status lookup by phone
-      const terminalByPhone = new Map<string, string>();
-      terminalLeads.forEach((tl: any) => {
-        const ph = (tl.phone || '').replace(/[^0-9]/g, '');
-        if (ph.length >= 10) terminalByPhone.set(ph, tl.status);
-      });
+      // Terminal leads lookup
+      const terminalEmails = new Set(
+        leads.filter((l: any) => ['converted', 'lost', 'fake_lead'].includes(l.status))
+          .map((l: any) => l.email?.toLowerCase()).filter(Boolean)
+      );
 
-      // Count how many times each email appears in abandoned_carts (for duplicate detection)
-      const emailCounts = new Map<string, number>();
-      carts.forEach((c: any) => {
-        const em = c.email?.toLowerCase();
-        if (em) emailCounts.set(em, (emailCounts.get(em) || 0) + 1);
-      });
-
-      const classifyOrphanReason = (cart: any): string => {
-        const em = cart.email?.toLowerCase();
-        const ph = (cart.phone || '').replace(/[^0-9]/g, '');
-
-        // Check terminal guard
-        if (em && terminalByEmail.has(em)) {
-          const status = terminalByEmail.get(em)!;
-          const label = status === 'fake_lead' ? 'Fake' : status === 'lost' ? 'Lost' : 'Converted';
-          return `Terminal — ${label}`;
-        }
-        if (ph.length >= 10 && terminalByPhone.has(ph)) {
-          const status = terminalByPhone.get(ph)!;
-          const label = status === 'fake_lead' ? 'Fake' : status === 'lost' ? 'Lost' : 'Converted';
-          return `Terminal — ${label}`;
-        }
-
-        // Check duplicate submissions
-        const dupCount = em ? (emailCounts.get(em) || 0) : 0;
-        if (dupCount > 1) {
-          return `Duplicate (×${dupCount})`;
-        }
-
-        // Check if step 1 only
-        if ((cart.step_abandoned || 0) < 2) {
-          return 'Step 1 only';
-        }
-
-        // Check for suspicious indicators
-        const phoneResult = validatePhone(cart.phone);
-        const emailResult = validateEmail(cart.email);
-        const spamName = isSpamName(cart.full_name);
-
-        if (spamName && !phoneResult.valid) return 'Suspicious — Spam name + bad phone';
-        if (!phoneResult.valid && !emailResult.valid) return 'Suspicious — No valid contact';
-        if (emailResult.reason === 'Disposable email') return 'Suspicious — Disposable email';
-        if (spamName) return 'Suspicious — Spam name';
-
-        return 'Genuine — New';
-      };
-
-      /** Calculate a 0-100 quality score */
       const calcQuality = (cart: any): number => {
         let score = 50;
         const phoneResult = validatePhone(cart.phone);
@@ -233,225 +158,91 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         if (linkedCartIds.has(cart.id)) return false;
         if (existingEmails.has(cart.email?.toLowerCase())) return false;
         if (cart.is_converted === true) return false;
-        if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead'].includes(cart.contact_status)) return false;
+        if (terminalEmails.has(cart.email?.toLowerCase())) return false;
+        if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead', 'duplicate'].includes(cart.contact_status)) return false;
         return true;
-      }).map((cart: any) => ({
+      }).map((cart: any, index: number) => ({
         ...cart,
-        orphan_reason: classifyOrphanReason(cart),
         phone_status: validatePhone(cart.phone),
         email_status: validateEmail(cart.email),
         quality_score: calcQuality(cart),
+        // Pre-assign round-robin: alternate between active agents
+        preAssignedTo: activeAgents.length > 0 ? activeAgents[index % activeAgents.length]?.id : undefined,
       })).sort((a: any, b: any) => b.quality_score - a.quality_score);
 
-      // Filter rejected leads: only show those not already in sales pipeline
-      const rejectedOrphans = rejected.filter((cart: any) => {
-        if (linkedCartIds.has(cart.id)) return false;
-        if (existingEmails.has(cart.email?.toLowerCase())) return false;
-        return true;
-      });
-
       setOrphanedLeads(orphans);
-      setRejectedLeads(rejectedOrphans);
-      if (orphans.length > 0) {
-        setIsOpen(true);
-      }
     } catch (err) {
       console.error('Error fetching orphaned leads:', err);
     } finally {
       setLoading(false);
       initialLoadDone.current = true;
     }
-  }, []);
+  }, [activeAgents]);
 
   useEffect(() => {
     fetchOrphanedLeads();
   }, [fetchOrphanedLeads]);
 
-  const handleSyncToSales = useCallback(async () => {
-    setSyncing(true);
+  /** Handle status change — recover or dismiss based on status */
+  const handleStatusChange = useCallback(async (lead: OrphanedLead, newStatus: string) => {
+    setDismissingId(lead.id);
     try {
-      const { data, error } = await supabase.rpc('recover_orphaned_leads');
-      if (error) throw error;
+      // Terminal statuses → dismiss from list
+      if (['fake_lead', 'lost', 'duplicate'].includes(newStatus)) {
+        const { error } = await supabase
+          .from('abandoned_carts')
+          .update({ contact_status: newStatus })
+          .eq('id', lead.id);
+        if (error) throw error;
 
-      const result = data as any;
-      const recovered = result?.recovered || 0;
-      const skipped = result?.skipped || 0;
+        // Preserve in marketing if valid contact
+        if (lead.email_status?.valid || lead.phone_status?.valid) {
+          await supabase
+            .from('marketing_audience')
+            .upsert({
+              lead_id: lead.id,
+              email: lead.email?.toLowerCase().trim() || null,
+              phone: lead.phone?.trim() || null,
+              full_name: lead.full_name || null,
+              source: 'orphaned_cart',
+              source_type: 'abandoned_cart',
+              lead_status: newStatus,
+              step_abandoned: lead.step_abandoned,
+              synced_at: new Date().toISOString(),
+            }, { onConflict: 'email' });
+        }
 
-      if (recovered > 0) {
-        toast.success(`✅ Recovered ${recovered} lost lead${recovered > 1 ? 's' : ''} to sales pipeline`);
-        setLastSyncedAt(new Date().toISOString());
-        await fetchOrphanedLeads();
-        onRecovered?.();
-      } else if (skipped > 0) {
-        toast.info(`No new leads to recover (${skipped} skipped as duplicates)`);
+        const label = newStatus === 'fake_lead' ? 'Fake Lead' : newStatus === 'duplicate' ? 'Duplicate' : 'Lost';
+        toast.success(`Marked as ${label} — removed from recovery`);
+        setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
       } else {
-        toast.info('All leads are already synced — no recovery needed');
-      }
-    } catch (err: any) {
-      console.error('Recovery error:', err);
-      toast.error(`Recovery failed: ${err.message}`);
-    } finally {
-      setSyncing(false);
-    }
-  }, [fetchOrphanedLeads, onRecovered]);
+        // Active status → recover into sales_leads with the pre-assigned agent
+        const agentId = lead.preAssignedTo || null;
+        const { data, error } = await supabase.rpc('recover_single_lead', {
+          p_cart_id: lead.id,
+          p_agent_id: agentId,
+        });
+        if (error) throw error;
+        const result = data as any;
+        if (!result?.success) {
+          toast.error(result?.error || 'Recovery failed');
+          return;
+        }
 
-  /** Sync all valid contacts from orphaned leads to marketing_audience */
-  const handleSyncToMarketing = useCallback(async () => {
-    const validContacts = orphanedLeads.filter(l => 
-      (l.email_status?.valid || l.phone_status?.valid)
-    );
-    if (validContacts.length === 0) {
-      toast.info('No valid contacts to sync');
-      return;
-    }
-    
-    try {
-      // Upsert each valid contact into marketing_audience
-      const rows = validContacts.map(l => ({
-        lead_id: l.id,
-        email: l.email?.toLowerCase().trim() || null,
-        phone: l.phone?.trim() || null,
-        full_name: l.full_name || null,
-        source: 'orphaned_cart',
-        source_type: 'abandoned_cart' as const,
-        lead_status: l.contact_status || 'orphaned',
-        step_abandoned: l.step_abandoned,
-        synced_at: new Date().toISOString(),
-      }));
+        // If the status is not 'new', update it after recovery
+        if (newStatus !== 'new' && result?.lead_id) {
+          await supabase.rpc('update_lead_status', {
+            p_lead_id: result.lead_id,
+            p_status: newStatus,
+          });
+        }
 
-      const { error } = await supabase
-        .from('marketing_audience')
-        .upsert(rows, { onConflict: 'email' });
-
-      if (error) throw error;
-      toast.success(`📧 Synced ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''} to marketing audience`);
-    } catch (err: any) {
-      console.error('Marketing sync error:', err);
-      toast.error(`Marketing sync failed: ${err.message}`);
-    }
-  }, [orphanedLeads]);
-
-  const handleDismissLead = useCallback(async (lead: OrphanedLead) => {
-    setDismissingId(lead.id);
-    try {
-      // Mark as fake in abandoned_carts but keep is_converted false 
-      // so marketing_audience sync still picks up the contact
-      const { error } = await supabase
-        .from('abandoned_carts')
-        .update({ contact_status: 'fake_lead' })
-        .eq('id', lead.id);
-
-      if (error) throw error;
-
-      // Also preserve in marketing_audience if valid contact
-      if (lead.email_status?.valid || lead.phone_status?.valid) {
-        await supabase
-          .from('marketing_audience')
-          .upsert({
-            lead_id: lead.id,
-            email: lead.email?.toLowerCase().trim() || null,
-            phone: lead.phone?.trim() || null,
-            full_name: lead.full_name || null,
-            source: 'orphaned_cart',
-            source_type: 'abandoned_cart',
-            lead_status: 'fake_lead',
-            step_abandoned: lead.step_abandoned,
-            synced_at: new Date().toISOString(),
-          }, { onConflict: 'email' });
-      }
-
-      toast.success(`Dismissed "${lead.email}" — contact preserved for marketing`);
-      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
-      setRejectedLeads(prev => [{ ...lead, contact_status: 'fake_lead' }, ...prev]);
-    } catch (err: any) {
-      console.error('Dismiss error:', err);
-      toast.error(`Failed to dismiss: ${err.message}`);
-    } finally {
-      setDismissingId(null);
-    }
-  }, []);
-
-  const handleRestoreLead = useCallback(async (lead: OrphanedLead) => {
-    setRestoringId(lead.id);
-    try {
-      const { error } = await supabase
-        .from('abandoned_carts')
-        .update({ contact_status: null, is_converted: false })
-        .eq('id', lead.id);
-
-      if (error) throw error;
-
-      toast.success(`Restored "${lead.email}" — now available for recovery`);
-      setRejectedLeads(prev => prev.filter(l => l.id !== lead.id));
-      setOrphanedLeads(prev => [{ ...lead, contact_status: null }, ...prev]);
-    } catch (err: any) {
-      console.error('Restore error:', err);
-      toast.error(`Failed to restore: ${err.message}`);
-    } finally {
-      setRestoringId(null);
-    }
-  }, []);
-
-  /** Recover a single lead into the sales pipeline with auto round-robin or specific agent */
-  const handleRecoverSingle = useCallback(async (lead: OrphanedLead, agentId?: string) => {
-    setDismissingId(lead.id);
-    try {
-      const { data, error } = await supabase.rpc('recover_single_lead', {
-        p_cart_id: lead.id,
-        p_agent_id: agentId || null,
-      });
-      if (error) throw error;
-      const result = data as any;
-      if (!result?.success) {
-        toast.error(result?.error || 'Recovery failed');
-        return;
-      }
-      const agentName = agentId 
-        ? salesUsers.find(u => u.id === agentId)?.first_name || 'agent'
-        : 'auto-assigned';
-      toast.success(`✅ Recovered "${lead.email}" → ${agentName}`);
-      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
-      onRecovered?.();
-    } catch (err: any) {
-      console.error('Single recovery error:', err);
-      toast.error(`Recovery failed: ${err.message}`);
-    } finally {
-      setDismissingId(null);
-    }
-  }, [salesUsers, onRecovered]);
-
-  /** Change status of an orphaned lead (fake/lost/duplicate → vanish from list) */
-  const handleStatusChange = useCallback(async (lead: OrphanedLead, status: string) => {
-    setDismissingId(lead.id);
-    try {
-      const { error } = await supabase
-        .from('abandoned_carts')
-        .update({ contact_status: status })
-        .eq('id', lead.id);
-      if (error) throw error;
-
-      // Preserve contact in marketing if valid
-      if (lead.email_status?.valid || lead.phone_status?.valid) {
-        await supabase
-          .from('marketing_audience')
-          .upsert({
-            lead_id: lead.id,
-            email: lead.email?.toLowerCase().trim() || null,
-            phone: lead.phone?.trim() || null,
-            full_name: lead.full_name || null,
-            source: 'orphaned_cart',
-            source_type: 'abandoned_cart',
-            lead_status: status,
-            step_abandoned: lead.step_abandoned,
-            synced_at: new Date().toISOString(),
-          }, { onConflict: 'email' });
-      }
-
-      const label = status === 'fake_lead' ? 'fake' : status === 'duplicate' ? 'duplicate' : 'lost';
-      toast.success(`Marked "${lead.email}" as ${label}`);
-      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
-      if (status === 'fake_lead') {
-        setRejectedLeads(prev => [{ ...lead, contact_status: status }, ...prev]);
+        const agentName = agentId
+          ? salesUsers.find(u => u.id === agentId)?.first_name || 'agent'
+          : 'auto-assigned';
+        toast.success(`✅ Recovered → ${agentName} (${newStatus})`);
+        setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+        onRecovered?.();
       }
     } catch (err: any) {
       console.error('Status change error:', err);
@@ -459,7 +250,38 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     } finally {
       setDismissingId(null);
     }
-  }, []);
+  }, [salesUsers, onRecovered]);
+
+  /** Handle agent assignment change — recover with specific agent */
+  const handleAssignChange = useCallback(async (lead: OrphanedLead, agentId: string) => {
+    setDismissingId(lead.id);
+    try {
+      const { data, error } = await supabase.rpc('recover_single_lead', {
+        p_cart_id: lead.id,
+        p_agent_id: agentId,
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (!result?.success) {
+        toast.error(result?.error || 'Recovery failed');
+        return;
+      }
+      const agentName = salesUsers.find(u => u.id === agentId)?.first_name || 'agent';
+      toast.success(`✅ Recovered & assigned to ${agentName}`);
+      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+      onRecovered?.();
+    } catch (err: any) {
+      console.error('Assign error:', err);
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setDismissingId(null);
+    }
+  }, [salesUsers, onRecovered]);
+
+  const getAgentInfo = useCallback((agentId?: string) => {
+    if (!agentId) return null;
+    return salesUsers.find(u => u.id === agentId);
+  }, [salesUsers]);
 
   if (loading) {
     if (inline) {
@@ -472,602 +294,275 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     return null;
   }
 
-  // Inline mode — renders inside the existing Card, no overlay/collapsible
+  if (orphanedLeads.length === 0) {
+    if (inline) {
+      return (
+        <div className="text-center py-8">
+          <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">All caught up — no recovered leads pending.</p>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  // Inline mode — matches main LeadsTable layout
   if (inline) {
     return (
-      <div className="p-4 space-y-4">
-        {/* Header row with actions */}
-        <div className="flex items-center justify-between">
+      <div className="space-y-0">
+        {/* Header matching main table style */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <span className="text-sm font-semibold">Recovery Queue</span>
+            <span className="text-sm font-bold tracking-tight">Recovery Queue</span>
             <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">
               {orphanedLeads.length} lead{orphanedLeads.length !== 1 ? 's' : ''}
             </Badge>
-            {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length > 0 && (
-              <Badge className="h-5 px-1.5 text-[10px] bg-green-100 text-green-800 border-green-300">
-                {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length} genuine
-              </Badge>
-            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSyncToMarketing}
-              size="sm"
-              variant="outline"
-              className="h-7 px-2.5 text-xs gap-1.5"
-              title="Sync valid contacts to marketing audience"
-            >
-              <Mail className="h-3.5 w-3.5" />
-              Sync to Marketing
-            </Button>
-            <Button
-              onClick={handleSyncToSales}
-              disabled={syncing || orphanedLeads.length === 0}
-              size="sm"
-              className="h-7 px-2.5 text-xs gap-1.5"
-            >
-              {syncing ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <ArrowRightCircle className="h-3.5 w-3.5" />}
-              {syncing ? 'Recovering...' : 'Recover All'}
-            </Button>
-            <Button
-              onClick={fetchOrphanedLeads}
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              title="Refresh"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+          <Button
+            onClick={fetchOrphanedLeads}
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            title="Refresh"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
         </div>
 
-        {orphanedLeads.length > 0 ? (
-          <LeadTable
-            leads={orphanedLeads}
-            salesUsers={salesUsers}
-            onStatusChange={handleStatusChange}
-            onRecover={handleRecoverSingle}
-            onAssign={(lead, agentId) => handleRecoverSingle(lead, agentId)}
-            disabledId={dismissingId}
-          />
-        ) : (
-          <div className="text-center py-12">
-            <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
-            <p className="text-sm font-medium">All caught up!</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              No orphaned leads to recover. All abandoned carts are synced to the sales pipeline.
-            </p>
-          </div>
-        )}
+        {/* Table matching main LeadsTable columns */}
+        <div className="rounded-md border-2 border-border overflow-x-auto">
+          <TooltipProvider>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 border-b-2 border-border">
+                  <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</TableHead>
+                  <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                  <TableHead className="w-[40px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">CB</TableHead>
+                  <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>
+                  <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+                  <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
+                  <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+                  <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
+                  <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>
+                  <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Plan</TableHead>
+                  <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orphanedLeads.map((lead) => {
+                  const preAgent = getAgentInfo(lead.preAssignedTo);
+                  const agentInitial = preAgent?.first_name?.[0]?.toUpperCase() || '?';
+                  const agentColor = preAgent?.first_name?.toLowerCase() === 'james' ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-teal-100 text-teal-800 border-teal-300';
 
-        {/* Rejected leads section */}
-        {rejectedLeads.length > 0 && (
-          <Collapsible open={isRejectedOpen} onOpenChange={setIsRejectedOpen}>
-            <div className="border rounded-md bg-muted/10">
-              <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors">
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <XCircle className="h-4 w-4" />
-                    <span>Rejected Leads</span>
-                    <Badge variant="secondary" className="ml-1">{rejectedLeads.length}</Badge>
-                  </div>
-                  {isRejectedOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-4 pb-4">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Previously rejected leads. Click restore to move them back to the recovery queue.
-                  </p>
-                  <LeadTable
-                    leads={rejectedLeads}
-                    actionColumn={(lead) => (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => handleRestoreLead(lead)}
-                        disabled={restoringId === lead.id}
-                        title="Restore this lead"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                    )}
-                  />
-                </div>
-              </CollapsibleContent>
-            </div>
-          </Collapsible>
-        )}
-      </div>
-    );
-  }
-
-  if (compact) {
-    return (
-      <div className="relative">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <div
-              className={cn(
-                "rounded-xl border-2 h-12 flex items-center justify-between px-3 cursor-pointer hover:bg-muted/20 transition-colors",
-                orphanedLeads.length > 0 ? 'border-amber-400 bg-amber-50/40' : 'border-green-400 bg-green-50/40'
-              )}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                {orphanedLeads.length > 0 ? (
-                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-                ) : (
-                  <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                )}
-                <span className="text-xs font-semibold truncate">
-                  {orphanedLeads.length > 0 ? 'Recovered Leads' : 'All Synced'}
-                </span>
-                {orphanedLeads.length > 0 && (
-                  <Badge variant="destructive" className="h-5 px-1.5 text-[10px] shrink-0">{orphanedLeads.length}</Badge>
-                )}
-                {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length > 0 && (
-                  <Badge className="h-5 px-1.5 text-[10px] shrink-0 bg-green-100 text-green-800 border-green-300">
-                    {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length} genuine
-                  </Badge>
-                )}
-                {rejectedLeads.length > 0 && (
-                  <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0">{rejectedLeads.length} rejected</Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {orphanedLeads.length > 0 && (
-                  <>
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); handleSyncToMarketing(); }}
-                      size="sm"
-                      variant="outline"
-                      className="h-6 px-2 text-[10px] gap-1"
-                      title="Sync all valid emails & phones to marketing audience"
+                  return (
+                    <TableRow
+                      key={lead.id}
+                      className={cn(
+                        'transition-colors',
+                        dismissingId === lead.id && 'opacity-50 pointer-events-none',
+                      )}
                     >
-                      <Mail className="h-3 w-3" />
-                      Marketing
-                    </Button>
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
-                      disabled={syncing}
-                      size="sm"
-                      className="h-6 px-2 text-[10px] gap-1"
-                    >
-                      {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
-                      {syncing ? 'Syncing...' : 'Recover'}
-                    </Button>
-                  </>
-                )}
-                {isOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
-              </div>
-            </div>
-          </CollapsibleTrigger>
+                      {/* Agent — round-robin pre-assignment with dropdown to override */}
+                      <TableCell className="sticky left-0 bg-background z-10">
+                        <Select onValueChange={(agentId) => handleAssignChange(lead, agentId)}>
+                          <SelectTrigger className={cn("h-7 w-[100px] text-[11px] border rounded-md font-medium gap-1", agentColor)}>
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border", agentColor)}>
+                                {agentInitial}
+                              </span>
+                              <span className="truncate">{preAgent?.first_name || '—'}</span>
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {salesUsers
+                              .filter(u => u.role === 'sales' || u.role === 'sales_lead')
+                              .map(user => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.first_name} {user.last_name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
 
-          <CollapsibleContent>
-            <div className="absolute right-0 top-full z-50 mt-2 w-[480px] max-h-[400px] overflow-y-auto rounded-lg border-2 border-border bg-background p-3 space-y-4 shadow-xl">
-              {orphanedLeads.length > 0 && (
-                <LeadTable
-                  leads={orphanedLeads}
-                  actionColumn={(lead) => (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          disabled={dismissingId === lead.id}
-                          title="Reject this lead"
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            <strong>{lead.email}</strong> will be marked as rejected. You can restore it later.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDismissLead(lead)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Reject Lead
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                />
-              )}
+                      {/* Status — defaulting to "New", full options like main table */}
+                      <TableCell>
+                        <Select onValueChange={(val) => handleStatusChange(lead, val)}>
+                          <SelectTrigger className="h-7 w-[85px] text-[11px] border-border">
+                            <SelectValue placeholder="New" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="contacted">Contacted</SelectItem>
+                            <SelectItem value="follow_up">Follow-up</SelectItem>
+                            <SelectItem value="quote_sent">Quote Sent</SelectItem>
+                            <SelectItem value="urgent_callback">Urgent Call-back</SelectItem>
+                            <SelectItem value="negotiating">Negotiating</SelectItem>
+                            <SelectItem value="converted">Converted</SelectItem>
+                            <SelectItem value="lost">Lost</SelectItem>
+                            <SelectItem value="fake_lead">Fake Lead</SelectItem>
+                            <SelectItem value="duplicate">Duplicate</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
 
-              {/* Rejected leads */}
-              {rejectedLeads.length > 0 && (
-                <Collapsible open={isRejectedOpen} onOpenChange={setIsRejectedOpen}>
-                  <div className="border rounded-md bg-muted/10">
-                    <CollapsibleTrigger asChild>
-                      <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors">
-                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                          <XCircle className="h-4 w-4" />
-                          <span>Rejected Leads</span>
-                          <Badge variant="secondary" className="ml-1">{rejectedLeads.length}</Badge>
-                        </div>
-                        {isRejectedOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className="px-4 pb-4">
-                        <LeadTable
-                          leads={rejectedLeads}
-                          actionColumn={(lead) => (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                              onClick={() => handleRestoreLead(lead)}
-                              disabled={restoringId === lead.id}
-                              title="Restore this lead"
-                            >
-                              <RotateCcw className="h-4 w-4" />
-                            </Button>
-                          )}
-                        />
-                      </div>
-                    </CollapsibleContent>
-                  </div>
-                </Collapsible>
-              )}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
-    );
-  }
+                      {/* CB — callback indicator */}
+                      <TableCell className="text-center text-muted-foreground text-xs">—</TableCell>
 
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className={cn(
-        "rounded-lg border-2 overflow-hidden",
-        orphanedLeads.length > 0 ? 'border-amber-400 bg-amber-50/40' : 'border-green-400 bg-green-50/40'
-      )}>
-        <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-muted/20 transition-colors">
-            <div className="flex items-center gap-2">
-              {orphanedLeads.length > 0 ? (
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-              )}
-              <span className="text-sm font-semibold">
-                {orphanedLeads.length > 0 ? 'Recovered Leads' : 'Recovered Leads — All Synced'}
-              </span>
-              {orphanedLeads.length > 0 && (
-                <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">{orphanedLeads.length}</Badge>
-              )}
-              {rejectedLeads.length > 0 && (
-                <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground">{rejectedLeads.length} rejected</Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {orphanedLeads.length > 0 && (
-                <Button
-                  onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
-                  disabled={syncing}
-                  size="sm"
-                  className="h-6 px-2 text-[10px] gap-1"
-                >
-                  {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
-                  {syncing ? 'Syncing...' : 'Recover'}
-                </Button>
-              )}
-              {lastSyncedAt && (
-                <span className="text-[10px] text-muted-foreground">
-                  Synced {format(new Date(lastSyncedAt), 'HH:mm')}
-                </span>
-              )}
-              {isOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
-            </div>
-          </div>
-        </CollapsibleTrigger>
+                      {/* Calls — 0 for recovered leads */}
+                      <TableCell className="text-center text-xs text-muted-foreground">0</TableCell>
 
-        <CollapsibleContent>
-          <div className="px-3 pb-3 pt-0 space-y-4 border-t border-border/50">
-            {/* Orphaned leads table */}
-            {orphanedLeads.length > 0 && (
-              <>
-
-                <LeadTable
-                  leads={orphanedLeads}
-                  actionColumn={(lead) => (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          disabled={dismissingId === lead.id}
-                          title="Reject this lead"
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            <strong>{lead.email}</strong> will be marked as rejected. You can restore it later from the Rejected Leads section below.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDismissLead(lead)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Reject Lead
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                />
-              </>
-            )}
-
-            {orphanedLeads.length === 0 && lastSyncedAt && (
-              <div className="text-center py-4">
-                <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  All backup leads are synced with the sales pipeline. No recovered leads detected.
-                </p>
-              </div>
-            )}
-
-            {/* Rejected leads recovery section */}
-            {rejectedLeads.length > 0 && (
-              <Collapsible open={isRejectedOpen} onOpenChange={setIsRejectedOpen}>
-                <div className="border rounded-md bg-muted/10">
-                  <CollapsibleTrigger asChild>
-                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <XCircle className="h-4 w-4" />
-                        <span>Rejected Leads</span>
-                        <Badge variant="secondary" className="ml-1">{rejectedLeads.length}</Badge>
-                      </div>
-                      {isRejectedOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="px-4 pb-4">
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Previously rejected leads. Click restore to move them back to the recovery queue.
-                      </p>
-                      <LeadTable
-                        leads={rejectedLeads}
-                        actionColumn={(lead) => (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                disabled={restoringId === lead.id}
-                                title="Restore this lead"
-                              >
-                                <RotateCcw className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Restore this lead?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  <strong>{lead.email}</strong> will be moved back to the recovery queue and can be synced to the sales pipeline.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleRestoreLead(lead)}
-                                  className="bg-green-600 text-white hover:bg-green-700"
+                      {/* Actions — phone copy + email copy for quick access */}
+                      <TableCell>
+                        <div className="flex items-center gap-0.5">
+                          {lead.phone && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(lead.phone || '');
+                                    toast.success('Phone copied');
+                                  }}
                                 >
-                                  Restore Lead
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      />
-                    </div>
-                  </CollapsibleContent>
-                </div>
-              </Collapsible>
-            )}
-          </div>
-        </CollapsibleContent>
+                                  <Phone className="h-3.5 w-3.5 text-green-600" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Copy phone</TooltipContent>
+                            </Tooltip>
+                          )}
+                          {lead.email && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(lead.email || '');
+                                    toast.success('Email copied');
+                                  }}
+                                >
+                                  <Mail className="h-3.5 w-3.5 text-blue-600" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Copy email</TooltipContent>
+                            </Tooltip>
+                          )}
+                          {lead.vehicle_reg && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(lead.vehicle_reg || '');
+                                    toast.success('Reg copied');
+                                  }}
+                                >
+                                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Copy reg</TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      {/* Name */}
+                      <TableCell>
+                        <span className={cn(
+                          "font-medium text-sm truncate block max-w-[100px]",
+                          isSpamName(lead.full_name) && "line-through text-muted-foreground"
+                        )}>
+                          {lead.full_name || lead.email?.split('@')[0] || '—'}
+                        </span>
+                      </TableCell>
+
+                      {/* Phone */}
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          {lead.phone ? (
+                            lead.phone_status?.valid ? (
+                              <Phone className="h-3 w-3 text-green-600 shrink-0" />
+                            ) : (
+                              <PhoneOff className="h-3 w-3 text-red-500 shrink-0" />
+                            )
+                          ) : null}
+                          <a
+                            href={lead.phone ? `tel:${lead.phone}` : undefined}
+                            className={cn(
+                              "text-sm",
+                              lead.phone && "text-green-700 font-medium hover:underline cursor-pointer"
+                            )}
+                          >
+                            {lead.phone || '—'}
+                          </a>
+                        </div>
+                      </TableCell>
+
+                      {/* Email */}
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {lead.email_status?.valid ? (
+                            <Mail className="h-3 w-3 text-green-600 shrink-0" />
+                          ) : (
+                            <MailX className="h-3 w-3 text-red-500 shrink-0" />
+                          )}
+                          <span className="text-sm text-muted-foreground truncate max-w-[150px]" title={lead.email}>
+                            {lead.email}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      {/* Reg */}
+                      <TableCell>
+                        {lead.vehicle_reg ? (
+                          <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
+                            {lead.vehicle_reg}
+                          </Badge>
+                        ) : <span className="text-muted-foreground text-xs">—</span>}
+                      </TableCell>
+
+                      {/* Plan */}
+                      <TableCell className="text-xs text-muted-foreground">
+                        {lead.plan_name || '—'}
+                      </TableCell>
+
+                      {/* Created */}
+                      <TableCell>
+                        <div className="text-xs text-muted-foreground">
+                          <div>{format(new Date(lead.created_at), 'MMM d, yyyy')}</div>
+                          <div className="text-[10px]">{format(new Date(lead.created_at), 'HH:mm')}</div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
+        </div>
+
+        {/* Footer count */}
+        <div className="px-4 py-2 text-xs text-muted-foreground border-t border-border">
+          Showing {orphanedLeads.length} recovered lead{orphanedLeads.length !== 1 ? 's' : ''}
+        </div>
       </div>
-    </Collapsible>
-  );
-};
+    );
+  }
 
-/** Reason badge color helper */
-const getReasonBadge = (reason?: string) => {
-  if (!reason) return null;
-  if (reason.startsWith('Genuine')) {
-    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldCheck className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
-  }
-  if (reason.startsWith('Terminal — Fake')) {
-    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
-  }
-  if (reason.startsWith('Terminal — Lost')) {
-    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
-  }
-  if (reason.startsWith('Terminal — Converted')) {
-    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
-  }
-  if (reason.startsWith('Duplicate')) {
-    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
-  }
-  if (reason.startsWith('Suspicious')) {
-    return <Badge className="bg-red-100 text-red-800 border-red-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
-  }
-  return <Badge variant="outline" className="text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
-};
-
-/** Quality score visual */
-const QualityDot: React.FC<{ score: number }> = ({ score }) => {
-  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-500';
+  // Compact/default mode — simple banner (unchanged for other use cases)
   return (
-    <div className="flex items-center gap-1" title={`Quality: ${score}/100`}>
-      <div className={cn("h-2.5 w-2.5 rounded-full", color)} />
-      <span className="text-[10px] text-muted-foreground font-mono">{score}</span>
-    </div>
-  );
-};
-
-/** Shared lead table used for both orphaned and rejected leads */
-const LeadTable: React.FC<{
-  leads: OrphanedLead[];
-  actionColumn?: (lead: OrphanedLead) => React.ReactNode;
-  salesUsers?: SalesUser[];
-  onStatusChange?: (lead: OrphanedLead, status: string) => void;
-  onRecover?: (lead: OrphanedLead, agentId?: string) => void;
-  onAssign?: (lead: OrphanedLead, agentId: string) => void;
-  disabledId?: string | null;
-}> = ({ leads, actionColumn, salesUsers, onStatusChange, onRecover, onAssign, disabledId }) => {
-  const hasFullActions = !!(onStatusChange || onRecover);
-
-  return (
-    <div className="rounded-md border overflow-x-auto max-h-[500px] overflow-y-auto">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/30">
-            <TableHead className="w-[30px]">Q</TableHead>
-            <TableHead className="w-[130px]">Reason</TableHead>
-            <TableHead className="w-[120px]">Name</TableHead>
-            <TableHead className="w-[170px]">Email</TableHead>
-            <TableHead className="w-[120px]">Phone</TableHead>
-            <TableHead className="w-[80px]">Reg</TableHead>
-            <TableHead className="w-[80px]">Plan</TableHead>
-            <TableHead className="w-[90px]">Date</TableHead>
-            {hasFullActions && <TableHead className="w-[100px]">Status</TableHead>}
-            {hasFullActions && salesUsers && salesUsers.length > 0 && <TableHead className="w-[120px]">Assign & Recover</TableHead>}
-            {hasFullActions && <TableHead className="w-[60px] text-center">Recover</TableHead>}
-            {actionColumn && !hasFullActions && <TableHead className="w-[60px] text-center">Action</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leads.map((lead) => (
-            <TableRow key={lead.id} className={cn(
-              lead.orphan_reason?.startsWith('Genuine') && 'bg-green-50/30',
-              lead.orphan_reason?.startsWith('Suspicious') && 'bg-red-50/20',
-              disabledId === lead.id && 'opacity-50 pointer-events-none',
-            )}>
-              <TableCell>{lead.quality_score !== undefined ? <QualityDot score={lead.quality_score} /> : null}</TableCell>
-              <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
-              <TableCell className={cn("font-medium text-sm", isSpamName(lead.full_name) && "line-through text-muted-foreground")}>{lead.full_name || '—'}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  {lead.email_status?.valid ? (
-                    <Mail className="h-3 w-3 text-green-600 shrink-0" />
-                  ) : (
-                    <MailX className="h-3 w-3 text-red-500 shrink-0" />
-                  )}
-                  <span className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${lead.email} — ${lead.email_status?.reason || ''}`}>
-                    {lead.email}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  {lead.phone ? (
-                    lead.phone_status?.valid ? (
-                      <Phone className="h-3 w-3 text-green-600 shrink-0" />
-                    ) : (
-                      <PhoneOff className="h-3 w-3 text-red-500 shrink-0" />
-                    )
-                  ) : null}
-                  <span className="text-sm" title={lead.phone_status?.reason || ''}>
-                    {lead.phone || '—'}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                {lead.vehicle_reg ? (
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
-                    {lead.vehicle_reg}
-                  </Badge>
-                ) : '—'}
-              </TableCell>
-              <TableCell className="text-sm">{lead.plan_name || '—'}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{format(new Date(lead.created_at), 'MMM d, HH:mm')}</TableCell>
-
-              {/* Status dropdown — fake/lost/duplicate → vanish from list */}
-              {hasFullActions && (
-                <TableCell>
-                  <Select
-                    onValueChange={(value) => onStatusChange?.(lead, value)}
-                  >
-                    <SelectTrigger className="h-7 w-[90px] text-[10px] border-border">
-                      <SelectValue placeholder="Mark as..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fake_lead">🚫 Fake</SelectItem>
-                      <SelectItem value="lost">💀 Lost</SelectItem>
-                      <SelectItem value="duplicate">📋 Duplicate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-              )}
-
-              {/* Agent assignment + recover to specific agent */}
-              {hasFullActions && salesUsers && salesUsers.length > 0 && (
-                <TableCell>
-                  <Select
-                    onValueChange={(agentId) => onAssign?.(lead, agentId)}
-                  >
-                    <SelectTrigger className="h-7 w-[110px] text-[10px] border-border">
-                      <SelectValue placeholder="Assign to..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {salesUsers.filter(u => u.role !== 'admin').map(user => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.first_name} {user.last_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-              )}
-
-              {/* Quick recover button — auto round-robin */}
-              {hasFullActions && (
-                <TableCell className="text-center">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="h-7 px-2 text-[10px] gap-1"
-                    onClick={() => onRecover?.(lead)}
-                    disabled={disabledId === lead.id}
-                    title="Recover to pipeline (auto-assigned via round-robin)"
-                  >
-                    <ArrowRightCircle className="h-3.5 w-3.5" />
-                    Recover
-                  </Button>
-                </TableCell>
-              )}
-
-              {/* Legacy action column for compact/non-inline modes */}
-              {actionColumn && !hasFullActions && (
-                <TableCell className="text-center">{actionColumn(lead)}</TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="rounded-lg border-2 border-amber-400 bg-amber-50/40 p-3">
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <span className="text-sm font-semibold">{orphanedLeads.length} recovered leads</span>
+      </div>
     </div>
   );
 };
