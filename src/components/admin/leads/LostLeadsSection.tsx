@@ -89,19 +89,31 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const initialLoadDone = React.useRef(false);
   const [dismissingId, setDismissingId] = useState<string | null>(null);
 
-  // Get active sales agents for round-robin display
-  const activeAgents = useMemo(() => {
-    return salesUsers
-      .filter(u => u.role === 'sales' || u.role === 'sales_lead')
-      .sort((a, b) => {
-        // James first (sort_order 1), Ash second (sort_order 2)
-        const nameA = a.first_name?.toLowerCase() || '';
-        const nameB = b.first_name?.toLowerCase() || '';
-        if (nameA === 'james') return -1;
-        if (nameB === 'james') return 1;
-        return 0;
+  // Agent distribution caps for correct sort_order
+  const [agentCaps, setAgentCaps] = useState<{ admin_user_id: string; sort_order: number; daily_cap: number; assigned_today: number; paused: boolean }[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('agent_distribution_caps')
+      .select('admin_user_id, sort_order, daily_cap, assigned_today, paused')
+      .eq('paused', false)
+      .order('sort_order', { ascending: true })
+      .then(({ data }) => {
+        if (data) setAgentCaps(data);
       });
-  }, [salesUsers]);
+  }, []);
+
+  // Get active sales agents sorted by distribution sort_order (same as main leads flow)
+  const activeAgents = useMemo(() => {
+    const capMap = new Map(agentCaps.map(c => [c.admin_user_id, c]));
+    return salesUsers
+      .filter(u => (u.role === 'sales' || u.role === 'sales_lead') && capMap.has(u.id) && !capMap.get(u.id)!.paused)
+      .sort((a, b) => {
+        const sortA = capMap.get(a.id)?.sort_order ?? 999;
+        const sortB = capMap.get(b.id)?.sort_order ?? 999;
+        return sortA - sortB;
+      });
+  }, [salesUsers, agentCaps]);
 
   const fetchOrphanedLeads = useCallback(async () => {
     if (!initialLoadDone.current) {
@@ -161,14 +173,16 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         if (terminalEmails.has(cart.email?.toLowerCase())) return false;
         if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead', 'duplicate'].includes(cart.contact_status)) return false;
         return true;
-      }).map((cart: any, index: number) => ({
+      }).map((cart: any) => ({
         ...cart,
         phone_status: validatePhone(cart.phone),
         email_status: validateEmail(cart.email),
         quality_score: calcQuality(cart),
-        // Pre-assign round-robin: alternate between active agents
-        preAssignedTo: activeAgents.length > 0 ? activeAgents[index % activeAgents.length]?.id : undefined,
-      })).sort((a: any, b: any) => b.quality_score - a.quality_score);
+      })).sort((a: any, b: any) => b.quality_score - a.quality_score)
+        .map((cart: any, index: number) => ({
+          ...cart,
+          preAssignedTo: activeAgents.length > 0 ? activeAgents[index % activeAgents.length]?.id : undefined,
+        }));
 
       setOrphanedLeads(orphans);
     } catch (err) {
