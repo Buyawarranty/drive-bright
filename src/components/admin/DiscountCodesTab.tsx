@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw } from "lucide-react";
+import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw, History } from "lucide-react";
+import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
