@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
