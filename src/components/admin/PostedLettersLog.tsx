@@ -608,13 +608,17 @@ export const PostedLettersLog: React.FC = () => {
                       <td className="py-2 px-2">
                         <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                           entry.action_type === 'search' ? 'bg-blue-100 text-blue-700' :
-                          entry.action_type === 'label' ? 'bg-amber-100 text-amber-700' :
-                          entry.action_type === 'print' ? 'bg-green-100 text-green-700' :
+                          entry.action_type === 'label' || entry.action_type === 'batch_label' ? 'bg-amber-100 text-amber-700' :
+                          entry.action_type === 'print' || entry.action_type === 'batch_print' || entry.action_type === 'batch' ? 'bg-green-100 text-green-700' :
+                          entry.action_type === 'reprint' ? 'bg-purple-100 text-purple-700' :
                           'bg-muted text-muted-foreground'
                         }`}>
                           {entry.action_type === 'search' ? 'Search' :
                            entry.action_type === 'label' ? 'Label' :
+                           entry.action_type === 'batch_label' ? 'Batch Label' :
                            entry.action_type === 'print' ? 'Print' :
+                           entry.action_type === 'batch_print' || entry.action_type === 'batch' ? 'Batch Print' :
+                           entry.action_type === 'reprint' ? 'Reprint' :
                            entry.action_type || 'Manual'}
                         </span>
                       </td>
@@ -632,12 +636,12 @@ export const PostedLettersLog: React.FC = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 gap-1 bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-200"
-                            onClick={() => printEnvelopeLabel(entry)}
-                            title="Print single envelope label"
+                            className="text-xs h-7 gap-1"
+                            onClick={() => reprintLetter(entry)}
+                            title="Reprint label for this customer"
                           >
-                            <Tag className="h-3 w-3" />
-                            Label
+                            <RotateCcw className="h-3 w-3" />
+                            Reprint
                           </Button>
                           <Button
                             size="sm"
