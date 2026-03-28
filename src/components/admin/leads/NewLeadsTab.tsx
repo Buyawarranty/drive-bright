@@ -738,71 +738,78 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
-              {/* Sticky Control Bar */}
-              <LeadsTableControlBar
-                totalItems={pagination.totalItems}
-                pageSize={pagination.pageSize}
-                onPageSizeChange={pagination.setPageSize}
-                selectedCount={selectedLeads.size}
-                totalVisible={pagination.paginatedData.length}
-                allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
-                onSelectAll={handleSelectAll}
-                salesUsers={canAssignLeads ? salesUsers : []}
-                onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
-                onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
-              />
-              
-              {/* Admin: Show pending paid lead access requests */}
-              {isAdminOrSuperAdmin && currentAdminId && (
-                <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
-              )}
-              
-              {/* Quote detail issues flagged by customers — admin only */}
-              {isDigitalAccess && (
-                <div className="px-4 pt-3">
-                  <QuoteDetailIssuesAlert />
-                </div>
-              )}
+              {activeFilter === 'recovery' ? (
+                /* Recovery Queue — inline, same card structure */
+                <LostLeadsSection onRecovered={fetchLeads} inline />
+              ) : (
+                <>
+                  {/* Sticky Control Bar */}
+                  <LeadsTableControlBar
+                    totalItems={pagination.totalItems}
+                    pageSize={pagination.pageSize}
+                    onPageSizeChange={pagination.setPageSize}
+                    selectedCount={selectedLeads.size}
+                    totalVisible={pagination.paginatedData.length}
+                    allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                    onSelectAll={handleSelectAll}
+                    salesUsers={canAssignLeads ? salesUsers : []}
+                    onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
+                    onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
+                  />
+                  
+                  {/* Admin: Show pending paid lead access requests */}
+                  {isAdminOrSuperAdmin && currentAdminId && (
+                    <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
+                  )}
+                  
+                  {/* Quote detail issues flagged by customers — admin only */}
+                  {isDigitalAccess && (
+                    <div className="px-4 pt-3">
+                      <QuoteDetailIssuesAlert />
+                    </div>
+                  )}
 
-              <LeadsTable
-                leads={pagination.paginatedData}
-                tags={tags}
-                salesUsers={salesUsers}
-                canAssignLeads={canAssignLeads}
-                selectedLeads={selectedLeads}
-                onSelectLead={handleSelectLead}
-                onSelectAll={handleSelectAll}
-                onUpdateStatus={updateLeadStatus}
-                onAssign={assignLead}
-                onAutoAssign={autoAssignLead}
-                onUpdatePriority={updateLeadPriority}
-                onScheduleFollowUp={scheduleFollowUp}
-                onAddTag={addTagToLead}
-                onRemoveTag={removeTagFromLead}
-                onUpdateNotes={updateLeadNotes}
-                onMarkContacted={markContactedAt}
-                onLogActivity={logActivity}
-                onUpdateCallCount={updateCallCount}
-                onRefresh={fetchLeads}
-                onSendQuote={handleSendQuote}
-                showFbBadge={isDigitalAccess}
-                showSourceColumn={isAdminOrSuperAdmin}
-                isPaidLocked={isPaidLocked}
-                paidLeadAccessCheck={paidLeadAccessCheck}
-                onRequestPaidAccess={handleRequestPaidAccess}
-              />
-              
-              {/* Lightweight Footer Pagination */}
-              <LeadsTableFooter
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.totalItems}
-                startIndex={pagination.startIndex}
-                endIndex={pagination.endIndex}
-                onPageChange={pagination.goToPage}
-                canGoNext={pagination.canGoNext}
-                canGoPrev={pagination.canGoPrev}
-              />
+                  <LeadsTable
+                    leads={pagination.paginatedData}
+                    tags={tags}
+                    salesUsers={salesUsers}
+                    canAssignLeads={canAssignLeads}
+                    selectedLeads={selectedLeads}
+                    onSelectLead={handleSelectLead}
+                    onSelectAll={handleSelectAll}
+                    onUpdateStatus={updateLeadStatus}
+                    onAssign={assignLead}
+                    onAutoAssign={autoAssignLead}
+                    onUpdatePriority={updateLeadPriority}
+                    onScheduleFollowUp={scheduleFollowUp}
+                    onAddTag={addTagToLead}
+                    onRemoveTag={removeTagFromLead}
+                    onUpdateNotes={updateLeadNotes}
+                    onMarkContacted={markContactedAt}
+                    onLogActivity={logActivity}
+                    onUpdateCallCount={updateCallCount}
+                    onRefresh={fetchLeads}
+                    onSendQuote={handleSendQuote}
+                    showFbBadge={isDigitalAccess}
+                    showSourceColumn={isAdminOrSuperAdmin}
+                    isPaidLocked={isPaidLocked}
+                    paidLeadAccessCheck={paidLeadAccessCheck}
+                    onRequestPaidAccess={handleRequestPaidAccess}
+                  />
+                  
+                  {/* Lightweight Footer Pagination */}
+                  <LeadsTableFooter
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    totalItems={pagination.totalItems}
+                    startIndex={pagination.startIndex}
+                    endIndex={pagination.endIndex}
+                    onPageChange={pagination.goToPage}
+                    canGoNext={pagination.canGoNext}
+                    canGoPrev={pagination.canGoPrev}
+                  />
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
