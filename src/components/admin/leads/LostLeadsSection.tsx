@@ -25,6 +25,7 @@ interface OrphanedLead {
   contact_status: string | null;
   contacted_by: string | null;
   created_at: string;
+  orphan_reason?: string;
 }
 
 interface LostLeadsSectionProps {
@@ -46,7 +47,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const fetchOrphanedLeads = useCallback(async () => {
     setLoading(true);
     try {
-      const [cartsRes, rejectedCartsRes, leadsRes] = await Promise.all([
+      const [cartsRes, rejectedCartsRes, leadsRes, terminalLeadsRes] = await Promise.all([
         fetchAllRows(() =>
           supabase
             .from('abandoned_carts')
@@ -65,13 +66,21 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         fetchAllRows(() =>
           supabase
             .from('sales_leads')
-            .select('id, email, abandoned_cart_id')
+            .select('id, email, abandoned_cart_id, status')
+        ),
+        // Fetch terminal leads to classify orphan reasons
+        fetchAllRows(() =>
+          supabase
+            .from('sales_leads')
+            .select('email, status, phone')
+            .in('status', ['converted', 'lost', 'fake_lead'])
         ),
       ]);
 
       const carts = cartsRes.data || [];
       const leads = leadsRes.data || [];
       const rejected = rejectedCartsRes.data || [];
+      const terminalLeads = terminalLeadsRes.data || [];
 
       const linkedCartIds = new Set(
         leads.filter((l: any) => l.abandoned_cart_id).map((l: any) => l.abandoned_cart_id)
@@ -80,13 +89,66 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         leads.map((l: any) => l.email?.toLowerCase()).filter(Boolean)
       );
 
+      // Build terminal status lookup by email
+      const terminalByEmail = new Map<string, string>();
+      terminalLeads.forEach((tl: any) => {
+        const em = tl.email?.toLowerCase();
+        if (em) terminalByEmail.set(em, tl.status);
+      });
+      // Build terminal status lookup by phone
+      const terminalByPhone = new Map<string, string>();
+      terminalLeads.forEach((tl: any) => {
+        const ph = (tl.phone || '').replace(/[^0-9]/g, '');
+        if (ph.length >= 10) terminalByPhone.set(ph, tl.status);
+      });
+
+      // Count how many times each email appears in abandoned_carts (for duplicate detection)
+      const emailCounts = new Map<string, number>();
+      carts.forEach((c: any) => {
+        const em = c.email?.toLowerCase();
+        if (em) emailCounts.set(em, (emailCounts.get(em) || 0) + 1);
+      });
+
+      const classifyOrphanReason = (cart: any): string => {
+        const em = cart.email?.toLowerCase();
+        const ph = (cart.phone || '').replace(/[^0-9]/g, '');
+
+        // Check terminal guard
+        if (em && terminalByEmail.has(em)) {
+          const status = terminalByEmail.get(em)!;
+          const label = status === 'fake_lead' ? 'Fake' : status === 'lost' ? 'Lost' : 'Converted';
+          return `Terminal — ${label}`;
+        }
+        if (ph.length >= 10 && terminalByPhone.has(ph)) {
+          const status = terminalByPhone.get(ph)!;
+          const label = status === 'fake_lead' ? 'Fake' : status === 'lost' ? 'Lost' : 'Converted';
+          return `Terminal — ${label}`;
+        }
+
+        // Check duplicate submissions
+        const dupCount = em ? (emailCounts.get(em) || 0) : 0;
+        if (dupCount > 1) {
+          return `Duplicate (×${dupCount})`;
+        }
+
+        // Check if step 1 only (shouldn't happen since we filter >=2, but safety)
+        if ((cart.step_abandoned || 0) < 2) {
+          return 'Step 1 only';
+        }
+
+        return 'Genuine — New';
+      };
+
       const orphans = carts.filter((cart: any) => {
         if (linkedCartIds.has(cart.id)) return false;
         if (existingEmails.has(cart.email?.toLowerCase())) return false;
         if (cart.is_converted === true) return false;
         if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead'].includes(cart.contact_status)) return false;
         return true;
-      });
+      }).map((cart: any) => ({
+        ...cart,
+        orphan_reason: classifyOrphanReason(cart),
+      }));
 
       // Filter rejected leads: only show those not already in sales pipeline
       const rejectedOrphans = rejected.filter((cart: any) => {
@@ -205,6 +267,11 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                 </span>
                 {orphanedLeads.length > 0 && (
                   <Badge variant="destructive" className="h-5 px-1.5 text-[10px] shrink-0">{orphanedLeads.length}</Badge>
+                )}
+                {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length > 0 && (
+                  <Badge className="h-5 px-1.5 text-[10px] shrink-0 bg-green-100 text-green-800 border-green-300">
+                    {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length} genuine
+                  </Badge>
                 )}
                 {rejectedLeads.length > 0 && (
                   <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0">{rejectedLeads.length} rejected</Badge>
@@ -475,6 +542,27 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   );
 };
 
+/** Reason badge color helper */
+const getReasonBadge = (reason?: string) => {
+  if (!reason) return null;
+  if (reason.startsWith('Genuine')) {
+    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap">✓ {reason}</Badge>;
+  }
+  if (reason.startsWith('Terminal — Fake')) {
+    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+  }
+  if (reason.startsWith('Terminal — Lost')) {
+    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+  }
+  if (reason.startsWith('Terminal — Converted')) {
+    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">🔄 {reason}</Badge>;
+  }
+  if (reason.startsWith('Duplicate')) {
+    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">⚠ {reason}</Badge>;
+  }
+  return <Badge variant="outline" className="text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
+};
+
 /** Shared lead table used for both orphaned and rejected leads */
 const LeadTable: React.FC<{
   leads: OrphanedLead[];
@@ -484,20 +572,22 @@ const LeadTable: React.FC<{
     <Table>
       <TableHeader>
         <TableRow className="bg-muted/30">
-          <TableHead className="w-[160px]">Name</TableHead>
-          <TableHead className="w-[200px]">Email</TableHead>
-          <TableHead className="w-[120px]">Phone</TableHead>
-          <TableHead className="w-[100px]">Reg Plate</TableHead>
-          <TableHead className="w-[120px]">Vehicle</TableHead>
-          <TableHead className="w-[100px]">Plan</TableHead>
-          <TableHead className="w-[60px]">Step</TableHead>
-          <TableHead className="w-[120px]">Date</TableHead>
-          <TableHead className="w-[80px] text-center">Action</TableHead>
+          <TableHead className="w-[110px]">Reason</TableHead>
+          <TableHead className="w-[140px]">Name</TableHead>
+          <TableHead className="w-[180px]">Email</TableHead>
+          <TableHead className="w-[110px]">Phone</TableHead>
+          <TableHead className="w-[90px]">Reg Plate</TableHead>
+          <TableHead className="w-[110px]">Vehicle</TableHead>
+          <TableHead className="w-[80px]">Plan</TableHead>
+          <TableHead className="w-[50px]">Step</TableHead>
+          <TableHead className="w-[100px]">Date</TableHead>
+          <TableHead className="w-[70px] text-center">Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {leads.map((lead) => (
-          <TableRow key={lead.id}>
+          <TableRow key={lead.id} className={lead.orphan_reason?.startsWith('Genuine') ? 'bg-green-50/30' : undefined}>
+            <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
             <TableCell className="font-medium text-sm">{lead.full_name || '—'}</TableCell>
             <TableCell className="text-sm text-muted-foreground">{lead.email}</TableCell>
             <TableCell className="text-sm">{lead.phone || '—'}</TableCell>
