@@ -762,7 +762,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <CardContent className="p-0">
               {activeFilter === 'recovery' ? (
                 /* Recovery Queue — full view when pill is selected */
-                <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} />
+                <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} userRole={userRole} />
               ) : (
                 <>
                   {/* Sticky Control Bar */}
@@ -840,7 +840,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <div id="recovery-queue-section">
               <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20">
                 <CardContent className="p-0">
-                  <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} />
+                  <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} userRole={userRole} />
                 </CardContent>
               </Card>
             </div>
