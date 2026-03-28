@@ -940,6 +940,10 @@ export function DiscountCodesTab() {
             <Archive className="h-4 w-4" />
             Archived Codes ({archivedCodes.length})
           </TabsTrigger>
+          <TabsTrigger value="usage" className="flex items-center gap-2">
+            <History className="h-4 w-4" />
+            Usage History
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="active">
