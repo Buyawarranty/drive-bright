@@ -413,15 +413,27 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 {orphanedLeads.length > 0 && (
-                  <Button
-                    onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
-                    disabled={syncing}
-                    size="sm"
-                    className="h-6 px-2 text-[10px] gap-1"
-                  >
-                    {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
-                    {syncing ? 'Syncing...' : 'Recover'}
-                  </Button>
+                  <>
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); handleSyncToMarketing(); }}
+                      size="sm"
+                      variant="outline"
+                      className="h-6 px-2 text-[10px] gap-1"
+                      title="Sync all valid emails & phones to marketing audience"
+                    >
+                      <Mail className="h-3 w-3" />
+                      Marketing
+                    </Button>
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
+                      disabled={syncing}
+                      size="sm"
+                      className="h-6 px-2 text-[10px] gap-1"
+                    >
+                      {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
+                      {syncing ? 'Syncing...' : 'Recover'}
+                    </Button>
+                  </>
                 )}
                 {isOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
