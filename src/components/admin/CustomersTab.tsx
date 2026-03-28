@@ -687,6 +687,21 @@ export const CustomersTab = () => {
         if (filterBySource === 'website') {
           // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
           return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+        } else if (filterBySource === 'website_google') {
+          // Website sale with Google Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const source = customer.purchase_source?.toLowerCase() || '';
+          return isWebsite && source === 'google_ads';
+        } else if (filterBySource === 'website_facebook') {
+          // Website sale with Facebook Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const source = customer.purchase_source?.toLowerCase() || '';
+          return isWebsite && source === 'facebook_ads';
+        } else if (filterBySource === 'website_organic') {
+          // Website sale with no paid attribution (organic)
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const source = customer.purchase_source?.toLowerCase() || '';
+          return isWebsite && source !== 'google_ads' && source !== 'facebook_ads';
         } else if (filterBySource === 'staff_purchase') {
           // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
           return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
