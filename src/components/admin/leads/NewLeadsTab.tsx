@@ -121,7 +121,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // - team-view: must be explicitly granted OR sales_lead/admin role gets it automatically
   // Global toggle 'agents_own_leads_only' = true means ALL agents can see all leads
   // Per-agent override: if agent has 'all-leads' permission, they can see all leads regardless
-  const canSeeAllLeads = isAdmin ? true : (agentsOwnLeadsOnly === true || hasAllLeadsPerm === true);
+  const canSeeAllLeads = true; // All sales roles see the full leads feed; column restrictions handle role differences
   const canSeeMyDashboard = true; // Always allow - shows only user's own leads
   const canSeeTeamView = hasTeamViewPerm === true || isAdmin; // Sales leads & admins always get team view
   
