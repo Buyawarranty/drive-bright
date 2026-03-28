@@ -552,6 +552,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount,
   ]);
 
+  // Show loading spinner BEFORE role-based routing so sales agents don't see empty state
+  if (loading && leads.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   // Sales agents get a restricted view UNLESS they have the 'all-leads' permission
   // If all-leads is not explicitly denied, they see the full leads feed
   // This is placed after all hooks to comply with React's rules of hooks
@@ -565,14 +574,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         onNavigateToTab={onNavigateToTab}
         hideAssignedColumn={hideAssignedColumnForAgents}
       />
-    );
-  }
-
-  if (loading && leads.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
     );
   }
 
