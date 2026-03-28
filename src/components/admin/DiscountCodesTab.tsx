@@ -1211,6 +1211,9 @@ export function DiscountCodesTab() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="usage">
+          <DiscountCodeUsageHistory />
+        </TabsContent>
       </Tabs>
     </div>
   );
