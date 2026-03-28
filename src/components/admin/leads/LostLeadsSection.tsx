@@ -107,7 +107,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [restoringId, setRestoringId] = useState<string | null>(null);
 
   const fetchOrphanedLeads = useCallback(async () => {
-    setLoading(true);
+    if (!initialLoadDone.current) {
+      setLoading(true);
+    }
     try {
       const [cartsRes, rejectedCartsRes, leadsRes, terminalLeadsRes] = await Promise.all([
         fetchAllRows(() =>
