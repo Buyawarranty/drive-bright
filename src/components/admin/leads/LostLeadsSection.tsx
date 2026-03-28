@@ -81,9 +81,10 @@ interface OrphanedLead {
 interface LostLeadsSectionProps {
   onRecovered?: () => void;
   compact?: boolean;
+  inline?: boolean;
 }
 
-export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false }) => {
+export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
