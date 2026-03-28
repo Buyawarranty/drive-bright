@@ -739,10 +739,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             recoveryCount={recoveryCount}
           />
           
+          {/* Recovery Queue — always visible above main table when there are recoverable leads */}
+          {recoveryCount > 0 && activeFilter !== 'recovery' && (
+            <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20">
+              <CardContent className="p-0">
+                <LostLeadsSection onRecovered={fetchLeads} inline />
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
               {activeFilter === 'recovery' ? (
-                /* Recovery Queue — inline, same card structure */
+                /* Recovery Queue — full view when pill is selected */
                 <LostLeadsSection onRecovered={fetchLeads} inline />
               ) : (
                 <>
