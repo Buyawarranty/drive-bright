@@ -12,6 +12,53 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
+// Disposable/throwaway email domains commonly used for fake signups
+const DISPOSABLE_DOMAINS = new Set([
+  'mailinator.com','guerrillamail.com','tempmail.com','throwaway.email','yopmail.com',
+  'sharklasers.com','guerrillamailblock.com','grr.la','dispostable.com','mailnesia.com',
+  'trashmail.com','tempail.com','fakeinbox.com','maildrop.cc','10minutemail.com',
+  'temp-mail.org','emailondeck.com','getairmail.com','mohmal.com','burnermail.io',
+  'getnada.com','tmail.ws','harakirimail.com','33mail.com','spam4.me',
+]);
+
+// Known test/spam name patterns
+const SPAM_NAME_PATTERNS = [/^test\b/i, /^asdf/i, /^xxx/i, /^aaa+$/i, /^qwer/i, /^fake/i, /^sample/i, /^demo\b/i];
+
+/** Validate UK phone number format (admin-side only, not blocking customers) */
+const validatePhone = (phone: string | null): { valid: boolean; reason: string } => {
+  if (!phone || phone.trim() === '') return { valid: false, reason: 'Missing' };
+  const digits = phone.replace(/[^0-9]/g, '');
+  if (digits.length < 10) return { valid: false, reason: `Too short (${digits.length} digits)` };
+  if (digits.length > 15) return { valid: false, reason: 'Too long' };
+  // UK mobile: 07xxx or +447xxx
+  const isUkMobile = /^(0|44|440)7\d{8,9}$/.test(digits);
+  // UK landline: 01xxx, 02xxx, 03xxx
+  const isUkLandline = /^(0|44|440)[123]\d{8,9}$/.test(digits);
+  // International: starts with valid country code
+  const isInternational = /^(1|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7,13}$/.test(digits);
+  if (isUkMobile) return { valid: true, reason: 'UK Mobile' };
+  if (isUkLandline) return { valid: true, reason: 'UK Landline' };
+  if (isInternational) return { valid: true, reason: 'International' };
+  // Has enough digits but unknown format
+  return { valid: true, reason: 'Unknown format' };
+};
+
+/** Validate email format (admin-side only) */
+const validateEmail = (email: string | null): { valid: boolean; reason: string } => {
+  if (!email || email.trim() === '') return { valid: false, reason: 'Missing' };
+  const em = email.toLowerCase().trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return { valid: false, reason: 'Invalid format' };
+  const domain = em.split('@')[1];
+  if (DISPOSABLE_DOMAINS.has(domain)) return { valid: false, reason: 'Disposable email' };
+  return { valid: true, reason: 'Valid' };
+};
+
+/** Check name for spam patterns */
+const isSpamName = (name: string | null): boolean => {
+  if (!name) return false;
+  return SPAM_NAME_PATTERNS.some(p => p.test(name.trim()));
+};
+
 interface OrphanedLead {
   id: string;
   email: string;
@@ -26,6 +73,9 @@ interface OrphanedLead {
   contacted_by: string | null;
   created_at: string;
   orphan_reason?: string;
+  phone_status?: { valid: boolean; reason: string };
+  email_status?: { valid: boolean; reason: string };
+  quality_score?: number; // 0-100
 }
 
 interface LostLeadsSectionProps {
