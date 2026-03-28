@@ -292,11 +292,18 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
           });
         }
 
+        // Update the abandoned_cart contact_status so it reflects in the queue
+        await supabase
+          .from('abandoned_carts')
+          .update({ contact_status: newStatus })
+          .eq('id', lead.id);
+
         const agentName = agentId
           ? salesUsers.find(u => u.id === agentId)?.first_name || 'agent'
           : 'auto-assigned';
-        toast.success(`✅ Recovered → ${agentName} (${newStatus})`);
-        setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+        toast.success(`✅ Status → ${newStatus} (${agentName})`);
+        // Keep lead in list — update its local status
+        setOrphanedLeads(prev => prev.map(l => l.id === lead.id ? { ...l, contact_status: newStatus } : l));
         onRecovered?.();
       }
     } catch (err: any) {
