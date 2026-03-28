@@ -468,9 +468,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
 
                       {/* Status — defaulting to "New", full options like main table */}
                       <TableCell>
-                        <Select onValueChange={(val) => handleStatusChange(lead, val)}>
+                        <Select value={lead.contact_status || 'new'} onValueChange={(val) => handleStatusChange(lead, val)}>
                           <SelectTrigger className="h-7 w-[85px] text-[11px] border-border">
-                            <SelectValue placeholder="New" />
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="new">New</SelectItem>
