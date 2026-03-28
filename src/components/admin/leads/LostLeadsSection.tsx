@@ -5,12 +5,59 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
+// Disposable/throwaway email domains commonly used for fake signups
+const DISPOSABLE_DOMAINS = new Set([
+  'mailinator.com','guerrillamail.com','tempmail.com','throwaway.email','yopmail.com',
+  'sharklasers.com','guerrillamailblock.com','grr.la','dispostable.com','mailnesia.com',
+  'trashmail.com','tempail.com','fakeinbox.com','maildrop.cc','10minutemail.com',
+  'temp-mail.org','emailondeck.com','getairmail.com','mohmal.com','burnermail.io',
+  'getnada.com','tmail.ws','harakirimail.com','33mail.com','spam4.me',
+]);
+
+// Known test/spam name patterns
+const SPAM_NAME_PATTERNS = [/^test\b/i, /^asdf/i, /^xxx/i, /^aaa+$/i, /^qwer/i, /^fake/i, /^sample/i, /^demo\b/i];
+
+/** Validate UK phone number format (admin-side only, not blocking customers) */
+const validatePhone = (phone: string | null): { valid: boolean; reason: string } => {
+  if (!phone || phone.trim() === '') return { valid: false, reason: 'Missing' };
+  const digits = phone.replace(/[^0-9]/g, '');
+  if (digits.length < 10) return { valid: false, reason: `Too short (${digits.length} digits)` };
+  if (digits.length > 15) return { valid: false, reason: 'Too long' };
+  // UK mobile: 07xxx or +447xxx
+  const isUkMobile = /^(0|44|440)7\d{8,9}$/.test(digits);
+  // UK landline: 01xxx, 02xxx, 03xxx
+  const isUkLandline = /^(0|44|440)[123]\d{8,9}$/.test(digits);
+  // International: starts with valid country code
+  const isInternational = /^(1|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7,13}$/.test(digits);
+  if (isUkMobile) return { valid: true, reason: 'UK Mobile' };
+  if (isUkLandline) return { valid: true, reason: 'UK Landline' };
+  if (isInternational) return { valid: true, reason: 'International' };
+  // Has enough digits but unknown format
+  return { valid: true, reason: 'Unknown format' };
+};
+
+/** Validate email format (admin-side only) */
+const validateEmail = (email: string | null): { valid: boolean; reason: string } => {
+  if (!email || email.trim() === '') return { valid: false, reason: 'Missing' };
+  const em = email.toLowerCase().trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return { valid: false, reason: 'Invalid format' };
+  const domain = em.split('@')[1];
+  if (DISPOSABLE_DOMAINS.has(domain)) return { valid: false, reason: 'Disposable email' };
+  return { valid: true, reason: 'Valid' };
+};
+
+/** Check name for spam patterns */
+const isSpamName = (name: string | null): boolean => {
+  if (!name) return false;
+  return SPAM_NAME_PATTERNS.some(p => p.test(name.trim()));
+};
 
 interface OrphanedLead {
   id: string;
@@ -26,6 +73,9 @@ interface OrphanedLead {
   contacted_by: string | null;
   created_at: string;
   orphan_reason?: string;
+  phone_status?: { valid: boolean; reason: string };
+  email_status?: { valid: boolean; reason: string };
+  quality_score?: number; // 0-100
 }
 
 interface LostLeadsSectionProps {
@@ -131,12 +181,38 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
           return `Duplicate (×${dupCount})`;
         }
 
-        // Check if step 1 only (shouldn't happen since we filter >=2, but safety)
+        // Check if step 1 only
         if ((cart.step_abandoned || 0) < 2) {
           return 'Step 1 only';
         }
 
+        // Check for suspicious indicators
+        const phoneResult = validatePhone(cart.phone);
+        const emailResult = validateEmail(cart.email);
+        const spamName = isSpamName(cart.full_name);
+
+        if (spamName && !phoneResult.valid) return 'Suspicious — Spam name + bad phone';
+        if (!phoneResult.valid && !emailResult.valid) return 'Suspicious — No valid contact';
+        if (emailResult.reason === 'Disposable email') return 'Suspicious — Disposable email';
+        if (spamName) return 'Suspicious — Spam name';
+
         return 'Genuine — New';
+      };
+
+      /** Calculate a 0-100 quality score */
+      const calcQuality = (cart: any): number => {
+        let score = 50;
+        const phoneResult = validatePhone(cart.phone);
+        const emailResult = validateEmail(cart.email);
+        if (phoneResult.valid) score += 20; else score -= 20;
+        if (emailResult.valid) score += 10; else score -= 10;
+        if (emailResult.reason === 'Disposable email') score -= 15;
+        if (cart.full_name && !isSpamName(cart.full_name)) score += 5;
+        if (isSpamName(cart.full_name)) score -= 15;
+        if (cart.vehicle_reg) score += 5;
+        if (cart.plan_name) score += 5;
+        if (cart.step_abandoned >= 3) score += 5;
+        return Math.max(0, Math.min(100, score));
       };
 
       const orphans = carts.filter((cart: any) => {
@@ -148,7 +224,10 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       }).map((cart: any) => ({
         ...cart,
         orphan_reason: classifyOrphanReason(cart),
-      }));
+        phone_status: validatePhone(cart.phone),
+        email_status: validateEmail(cart.email),
+        quality_score: calcQuality(cart),
+      })).sort((a: any, b: any) => b.quality_score - a.quality_score);
 
       // Filter rejected leads: only show those not already in sales pipeline
       const rejectedOrphans = rejected.filter((cart: any) => {
@@ -546,21 +625,35 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
 const getReasonBadge = (reason?: string) => {
   if (!reason) return null;
   if (reason.startsWith('Genuine')) {
-    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap">✓ {reason}</Badge>;
+    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldCheck className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   if (reason.startsWith('Terminal — Fake')) {
-    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   if (reason.startsWith('Terminal — Lost')) {
-    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   if (reason.startsWith('Terminal — Converted')) {
-    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">🔄 {reason}</Badge>;
+    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
   }
   if (reason.startsWith('Duplicate')) {
-    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">⚠ {reason}</Badge>;
+    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
+  }
+  if (reason.startsWith('Suspicious')) {
+    return <Badge className="bg-red-100 text-red-800 border-red-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   return <Badge variant="outline" className="text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
+};
+
+/** Quality score visual */
+const QualityDot: React.FC<{ score: number }> = ({ score }) => {
+  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-500';
+  return (
+    <div className="flex items-center gap-1" title={`Quality: ${score}/100`}>
+      <div className={cn("h-2.5 w-2.5 rounded-full", color)} />
+      <span className="text-[10px] text-muted-foreground font-mono">{score}</span>
+    </div>
+  );
 };
 
 /** Shared lead table used for both orphaned and rejected leads */
@@ -572,25 +665,53 @@ const LeadTable: React.FC<{
     <Table>
       <TableHeader>
         <TableRow className="bg-muted/30">
-          <TableHead className="w-[110px]">Reason</TableHead>
-          <TableHead className="w-[140px]">Name</TableHead>
-          <TableHead className="w-[180px]">Email</TableHead>
-          <TableHead className="w-[110px]">Phone</TableHead>
-          <TableHead className="w-[90px]">Reg Plate</TableHead>
-          <TableHead className="w-[110px]">Vehicle</TableHead>
+          <TableHead className="w-[30px]">Q</TableHead>
+          <TableHead className="w-[130px]">Reason</TableHead>
+          <TableHead className="w-[120px]">Name</TableHead>
+          <TableHead className="w-[170px]">Email</TableHead>
+          <TableHead className="w-[120px]">Phone</TableHead>
+          <TableHead className="w-[80px]">Reg</TableHead>
+          <TableHead className="w-[100px]">Vehicle</TableHead>
           <TableHead className="w-[80px]">Plan</TableHead>
-          <TableHead className="w-[50px]">Step</TableHead>
-          <TableHead className="w-[100px]">Date</TableHead>
-          <TableHead className="w-[70px] text-center">Action</TableHead>
+          <TableHead className="w-[90px]">Date</TableHead>
+          <TableHead className="w-[60px] text-center">Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {leads.map((lead) => (
-          <TableRow key={lead.id} className={lead.orphan_reason?.startsWith('Genuine') ? 'bg-green-50/30' : undefined}>
+          <TableRow key={lead.id} className={cn(
+            lead.orphan_reason?.startsWith('Genuine') && 'bg-green-50/30',
+            lead.orphan_reason?.startsWith('Suspicious') && 'bg-red-50/20',
+          )}>
+            <TableCell>{lead.quality_score !== undefined ? <QualityDot score={lead.quality_score} /> : null}</TableCell>
             <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
-            <TableCell className="font-medium text-sm">{lead.full_name || '—'}</TableCell>
-            <TableCell className="text-sm text-muted-foreground">{lead.email}</TableCell>
-            <TableCell className="text-sm">{lead.phone || '—'}</TableCell>
+            <TableCell className={cn("font-medium text-sm", isSpamName(lead.full_name) && "line-through text-muted-foreground")}>{lead.full_name || '—'}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                {lead.email_status?.valid ? (
+                  <Mail className="h-3 w-3 text-green-600 shrink-0" />
+                ) : (
+                  <MailX className="h-3 w-3 text-red-500 shrink-0" />
+                )}
+                <span className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${lead.email} — ${lead.email_status?.reason || ''}`}>
+                  {lead.email}
+                </span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                {lead.phone ? (
+                  lead.phone_status?.valid ? (
+                    <Phone className="h-3 w-3 text-green-600 shrink-0" />
+                  ) : (
+                    <PhoneOff className="h-3 w-3 text-red-500 shrink-0" />
+                  )
+                ) : null}
+                <span className="text-sm" title={lead.phone_status?.reason || ''}>
+                  {lead.phone || '—'}
+                </span>
+              </div>
+            </TableCell>
             <TableCell>
               {lead.vehicle_reg ? (
                 <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
@@ -600,7 +721,6 @@ const LeadTable: React.FC<{
             </TableCell>
             <TableCell className="text-sm">{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</TableCell>
             <TableCell className="text-sm">{lead.plan_name || '—'}</TableCell>
-            <TableCell className="text-center text-sm">{lead.step_abandoned}</TableCell>
             <TableCell className="text-sm text-muted-foreground">{format(new Date(lead.created_at), 'MMM d, HH:mm')}</TableCell>
             <TableCell className="text-center">{actionColumn(lead)}</TableCell>
           </TableRow>
