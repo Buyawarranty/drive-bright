@@ -736,6 +736,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLeadCounts={agentLeadCounts}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
+            recoveryCount={recoveryCount}
           />
           
           <Card className="overflow-hidden border-2 border-border">
