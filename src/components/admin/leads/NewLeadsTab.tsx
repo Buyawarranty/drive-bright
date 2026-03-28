@@ -739,13 +739,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             recoveryCount={recoveryCount}
           />
           
-          {/* Recovery Queue — always visible above main table when there are recoverable leads */}
+          {/* Recovery banner link at top — scrolls to section below */}
           {recoveryCount > 0 && activeFilter !== 'recovery' && (
-            <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20">
-              <CardContent className="p-0">
-                <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} />
-              </CardContent>
-            </Card>
+            <button
+              onClick={() => document.getElementById('recovery-queue-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-amber-400 bg-amber-50/30 hover:bg-amber-100/40 transition-colors cursor-pointer text-left"
+            >
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
+                </span>
+                <span className="text-sm font-medium text-amber-800">
+                  {recoveryCount} recovered lead{recoveryCount !== 1 ? 's' : ''} ready to call
+                </span>
+              </div>
+              <span className="text-xs text-amber-600 font-medium">View below ↓</span>
+            </button>
           )}
 
           <Card className="overflow-hidden border-2 border-border">
@@ -824,6 +834,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               )}
             </CardContent>
           </Card>
+
+          {/* Recovery Queue — below main leads table */}
+          {recoveryCount > 0 && activeFilter !== 'recovery' && (
+            <div id="recovery-queue-section">
+              <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20">
+                <CardContent className="p-0">
+                  <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
 
