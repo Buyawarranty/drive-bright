@@ -434,9 +434,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                       {/* Agent — round-robin pre-assignment with dropdown to override */}
                       <TableCell className="sticky left-0 bg-background z-10">
                         <Select onValueChange={(agentId) => handleAssignChange(lead, agentId)}>
-                          <SelectTrigger className={cn("h-7 w-[100px] text-[11px] border rounded-md font-medium gap-1", agentColor)}>
+                          <SelectTrigger className={cn("h-7 w-[100px] text-[11px] border rounded-md font-medium gap-1", agentBadgeColor)}>
                             <div className="flex items-center gap-1.5">
-                              <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border", agentColor)}>
+                              <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", agentAvatarBg)}>
                                 {agentInitial}
                               </span>
                               <span className="truncate">{preAgent?.first_name || '—'}</span>
