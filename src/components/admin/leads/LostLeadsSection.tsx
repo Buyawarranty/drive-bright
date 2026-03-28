@@ -603,9 +603,14 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                         ) : <span className="text-muted-foreground text-xs">—</span>}
                       </TableCell>
 
-                      {/* Plan */}
+                      {/* Payment */}
                       <TableCell className="text-xs text-muted-foreground">
-                        {lead.plan_name || '—'}
+                        {lead.total_price ? `£${lead.total_price.toFixed(0)}` : '—'}
+                      </TableCell>
+
+                      {/* Activity */}
+                      <TableCell>
+                        <div className="text-xs text-muted-foreground">—</div>
                       </TableCell>
 
                       {/* Created */}
