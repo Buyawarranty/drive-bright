@@ -402,7 +402,8 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                   <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
                   <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
                   <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>
-                  <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Plan</TableHead>
+                  <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>
+                  <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Activity</TableHead>
                   <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Created</TableHead>
                 </TableRow>
               </TableHeader>
@@ -602,9 +603,14 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                         ) : <span className="text-muted-foreground text-xs">—</span>}
                       </TableCell>
 
-                      {/* Plan */}
+                      {/* Payment */}
                       <TableCell className="text-xs text-muted-foreground">
-                        {lead.plan_name || '—'}
+                        {lead.total_price ? `£${lead.total_price.toFixed(0)}` : '—'}
+                      </TableCell>
+
+                      {/* Activity */}
+                      <TableCell>
+                        <div className="text-xs text-muted-foreground">—</div>
                       </TableCell>
 
                       {/* Created */}
