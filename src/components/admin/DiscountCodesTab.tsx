@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw } from "lucide-react";
+import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw, History } from "lucide-react";
+import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -69,7 +70,7 @@ export function DiscountCodesTab() {
   const [editingCode, setEditingCode] = useState<DiscountCode | null>(null);
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
   const [isSelectAll, setIsSelectAll] = useState(false);
-  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'usage'>('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSource, setFilterSource] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'created_at' | 'valid_to' | 'used_count' | 'code'>('created_at');
@@ -939,6 +940,10 @@ export function DiscountCodesTab() {
             <Archive className="h-4 w-4" />
             Archived Codes ({archivedCodes.length})
           </TabsTrigger>
+          <TabsTrigger value="usage" className="flex items-center gap-2">
+            <History className="h-4 w-4" />
+            Usage History
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="active">
@@ -1205,6 +1210,9 @@ export function DiscountCodesTab() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="usage">
+          <DiscountCodeUsageHistory />
         </TabsContent>
       </Tabs>
     </div>
