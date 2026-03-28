@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertTriangle, RefreshCw, ArrowRightCircle, CheckCircle2, XCircle, RotateCcw, Phone, PhoneOff, Mail, MailX, ShieldCheck, ShieldAlert, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -78,13 +79,22 @@ interface OrphanedLead {
   quality_score?: number; // 0-100
 }
 
+interface SalesUser {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role?: string;
+}
+
 interface LostLeadsSectionProps {
   onRecovered?: () => void;
   compact?: boolean;
   inline?: boolean;
+  salesUsers?: SalesUser[];
 }
 
-export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false }) => {
+export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [] }) => {
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
