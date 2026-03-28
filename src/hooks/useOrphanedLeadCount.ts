@@ -1,15 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * Lightweight hook that returns the count of orphaned/recoverable leads.
  * Used by the Recovery pill in LeadsFilters for badge count.
  */
 export const useOrphanedLeadCount = () => {
+  const { user, loading: authLoading } = useAuth();
   const [count, setCount] = useState(0);
 
   const refresh = useCallback(async () => {
+    if (authLoading || !user?.id) return;
+
     try {
       const [cartsRes, leadsRes] = await Promise.all([
         fetchAllRows(() =>
@@ -60,14 +64,16 @@ export const useOrphanedLeadCount = () => {
     } catch (err) {
       console.error('Error counting orphaned leads:', err);
     }
-  }, []);
+  }, [authLoading, user?.id]);
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
+
     refresh();
     // Refresh every 5 minutes
     const interval = setInterval(refresh, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [refresh]);
+  }, [authLoading, user?.id, refresh]);
 
   return { count, refresh };
 };
