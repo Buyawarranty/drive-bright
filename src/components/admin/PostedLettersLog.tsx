@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer } from 'lucide-react';
+import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw } from 'lucide-react';
+import { format } from 'date-fns';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 
