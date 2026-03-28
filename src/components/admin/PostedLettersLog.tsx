@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
-import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface PostedLetterEntry {
