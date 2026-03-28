@@ -25,6 +25,7 @@ interface OrphanedLead {
   contact_status: string | null;
   contacted_by: string | null;
   created_at: string;
+  orphan_reason?: string;
 }
 
 interface LostLeadsSectionProps {
