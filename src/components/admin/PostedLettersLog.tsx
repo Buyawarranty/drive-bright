@@ -230,10 +230,12 @@ export const PostedLettersLog: React.FC = () => {
       .from('posted_letters_log')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(200);
+      .limit(500);
 
     if (!error && data) {
       setLogEntries(data as PostedLetterEntry[]);
+    } else if (error) {
+      console.error('Error fetching posted letters log:', error);
     }
     setIsLoading(false);
   };
