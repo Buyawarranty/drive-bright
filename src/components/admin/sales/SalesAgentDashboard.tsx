@@ -375,6 +375,13 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
             onRefresh={fetchLeads}
             hideAssignedColumn={hideAssignedColumn}
           />
+
+          {/* Recovery Queue for sales agents */}
+          <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20 mt-4">
+            <CardContent className="p-0">
+              <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers as any} userRole="sales" />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* My Orders Tab */}
