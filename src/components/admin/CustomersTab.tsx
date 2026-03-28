@@ -411,6 +411,12 @@ export const CustomersTab = () => {
       statusLabel = 'cancellations/refunds';
     } else if (filterBySource === 'website') {
       statusLabel = 'website sales';
+    } else if (filterBySource === 'website_google') {
+      statusLabel = 'Google Ads sales';
+    } else if (filterBySource === 'website_facebook') {
+      statusLabel = 'Facebook Ads sales';
+    } else if (filterBySource === 'website_organic') {
+      statusLabel = 'organic sales';
     } else if (filterBySource === 'staff_purchase') {
       statusLabel = 'staff sales';
     } else if (filterBySource === 'quote_order') {
