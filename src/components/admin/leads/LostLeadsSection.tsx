@@ -98,6 +98,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
+  const initialLoadDone = React.useRef(false);
   const [syncing, setSyncing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isRejectedOpen, setIsRejectedOpen] = useState(false);
@@ -106,7 +107,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [restoringId, setRestoringId] = useState<string | null>(null);
 
   const fetchOrphanedLeads = useCallback(async () => {
-    setLoading(true);
+    if (!initialLoadDone.current) {
+      setLoading(true);
+    }
     try {
       const [cartsRes, rejectedCartsRes, leadsRes, terminalLeadsRes] = await Promise.all([
         fetchAllRows(() =>
@@ -256,6 +259,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       console.error('Error fetching orphaned leads:', err);
     } finally {
       setLoading(false);
+      initialLoadDone.current = true;
     }
   }, []);
 
