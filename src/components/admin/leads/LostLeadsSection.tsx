@@ -625,21 +625,35 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
 const getReasonBadge = (reason?: string) => {
   if (!reason) return null;
   if (reason.startsWith('Genuine')) {
-    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap">✓ {reason}</Badge>;
+    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldCheck className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   if (reason.startsWith('Terminal — Fake')) {
-    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   if (reason.startsWith('Terminal — Lost')) {
-    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   if (reason.startsWith('Terminal — Converted')) {
-    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">🔄 {reason}</Badge>;
+    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
   }
   if (reason.startsWith('Duplicate')) {
-    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">⚠ {reason}</Badge>;
+    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
+  }
+  if (reason.startsWith('Suspicious')) {
+    return <Badge className="bg-red-100 text-red-800 border-red-300 text-[10px] px-1.5 whitespace-nowrap"><ShieldAlert className="h-3 w-3 mr-0.5 inline" />{reason}</Badge>;
   }
   return <Badge variant="outline" className="text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
+};
+
+/** Quality score visual */
+const QualityDot: React.FC<{ score: number }> = ({ score }) => {
+  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-500';
+  return (
+    <div className="flex items-center gap-1" title={`Quality: ${score}/100`}>
+      <div className={cn("h-2.5 w-2.5 rounded-full", color)} />
+      <span className="text-[10px] text-muted-foreground font-mono">{score}</span>
+    </div>
+  );
 };
 
 /** Shared lead table used for both orphaned and rejected leads */
@@ -651,25 +665,53 @@ const LeadTable: React.FC<{
     <Table>
       <TableHeader>
         <TableRow className="bg-muted/30">
-          <TableHead className="w-[110px]">Reason</TableHead>
-          <TableHead className="w-[140px]">Name</TableHead>
-          <TableHead className="w-[180px]">Email</TableHead>
-          <TableHead className="w-[110px]">Phone</TableHead>
-          <TableHead className="w-[90px]">Reg Plate</TableHead>
-          <TableHead className="w-[110px]">Vehicle</TableHead>
+          <TableHead className="w-[30px]">Q</TableHead>
+          <TableHead className="w-[130px]">Reason</TableHead>
+          <TableHead className="w-[120px]">Name</TableHead>
+          <TableHead className="w-[170px]">Email</TableHead>
+          <TableHead className="w-[120px]">Phone</TableHead>
+          <TableHead className="w-[80px]">Reg</TableHead>
+          <TableHead className="w-[100px]">Vehicle</TableHead>
           <TableHead className="w-[80px]">Plan</TableHead>
-          <TableHead className="w-[50px]">Step</TableHead>
-          <TableHead className="w-[100px]">Date</TableHead>
-          <TableHead className="w-[70px] text-center">Action</TableHead>
+          <TableHead className="w-[90px]">Date</TableHead>
+          <TableHead className="w-[60px] text-center">Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {leads.map((lead) => (
-          <TableRow key={lead.id} className={lead.orphan_reason?.startsWith('Genuine') ? 'bg-green-50/30' : undefined}>
+          <TableRow key={lead.id} className={cn(
+            lead.orphan_reason?.startsWith('Genuine') && 'bg-green-50/30',
+            lead.orphan_reason?.startsWith('Suspicious') && 'bg-red-50/20',
+          )}>
+            <TableCell>{lead.quality_score !== undefined ? <QualityDot score={lead.quality_score} /> : null}</TableCell>
             <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
-            <TableCell className="font-medium text-sm">{lead.full_name || '—'}</TableCell>
-            <TableCell className="text-sm text-muted-foreground">{lead.email}</TableCell>
-            <TableCell className="text-sm">{lead.phone || '—'}</TableCell>
+            <TableCell className={cn("font-medium text-sm", isSpamName(lead.full_name) && "line-through text-muted-foreground")}>{lead.full_name || '—'}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                {lead.email_status?.valid ? (
+                  <Mail className="h-3 w-3 text-green-600 shrink-0" />
+                ) : (
+                  <MailX className="h-3 w-3 text-red-500 shrink-0" />
+                )}
+                <span className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${lead.email} — ${lead.email_status?.reason || ''}`}>
+                  {lead.email}
+                </span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                {lead.phone ? (
+                  lead.phone_status?.valid ? (
+                    <Phone className="h-3 w-3 text-green-600 shrink-0" />
+                  ) : (
+                    <PhoneOff className="h-3 w-3 text-red-500 shrink-0" />
+                  )
+                ) : null}
+                <span className="text-sm" title={lead.phone_status?.reason || ''}>
+                  {lead.phone || '—'}
+                </span>
+              </div>
+            </TableCell>
             <TableCell>
               {lead.vehicle_reg ? (
                 <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
@@ -679,7 +721,6 @@ const LeadTable: React.FC<{
             </TableCell>
             <TableCell className="text-sm">{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</TableCell>
             <TableCell className="text-sm">{lead.plan_name || '—'}</TableCell>
-            <TableCell className="text-center text-sm">{lead.step_abandoned}</TableCell>
             <TableCell className="text-sm text-muted-foreground">{format(new Date(lead.created_at), 'MMM d, HH:mm')}</TableCell>
             <TableCell className="text-center">{actionColumn(lead)}</TableCell>
           </TableRow>
