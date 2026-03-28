@@ -6259,6 +6259,10 @@ export type Database = {
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       process_scheduled_sms: { Args: never; Returns: number }
       recover_orphaned_leads: { Args: never; Returns: Json }
+      recover_single_lead: {
+        Args: { p_agent_id?: string; p_cart_id: string }
+        Returns: Json
+      }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
