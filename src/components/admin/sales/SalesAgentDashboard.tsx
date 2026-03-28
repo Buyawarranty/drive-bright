@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
 import { SalesAgentMyLeadsView } from './SalesAgentMyLeadsView';
+import { LostLeadsSection } from '../leads/LostLeadsSection';
 import SalesCustomerManagement from './SalesCustomerManagement';
 import { SalesDashboardKPIs } from './SalesDashboardKPIs';
 import { SalesBadges } from './SalesBadges';
