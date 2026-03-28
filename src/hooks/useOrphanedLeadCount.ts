@@ -15,13 +15,13 @@ export const useOrphanedLeadCount = () => {
         fetchAllRows(() =>
           supabase
             .from('abandoned_carts')
-            .select('id, email, is_converted, contact_status')
+            .select('id, email, phone, is_converted, contact_status')
             .gte('step_abandoned', 2)
         ),
         fetchAllRows(() =>
           supabase
             .from('sales_leads')
-            .select('id, email, abandoned_cart_id, status')
+            .select('id, email, phone, abandoned_cart_id, status')
         ),
       ]);
 
@@ -34,6 +34,9 @@ export const useOrphanedLeadCount = () => {
       const existingEmails = new Set(
         leads.map((l: any) => l.email?.toLowerCase()).filter(Boolean)
       );
+      const existingPhones = new Set(
+        leads.map((l: any) => l.phone?.replace(/[^0-9]/g, '')).filter((p: string) => p && p.length >= 10)
+      );
 
       // Build terminal emails set from sales_leads
       const terminalEmails = new Set(
@@ -43,9 +46,12 @@ export const useOrphanedLeadCount = () => {
 
       const orphanCount = carts.filter((cart: any) => {
         if (linkedCartIds.has(cart.id)) return false;
-        if (existingEmails.has(cart.email?.toLowerCase())) return false;
+        const cartEmail = cart.email?.toLowerCase();
+        if (cartEmail && existingEmails.has(cartEmail)) return false;
         if (cart.is_converted === true) return false;
-        if (terminalEmails.has(cart.email?.toLowerCase())) return false;
+        if (cartEmail && terminalEmails.has(cartEmail)) return false;
+        const cartPhone = cart.phone?.replace(/[^0-9]/g, '') || '';
+        if (cartPhone.length >= 10 && existingPhones.has(cartPhone)) return false;
         if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead', 'duplicate'].includes(cart.contact_status)) return false;
         return true;
       }).length;

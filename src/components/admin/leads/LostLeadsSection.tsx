@@ -144,6 +144,10 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       const existingEmails = new Set(
         leads.map((l: any) => l.email?.toLowerCase()).filter(Boolean)
       );
+      // Build phone set from existing leads for phone-based dedup
+      const existingPhones = new Set(
+        leads.map((l: any) => l.phone?.replace(/[^0-9]/g, '')).filter((p: string) => p && p.length >= 10)
+      );
 
       // Terminal leads lookup
       const terminalEmails = new Set(
@@ -166,14 +170,49 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         return Math.max(0, Math.min(100, score));
       };
 
-      const orphans = carts.filter((cart: any) => {
-        if (linkedCartIds.has(cart.id)) return false;
-        if (existingEmails.has(cart.email?.toLowerCase())) return false;
-        if (cart.is_converted === true) return false;
-        if (terminalEmails.has(cart.email?.toLowerCase())) return false;
-        if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead', 'duplicate'].includes(cart.contact_status)) return false;
-        return true;
-      }).map((cart: any) => ({
+      // Identify duplicates to auto-mark permanently
+      const duplicateIds: string[] = [];
+      const genuineOrphans: any[] = [];
+
+      for (const cart of carts) {
+        // Skip already-processed carts
+        if (cart.is_converted === true) continue;
+        if (cart.contact_status && ['contacted', 'follow_up', 'quote_sent', 'converted', 'lost', 'fake_lead', 'duplicate'].includes(cart.contact_status)) continue;
+
+        const cartEmail = cart.email?.toLowerCase();
+        const cartPhone = cart.phone?.replace(/[^0-9]/g, '') || '';
+
+        // Check if this cart is a duplicate of an existing sales_lead
+        const isDuplicate =
+          linkedCartIds.has(cart.id) ||
+          (cartEmail && existingEmails.has(cartEmail)) ||
+          (cartEmail && terminalEmails.has(cartEmail)) ||
+          (cartPhone.length >= 10 && existingPhones.has(cartPhone));
+
+        if (isDuplicate) {
+          duplicateIds.push(cart.id);
+        } else {
+          genuineOrphans.push(cart);
+        }
+      }
+
+      // Auto-mark duplicates permanently in the database (fire and forget)
+      if (duplicateIds.length > 0) {
+        // Batch in chunks of 50
+        for (let i = 0; i < duplicateIds.length; i += 50) {
+          const chunk = duplicateIds.slice(i, i + 50);
+          supabase
+            .from('abandoned_carts')
+            .update({ contact_status: 'duplicate' })
+            .in('id', chunk)
+            .then(({ error }) => {
+              if (error) console.error('Auto-dedup error:', error);
+            });
+        }
+        console.log(`Auto-deduplicated ${duplicateIds.length} recovery leads`);
+      }
+
+      const orphans = genuineOrphans.map((cart: any) => ({
         ...cart,
         phone_status: validatePhone(cart.phone),
         email_status: validateEmail(cart.email),
