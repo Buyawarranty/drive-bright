@@ -259,7 +259,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       console.error('Error fetching orphaned leads:', err);
     } finally {
       setLoading(false);
-    }
+      initialLoadDone.current = true;
   }, []);
 
   useEffect(() => {
