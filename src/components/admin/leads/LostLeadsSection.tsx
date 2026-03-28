@@ -180,7 +180,12 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         quality_score: calcQuality(cart),
         // Pre-assign round-robin: alternate between active agents
         preAssignedTo: activeAgents.length > 0 ? activeAgents[index % activeAgents.length]?.id : undefined,
-      })).sort((a: any, b: any) => b.quality_score - a.quality_score);
+      }).sort((a: any, b: any) => b.quality_score - a.quality_score)
+        // Apply round-robin AFTER sorting so index maps correctly to agent sequence
+        .map((cart: any, index: number) => ({
+          ...cart,
+          preAssignedTo: activeAgents.length > 0 ? activeAgents[index % activeAgents.length]?.id : undefined,
+        }));
 
       setOrphanedLeads(orphans);
     } catch (err) {
