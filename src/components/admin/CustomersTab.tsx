@@ -411,6 +411,12 @@ export const CustomersTab = () => {
       statusLabel = 'cancellations/refunds';
     } else if (filterBySource === 'website') {
       statusLabel = 'website sales';
+    } else if (filterBySource === 'website_google') {
+      statusLabel = 'Google Ads sales';
+    } else if (filterBySource === 'website_facebook') {
+      statusLabel = 'Facebook Ads sales';
+    } else if (filterBySource === 'website_organic') {
+      statusLabel = 'organic sales';
     } else if (filterBySource === 'staff_purchase') {
       statusLabel = 'staff sales';
     } else if (filterBySource === 'quote_order') {
@@ -687,6 +693,21 @@ export const CustomersTab = () => {
         if (filterBySource === 'website') {
           // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
           return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+        } else if (filterBySource === 'website_google') {
+          // Website sale with Google Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const source = customer.purchase_source?.toLowerCase() || '';
+          return isWebsite && source === 'google_ads';
+        } else if (filterBySource === 'website_facebook') {
+          // Website sale with Facebook Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const source = customer.purchase_source?.toLowerCase() || '';
+          return isWebsite && source === 'facebook_ads';
+        } else if (filterBySource === 'website_organic') {
+          // Website sale with no paid attribution (organic)
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const source = customer.purchase_source?.toLowerCase() || '';
+          return isWebsite && source !== 'google_ads' && source !== 'facebook_ads';
         } else if (filterBySource === 'staff_purchase') {
           // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
           return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
@@ -2930,6 +2951,28 @@ export const CustomersTab = () => {
                         Website (BAW)
                       </div>
                     </SelectItem>
+                    {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'lead_gen') && (
+                      <>
+                        <SelectItem value="website_google">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            Website G (Google Ads)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="website_facebook">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-sky-500" />
+                            Website F (Facebook Ads)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="website_organic">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-500" />
+                            Website O (Organic)
+                          </div>
+                        </SelectItem>
+                      </>
+                    )}
                     <SelectItem value="staff_purchase">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
