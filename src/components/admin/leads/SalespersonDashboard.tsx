@@ -16,6 +16,7 @@ import { MyRemindersPanel } from './MyRemindersPanel';
 import { format, isToday, isPast } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface LeadHandlers {
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<void>;
@@ -47,10 +48,16 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const { effectiveAdminUserId, isImpersonating } = useViewAs();
   
   const { personalStats, teamStats, userBadges, loading: statsLoading } = useSalesStats(currentUserId || undefined);
 
   useEffect(() => {
+    // If impersonating, use the effective admin user ID directly
+    if (isImpersonating && effectiveAdminUserId) {
+      setCurrentUserId(effectiveAdminUserId);
+      return;
+    }
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -66,7 +73,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       }
     };
     getCurrentUser();
-  }, []);
+  }, [isImpersonating, effectiveAdminUserId]);
 
   // Memoize filtered leads to prevent recalculation
   // Exclude fake, lost, and hidden leads from the active salesperson workspace
