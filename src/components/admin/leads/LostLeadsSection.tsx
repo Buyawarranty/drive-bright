@@ -537,6 +537,27 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   );
 };
 
+/** Reason badge color helper */
+const getReasonBadge = (reason?: string) => {
+  if (!reason) return null;
+  if (reason.startsWith('Genuine')) {
+    return <Badge className="bg-green-100 text-green-800 border-green-300 text-[10px] px-1.5 whitespace-nowrap">✓ {reason}</Badge>;
+  }
+  if (reason.startsWith('Terminal — Fake')) {
+    return <Badge variant="destructive" className="text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+  }
+  if (reason.startsWith('Terminal — Lost')) {
+    return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px] px-1.5 whitespace-nowrap">⛔ {reason}</Badge>;
+  }
+  if (reason.startsWith('Terminal — Converted')) {
+    return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-[10px] px-1.5 whitespace-nowrap">🔄 {reason}</Badge>;
+  }
+  if (reason.startsWith('Duplicate')) {
+    return <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] px-1.5 whitespace-nowrap">⚠ {reason}</Badge>;
+  }
+  return <Badge variant="outline" className="text-[10px] px-1.5 whitespace-nowrap">{reason}</Badge>;
+};
+
 /** Shared lead table used for both orphaned and rejected leads */
 const LeadTable: React.FC<{
   leads: OrphanedLead[];
@@ -546,20 +567,22 @@ const LeadTable: React.FC<{
     <Table>
       <TableHeader>
         <TableRow className="bg-muted/30">
-          <TableHead className="w-[160px]">Name</TableHead>
-          <TableHead className="w-[200px]">Email</TableHead>
-          <TableHead className="w-[120px]">Phone</TableHead>
-          <TableHead className="w-[100px]">Reg Plate</TableHead>
-          <TableHead className="w-[120px]">Vehicle</TableHead>
-          <TableHead className="w-[100px]">Plan</TableHead>
-          <TableHead className="w-[60px]">Step</TableHead>
-          <TableHead className="w-[120px]">Date</TableHead>
-          <TableHead className="w-[80px] text-center">Action</TableHead>
+          <TableHead className="w-[110px]">Reason</TableHead>
+          <TableHead className="w-[140px]">Name</TableHead>
+          <TableHead className="w-[180px]">Email</TableHead>
+          <TableHead className="w-[110px]">Phone</TableHead>
+          <TableHead className="w-[90px]">Reg Plate</TableHead>
+          <TableHead className="w-[110px]">Vehicle</TableHead>
+          <TableHead className="w-[80px]">Plan</TableHead>
+          <TableHead className="w-[50px]">Step</TableHead>
+          <TableHead className="w-[100px]">Date</TableHead>
+          <TableHead className="w-[70px] text-center">Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {leads.map((lead) => (
-          <TableRow key={lead.id}>
+          <TableRow key={lead.id} className={lead.orphan_reason?.startsWith('Genuine') ? 'bg-green-50/30' : undefined}>
+            <TableCell>{getReasonBadge(lead.orphan_reason)}</TableCell>
             <TableCell className="font-medium text-sm">{lead.full_name || '—'}</TableCell>
             <TableCell className="text-sm text-muted-foreground">{lead.email}</TableCell>
             <TableCell className="text-sm">{lead.phone || '—'}</TableCell>
