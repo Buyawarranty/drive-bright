@@ -521,38 +521,11 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
         {orphanedLeads.length > 0 ? (
           <LeadTable
             leads={orphanedLeads}
-            actionColumn={(lead) => (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    disabled={dismissingId === lead.id}
-                    title="Mark as fake / reject"
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Reject this lead?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      <strong>{lead.email}</strong> will be marked as fake/rejected and removed from the recovery queue. Valid contact info is preserved for marketing.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDismissLead(lead)}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Reject Lead
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            salesUsers={salesUsers}
+            onStatusChange={handleStatusChange}
+            onRecover={handleRecoverSingle}
+            onAssign={(lead, agentId) => handleRecoverSingle(lead, agentId)}
+            disabledId={dismissingId}
           />
         ) : (
           <div className="text-center py-12">
