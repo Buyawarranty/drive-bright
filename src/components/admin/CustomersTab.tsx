@@ -2930,6 +2930,28 @@ export const CustomersTab = () => {
                         Website (BAW)
                       </div>
                     </SelectItem>
+                    {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'lead_gen') && (
+                      <>
+                        <SelectItem value="website_google">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            Website G (Google Ads)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="website_facebook">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-sky-500" />
+                            Website F (Facebook Ads)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="website_organic">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-500" />
+                            Website O (Organic)
+                          </div>
+                        </SelectItem>
+                      </>
+                    )}
                     <SelectItem value="staff_purchase">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
