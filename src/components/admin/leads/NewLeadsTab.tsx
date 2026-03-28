@@ -32,6 +32,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { useOrphanedLeadCount } from '@/hooks/useOrphanedLeadCount';
 import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
