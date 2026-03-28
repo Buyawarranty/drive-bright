@@ -81,9 +81,11 @@ interface LostLeadsSectionProps {
   compact?: boolean;
   inline?: boolean;
   salesUsers?: SalesUser[];
+  userRole?: string;
 }
 
-export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [] }) => {
+export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [], userRole }) => {
+  const showCbColumn = userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen';
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
   const initialLoadDone = React.useRef(false);
