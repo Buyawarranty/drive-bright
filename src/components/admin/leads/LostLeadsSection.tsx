@@ -98,6 +98,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [rejectedLeads, setRejectedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
+  const initialLoadDone = React.useRef(false);
   const [syncing, setSyncing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isRejectedOpen, setIsRejectedOpen] = useState(false);
