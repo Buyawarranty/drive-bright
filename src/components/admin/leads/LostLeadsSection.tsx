@@ -406,7 +406,22 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                 {orphanedLeads.map((lead) => {
                   const preAgent = getAgentInfo(lead.preAssignedTo);
                   const agentInitial = preAgent?.first_name?.[0]?.toUpperCase() || '?';
-                  const agentColor = preAgent?.first_name?.toLowerCase() === 'james' ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-teal-100 text-teal-800 border-teal-300';
+                  const AGENT_COLOR_MAP: Record<string, { bg: string; badge: string }> = {
+                    'isobel': { bg: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+                    'james': { bg: 'bg-blue-600', badge: 'bg-blue-100 text-blue-800 border-blue-300' },
+                    'ash': { bg: 'bg-violet-600', badge: 'bg-violet-100 text-violet-800 border-violet-300' },
+                  };
+                  const FALLBACK_BADGE_COLORS = [
+                    'bg-orange-100 text-orange-800 border-orange-300',
+                    'bg-pink-100 text-pink-800 border-pink-300',
+                    'bg-indigo-100 text-indigo-800 border-indigo-300',
+                    'bg-teal-100 text-teal-800 border-teal-300',
+                  ];
+                  const firstName = (preAgent?.first_name || '').toLowerCase();
+                  const colorEntry = AGENT_COLOR_MAP[firstName];
+                  const agentBadgeColor = colorEntry?.badge
+                    || FALLBACK_BADGE_COLORS[salesUsers.findIndex(u => u.id === lead.preAssignedTo) % FALLBACK_BADGE_COLORS.length];
+                  const agentAvatarBg = colorEntry?.bg || 'bg-gray-600';
 
                   return (
                     <TableRow
@@ -419,9 +434,9 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                       {/* Agent — round-robin pre-assignment with dropdown to override */}
                       <TableCell className="sticky left-0 bg-background z-10">
                         <Select onValueChange={(agentId) => handleAssignChange(lead, agentId)}>
-                          <SelectTrigger className={cn("h-7 w-[100px] text-[11px] border rounded-md font-medium gap-1", agentColor)}>
+                          <SelectTrigger className={cn("h-7 w-[100px] text-[11px] border rounded-md font-medium gap-1", agentBadgeColor)}>
                             <div className="flex items-center gap-1.5">
-                              <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border", agentColor)}>
+                              <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", agentAvatarBg)}>
                                 {agentInitial}
                               </span>
                               <span className="truncate">{preAgent?.first_name || '—'}</span>
