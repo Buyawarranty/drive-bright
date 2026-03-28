@@ -457,7 +457,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     }
   }, []);
 
-
+  if (loading) {
     if (inline) {
       return (
         <div className="flex items-center justify-center py-12">
