@@ -338,6 +338,33 @@ export const PostedLettersLog: React.FC = () => {
     }
   };
 
+  // Reprint letter for a log entry — navigates to PolicyDocumentsTab with customer pre-selected
+  const reprintLetter = useCallback(async (entry: PostedLetterEntry) => {
+    if (!entry.customer_id) {
+      toast({ title: 'No customer linked', description: 'Cannot reprint — no customer ID on this entry.', variant: 'destructive' });
+      return;
+    }
+
+    // Log this reprint action
+    await supabase.from('posted_letters_log').insert({
+      customer_id: entry.customer_id,
+      registration_plate: entry.registration_plate,
+      customer_name: entry.customer_name,
+      customer_email: entry.customer_email,
+      warranty_number: entry.warranty_number,
+      plan_type: entry.plan_type,
+      sent_at: new Date().toISOString(),
+      marked_sent_by: null,
+      action_type: 'reprint',
+      notes: `Reprinted from log entry ${format(new Date(entry.created_at), 'dd/MM/yyyy HH:mm')}`,
+    } as any);
+
+    // Print the label directly
+    await printEnvelopeLabel(entry);
+    toast({ title: 'Reprinting', description: `Label for ${entry.customer_name} sent to printer.` });
+    fetchLog();
+  }, [fetchLog]);
+
   // Filter log entries
   const filteredEntries = useMemo(() => {
     if (!filterQuery.trim()) return logEntries;
