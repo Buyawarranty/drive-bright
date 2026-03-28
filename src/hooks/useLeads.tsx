@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { addSystemNote } from '@/utils/leadSystemNotes';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
+import { useAuth } from '@/hooks/useAuth';
 
 const LEAD_TAG_BATCH_SIZE = 300;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
@@ -187,6 +188,7 @@ interface UseLeadsOptions {
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
+  const { user, loading: authLoading } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
@@ -208,6 +210,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
   salesUsersRef.current = salesUsers;
   const leadsRef = useRef<Lead[]>([]);
   leadsRef.current = leads;
+  const authLoadingRef = useRef(authLoading);
+  authLoadingRef.current = authLoading;
+  const userRef = useRef(user);
+  userRef.current = user;
 
   // Cache admin user ID to avoid repeated auth lookups
   const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string; role: string } | null>(null);
@@ -311,6 +317,16 @@ export const useLeads = (options?: UseLeadsOptions) => {
   }, [clearPendingStatusUpdate]);
 
   const fetchLeads = useCallback(async () => {
+    if (authLoadingRef.current) return;
+
+    if (!userRef.current) {
+      setLeads([]);
+      setLoading(false);
+      initialLoadDoneRef.current = true;
+      initialLoadStartedRef.current = false;
+      return;
+    }
+
     if (isFetchingRef.current) {
       pendingFetchRef.current = true;
       return;
@@ -578,17 +594,21 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
   // Initial fetch + fetch on filter change (no subscription teardown)
   useEffect(() => {
+    if (authLoading || !user?.id) return;
     fetchLeads();
-  }, [fetchLeads]);
+  }, [authLoading, user?.id, fetchLeads]);
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
     void flushPendingStatusUpdates().then(() => {
       fetchLeadsRef.current();
     });
-  }, [flushPendingStatusUpdates]);
+  }, [authLoading, user?.id, flushPendingStatusUpdates]);
 
   // One-time setup for realtime, polling, and visibility listeners
   useEffect(() => {
+    if (authLoading || !user?.id) return;
+
     fetchTags();
     fetchSalesUsers();
 
@@ -639,7 +659,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         clearTimeout(realtimeRefetchTimerRef.current);
       }
     };
-  }, [fetchTags, fetchSalesUsers, debouncedRealtimeRefetch, flushPendingStatusUpdates]);
+  }, [authLoading, user?.id, fetchTags, fetchSalesUsers, debouncedRealtimeRefetch, flushPendingStatusUpdates]);
 
   // Track recently updated lead IDs to prevent realtime from overwriting optimistic updates
   const recentOptimisticUpdatesRef = useRef<Set<string>>(new Set());

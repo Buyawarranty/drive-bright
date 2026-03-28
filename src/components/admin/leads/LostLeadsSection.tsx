@@ -12,6 +12,7 @@ import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { useAuth } from '@/hooks/useAuth';
 
 // Disposable/throwaway email domains
 const DISPOSABLE_DOMAINS = new Set([
@@ -87,6 +88,7 @@ interface LostLeadsSectionProps {
 }
 
 export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [], userRole }) => {
+  const { user, loading: authLoading } = useAuth();
   const showCbColumn = userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen';
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +100,8 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [agentCaps, setAgentCaps] = useState<{ admin_user_id: string; sort_order: number; daily_cap: number; assigned_today: number; paused: boolean }[]>([]);
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
+
     supabase
       .from('agent_distribution_caps')
       .select('admin_user_id, sort_order, daily_cap, assigned_today, paused')
@@ -106,7 +110,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       .then(({ data }) => {
         if (data) setAgentCaps(data);
       });
-  }, []);
+  }, [authLoading, user?.id]);
 
   // Get active sales agents sorted by distribution sort_order (same as main leads flow)
   const activeAgents = useMemo(() => {
@@ -121,6 +125,8 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   }, [salesUsers, agentCaps]);
 
   const fetchOrphanedLeads = useCallback(async () => {
+    if (authLoading || !user?.id) return;
+
     if (!initialLoadDone.current) {
       setLoading(true);
     }
@@ -235,11 +241,12 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       setLoading(false);
       initialLoadDone.current = true;
     }
-  }, [activeAgents]);
+  }, [authLoading, user?.id, activeAgents]);
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
     fetchOrphanedLeads();
-  }, [fetchOrphanedLeads]);
+  }, [authLoading, user?.id, fetchOrphanedLeads]);
 
   /** Handle status change — recover or dismiss based on status */
   const handleStatusChange = useCallback(async (lead: OrphanedLead, newStatus: string) => {
@@ -348,7 +355,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     return salesUsers.find(u => u.id === agentId);
   }, [salesUsers]);
 
-  if (loading) {
+  if (authLoading || loading) {
     if (inline) {
       return (
         <div className="flex items-center justify-center py-12">
@@ -358,6 +365,8 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     }
     return null;
   }
+
+  if (!user?.id) return null;
 
   if (orphanedLeads.length === 0) {
     if (inline) {

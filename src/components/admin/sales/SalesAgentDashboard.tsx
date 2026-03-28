@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { format, isToday, isPast, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface SalesAgentDashboardProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
@@ -39,6 +40,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const { effectiveAdminUserId } = useViewAs();
 
   // Use own data fetching for sales agents
   const {
@@ -62,7 +64,34 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   const salesUsers = propSalesUsers ?? fetchedSalesUsers;
 
   useEffect(() => {
+    let cancelled = false;
+
     const getCurrentUser = async () => {
+      if (effectiveAdminUserId) {
+        if (!cancelled) {
+          setCurrentUserId(effectiveAdminUserId);
+        }
+
+        const matchingUser = salesUsers.find(user => user.id === effectiveAdminUserId);
+        if (matchingUser?.email) {
+          if (!cancelled) {
+            setCurrentUserEmail(matchingUser.email);
+          }
+          return;
+        }
+
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id, email')
+          .eq('id', effectiveAdminUserId)
+          .maybeSingle();
+
+        if (!cancelled && adminUser) {
+          setCurrentUserEmail(adminUser.email);
+        }
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: adminUser } = await supabase
@@ -71,14 +100,18 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
           .eq('user_id', user.id)
           .maybeSingle();
         
-        if (adminUser) {
+        if (!cancelled && adminUser) {
           setCurrentUserId(adminUser.id);
           setCurrentUserEmail(adminUser.email);
         }
       }
     };
     getCurrentUser();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveAdminUserId, salesUsers]);
 
   // Filter leads to only show those assigned to current user - CRITICAL SECURITY
   // Also exclude fake_lead status as they should only appear in the Fake tab
