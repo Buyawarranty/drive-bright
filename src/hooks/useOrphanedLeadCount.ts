@@ -21,7 +21,7 @@ export const useOrphanedLeadCount = () => {
         fetchAllRows(() =>
           supabase
             .from('sales_leads')
-            .select('id, email, abandoned_cart_id')
+            .select('id, email, abandoned_cart_id, status')
         ),
       ]);
 
