@@ -561,21 +561,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     );
   }
 
-  // Sales agents get a restricted view UNLESS they have the 'all-leads' permission
-  // If all-leads is not explicitly denied, they see the full leads feed
-  // This is placed after all hooks to comply with React's rules of hooks
-  if (isSalesAgent && !canSeeAllLeads) {
-    return (
-      <SalesAgentDashboard
-        leads={leads}
-        tags={tags}
-        salesUsers={salesUsers}
-        handlers={leadHandlers}
-        onNavigateToTab={onNavigateToTab}
-        hideAssignedColumn={hideAssignedColumnForAgents}
-      />
-    );
-  }
+  // Sales agents now see the same full leads view as sales_lead/admin
+  // Role-based column restrictions (CB, Source, etc.) are handled inline below
 
   return (
     <div className="space-y-4">
