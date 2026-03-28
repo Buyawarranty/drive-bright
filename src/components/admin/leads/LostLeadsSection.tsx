@@ -373,11 +373,11 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     return (
       <div className="space-y-0">
         {/* Header matching main table style */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-amber-400">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <span className="text-sm font-bold tracking-tight">Recovery Queue</span>
-            <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">
+            <AlertTriangle className="h-4 w-4 text-amber-900" />
+            <span className="text-sm font-bold tracking-tight text-amber-900">Recovery Queue</span>
+            <Badge className="text-[10px] font-mono tabular-nums h-5 bg-amber-900 text-white border-0">
               {orphanedLeads.length} lead{orphanedLeads.length !== 1 ? 's' : ''}
             </Badge>
           </div>
