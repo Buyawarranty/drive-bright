@@ -268,6 +268,11 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                 {orphanedLeads.length > 0 && (
                   <Badge variant="destructive" className="h-5 px-1.5 text-[10px] shrink-0">{orphanedLeads.length}</Badge>
                 )}
+                {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length > 0 && (
+                  <Badge className="h-5 px-1.5 text-[10px] shrink-0 bg-green-100 text-green-800 border-green-300">
+                    {orphanedLeads.filter(l => l.orphan_reason?.startsWith('Genuine')).length} genuine
+                  </Badge>
+                )}
                 {rejectedLeads.length > 0 && (
                   <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0">{rejectedLeads.length} rejected</Badge>
                 )}
