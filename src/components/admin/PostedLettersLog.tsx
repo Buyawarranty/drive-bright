@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer } from 'lucide-react';
+import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -230,10 +230,12 @@ export const PostedLettersLog: React.FC = () => {
       .from('posted_letters_log')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(200);
+      .limit(500);
 
     if (!error && data) {
       setLogEntries(data as PostedLetterEntry[]);
+    } else if (error) {
+      console.error('Error fetching posted letters log:', error);
     }
     setIsLoading(false);
   };
@@ -335,6 +337,33 @@ export const PostedLettersLog: React.FC = () => {
       fetchLog();
     }
   };
+
+  // Reprint letter for a log entry — navigates to PolicyDocumentsTab with customer pre-selected
+  const reprintLetter = useCallback(async (entry: PostedLetterEntry) => {
+    if (!entry.customer_id) {
+      toast({ title: 'No customer linked', description: 'Cannot reprint — no customer ID on this entry.', variant: 'destructive' });
+      return;
+    }
+
+    // Log this reprint action
+    await supabase.from('posted_letters_log').insert({
+      customer_id: entry.customer_id,
+      registration_plate: entry.registration_plate,
+      customer_name: entry.customer_name,
+      customer_email: entry.customer_email,
+      warranty_number: entry.warranty_number,
+      plan_type: entry.plan_type,
+      sent_at: new Date().toISOString(),
+      marked_sent_by: null,
+      action_type: 'reprint',
+      notes: `Reprinted from log entry ${format(new Date(entry.created_at), 'dd/MM/yyyy HH:mm')}`,
+    } as any);
+
+    // Print the label directly
+    await printEnvelopeLabel(entry);
+    toast({ title: 'Reprinting', description: `Label for ${entry.customer_name} sent to printer.` });
+    fetchLog();
+  }, [fetchLog]);
 
   // Filter log entries
   const filteredEntries = useMemo(() => {
@@ -579,13 +608,17 @@ export const PostedLettersLog: React.FC = () => {
                       <td className="py-2 px-2">
                         <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                           entry.action_type === 'search' ? 'bg-blue-100 text-blue-700' :
-                          entry.action_type === 'label' ? 'bg-amber-100 text-amber-700' :
-                          entry.action_type === 'print' ? 'bg-green-100 text-green-700' :
+                          entry.action_type === 'label' || entry.action_type === 'batch_label' ? 'bg-amber-100 text-amber-700' :
+                          entry.action_type === 'print' || entry.action_type === 'batch_print' || entry.action_type === 'batch' ? 'bg-green-100 text-green-700' :
+                          entry.action_type === 'reprint' ? 'bg-purple-100 text-purple-700' :
                           'bg-muted text-muted-foreground'
                         }`}>
                           {entry.action_type === 'search' ? 'Search' :
                            entry.action_type === 'label' ? 'Label' :
+                           entry.action_type === 'batch_label' ? 'Batch Label' :
                            entry.action_type === 'print' ? 'Print' :
+                           entry.action_type === 'batch_print' || entry.action_type === 'batch' ? 'Batch Print' :
+                           entry.action_type === 'reprint' ? 'Reprint' :
                            entry.action_type || 'Manual'}
                         </span>
                       </td>
@@ -603,12 +636,12 @@ export const PostedLettersLog: React.FC = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 gap-1 bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-200"
-                            onClick={() => printEnvelopeLabel(entry)}
-                            title="Print single envelope label"
+                            className="text-xs h-7 gap-1"
+                            onClick={() => reprintLetter(entry)}
+                            title="Reprint label for this customer"
                           >
-                            <Tag className="h-3 w-3" />
-                            Label
+                            <RotateCcw className="h-3 w-3" />
+                            Reprint
                           </Button>
                           <Button
                             size="sm"
