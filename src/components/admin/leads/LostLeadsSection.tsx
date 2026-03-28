@@ -181,12 +181,38 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
           return `Duplicate (×${dupCount})`;
         }
 
-        // Check if step 1 only (shouldn't happen since we filter >=2, but safety)
+        // Check if step 1 only
         if ((cart.step_abandoned || 0) < 2) {
           return 'Step 1 only';
         }
 
+        // Check for suspicious indicators
+        const phoneResult = validatePhone(cart.phone);
+        const emailResult = validateEmail(cart.email);
+        const spamName = isSpamName(cart.full_name);
+
+        if (spamName && !phoneResult.valid) return 'Suspicious — Spam name + bad phone';
+        if (!phoneResult.valid && !emailResult.valid) return 'Suspicious — No valid contact';
+        if (emailResult.reason === 'Disposable email') return 'Suspicious — Disposable email';
+        if (spamName) return 'Suspicious — Spam name';
+
         return 'Genuine — New';
+      };
+
+      /** Calculate a 0-100 quality score */
+      const calcQuality = (cart: any): number => {
+        let score = 50;
+        const phoneResult = validatePhone(cart.phone);
+        const emailResult = validateEmail(cart.email);
+        if (phoneResult.valid) score += 20; else score -= 20;
+        if (emailResult.valid) score += 10; else score -= 10;
+        if (emailResult.reason === 'Disposable email') score -= 15;
+        if (cart.full_name && !isSpamName(cart.full_name)) score += 5;
+        if (isSpamName(cart.full_name)) score -= 15;
+        if (cart.vehicle_reg) score += 5;
+        if (cart.plan_name) score += 5;
+        if (cart.step_abandoned >= 3) score += 5;
+        return Math.max(0, Math.min(100, score));
       };
 
       const orphans = carts.filter((cart: any) => {
@@ -198,7 +224,10 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
       }).map((cart: any) => ({
         ...cart,
         orphan_reason: classifyOrphanReason(cart),
-      }));
+        phone_status: validatePhone(cart.phone),
+        email_status: validateEmail(cart.email),
+        quality_score: calcQuality(cart),
+      })).sort((a: any, b: any) => b.quality_score - a.quality_score);
 
       // Filter rejected leads: only show those not already in sales pipeline
       const rejectedOrphans = rejected.filter((cart: any) => {
