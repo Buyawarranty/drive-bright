@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, RefreshCw, CheckCircle2, Phone, PhoneOff, Mail, MailX, Copy } from 'lucide-react';
+import { AlertTriangle, RefreshCw, CheckCircle2, Phone, PhoneOff, Mail, MailX, Copy, ChevronDown, StickyNote } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -90,6 +92,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
   const [loading, setLoading] = useState(true);
   const initialLoadDone = React.useRef(false);
   const [dismissingId, setDismissingId] = useState<string | null>(null);
+  const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
 
   // Agent distribution caps for correct sort_order
   const [agentCaps, setAgentCaps] = useState<{ admin_user_id: string; sort_order: number; daily_cap: number; assigned_today: number; paused: boolean }[]>([]);
@@ -400,9 +403,6 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                 <TableRow className="bg-muted/30 border-b-2 border-border">
                   <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</TableHead>
                   <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-                  {showCbColumn && (
-                    <TableHead className="w-[40px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">CB</TableHead>
-                  )}
                   <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>
                   <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
                   <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
@@ -436,14 +436,14 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                   const agentAvatarBg = colorEntry?.bg || 'bg-gray-600';
 
                   return (
+                    <React.Fragment key={lead.id}>
                     <TableRow
-                      key={lead.id}
                       className={cn(
                         'transition-colors',
                         dismissingId === lead.id && 'opacity-50 pointer-events-none',
                       )}
                     >
-                      {/* Agent — round-robin pre-assignment with dropdown to override */}
+                      {/* Agent */}
                       <TableCell className="sticky left-0 bg-background z-10">
                         <Select onValueChange={(agentId) => handleAssignChange(lead, agentId)}>
                           <SelectTrigger className={cn("h-7 w-[100px] text-[11px] border rounded-md font-medium gap-1", agentBadgeColor)}>
@@ -466,7 +466,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                         </Select>
                       </TableCell>
 
-                      {/* Status — defaulting to "New", full options like main table */}
+                      {/* Status */}
                       <TableCell>
                         <Select value={lead.contact_status || 'new'} onValueChange={(val) => handleStatusChange(lead, val)}>
                           <SelectTrigger className="h-7 w-[85px] text-[11px] border-border">
@@ -487,69 +487,66 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                         </Select>
                       </TableCell>
 
-                      {/* CB — callback indicator */}
-                      {showCbColumn && (
-                        <TableCell className="text-center text-muted-foreground text-xs">—</TableCell>
-                      )}
-
-                      {/* Calls — 0 for recovered leads */}
+                      {/* Calls */}
                       <TableCell className="text-center text-xs text-muted-foreground">0</TableCell>
 
-                      {/* Actions — phone copy + email copy for quick access */}
-                      <TableCell>
-                        <div className="flex items-center gap-0.5">
+                      {/* Actions — expand toggle + copy buttons (matches main leads) */}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={expandedLeadId === lead.id ? "default" : "outline"}
+                                size="icon"
+                                className={cn(
+                                  "h-9 w-9 transition-all duration-150",
+                                  expandedLeadId === lead.id
+                                    ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                                )}
+                                onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                              >
+                                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", expandedLeadId === lead.id && "rotate-180")} strokeWidth={3} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              {expandedLeadId === lead.id ? "Close" : "Click to open"}
+                            </TooltipContent>
+                          </Tooltip>
+
                           {lead.phone && (
-                            <Tooltip>
+                            <Tooltip delayDuration={100}>
                               <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(lead.phone || '');
-                                    toast.success('Phone copied');
-                                  }}
-                                >
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(lead.phone || ''); toast.success('Phone copied'); }}>
                                   <Phone className="h-3.5 w-3.5 text-green-600" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Copy phone</TooltipContent>
                             </Tooltip>
                           )}
+
+                          <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 relative"
+                                onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                              >
+                                <StickyNote className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">Add note</TooltipContent>
+                          </Tooltip>
+
                           {lead.email && (
-                            <Tooltip>
+                            <Tooltip delayDuration={100}>
                               <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(lead.email || '');
-                                    toast.success('Email copied');
-                                  }}
-                                >
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(lead.email || ''); toast.success('Email copied'); }}>
                                   <Mail className="h-3.5 w-3.5 text-blue-600" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Copy email</TooltipContent>
-                            </Tooltip>
-                          )}
-                          {lead.vehicle_reg && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(lead.vehicle_reg || '');
-                                    toast.success('Reg copied');
-                                  }}
-                                >
-                                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Copy reg</TooltipContent>
                             </Tooltip>
                           )}
                         </div>
@@ -601,33 +598,51 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                         </div>
                       </TableCell>
 
-                      {/* Reg */}
+                      {/* Reg — matching main leads yellow plate style */}
                       <TableCell>
                         {lead.vehicle_reg ? (
-                          <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300 font-mono text-xs">
+                          <Badge variant="outline" className="font-mono text-xs bg-yellow-400 text-black border-yellow-500 rounded-sm">
                             {lead.vehicle_reg}
                           </Badge>
                         ) : <span className="text-muted-foreground text-xs">—</span>}
                       </TableCell>
 
                       {/* Payment */}
-                      <TableCell className="text-xs text-muted-foreground">
-                        {lead.total_price ? `£${lead.total_price.toFixed(0)}` : '—'}
+                      <TableCell>
+                        <span className="text-xs text-muted-foreground">
+                          {lead.total_price ? `£${lead.total_price.toFixed(0)}` : '—'}
+                        </span>
                       </TableCell>
 
                       {/* Activity */}
                       <TableCell>
-                        <div className="text-xs text-muted-foreground">—</div>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
+                        </span>
                       </TableCell>
 
                       {/* Created */}
                       <TableCell>
-                        <div className="text-xs text-muted-foreground">
-                          <div>{format(new Date(lead.created_at), 'MMM d, yyyy')}</div>
-                          <div className="text-[10px]">{format(new Date(lead.created_at), 'HH:mm')}</div>
-                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(lead.created_at), 'MMM d, yyyy HH:mm')}
+                        </span>
                       </TableCell>
                     </TableRow>
+
+                    {/* Expanded notes panel */}
+                    {expandedLeadId === lead.id && (
+                      <TableRow>
+                        <TableCell colSpan={11} className="p-0 bg-muted/20">
+                          <div className="p-4">
+                            <UnifiedNotesPanel
+                              leadId={lead.id}
+                              compact
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
