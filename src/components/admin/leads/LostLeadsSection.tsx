@@ -388,7 +388,76 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     }
   }, []);
 
-  if (loading) {
+  /** Recover a single lead into the sales pipeline with auto round-robin or specific agent */
+  const handleRecoverSingle = useCallback(async (lead: OrphanedLead, agentId?: string) => {
+    setDismissingId(lead.id);
+    try {
+      const { data, error } = await supabase.rpc('recover_single_lead', {
+        p_cart_id: lead.id,
+        p_agent_id: agentId || null,
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (!result?.success) {
+        toast.error(result?.error || 'Recovery failed');
+        return;
+      }
+      const agentName = agentId 
+        ? salesUsers.find(u => u.id === agentId)?.first_name || 'agent'
+        : 'auto-assigned';
+      toast.success(`✅ Recovered "${lead.email}" → ${agentName}`);
+      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+      onRecovered?.();
+    } catch (err: any) {
+      console.error('Single recovery error:', err);
+      toast.error(`Recovery failed: ${err.message}`);
+    } finally {
+      setDismissingId(null);
+    }
+  }, [salesUsers, onRecovered]);
+
+  /** Change status of an orphaned lead (fake/lost/duplicate → vanish from list) */
+  const handleStatusChange = useCallback(async (lead: OrphanedLead, status: string) => {
+    setDismissingId(lead.id);
+    try {
+      const { error } = await supabase
+        .from('abandoned_carts')
+        .update({ contact_status: status })
+        .eq('id', lead.id);
+      if (error) throw error;
+
+      // Preserve contact in marketing if valid
+      if (lead.email_status?.valid || lead.phone_status?.valid) {
+        await supabase
+          .from('marketing_audience')
+          .upsert({
+            lead_id: lead.id,
+            email: lead.email?.toLowerCase().trim() || null,
+            phone: lead.phone?.trim() || null,
+            full_name: lead.full_name || null,
+            source: 'orphaned_cart',
+            source_type: 'abandoned_cart',
+            lead_status: status,
+            step_abandoned: lead.step_abandoned,
+            synced_at: new Date().toISOString(),
+          }, { onConflict: 'email' });
+      }
+
+      const label = status === 'fake_lead' ? 'fake' : status === 'duplicate' ? 'duplicate' : 'lost';
+      toast.success(`Marked "${lead.email}" as ${label}`);
+      setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
+      if (status === 'fake_lead') {
+        setRejectedLeads(prev => [{ ...lead, contact_status: status }, ...prev]);
+      }
+    } catch (err: any) {
+      console.error('Status change error:', err);
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setDismissingId(null);
+    }
+  }, []);
+
+
     if (inline) {
       return (
         <div className="flex items-center justify-center py-12">
