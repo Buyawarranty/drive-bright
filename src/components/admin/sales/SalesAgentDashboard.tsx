@@ -59,6 +59,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   // a switch to fetchedLeads (which lacks the parent's optimistic updates)
   const leads = propLeads ?? fetchedLeads;
   const tags = propTags ?? fetchedTags;
+  const salesUsers = propSalesUsers ?? fetchedSalesUsers;
 
   useEffect(() => {
     const getCurrentUser = async () => {
