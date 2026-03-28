@@ -280,17 +280,72 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     }
   }, [fetchOrphanedLeads, onRecovered]);
 
+  /** Sync all valid contacts from orphaned leads to marketing_audience */
+  const handleSyncToMarketing = useCallback(async () => {
+    const validContacts = orphanedLeads.filter(l => 
+      (l.email_status?.valid || l.phone_status?.valid)
+    );
+    if (validContacts.length === 0) {
+      toast.info('No valid contacts to sync');
+      return;
+    }
+    
+    try {
+      // Upsert each valid contact into marketing_audience
+      const rows = validContacts.map(l => ({
+        lead_id: l.id,
+        email: l.email?.toLowerCase().trim() || null,
+        phone: l.phone?.trim() || null,
+        full_name: l.full_name || null,
+        source: 'orphaned_cart',
+        source_type: 'abandoned_cart' as const,
+        lead_status: l.contact_status || 'orphaned',
+        step_abandoned: l.step_abandoned,
+        synced_at: new Date().toISOString(),
+      }));
+
+      const { error } = await supabase
+        .from('marketing_audience')
+        .upsert(rows, { onConflict: 'email' });
+
+      if (error) throw error;
+      toast.success(`📧 Synced ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''} to marketing audience`);
+    } catch (err: any) {
+      console.error('Marketing sync error:', err);
+      toast.error(`Marketing sync failed: ${err.message}`);
+    }
+  }, [orphanedLeads]);
+
   const handleDismissLead = useCallback(async (lead: OrphanedLead) => {
     setDismissingId(lead.id);
     try {
+      // Mark as fake in abandoned_carts but keep is_converted false 
+      // so marketing_audience sync still picks up the contact
       const { error } = await supabase
         .from('abandoned_carts')
-        .update({ contact_status: 'fake_lead', is_converted: true })
+        .update({ contact_status: 'fake_lead' })
         .eq('id', lead.id);
 
       if (error) throw error;
 
-      toast.success(`Dismissed "${lead.email}" — moved to rejected`);
+      // Also preserve in marketing_audience if valid contact
+      if (lead.email_status?.valid || lead.phone_status?.valid) {
+        await supabase
+          .from('marketing_audience')
+          .upsert({
+            lead_id: lead.id,
+            email: lead.email?.toLowerCase().trim() || null,
+            phone: lead.phone?.trim() || null,
+            full_name: lead.full_name || null,
+            source: 'orphaned_cart',
+            source_type: 'abandoned_cart',
+            lead_status: 'fake_lead',
+            step_abandoned: lead.step_abandoned,
+            synced_at: new Date().toISOString(),
+          }, { onConflict: 'email' });
+      }
+
+      toast.success(`Dismissed "${lead.email}" — contact preserved for marketing`);
       setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
       setRejectedLeads(prev => [{ ...lead, contact_status: 'fake_lead' }, ...prev]);
     } catch (err: any) {
@@ -358,15 +413,27 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 {orphanedLeads.length > 0 && (
-                  <Button
-                    onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
-                    disabled={syncing}
-                    size="sm"
-                    className="h-6 px-2 text-[10px] gap-1"
-                  >
-                    {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
-                    {syncing ? 'Syncing...' : 'Recover'}
-                  </Button>
+                  <>
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); handleSyncToMarketing(); }}
+                      size="sm"
+                      variant="outline"
+                      className="h-6 px-2 text-[10px] gap-1"
+                      title="Sync all valid emails & phones to marketing audience"
+                    >
+                      <Mail className="h-3 w-3" />
+                      Marketing
+                    </Button>
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); handleSyncToSales(); }}
+                      disabled={syncing}
+                      size="sm"
+                      className="h-6 px-2 text-[10px] gap-1"
+                    >
+                      {syncing ? <RefreshCw className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
+                      {syncing ? 'Syncing...' : 'Recover'}
+                    </Button>
+                  </>
                 )}
                 {isOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
