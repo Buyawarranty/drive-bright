@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
 import { SalesAgentMyLeadsView } from './SalesAgentMyLeadsView';
+import { LostLeadsSection } from '../leads/LostLeadsSection';
 import SalesCustomerManagement from './SalesCustomerManagement';
 import { SalesDashboardKPIs } from './SalesDashboardKPIs';
 import { SalesBadges } from './SalesBadges';
@@ -58,6 +59,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   // a switch to fetchedLeads (which lacks the parent's optimistic updates)
   const leads = propLeads ?? fetchedLeads;
   const tags = propTags ?? fetchedTags;
+  const salesUsers = propSalesUsers ?? fetchedSalesUsers;
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -373,6 +375,13 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
             onRefresh={fetchLeads}
             hideAssignedColumn={hideAssignedColumn}
           />
+
+          {/* Recovery Queue for sales agents */}
+          <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20 mt-4">
+            <CardContent className="p-0">
+              <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers as any} userRole="sales" />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* My Orders Tab */}
