@@ -70,7 +70,7 @@ export function DiscountCodesTab() {
   const [editingCode, setEditingCode] = useState<DiscountCode | null>(null);
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
   const [isSelectAll, setIsSelectAll] = useState(false);
-  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'usage'>('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSource, setFilterSource] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'created_at' | 'valid_to' | 'used_count' | 'code'>('created_at');
