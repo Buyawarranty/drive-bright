@@ -260,6 +260,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
     } finally {
       setLoading(false);
       initialLoadDone.current = true;
+    }
   }, []);
 
   useEffect(() => {
