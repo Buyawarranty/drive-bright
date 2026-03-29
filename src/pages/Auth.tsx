@@ -562,11 +562,13 @@ const Auth = () => {
           </CardContent>
         </Card>
         
-        {/* Debug tools for login issues */}
-        <div className="mt-8 grid md:grid-cols-2 gap-6">
-          <AdminLoginDebug />
-          <CustomerLoginDebugTool />
-        </div>
+        {/* Debug tools - only visible to super_admin and admin */}
+        {isAdminUser && (
+          <div className="mt-8 grid md:grid-cols-2 gap-6">
+            <AdminLoginDebug />
+            <CustomerLoginDebugTool />
+          </div>
+        )}
         </div>
       </div>
     </div>
