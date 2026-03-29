@@ -540,6 +540,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     deleteNote,
     refetch: () => fetchNotes(true),
     isAbandonedCart,
-    isSaving: isSavingRef.current
+    isSaving: isSavingRef.current,
+    flushPendingQuickNotes: flushAllPendingQuickNotes
   };
 };
