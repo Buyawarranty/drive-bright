@@ -28,6 +28,23 @@ const Auth = () => {
   });
   
   const [loading, setLoading] = useState(false);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+
+  // Check if current user is super_admin or admin to show debug tools
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id);
+        const roles = roleData?.map(r => r.role) || [];
+        setIsAdminUser(roles.some(r => ['super_admin', 'admin'].includes(r as string)));
+      }
+    };
+    checkAdminRole();
+  }, []);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
