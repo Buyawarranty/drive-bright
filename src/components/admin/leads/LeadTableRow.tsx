@@ -320,6 +320,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       isLocked && "opacity-70"
     )}>
       {/* Selection Checkbox */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         <Checkbox
           checked={isSelected}
@@ -327,9 +328,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           aria-label={`Select ${lead.email}`}
         />
       </TableCell>
+      )}
 
       {/* Assigned To - Shows "Assign now" for unassigned leads */}
-      {!hideAssignedColumn && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
+      {!hideAssignedColumn && !isLeadGenView && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
           value={lead.assigned_to || WEBSITE_SALES_ACCOUNT_ID}
           onValueChange={(value) => {
