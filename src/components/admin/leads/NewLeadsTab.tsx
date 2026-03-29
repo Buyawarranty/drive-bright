@@ -195,8 +195,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [setFilter]);
 
-  // Refetch when date range changes (server-side filter changed)
+  const hasMountedDateRangeRef = React.useRef(false);
+
+  // Refetch when date range changes after the initial mount.
+  // The initial mount already loads with the current server-side date filter.
   useEffect(() => {
+    if (!hasMountedDateRangeRef.current) {
+      hasMountedDateRangeRef.current = true;
+      return;
+    }
+
     if (dateRange.from || dateRange.to) {
       fetchLeads();
     }

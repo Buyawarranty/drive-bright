@@ -3,10 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const quickNotesCache = new Map<string, QuickNote[]>();
+export const PENDING_NOTE_QUEUE_STORAGE_KEY = 'lead-quick-note-pending-queue';
 
-// Cache admin user to avoid repeated lookups
-let cachedAdminUser: { id: string; first_name: string | null; last_name: string | null; email: string } | null = null;
-let cacheExpiry = 0;
+export interface PendingQueuedNote {
+  id: string;
+  leadId: string;
+  noteText: string;
+  createdAt: string;
+}
 
 export interface QuickNote {
   id: string;
@@ -22,6 +26,34 @@ export interface QuickNote {
     email: string;
   } | null;
 }
+
+export const readPendingQueuedNotes = (): PendingQueuedNote[] => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = window.localStorage.getItem(PENDING_NOTE_QUEUE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const writePendingQueuedNotes = (notes: PendingQueuedNote[]) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(PENDING_NOTE_QUEUE_STORAGE_KEY, JSON.stringify(notes));
+  } catch {
+    // Ignore storage failures
+  }
+};
+
+const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
+const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
+
+// Cache admin user to avoid repeated lookups
+let cachedAdminUser: { id: string; first_name: string | null; last_name: string | null; email: string } | null = null;
+let cacheExpiry = 0;
 
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
@@ -193,6 +225,20 @@ export const useLeadQuickNotes = (leadId: string) => {
     fetchNotes(false); // initial load
   }, [fetchNotes]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void flushAllPendingQuickNotes().then((flushedLeadIds) => {
+      if (!cancelled && flushedLeadIds.includes(leadId)) {
+        void fetchNotes(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [leadId, fetchNotes]);
+
   const getAuthenticatedAdmin = async () => {
     const now = Date.now();
     
@@ -232,6 +278,79 @@ export const useLeadQuickNotes = (leadId: string) => {
     cachedAdminUser = adminData;
     cacheExpiry = now + 10 * 60 * 1000; // Cache for 10 minutes instead of 5
     return adminData;
+  };
+
+  const flushAllPendingQuickNotes = async () => {
+    const pendingNotes = readPendingQueuedNotes().sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
+    if (pendingNotes.length === 0) return [] as string[];
+
+    try {
+      const adminUser = await getAuthenticatedAdmin();
+      const remainingNotes: PendingQueuedNote[] = [];
+      const flushedLeadIds = new Set<string>();
+
+      for (const queuedNote of pendingNotes) {
+        try {
+          const queuedLeadId = queuedNote.leadId;
+          const queuedActualId = getActualLeadId(queuedLeadId);
+          const nowIso = new Date().toISOString();
+
+          if (isAbandonedCartLeadId(queuedLeadId)) {
+            const { data: cartData, error: cartError } = await supabase
+              .from('abandoned_carts')
+              .select('contact_notes')
+              .eq('id', queuedActualId)
+              .maybeSingle();
+
+            if (cartError) throw cartError;
+
+            const timestamp = new Date().toLocaleString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            const authorName = adminUser.first_name || adminUser.email.split('@')[0];
+            const newNoteEntry = `[${timestamp} - ${authorName}] ${queuedNote.noteText.trim()}`;
+            const updatedNotes = cartData?.contact_notes
+              ? `${cartData.contact_notes}\n\n${newNoteEntry}`
+              : newNoteEntry;
+
+            const { error: updateError } = await supabase
+              .from('abandoned_carts')
+              .update({ contact_notes: updatedNotes, updated_at: nowIso })
+              .eq('id', queuedActualId);
+
+            if (updateError) throw updateError;
+          } else {
+            const { error: insertError } = await supabase
+              .from('lead_quick_notes')
+              .insert({
+                lead_id: queuedLeadId,
+                note_text: queuedNote.noteText.trim(),
+                created_by: adminUser.id
+              });
+
+            if (insertError) throw insertError;
+          }
+
+          flushedLeadIds.add(queuedLeadId);
+        } catch (error) {
+          console.warn('[useLeadQuickNotes] Failed to flush queued note, will retry later:', error);
+          remainingNotes.push(queuedNote);
+        }
+      }
+
+      writePendingQueuedNotes(remainingNotes);
+      return Array.from(flushedLeadIds);
+    } catch (error) {
+      console.warn('[useLeadQuickNotes] Unable to flush queued notes yet:', error);
+      return [] as string[];
+    }
   };
 
   const addNote = async (noteText: string) => {
@@ -421,6 +540,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     deleteNote,
     refetch: () => fetchNotes(true),
     isAbandonedCart,
-    isSaving: isSavingRef.current
+    isSaving: isSavingRef.current,
+    flushPendingQuickNotes: flushAllPendingQuickNotes
   };
 };

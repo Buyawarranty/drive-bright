@@ -592,17 +592,23 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }, 1000);
   }, []);
 
-  // Initial fetch + fetch on filter change (no subscription teardown)
+  // Initial fetch: flush any queued status changes first, then load once.
+  // This avoids duplicate mount-time full-table fetches that were causing lag.
   useEffect(() => {
     if (authLoading || !user?.id) return;
-    fetchLeads();
-  }, [authLoading, user?.id, fetchLeads]);
 
-  useEffect(() => {
-    if (authLoading || !user?.id) return;
-    void flushPendingStatusUpdates().then(() => {
-      fetchLeadsRef.current();
-    });
+    let cancelled = false;
+
+    void (async () => {
+      await flushPendingStatusUpdates();
+      if (!cancelled) {
+        fetchLeadsRef.current();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [authLoading, user?.id, flushPendingStatusUpdates]);
 
   // One-time setup for realtime, polling, and visibility listeners
@@ -628,18 +634,24 @@ export const useLeads = (options?: UseLeadsOptions) => {
       fetchLeadsRef.current();
     }, 60000);
 
+    const flushPendingStatusQueue = () => {
+      void flushPendingStatusUpdates();
+    };
+
     // Debounced visibility/focus handler - prevents rapid-fire refetches
     const throttledRefetch = () => {
       const now = Date.now();
       if (now - lastRefetchTimeRef.current < 5000) return;
       lastRefetchTimeRef.current = now;
-      void flushPendingStatusUpdates();
+      flushPendingStatusQueue();
       fetchLeadsRef.current();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         throttledRefetch();
+      } else if (document.visibilityState === 'hidden') {
+        flushPendingStatusQueue();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -648,6 +660,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
       throttledRefetch();
     };
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('pagehide', flushPendingStatusQueue);
+    window.addEventListener('beforeunload', flushPendingStatusQueue);
 
     return () => {
       leadsChannel.unsubscribe();
@@ -655,6 +669,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
       clearInterval(pollingInterval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pagehide', flushPendingStatusQueue);
+      window.removeEventListener('beforeunload', flushPendingStatusQueue);
       if (realtimeRefetchTimerRef.current) {
         clearTimeout(realtimeRefetchTimerRef.current);
       }
