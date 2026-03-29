@@ -75,6 +75,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
+  const isLeadGenUser = userRole === 'lead_gen';
   
   // Paid lead lock system — only admin/super_admin bypass the lock
   const isPaidLocked = !isAdminOrSuperAdmin;
@@ -801,10 +802,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onRefresh={fetchLeads}
                     onSendQuote={handleSendQuote}
                     showFbBadge={isDigitalAccess}
-                    showSourceColumn={isAdminOrSuperAdmin}
+                    showSourceColumn={isAdminOrSuperAdmin || isLeadGenUser}
                     isPaidLocked={isPaidLocked}
                     paidLeadAccessCheck={paidLeadAccessCheck}
                     onRequestPaidAccess={handleRequestPaidAccess}
+                    isLeadGenView={isLeadGenUser}
+                    hideAssignedColumn={hideAssignedColumnForAgents}
                   />
                   
                   {/* Lightweight Footer Pagination */}
