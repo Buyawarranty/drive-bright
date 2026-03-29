@@ -705,6 +705,89 @@ export const UserPermissionsTab = () => {
       
       {/* Access Requests Panel */}
       <AccessRequestsPanel />
+
+      {/* Super Admin Only: User Credentials Overview */}
+      {currentAdminUser?.role === 'super_admin' && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-800">
+              <Key className="h-5 w-5" />
+              User Credentials
+              <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-700 border-amber-300 text-xs">Super Admin Only</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Login Email / Username</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Password Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((u) => (
+                  <TableRow key={`cred-${u.id}`}>
+                    <TableCell className="font-medium">
+                      {u.first_name} {u.last_name}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{u.email}</code>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-6 p-0"
+                          onClick={() => copyToClipboard(u.email, `cred-email-${u.id}`)}
+                          title="Copy email"
+                        >
+                          {copiedField === `cred-email-${u.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getRoleBadgeVariant(u.role)} className={`text-xs ${getRoleBadgeClassName(u.role)}`}>
+                        {u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : u.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={u.is_active ? 'default' : 'secondary'} className="text-xs">
+                        {u.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => openPasswordDialog(u)}
+                          title="Set Password Manually"
+                          className="bg-orange-500 hover:bg-orange-600 text-xs"
+                        >
+                          <Key className="h-3 w-3 mr-1" />
+                          Set Password
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleResetPassword(u.user_id || u.id, u.email)}
+                          title="Reset Password (Sends Email)"
+                          className="text-xs"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Reset
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
       
       <div className="flex justify-between items-center">
         <div>
