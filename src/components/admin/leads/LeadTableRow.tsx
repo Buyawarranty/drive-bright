@@ -717,6 +717,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
 
       {/* Reg Plate */}
+      {!isLeadGenView && (
       <TableCell>
         {lead.vehicle_reg ? (
           <Badge variant="outline" className="font-mono text-xs bg-yellow-400 text-black border-yellow-500 rounded-sm">{lead.vehicle_reg}</Badge>
@@ -724,9 +725,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
-
+      )}
 
       {/* Payment Status */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.is_paid ? (
           <PaidCellContent
@@ -738,22 +740,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
-
-
+      )}
 
       {/* Last Activity */}
+      {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground">
           {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
         </span>
       </TableCell>
+      )}
 
       {/* Date Created */}
+      {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground">
           {format(new Date(lead.created_at), 'MMM d, yyyy HH:mm')}
         </span>
       </TableCell>
+      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
