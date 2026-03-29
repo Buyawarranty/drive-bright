@@ -7,39 +7,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useLeadQuickNotes, QuickNote } from '@/hooks/useLeadQuickNotes';
+import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
-const PENDING_NOTE_QUEUE_STORAGE_KEY = 'lead-quick-note-pending-queue';
-
-type PendingQueuedNote = {
-  id: string;
-  leadId: string;
-  noteText: string;
-  createdAt: string;
-};
-
-const readPendingQueuedNotes = (): PendingQueuedNote[] => {
-  if (typeof window === 'undefined') return [];
-
-  try {
-    const raw = window.localStorage.getItem(PENDING_NOTE_QUEUE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-const writePendingQueuedNotes = (notes: PendingQueuedNote[]) => {
-  if (typeof window === 'undefined') return;
-
-  try {
-    window.localStorage.setItem(PENDING_NOTE_QUEUE_STORAGE_KEY, JSON.stringify(notes));
-  } catch {
-    // Ignore storage failures
-  }
-};
 
 interface UnifiedNotesPanelProps {
   leadId: string;
