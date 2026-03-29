@@ -55,6 +55,7 @@ interface LeadTableRowProps {
   hasPendingAccessRequest?: boolean;
   hasApprovedAccess?: boolean;
   onRequestAccess?: (reason: string) => void;
+  isLeadGenView?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -277,6 +278,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   hasPendingAccessRequest = false,
   hasApprovedAccess = false,
   onRequestAccess,
+  isLeadGenView = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -318,6 +320,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       isLocked && "opacity-70"
     )}>
       {/* Selection Checkbox */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         <Checkbox
           checked={isSelected}
@@ -325,9 +328,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           aria-label={`Select ${lead.email}`}
         />
       </TableCell>
+      )}
 
       {/* Assigned To - Shows "Assign now" for unassigned leads */}
-      {!hideAssignedColumn && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
+      {!hideAssignedColumn && !isLeadGenView && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
           value={lead.assigned_to || WEBSITE_SALES_ACCOUNT_ID}
           onValueChange={(value) => {
@@ -461,6 +465,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       )}
 
       {/* Status */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         {isLocked ? (
           <PaidLeadLockOverlay
@@ -490,8 +495,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </Select>
         )}
       </TableCell>
+      )}
 
       {/* Callback indicator */}
+      {!isLeadGenView && (
       <TableCell className="text-center">
         {lead.is_callback ? (
           <Tooltip delayDuration={100}>
@@ -507,8 +514,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
+      )}
 
       {/* Call Count - Enhanced with dialog and guardrails */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         {isLocked ? (
           <span className="text-muted-foreground text-xs">🔒</span>
@@ -522,8 +531,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         />
         )}
       </TableCell>
+      )}
 
       {/* Quick Actions */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-1">
           <Tooltip delayDuration={100}>
@@ -610,6 +621,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           )}
         </div>
       </TableCell>
+      )}
 
       {/* Name */}
       <TableCell>
@@ -705,6 +717,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
 
       {/* Reg Plate */}
+      {!isLeadGenView && (
       <TableCell>
         {lead.vehicle_reg ? (
           <Badge variant="outline" className="font-mono text-xs bg-yellow-400 text-black border-yellow-500 rounded-sm">{lead.vehicle_reg}</Badge>
@@ -712,9 +725,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
-
+      )}
 
       {/* Payment Status */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.is_paid ? (
           <PaidCellContent
@@ -726,22 +740,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
-
-
+      )}
 
       {/* Last Activity */}
+      {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground">
           {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
         </span>
       </TableCell>
+      )}
 
       {/* Date Created */}
+      {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground">
           {format(new Date(lead.created_at), 'MMM d, yyyy HH:mm')}
         </span>
       </TableCell>
+      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
@@ -766,7 +783,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isPaidLocked === nextProps.isPaidLocked &&
     prevProps.showSourceColumn === nextProps.showSourceColumn &&
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
-    prevProps.hasApprovedAccess === nextProps.hasApprovedAccess
+    prevProps.hasApprovedAccess === nextProps.hasApprovedAccess &&
+    prevProps.isLeadGenView === nextProps.isLeadGenView
   );
 });
 

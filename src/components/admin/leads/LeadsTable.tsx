@@ -36,6 +36,7 @@ interface LeadsTableProps {
   isPaidLocked?: boolean;
   paidLeadAccessCheck?: (leadId: string) => { hasPending: boolean; hasApproved: boolean };
   onRequestPaidAccess?: (leadId: string, reason: string) => void;
+  isLeadGenView?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -65,6 +66,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   isPaidLocked = false,
   paidLeadAccessCheck,
   onRequestPaidAccess,
+  isLeadGenView = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -87,22 +89,24 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30 border-b-2 border-border">
+              {!isLeadGenView && (
               <TableHead className="w-[36px] py-2">
                 {/* Checkbox moved to control bar */}
               </TableHead>
-              {!hideAssignedColumn && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</TableHead>}
+              )}
+              {!hideAssignedColumn && !isLeadGenView && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</TableHead>}
               {showSourceColumn && <TableHead className="w-[35px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Src</TableHead>}
-              <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-              <TableHead className="w-[40px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">CB</TableHead>
-              <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>
-              <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+              {!isLeadGenView && <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[40px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">CB</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>}
               <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
               <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
               <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
-              <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>
-              <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>
-              <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Activity</TableHead>
-              <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Created</TableHead>
+              {!isLeadGenView && <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Activity</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Created</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -133,11 +137,12 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   canAssignLeads={canAssignLeads}
                    noteCount={noteCounts[lead.id] || 0}
                    showFbBadge={showFbBadge}
-                   showSourceColumn={showSourceColumn}
+                    showSourceColumn={showSourceColumn}
                   isPaidLocked={isPaidLocked}
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
                   onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
+                  isLeadGenView={isLeadGenView}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
