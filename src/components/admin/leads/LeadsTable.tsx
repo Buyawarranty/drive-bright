@@ -137,11 +137,12 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   canAssignLeads={canAssignLeads}
                    noteCount={noteCounts[lead.id] || 0}
                    showFbBadge={showFbBadge}
-                   showSourceColumn={showSourceColumn}
+                    showSourceColumn={showSourceColumn}
                   isPaidLocked={isPaidLocked}
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
                   onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
+                  isLeadGenView={isLeadGenView}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
