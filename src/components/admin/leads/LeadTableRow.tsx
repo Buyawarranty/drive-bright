@@ -55,6 +55,7 @@ interface LeadTableRowProps {
   hasPendingAccessRequest?: boolean;
   hasApprovedAccess?: boolean;
   onRequestAccess?: (reason: string) => void;
+  isLeadGenView?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -277,6 +278,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   hasPendingAccessRequest = false,
   hasApprovedAccess = false,
   onRequestAccess,
+  isLeadGenView = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
