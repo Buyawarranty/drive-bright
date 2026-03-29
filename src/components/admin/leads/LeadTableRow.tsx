@@ -534,6 +534,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       )}
 
       {/* Quick Actions */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-1">
           <Tooltip delayDuration={100}>
@@ -620,6 +621,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           )}
         </div>
       </TableCell>
+      )}
 
       {/* Name */}
       <TableCell>
