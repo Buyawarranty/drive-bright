@@ -465,6 +465,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       )}
 
       {/* Status */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         {isLocked ? (
           <PaidLeadLockOverlay
@@ -494,8 +495,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </Select>
         )}
       </TableCell>
+      )}
 
       {/* Callback indicator */}
+      {!isLeadGenView && (
       <TableCell className="text-center">
         {lead.is_callback ? (
           <Tooltip delayDuration={100}>
@@ -511,8 +514,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
+      )}
 
       {/* Call Count - Enhanced with dialog and guardrails */}
+      {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
         {isLocked ? (
           <span className="text-muted-foreground text-xs">🔒</span>
@@ -526,6 +531,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         />
         )}
       </TableCell>
+      )}
 
       {/* Quick Actions */}
       <TableCell onClick={(e) => e.stopPropagation()}>
