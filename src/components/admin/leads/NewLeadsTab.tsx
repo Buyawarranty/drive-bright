@@ -827,6 +827,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     salesUsers={canAssignLeads ? salesUsers : []}
                     onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
+                    onBulkMarkFake={handleBulkMarkFake}
+                    onBulkMarkLost={handleBulkMarkLost}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
