@@ -27,7 +27,7 @@ interface SalesUser {
 
 interface LeadsFiltersProps {
   filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks') => void;
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -242,7 +242,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks');
+    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered');
   };
 
   const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
