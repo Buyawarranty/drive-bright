@@ -370,7 +370,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           (l.status as string) !== 'archived'
       ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
-      recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id).length,
+      recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredLeadsForCounts.filter(l => !l.lead_source || l.lead_source === 'website').length,
