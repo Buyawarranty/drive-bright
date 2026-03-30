@@ -599,12 +599,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     let cancelled = false;
 
-    void (async () => {
-      await flushPendingStatusUpdates();
-      if (!cancelled) {
-        fetchLeadsRef.current();
-      }
-    })();
+    // Fire fetch immediately — don't block on flushing pending status updates
+    fetchLeadsRef.current();
+
+    // Flush pending status updates in the background (non-blocking)
+    void flushPendingStatusUpdates();
 
     return () => {
       cancelled = true;

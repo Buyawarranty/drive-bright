@@ -271,7 +271,7 @@ const AdminDashboard = () => {
       const { data, error } = rolesResult;
       const adminUserData = permissionsResult.data;
 
-      const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead'];
+      const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen'];
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
@@ -281,7 +281,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'viewer', 'guest', 'sales', 'blog_writer'];
+      const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll'];
       const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
       setUserRole(primaryRole);
@@ -306,6 +306,8 @@ const AdminDashboard = () => {
         } else if (primaryRole === 'sales') {
           defaultTab = 'new-leads';
         } else if (primaryRole === 'sales_lead') {
+          defaultTab = 'new-leads';
+        } else if (primaryRole === 'lead_gen') {
           defaultTab = 'new-leads';
         } else if (!['super_admin', 'admin'].includes(primaryRole) && adminUserData?.permissions) {
           const perms = adminUserData.permissions as Record<string, boolean>;
