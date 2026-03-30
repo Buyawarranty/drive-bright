@@ -637,7 +637,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
-                Returning customer — resubmitted {lead.resubmission_count}x{lead.last_resubmitted_at ? ` (last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')})` : ''}
+                Returning customer — resubmitted {(lead.resubmission_count || 0) > 9 ? '9+' : `${lead.resubmission_count}x`}{lead.last_resubmitted_at ? ` (last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')})` : ''}
               </TooltipContent>
             </Tooltip>
           )}
