@@ -10,7 +10,18 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { UserPlus, ChevronDown, X, Zap } from 'lucide-react';
+import { UserPlus, ChevronDown, X, Zap, Ban, XCircle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { AdminUser } from '@/hooks/useLeads';
 
 interface LeadsTableControlBarProps {
@@ -26,6 +37,9 @@ interface LeadsTableControlBarProps {
   salesUsers?: AdminUser[];
   onBulkAssign?: (userId: string | null) => void;
   onBulkAutoAssign?: () => void;
+  // Bulk status props
+  onBulkMarkFake?: () => void;
+  onBulkMarkLost?: () => void;
 }
 
 export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
