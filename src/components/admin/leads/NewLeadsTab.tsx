@@ -181,18 +181,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }, [dateRange]),
   });
 
-  // Set default filter on mount
+  // Set default filter on mount + silently import any orphaned carts into sales_leads
   useEffect(() => {
     setFilter('live');
     setActiveFilter('live');
-  }, [setFilter]);
+    // Auto-import orphaned abandoned carts so they appear as regular leads
+    migrateFromAbandonedCarts().catch(() => {});
+  }, [setFilter, migrateFromAbandonedCarts]);
 
-  // Handle filter change — 'recovery' is local-only, others pass through to useLeads
+  // Handle filter change
   const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
     setActiveFilter(newFilter);
-    if (newFilter !== 'recovery') {
-      setFilter(newFilter as any);
-    }
+    setFilter(newFilter as any);
   }, [setFilter]);
 
   const hasMountedDateRangeRef = React.useRef(false);
