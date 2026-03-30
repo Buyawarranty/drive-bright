@@ -103,9 +103,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Sales Lead, Admin, Super Admin should NOT have delete by default
   const canDelete = hasGranularPermission('new-leads', 'delete') === true;
   
-  // Assign permission - ALL sales roles and admins can ALWAYS assign leads
-  // This is a core sales function that must never be blocked by granular permissions
-  const canAssignLeads = isAdmin || userRole === 'sales' || userRole === 'sales_lead' || hasGranularPermission('new-leads', 'assign') !== false;
+  // Assign permission - only sales_lead, admin, super_admin can reassign leads to other agents
+  const canAssignLeads = isAdmin || userRole === 'sales_lead';
   
   // Export permission - admins always can, others need explicit permission
   const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
