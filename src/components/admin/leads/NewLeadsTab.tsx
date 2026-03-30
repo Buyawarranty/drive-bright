@@ -503,6 +503,20 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, updateLeadStatus]);
 
+  // Bulk restore selected leads back to new
+  const handleBulkRestore = useCallback(async () => {
+    if (selectedLeads.size === 0) return;
+    const leadIds = Array.from(selectedLeads);
+    const results = await Promise.allSettled(
+      leadIds.map(leadId => updateLeadStatus(leadId, 'new' as any))
+    );
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    if (successCount > 0) {
+      toast.success(`Restored ${successCount} lead${successCount > 1 ? 's' : ''}`);
+      setSelectedLeads(new Set());
+    }
+  }, [selectedLeads, updateLeadStatus]);
+
   // Bulk assign selected leads to a user - parallel for speed
   const handleBulkAssign = useCallback(async (userId: string | null) => {
     if (selectedLeads.size === 0) return;
@@ -680,57 +694,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </AlertDialog>
           )}
 
-          {/* Bulk Mark as Fake */}
-          {selectedLeads.size > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs border-red-300 text-red-700 hover:bg-red-50">
-                  <Ban className="h-3.5 w-3.5" />
-                  Fake ({selectedLeads.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Mark {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''} as Fake?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will mark the selected lead{selectedLeads.size > 1 ? 's' : ''} as fake. They will be removed from the live feed.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleBulkMarkFake} className="bg-red-600 text-white hover:bg-red-700">
-                    Mark as Fake
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-
-          {/* Bulk Mark as Lost */}
-          {selectedLeads.size > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs border-gray-400 text-gray-700 hover:bg-gray-100">
-                  <XCircle className="h-3.5 w-3.5" />
-                  Lost ({selectedLeads.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Mark {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''} as Lost?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will mark the selected lead{selectedLeads.size > 1 ? 's' : ''} as lost. They will be removed from the live feed.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleBulkMarkLost} className="bg-gray-600 text-white hover:bg-gray-700">
-                    Mark as Lost
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
           
           {/* View Toggle — pill-style, tight */}
           <div className="flex items-center bg-muted/50 border-2 border-border rounded-lg p-0.5">
@@ -829,6 +792,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
+                    onBulkRestore={handleBulkRestore}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
