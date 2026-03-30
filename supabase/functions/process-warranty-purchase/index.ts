@@ -77,8 +77,22 @@ const handler = async (req: Request): Promise<Response> => {
     const documentPath = docMapping.document_path;
     console.log('Document path determined:', documentPath);
 
-    // Step 2: Create customer record if not exists
+    // Step 2: Create customer record - check for existing by email + reg plate
     console.log('Step 2: Creating/updating customer record');
+    
+    const incomingReg = (vehicleDetails?.registrationNumber || vehicleDetails?.registration_plate || '').toUpperCase().replace(/\s/g, '');
+    
+    // Check for existing customer with same email
+    const { data: existingCustomer } = await supabase
+      .from('customers')
+      .select('id, email, registration_plate')
+      .ilike('email', customerEmail)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const existingReg = existingCustomer ? (existingCustomer.registration_plate || '').toUpperCase().replace(/\s/g, '') : '';
+    const isDifferentVehicle = existingCustomer && incomingReg && existingReg && incomingReg !== existingReg;
     
     const customerRecord = {
       email: customerEmail,
@@ -97,15 +111,27 @@ const handler = async (req: Request): Promise<Response> => {
       ...(vehicleDetails || {})
     };
 
-    const { data: customer, error: customerError } = await supabase
-      .from('customers')
-      .upsert(customerRecord, { onConflict: 'email' })
-      .select()
-      .single();
+    let customer: any;
 
-    if (customerError) {
-      console.error('Error creating customer:', customerError);
-      throw customerError;
+    if (existingCustomer && !isDifferentVehicle) {
+      // Same vehicle or no reg data - update existing
+      const { data: updated, error: updateErr } = await supabase
+        .from('customers')
+        .update({ ...customerRecord, updated_at: new Date().toISOString() })
+        .eq('id', existingCustomer.id)
+        .select()
+        .single();
+      if (updateErr) { console.error('Error updating customer:', updateErr); throw updateErr; }
+      customer = updated;
+    } else {
+      // Different vehicle or no existing customer - create new
+      const { data: created, error: createErr } = await supabase
+        .from('customers')
+        .insert(customerRecord)
+        .select()
+        .single();
+      if (createErr) { console.error('Error creating customer:', createErr); throw createErr; }
+      customer = created;
     }
 
     console.log('Customer record created/updated:', customer.id);
