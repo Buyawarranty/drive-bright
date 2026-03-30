@@ -45,8 +45,8 @@ export const useAuth = () => {
                 
                 if (mounted) {
                   // Get the highest priority role
-                  const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer'];
-                  const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'viewer', 'guest', 'sales', 'blog_writer'];
+                  const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'lead_gen'];
+                  const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer'];
                   const userRoles = roleData?.map(r => r.role) || [];
                   const primaryRole = rolePriority.find(role => userRoles.includes(role as any)) || userRoles[0] || null;
                   setUserRole(primaryRole);
