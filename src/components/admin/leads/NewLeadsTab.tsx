@@ -469,12 +469,38 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Archive leads (soft-archive by setting status to 'archived')
   const handleArchiveSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
-    
-    // Update status to archived instead of deleting
     for (const leadId of selectedLeads) {
       await updateLeadStatus(leadId, 'archived' as any);
     }
     setSelectedLeads(new Set());
+  }, [selectedLeads, updateLeadStatus]);
+
+  // Bulk mark selected leads as fake
+  const handleBulkMarkFake = useCallback(async () => {
+    if (selectedLeads.size === 0) return;
+    const leadIds = Array.from(selectedLeads);
+    const results = await Promise.allSettled(
+      leadIds.map(leadId => updateLeadStatus(leadId, 'fake_lead' as any))
+    );
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    if (successCount > 0) {
+      toast.success(`Marked ${successCount} lead${successCount > 1 ? 's' : ''} as fake`);
+      setSelectedLeads(new Set());
+    }
+  }, [selectedLeads, updateLeadStatus]);
+
+  // Bulk mark selected leads as lost
+  const handleBulkMarkLost = useCallback(async () => {
+    if (selectedLeads.size === 0) return;
+    const leadIds = Array.from(selectedLeads);
+    const results = await Promise.allSettled(
+      leadIds.map(leadId => updateLeadStatus(leadId, 'lost' as any))
+    );
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    if (successCount > 0) {
+      toast.success(`Marked ${successCount} lead${successCount > 1 ? 's' : ''} as lost`);
+      setSelectedLeads(new Set());
+    }
   }, [selectedLeads, updateLeadStatus]);
 
   // Bulk assign selected leads to a user - parallel for speed
