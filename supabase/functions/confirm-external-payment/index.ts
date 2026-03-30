@@ -113,9 +113,14 @@ serve(async (req) => {
       : paymentType === '36months' ? '3-Year'
       : paymentType;
 
+    // CRITICAL: Determine if this is the same vehicle or a different one
+    const existingReg = existingCustomer ? (existingCustomer.registration_plate || '').toUpperCase().replace(/\s/g, '') : '';
+    const isSameVehicle = existingCustomer && incomingReg && existingReg && incomingReg === existingReg;
+    const isDifferentVehicle = existingCustomer && incomingReg && existingReg && incomingReg !== existingReg;
+
     // Check for existing policy for same customer + same vehicle reg
     let existingPolicy: any = null;
-    if (existingCustomer) {
+    if (existingCustomer && !isDifferentVehicle) {
       const { data: policies } = await supabase
         .from('customer_policies')
         .select('id, warranty_number, policy_number')
@@ -149,8 +154,8 @@ serve(async (req) => {
     });
 
     // Create or update customer record
-    if (existingCustomer) {
-      logStep("Updating existing customer", { customerId: existingCustomer.id });
+    if (existingCustomer && !isDifferentVehicle) {
+      logStep("Updating existing customer (same vehicle)", { customerId: existingCustomer.id, existingReg, incomingReg });
       
       const { error: updateError } = await supabase
         .from('customers')
