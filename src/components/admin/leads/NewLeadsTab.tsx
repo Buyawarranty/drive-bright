@@ -344,7 +344,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const absoluteTotal = dateFilteredLeadsForCounts.length;
     // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
     const liveCount = dateFilteredLeadsForCounts.filter(
-      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
+      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived' && !l.abandoned_cart_id
     ).length;
 
     return {
