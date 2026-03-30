@@ -706,13 +706,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
-          {/* Sales Executive Header - Non-Admin with view permissions */}
-          {!isAdmin && canSeeMyDashboard && (
-            <SalesExecutiveHeader
-              onLeadClaimed={() => fetchLeads()}
-            />
-          )}
-
+          {/* Sales Executive Header removed - agents focus on leads only */}
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
             filter={activeFilter}
