@@ -739,9 +739,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
-              <>
-              ) : (
-                <>
                   {/* Sticky Control Bar */}
                   <LeadsTableControlBar
                     totalItems={pagination.totalItems}
@@ -809,8 +806,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     canGoNext={pagination.canGoNext}
                     canGoPrev={pagination.canGoPrev}
                   />
-                </>
-              )}
             </CardContent>
           </Card>
 
