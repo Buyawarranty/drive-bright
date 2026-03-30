@@ -320,8 +320,27 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return result;
   }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter]);
 
-  // Pagination for leads table
-  const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
+  // Separate fresh leads from recovered (unworked) leads
+  const isRecoveredLead = useCallback((lead: Lead) => {
+    return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
+  }, []);
+
+  const freshLeads = useMemo(() => {
+    // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
+    if (filter === 'recovered') return [];
+    return filteredLeads.filter(lead => !isRecoveredLead(lead));
+  }, [filteredLeads, isRecoveredLead, filter]);
+
+  const recoveredLeads = useMemo(() => {
+    if (filter === 'recovered') return filteredLeads.filter(lead => isRecoveredLead(lead));
+    return filteredLeads.filter(lead => isRecoveredLead(lead));
+  }, [filteredLeads, isRecoveredLead, filter]);
+
+  // Pagination for leads table (fresh only)
+  const pagination = usePagination(freshLeads, { initialPageSize: 50 });
+
+  // Separate pagination for unworked leads
+  const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
