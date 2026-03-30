@@ -229,6 +229,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return inputLeads.filter(lead => lead.status === 'lost');
       case 'callbacks':
         return inputLeads.filter(lead => lead.is_callback === true);
+      case 'recovered':
+        return inputLeads.filter(lead => !!lead.abandoned_cart_id);
       case 'urgent_callback':
       case 'quote_sent':
       case 'contacted':
@@ -367,6 +369,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           (l.status as string) !== 'archived'
       ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
+      recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id).length,
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredLeadsForCounts.filter(l => !l.lead_source || l.lead_source === 'website').length,
@@ -733,7 +736,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLeadCounts={agentLeadCounts}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
-            
+            showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
           />
           
 
