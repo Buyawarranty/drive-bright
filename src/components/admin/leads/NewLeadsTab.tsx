@@ -430,13 +430,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const handleSelectAll = useCallback(() => {
     setSelectedLeads(prev => {
-      if (prev.size === filteredLeads.length) {
+      if (prev.size === freshLeads.length) {
         return new Set();
       } else {
-        return new Set(filteredLeads.map(l => l.id));
+        return new Set(freshLeads.map(l => l.id));
       }
     });
-  }, [filteredLeads]);
+  }, [freshLeads]);
 
   // Memoize tab change handler for instant switching
   const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view') => {
@@ -803,7 +803,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onPageSizeChange={pagination.setPageSize}
                     selectedCount={selectedLeads.size}
                     totalVisible={pagination.paginatedData.length}
-                    allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                    allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
                     onSelectAll={handleSelectAll}
                     salesUsers={canAssignLeads ? salesUsers : []}
                     onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
