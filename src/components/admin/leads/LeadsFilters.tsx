@@ -49,10 +49,12 @@ interface LeadsFiltersProps {
     converted: number;
     high_priority: number;
     fake: number;
+    recovered: number;
     source_google?: number;
     source_facebook?: number;
     source_organic?: number;
   };
+  showRecoveredPill?: boolean;
   dateRange?: { from: Date | undefined; to: Date | undefined };
   onDateRangeChange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
   assignmentFilter?: AssignmentFilter;
@@ -95,7 +97,7 @@ const STATUS_PILLS: {
   { value: 'high_priority', label: 'Hot', icon: '🔥', colorClass: 'data-[state=active]:bg-orange-600 data-[state=active]:text-white', countKey: 'high_priority' },
   { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
   { value: 'fake', label: 'Fake', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
-  
+  { value: 'recovered', label: 'Recovered', icon: '🔄', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'recovered' },
 ];
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
@@ -120,6 +122,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   agentLeadCounts,
   sourceFilter = 'all',
   onSourceFilterChange,
+  showRecoveredPill = false,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -277,7 +280,11 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       {/* Row 2: Status pills — small, compact, secondary */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
         <TabsList className="h-auto p-0.5 bg-muted/40 border border-border rounded-lg flex flex-wrap gap-0">
-          {STATUS_PILLS.map(pill => {
+          {STATUS_PILLS.filter(pill => {
+            // Hide recovered pill from non-admin users
+            if (pill.value === 'recovered' && !showRecoveredPill) return false;
+            return true;
+          }).map(pill => {
             const count = getCount(pill);
             const isActive = effectiveTabValue === pill.value;
             return (
