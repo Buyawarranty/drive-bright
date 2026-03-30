@@ -220,7 +220,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         // Show ALL leads — absolute total that never fluctuates for past dates
         return inputLeads;
       case 'live':
-        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead' && !lead.abandoned_cart_id);
+        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'high_priority':
         return inputLeads.filter(lead => (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'fake':
@@ -344,7 +344,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const absoluteTotal = dateFilteredLeadsForCounts.length;
     // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
     const liveCount = dateFilteredLeadsForCounts.filter(
-      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived' && !l.abandoned_cart_id
+      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
     ).length;
 
     return {
