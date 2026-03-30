@@ -320,8 +320,27 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return result;
   }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter]);
 
-  // Pagination for leads table
-  const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
+  // Separate fresh leads from recovered (unworked) leads
+  const isRecoveredLead = useCallback((lead: Lead) => {
+    return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
+  }, []);
+
+  const freshLeads = useMemo(() => {
+    // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
+    if (filter === 'recovered') return [];
+    return filteredLeads.filter(lead => !isRecoveredLead(lead));
+  }, [filteredLeads, isRecoveredLead, filter]);
+
+  const recoveredLeads = useMemo(() => {
+    if (filter === 'recovered') return filteredLeads.filter(lead => isRecoveredLead(lead));
+    return filteredLeads.filter(lead => isRecoveredLead(lead));
+  }, [filteredLeads, isRecoveredLead, filter]);
+
+  // Pagination for leads table (fresh only)
+  const pagination = usePagination(freshLeads, { initialPageSize: 50 });
+
+  // Separate pagination for unworked leads
+  const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
@@ -411,13 +430,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const handleSelectAll = useCallback(() => {
     setSelectedLeads(prev => {
-      if (prev.size === filteredLeads.length) {
+      if (prev.size === freshLeads.length) {
         return new Set();
       } else {
-        return new Set(filteredLeads.map(l => l.id));
+        return new Set(freshLeads.map(l => l.id));
       }
     });
-  }, [filteredLeads]);
+  }, [freshLeads]);
 
   // Memoize tab change handler for instant switching
   const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view') => {
@@ -773,7 +792,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
           />
-          
 
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
@@ -784,7 +802,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onPageSizeChange={pagination.setPageSize}
                     selectedCount={selectedLeads.size}
                     totalVisible={pagination.paginatedData.length}
-                    allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                    allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
                     onSelectAll={handleSelectAll}
                     salesUsers={canAssignLeads ? salesUsers : []}
                     onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
@@ -850,6 +868,60 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   />
             </CardContent>
           </Card>
+
+          {/* Unworked Leads Section — recovered leads separated from fresh */}
+          {recoveredLeads.length > 0 && (
+            <Card className="overflow-hidden border-2 border-border mt-4">
+              <CardContent className="p-0">
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border">
+                  <h2 className="text-sm font-semibold tracking-tight text-muted-foreground">Unworked Leads</h2>
+                  <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{recoveredLeads.length}</Badge>
+                </div>
+
+                <LeadsTable
+                  leads={unworkedPagination.paginatedData}
+                  tags={tags}
+                  salesUsers={salesUsers}
+                  canAssignLeads={canAssignLeads}
+                  selectedLeads={selectedLeads}
+                  onSelectLead={handleSelectLead}
+                  onSelectAll={handleSelectAll}
+                  onUpdateStatus={updateLeadStatus}
+                  onAssign={assignLead}
+                  onAutoAssign={autoAssignLead}
+                  onUpdatePriority={updateLeadPriority}
+                  onScheduleFollowUp={scheduleFollowUp}
+                  onAddTag={addTagToLead}
+                  onRemoveTag={removeTagFromLead}
+                  onUpdateNotes={updateLeadNotes}
+                  onMarkContacted={markContactedAt}
+                  onLogActivity={logActivity}
+                  onUpdateCallCount={updateCallCount}
+                  onRefresh={fetchLeads}
+                  onSendQuote={handleSendQuote}
+                  showFbBadge={isDigitalAccess}
+                  showRecoveredBadge={isAdminOrSuperAdmin}
+                  showSourceColumn={isAdminOrSuperAdmin || isLeadGenUser}
+                  isPaidLocked={isPaidLocked}
+                  paidLeadAccessCheck={paidLeadAccessCheck}
+                  onRequestPaidAccess={handleRequestPaidAccess}
+                  isLeadGenView={isLeadGenUser}
+                  hideAssignedColumn={hideAssignedColumnForAgents}
+                />
+
+                <LeadsTableFooter
+                  currentPage={unworkedPagination.currentPage}
+                  totalPages={unworkedPagination.totalPages}
+                  totalItems={unworkedPagination.totalItems}
+                  startIndex={unworkedPagination.startIndex}
+                  endIndex={unworkedPagination.endIndex}
+                  onPageChange={unworkedPagination.goToPage}
+                  canGoNext={unworkedPagination.canGoNext}
+                  canGoPrev={unworkedPagination.canGoPrev}
+                />
+              </CardContent>
+            </Card>
+          )}
 
         </div>
       </div>
