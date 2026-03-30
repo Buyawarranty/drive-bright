@@ -307,6 +307,8 @@ const AdminDashboard = () => {
           defaultTab = 'new-leads';
         } else if (primaryRole === 'sales_lead') {
           defaultTab = 'new-leads';
+        } else if (primaryRole === 'lead_gen') {
+          defaultTab = 'new-leads';
         } else if (!['super_admin', 'admin'].includes(primaryRole) && adminUserData?.permissions) {
           const perms = adminUserData.permissions as Record<string, boolean>;
           const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
