@@ -6257,6 +6257,7 @@ export type Database = {
         Returns: string
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
+      migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       process_scheduled_sms: { Args: never; Returns: number }
       recover_orphaned_leads: { Args: never; Returns: Json }
       recover_single_lead: {

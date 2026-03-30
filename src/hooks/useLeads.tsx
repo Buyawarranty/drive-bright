@@ -1257,53 +1257,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
   const migrateFromAbandonedCarts = useCallback(async (silent = false) => {
     try {
-      const { data: carts, error: fetchError } = await supabase
-        .from('abandoned_carts')
-        .select('*')
-        .eq('is_converted', false);
+      const { data: result, error } = await supabase.rpc('migrate_orphan_carts_to_leads');
 
-      if (fetchError) throw fetchError;
+      if (error) throw error;
 
-      if (!carts || carts.length === 0) {
-        if (!silent) toast.info('No abandoned carts to migrate');
-        return;
-      }
-
-      let migrated = 0;
-      for (const cart of carts) {
-        const { data: existing } = await supabase
-          .from('sales_leads')
-          .select('id')
-          .eq('abandoned_cart_id', cart.id)
-          .maybeSingle();
-
-        if (existing) continue;
-
-        const { error: insertError } = await supabase
-          .from('sales_leads')
-          .insert({
-            first_name: cart.full_name?.split(' ')[0] || null,
-            last_name: cart.full_name?.split(' ').slice(1).join(' ') || null,
-            email: cart.email,
-            phone: cart.phone,
-            lead_source: 'website',
-            status: cart.contact_status === 'contacted' ? 'contacted' : 'new',
-            plan_interest: cart.plan_name,
-            vehicle_reg: cart.vehicle_reg,
-            vehicle_make: cart.vehicle_make,
-            vehicle_model: cart.vehicle_model,
-            vehicle_year: cart.vehicle_year,
-            vehicle_type: cart.vehicle_type,
-            mileage: cart.mileage,
-            notes: cart.contact_notes,
-            abandoned_cart_id: cart.id
-          });
-
-        if (!insertError) {
-          migrated++;
-        }
-      }
-
+      const migrated = (result as any)?.migrated || 0;
       if (migrated > 0) {
         if (!silent) toast.success(`Migrated ${migrated} leads from abandoned carts`);
         fetchLeads();
