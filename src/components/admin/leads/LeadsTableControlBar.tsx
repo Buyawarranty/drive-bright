@@ -9,8 +9,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { UserPlus, ChevronDown, X, Zap, Ban, XCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +20,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserPlus, ChevronDown, X, Zap, Ban, XCircle } from 'lucide-react';
 import { AdminUser } from '@/hooks/useLeads';
 
 interface LeadsTableControlBarProps {
@@ -33,11 +33,9 @@ interface LeadsTableControlBarProps {
   allSelected: boolean;
   onSelectAll: () => void;
   pageSizeOptions?: number[];
-  // Bulk assignment props
   salesUsers?: AdminUser[];
   onBulkAssign?: (userId: string | null) => void;
   onBulkAutoAssign?: () => void;
-  // Bulk status props
   onBulkMarkFake?: () => void;
   onBulkMarkLost?: () => void;
 }
@@ -54,26 +52,27 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   salesUsers = [],
   onBulkAssign,
   onBulkAutoAssign,
+  onBulkMarkFake,
+  onBulkMarkLost,
 }) => {
-  const {
-    salesUsers = [],
-    onBulkAssign,
-    onBulkAutoAssign,
-    onBulkMarkFake,
-    onBulkMarkLost,
-  } = props as any;
+  const getInitials = (user: AdminUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  };
 
-  // Destructure remaining props
-  const {
-    totalItems, pageSize, onPageSizeChange, selectedCount, totalVisible,
-    allSelected, onSelectAll, pageSizeOptions = [25, 50, 100, 200],
-  } = arguments[0] as LeadsTableControlBarProps;
+  const getDisplayName = (user: AdminUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    }
+    return user.email;
+  };
 
   return (
     <div className="sticky top-0 z-20 bg-background border-b px-3 py-1.5 flex items-center justify-between gap-3">
-      {/* Left side - Results summary and bulk selection */}
+      {/* Left side */}
       <div className="flex items-center gap-3">
-        {/* Bulk selection checkbox */}
         <div className="flex items-center gap-1.5">
           <Checkbox
             checked={allSelected && totalVisible > 0}
@@ -88,60 +87,110 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
           )}
         </div>
         
-        {/* Results summary — tiny */}
         <div className="text-[11px] text-muted-foreground">
           <span className="font-semibold text-foreground">{totalItems.toLocaleString()}</span>
           {' '}leads
         </div>
 
-        {/* Bulk Assign Dropdown - Only show when leads are selected */}
-        {selectedCount > 0 && onBulkAssign && salesUsers.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Assign to
-                <ChevronDown className="h-3 w-3 opacity-60" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
-              {/* Remove assignment option */}
-              <DropdownMenuItem onClick={() => onBulkAssign(null)} className="gap-2">
-                <X className="h-4 w-4 text-muted-foreground" />
-                <span>Remove assignment</span>
-              </DropdownMenuItem>
-              
-              {/* Auto-assign option */}
-              {onBulkAutoAssign && (
-                <DropdownMenuItem onClick={onBulkAutoAssign} className="gap-2 text-green-600">
-                  <Zap className="h-4 w-4" />
-                  <span>Auto-assign (next available)</span>
-                </DropdownMenuItem>
-              )}
-              
-              <DropdownMenuSeparator />
-              
-              {/* Sales users list */}
-              {salesUsers.map((user) => (
-                <DropdownMenuItem
-                  key={user.id}
-                  onClick={() => onBulkAssign(user.id)}
-                  className="gap-2"
-                >
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                      {getInitials(user)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">{getDisplayName(user)}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Bulk actions - only when leads are selected */}
+        {selectedCount > 0 && (
+          <div className="flex items-center gap-1.5">
+            {/* Assign dropdown */}
+            {onBulkAssign && salesUsers.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Assign to
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
+                  <DropdownMenuItem onClick={() => onBulkAssign(null)} className="gap-2">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                    <span>Remove assignment</span>
+                  </DropdownMenuItem>
+                  {onBulkAutoAssign && (
+                    <DropdownMenuItem onClick={onBulkAutoAssign} className="gap-2 text-green-600">
+                      <Zap className="h-4 w-4" />
+                      <span>Auto-assign (next available)</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  {salesUsers.map((user) => (
+                    <DropdownMenuItem
+                      key={user.id}
+                      onClick={() => onBulkAssign(user.id)}
+                      className="gap-2"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {getInitials(user)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{getDisplayName(user)}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Mark as Fake */}
+            {onBulkMarkFake && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10">
+                    <Ban className="h-3.5 w-3.5" />
+                    Fake ({selectedCount})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Mark {selectedCount} leads as Fake?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will mark the selected leads as fake. They will be moved to the Fake filter.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onBulkMarkFake} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Mark as Fake
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
+            {/* Mark as Lost */}
+            {onBulkMarkLost && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:bg-muted">
+                    <XCircle className="h-3.5 w-3.5" />
+                    Lost ({selectedCount})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Mark {selectedCount} leads as Lost?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will mark the selected leads as lost. They will be moved to the Lost filter.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onBulkMarkLost}>
+                      Mark as Lost
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Right side - Page size control — compact */}
+      {/* Right side */}
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground">Per page</span>
         <div className="inline-flex items-center rounded-md border bg-muted/30 p-0.5">
