@@ -637,13 +637,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
-                Returning customer — resubmitted {lead.resubmission_count}x{lead.last_resubmitted_at ? ` (last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')})` : ''}
+                Returning customer — resubmitted {(lead.resubmission_count || 0) > 9 ? '9+' : `${lead.resubmission_count}x`}{lead.last_resubmitted_at ? ` (last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')})` : ''}
               </TooltipContent>
             </Tooltip>
           )}
           {lead.application_count > 1 && !(lead.resubmission_count || 0) && (
             <Badge className="text-[10px] px-1.5 py-0.5 bg-orange-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
-              <Flame className="h-3 w-3" />{lead.application_count}x
+              <Flame className="h-3 w-3" />{lead.application_count > 9 ? '9+' : `${lead.application_count}x`}
             </Badge>
           )}
           {displayName ? (

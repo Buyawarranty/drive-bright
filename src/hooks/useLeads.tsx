@@ -418,17 +418,39 @@ export const useLeads = (options?: UseLeadsOptions) => {
         .filter((lead: any) => !recentlyDeletedRef.current.has(lead.id))
         .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+      // Deduplicate by email — keep only the most recent lead per email,
+      // carry the count so we know how many times they applied
       const emailCounts: Record<string, number> = {};
+      const emailBestLead: Record<string, any> = {};
       allLeads.forEach((lead: any) => {
         const email = lead.email?.toLowerCase();
         if (email) {
           emailCounts[email] = (emailCounts[email] || 0) + 1;
+          // Keep the lead with the most recent activity (already sorted newest first)
+          if (!emailBestLead[email]) {
+            emailBestLead[email] = lead;
+          }
         }
       });
 
-      const leadsWithCounts = allLeads.map((lead: any) => ({
+      // Build deduplicated list: one row per email (most recent), plus leads without email
+      const deduplicatedLeads: any[] = [];
+      const seenEmails = new Set<string>();
+      allLeads.forEach((lead: any) => {
+        const email = lead.email?.toLowerCase();
+        if (email) {
+          if (!seenEmails.has(email)) {
+            seenEmails.add(email);
+            deduplicatedLeads.push(lead);
+          }
+        } else {
+          deduplicatedLeads.push(lead);
+        }
+      });
+
+      const leadsWithCounts = deduplicatedLeads.map((lead: any) => ({
         ...lead,
-        application_count: emailCounts[lead.email?.toLowerCase()] || 1,
+        application_count: Math.min(emailCounts[lead.email?.toLowerCase()] || 1, 10),
       }));
 
       const salesLeadIds = leadsWithCounts.map((lead: any) => lead.id);
