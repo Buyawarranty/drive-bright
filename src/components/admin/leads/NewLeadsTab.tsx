@@ -19,7 +19,7 @@ import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
@@ -674,6 +674,58 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     className="bg-orange-600 text-white hover:bg-orange-700"
                   >
                     Archive
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          {/* Bulk Mark as Fake */}
+          {selectedLeads.size > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs border-red-300 text-red-700 hover:bg-red-50">
+                  <Ban className="h-3.5 w-3.5" />
+                  Fake ({selectedLeads.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Mark {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''} as Fake?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will mark the selected lead{selectedLeads.size > 1 ? 's' : ''} as fake. They will be removed from the live feed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleBulkMarkFake} className="bg-red-600 text-white hover:bg-red-700">
+                    Mark as Fake
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          {/* Bulk Mark as Lost */}
+          {selectedLeads.size > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs border-gray-400 text-gray-700 hover:bg-gray-100">
+                  <XCircle className="h-3.5 w-3.5" />
+                  Lost ({selectedLeads.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Mark {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''} as Lost?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will mark the selected lead{selectedLeads.size > 1 ? 's' : ''} as lost. They will be removed from the live feed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleBulkMarkLost} className="bg-gray-600 text-white hover:bg-gray-700">
+                    Mark as Lost
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
