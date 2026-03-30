@@ -50,6 +50,7 @@ interface LeadTableRowProps {
   canAssignLeads?: boolean;
   noteCount?: number;
   showFbBadge?: boolean;
+  showRecoveredBadge?: boolean;
   showSourceColumn?: boolean;
   isPaidLocked?: boolean;
   hasPendingAccessRequest?: boolean;
@@ -273,6 +274,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   canAssignLeads = true,
   noteCount = 0,
   showFbBadge = false,
+  showRecoveredBadge = false,
   showSourceColumn = false,
   isPaidLocked = false,
   hasPendingAccessRequest = false,
@@ -651,6 +653,16 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           )}
           {lead.is_from_abandoned_cart && (
             <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300">Cart</Badge>
+          )}
+          {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1 py-0 bg-cyan-100 text-cyan-800 border-cyan-300 font-bold flex-shrink-0">
+                  R
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">Recovered from abandoned cart</TooltipContent>
+            </Tooltip>
           )}
           {showFbBadge && (() => {
             const metadata = lead.cart_metadata as { fbclid?: string; utm_source?: string } | null;

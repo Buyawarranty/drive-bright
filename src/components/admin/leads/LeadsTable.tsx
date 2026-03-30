@@ -32,6 +32,7 @@ interface LeadsTableProps {
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
   showFbBadge?: boolean;
+  showRecoveredBadge?: boolean;
   showSourceColumn?: boolean;
   isPaidLocked?: boolean;
   paidLeadAccessCheck?: (leadId: string) => { hasPending: boolean; hasApproved: boolean };
@@ -62,6 +63,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   hideAssignedColumn,
   canAssignLeads = true,
   showFbBadge = false,
+  showRecoveredBadge = false,
   showSourceColumn = false,
   isPaidLocked = false,
   paidLeadAccessCheck,
@@ -137,7 +139,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   canAssignLeads={canAssignLeads}
                    noteCount={noteCounts[lead.id] || 0}
                    showFbBadge={showFbBadge}
-                    showSourceColumn={showSourceColumn}
+                   showRecoveredBadge={showRecoveredBadge}
+                     showSourceColumn={showSourceColumn}
                   isPaidLocked={isPaidLocked}
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
