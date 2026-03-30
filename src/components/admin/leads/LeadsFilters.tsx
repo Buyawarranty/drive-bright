@@ -97,7 +97,7 @@ const STATUS_PILLS: {
   { value: 'high_priority', label: 'Hot', icon: '🔥', colorClass: 'data-[state=active]:bg-orange-600 data-[state=active]:text-white', countKey: 'high_priority' },
   { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
   { value: 'fake', label: 'Fake', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
-  { value: 'recovery', label: 'Recovery', icon: '🔄', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'recovery' as any },
+  
 ];
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
