@@ -654,16 +654,23 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {lead.is_from_abandoned_cart && (
             <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300">Cart</Badge>
           )}
-          {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1 py-0 bg-cyan-100 text-cyan-800 border-cyan-300 font-bold flex-shrink-0">
-                  R
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">Recovered from abandoned cart</TooltipContent>
-            </Tooltip>
-          )}
+          {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && (() => {
+            const meta = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string } | null;
+            const isGoogle = !!meta?.gclid;
+            const isFb = !!meta?.fbclid || ['facebook', 'fb', 'ig'].includes((meta?.utm_source || '').toLowerCase());
+            const srcLabel = isGoogle ? 'G' : isFb ? 'FB' : 'Or';
+            const srcColor = isGoogle ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : isFb ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-gray-100 text-gray-700 border-gray-300';
+            return (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge className={`text-[10px] px-1 py-0 font-bold flex-shrink-0 ${srcColor}`}>
+                    R·{srcLabel}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Recovered from abandoned cart ({isGoogle ? 'Google' : isFb ? 'Facebook' : 'Organic'})</TooltipContent>
+              </Tooltip>
+            );
+          })()}
           {showFbBadge && (() => {
             const metadata = lead.cart_metadata as { fbclid?: string; utm_source?: string } | null;
             const isFacebook = metadata?.fbclid || metadata?.utm_source?.toLowerCase() === 'facebook' || metadata?.utm_source?.toLowerCase() === 'fb' || metadata?.utm_source?.toLowerCase() === 'ig';
