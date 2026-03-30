@@ -793,6 +793,59 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
           />
 
+          {/* Unworked Leads Section — recovered leads separated from fresh */}
+          {recoveredLeads.length > 0 && (
+            <Card className="overflow-hidden border-2 border-border mt-4">
+              <CardContent className="p-0">
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border">
+                  <h2 className="text-sm font-semibold tracking-tight text-muted-foreground">Unworked Leads</h2>
+                  <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{recoveredLeads.length}</Badge>
+                </div>
+
+                <LeadsTable
+                  leads={unworkedPagination.paginatedData}
+                  tags={tags}
+                  salesUsers={salesUsers}
+                  canAssignLeads={canAssignLeads}
+                  selectedLeads={selectedLeads}
+                  onSelectLead={handleSelectLead}
+                  onSelectAll={handleSelectAll}
+                  onUpdateStatus={updateLeadStatus}
+                  onAssign={assignLead}
+                  onAutoAssign={autoAssignLead}
+                  onUpdatePriority={updateLeadPriority}
+                  onScheduleFollowUp={scheduleFollowUp}
+                  onAddTag={addTagToLead}
+                  onRemoveTag={removeTagFromLead}
+                  onUpdateNotes={updateLeadNotes}
+                  onMarkContacted={markContactedAt}
+                  onLogActivity={logActivity}
+                  onUpdateCallCount={updateCallCount}
+                  onRefresh={fetchLeads}
+                  onSendQuote={handleSendQuote}
+                  showFbBadge={isDigitalAccess}
+                  showRecoveredBadge={isAdminOrSuperAdmin}
+                  showSourceColumn={isAdminOrSuperAdmin || isLeadGenUser}
+                  isPaidLocked={isPaidLocked}
+                  paidLeadAccessCheck={paidLeadAccessCheck}
+                  onRequestPaidAccess={handleRequestPaidAccess}
+                  isLeadGenView={isLeadGenUser}
+                  hideAssignedColumn={hideAssignedColumnForAgents}
+                />
+
+                <LeadsTableFooter
+                  currentPage={unworkedPagination.currentPage}
+                  totalPages={unworkedPagination.totalPages}
+                  totalItems={unworkedPagination.totalItems}
+                  startIndex={unworkedPagination.startIndex}
+                  endIndex={unworkedPagination.endIndex}
+                  onPageChange={unworkedPagination.goToPage}
+                  canGoNext={unworkedPagination.canGoNext}
+                  canGoPrev={unworkedPagination.canGoPrev}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
