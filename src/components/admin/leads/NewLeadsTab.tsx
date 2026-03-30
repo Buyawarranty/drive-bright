@@ -220,7 +220,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         // Show ALL leads — absolute total that never fluctuates for past dates
         return inputLeads;
       case 'live':
-        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead' && !lead.abandoned_cart_id);
+        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'high_priority':
         return inputLeads.filter(lead => (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'fake':
@@ -230,7 +230,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       case 'callbacks':
         return inputLeads.filter(lead => lead.is_callback === true);
       case 'recovered':
-        return inputLeads.filter(lead => !!lead.abandoned_cart_id);
+        // Recovered = migrated orphan carts (no assigned_at and no step_two_completed_at)
+        return inputLeads.filter(lead => !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at);
       case 'urgent_callback':
       case 'quote_sent':
       case 'contacted':
@@ -344,7 +345,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const absoluteTotal = dateFilteredLeadsForCounts.length;
     // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
     const liveCount = dateFilteredLeadsForCounts.filter(
-      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived' && !l.abandoned_cart_id
+      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
     ).length;
 
     return {
@@ -369,7 +370,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           (l.status as string) !== 'archived'
       ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
-      recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id).length,
+      recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredLeadsForCounts.filter(l => !l.lead_source || l.lead_source === 'website').length,

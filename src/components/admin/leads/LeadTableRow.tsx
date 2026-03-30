@@ -654,7 +654,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {lead.is_from_abandoned_cart && (
             <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300">Cart</Badge>
           )}
-          {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && (() => {
+          {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && !lead.assigned_at && !lead.step_two_completed_at && (() => {
             const meta = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string } | null;
             const isGoogle = !!meta?.gclid;
             const isFb = !!meta?.fbclid || ['facebook', 'fb', 'ig'].includes((meta?.utm_source || '').toLowerCase());
