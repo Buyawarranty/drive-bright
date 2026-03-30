@@ -491,6 +491,7 @@ export const AnalyticsTab = () => {
   const monthlyRevenue = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
+      date.setDate(1); // Use 1st of month to avoid month-skip bugs (e.g. Mar 30 - 1 month = Mar 2)
       date.setMonth(date.getMonth() - i);
       return {
         month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
