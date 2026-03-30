@@ -93,10 +93,11 @@ serve(async (req) => {
       throw new Error("Sales agent assignment is required before confirming payment");
     }
 
-    // Check for existing customer by email
+    // Check for existing customer by email AND registration plate
+    const incomingReg = (vehicleReg || '').toUpperCase().replace(/\s/g, '');
     const { data: existingCustomer } = await supabase
       .from('customers')
-      .select('id, email')
+      .select('id, email, registration_plate')
       .ilike('email', customerEmail)
       .maybeSingle();
 
