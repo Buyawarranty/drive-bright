@@ -473,7 +473,7 @@ serve(async (req) => {
     const normalizedEmailForLookup = userEmail.toLowerCase().trim();
     const { data: existingCustomerByEmail } = await supabaseClient
       .from('customers')
-      .select('id, email, warranty_reference_number')
+      .select('id, email, warranty_reference_number, registration_plate')
       .ilike('email', normalizedEmailForLookup)
       .or('is_deleted.is.null,is_deleted.eq.false')
       .order('created_at', { ascending: false })
@@ -483,11 +483,20 @@ serve(async (req) => {
     let customerData2: any = null;
     let customerError: any = null;
 
-    if (existingCustomerByEmail) {
-      // UPDATE existing customer record instead of creating a new one
-      logStep("Existing customer found - updating instead of creating new", { 
+    // CRITICAL: Check if this is the SAME vehicle or a DIFFERENT vehicle
+    // If same email but different reg plate, create a NEW customer record (multi-vehicle customer)
+    const incomingReg = (customerRecord.registration_plate || '').toUpperCase().replace(/\s/g, '');
+    const existingReg = existingCustomerByEmail ? (existingCustomerByEmail.registration_plate || '').toUpperCase().replace(/\s/g, '') : '';
+    const isSameVehicle = existingCustomerByEmail && incomingReg && existingReg && incomingReg === existingReg;
+    const isDifferentVehicle = existingCustomerByEmail && incomingReg && existingReg && incomingReg !== existingReg;
+
+    if (existingCustomerByEmail && (isSameVehicle || !incomingReg || !existingReg)) {
+      // SAME vehicle or missing reg data - UPDATE existing customer record
+      logStep("Existing customer found with same vehicle - updating", { 
         existingId: existingCustomerByEmail.id, 
-        existingEmail: existingCustomerByEmail.email 
+        existingEmail: existingCustomerByEmail.email,
+        existingReg,
+        incomingReg
       });
       
       // Preserve the existing warranty_reference_number if it's a BAW-S- prefix (staff-attributed)
@@ -513,6 +522,28 @@ serve(async (req) => {
         logStep("Warning: Customer record update failed", updateError);
       } else {
         logStep("Customer record updated successfully (existing customer)", { customerId: customerData2.id });
+      }
+    } else if (isDifferentVehicle) {
+      // DIFFERENT vehicle for same email - CREATE a new customer record
+      logStep("Same email but DIFFERENT vehicle detected - creating new customer record", {
+        existingId: existingCustomerByEmail.id,
+        existingReg,
+        incomingReg
+      });
+      
+      const { data: newCustomer, error: insertError } = await supabaseClient
+        .from('customers')
+        .insert(customerRecord)
+        .select()
+        .single();
+
+      customerData2 = newCustomer;
+      customerError = insertError;
+      
+      if (insertError) {
+        logStep("Warning: New customer record creation failed for multi-vehicle", insertError);
+      } else {
+        logStep("New customer record created for different vehicle", { customerId: customerData2.id, reg: incomingReg });
       }
     } else {
       // No existing customer - create new record
