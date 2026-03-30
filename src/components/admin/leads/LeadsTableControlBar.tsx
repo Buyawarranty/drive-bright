@@ -9,19 +9,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { UserPlus, ChevronDown, X, Zap, Ban, XCircle } from 'lucide-react';
+import { UserPlus, ChevronDown, X, Zap, Ban, XCircle, RotateCcw } from 'lucide-react';
 import { AdminUser } from '@/hooks/useLeads';
 
 interface LeadsTableControlBarProps {
@@ -38,6 +27,7 @@ interface LeadsTableControlBarProps {
   onBulkAutoAssign?: () => void;
   onBulkMarkFake?: () => void;
   onBulkMarkLost?: () => void;
+  onBulkRestore?: () => void;
 }
 
 export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
@@ -54,6 +44,7 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   onBulkAutoAssign,
   onBulkMarkFake,
   onBulkMarkLost,
+  onBulkRestore,
 }) => {
   const getInitials = (user: AdminUser) => {
     if (user.first_name || user.last_name) {
@@ -135,56 +126,28 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
               </DropdownMenu>
             )}
 
-            {/* Mark as Fake */}
+            {/* Mark as Fake - instant, no popup */}
             {onBulkMarkFake && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10">
-                    <Ban className="h-3.5 w-3.5" />
-                    Fake ({selectedCount})
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Mark {selectedCount} leads as Fake?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will mark the selected leads as fake. They will be moved to the Fake filter.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={onBulkMarkFake} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Mark as Fake
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10" onClick={onBulkMarkFake}>
+                <Ban className="h-3.5 w-3.5" />
+                Fake
+              </Button>
             )}
 
-            {/* Mark as Lost */}
+            {/* Mark as Lost - instant, no popup */}
             {onBulkMarkLost && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:bg-muted">
-                    <XCircle className="h-3.5 w-3.5" />
-                    Lost ({selectedCount})
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Mark {selectedCount} leads as Lost?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will mark the selected leads as lost. They will be moved to the Lost filter.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={onBulkMarkLost}>
-                      Mark as Lost
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:bg-muted" onClick={onBulkMarkLost}>
+                <XCircle className="h-3.5 w-3.5" />
+                Lost
+              </Button>
+            )}
+
+            {/* Restore - instant, no popup */}
+            {onBulkRestore && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-green-700 border-green-300 hover:bg-green-50" onClick={onBulkRestore}>
+                <RotateCcw className="h-3.5 w-3.5" />
+                Restore
+              </Button>
             )}
           </div>
         )}
