@@ -643,7 +643,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           )}
           {lead.application_count > 1 && !(lead.resubmission_count || 0) && (
             <Badge className="text-[10px] px-1.5 py-0.5 bg-orange-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
-              <Flame className="h-3 w-3" />{lead.application_count}x
+              <Flame className="h-3 w-3" />{lead.application_count > 9 ? '9+' : `${lead.application_count}x`}
             </Badge>
           )}
           {displayName ? (
