@@ -97,7 +97,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
-  const { count: recoveryCount } = useOrphanedLeadCount();
+  
   
   // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
   // Sales Lead, Admin, Super Admin should NOT have delete by default
@@ -733,7 +733,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLeadCounts={agentLeadCounts}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
-            recoveryCount={recoveryCount}
+            
           />
           
 
