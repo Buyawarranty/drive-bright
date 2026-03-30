@@ -1255,7 +1255,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }
   }, [logActivity, fetchLeads]);
 
-  const migrateFromAbandonedCarts = useCallback(async () => {
+  const migrateFromAbandonedCarts = useCallback(async (silent = false) => {
     try {
       const { data: carts, error: fetchError } = await supabase
         .from('abandoned_carts')
@@ -1265,7 +1265,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
       if (fetchError) throw fetchError;
 
       if (!carts || carts.length === 0) {
-        toast.info('No abandoned carts to migrate');
+        if (!silent) toast.info('No abandoned carts to migrate');
         return;
       }
 
@@ -1304,11 +1304,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
         }
       }
 
-      toast.success(`Migrated ${migrated} leads from abandoned carts`);
-      fetchLeads();
+      if (migrated > 0) {
+        if (!silent) toast.success(`Migrated ${migrated} leads from abandoned carts`);
+        fetchLeads();
+      } else {
+        if (!silent) toast.info('No new carts to migrate');
+      }
     } catch (error) {
       console.error('Error migrating carts:', error);
-      toast.error('Failed to migrate abandoned carts');
+      if (!silent) toast.error('Failed to migrate abandoned carts');
     }
   }, [fetchLeads]);
 

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovery';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -21,7 +21,7 @@ import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
-import { LostLeadsSection } from './LostLeadsSection';
+
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -32,7 +32,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
-import { useOrphanedLeadCount } from '@/hooks/useOrphanedLeadCount';
+
 import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
@@ -97,7 +97,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
-  const { count: recoveryCount } = useOrphanedLeadCount();
+  
   
   // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
   // Sales Lead, Admin, Super Admin should NOT have delete by default
@@ -181,18 +181,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }, [dateRange]),
   });
 
-  // Set default filter on mount
+  // Set default filter on mount + silently import any orphaned carts into sales_leads
   useEffect(() => {
     setFilter('live');
     setActiveFilter('live');
-  }, [setFilter]);
+    // Auto-import orphaned abandoned carts so they appear as regular leads
+    migrateFromAbandonedCarts(true).catch(() => {});
+  }, [setFilter, migrateFromAbandonedCarts]);
 
-  // Handle filter change — 'recovery' is local-only, others pass through to useLeads
+  // Handle filter change
   const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
     setActiveFilter(newFilter);
-    if (newFilter !== 'recovery') {
-      setFilter(newFilter as any);
-    }
+    setFilter(newFilter as any);
   }, [setFilter]);
 
   const hasMountedDateRangeRef = React.useRef(false);
@@ -733,35 +733,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLeadCounts={agentLeadCounts}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
-            recoveryCount={recoveryCount}
+            
           />
           
-          {/* Recovery banner link at top — scrolls to section below */}
-          {recoveryCount > 0 && activeFilter !== 'recovery' && (
-            <button
-              onClick={() => document.getElementById('recovery-queue-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-amber-400 bg-amber-50/30 hover:bg-amber-100/40 transition-colors cursor-pointer text-left"
-            >
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
-                </span>
-                <span className="text-sm font-medium text-amber-800">
-                  {recoveryCount} recovered lead{recoveryCount !== 1 ? 's' : ''} ready to call
-                </span>
-              </div>
-              <span className="text-xs text-amber-600 font-medium">View below ↓</span>
-            </button>
-          )}
 
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
-              {activeFilter === 'recovery' ? (
-                /* Recovery Queue — full view when pill is selected */
-                <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} userRole={userRole} />
-              ) : (
-                <>
                   {/* Sticky Control Bar */}
                   <LeadsTableControlBar
                     totalItems={pagination.totalItems}
@@ -829,21 +806,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     canGoNext={pagination.canGoNext}
                     canGoPrev={pagination.canGoPrev}
                   />
-                </>
-              )}
             </CardContent>
           </Card>
 
-          {/* Recovery Queue — below main leads table */}
-          {recoveryCount > 0 && activeFilter !== 'recovery' && (
-            <div id="recovery-queue-section">
-              <Card className="overflow-hidden border-2 border-amber-400 bg-amber-50/20">
-                <CardContent className="p-0">
-                  <LostLeadsSection onRecovered={fetchLeads} inline salesUsers={salesUsers} userRole={userRole} />
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
       </div>
 
