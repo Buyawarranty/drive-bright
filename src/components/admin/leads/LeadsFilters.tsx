@@ -524,8 +524,20 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         <div className="flex-1" />
 
         {/* Action buttons — minimal, icon-forward */}
-        <Button variant="ghost" size="sm" onClick={onRefresh} className="h-7 px-2 text-[11px] gap-1 rounded-md">
-          <RefreshCw className="h-3 w-3" /> Refresh
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => {
+            onRefresh();
+            const btn = document.getElementById('leads-refresh-btn');
+            if (btn) {
+              btn.classList.add('animate-spin');
+              setTimeout(() => btn.classList.remove('animate-spin'), 1000);
+            }
+          }} 
+          className="h-8 px-3 text-xs gap-1.5 rounded-md border-primary/30 bg-primary/5 hover:bg-primary/10 font-medium"
+        >
+          <RefreshCw id="leads-refresh-btn" className="h-3.5 w-3.5" /> Refresh Leads
         </Button>
         <Button variant="ghost" size="sm" onClick={onMigrate} className="h-7 px-2 text-[11px] gap-1 rounded-md">
           <Upload className="h-3 w-3" /> Import
