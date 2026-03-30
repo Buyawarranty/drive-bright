@@ -246,7 +246,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   const getCount = (pill: typeof STATUS_PILLS[0]) => {
     if (pill.isAssignment) return assignmentCounts?.awaiting_contact ?? 0;
-    if (pill.value === 'recovery') return recoveryCount;
+    
     return leadCounts[pill.countKey] ?? 0;
   };
 
@@ -272,11 +272,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             </button>
           )}
         </div>
-        {recoveredLeadsSlot && (
-          <div className="flex-1 min-w-0">
-            {recoveredLeadsSlot}
-          </div>
-        )}
       </div>
 
       {/* Row 2: Status pills — small, compact, secondary */}
