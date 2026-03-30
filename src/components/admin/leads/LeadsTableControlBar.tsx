@@ -55,19 +55,19 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   onBulkAssign,
   onBulkAutoAssign,
 }) => {
-  const getInitials = (user: AdminUser) => {
-    if (user.first_name || user.last_name) {
-      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
-    }
-    return user.email[0].toUpperCase();
-  };
+  const {
+    salesUsers = [],
+    onBulkAssign,
+    onBulkAutoAssign,
+    onBulkMarkFake,
+    onBulkMarkLost,
+  } = props as any;
 
-  const getDisplayName = (user: AdminUser) => {
-    if (user.first_name || user.last_name) {
-      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    }
-    return user.email;
-  };
+  // Destructure remaining props
+  const {
+    totalItems, pageSize, onPageSizeChange, selectedCount, totalVisible,
+    allSelected, onSelectAll, pageSizeOptions = [25, 50, 100, 200],
+  } = arguments[0] as LeadsTableControlBarProps;
 
   return (
     <div className="sticky top-0 z-20 bg-background border-b px-3 py-1.5 flex items-center justify-between gap-3">
