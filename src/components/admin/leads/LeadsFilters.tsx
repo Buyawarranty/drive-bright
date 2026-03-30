@@ -68,8 +68,6 @@ interface LeadsFiltersProps {
   agentFilter?: string;
   onAgentFilterChange?: (agentId: string) => void;
   agentLeadCounts?: Record<string, number>;
-  recoveredLeadsSlot?: React.ReactNode;
-  recoveryCount?: number;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
 }
@@ -120,8 +118,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   agentFilter = 'all',
   onAgentFilterChange,
   agentLeadCounts,
-  recoveredLeadsSlot,
-  recoveryCount = 0,
   sourceFilter = 'all',
   onSourceFilterChange,
 }) => {
