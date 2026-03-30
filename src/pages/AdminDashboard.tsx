@@ -405,9 +405,6 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
       case 'new-leads':
-        if (effectiveUserRole === 'sales_lead') {
-          return <SalesLeadDashboard onNavigateToTab={handleTabChange} />;
-        }
         return (
           <NewLeadsTab 
             notifications={notifications}
