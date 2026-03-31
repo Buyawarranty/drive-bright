@@ -1989,7 +1989,7 @@ const CustomerDashboard = () => {
                              {/* Email Address */}
                              <div>
                                <Label className="text-sm font-medium text-gray-500">Email Address</Label>
-                               <p className="font-semibold text-base">{user?.email}</p>
+                               <p className="font-semibold text-base">{selectedPolicy?.email || policies[0]?.email || user?.email}</p>
                              </div>
                              
                              {/* Phone Number */}
