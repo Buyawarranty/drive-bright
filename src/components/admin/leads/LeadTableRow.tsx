@@ -57,6 +57,7 @@ interface LeadTableRowProps {
   hasApprovedAccess?: boolean;
   onRequestAccess?: (reason: string) => void;
   isLeadGenView?: boolean;
+  userRole?: string | null;
 }
 
 const statusColors: Record<LeadStatus, string> = {
