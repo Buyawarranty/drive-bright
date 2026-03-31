@@ -115,10 +115,10 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #FFF4D6; border-radius: 6px; border: 1px solid #F0E4B8;">
                     <tr>
                       <td align="center" style="padding: 18px 16px;">
-                        <p style="font-size: 15px; color: #1A1A1A; font-weight: 600; margin: 0 0 10px 0;">
-                          Save 10% today with code
+                         <p style="font-size: 15px; color: #1A1A1A; font-weight: 600; margin: 0 0 10px 0;">
+                          Save £50 today with code
                         </p>
-                        <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 10px 28px; text-decoration: none; border-radius: 4px; font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace;">SAVE10TODAY</a>
+                        <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 10px 28px; text-decoration: none; border-radius: 4px; font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace;">BUS</a>
                         <p style="font-size: 12px; color: #777777; margin: 10px 0 0 0;">
                           Tap to copy &bull; Valid for 24 hours
                         </p>
