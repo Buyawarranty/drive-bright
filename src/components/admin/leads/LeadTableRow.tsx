@@ -674,7 +674,28 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Name */}
       <TableCell>
         <div className="flex items-center gap-1.5">
-          {isOverdue && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+          {suspiciousFlags.length > 0 && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className={cn(
+                  "text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0",
+                  suspiciousSeverity === 'high' ? "bg-red-500 text-white" : "bg-orange-400 text-white"
+                )}>
+                  <AlertTriangle className="h-3 w-3" />
+                  {suspiciousSeverity === 'high' ? 'FAKE' : 'CHECK'}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[250px]">
+                <div className="font-semibold mb-1">⚠️ Suspicious lead detected:</div>
+                <ul className="list-disc pl-3 space-y-0.5">
+                  {suspiciousFlags.map((f, i) => (
+                    <li key={i}>{f.reason}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {isOverdue && !suspiciousFlags.length && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
