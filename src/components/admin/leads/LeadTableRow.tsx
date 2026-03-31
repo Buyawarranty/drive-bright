@@ -376,11 +376,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectTrigger 
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
-                !lead.assigned_to || lead.assigned_to === WEBSITE_SALES_ACCOUNT_ID
-                  ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
-                  : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
+                isWebsiteSaleAssignmentLocked
+                  ? "border border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed"
+                  : !lead.assigned_to || lead.assigned_to === WEBSITE_SALES_ACCOUNT_ID
+                    ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
+                    : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
               )}
             >
+              <Tooltip>
+                <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 w-full">
                 {lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? (
                   // Assigned state - show initials avatar with per-agent color
@@ -415,9 +419,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   <>
                     <Globe className="h-3.5 w-3.5 flex-shrink-0" />
                     <span>Website</span>
+                    {isWebsiteSaleAssignmentLocked && <span className="ml-auto text-[9px]">🔒</span>}
                   </>
                 )}
               </div>
+                </TooltipTrigger>
+                {isWebsiteSaleAssignmentLocked && (
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    {isGoogleAdAssignmentLocked
+                      ? 'Google Ads sale — only admin can reassign'
+                      : 'Out-of-hours website sale (6pm–9am) — only admin can reassign'}
+                  </TooltipContent>
+                )}
+              </Tooltip>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
               <SelectItem value={WEBSITE_SALES_ACCOUNT_ID} className="text-slate-600">
