@@ -111,16 +111,16 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
     ctaText = 'Complete My Purchase';
     showPromo = true;
-    promoCode = 'SAVE10TODAY';
-    promoText = 'Complete your purchase now and save 10% with code';
+    promoCode = 'SAVE50NOW';
+    promoText = 'Complete your purchase now and save £50 with code';
   } else if (request.triggerType === 'pricing_page_view_24h') {
     showPromo = true;
-    promoCode = 'SAVE10TODAY';
-    promoText = 'Special offer: Save 10% with code';
+    promoCode = 'SAVE50NOW';
+    promoText = 'Special offer: Save £50 with code';
   } else if (request.triggerType === 'pricing_page_view_72h') {
     showPromo = true;
-    promoCode = 'SAVE10TODAY';
-    promoText = 'Limited time: Save 10% with code';
+    promoCode = 'SAVE50NOW';
+    promoText = 'Limited time: Save £50 with code';
     intro = `This is a reminder about your warranty quote for ${vehicleReg}.`;
     body = "Your quote information is still available to review.";
   }
