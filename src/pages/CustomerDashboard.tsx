@@ -27,6 +27,7 @@ import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/c
 
 interface CustomerPolicy {
   id: string;
+  email?: string;
   plan_type: string;
   payment_type: string;
   policy_number: string;
@@ -1840,7 +1841,7 @@ const CustomerDashboard = () => {
                               <Input
                                 id="editEmail"
                                 type="email"
-                                value={user?.email || ''}
+                                value={selectedPolicy?.email || policies[0]?.email || user?.email || ''}
                                 disabled
                                 className="bg-gray-100"
                               />
@@ -1989,7 +1990,7 @@ const CustomerDashboard = () => {
                              {/* Email Address */}
                              <div>
                                <Label className="text-sm font-medium text-gray-500">Email Address</Label>
-                               <p className="font-semibold text-base">{user?.email}</p>
+                               <p className="font-semibold text-base">{selectedPolicy?.email || policies[0]?.email || user?.email}</p>
                              </div>
                              
                              {/* Phone Number */}
@@ -2090,8 +2091,8 @@ const CustomerDashboard = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label className="text-sm font-medium text-gray-500">Email</Label>
-                        <p className="font-semibold">{user?.email}</p>
+                       <Label className="text-sm font-medium text-gray-500">Email</Label>
+                       <p className="font-semibold">{selectedPolicy?.email || policies[0]?.email || user?.email}</p>
                       </div>
                       
                       <div className="pt-4 border-t">
