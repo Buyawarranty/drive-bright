@@ -27,6 +27,7 @@ import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/c
 
 interface CustomerPolicy {
   id: string;
+  email?: string;
   plan_type: string;
   payment_type: string;
   policy_number: string;
