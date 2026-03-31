@@ -2090,8 +2090,8 @@ const CustomerDashboard = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label className="text-sm font-medium text-gray-500">Email</Label>
-                        <p className="font-semibold">{user?.email}</p>
+                       <Label className="text-sm font-medium text-gray-500">Email</Label>
+                       <p className="font-semibold">{selectedPolicy?.email || policies[0]?.email || user?.email}</p>
                       </div>
                       
                       <div className="pt-4 border-t">
