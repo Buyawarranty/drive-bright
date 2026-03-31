@@ -5,7 +5,7 @@ import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { SentQuote } from '@/hooks/useLeadQuotes';
-import { detectSuspiciousLead, getSuspiciousSeverity } from '@/utils/suspiciousLeadDetection';
+import { detectSuspiciousLead, isSuspicious } from '@/utils/suspiciousLeadDetection';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -302,7 +302,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   
   // Suspicious lead detection
   const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
-  const suspiciousSeverity = getSuspiciousSeverity(suspiciousFlags);
+  const isSuspiciousLead = isSuspicious(suspiciousFlags);
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
@@ -350,8 +350,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       getRowUrgencyClass(lead),
       isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60",
       isLocked && "opacity-70",
-      suspiciousSeverity === 'high' && !isFakeLead && "bg-red-50/60 hover:bg-red-100/50",
-      suspiciousSeverity === 'medium' && !isFakeLead && "bg-orange-50/40 hover:bg-orange-100/40"
+      isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40"
     )}>
       {/* Selection Checkbox */}
       {!isLeadGenView && (
@@ -677,12 +676,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {suspiciousFlags.length > 0 && !isFakeLead && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Badge className={cn(
-                  "text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0",
-                  suspiciousSeverity === 'high' ? "bg-red-500 text-white" : "bg-orange-400 text-white"
-                )}>
+                <Badge className="text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 bg-red-500 text-white">
                   <AlertTriangle className="h-3 w-3" />
-                  {suspiciousSeverity === 'high' ? 'FAKE' : 'CHECK'}
+                  CHECK
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs max-w-[250px]">

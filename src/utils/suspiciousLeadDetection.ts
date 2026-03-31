@@ -4,7 +4,6 @@
 export interface SuspiciousFlag {
   type: 'test_account' | 'invalid_phone' | 'junk_email' | 'spam_name';
   reason: string;
-  severity: 'high' | 'medium'; // high = definitely fake, medium = possibly fake
 }
 
 // Known test reg plates
@@ -37,7 +36,7 @@ export function detectSuspiciousLead(lead: {
   // 1. Check for test reg plates
   const reg = (lead.vehicle_reg || '').replace(/\s/g, '').toUpperCase();
   if (TEST_REG_PLATES.some(r => r.replace(/\s/g, '') === reg)) {
-    flags.push({ type: 'test_account', reason: 'Known test reg plate', severity: 'high' });
+    flags.push({ type: 'test_account', reason: 'Known test reg plate' });
   }
 
   // 2. Check phone number validity
@@ -46,19 +45,23 @@ export function detectSuspiciousLead(lead: {
     
     // Check dummy numbers
     if (DUMMY_PHONES.includes(lead.phone.replace(/\s/g, '')) || DUMMY_PHONES.includes(cleanPhone)) {
-      flags.push({ type: 'invalid_phone', reason: 'Known dummy number', severity: 'high' });
+      flags.push({ type: 'invalid_phone', reason: 'Known dummy number' });
     }
     // UK mobiles starting with 07 must be exactly 11 digits
     else if (lead.phone.trim().startsWith('07') && cleanPhone.length !== 11) {
-      flags.push({ type: 'invalid_phone', reason: `Mobile number has ${cleanPhone.length} digits (needs 11)`, severity: 'medium' });
+      flags.push({ type: 'invalid_phone', reason: `Mobile has ${cleanPhone.length} digits (needs 11)` });
     }
     // UK landlines starting with 01/02 must be 10-11 digits
-    else if ((lead.phone.trim().startsWith('01') || lead.phone.trim().startsWith('02')) && cleanPhone.length < 10) {
-      flags.push({ type: 'invalid_phone', reason: `Landline has ${cleanPhone.length} digits (needs 10-11)`, severity: 'medium' });
+    else if ((lead.phone.trim().startsWith('01') || lead.phone.trim().startsWith('02')) && (cleanPhone.length < 10 || cleanPhone.length > 11)) {
+      flags.push({ type: 'invalid_phone', reason: `Landline has ${cleanPhone.length} digits (needs 10-11)` });
     }
     // All repeated digits
     else if (/^(\d)\1+$/.test(cleanPhone)) {
-      flags.push({ type: 'invalid_phone', reason: 'Repeated digits', severity: 'high' });
+      flags.push({ type: 'invalid_phone', reason: 'Repeated digits' });
+    }
+    // Not a valid UK number format at all
+    else if (cleanPhone.length > 0 && cleanPhone.length < 10) {
+      flags.push({ type: 'invalid_phone', reason: `Only ${cleanPhone.length} digits — not a valid UK number` });
     }
   }
 
@@ -66,26 +69,23 @@ export function detectSuspiciousLead(lead: {
   if (lead.email) {
     const emailLower = lead.email.toLowerCase();
     if (JUNK_EMAIL_DOMAINS.some(d => emailLower.endsWith(d))) {
-      flags.push({ type: 'junk_email', reason: 'Suspicious email domain', severity: 'high' });
+      flags.push({ type: 'junk_email', reason: 'Suspicious email domain' });
     }
-    // Very short local part with suspicious domain
     const localPart = emailLower.split('@')[0];
     if (localPart && (localPart === '1' || localPart === 'test' || localPart === 'na' || localPart === 'blank')) {
-      flags.push({ type: 'junk_email', reason: 'Test/placeholder email', severity: 'high' });
+      flags.push({ type: 'junk_email', reason: 'Test/placeholder email' });
     }
   }
 
   // 4. Check junk names
   const firstName = (lead.first_name || '').toLowerCase().trim();
   if (firstName && JUNK_NAMES.includes(firstName)) {
-    flags.push({ type: 'spam_name', reason: 'Suspicious name', severity: 'medium' });
+    flags.push({ type: 'spam_name', reason: 'Suspicious name' });
   }
 
   return flags;
 }
 
-export function getSuspiciousSeverity(flags: SuspiciousFlag[]): 'high' | 'medium' | 'none' {
-  if (flags.some(f => f.severity === 'high')) return 'high';
-  if (flags.length > 0) return 'medium';
-  return 'none';
+export function isSuspicious(flags: SuspiciousFlag[]): boolean {
+  return flags.length > 0;
 }
