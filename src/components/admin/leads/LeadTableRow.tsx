@@ -752,7 +752,21 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.phone ? (
           <div className="flex items-center gap-1">
-            <PhoneCopyText phone={lead.phone} />
+            {suspiciousFlags.some(f => f.type === 'invalid_phone') ? (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 text-red-500 text-xs font-semibold whitespace-nowrap line-through opacity-70">
+                    <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span>{formatUKPhone(lead.phone)}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  ⚠️ {suspiciousFlags.find(f => f.type === 'invalid_phone')?.reason} — Do not call
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <PhoneCopyText phone={lead.phone} />
+            )}
             <div className="flex items-center">
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
