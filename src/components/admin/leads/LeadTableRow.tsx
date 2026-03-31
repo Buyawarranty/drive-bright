@@ -282,6 +282,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   hasApprovedAccess = false,
   onRequestAccess,
   isLeadGenView = false,
+  userRole,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
