@@ -57,6 +57,7 @@ interface LeadTableRowProps {
   hasApprovedAccess?: boolean;
   onRequestAccess?: (reason: string) => void;
   isLeadGenView?: boolean;
+  userRole?: string | null;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -281,6 +282,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   hasApprovedAccess = false,
   onRequestAccess,
   isLeadGenView = false,
+  userRole,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -300,6 +302,30 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
+
+  // Website sale assignment lock rules:
+  // - Google Ads paid leads: ALWAYS locked to Website, only admin/super_admin can reassign
+  // - Facebook/Organic paid leads outside work hours (6pm-9am): locked to Website, no agent can claim
+  // - Facebook/Organic paid leads during work hours (9am-6pm): default Website but agents can claim
+  const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+  const isGoogleAdSale = lead.is_paid && lead.lead_source === 'google_ad';
+  const isFacebookSale = lead.is_paid && lead.lead_source === 'social_ad';
+  const isOrganicSale = lead.is_paid && (!lead.lead_source || lead.lead_source === 'website');
+  
+  const isOutsideWorkHours = (() => {
+    const now = new Date();
+    // Convert to UK time (Europe/London)
+    const ukTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+    const hour = ukTime.getHours();
+    return hour < 9 || hour >= 18; // Before 9am or 6pm onwards
+  })();
+
+  // Google Ads sales: always locked for non-admin
+  const isGoogleAdAssignmentLocked = isGoogleAdSale && !isAdminRole;
+  // Facebook/Organic sales: locked outside work hours for non-admin
+  const isOffHoursSaleLocked = (isFacebookSale || isOrganicSale) && isOutsideWorkHours && !isAdminRole;
+  // Combined: is this lead's assignment locked due to website sale rules?
+  const isWebsiteSaleAssignmentLocked = isGoogleAdAssignmentLocked || isOffHoursSaleLocked;
 
   const getNextActionLabel = () => {
     if (!lead.next_action_type) return 'Schedule';
@@ -345,16 +371,20 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               onAssign(value);
             }
           }}
-          disabled={!canAssignLeads || isLocked}
+          disabled={!canAssignLeads || isLocked || isWebsiteSaleAssignmentLocked}
         >
             <SelectTrigger 
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
-                !lead.assigned_to || lead.assigned_to === WEBSITE_SALES_ACCOUNT_ID
-                  ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
-                  : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
+                isWebsiteSaleAssignmentLocked
+                  ? "border border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed"
+                  : !lead.assigned_to || lead.assigned_to === WEBSITE_SALES_ACCOUNT_ID
+                    ? "border border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400" 
+                    : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
               )}
             >
+              <Tooltip>
+                <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 w-full">
                 {lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? (
                   // Assigned state - show initials avatar with per-agent color
@@ -389,9 +419,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   <>
                     <Globe className="h-3.5 w-3.5 flex-shrink-0" />
                     <span>Website</span>
+                    {isWebsiteSaleAssignmentLocked && <span className="ml-auto text-[9px]">🔒</span>}
                   </>
                 )}
               </div>
+                </TooltipTrigger>
+                {isWebsiteSaleAssignmentLocked && (
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    {isGoogleAdAssignmentLocked
+                      ? 'Google Ads sale — only admin can reassign'
+                      : 'Out-of-hours website sale (6pm–9am) — only admin can reassign'}
+                  </TooltipContent>
+                )}
+              </Tooltip>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
               <SelectItem value={WEBSITE_SALES_ACCOUNT_ID} className="text-slate-600">

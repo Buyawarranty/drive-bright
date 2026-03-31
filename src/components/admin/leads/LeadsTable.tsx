@@ -38,6 +38,7 @@ interface LeadsTableProps {
   paidLeadAccessCheck?: (leadId: string) => { hasPending: boolean; hasApproved: boolean };
   onRequestPaidAccess?: (leadId: string, reason: string) => void;
   isLeadGenView?: boolean;
+  userRole?: string | null;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -69,6 +70,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   paidLeadAccessCheck,
   onRequestPaidAccess,
   isLeadGenView = false,
+  userRole,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -144,8 +146,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   isPaidLocked={isPaidLocked}
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
-                  onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
+                   onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
                   isLeadGenView={isLeadGenView}
+                  userRole={userRole}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
