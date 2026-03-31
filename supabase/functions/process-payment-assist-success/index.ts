@@ -225,7 +225,21 @@ serve(async (req) => {
       customerError = insertError;
 
       if (insertError) {
-        logStep("Failed to create customer", { error: insertError.message });
+        // Handle unique constraint violation (race condition / double-click)
+        if (insertError.code === '23505') {
+          logStep("Duplicate insert blocked by unique index, fetching existing record");
+          const { data: existingDup } = await supabase
+            .from('customers')
+            .select('*')
+            .ilike('email', customerData.email)
+            .or('is_deleted.is.null,is_deleted.eq.false')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          customer = existingDup;
+        } else {
+          logStep("Failed to create customer", { error: insertError.message });
+        }
       } else {
         logStep("Customer created successfully (new customer)", { customerId: customer?.id });
       }

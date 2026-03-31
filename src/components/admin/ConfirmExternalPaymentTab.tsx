@@ -396,15 +396,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   };
 
   const handleConfirmPayment = async () => {
+    // Prevent double-click race condition
+    if (isConfirming) return;
+    setIsConfirming(true);
+
     // Check for duplicate warranty before proceeding
     const { checkDuplicateWarranty } = await import('@/lib/duplicateWarrantyCheck');
     const duplicateCheck = await checkDuplicateWarranty(editableRegNumber, editableCustomerEmail);
     if (duplicateCheck.isDuplicate) {
       setDuplicateWarning({ show: true, record: duplicateCheck.existingRecord });
+      setIsConfirming(false);
       return;
     }
-
-    setIsConfirming(true);
     setCompletionStatus({});
     
     try {

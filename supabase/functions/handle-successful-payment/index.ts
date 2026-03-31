@@ -541,7 +541,20 @@ serve(async (req) => {
       customerError = insertError;
       
       if (insertError) {
-        logStep("Warning: New customer record creation failed for multi-vehicle", insertError);
+        if (insertError.code === '23505') {
+          logStep("Duplicate insert blocked by unique index for multi-vehicle, fetching existing");
+          const { data: existingDup } = await supabaseClient
+            .from('customers')
+            .select('*')
+            .ilike('email', userEmail)
+            .eq('registration_plate', incomingReg)
+            .or('is_deleted.is.null,is_deleted.eq.false')
+            .limit(1)
+            .single();
+          if (existingDup) { customerData2 = existingDup; customerError = null; }
+        } else {
+          logStep("Warning: New customer record creation failed for multi-vehicle", insertError);
+        }
       } else {
         logStep("New customer record created for different vehicle", { customerId: customerData2.id, reg: incomingReg });
       }
@@ -559,7 +572,20 @@ serve(async (req) => {
       customerError = insertError;
       
       if (insertError) {
-        logStep("Warning: Customer record creation failed", insertError);
+        if (insertError.code === '23505') {
+          logStep("Duplicate insert blocked by unique index, fetching existing");
+          const { data: existingDup } = await supabaseClient
+            .from('customers')
+            .select('*')
+            .ilike('email', userEmail)
+            .eq('registration_plate', incomingReg || customerRecord.registration_plate)
+            .or('is_deleted.is.null,is_deleted.eq.false')
+            .limit(1)
+            .single();
+          if (existingDup) { customerData2 = existingDup; customerError = null; }
+        } else {
+          logStep("Warning: Customer record creation failed", insertError);
+        }
       } else {
         logStep("Customer record created successfully (new customer)", { customerId: customerData2.id });
       }
