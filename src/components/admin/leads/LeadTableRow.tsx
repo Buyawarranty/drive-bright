@@ -1,10 +1,11 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo, useState, useCallback, useMemo } from 'react';
 import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { SentQuote } from '@/hooks/useLeadQuotes';
+import { detectSuspiciousLead, getSuspiciousSeverity } from '@/utils/suspiciousLeadDetection';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -299,6 +300,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
   
+  // Suspicious lead detection
+  const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
+  const suspiciousSeverity = getSuspiciousSeverity(suspiciousFlags);
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
@@ -345,7 +349,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       "transition-colors border-b border-border/30 group", 
       getRowUrgencyClass(lead),
       isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60",
-      isLocked && "opacity-70"
+      isLocked && "opacity-70",
+      suspiciousSeverity === 'high' && !isFakeLead && "bg-red-50/60 hover:bg-red-100/50",
+      suspiciousSeverity === 'medium' && !isFakeLead && "bg-orange-50/40 hover:bg-orange-100/40"
     )}>
       {/* Selection Checkbox */}
       {!isLeadGenView && (
@@ -668,7 +674,28 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Name */}
       <TableCell>
         <div className="flex items-center gap-1.5">
-          {isOverdue && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+          {suspiciousFlags.length > 0 && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className={cn(
+                  "text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0",
+                  suspiciousSeverity === 'high' ? "bg-red-500 text-white" : "bg-orange-400 text-white"
+                )}>
+                  <AlertTriangle className="h-3 w-3" />
+                  {suspiciousSeverity === 'high' ? 'FAKE' : 'CHECK'}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[250px]">
+                <div className="font-semibold mb-1">⚠️ Suspicious lead detected:</div>
+                <ul className="list-disc pl-3 space-y-0.5">
+                  {suspiciousFlags.map((f, i) => (
+                    <li key={i}>{f.reason}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {isOverdue && !suspiciousFlags.length && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
@@ -725,7 +752,21 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.phone ? (
           <div className="flex items-center gap-1">
-            <PhoneCopyText phone={lead.phone} />
+            {suspiciousFlags.some(f => f.type === 'invalid_phone') ? (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 text-red-500 text-xs font-semibold whitespace-nowrap line-through opacity-70">
+                    <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span>{formatUKPhone(lead.phone)}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  ⚠️ {suspiciousFlags.find(f => f.type === 'invalid_phone')?.reason} — Do not call
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <PhoneCopyText phone={lead.phone} />
+            )}
             <div className="flex items-center">
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
