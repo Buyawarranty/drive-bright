@@ -1447,44 +1447,59 @@ const CustomerDashboard = () => {
                           {policies.length > 1 ? 'Your Warranties' : 'Your Active Policy'}
                         </span>
                         {policies.length > 1 && (
-                          <span className="text-sm font-normal text-gray-600">
-                            {policies.length} total warranties
+                          <span className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                            {policies.length} Warranties
                           </span>
                         )}
                       </CardTitle>
                       {policies.length > 1 && (
                         <CardDescription>
-                          <div className="mt-4">
-                            <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                              Select warranty to view details:
+                          <div className="mt-4 space-y-2">
+                            <Label className="text-sm font-semibold text-gray-700 block">
+                              You have {policies.length} warranties — select one to view:
                             </Label>
-                            <select
-                              className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm"
-                              value={selectedPolicy?.id || ''}
-                              onChange={(e) => {
-                                const policy = policies.find(p => p.id === e.target.value);
-                                if (policy) setSelectedPolicy(policy);
-                              }}
-                            >
-                              {policies.map((policy, index) => {
+                            <div className="space-y-2">
+                              {policies.map((policy) => {
                                 const vehicleReg = policy.customers?.registration_plate || 
                                                  policy.policy_number?.split('-').pop() || 
                                                  'Unknown Vehicle';
                                 const vehicleName = policy.customers?.vehicle_make && policy.customers?.vehicle_model
-                                  ? `${policy.customers.vehicle_year ? policy.customers.vehicle_year + ' ' : ''}${policy.customers.vehicle_make} ${policy.customers.vehicle_model}`.toUpperCase()
+                                  ? `${policy.customers.vehicle_year ? policy.customers.vehicle_year + ' ' : ''}${policy.customers.vehicle_make} ${policy.customers.vehicle_model}`
                                   : (policy.plan_type?.includes('motorbike') || policy.plan_type?.includes('Motorbike'))
                                   ? 'Motorbike'
                                   : 'Vehicle';
                                 const policyDate = new Date(policy.policy_start_date).toLocaleDateString('en-GB');
                                 const warrantyRef = policy.warranty_number || policy.policy_number;
+                                const isSelected = selectedPolicy?.id === policy.id;
                                 
                                 return (
-                                  <option key={policy.id} value={policy.id}>
-                                    {vehicleReg} - {vehicleName} (Ref: {warrantyRef}, Started: {policyDate})
-                                  </option>
+                                  <button
+                                    key={policy.id}
+                                    onClick={() => setSelectedPolicy(policy)}
+                                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                                      isSelected 
+                                        ? 'border-blue-500 bg-blue-50 shadow-sm' 
+                                        : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-3">
+                                        <span className="inline-block bg-yellow-400 text-black font-bold text-xs px-2 py-1 rounded">
+                                          {vehicleReg}
+                                        </span>
+                                        <span className="font-medium text-sm text-gray-900">{vehicleName}</span>
+                                      </div>
+                                      {isSelected && (
+                                        <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">Viewing</span>
+                                      )}
+                                    </div>
+                                    <div className="mt-1 text-xs text-gray-500 ml-0">
+                                      Ref: {warrantyRef} · Started: {policyDate} · £{policy.payment_amount?.toFixed(2) || '0.00'}
+                                    </div>
+                                  </button>
                                 );
                               })}
-                            </select>
+                            </div>
                           </div>
                         </CardDescription>
                       )}
