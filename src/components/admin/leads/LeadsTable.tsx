@@ -70,6 +70,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   paidLeadAccessCheck,
   onRequestPaidAccess,
   isLeadGenView = false,
+  userRole,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
