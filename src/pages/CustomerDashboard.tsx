@@ -1840,7 +1840,7 @@ const CustomerDashboard = () => {
                               <Input
                                 id="editEmail"
                                 type="email"
-                                value={user?.email || ''}
+                                value={selectedPolicy?.email || policies[0]?.email || user?.email || ''}
                                 disabled
                                 className="bg-gray-100"
                               />
