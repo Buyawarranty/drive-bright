@@ -303,6 +303,30 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
 
+  // Website sale assignment lock rules:
+  // - Google Ads paid leads: ALWAYS locked to Website, only admin/super_admin can reassign
+  // - Facebook/Organic paid leads outside work hours (6pm-9am): locked to Website, no agent can claim
+  // - Facebook/Organic paid leads during work hours (9am-6pm): default Website but agents can claim
+  const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+  const isGoogleAdSale = lead.is_paid && lead.lead_source === 'google_ad';
+  const isFacebookSale = lead.is_paid && lead.lead_source === 'social_ad';
+  const isOrganicSale = lead.is_paid && (!lead.lead_source || lead.lead_source === 'website');
+  
+  const isOutsideWorkHours = (() => {
+    const now = new Date();
+    // Convert to UK time (Europe/London)
+    const ukTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+    const hour = ukTime.getHours();
+    return hour < 9 || hour >= 18; // Before 9am or 6pm onwards
+  })();
+
+  // Google Ads sales: always locked for non-admin
+  const isGoogleAdAssignmentLocked = isGoogleAdSale && !isAdminRole;
+  // Facebook/Organic sales: locked outside work hours for non-admin
+  const isOffHoursSaleLocked = (isFacebookSale || isOrganicSale) && isOutsideWorkHours && !isAdminRole;
+  // Combined: is this lead's assignment locked due to website sale rules?
+  const isWebsiteSaleAssignmentLocked = isGoogleAdAssignmentLocked || isOffHoursSaleLocked;
+
   const getNextActionLabel = () => {
     if (!lead.next_action_type) return 'Schedule';
     const labels: Record<string, string> = {
