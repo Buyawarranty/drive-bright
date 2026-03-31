@@ -302,7 +302,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   
   // Suspicious lead detection
   const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
-  const suspiciousSeverity = getSuspiciousSeverity(suspiciousFlags);
+  const isSuspiciousLead = isSuspicious(suspiciousFlags);
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
