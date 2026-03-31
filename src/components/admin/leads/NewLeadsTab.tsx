@@ -908,6 +908,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   onRequestPaidAccess={handleRequestPaidAccess}
                   isLeadGenView={isLeadGenUser}
                   hideAssignedColumn={hideAssignedColumnForAgents}
+                  userRole={userRole}
                 />
 
                 <LeadsTableFooter
