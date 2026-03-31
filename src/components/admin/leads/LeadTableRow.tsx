@@ -300,6 +300,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
   
+  // Suspicious lead detection
+  const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
+  const suspiciousSeverity = getSuspiciousSeverity(suspiciousFlags);
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
