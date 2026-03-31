@@ -59,7 +59,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
   const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
   
   const quoteLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3`;
-  const promoLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3&promo=BUS`;
+  const promoLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3&promo=SAVE50NOW`;
   
   return `
     <!DOCTYPE html>
