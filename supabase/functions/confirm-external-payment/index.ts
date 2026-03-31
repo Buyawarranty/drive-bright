@@ -239,9 +239,30 @@ serve(async (req) => {
         .select('id')
         .single();
 
-      if (createError) throw createError;
-      customerId = newCustomer.id;
-      customerCreated = true;
+      if (createError) {
+        // Handle unique constraint violation (race condition / double-click)
+        if (createError.code === '23505') {
+          logStep("Duplicate insert blocked by unique index, fetching existing record");
+          const { data: existingDup } = await supabase
+            .from('customers')
+            .select('id')
+            .ilike('email', customerEmail)
+            .eq('registration_plate', vehicleReg?.toUpperCase())
+            .or('is_deleted.is.null,is_deleted.eq.false')
+            .limit(1)
+            .single();
+          if (existingDup) {
+            customerId = existingDup.id;
+          } else {
+            throw createError;
+          }
+        } else {
+          throw createError;
+        }
+      } else {
+        customerId = newCustomer.id;
+        customerCreated = true;
+      }
     }
 
     logStep("Customer record processed", { customerId, created: customerCreated });
