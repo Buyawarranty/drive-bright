@@ -146,8 +146,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   isPaidLocked={isPaidLocked}
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
-                  onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
+                   onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
                   isLeadGenView={isLeadGenView}
+                  userRole={userRole}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
