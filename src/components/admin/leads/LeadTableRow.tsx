@@ -349,7 +349,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       "transition-colors border-b border-border/30 group", 
       getRowUrgencyClass(lead),
       isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60",
-      isLocked && "opacity-70"
+      isLocked && "opacity-70",
+      suspiciousSeverity === 'high' && !isFakeLead && "bg-red-50/60 hover:bg-red-100/50",
+      suspiciousSeverity === 'medium' && !isFakeLead && "bg-orange-50/40 hover:bg-orange-100/40"
     )}>
       {/* Selection Checkbox */}
       {!isLeadGenView && (
