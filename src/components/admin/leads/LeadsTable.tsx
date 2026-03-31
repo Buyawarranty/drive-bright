@@ -38,6 +38,7 @@ interface LeadsTableProps {
   paidLeadAccessCheck?: (leadId: string) => { hasPending: boolean; hasApproved: boolean };
   onRequestPaidAccess?: (leadId: string, reason: string) => void;
   isLeadGenView?: boolean;
+  userRole?: string | null;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
