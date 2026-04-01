@@ -277,7 +277,7 @@ const AdminDashboard = () => {
       if (error || userAdminRoles.length === 0) {
         hasCheckedAccessRef.current = true;
         setIsCheckingRole(false);
-        navigate('/', { replace: true });
+        navigate('/auth', { replace: true });
         return;
       }
 
