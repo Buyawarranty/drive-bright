@@ -327,7 +327,7 @@ const AdminDashboard = () => {
       console.error('Error checking admin access:', error);
       hasCheckedAccessRef.current = true;
       setIsCheckingRole(false);
-      navigate('/', { replace: true });
+      navigate('/auth', { replace: true });
     }
   };
 
