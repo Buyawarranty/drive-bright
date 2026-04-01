@@ -676,7 +676,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {suspiciousFlags.length > 0 && !isFakeLead && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 bg-red-500 text-white">
+                <Badge className="text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 bg-red-500 text-white cursor-help">
                   <AlertTriangle className="h-3 w-3" />
                   CHECK
                 </Badge>
