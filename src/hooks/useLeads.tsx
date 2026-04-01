@@ -773,6 +773,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       clearPendingStatusUpdate(leadId);
       
+      // Send email notification when lead is converted to sale
+      if (status === 'converted') {
+        const adminUser = await getCachedAdminUser();
+        supabase.functions.invoke('send-agent-sale-notification', {
+          body: { leadId: actualId, agentId: adminUser?.id || null }
+        }).catch(err => console.error('Failed to send agent sale notification:', err));
+      }
+      
       toast.success(`Status: ${status.replace('_', ' ')}`);
     } catch (error) {
       console.error('Error updating lead status:', error);
