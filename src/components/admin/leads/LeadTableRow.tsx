@@ -751,7 +751,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             {suspiciousFlags.some(f => f.type === 'invalid_phone') ? (
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex items-center gap-1 text-red-500 text-xs font-semibold whitespace-nowrap line-through opacity-70">
+                  <span className="inline-flex items-center gap-1 text-red-500 text-xs font-semibold whitespace-nowrap line-through opacity-70 cursor-help">
                     <Phone className="h-3.5 w-3.5 flex-shrink-0" />
                     <span>{formatUKPhone(lead.phone)}</span>
                   </span>
