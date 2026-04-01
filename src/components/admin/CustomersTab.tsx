@@ -1223,6 +1223,19 @@ export const CustomersTab = () => {
           console.error('❌ Fallback query error:', fallbackError);
           setDebugInfo(prev => prev + `\nFallback query error: ${fallbackError.message}`);
           
+          // Auto-refresh session on JWT expired
+          if (fallbackError.message?.includes('JWT expired')) {
+            console.log('🔄 JWT expired, refreshing session...');
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (!refreshError) {
+              toast.info('Session refreshed. Please try again.');
+            } else {
+              toast.error('Session expired. Please log in again.');
+              window.location.href = '/auth';
+            }
+            return;
+          }
+          
           if (isMasterAdmin) {
             toast.error('RLS policies might be blocking access. Check database policies.');
           } else {
