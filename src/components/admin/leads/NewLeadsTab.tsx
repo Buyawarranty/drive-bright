@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
-import { subDays } from 'date-fns';
+
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
@@ -137,9 +137,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
-    const today = getTodayLeadFeedSelectionDate();
-    return { from: subDays(today, 30), to: today };
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
@@ -204,9 +204,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return;
     }
 
-    if (dateRange.from || dateRange.to) {
-      fetchLeads();
-    }
+    // Always refetch when date range changes — including "All Time" (both undefined)
+    fetchLeads();
   }, [dateRange, fetchLeads]);
 
   // Debounce search term to avoid filtering on every keystroke

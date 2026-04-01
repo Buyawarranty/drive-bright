@@ -187,7 +187,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   const handleAllTime = () => {
     if (onDateRangeChange) {
-      onDateRangeChange({ from: new Date(2020, 0, 1), to: getTodayLeadFeedSelectionDate() });
+      onDateRangeChange({ from: undefined, to: undefined });
       setIsCalendarOpen(false);
     }
   };
@@ -216,7 +216,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   const hasDateFilter = dateRange?.from || dateRange?.to;
 
   const getDateFilterLabel = () => {
-    if (!hasDateFilter) return 'Date Range';
+    if (!hasDateFilter) return 'All Time';
     if (dateRange?.from && dateRange.from.getFullYear() === 2020 && dateRange.from.getMonth() === 0) return 'All Time';
     if (dateRange?.from && dateRange?.to) {
       const fromStart = startOfYear(dateRange.from);
