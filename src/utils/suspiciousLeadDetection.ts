@@ -51,8 +51,8 @@ export function detectSuspiciousLead(lead: {
     else if (lead.phone.trim().startsWith('07') && cleanPhone.length !== 11) {
       flags.push({ type: 'invalid_phone', reason: `Mobile has ${cleanPhone.length} digits (needs 11)` });
     }
-    // UK landlines starting with 01/02 must be 10-11 digits
-    else if ((lead.phone.trim().startsWith('01') || lead.phone.trim().startsWith('02')) && (cleanPhone.length < 10 || cleanPhone.length > 11)) {
+    // UK landlines starting with 01/02/03 must be 10-11 digits
+    else if ((lead.phone.trim().startsWith('01') || lead.phone.trim().startsWith('02') || lead.phone.trim().startsWith('03')) && (cleanPhone.length < 10 || cleanPhone.length > 11)) {
       flags.push({ type: 'invalid_phone', reason: `Landline has ${cleanPhone.length} digits (needs 10-11)` });
     }
     // All repeated digits
