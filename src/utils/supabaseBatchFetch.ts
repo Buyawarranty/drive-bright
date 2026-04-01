@@ -1,5 +1,24 @@
+import { supabase } from '@/integrations/supabase/client';
+
 const BATCH_SIZE = 1000;
 const MAX_RETRIES = 2;
+
+/**
+ * Attempts to refresh the session if a JWT expired error is detected.
+ * Returns true if refresh succeeded.
+ */
+async function handleJwtExpired(error: any): Promise<boolean> {
+  if (error?.message?.includes('JWT expired') || error?.code === 'PGRST301') {
+    console.warn('[BatchFetch] JWT expired, refreshing session...');
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (!refreshError) {
+      console.log('[BatchFetch] Session refreshed successfully');
+      return true;
+    }
+    console.error('[BatchFetch] Session refresh failed:', refreshError);
+  }
+  return false;
+}
 
 /**
  * Fetches all rows from a Supabase query by paginating with .range().
@@ -20,6 +39,20 @@ export async function fetchAllRows<T = any>(
     const { data, error } = await query.range(offset, offset + BATCH_SIZE - 1);
     
     if (error) {
+      // Check for JWT expired and auto-refresh
+      const refreshed = await handleJwtExpired(error);
+      if (refreshed) {
+        // Retry this batch immediately with the refreshed token
+        const retryQuery = buildQuery();
+        const retryResult = await retryQuery.range(offset, offset + BATCH_SIZE - 1);
+        if (!retryResult.error && retryResult.data) {
+          allData.push(...retryResult.data);
+          offset += retryResult.data.length;
+          hasMore = retryResult.data.length === BATCH_SIZE;
+          continue;
+        }
+      }
+
       // Retry this batch before giving up
       let retrySuccess = false;
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
