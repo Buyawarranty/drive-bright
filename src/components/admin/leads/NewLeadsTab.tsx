@@ -204,9 +204,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return;
     }
 
-    if (dateRange.from || dateRange.to) {
-      fetchLeads();
-    }
+    // Always refetch when date range changes — including "All Time" (both undefined)
+    fetchLeads();
   }, [dateRange, fetchLeads]);
 
   // Debounce search term to avoid filtering on every keystroke

@@ -187,7 +187,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
   const handleAllTime = () => {
     if (onDateRangeChange) {
-      onDateRangeChange({ from: new Date(2020, 0, 1), to: getTodayLeadFeedSelectionDate() });
+      onDateRangeChange({ from: undefined, to: undefined });
       setIsCalendarOpen(false);
     }
   };
