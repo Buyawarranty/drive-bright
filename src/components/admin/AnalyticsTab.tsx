@@ -288,11 +288,13 @@ export const AnalyticsTab = () => {
     return 'unknown';
   };
 
-  // Sub-categorize website sales by ad channel
+  // Sub-categorize website sales by ad channel — check both purchase_source AND click IDs
   const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'pure' => {
     const source = customer.purchase_source?.toLowerCase() || '';
-    if (source === 'google_ads') return 'google';
-    if (source === 'facebook_ads') return 'facebook';
+    const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
+    const hasFbclid = !!(customer.fbclid && String(customer.fbclid).trim() !== '');
+    if (source === 'google_ads' || hasGclid) return 'google';
+    if (source === 'facebook_ads' || hasFbclid) return 'facebook';
     return 'pure';
   };
 
