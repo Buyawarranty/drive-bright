@@ -94,7 +94,7 @@ export const AnalyticsTab = () => {
       const { data, error } = await fetchAllRows(() =>
         supabase
           .from('customers')
-          .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at')
+          .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid, fbclid')
           .not('email', 'ilike', '%@test.com%')
           .not('email', 'ilike', '%testuser%')
           .not('email', 'ilike', '%guest@%')
