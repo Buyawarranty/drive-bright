@@ -33,6 +33,8 @@ interface Customer {
   mileage: string | null;
   assigned_to: string | null;
   updated_at: string | null;
+  gclid: string | null;
+  fbclid: string | null;
 }
 
 interface AdminUser {
