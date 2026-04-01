@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
-import { startOfMonth } from 'date-fns';
+import { subDays } from 'date-fns';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
@@ -139,7 +139,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
     const today = getTodayLeadFeedSelectionDate();
-    return { from: startOfMonth(today), to: today };
+    return { from: subDays(today, 30), to: today };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
