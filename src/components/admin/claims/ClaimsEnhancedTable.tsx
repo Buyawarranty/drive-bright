@@ -102,6 +102,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Email</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Phone #</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Issue</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Customer Message</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Notes</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Status</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap text-right">Amount</TableHead>
@@ -183,7 +184,17 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                     </span>
                   </TableCell>
 
-                  {/* Notes - Sticky note icon like leads page */}
+                  {/* Customer Message */}
+                  <TableCell className="py-2">
+                    {claim.message ? (
+                      <span className="text-xs text-muted-foreground block truncate max-w-[180px]" title={claim.message}>
+                        {claim.message}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+
                   <TableCell className="py-2">
                     <ClaimNotesBadge
                       claimId={claim.id}
@@ -249,7 +260,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                 {/* Expandable notes sub-row */}
                 {expandedNoteId === claim.id && (
                   <TableRow className="bg-muted/20">
-                    <TableCell colSpan={11} className="p-0">
+                    <TableCell colSpan={12} className="p-0">
                       <div className="p-4">
                         <ClaimNotesPanel claimId={claim.id} compact />
                       </div>
