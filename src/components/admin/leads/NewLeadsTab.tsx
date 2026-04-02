@@ -107,8 +107,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Assign permission - only sales_lead, admin, super_admin can reassign leads to other agents
   const canAssignLeads = isAdmin || userRole === 'sales_lead';
   
-  // Export permission - admins always can, others need explicit permission
-  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
+  // Export permission - only super_admin, admin, and sales_lead can export
+  const canExport = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_lead';
   
   // Granular permissions for sub-views
   // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
@@ -444,14 +444,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, []);
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
-    // Non-admin roles can only export the last 7 days of leads
     const isFullExportAllowed = userRole === 'admin' || userRole === 'super_admin';
+    const isSalesLeadExport = userRole === 'sales_lead';
     
     let baseLeads = selectedLeads.size > 0 
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
       : filteredLeads;
 
-    if (!isFullExportAllowed) {
+    if (isSalesLeadExport) {
+      // Sales lead can only export up to 2 months of data
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= twoMonthsAgo);
+    } else if (!isFullExportAllowed) {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= sevenDaysAgo);
@@ -825,8 +830,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
+            userRole={userRole}
           />
-
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
                   {/* Sticky Control Bar */}
