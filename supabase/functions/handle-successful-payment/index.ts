@@ -1005,11 +1005,18 @@ serve(async (req) => {
             ? 'Stripe (Paid in Full)' 
             : 'Other';
         
+        // Use stored DB customer data (customerData2) for accurate details in notification
+        const emailCustomerName = customerData2?.name || customerName || 'Unknown';
+        const emailCustomerEmail = customerData2?.email || userEmail;
+        const emailCustomerPhone = customerData2?.phone || customerData?.mobile || customerData?.phone || vehicleData?.phone || 'N/A';
+        const emailCustomerAddress = [customerData2?.street, customerData2?.town, customerData2?.postcode].filter(Boolean).join(' ') || 
+          [customerData?.street, customerData?.town, customerData?.postcode].filter(Boolean).join(' ') || '';
+
         // Get the sale value
-        const saleValue = customerData?.final_amount || customerData?.original_amount || 'N/A';
+        const saleValue = customerData2?.final_amount || customerData?.final_amount || customerData?.original_amount || 'N/A';
         const saleValueDisplay = typeof saleValue === 'number' ? `£${saleValue.toFixed(2)}` : saleValue;
 
-        const regPlate = vehicleData?.regNumber || 'Unknown';
+        const regPlate = customerData2?.registration_plate || vehicleData?.regNumber || 'Unknown';
         
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -1029,10 +1036,10 @@ serve(async (req) => {
             
             <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData?.mobile || customerData?.phone || vehicleData?.phone || 'N/A'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Address:</strong></td><td style="padding: 8px;">${customerData?.street || ''} ${customerData?.town || ''} ${customerData?.postcode || ''}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${emailCustomerName}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${emailCustomerEmail}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${emailCustomerPhone}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Address:</strong></td><td style="padding: 8px;">${emailCustomerAddress}</td></tr>
             </table>
 
             <h3 style="color: #333; margin-top: 20px;">Warranty Details</h3>
@@ -1046,12 +1053,12 @@ serve(async (req) => {
 
             <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${vehicleData?.regNumber || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleData?.make || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleData?.model || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Year:</strong></td><td style="padding: 8px;">${vehicleData?.year || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Fuel Type:</strong></td><td style="padding: 8px;">${vehicleData?.fuelType || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Mileage:</strong></td><td style="padding: 8px;">${vehicleData?.mileage || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${customerData2?.registration_plate || vehicleData?.regNumber || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_make || vehicleData?.make || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_model || vehicleData?.model || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Year:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_year || vehicleData?.year || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Fuel Type:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_fuel_type || vehicleData?.fuelType || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Mileage:</strong></td><td style="padding: 8px;">${customerData2?.mileage || vehicleData?.mileage || 'Unknown'}</td></tr>
             </table>
 
             <h3 style="color: #333; margin-top: 20px;">Add-Ons Included</h3>
@@ -1155,9 +1162,9 @@ serve(async (req) => {
               
               <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
               <table style="width: 100%; border-collapse: collapse;">
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerRecord.name || 'Unknown'}</td></tr>
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerRecord.phone || matchedLead.phone || 'N/A'}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerData2?.name || customerRecord.name || 'Unknown'}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerData2?.email || userEmail}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData2?.phone || customerRecord.phone || matchedLead.phone || 'N/A'}</td></tr>
               </table>
 
               <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
