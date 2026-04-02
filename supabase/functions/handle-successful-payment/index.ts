@@ -1162,9 +1162,9 @@ serve(async (req) => {
               
               <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
               <table style="width: 100%; border-collapse: collapse;">
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerRecord.name || 'Unknown'}</td></tr>
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerRecord.phone || matchedLead.phone || 'N/A'}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerData2?.name || customerRecord.name || 'Unknown'}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerData2?.email || userEmail}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData2?.phone || customerRecord.phone || matchedLead.phone || 'N/A'}</td></tr>
               </table>
 
               <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
