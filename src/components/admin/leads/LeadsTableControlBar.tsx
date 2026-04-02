@@ -130,7 +130,7 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
             {onBulkMarkFake && (
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10" onClick={onBulkMarkFake}>
                 <Ban className="h-3.5 w-3.5" />
-                Fake
+                Fake 404
               </Button>
             )}
 
