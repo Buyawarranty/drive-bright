@@ -219,7 +219,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         // Show ALL leads — absolute total that never fluctuates for past dates
         return inputLeads;
       case 'live':
-        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
+        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead' && !(lead.lead_source === 'google_ad' && lead.status === 'converted'));
       case 'high_priority':
         return inputLeads.filter(lead => (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead');
       case 'fake':
