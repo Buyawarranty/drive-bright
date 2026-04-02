@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -245,9 +246,144 @@ serve(async (req) => {
       }
     }
 
-    // TODO: Call Warranties 2000 registration (same as Bumper flow)
-    // TODO: Send welcome email
-    // TODO: Fire conversion tracking
+    // Send sale notification email
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        const customerName = customer?.name || `${customerData.first_name || ''} ${customerData.last_name || ''}`.trim() || 'Unknown';
+        const userEmail = customerData.email;
+        const regPlate = vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg || 'Unknown';
+        const planName = transaction.plan_id || 'Unknown';
+        const saleValue = transaction.final_amount ? `£${Number(transaction.final_amount).toFixed(2)}` : 'N/A';
+        const paymentMethod = 'Payment Assist';
+
+        // Detect ad source from tracking data
+        const gclid = transaction.gclid || null;
+        const cartMeta = transaction.customer_data?.cart_metadata || {};
+        const fbclid = cartMeta?.fbclid || null;
+        let saleType = 'Web';
+        if (gclid) saleType = 'G';
+        else if (fbclid) saleType = 'F';
+
+        const salesEmailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎉 New Sale - Payment Assist</h2>
+            <div style="margin-top: 16px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">${regPlate}</div>
+            </div>
+            <div style="margin-top: 16px; padding: 20px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 8px; color: white;">
+              <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
+              <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValue}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${paymentMethod}</strong></div>
+            </div>
+            <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData.phone || customerData.mobile || 'N/A'}</td></tr>
+            </table>
+            <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentMethod}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValue}</td></tr>
+            </table>
+            <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${regPlate}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleData?.make || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleData?.model || 'Unknown'}</td></tr>
+            </table>
+            <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
+              <p style="margin: 0; color: #166534;"><strong>✓ Payment Assist sale completed</strong></p>
+            </div>
+          </div>
+        `;
+
+        await resend.emails.send({
+          from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+          to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
+          subject: `New Sale ${saleType}: ${regPlate} - ${planName} - ${saleValue} via ${paymentMethod}`,
+          html: salesEmailHtml,
+        });
+        logStep("Sale notification email sent successfully");
+
+        // Check for agent-attributed sale (New Sale S)
+        const defaultSupportId = 'e39499b8-f88c-4963-9f0d-63e1addb3025';
+        const { data: matchedLead } = await supabase
+          .from('sales_leads')
+          .select('id, assigned_to, full_name, phone, vehicle_reg, lead_source')
+          .ilike('email', userEmail)
+          .not('assigned_to', 'is', null)
+          .neq('assigned_to', defaultSupportId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (matchedLead && matchedLead.assigned_to) {
+          const { data: agentData } = await supabase
+            .from('admin_users')
+            .select('first_name, last_name, email')
+            .eq('id', matchedLead.assigned_to)
+            .maybeSingle();
+
+          const agentName = agentData
+            ? [agentData.first_name, agentData.last_name].filter(Boolean).join(' ') || agentData.email
+            : 'Unknown Agent';
+
+          // Update customer to reflect agent assignment
+          if (customer?.id) {
+            await supabase.from('customers').update({ assigned_to: matchedLead.assigned_to }).eq('id', customer.id);
+          }
+          // Mark lead as converted
+          await supabase.from('sales_leads').update({ status: 'converted', updated_at: new Date().toISOString() }).eq('id', matchedLead.id);
+
+          const leadSource = matchedLead.lead_source || 'unknown';
+          let sourcePrefix = 'S';
+          if (leadSource === 'google_ad') sourcePrefix = 'S-G';
+          else if (leadSource === 'social_ad') sourcePrefix = 'S-F';
+
+          const agentSaleHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎯 New Agent Sale - Lead Converted</h2>
+              <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
+                <div style="font-size: 14px; color: #1e40af;"><strong>Converted by:</strong> ${agentName}</div>
+              </div>
+              <div style="margin-top: 16px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
+                <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px;">${regPlate}</div>
+              </div>
+              <div style="margin-top: 16px; padding: 20px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 8px; color: white;">
+                <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
+                <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValue}</div>
+                <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${paymentMethod}</strong></div>
+              </div>
+              <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData.phone || customerData.mobile || 'N/A'}</td></tr>
+              </table>
+              <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
+                <p style="margin: 0; color: #166534;"><strong>✓ Lead converted to sale by ${agentName}</strong></p>
+              </div>
+            </div>
+          `;
+
+          await resend.emails.send({
+            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+            to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
+            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${planName} - ${saleValue} - Converted by ${agentName}`,
+            html: agentSaleHtml,
+          });
+          logStep("Agent sale notification (New Sale S) sent", { agent: agentName });
+        }
+      } else {
+        logStep("Warning: RESEND_API_KEY not configured, skipping sale notification");
+      }
+    } catch (emailError) {
+      logStep("Warning: Failed to send sale notification", { error: emailError instanceof Error ? emailError.message : emailError });
+    }
 
     logStep("Redirecting to thank you page");
 
