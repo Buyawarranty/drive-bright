@@ -102,6 +102,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Email</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Phone #</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Issue</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Customer Message</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Notes</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Status</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap text-right">Amount</TableHead>
