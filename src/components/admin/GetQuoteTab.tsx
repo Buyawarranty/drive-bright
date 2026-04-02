@@ -1791,6 +1791,27 @@ Questions? Call 0330 229 5040`;
         }
       }
 
+      // Send sale notification email (fire and forget)
+      try {
+        await supabase.functions.invoke('send-sale-notification', {
+          body: {
+            customerName: finalName,
+            customerEmail: finalEmail,
+            customerPhone: customerPhone || null,
+            regPlate: regNumber || null,
+            planName: 'Platinum',
+            saleValue: confirmedAmount,
+            paymentMethod: paymentSource || 'External',
+            warrantyReference: finalWarrantyReference,
+            vehicleMake: vehicleData?.make || null,
+            vehicleModel: vehicleData?.model || null,
+            agentId: quoteSentByUserId || null,
+          }
+        });
+      } catch (e) {
+        console.warn('Sale notification email failed (non-critical):', e);
+      }
+
       // Set completion status and show complete step
       setCompletionStatus({
         policyCreated: true,

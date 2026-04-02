@@ -419,6 +419,27 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
         }
       }
 
+      // Send sale notification email (fire and forget)
+      try {
+        await supabase.functions.invoke('send-sale-notification', {
+          body: {
+            customerName: customerName || lead.email,
+            customerEmail: lead.email,
+            customerPhone: lead.phone || null,
+            regPlate: lead.vehicle_reg || null,
+            planName: planType,
+            saleValue: amount,
+            paymentMethod: 'Stripe',
+            warrantyReference: policyData.policy_number,
+            vehicleMake: lead.vehicle_make || null,
+            vehicleModel: lead.vehicle_model || null,
+            agentId: lead.assigned_to || null,
+          }
+        });
+      } catch (e) {
+        console.warn('Sale notification email failed (non-critical):', e);
+      }
+
       toast.success(`Successfully marked as paid! Policy: ${policyData.policy_number}`);
       onOpenChange(false);
       onSuccess?.();
