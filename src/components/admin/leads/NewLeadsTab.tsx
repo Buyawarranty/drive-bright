@@ -4,6 +4,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
