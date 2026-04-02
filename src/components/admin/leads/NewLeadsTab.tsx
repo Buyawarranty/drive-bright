@@ -831,7 +831,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
-
+          />
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
                   {/* Sticky Control Bar */}
