@@ -73,6 +73,8 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
   onDownloadFile,
   loading,
 }) => {
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+
   if (groupedClaims.length === 0) {
     return (
       <div className="text-center py-12">
