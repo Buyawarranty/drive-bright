@@ -169,7 +169,7 @@ export const ClaimsFilterBar: React.FC<ClaimsFilterBarProps> = ({
           placeholder="Search name, email, vehicle reg..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 h-9"
+          className="pl-10 h-9 bg-yellow-50 border-yellow-300 focus-visible:ring-yellow-400"
         />
       </div>
     </div>
