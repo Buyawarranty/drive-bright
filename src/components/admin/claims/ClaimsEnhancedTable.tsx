@@ -246,10 +246,44 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                   </div>
                 </TableCell>
               </TableRow>
+              {/* Expandable notes sub-row */}
+              {expandedNoteId === claim.id && (
+                <TableRow className="bg-muted/20">
+                  <TableCell colSpan={11} className="p-0">
+                    <div className="p-4">
+                      <ClaimNotesPanel claimId={claim.id} compact />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </>
             );
           })}
         </TableBody>
       </Table>
     </div>
+  );
+};
+
+// Small helper to show note count badge (fetches count per claim)
+const ClaimNotesBadge: React.FC<{ claimId: string; isExpanded: boolean; onToggle: () => void }> = ({ claimId, isExpanded, onToggle }) => {
+  const { notes } = useClaimQuickNotes(claimId);
+  const hasNotes = notes.length > 0;
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className={cn('h-7 w-7 p-0 relative', hasNotes && 'text-amber-600', isExpanded && 'bg-muted')}
+      title={hasNotes ? `${notes.length} note(s) – click to expand` : 'Add note'}
+      onClick={onToggle}
+    >
+      <StickyNote className="h-3.5 w-3.5" />
+      {hasNotes && (
+        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-amber-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+          {notes.length}
+        </span>
+      )}
+    </Button>
   );
 };
