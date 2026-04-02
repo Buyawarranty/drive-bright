@@ -282,14 +282,39 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Apply search filter
     if (debouncedSearchTerm) {
       const term = debouncedSearchTerm.toLowerCase();
-      result = result.filter(lead =>
-        lead.email.toLowerCase().includes(term) ||
-        (lead.first_name?.toLowerCase().includes(term)) ||
-        (lead.last_name?.toLowerCase().includes(term)) ||
-        (lead.phone?.toLowerCase().includes(term)) ||
-        (lead.vehicle_reg?.toLowerCase().includes(term)) ||
-        (lead.plan_interest?.toLowerCase().includes(term))
-      );
+      result = result.filter(lead => {
+        const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').toLowerCase();
+        return (
+          lead.email.toLowerCase().includes(term) ||
+          fullName.includes(term) ||
+          (lead.first_name?.toLowerCase().includes(term)) ||
+          (lead.last_name?.toLowerCase().includes(term)) ||
+          (lead.phone?.toLowerCase().includes(term)) ||
+          (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+          (lead.plan_interest?.toLowerCase().includes(term))
+        );
+      });
+
+      // When searching, also search across ALL statuses (not just current filter)
+      // so leads are always findable regardless of active filter
+      if (result.length === 0) {
+        const allLeads = leads.filter(lead => (lead.status as string) !== 'archived');
+        const fullSearch = allLeads.filter(lead => {
+          const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').toLowerCase();
+          return (
+            lead.email.toLowerCase().includes(term) ||
+            fullName.includes(term) ||
+            (lead.first_name?.toLowerCase().includes(term)) ||
+            (lead.last_name?.toLowerCase().includes(term)) ||
+            (lead.phone?.toLowerCase().includes(term)) ||
+            (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+            (lead.plan_interest?.toLowerCase().includes(term))
+          );
+        });
+        if (fullSearch.length > 0) {
+          result = fullSearch;
+        }
+      }
     }
 
     result = [...result].sort((a, b) => {
