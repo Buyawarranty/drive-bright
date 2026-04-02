@@ -172,7 +172,7 @@ export const ClaimNotesPanel: React.FC<ClaimNotesPanelProps> = ({
                         <span className="ml-1">{note.note_text}</span>
                       </p>
                     </div>
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
                       <button onClick={() => handleStartEdit(note)} className="p-1 hover:bg-muted rounded" title="Edit">
                         <Edit2 className="h-3 w-3 text-muted-foreground" />
                       </button>
