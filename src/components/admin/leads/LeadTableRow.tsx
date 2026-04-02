@@ -123,7 +123,7 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   
   // Closed/resolved leads don't need action
   if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'fake_lead') {
-    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', fake_lead: 'Fake' };
+    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', fake_lead: 'Fake 404' };
     return { label: labelMap[lead.status] || lead.status, color: 'bg-gray-100 text-gray-600', priority: 5 };
   }
   
@@ -348,7 +348,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     <TableRow className={cn(
       "transition-colors border-b border-border/30 group", 
       getRowUrgencyClass(lead),
-      isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60",
+      isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40"
     )}>
@@ -537,7 +537,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="negotiating">Negotiating</SelectItem>
             <SelectItem value="converted">Converted</SelectItem>
             <SelectItem value="lost">Lost</SelectItem>
-            <SelectItem value="fake_lead">Fake Lead</SelectItem>
+            <SelectItem value="fake_lead">Fake 404</SelectItem>
           </SelectContent>
         </Select>
         )}

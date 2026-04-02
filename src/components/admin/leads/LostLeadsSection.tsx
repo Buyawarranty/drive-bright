@@ -277,7 +277,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
             }, { onConflict: 'email' });
         }
 
-        const label = newStatus === 'fake_lead' ? 'Fake Lead' : newStatus === 'duplicate' ? 'Duplicate' : 'Lost';
+        const label = newStatus === 'fake_lead' ? 'Fake 404' : newStatus === 'duplicate' ? 'Duplicate' : 'Lost';
         toast.success(`Marked as ${label} — removed from recovery`);
         setOrphanedLeads(prev => prev.filter(l => l.id !== lead.id));
       } else {
@@ -490,7 +490,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                             <SelectItem value="negotiating">Negotiating</SelectItem>
                             <SelectItem value="converted">Converted</SelectItem>
                             <SelectItem value="lost">Lost</SelectItem>
-                            <SelectItem value="fake_lead">Fake Lead</SelectItem>
+                            <SelectItem value="fake_lead">Fake 404</SelectItem>
                             <SelectItem value="duplicate">Duplicate</SelectItem>
                           </SelectContent>
                         </Select>
