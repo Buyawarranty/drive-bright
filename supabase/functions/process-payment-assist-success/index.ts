@@ -252,8 +252,8 @@ serve(async (req) => {
       if (resendApiKey) {
         const resend = new Resend(resendApiKey);
         const customerName = customer?.name || `${customerData.first_name || ''} ${customerData.last_name || ''}`.trim() || 'Unknown';
-        const userEmail = customerData.email;
-        const regPlate = vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg || 'Unknown';
+        const userEmail = customer?.email || customerData.email;
+        const regPlate = customer?.registration_plate || vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg || 'Unknown';
         const planName = transaction.plan_id || 'Unknown';
         const saleValue = transaction.final_amount ? `£${Number(transaction.final_amount).toFixed(2)}` : 'N/A';
         const paymentMethod = 'Payment Assist';
