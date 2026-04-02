@@ -124,6 +124,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   sourceFilter = 'all',
   onSourceFilterChange,
   showRecoveredPill = false,
+  userRole,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
