@@ -72,6 +72,7 @@ interface LeadsFiltersProps {
   agentLeadCounts?: Record<string, number>;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
+  userRole?: string;
 }
 
 // Status pill configuration — compact, color-coded for instant recognition
