@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Edit, Send, Paperclip, FileSpreadsheet } from 'lucide-react';
+import { Eye, Edit, Send, Paperclip, FileSpreadsheet, StickyNote } from 'lucide-react';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
-import { ClaimInlineNote } from './ClaimInlineNote';
+import { ClaimNotesPanel } from './ClaimNotesPanel';
 import { cn } from '@/lib/utils';
+import { useClaimQuickNotes } from '@/hooks/useClaimQuickNotes';
 
 interface ClaimSubmission {
   id: string;
