@@ -634,6 +634,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Sales agents now see the same full leads view as sales_lead/admin
   // Role-based column restrictions (CB, Source, etc.) are handled inline below
 
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  const handleRestoreAllLeads = useCallback(async () => {
+    setIsRestoring(true);
+    try {
+      // Clear all filters to ensure full dataset loads
+      setDateRange({ from: undefined, to: undefined });
+      setSearchTerm('');
+      setAssignmentFilter('all');
+      setAgentFilter('all');
+      setSourceFilter('all');
+      handleFilterChange('live');
+      setSortOption('latest_submitted');
+      
+      // Force a fresh fetch with no date boundaries
+      await fetchLeads();
+      toast.success(`All leads restored — ${leads.length} leads loaded`);
+    } catch (error) {
+      toast.error('Failed to restore leads. Please try again.');
+    } finally {
+      setIsRestoring(false);
+    }
+  }, [fetchLeads, leads.length, handleFilterChange]);
+
   return (
     <div className="space-y-4">
       {/* Header — compact, action-dense */}
@@ -641,6 +665,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold tracking-tight">Leads</h1>
           <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRestoreAllLeads}
+            disabled={isRestoring}
+            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-amber-400 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:border-amber-500"
+          >
+            <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
+            {isRestoring ? 'Restoring...' : 'Restore All Leads'}
+          </Button>
         </div>
         
         <div className="flex items-center gap-2">
