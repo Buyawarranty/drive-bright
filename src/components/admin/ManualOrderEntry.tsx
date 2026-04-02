@@ -879,6 +879,29 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
       }
 
       console.log(isEditMode ? '🎉 Manual order updated successfully!' : '🎉 Manual order created successfully!');
+
+      // Send sale notification email (fire and forget)
+      if (!isEditMode) {
+        try {
+          await supabase.functions.invoke('send-sale-notification', {
+            body: {
+              customerName: `${orderData.firstName} ${orderData.lastName}`.trim() || orderData.email,
+              customerEmail: orderData.email,
+              customerPhone: orderData.phone || null,
+              regPlate: orderData.registrationPlate || null,
+              planName: orderData.planType,
+              saleValue: orderData.totalAmount ? parseFloat(orderData.totalAmount) : null,
+              paymentMethod: 'Manual Entry',
+              warrantyReference,
+              vehicleMake: orderData.vehicleMake || null,
+              vehicleModel: orderData.vehicleModel || null,
+              saleSource: 'Web',
+            }
+          });
+        } catch (e) {
+          console.warn('Sale notification email failed (non-critical):', e);
+        }
+      }
       
       // Reset form and close dialog
       setOrderData(initialOrderData);
