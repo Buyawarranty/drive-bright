@@ -184,7 +184,17 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                     </span>
                   </TableCell>
 
-                  {/* Notes - Sticky note icon like leads page */}
+                  {/* Customer Message */}
+                  <TableCell className="py-2">
+                    {claim.message ? (
+                      <span className="text-xs text-muted-foreground block truncate max-w-[180px]" title={claim.message}>
+                        {claim.message}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+
                   <TableCell className="py-2">
                     <ClaimNotesBadge
                       claimId={claim.id}
