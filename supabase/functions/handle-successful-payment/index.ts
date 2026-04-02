@@ -1085,6 +1085,107 @@ serve(async (req) => {
         logStep("Warning: Failed to send sales notification", { error: emailError });
         // Don't fail the payment process if notification fails
       }
+
+      // Check if this sale was driven by a sales agent (matched sales_lead with agent assigned)
+      // If so, send an additional "New Sale S" (agent sale) notification
+      try {
+        const defaultSupportId = 'e39499b8-f88c-4963-9f0d-63e1addb3025';
+        const { data: matchedLead } = await supabaseClient
+          .from('sales_leads')
+          .select('id, assigned_to, full_name, phone, vehicle_reg, lead_source')
+          .ilike('email', userEmail)
+          .not('assigned_to', 'is', null)
+          .neq('assigned_to', defaultSupportId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (matchedLead && matchedLead.assigned_to) {
+          logStep("Agent-attributed sale detected", { leadId: matchedLead.id, agentId: matchedLead.assigned_to });
+
+          // Get agent name
+          const { data: agentData } = await supabaseClient
+            .from('admin_users')
+            .select('first_name, last_name, email')
+            .eq('id', matchedLead.assigned_to)
+            .maybeSingle();
+
+          const agentName = agentData 
+            ? [agentData.first_name, agentData.last_name].filter(Boolean).join(' ') || agentData.email
+            : 'Unknown Agent';
+
+          // Update customer record to reflect agent assignment
+          if (customerData2?.id) {
+            await supabaseClient
+              .from('customers')
+              .update({ assigned_to: matchedLead.assigned_to })
+              .eq('id', customerData2.id);
+          }
+
+          // Mark the lead as converted
+          await supabaseClient
+            .from('sales_leads')
+            .update({ status: 'converted', updated_at: new Date().toISOString() })
+            .eq('id', matchedLead.id);
+
+          // Determine source prefix for agent sale
+          const leadSource = matchedLead.lead_source || 'unknown';
+          let sourcePrefix = 'S';
+          if (leadSource === 'google_ad') sourcePrefix = 'S-G';
+          else if (leadSource === 'social_ad') sourcePrefix = 'S-F';
+
+          // Build agent sale notification email
+          const agentSaleHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎯 New Agent Sale - Lead Converted</h2>
+              
+              <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
+                <div style="font-size: 14px; color: #1e40af;"><strong>Converted by:</strong> ${agentName}</div>
+              </div>
+
+              <div style="margin-top: 16px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
+                <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">${regPlate}</div>
+              </div>
+              
+              <div style="margin-top: 16px; padding: 20px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 8px; color: white;">
+                <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
+                <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
+                <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${paymentMethod}</strong></div>
+              </div>
+              
+              <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerRecord.name || 'Unknown'}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerRecord.phone || matchedLead.phone || 'N/A'}</td></tr>
+              </table>
+
+              <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty Number:</strong></td><td style="padding: 8px;">${warrantyReference}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentMethod}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
+              </table>
+
+              <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
+                <p style="margin: 0; color: #166534;"><strong>✓ Lead converted to sale by ${agentName}</strong></p>
+              </div>
+            </div>
+          `;
+
+          await resend.emails.send({
+            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+            to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
+            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${planName} - ${saleValueDisplay} - Converted by ${agentName}`,
+            html: agentSaleHtml,
+          });
+
+          logStep("Agent sale notification (New Sale S) sent successfully", { agent: agentName });
+        }
+      } catch (agentEmailError) {
+        logStep("Warning: Failed to send agent sale notification", { error: agentEmailError });
+      }
     }
 
     return new Response(JSON.stringify({
