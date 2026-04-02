@@ -183,18 +183,13 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                   </span>
                 </TableCell>
 
-                {/* Notes */}
+                {/* Notes - Sticky note icon like leads page */}
                 <TableCell className="py-2">
-                  <div className="flex items-center gap-1">
-                    {claim.internal_notes ? (
-                      <span className="text-xs text-muted-foreground truncate max-w-[140px] block" title={claim.internal_notes}>
-                        {claim.internal_notes}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
-                    <ClaimInlineNote claimId={claim.id} />
-                  </div>
+                  <ClaimNotesBadge
+                    claimId={claim.id}
+                    isExpanded={expandedNoteId === claim.id}
+                    onToggle={() => setExpandedNoteId(expandedNoteId === claim.id ? null : claim.id)}
+                  />
                 </TableCell>
 
                 {/* Status */}
