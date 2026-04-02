@@ -260,7 +260,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                 {/* Expandable notes sub-row */}
                 {expandedNoteId === claim.id && (
                   <TableRow className="bg-muted/20">
-                    <TableCell colSpan={11} className="p-0">
+                    <TableCell colSpan={12} className="p-0">
                       <div className="p-4">
                         <ClaimNotesPanel claimId={claim.id} compact />
                       </div>
