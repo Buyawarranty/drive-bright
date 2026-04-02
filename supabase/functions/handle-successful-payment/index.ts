@@ -1053,12 +1053,12 @@ serve(async (req) => {
 
             <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${vehicleData?.regNumber || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleData?.make || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleData?.model || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Year:</strong></td><td style="padding: 8px;">${vehicleData?.year || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Fuel Type:</strong></td><td style="padding: 8px;">${vehicleData?.fuelType || 'Unknown'}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Mileage:</strong></td><td style="padding: 8px;">${vehicleData?.mileage || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${customerData2?.registration_plate || vehicleData?.regNumber || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_make || vehicleData?.make || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_model || vehicleData?.model || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Year:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_year || vehicleData?.year || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Fuel Type:</strong></td><td style="padding: 8px;">${customerData2?.vehicle_fuel_type || vehicleData?.fuelType || 'Unknown'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Mileage:</strong></td><td style="padding: 8px;">${customerData2?.mileage || vehicleData?.mileage || 'Unknown'}</td></tr>
             </table>
 
             <h3 style="color: #333; margin-top: 20px;">Add-Ons Included</h3>
