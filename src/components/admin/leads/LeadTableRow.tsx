@@ -59,6 +59,7 @@ interface LeadTableRowProps {
   onRequestAccess?: (reason: string) => void;
   isLeadGenView?: boolean;
   userRole?: string | null;
+  isExistingCustomer?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
