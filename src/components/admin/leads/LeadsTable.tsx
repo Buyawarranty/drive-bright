@@ -74,6 +74,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   userRole,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
+  const [existingCustomerEmails, setExistingCustomerEmails] = useState<Set<string>>(new Set());
 
   // Extract emails from leads for quote lookup
   const leadEmails = useMemo(() => leads.map(l => l.email), [leads]);
@@ -82,6 +83,27 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
   const noteCounts = useLeadNoteCounts(leadIds);
+
+  // Fetch existing customer emails (those with active/scheduled policies)
+  useEffect(() => {
+    if (leadEmails.length === 0) return;
+    const uniqueEmails = [...new Set(leadEmails.filter(Boolean).map(e => e.toLowerCase()))];
+    if (uniqueEmails.length === 0) return;
+
+    const fetchExistingCustomers = async () => {
+      const { data } = await supabase
+        .from('customer_policies')
+        .select('email')
+        .in('email', uniqueEmails)
+        .in('status', ['active', 'scheduled'])
+        .eq('is_deleted', false);
+
+      if (data) {
+        setExistingCustomerEmails(new Set(data.map(d => d.email.toLowerCase())));
+      }
+    };
+    fetchExistingCustomers();
+  }, [leadEmails]);
 
   // Memoized callbacks for row actions
   const handleToggleExpand = useCallback((leadId: string) => {
