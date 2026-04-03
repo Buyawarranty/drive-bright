@@ -711,6 +711,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <Flame className="h-3 w-3" />{lead.application_count > 9 ? '9+' : `${lead.application_count}x`}
             </Badge>
           )}
+          {isExistingCustomer && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-green-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help">
+                  <CheckCircle className="h-3 w-3" />
+                  CUSTOMER
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                ✅ This person already has an active warranty with us
+              </TooltipContent>
+            </Tooltip>
+          )}
           {displayName ? (
             <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>{displayName}</span>
           ) : (
