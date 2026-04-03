@@ -1,7 +1,8 @@
-import React, { useState, useCallback, memo, useMemo } from 'react';
+import React, { useState, useCallback, memo, useMemo, useEffect } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
+import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -73,6 +74,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   userRole,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
+  const [existingCustomerEmails, setExistingCustomerEmails] = useState<Set<string>>(new Set());
 
   // Extract emails from leads for quote lookup
   const leadEmails = useMemo(() => leads.map(l => l.email), [leads]);
@@ -81,6 +83,27 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
   const noteCounts = useLeadNoteCounts(leadIds);
+
+  // Fetch existing customer emails (those with active/scheduled policies)
+  useEffect(() => {
+    if (leadEmails.length === 0) return;
+    const uniqueEmails = [...new Set(leadEmails.filter(Boolean).map(e => e.toLowerCase()))];
+    if (uniqueEmails.length === 0) return;
+
+    const fetchExistingCustomers = async () => {
+      const { data } = await supabase
+        .from('customer_policies')
+        .select('email')
+        .in('email', uniqueEmails)
+        .in('status', ['active', 'scheduled'])
+        .eq('is_deleted', false);
+
+      if (data) {
+        setExistingCustomerEmails(new Set(data.map(d => d.email.toLowerCase())));
+      }
+    };
+    fetchExistingCustomers();
+  }, [leadEmails]);
 
   // Memoized callbacks for row actions
   const handleToggleExpand = useCallback((leadId: string) => {
@@ -147,9 +170,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
                    onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
-                  isLeadGenView={isLeadGenView}
-                  userRole={userRole}
-                />
+                   isLeadGenView={isLeadGenView}
+                   userRole={userRole}
+                   isExistingCustomer={existingCustomerEmails.has(lead.email?.toLowerCase() || '')}
+                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
                 {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && lead.lead_source === 'google_ad' && !accessStatus.hasApproved) && (
