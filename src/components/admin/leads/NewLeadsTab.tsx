@@ -476,15 +476,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
       : filteredLeads;
 
-    if (isSalesLeadExport) {
-      // Sales lead can only export up to 2 months of data
-      const twoMonthsAgo = new Date();
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
-      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= twoMonthsAgo);
-    } else if (!isFullExportAllowed) {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= sevenDaysAgo);
+    if (!isFullExportAllowed) {
+      // All non-admin/super_admin roles: max 2 weeks of data
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= twoWeeksAgo);
     }
 
     const leadsToExport = baseLeads;
