@@ -4760,9 +4760,14 @@ Please log in and change your password after first login.`;
                      <Badge variant="secondary">{getWarrantyType(customer.plan_type)}</Badge>
                    </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="outline" className="font-mono">
-                        {getWarrantyDurationInMonths(customer.payment_type || '')} months
-                      </Badge>
+                       <Badge variant="outline" className="font-mono">
+                         {(() => {
+                           const baseMonths = getWarrantyDurationInMonths(customer.payment_type || '');
+                           const bonusMonths = customer.customer_policies?.[0]?.seasonal_bonus_months || 0;
+                           const totalMonths = baseMonths + bonusMonths;
+                           return `${totalMonths} months`;
+                         })()}
+                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       {(() => {
