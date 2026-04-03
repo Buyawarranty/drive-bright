@@ -272,23 +272,17 @@ async function generateWarrantyNumber(supabase: any): Promise<string> {
 
 function calculatePolicyEndDate(paymentType: string): string {
   const startDate = new Date();
-  
-  switch (paymentType) {
-    case 'monthly':
-      startDate.setMonth(startDate.getMonth() + 1);
-      break;
-    case 'yearly':
-      startDate.setFullYear(startDate.getFullYear() + 1);
-      break;
-    case 'twoYear':
-      startDate.setFullYear(startDate.getFullYear() + 2);
-      break;
-    case 'threeYear':
-      startDate.setFullYear(startDate.getFullYear() + 3);
-      break;
-    default:
-      startDate.setFullYear(startDate.getFullYear() + 1);
-  }
-  
+  const months = getWarrantyDurationInMonths(paymentType);
+  startDate.setMonth(startDate.getMonth() + months);
   return startDate.toISOString();
+}
+
+function getWarrantyDurationInMonths(paymentType: string): number {
+  if (!paymentType) return 12;
+  const n = paymentType.toLowerCase().replace(/[_\-\s]/g, '').trim();
+  if (n.includes('24') || n === '2year' || n === '2years' || n === 'twoyear' || n === 'twoyearly') return 24;
+  if (n.includes('36') || n === '3year' || n === '3years' || n === 'threeyear' || n === 'threeyearly') return 36;
+  if (n.includes('48') || n === '4year' || n === '4years' || n === 'fouryear') return 48;
+  if (n.includes('60') || n === '5year' || n === '5years' || n === 'fiveyear') return 60;
+  return 12;
 }
