@@ -470,11 +470,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
     const isFullExportAllowed = userRole === 'admin' || userRole === 'super_admin';
-    const isSalesLeadExport = userRole === 'sales_lead';
     
+    // When leads are selected, export those specific leads.
+    // Otherwise, export ALL leads (not the filtered view) so admins get the full dataset
+    // and non-admins get up to 2 weeks of ALL leads regardless of current filter/view.
     let baseLeads = selectedLeads.size > 0 
-      ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
-      : filteredLeads;
+      ? leads.filter(lead => selectedLeads.has(lead.id))
+      : [...leads];
 
     if (!isFullExportAllowed) {
       // All non-admin/super_admin roles: max 2 weeks of data
@@ -508,7 +510,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } else {
       exportToExcel(exportData, { filename: 'leads', format: 'xlsx' });
     }
-  }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel]);
+  }, [selectedLeads, leads, exportToCSV, exportToExcel, userRole]);
 
   // Archive leads (soft-archive by setting status to 'archived')
   const handleArchiveSelected = useCallback(async () => {
