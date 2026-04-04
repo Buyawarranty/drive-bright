@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid } from '@/utils/fbclidCapture';
 import { getStoredGclid } from '@/utils/gclidCapture';
+import { trackButtonClick } from '@/utils/analytics';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
@@ -594,12 +595,16 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             <a 
               href="tel:03302295040"
               className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-brand-orange transition-colors"
+              onClick={() => trackButtonClick('step2_call_phone', { location: 'desktop_footer', phone: '03302295040' })}
             >
               <Phone className="w-5 h-5 text-brand-orange" />
               <span>0330 229 5040</span>
             </a>
             <button 
-              onClick={() => setShowCallbackModal(true)}
+              onClick={() => {
+                trackButtonClick('step2_request_callback', { location: 'desktop_footer' });
+                setShowCallbackModal(true);
+              }}
               className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-brand-orange transition-colors"
             >
               <PhoneCall className="w-5 h-5 text-brand-orange" />
