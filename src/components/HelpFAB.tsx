@@ -41,7 +41,10 @@ const HelpFAB: React.FC = () => {
             <a 
               href="tel:03302295040"
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-              onClick={() => setIsExpanded(false)}
+              onClick={() => {
+                trackButtonClick('help_fab_call_phone', { location: 'mobile_fab', phone: '03302295040' });
+                setIsExpanded(false);
+              }}
             >
               <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center">
                 <Phone className="w-5 h-5 text-brand-orange" />
