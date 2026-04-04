@@ -57,6 +57,7 @@ const HelpFAB: React.FC = () => {
             
             <button 
               onClick={() => {
+                trackButtonClick('help_fab_request_callback', { location: 'mobile_fab' });
                 setIsExpanded(false);
                 setShowCallbackModal(true);
               }}
