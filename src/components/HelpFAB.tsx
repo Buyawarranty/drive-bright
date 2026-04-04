@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, MessageCircle, Star, X, HelpCircle, PhoneCall } from 'lucide-react';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import { trackButtonClick } from '@/utils/analytics';
 
 const HelpFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
