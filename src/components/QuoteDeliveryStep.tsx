@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid } from '@/utils/fbclidCapture';
 import { getStoredGclid } from '@/utils/gclidCapture';
+import { trackButtonClick } from '@/utils/analytics';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
