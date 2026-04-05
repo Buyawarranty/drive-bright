@@ -164,6 +164,41 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
         )}
       </div>
 
+      {/* Website Sales Day - super_admin only */}
+      {isSuperAdmin && onToggleWebsiteSalesDay && (
+        <div className="flex items-center gap-2 border-l pl-3 ml-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5">
+                <Globe className={cn("h-3.5 w-3.5", websiteSalesDay ? "text-amber-600" : "text-muted-foreground")} />
+                <span className={cn("text-[11px] font-medium whitespace-nowrap", websiteSalesDay ? "text-amber-700" : "text-muted-foreground")}>
+                  Website Day
+                </span>
+                <Switch
+                  checked={websiteSalesDay === true}
+                  onCheckedChange={onToggleWebsiteSalesDay}
+                  className="scale-75"
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+              When ON, all today's leads are treated as website sales (no agent assignment). Use for holidays/closures.
+            </TooltipContent>
+          </Tooltip>
+          {websiteSalesDay && onBulkAssignWebsite && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50"
+              onClick={onBulkAssignWebsite}
+            >
+              <Globe className="h-3.5 w-3.5" />
+              Assign all to Website
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Right side */}
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground">Per page</span>
