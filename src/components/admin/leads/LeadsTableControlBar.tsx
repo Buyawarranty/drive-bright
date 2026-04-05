@@ -10,8 +10,10 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { UserPlus, ChevronDown, X, Zap, Ban, XCircle, RotateCcw } from 'lucide-react';
+import { UserPlus, ChevronDown, X, Zap, Ban, XCircle, RotateCcw, Globe } from 'lucide-react';
 import { AdminUser } from '@/hooks/useLeads';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LeadsTableControlBarProps {
   totalItems: number;
@@ -28,6 +30,11 @@ interface LeadsTableControlBarProps {
   onBulkMarkFake?: () => void;
   onBulkMarkLost?: () => void;
   onBulkRestore?: () => void;
+  // Website Sales Day
+  isSuperAdmin?: boolean;
+  websiteSalesDay?: boolean | null;
+  onToggleWebsiteSalesDay?: (value: boolean) => void;
+  onBulkAssignWebsite?: () => void;
 }
 
 export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
