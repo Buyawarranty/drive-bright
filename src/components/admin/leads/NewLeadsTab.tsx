@@ -99,6 +99,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
   
+  // Website Sales Day toggle - super_admin only
+  const { value: websiteSalesDay, updateConfig: updateWebsiteSalesDay } = useAdminConfig('website_sales_day');
+  
   
   // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
   // Sales Lead, Admin, Super Admin should NOT have delete by default
