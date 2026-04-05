@@ -606,6 +606,36 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, autoAssignLead]);
 
+  // Bulk assign ALL today's leads to Website (for website sales day)
+  const handleBulkAssignWebsite = useCallback(async () => {
+    const WEBSITE_ID = 'e39499b8-f88c-4963-9f0d-63e1addb3025';
+    // Get all leads that are not already assigned to website
+    const todayLeads = freshLeads.filter(l => 
+      l.assigned_to !== WEBSITE_ID && l.status !== 'converted' && l.status !== 'fake_lead' && l.status !== 'lost'
+    );
+    
+    if (todayLeads.length === 0) {
+      toast.info('All leads are already assigned to Website');
+      return;
+    }
+    
+    const results = await Promise.allSettled(
+      todayLeads.map(l => assignLead(l.id, WEBSITE_ID))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    if (successCount > 0) {
+      toast.success(`Assigned ${successCount} lead${successCount > 1 ? 's' : ''} to Website`);
+    }
+  }, [freshLeads, assignLead]);
+
+  const handleToggleWebsiteSalesDay = useCallback(async (value: boolean) => {
+    const success = await updateWebsiteSalesDay(value);
+    if (success) {
+      toast.success(value ? 'Website Sales Day enabled — all new leads will be treated as website sales' : 'Website Sales Day disabled — normal agent assignment resumed');
+    }
+  }, [updateWebsiteSalesDay]);
+
   // Memoize quote navigation handler
   const handleSendQuote = useCallback((lead: Lead) => {
     if (onNavigateToTab) {
