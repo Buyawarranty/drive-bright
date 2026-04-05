@@ -905,6 +905,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
                     onBulkRestore={handleBulkRestore}
+                    isSuperAdmin={userRole === 'super_admin'}
+                    websiteSalesDay={websiteSalesDay}
+                    onToggleWebsiteSalesDay={userRole === 'super_admin' ? handleToggleWebsiteSalesDay : undefined}
+                    onBulkAssignWebsite={userRole === 'super_admin' ? handleBulkAssignWebsite : undefined}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
