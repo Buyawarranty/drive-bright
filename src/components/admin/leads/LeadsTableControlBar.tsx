@@ -52,6 +52,10 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   onBulkMarkFake,
   onBulkMarkLost,
   onBulkRestore,
+  isSuperAdmin = false,
+  websiteSalesDay,
+  onToggleWebsiteSalesDay,
+  onBulkAssignWebsite,
 }) => {
   const getInitials = (user: AdminUser) => {
     if (user.first_name || user.last_name) {
