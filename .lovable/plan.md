@@ -1,64 +1,72 @@
 
 
-## Plan: Stop Auto-Creating Warranty on Payment — Let Sales Complete Orders Manually
+# Lead Assignment Architecture & Bug Root Cause
 
-### Problem
-When a customer pays via a quote link (Stripe or Bumper), the system automatically:
-1. Creates a customer record (often a duplicate)
-2. Creates a warranty/policy
-3. Sends a welcome email with incorrect details
+## How Round-Robin Currently Works
 
-The sales agent should instead review the paid order, correct any details, and manually trigger the customer record + email.
-
-### Current Flow
 ```text
-Customer pays → stripe-webhook / process-quote-bumper-success
-  → handle-successful-payment (creates customer + policy + sends email)
-  → Paid order appears in "Paid Orders" tab (but damage already done)
+Customer visits website
+        |
+        v
+  abandoned_carts UPSERT
+        |
+        v
+  TRIGGER: auto_create_lead_from_abandoned_cart()
+        |
+        +---> 1. IDEMPOTENCY: Same cart_id already has a lead? UPDATE existing, STOP
+        +---> 2. PHONE DEDUP: Same phone within 7 days? UPDATE existing, STOP
+        +---> 3. EMAIL DEDUP: Same email within 7 days? UPDATE existing, STOP
+        +---> 4. TERMINAL GUARD: Phone/email in converted/lost/fake? STOP
+        +---> 5. NEW LEAD: get_next_sales_user() -> round-robin assign -> INSERT
+        
+  TRIGGER: protect_worked_lead_assignment()
+        |
+        +---> If lead has activity (status != 'new', calls > 0, notes exist)
+              AND no auth.uid() (automated process), BLOCK reassignment
 ```
 
-### New Flow
-```text
-Customer pays → stripe-webhook / process-quote-bumper-success
-  → Only update live_quotes status to "paid" (NO customer/policy creation)
-  → Redirect to thank-you page with quote details
-  → Order appears in "Paid Orders" tab with "⚠️ Needs Processing" badge
-  → Sales agent opens order → reviews/edits details → clicks "Complete Order"
-  → System creates customer (or links to existing) + policy + sends welcome email
-```
+## What Happened With 07397214821 (Mohammad)
 
-### Changes Required
+The database shows **5 separate lead rows** for this phone number:
 
-**1. Stripe Webhook (`supabase/functions/stripe-webhook/index.ts`)**
-- For live_quote-sourced payments (`metadata.source === 'live_quote'`): instead of calling `handle-successful-payment`, just update the `live_quotes` record to `status: 'paid'` with the payment details (Stripe session ID, amount). Skip warranty creation and email entirely.
-- Non-quote payments (direct website checkout) remain unchanged.
+| # | Created | Assigned To | Status | How Created |
+|---|---------|------------|--------|-------------|
+| 1 | Mar 19 | James | fake_lead | Original cart `632a5594` |
+| 2 | Mar 30 | James | contacted | Cart `abf9baf9` — new lead (>7 days from #1) |
+| 3 | Mar 30 | James | new | **DUPLICATE** of #2 (same cart timestamp) |
+| 4 | Apr 1 | **Ash** | quote_sent | Cart `b3cedf98` — new email entry, phone dedup found #2 but then a Price Match callback cart `3388a11c` created ANOTHER lead |
+| 5 | Apr 1 | **Ash** | quote_sent | Price Match callback cart with fake email `callback-...@price-match.temp` — bypassed email dedup |
 
-**2. Bumper Success Handler (`supabase/functions/process-quote-bumper-success/index.ts`)**
-- Remove the call to `handle-successful-payment` and the welcome email send.
-- Only update `live_quotes` to `status: 'paid'` with `payment_method: 'bumper'`.
-- Still redirect to the thank-you page with quote details (from `live_quotes` data, not from a newly created policy).
+### The Bug: Two Specific Gaps
 
-**3. Paid Orders Tab — Add "Complete Order" Action (`src/components/admin/PaidOrderEditDialog.tsx`)**
-- Add a new "Complete Order & Send Email" button that:
-  - Calls `confirm-external-payment` (which already handles customer creation, duplicate detection, policy creation, and welcome email)
-  - Passes all the edited details from the dialog form
-  - On success, updates the `live_quotes` record with the policy number
-  - Shows success confirmation
-- Add visual distinction: orders without a `customer_id` or `policy_id` show a prominent "Needs Processing" status badge instead of "Paid"
+**Gap 1 — Phone format mismatch**: The phone dedup uses `regexp_replace` to strip non-digits, but `07397214821` (11 digits) vs `+447397214821` (12 digits with country code) produce different strings (`07397214821` vs `447397214821`). The Price Match callback cart stored `+447397214821`, which **bypassed** the phone dedup check.
 
-**4. Paid Orders Tab — Status Indicators (`src/components/admin/PaidOrdersTab.tsx`)**
-- Update `getStatusBadge` to show amber "Needs Processing" for paid orders that have no `customer_id` or `policy_id`
-- Sort unprocessed orders to the top
+**Gap 2 — Fake callback email bypasses email dedup**: The Price Match system generates a temporary email like `callback-...@price-match.temp`. This doesn't match the real email `m.ummair90@gmail.com`, so the email dedup also fails. Combined with Gap 1, the system creates a brand new lead and round-robin assigns it to the next agent (Ash instead of James).
 
-### Technical Details
+**Gap 3 — 7-day dedup window**: The dedup only looks back 7 days. Lead #1 (Mar 19, fake_lead) was already terminal, but if it hadn't been, it would still have fallen outside the window by Mar 30.
 
-- The `confirm-external-payment` edge function already has full duplicate detection logic (matches by email + reg plate), creates or updates customers, creates policies, and optionally sends welcome emails. This is the ideal function for the sales agent to trigger manually.
-- The thank-you page continues to work because it reads from URL params (populated from `live_quotes` data), not from the customer/policy tables.
-- No database migration needed — `live_quotes` already has the `status`, `paid_at`, `payment_method`, and `policy_number` columns.
+## The Fix (Database Migration)
 
-### Files to Edit
-1. `supabase/functions/stripe-webhook/index.ts` — Skip `handle-successful-payment` for live_quote payments
-2. `supabase/functions/process-quote-bumper-success/index.ts` — Remove warranty creation, keep redirect
-3. `src/components/admin/PaidOrderEditDialog.tsx` — Add "Complete Order & Send Email" button
-4. `src/components/admin/PaidOrdersTab.tsx` — Add "Needs Processing" status, sort unprocessed first
+### 1. Normalize UK phone numbers before dedup comparison
+Add phone normalization that converts `+44` prefix to `0` (or vice versa) so `+447397214821` and `07397214821` match. Apply this in:
+- `auto_create_lead_from_abandoned_cart()` — phone dedup step
+- `recover_orphaned_leads()` — phone dedup step
+- `protect_worked_lead_assignment()` — no change needed (doesn't do phone matching)
+
+### 2. Cross-reference by phone regardless of email
+When a callback or price-match cart has a fake/temp email, the function should still find the existing lead by phone. Add: if email contains `@price-match.temp` or `@callback.temp`, skip email dedup and rely solely on phone dedup (with normalized numbers).
+
+### 3. Extend dedup window for worked leads
+Currently dedup only looks back 7 days. Change to: if a matching lead has **any activity** (assigned, status changed, notes, calls), match it regardless of age. Only apply the 7-day window for untouched `new` status leads.
+
+### 4. Clean up existing duplicates
+Merge the duplicate rows for this customer, keeping the one with the most activity (James's `contacted` lead `bd195ed1`).
+
+## Files Changed
+
+- **1 database migration** — Updates `auto_create_lead_from_abandoned_cart()` and `recover_orphaned_leads()` with:
+  - UK phone normalization helper (`normalize_uk_phone()`)
+  - Temp-email detection to force phone-only dedup
+  - Extended dedup window for worked leads (no time limit)
+- **No frontend changes needed** — this is purely a database trigger logic fix
 
