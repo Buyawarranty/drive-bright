@@ -6258,6 +6258,7 @@ export type Database = {
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
+      normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
       process_scheduled_sms: { Args: never; Returns: number }
       recover_orphaned_leads: { Args: never; Returns: Json }
       recover_single_lead: {
