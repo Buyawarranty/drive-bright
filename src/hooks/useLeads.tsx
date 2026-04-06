@@ -141,6 +141,7 @@ export interface Lead {
   // Resubmission tracking - when returning customer submits again
   resubmission_count: number;
   last_resubmitted_at: string | null;
+  is_recreated: boolean;
   // Joined data
   assigned_user?: {
     id: string;
@@ -409,6 +410,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           cart_metadata: lead.abandoned_cart?.cart_metadata || null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
+          is_recreated: lead.is_recreated || false,
         };
       });
 

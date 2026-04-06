@@ -694,6 +694,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </Tooltip>
           )}
           {isOverdue && !suspiciousFlags.length && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+          {lead.is_recreated && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-red-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <AlertTriangle className="h-3 w-3" />RECREATED
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[200px]">
+                ⚠️ This lead was recreated from a returning customer — check notes before calling
+              </TooltipContent>
+            </Tooltip>
+          )}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
