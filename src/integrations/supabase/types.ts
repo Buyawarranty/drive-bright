@@ -6331,6 +6331,7 @@ export type Database = {
         | "quote_sent"
         | "negotiating"
         | "upsell"
+        | "upgraded"
         | "converted"
         | "lost"
         | "fake_lead"
@@ -6513,6 +6514,7 @@ export const Constants = {
         "quote_sent",
         "negotiating",
         "upsell",
+        "upgraded",
         "converted",
         "lost",
         "fake_lead",
