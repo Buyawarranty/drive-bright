@@ -759,8 +759,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         throw new Error(statusResult.error || 'Status update failed');
       }
 
-      // If marked as converted/lost/fake on abandoned cart, remove from local state
-      if (isAbandonedCart && (status === 'lost' || status === 'fake_lead' || status === 'converted')) {
+      // If marked as lost/fake on abandoned cart, remove from local state (converted stays visible with SOLD tag)
+      if (isAbandonedCart && (status === 'lost' || status === 'fake_lead')) {
         setLeads(prev => prev.filter(lead => lead.id !== leadId));
       }
 
