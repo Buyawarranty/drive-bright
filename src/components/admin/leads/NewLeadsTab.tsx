@@ -188,8 +188,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   useEffect(() => {
     setFilter('live');
     setActiveFilter('live');
-    // Auto-import orphaned abandoned carts so they appear as regular leads
-    migrateFromAbandonedCarts(true).catch(() => {});
+
+    const migrationTimer = window.setTimeout(() => {
+      // Run this after the first paint so it doesn't compete with the initial lead load
+      void migrateFromAbandonedCarts(true);
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(migrationTimer);
+    };
   }, [setFilter, migrateFromAbandonedCarts]);
 
   // Handle filter change
