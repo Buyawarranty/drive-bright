@@ -136,7 +136,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
               <SelectItem value="contacted">Contacted</SelectItem>
               <SelectItem value="follow_up">Follow Up</SelectItem>
               <SelectItem value="quoted">Quoted</SelectItem>
-              <SelectItem value="converted">Converted</SelectItem>
+              <SelectItem value="converted">Sold</SelectItem>
               <SelectItem value="lost">Lost</SelectItem>
             </SelectContent>
           </Select>
@@ -254,7 +254,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                           <SelectItem value="contacted">Contacted</SelectItem>
                           <SelectItem value="follow_up">Follow Up</SelectItem>
                           <SelectItem value="quoted">Quoted</SelectItem>
-                          <SelectItem value="converted">Converted</SelectItem>
+                          <SelectItem value="converted">Sold</SelectItem>
                           <SelectItem value="lost">Lost</SelectItem>
                         </SelectContent>
                       </Select>
