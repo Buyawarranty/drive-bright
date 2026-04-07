@@ -457,6 +457,8 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         return <Badge className="bg-amber-500 text-white">💰 Refunded</Badge>;
       case 'lead':
         return <Badge className="bg-blue-500 text-white">📋 Lead</Badge>;
+      case 'upsold':
+        return <Badge className="bg-teal-500 text-white">⬆️ Upsold</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -612,6 +614,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
                 <SelectItem value="claim_made">Claim Made</SelectItem>
+                <SelectItem value="upsold">⬆️ Upsold</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1010,8 +1013,37 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                     </TableCell>
                     
                     {/* Status */}
-                    <TableCell>
-                      {getStatusBadge(customer.status)}
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Select
+                        value={customer.status || 'active'}
+                        onValueChange={async (val) => {
+                          try {
+                            const { error } = await supabase
+                              .from('customers')
+                              .update({ status: val })
+                              .eq('id', customer.id);
+                            if (error) throw error;
+                            toast.success(`Status updated to ${val}`);
+                            fetchCustomers();
+                          } catch (err) {
+                            console.error('Status update error:', err);
+                            toast.error('Failed to update status');
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-7 text-xs w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="refunded">Refunded</SelectItem>
+                          <SelectItem value="upsold">⬆️ Upsold</SelectItem>
+                          <SelectItem value="claim_made">Claim Made</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                   </TableRow>
                 ))
