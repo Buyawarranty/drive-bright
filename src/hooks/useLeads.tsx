@@ -144,6 +144,11 @@ export interface Lead {
   resubmission_count: number;
   last_resubmitted_at: string | null;
   is_recreated: boolean;
+  // Upsell attribution
+  original_source: string | null;
+  original_assigned_to: string | null;
+  upsold_by: string | null;
+  upsold_at: string | null;
   // Joined data
   assigned_user?: {
     id: string;

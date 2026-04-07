@@ -130,6 +130,11 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
     return { label: labelMap[lead.status] || lead.status, color: lead.status === 'converted' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600', priority: 5 };
   }
   
+  // Upsell/Upgraded
+  if (lead.status === 'upsell' || lead.status === 'upgraded') {
+    return { label: lead.status === 'upsell' ? 'Upsell' : 'Upgraded ⬆️', color: lead.status === 'upsell' ? 'bg-teal-200 text-teal-800' : 'bg-cyan-200 text-cyan-800', priority: 4 };
+  }
+  
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
@@ -752,6 +757,30 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </TooltipContent>
             </Tooltip>
           )}
+          {(lead.status === 'upsell' || lead.status === 'upgraded') && (() => {
+            const originalAgent = lead.original_assigned_to ? salesUsers.find(u => u.id === lead.original_assigned_to) : null;
+            const upsellAgent = lead.upsold_by ? salesUsers.find(u => u.id === lead.upsold_by) : null;
+            const origSourceLabel = lead.original_source === 'google_ad' ? 'Google Ad' : lead.original_source === 'website' ? 'Website' : lead.original_source || 'Unknown';
+            const origAgentName = originalAgent ? `${originalAgent.first_name || ''} ${originalAgent.last_name || ''}`.trim() || originalAgent.email : (lead.original_assigned_to === WEBSITE_SALES_ACCOUNT_ID ? 'Website' : null);
+            const upsellAgentName = upsellAgent ? `${upsellAgent.first_name || ''} ${upsellAgent.last_name || ''}`.trim() || upsellAgent.email : null;
+            return (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge className={`text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 font-bold ${lead.status === 'upsell' ? 'bg-teal-500 text-white' : 'bg-cyan-500 text-white'}`}>
+                    ⬆️ {lead.status === 'upsell' ? 'UPSELL' : 'UPGRADED'}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[250px]">
+                  <div className="space-y-1">
+                    <div className="font-semibold">{lead.status === 'upsell' ? 'Upsell' : 'Upgrade'} Attribution</div>
+                    <div>📌 Original sale: <span className="font-medium">{origSourceLabel}</span>{origAgentName && <> — {origAgentName}</>}</div>
+                    {upsellAgentName && <div>⬆️ {lead.status === 'upsell' ? 'Upsold' : 'Upgraded'} by: <span className="font-medium">{upsellAgentName}</span></div>}
+                    {lead.upsold_at && <div>📅 {format(new Date(lead.upsold_at), 'dd/MM/yyyy HH:mm')}</div>}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })()}
           {displayName ? (
             <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>{displayName}</span>
           ) : (

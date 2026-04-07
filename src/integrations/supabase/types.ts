@@ -4500,6 +4500,8 @@ export type Database = {
           next_action_date: string | null
           next_action_type: string | null
           notes: string | null
+          original_assigned_to: string | null
+          original_source: string | null
           payment_amount: number | null
           payment_date: string | null
           payment_method: string | null
@@ -4512,6 +4514,8 @@ export type Database = {
           status: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at: string | null
           updated_at: string
+          upsold_at: string | null
+          upsold_by: string | null
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_reg: string | null
@@ -4544,6 +4548,8 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
+          original_assigned_to?: string | null
+          original_source?: string | null
           payment_amount?: number | null
           payment_date?: string | null
           payment_method?: string | null
@@ -4556,6 +4562,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
+          upsold_at?: string | null
+          upsold_by?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_reg?: string | null
@@ -4588,6 +4596,8 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
+          original_assigned_to?: string | null
+          original_source?: string | null
           payment_amount?: number | null
           payment_date?: string | null
           payment_method?: string | null
@@ -4600,6 +4610,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
+          upsold_at?: string | null
+          upsold_by?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_reg?: string | null
