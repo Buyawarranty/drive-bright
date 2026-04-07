@@ -163,11 +163,11 @@ export const useLeadQuickNotes = (leadId: string) => {
       // Skip session check on refetch to avoid latency — RLS will gate access
       if (isAbandonedCart) {
         const { data: cartData, error: cartError } = await withTimeout(
-          supabase
+          (async () => await supabase
             .from('abandoned_carts')
             .select('contact_notes, updated_at')
             .eq('id', actualId)
-            .maybeSingle(),
+            .maybeSingle())(),
           NOTE_REQUEST_TIMEOUT_MS,
           'Loading notes timed out'
         );

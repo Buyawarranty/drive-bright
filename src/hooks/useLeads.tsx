@@ -352,10 +352,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
         const batch = leadIds.slice(index, index + LEAD_TAG_BATCH_SIZE);
 
         const { data, error } = await withTimeout(
-          supabase
+          (async () => await supabase
             .from('lead_tag_assignments')
             .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-            .in('lead_id', batch),
+            .in('lead_id', batch))(),
           LEAD_TAG_FETCH_TIMEOUT_MS,
           'Lead tag fetch timed out'
         );
