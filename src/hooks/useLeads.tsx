@@ -64,7 +64,7 @@ const isRetryableMutationError = (error: unknown) => {
   );
 };
 
-export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
+export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'upsell' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'phone' | 'email' | 'partner' | 'other';
 
