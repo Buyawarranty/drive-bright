@@ -125,8 +125,8 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   
   // Closed/resolved leads don't need action
   if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'fake_lead') {
-    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', fake_lead: 'Fake / 404' };
-    return { label: labelMap[lead.status] || lead.status, color: 'bg-gray-100 text-gray-600', priority: 5 };
+    const labelMap: Record<string, string> = { converted: 'Sold ✅', lost: 'Lost', fake_lead: 'Fake / 404' };
+    return { label: labelMap[lead.status] || lead.status, color: lead.status === 'converted' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600', priority: 5 };
   }
   
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
@@ -539,7 +539,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="urgent_callback">Urgent Call-back</SelectItem>
             <SelectItem value="negotiating">Negotiating</SelectItem>
             <SelectItem value="upsell">Upsell</SelectItem>
-            <SelectItem value="converted">Converted</SelectItem>
+            <SelectItem value="converted">Sold</SelectItem>
             <SelectItem value="lost">Lost</SelectItem>
             <SelectItem value="fake_lead">Fake / 404</SelectItem>
           </SelectContent>
@@ -735,6 +735,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
                 ✅ This person already has an active warranty with us
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {lead.status === 'converted' && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-green-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0 font-bold">
+                  <Award className="h-3 w-3" />SOLD
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                ✅ This lead has been converted to a sale{lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? ' by an agent' : ' (Website)'}
               </TooltipContent>
             </Tooltip>
           )}
