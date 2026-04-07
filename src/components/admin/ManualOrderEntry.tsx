@@ -896,6 +896,17 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
               vehicleMake: orderData.vehicleMake || null,
               vehicleModel: orderData.vehicleModel || null,
               saleSource: 'Web',
+              claimLimit: orderData.claimLimit || null,
+              voluntaryExcess: orderData.voluntaryExcess || null,
+              labourRate: null,
+              paymentType: orderData.paymentType || null,
+              wearTearCover: orderData.wearTearCover || false,
+              vehicleRecovery: orderData.vehicleRecovery || false,
+              tyreCover: orderData.tyreCover || false,
+              europeCover: orderData.europeCover || false,
+              vehicleRental: orderData.vehicleRental || false,
+              motFeeCover: orderData.motFeeCover || false,
+              transferCover: orderData.transferCover || false,
             }
           });
         } catch (e) {
