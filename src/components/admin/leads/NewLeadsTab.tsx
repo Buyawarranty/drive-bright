@@ -533,7 +533,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     );
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     if (successCount > 0) {
-      toast.success(`Marked ${successCount} lead${successCount > 1 ? 's' : ''} as Fake 404`);
+      toast.success(`Marked ${successCount} lead${successCount > 1 ? 's' : ''} as Fake / 404`);
       setSelectedLeads(new Set());
     }
   }, [selectedLeads, updateLeadStatus]);
