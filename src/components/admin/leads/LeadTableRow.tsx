@@ -130,6 +130,11 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
     return { label: labelMap[lead.status] || lead.status, color: lead.status === 'converted' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600', priority: 5 };
   }
   
+  // Upsell/Upgraded
+  if (lead.status === 'upsell' || lead.status === 'upgraded') {
+    return { label: lead.status === 'upsell' ? 'Upsell' : 'Upgraded ⬆️', color: lead.status === 'upsell' ? 'bg-teal-200 text-teal-800' : 'bg-cyan-200 text-cyan-800', priority: 4 };
+  }
+  
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
