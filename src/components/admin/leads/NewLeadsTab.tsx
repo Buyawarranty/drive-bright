@@ -356,8 +356,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter]);
 
   // Separate fresh leads from recovered (unworked) leads
+  // A lead is only "unworked" if it has NO signs of activity whatsoever:
+  // - no assignment, no step 2 completion, no status change, no calls, no notes
+  // Once any agent has touched it, it belongs in the main table.
   const isRecoveredLead = useCallback((lead: Lead) => {
-    return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
+    if (!lead.abandoned_cart_id) return false;
+    if (lead.assigned_at) return false;
+    if (lead.step_two_completed_at) return false;
+    // Any status beyond 'new' means someone worked it
+    if (lead.status && lead.status !== 'new') return false;
+    // Any calls or notes mean it was worked
+    if (lead.call_count && lead.call_count > 0) return false;
+    if (lead.notes && lead.notes.trim() !== '') return false;
+    // Has an assigned agent means it was worked
+    if (lead.assigned_to) return false;
+    return true;
   }, []);
 
   const freshLeads = useMemo(() => {
