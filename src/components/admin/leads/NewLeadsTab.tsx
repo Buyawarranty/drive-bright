@@ -990,7 +990,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           </Card>
 
           {/* Unworked Leads Section — recovered leads separated from fresh */}
-          {recoveredLeads.length > 0 && (
+          {recoveredLeads.length > 0 && isAdmin && (
             <Card className="overflow-hidden border-2 border-border mt-4">
               <CardContent className="p-0">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border">
