@@ -435,7 +435,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
             vehicleModel: lead.vehicle_model || null,
             agentId: lead.assigned_to || null,
             claimLimit: claimLimit || null,
-            voluntaryExcess: excessAmount || null,
+            voluntaryExcess: voluntaryExcess || null,
           }
         });
       } catch (e) {
