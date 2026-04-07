@@ -1806,6 +1806,18 @@ Questions? Call 0330 229 5040`;
             vehicleMake: vehicleData?.make || null,
             vehicleModel: vehicleData?.model || null,
             agentId: quoteSentByUserId || null,
+            claimLimit: claimLimit || null,
+            voluntaryExcess: excessAmount || null,
+            labourRate: labourRate || null,
+            paymentType: paymentType || null,
+            boostAddon: boostAddon || false,
+            wearTearCover: selectedAddOns?.wearAndTear || false,
+            vehicleRecovery: selectedAddOns?.breakdownRecovery || false,
+            tyreCover: selectedAddOns?.tyreCover || false,
+            europeCover: selectedAddOns?.europeCover || false,
+            vehicleRental: selectedAddOns?.vehicleRental || false,
+            motFeeCover: selectedAddOns?.motFee || false,
+            transferCover: selectedAddOns?.transferCover || false,
           }
         });
       } catch (e) {
