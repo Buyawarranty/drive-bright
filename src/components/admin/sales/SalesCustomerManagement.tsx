@@ -459,6 +459,8 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         return <Badge className="bg-blue-500 text-white">📋 Lead</Badge>;
       case 'upsold':
         return <Badge className="bg-teal-500 text-white">⬆️ Upsold</Badge>;
+      case 'upgraded':
+        return <Badge className="bg-cyan-500 text-white">⬆️ Upgraded</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -615,6 +617,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                 <SelectItem value="cancelled">Cancelled</SelectItem>
                 <SelectItem value="claim_made">Claim Made</SelectItem>
                 <SelectItem value="upsold">⬆️ Upsold</SelectItem>
+                <SelectItem value="upgraded">⬆️ Upgraded</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1041,6 +1044,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                           <SelectItem value="refunded">Refunded</SelectItem>
                           <SelectItem value="upsold">⬆️ Upsold</SelectItem>
+                          <SelectItem value="upgraded">⬆️ Upgraded</SelectItem>
                           <SelectItem value="claim_made">Claim Made</SelectItem>
                         </SelectContent>
                       </Select>
