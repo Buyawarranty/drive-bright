@@ -790,7 +790,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds, currentAdminUser]);
 
   const getCurrentUser = async () => {
     try {
