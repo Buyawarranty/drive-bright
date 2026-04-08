@@ -1,64 +1,28 @@
 
 
-## Plan: Stop Auto-Creating Warranty on Payment — Let Sales Complete Orders Manually
+## Plan: Allow Sales Agents to Search All Customers
 
-### Problem
-When a customer pays via a quote link (Stripe or Bumper), the system automatically:
-1. Creates a customer record (often a duplicate)
-2. Creates a warranty/policy
-3. Sends a welcome email with incorrect details
+**Problem**: Sales agents (`sales` and `sales_lead` roles) currently have their agent filter auto-locked to their own ID (line 569-571 in `CustomersTab.tsx`). This means they can only see customers assigned to them, even when searching.
 
-The sales agent should instead review the paid order, correct any details, and manually trigger the customer record + email.
+**Solution**: When a sales agent types a search query, temporarily bypass the agent filter so they can find any customer across the entire database. When the search is cleared, revert to showing only their own customers.
 
-### Current Flow
-```text
-Customer pays → stripe-webhook / process-quote-bumper-success
-  → handle-successful-payment (creates customer + policy + sends email)
-  → Paid order appears in "Paid Orders" tab (but damage already done)
-```
+### Changes
 
-### New Flow
-```text
-Customer pays → stripe-webhook / process-quote-bumper-success
-  → Only update live_quotes status to "paid" (NO customer/policy creation)
-  → Redirect to thank-you page with quote details
-  → Order appears in "Paid Orders" tab with "⚠️ Needs Processing" badge
-  → Sales agent opens order → reviews/edits details → clicks "Complete Order"
-  → System creates customer (or links to existing) + policy + sends welcome email
-```
+**File: `src/components/admin/CustomersTab.tsx`**
 
-### Changes Required
+1. **Modify `applyFiltersAndSort`** (~line 728-735): Add a condition so that when there's an active search term AND the user is a `sales` or `sales_lead`, the agent filter is skipped. This lets them search across all customers.
 
-**1. Stripe Webhook (`supabase/functions/stripe-webhook/index.ts`)**
-- For live_quote-sourced payments (`metadata.source === 'live_quote'`): instead of calling `handle-successful-payment`, just update the `live_quotes` record to `status: 'paid'` with the payment details (Stripe session ID, amount). Skip warranty creation and email entirely.
-- Non-quote payments (direct website checkout) remain unchanged.
+   ```
+   // Apply agent filter — skip when sales/sales_lead is actively searching
+   const isSalesSearching = debouncedSearchTerm && 
+     (currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead');
+   
+   if (filterByAgent !== 'all' && !isSalesSearching) {
+     // existing filter logic
+   }
+   ```
 
-**2. Bumper Success Handler (`supabase/functions/process-quote-bumper-success/index.ts`)**
-- Remove the call to `handle-successful-payment` and the welcome email send.
-- Only update `live_quotes` to `status: 'paid'` with `payment_method: 'bumper'`.
-- Still redirect to the thank-you page with quote details (from `live_quotes` data, not from a newly created policy).
+2. **Add `currentAdminUser` to the dependency array** of `applyFiltersAndSort` useCallback (~line 790) to ensure it reacts to the user context.
 
-**3. Paid Orders Tab — Add "Complete Order" Action (`src/components/admin/PaidOrderEditDialog.tsx`)**
-- Add a new "Complete Order & Send Email" button that:
-  - Calls `confirm-external-payment` (which already handles customer creation, duplicate detection, policy creation, and welcome email)
-  - Passes all the edited details from the dialog form
-  - On success, updates the `live_quotes` record with the policy number
-  - Shows success confirmation
-- Add visual distinction: orders without a `customer_id` or `policy_id` show a prominent "Needs Processing" status badge instead of "Paid"
-
-**4. Paid Orders Tab — Status Indicators (`src/components/admin/PaidOrdersTab.tsx`)**
-- Update `getStatusBadge` to show amber "Needs Processing" for paid orders that have no `customer_id` or `policy_id`
-- Sort unprocessed orders to the top
-
-### Technical Details
-
-- The `confirm-external-payment` edge function already has full duplicate detection logic (matches by email + reg plate), creates or updates customers, creates policies, and optionally sends welcome emails. This is the ideal function for the sales agent to trigger manually.
-- The thank-you page continues to work because it reads from URL params (populated from `live_quotes` data), not from the customer/policy tables.
-- No database migration needed — `live_quotes` already has the `status`, `paid_at`, `payment_method`, and `policy_number` columns.
-
-### Files to Edit
-1. `supabase/functions/stripe-webhook/index.ts` — Skip `handle-successful-payment` for live_quote payments
-2. `supabase/functions/process-quote-bumper-success/index.ts` — Remove warranty creation, keep redirect
-3. `src/components/admin/PaidOrderEditDialog.tsx` — Add "Complete Order & Send Email" button
-4. `src/components/admin/PaidOrdersTab.tsx` — Add "Needs Processing" status, sort unprocessed first
+This is a minimal, targeted change — no new components, no database changes. Sales agents see only their customers by default, but can search and find any customer when they need to.
 
