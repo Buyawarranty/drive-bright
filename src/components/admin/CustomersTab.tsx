@@ -605,44 +605,53 @@ export const CustomersTab = () => {
   const applyFiltersAndSort = useCallback(() => {
     let filtered = [...customers];
 
-    // Apply comprehensive search filter across all customer fields using debounced search term
+    // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
-      filtered = filtered.filter(customer =>
-        customer.name?.toLowerCase().includes(searchLower) ||
-        customer.email?.toLowerCase().includes(searchLower) ||
-        customer.first_name?.toLowerCase().includes(searchLower) ||
-        customer.last_name?.toLowerCase().includes(searchLower) ||
-        customer.phone?.toLowerCase().includes(searchLower) ||
-        customer.registration_plate?.toLowerCase().includes(searchLower) ||
-        customer.vehicle_make?.toLowerCase().includes(searchLower) ||
-        customer.vehicle_model?.toLowerCase().includes(searchLower) ||
-        customer.vehicle_year?.toLowerCase().includes(searchLower) ||
-        customer.vehicle_fuel_type?.toLowerCase().includes(searchLower) ||
-        customer.vehicle_transmission?.toLowerCase().includes(searchLower) ||
-        customer.mileage?.toLowerCase().includes(searchLower) ||
-        customer.flat_number?.toLowerCase().includes(searchLower) ||
-        customer.building_name?.toLowerCase().includes(searchLower) ||
-        customer.building_number?.toLowerCase().includes(searchLower) ||
-        customer.street?.toLowerCase().includes(searchLower) ||
-        customer.town?.toLowerCase().includes(searchLower) ||
-        customer.county?.toLowerCase().includes(searchLower) ||
-        customer.postcode?.toLowerCase().includes(searchLower) ||
-        customer.country?.toLowerCase().includes(searchLower) ||
-        customer.warranty_reference_number?.toLowerCase().includes(searchLower) ||
-        customer.warranty_number?.toLowerCase().includes(searchLower) ||
-        customer.plan_type?.toLowerCase().includes(searchLower) ||
-        customer.payment_type?.toLowerCase().includes(searchLower) ||
-        customer.discount_code?.toLowerCase().includes(searchLower) ||
-        customer.stripe_session_id?.toLowerCase().includes(searchLower) ||
-        customer.bumper_order_id?.toLowerCase().includes(searchLower) ||
-        customer.stripe_customer_id?.toLowerCase().includes(searchLower) ||
-        customer.status?.toLowerCase().includes(searchLower) ||
-        customer.customer_policies?.some(policy => 
-          policy.policy_number?.toLowerCase().includes(searchLower) ||
-          policy.warranty_number?.toLowerCase().includes(searchLower)
-        )
-      );
+      const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+
+      filtered = filtered.filter(customer => {
+        // Core fields available to all roles
+        const coreMatch =
+          customer.name?.toLowerCase().includes(searchLower) ||
+          customer.email?.toLowerCase().includes(searchLower) ||
+          customer.first_name?.toLowerCase().includes(searchLower) ||
+          customer.last_name?.toLowerCase().includes(searchLower) ||
+          customer.phone?.toLowerCase().includes(searchLower) ||
+          customer.registration_plate?.toLowerCase().includes(searchLower);
+
+        if (isSalesRole) return coreMatch;
+
+        // Extended fields for admin/super_admin and other roles
+        return coreMatch ||
+          customer.vehicle_make?.toLowerCase().includes(searchLower) ||
+          customer.vehicle_model?.toLowerCase().includes(searchLower) ||
+          customer.vehicle_year?.toLowerCase().includes(searchLower) ||
+          customer.vehicle_fuel_type?.toLowerCase().includes(searchLower) ||
+          customer.vehicle_transmission?.toLowerCase().includes(searchLower) ||
+          customer.mileage?.toLowerCase().includes(searchLower) ||
+          customer.flat_number?.toLowerCase().includes(searchLower) ||
+          customer.building_name?.toLowerCase().includes(searchLower) ||
+          customer.building_number?.toLowerCase().includes(searchLower) ||
+          customer.street?.toLowerCase().includes(searchLower) ||
+          customer.town?.toLowerCase().includes(searchLower) ||
+          customer.county?.toLowerCase().includes(searchLower) ||
+          customer.postcode?.toLowerCase().includes(searchLower) ||
+          customer.country?.toLowerCase().includes(searchLower) ||
+          customer.warranty_reference_number?.toLowerCase().includes(searchLower) ||
+          customer.warranty_number?.toLowerCase().includes(searchLower) ||
+          customer.plan_type?.toLowerCase().includes(searchLower) ||
+          customer.payment_type?.toLowerCase().includes(searchLower) ||
+          customer.discount_code?.toLowerCase().includes(searchLower) ||
+          customer.stripe_session_id?.toLowerCase().includes(searchLower) ||
+          customer.bumper_order_id?.toLowerCase().includes(searchLower) ||
+          customer.stripe_customer_id?.toLowerCase().includes(searchLower) ||
+          customer.status?.toLowerCase().includes(searchLower) ||
+          customer.customer_policies?.some(policy => 
+            policy.policy_number?.toLowerCase().includes(searchLower) ||
+            policy.warranty_number?.toLowerCase().includes(searchLower)
+          );
+      });
     }
 
     // Apply plan filter
