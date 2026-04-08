@@ -725,8 +725,11 @@ export const CustomersTab = () => {
       });
     }
 
-    // Apply agent filter
-    if (filterByAgent !== 'all') {
+    // Apply agent filter — skip when sales/sales_lead is actively searching
+    const isSalesSearching = debouncedSearchTerm && 
+      (currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead');
+
+    if (filterByAgent !== 'all' && !isSalesSearching) {
       if (filterByAgent === 'unassigned') {
         filtered = filtered.filter(customer => !customer.assigned_to);
       } else {
@@ -787,7 +790,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds, currentAdminUser]);
 
   const getCurrentUser = async () => {
     try {
