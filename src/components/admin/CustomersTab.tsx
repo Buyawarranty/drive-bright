@@ -4760,14 +4760,9 @@ Please log in and change your password after first login.`;
                      <Badge variant="secondary">{getWarrantyType(customer.plan_type)}</Badge>
                    </TableCell>
                     <TableCell className="text-center">
-                       <Badge variant="outline" className="font-mono">
-                         {(() => {
-                           const baseMonths = getWarrantyDurationInMonths(customer.payment_type || '');
-                           const bonusMonths = customer.customer_policies?.[0]?.seasonal_bonus_months || 0;
-                           const totalMonths = baseMonths + bonusMonths;
-                           return `${totalMonths} months`;
-                         })()}
-                       </Badge>
+                      <Badge variant="outline" className="font-mono">
+                        {getWarrantyDurationInMonths(customer.payment_type || '')} months
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       {(() => {
@@ -4820,24 +4815,20 @@ Please log in and change your password after first login.`;
                         consequential={customer.consequential}
                       />
                     </TableCell>
-                     <TableCell className="text-center">
-                       {(() => {
-                         const policyEndDate = customer.customer_policies?.[0]?.policy_end_date;
-                         if (policyEndDate) {
-                           const endDate = new Date(policyEndDate);
-                           const bonusMonths = customer.customer_policies?.[0]?.seasonal_bonus_months || 0;
-                           if (bonusMonths > 0) {
-                             endDate.setMonth(endDate.getMonth() + bonusMonths);
-                           }
-                           return <div className="text-sm">{format(endDate, 'dd/MM/yyyy')}</div>;
-                         }
-                         // Fallback: calculate from start date if no policy end date
-                         const startDate = customer.customer_policies?.[0]?.policy_start_date || customer.signup_date;
-                         if (startDate) {
-                           return <div className="text-sm">{format(calculateExpiryDate(startDate, customer.payment_type || ''), 'dd/MM/yyyy')}</div>;
-                         }
-                         return <span className="text-gray-400">N/A</span>;
-                       })()}
+                    <TableCell className="text-center">
+                      {customer.customer_policies?.[0]?.policy_start_date || customer.signup_date ? (
+                        <div className="text-sm">
+                          {format(
+                            calculateExpiryDate(
+                              customer.customer_policies?.[0]?.policy_start_date || customer.signup_date,
+                              customer.payment_type || ''
+                           ), 
+                           'dd/MM/yyyy'
+                         )}
+                       </div>
+                     ) : (
+                       <span className="text-gray-400">N/A</span>
+                     )}
                    </TableCell>
                      <TableCell>
                        <div className="flex flex-col gap-1">

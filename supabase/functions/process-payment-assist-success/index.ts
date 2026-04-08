@@ -252,8 +252,8 @@ serve(async (req) => {
       if (resendApiKey) {
         const resend = new Resend(resendApiKey);
         const customerName = customer?.name || `${customerData.first_name || ''} ${customerData.last_name || ''}`.trim() || 'Unknown';
-        const userEmail = customer?.email || customerData.email;
-        const regPlate = customer?.registration_plate || vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg || 'Unknown';
+        const userEmail = customerData.email;
+        const regPlate = vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg || 'Unknown';
         const planName = transaction.plan_id || 'Unknown';
         const saleValue = transaction.final_amount ? `£${Number(transaction.final_amount).toFixed(2)}` : 'N/A';
         const paymentMethod = 'Payment Assist';
@@ -281,7 +281,7 @@ serve(async (req) => {
             <table style="width: 100%; border-collapse: collapse;">
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customer?.phone || customerData.phone || customerData.mobile || 'N/A'}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData.phone || customerData.mobile || 'N/A'}</td></tr>
             </table>
             <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
@@ -362,7 +362,7 @@ serve(async (req) => {
               <table style="width: 100%; border-collapse: collapse;">
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
-                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customer?.phone || customerData.phone || customerData.mobile || 'N/A'}</td></tr>
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData.phone || customerData.mobile || 'N/A'}</td></tr>
               </table>
               <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
                 <p style="margin: 0; color: #166534;"><strong>✓ Lead converted to sale by ${agentName}</strong></p>

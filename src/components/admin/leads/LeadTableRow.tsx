@@ -59,7 +59,6 @@ interface LeadTableRowProps {
   onRequestAccess?: (reason: string) => void;
   isLeadGenView?: boolean;
   userRole?: string | null;
-  isExistingCustomer?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -68,8 +67,6 @@ const statusColors: Record<LeadStatus, string> = {
   follow_up: 'bg-purple-100 text-purple-800',
   quote_sent: 'bg-indigo-100 text-indigo-800',
   negotiating: 'bg-orange-100 text-orange-800',
-  upsell: 'bg-teal-100 text-teal-800',
-  upgraded: 'bg-cyan-100 text-cyan-800',
   converted: 'bg-green-100 text-green-800',
   lost: 'bg-gray-100 text-gray-800',
   fake_lead: 'bg-red-100 text-red-800',
@@ -126,13 +123,8 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   
   // Closed/resolved leads don't need action
   if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'fake_lead') {
-    const labelMap: Record<string, string> = { converted: 'Sold ✅', lost: 'Lost', fake_lead: 'Fake / 404' };
-    return { label: labelMap[lead.status] || lead.status, color: lead.status === 'converted' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600', priority: 5 };
-  }
-  
-  // Upsell/Upgraded
-  if (lead.status === 'upsell' || lead.status === 'upgraded') {
-    return { label: lead.status === 'upsell' ? 'Upsell' : 'Upgraded ⬆️', color: lead.status === 'upsell' ? 'bg-teal-200 text-teal-800' : 'bg-cyan-200 text-cyan-800', priority: 4 };
+    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', fake_lead: 'Fake 404' };
+    return { label: labelMap[lead.status] || lead.status, color: 'bg-gray-100 text-gray-600', priority: 5 };
   }
   
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
@@ -292,7 +284,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onRequestAccess,
   isLeadGenView = false,
   userRole,
-  isExistingCustomer = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -320,7 +311,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   // - Google Ads paid leads: ALWAYS locked to Website, only admin/super_admin can reassign
   // - Facebook/Organic paid leads outside work hours (6pm-9am): locked to Website, no agent can claim
   // - Facebook/Organic paid leads during work hours (9am-6pm): default Website but agents can claim
-  const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
+  const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
   const isGoogleAdSale = (lead.is_paid || lead.status === 'converted') && lead.lead_source === 'google_ad';
   const isFacebookSale = lead.is_paid && lead.lead_source === 'social_ad';
   const isOrganicSale = lead.is_paid && (!lead.lead_source || lead.lead_source === 'website');
@@ -544,11 +535,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="quote_sent">Quote Sent</SelectItem>
             <SelectItem value="urgent_callback">Urgent Call-back</SelectItem>
             <SelectItem value="negotiating">Negotiating</SelectItem>
-            <SelectItem value="upsell">Upsell</SelectItem>
-            <SelectItem value="upgraded">⬆️ Upgraded</SelectItem>
-            <SelectItem value="converted">Sold</SelectItem>
+            <SelectItem value="converted">Converted</SelectItem>
             <SelectItem value="lost">Lost</SelectItem>
-            <SelectItem value="fake_lead">Fake / 404</SelectItem>
+            <SelectItem value="fake_lead">Fake 404</SelectItem>
           </SelectContent>
         </Select>
         )}
@@ -703,18 +692,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </Tooltip>
           )}
           {isOverdue && !suspiciousFlags.length && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
-          {lead.is_recreated && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 bg-red-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
-                  <AlertTriangle className="h-3 w-3" />RECREATED
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs max-w-[200px]">
-                ⚠️ This lead was recreated from a returning customer — check notes before calling
-              </TooltipContent>
-            </Tooltip>
-          )}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
@@ -732,55 +709,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <Flame className="h-3 w-3" />{lead.application_count > 9 ? '9+' : `${lead.application_count}x`}
             </Badge>
           )}
-          {isExistingCustomer && !isFakeLead && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 bg-green-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help">
-                  <CheckCircle className="h-3 w-3" />
-                  CUSTOMER
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">
-                ✅ This person already has an active warranty with us
-              </TooltipContent>
-            </Tooltip>
-          )}
-          {lead.status === 'converted' && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 bg-green-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0 font-bold">
-                  <Award className="h-3 w-3" />SOLD
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">
-                ✅ This lead has been converted to a sale{lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? ' by an agent' : ' (Website)'}
-              </TooltipContent>
-            </Tooltip>
-          )}
-          {(lead.status === 'upsell' || lead.status === 'upgraded') && (() => {
-            const originalAgent = lead.original_assigned_to ? salesUsers.find(u => u.id === lead.original_assigned_to) : null;
-            const upsellAgent = lead.upsold_by ? salesUsers.find(u => u.id === lead.upsold_by) : null;
-            const origSourceLabel = lead.original_source === 'google_ad' ? 'Google Ad' : lead.original_source === 'website' ? 'Website' : lead.original_source || 'Unknown';
-            const origAgentName = originalAgent ? `${originalAgent.first_name || ''} ${originalAgent.last_name || ''}`.trim() || originalAgent.email : (lead.original_assigned_to === WEBSITE_SALES_ACCOUNT_ID ? 'Website' : null);
-            const upsellAgentName = upsellAgent ? `${upsellAgent.first_name || ''} ${upsellAgent.last_name || ''}`.trim() || upsellAgent.email : null;
-            return (
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <Badge className={`text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 font-bold ${lead.status === 'upsell' ? 'bg-teal-500 text-white' : 'bg-cyan-500 text-white'}`}>
-                    ⬆️ {lead.status === 'upsell' ? 'UPSELL' : 'UPGRADED'}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs max-w-[250px]">
-                  <div className="space-y-1">
-                    <div className="font-semibold">{lead.status === 'upsell' ? 'Upsell' : 'Upgrade'} Attribution</div>
-                    <div>📌 Original sale: <span className="font-medium">{origSourceLabel}</span>{origAgentName && <> — {origAgentName}</>}</div>
-                    {upsellAgentName && <div>⬆️ {lead.status === 'upsell' ? 'Upsold' : 'Upgraded'} by: <span className="font-medium">{upsellAgentName}</span></div>}
-                    {lead.upsold_at && <div>📅 {format(new Date(lead.upsold_at), 'dd/MM/yyyy HH:mm')}</div>}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })()}
           {displayName ? (
             <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>{displayName}</span>
           ) : (

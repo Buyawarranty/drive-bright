@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, MessageCircle, Star, X, HelpCircle, PhoneCall } from 'lucide-react';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import { trackButtonClick } from '@/utils/analytics';
 
 const HelpFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -41,10 +40,7 @@ const HelpFAB: React.FC = () => {
             <a 
               href="tel:03302295040"
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-              onClick={() => {
-                trackButtonClick('help_fab_call_phone', { location: 'mobile_fab', phone: '03302295040' });
-                setIsExpanded(false);
-              }}
+              onClick={() => setIsExpanded(false)}
             >
               <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center">
                 <Phone className="w-5 h-5 text-brand-orange" />
@@ -57,7 +53,6 @@ const HelpFAB: React.FC = () => {
             
             <button 
               onClick={() => {
-                trackButtonClick('help_fab_request_callback', { location: 'mobile_fab' });
                 setIsExpanded(false);
                 setShowCallbackModal(true);
               }}

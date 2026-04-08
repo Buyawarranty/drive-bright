@@ -8,8 +8,6 @@ import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
 
 const LEAD_TAG_BATCH_SIZE = 300;
-const LEAD_LOAD_TIMEOUT_MS = 12000;
-const LEAD_TAG_FETCH_TIMEOUT_MS = 8000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 
 type PendingStatusUpdate = {
@@ -66,7 +64,7 @@ const isRetryableMutationError = (error: unknown) => {
   );
 };
 
-export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'upsell' | 'upgraded' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
+export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'phone' | 'email' | 'partner' | 'other';
 
@@ -143,12 +141,6 @@ export interface Lead {
   // Resubmission tracking - when returning customer submits again
   resubmission_count: number;
   last_resubmitted_at: string | null;
-  is_recreated: boolean;
-  // Upsell attribution
-  original_source: string | null;
-  original_assigned_to: string | null;
-  upsold_by: string | null;
-  upsold_at: string | null;
   // Joined data
   assigned_user?: {
     id: string;
@@ -227,7 +219,6 @@ export const useLeads = (options?: UseLeadsOptions) => {
   const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string; role: string } | null>(null);
   const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string; role: string } | null> | null>(null);
   const pendingStatusFlushRef = useRef<Promise<void> | null>(null);
-  const tagFetchTokenRef = useRef(0);
 
   const getCachedAdminUser = useCallback(async () => {
     if (cachedAdminUserRef.current) return cachedAdminUserRef.current;
@@ -325,82 +316,6 @@ export const useLeads = (options?: UseLeadsOptions) => {
     return pendingStatusFlushRef.current;
   }, [clearPendingStatusUpdate]);
 
-  const applyPendingStatusesToLeads = useCallback((inputLeads: Lead[]): Lead[] => {
-    const pendingUpdates = readPendingStatusUpdates();
-    if (Object.keys(pendingUpdates).length === 0) return inputLeads;
-
-    return inputLeads.map((lead) => {
-      const pendingUpdate = pendingUpdates[lead.id];
-      if (!pendingUpdate) return lead;
-
-      const pendingTimestamp = pendingUpdate.updatedAt || lead.updated_at;
-
-      return {
-        ...lead,
-        status: pendingUpdate.status,
-        updated_at: pendingTimestamp,
-        last_activity_date: pendingTimestamp,
-        converted_at: pendingUpdate.status === 'converted' ? lead.converted_at || pendingTimestamp : lead.converted_at,
-        lost_at: pendingUpdate.status === 'lost' ? lead.lost_at || pendingTimestamp : lead.lost_at,
-      };
-    });
-  }, []);
-
-  const fetchLeadTagsInBackground = useCallback(async (leadIds: string[], fetchToken: number) => {
-    if (leadIds.length === 0) return;
-
-    const currentTagFetchToken = ++tagFetchTokenRef.current;
-    const tagsByLeadId: Record<string, LeadTag[]> = {};
-
-    try {
-      for (let index = 0; index < leadIds.length; index += LEAD_TAG_BATCH_SIZE) {
-        const batch = leadIds.slice(index, index + LEAD_TAG_BATCH_SIZE);
-
-        const { data, error } = await withTimeout(
-          (async () => await supabase
-            .from('lead_tag_assignments')
-            .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-            .in('lead_id', batch))(),
-          LEAD_TAG_FETCH_TIMEOUT_MS,
-          'Lead tag fetch timed out'
-        );
-
-        if (error) throw error;
-
-        (data || []).forEach((assignment: any) => {
-          if (!tagsByLeadId[assignment.lead_id]) {
-            tagsByLeadId[assignment.lead_id] = [];
-          }
-
-          const relatedTags = Array.isArray(assignment.lead_tags)
-            ? assignment.lead_tags
-            : assignment.lead_tags
-              ? [assignment.lead_tags]
-              : [];
-
-          relatedTags.forEach((tag: LeadTag) => {
-            if (!tagsByLeadId[assignment.lead_id].some(existingTag => existingTag.id === tag.id)) {
-              tagsByLeadId[assignment.lead_id].push(tag);
-            }
-          });
-        });
-      }
-
-      if (fetchToken !== latestFetchTokenRef.current || currentTagFetchToken !== tagFetchTokenRef.current) {
-        return;
-      }
-
-      const targetLeadIds = new Set(leadIds);
-      setLeads(prev => prev.map(lead => (
-        targetLeadIds.has(lead.id)
-          ? { ...lead, tags: tagsByLeadId[lead.id] ?? lead.tags ?? [] }
-          : lead
-      )));
-    } catch (error) {
-      console.warn('[Leads] Background tag fetch failed, keeping cached tags:', error);
-    }
-  }, []);
-
   const fetchLeads = useCallback(async () => {
     if (authLoadingRef.current) return;
 
@@ -444,36 +359,32 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
       // by LostLeadsSection / recover_orphaned_leads RPC.
-      const allSalesLeadsResult = await withTimeout(
-        fetchAllRows(() => {
-          let query = supabase
-            .from('sales_leads')
-            .select(`
-              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
-              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
-              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
-              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-              call_count, is_callback,
-              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
-              abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
-            `)
-            .order('created_at', { ascending: false });
+      const allSalesLeadsResult = await fetchAllRows(() => {
+        let query = supabase
+          .from('sales_leads')
+          .select(`
+            id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+            plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+            vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+            last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+            created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+            call_count, is_callback,
+            assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
+            abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
+          `)
+          .order('created_at', { ascending: false });
 
-          // Apply server-side date filter to reduce dataset size
-          const dateFilter = serverDateFilterRef.current;
-          if (dateFilter?.from) {
-            query = query.gte('created_at', dateFilter.from.toISOString());
-          }
-          if (dateFilter?.to) {
-            query = query.lte('created_at', dateFilter.to.toISOString());
-          }
+        // Apply server-side date filter to reduce dataset size
+        const dateFilter = serverDateFilterRef.current;
+        if (dateFilter?.from) {
+          query = query.gte('created_at', dateFilter.from.toISOString());
+        }
+        if (dateFilter?.to) {
+          query = query.lte('created_at', dateFilter.to.toISOString());
+        }
 
-          return query;
-        }),
-        LEAD_LOAD_TIMEOUT_MS,
-        'Lead load timed out'
-      );
+        return query;
+      });
 
       const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;
@@ -498,7 +409,6 @@ export const useLeads = (options?: UseLeadsOptions) => {
           cart_metadata: lead.abandoned_cart?.cart_metadata || null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
-          is_recreated: lead.is_recreated || false,
         };
       });
 
@@ -541,16 +451,50 @@ export const useLeads = (options?: UseLeadsOptions) => {
       const leadsWithCounts = deduplicatedLeads.map((lead: any) => ({
         ...lead,
         application_count: Math.min(emailCounts[lead.email?.toLowerCase()] || 1, 10),
-      })) as Lead[];
+      }));
 
-      const salesLeadIds = leadsWithCounts.map((lead) => lead.id);
-      const cachedTagsByLeadId = new Map(leadsRef.current.map(lead => [lead.id, lead.tags || []]));
-      const leadsWithCachedTags = applyPendingStatusesToLeads(
-        leadsWithCounts.map((lead) => ({
-          ...lead,
-          tags: cachedTagsByLeadId.get(lead.id) || [],
-        }))
-      );
+      const salesLeadIds = leadsWithCounts.map((lead: any) => lead.id);
+
+      let tagsByLeadId: Record<string, any[]> = {};
+
+      try {
+        if (salesLeadIds.length > 0) {
+          const leadIdBatches: string[][] = [];
+
+          for (let i = 0; i < salesLeadIds.length; i += LEAD_TAG_BATCH_SIZE) {
+            leadIdBatches.push(salesLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
+          }
+
+          const tagBatchResults = await Promise.all(
+            leadIdBatches.map(async (batch) =>
+              await supabase
+                .from('lead_tag_assignments')
+                .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+                .in('lead_id', batch)
+            )
+          );
+
+          tagBatchResults.forEach(({ data, error }) => {
+            if (error) throw error;
+
+            (data || []).forEach((assignment: any) => {
+              if (!tagsByLeadId[assignment.lead_id]) {
+                tagsByLeadId[assignment.lead_id] = [];
+              }
+              if (assignment.lead_tags) {
+                tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
+              }
+            });
+          });
+        }
+      } catch (tagError) {
+        console.warn('[Leads] Tag fetch failed, continuing without tags:', tagError);
+      }
+
+      const leadsWithTags = leadsWithCounts.map((lead: any) => ({
+        ...lead,
+        tags: tagsByLeadId[lead.id] || [],
+      }));
 
       if (fetchToken !== latestFetchTokenRef.current) {
         return;
@@ -565,7 +509,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
             }
           });
 
-          const merged = leadsWithCachedTags.map(lead =>
+          const merged = (leadsWithTags as Lead[]).map(lead =>
             protectedLeads.has(lead.id) ? protectedLeads.get(lead.id)! : lead
           );
 
@@ -578,10 +522,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
           return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         });
       } else {
-        setLeads(leadsWithCachedTags);
+        setLeads(leadsWithTags as Lead[]);
       }
-
-      void fetchLeadTagsInBackground(salesLeadIds, fetchToken);
     } catch (error) {
       if (fetchToken !== latestFetchTokenRef.current) {
         // Even on stale token, ensure loading is cleared to prevent infinite spinner
@@ -614,7 +556,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         });
       }
     }
-  }, [applyPendingStatusesToLeads, fetchLeadTagsInBackground]);
+  }, []);
 
   const fetchTags = useCallback(async () => {
     const { data, error } = await supabase
@@ -815,8 +757,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         throw new Error(statusResult.error || 'Status update failed');
       }
 
-      // If marked as lost/fake on abandoned cart, remove from local state (converted stays visible with SOLD tag)
-      if (isAbandonedCart && (status === 'lost' || status === 'fake_lead')) {
+      // If marked as converted/lost/fake on abandoned cart, remove from local state
+      if (isAbandonedCart && (status === 'lost' || status === 'fake_lead' || status === 'converted')) {
         setLeads(prev => prev.filter(lead => lead.id !== leadId));
       }
 

@@ -331,17 +331,21 @@ serve(async (req) => {
 
 function calculatePolicyEndDate(paymentType: string): string {
   const now = new Date();
-  const months = getWarrantyDurationInMonths(paymentType);
-  now.setMonth(now.getMonth() + months);
+  switch (paymentType) {
+    case 'monthly':
+      now.setMonth(now.getMonth() + 1);
+      break;
+    case 'yearly':
+      now.setFullYear(now.getFullYear() + 1);
+      break;
+    case 'two_yearly':
+      now.setFullYear(now.getFullYear() + 2);
+      break;
+    case 'three_yearly':
+      now.setFullYear(now.getFullYear() + 3);
+      break;
+    default:
+      now.setMonth(now.getMonth() + 1);
+  }
   return now.toISOString();
-}
-
-function getWarrantyDurationInMonths(paymentType: string): number {
-  if (!paymentType) return 12;
-  const n = paymentType.toLowerCase().replace(/[_\-\s]/g, '').trim();
-  if (n.includes('24') || n === '2year' || n === '2years' || n === 'twoyear' || n === 'twoyearly') return 24;
-  if (n.includes('36') || n === '3year' || n === '3years' || n === 'threeyear' || n === 'threeyearly') return 36;
-  if (n.includes('48') || n === '4year' || n === '4years' || n === 'fouryear') return 48;
-  if (n.includes('60') || n === '5year' || n === '5years' || n === 'fiveyear') return 60;
-  return 12;
 }

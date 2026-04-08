@@ -4488,7 +4488,6 @@ export type Database = {
           id: string
           is_callback: boolean | null
           is_paid: boolean | null
-          is_recreated: boolean | null
           last_activity_date: string | null
           last_contacted_at: string | null
           last_name: string | null
@@ -4500,8 +4499,6 @@ export type Database = {
           next_action_date: string | null
           next_action_type: string | null
           notes: string | null
-          original_assigned_to: string | null
-          original_source: string | null
           payment_amount: number | null
           payment_date: string | null
           payment_method: string | null
@@ -4514,8 +4511,6 @@ export type Database = {
           status: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at: string | null
           updated_at: string
-          upsold_at: string | null
-          upsold_by: string | null
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_reg: string | null
@@ -4536,7 +4531,6 @@ export type Database = {
           id?: string
           is_callback?: boolean | null
           is_paid?: boolean | null
-          is_recreated?: boolean | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
@@ -4548,8 +4542,6 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
-          original_assigned_to?: string | null
-          original_source?: string | null
           payment_amount?: number | null
           payment_date?: string | null
           payment_method?: string | null
@@ -4562,8 +4554,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
-          upsold_at?: string | null
-          upsold_by?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_reg?: string | null
@@ -4584,7 +4574,6 @@ export type Database = {
           id?: string
           is_callback?: boolean | null
           is_paid?: boolean | null
-          is_recreated?: boolean | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
@@ -4596,8 +4585,6 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
-          original_assigned_to?: string | null
-          original_source?: string | null
           payment_amount?: number | null
           payment_date?: string | null
           payment_method?: string | null
@@ -4610,8 +4597,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
-          upsold_at?: string | null
-          upsold_by?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_reg?: string | null
@@ -6273,7 +6258,6 @@ export type Database = {
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
-      normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
       process_scheduled_sms: { Args: never; Returns: number }
       recover_orphaned_leads: { Args: never; Returns: Json }
       recover_single_lead: {
@@ -6330,8 +6314,6 @@ export type Database = {
         | "follow_up"
         | "quote_sent"
         | "negotiating"
-        | "upsell"
-        | "upgraded"
         | "converted"
         | "lost"
         | "fake_lead"
@@ -6513,8 +6495,6 @@ export const Constants = {
         "follow_up",
         "quote_sent",
         "negotiating",
-        "upsell",
-        "upgraded",
         "converted",
         "lost",
         "fake_lead",

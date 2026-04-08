@@ -27,13 +27,7 @@ serve(async (req: Request) => {
       customerName, customerEmail, customerPhone,
       regPlate, planName, saleValue, paymentMethod,
       warrantyReference, vehicleMake, vehicleModel,
-      agentId, agentName: providedAgentName, saleSource,
-      // New warranty detail fields
-      claimLimit, voluntaryExcess, labourRate, paymentType,
-      wearTearCover, vehicleRecovery, tyreCover, europeCover,
-      vehicleRental, motFeeCover, transferCover, boostAddon,
-      consequentialCover, lostKeyCover, motRepairCover,
-      seasonalBonusMonths, breakdownRecovery
+      agentId, agentName: providedAgentName, saleSource
     } = await req.json();
 
     if (!customerEmail) throw new Error("customerEmail is required");
@@ -47,6 +41,7 @@ serve(async (req: Request) => {
     const warranty = warrantyReference || 'Pending';
 
     // Determine sale type (G/F/Web/S)
+    // Check if there's an agent assigned via sales_leads
     let resolvedAgentName = providedAgentName || null;
     let resolvedAgentId = agentId || null;
     let saleType = saleSource || 'Web';
@@ -85,22 +80,6 @@ serve(async (req: Request) => {
       else saleType = 'Web';
     }
 
-    // Build add-ons list
-    const addons: string[] = [];
-    if (wearTearCover) addons.push('Wear & Tear');
-    if (vehicleRecovery || breakdownRecovery) addons.push('Breakdown Recovery');
-    if (tyreCover) addons.push('Tyre Cover');
-    if (europeCover) addons.push('European Cover');
-    if (vehicleRental) addons.push('Vehicle Rental');
-    if (motFeeCover) addons.push('MOT Fee Cover');
-    if (motRepairCover) addons.push('MOT Repair Cover');
-    if (transferCover) addons.push('Transfer Cover');
-    if (boostAddon) addons.push('Boost Add-on');
-    if (consequentialCover) addons.push('Consequential Loss');
-    if (lostKeyCover) addons.push('Lost Key Cover');
-
-    const addonsDisplay = addons.length > 0 ? addons.join(', ') : 'None';
-
     // Build standard sale email
     const salesEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -123,33 +102,19 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerEmail}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${phone}</td></tr>
         </table>
+        <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment:</strong></td><td style="padding: 8px;">${payment}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
+        </table>
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${reg}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleMake || 'Unknown'}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleModel || 'Unknown'}</td></tr>
         </table>
-        <h3 style="color: #333; margin-top: 20px;">Warranty Plan Details</h3>
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty Ref:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentType || payment}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimit ? `£${Number(claimLimit).toLocaleString()}` : 'N/A'}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${voluntaryExcess != null ? `£${Number(voluntaryExcess).toFixed(2)}` : 'N/A'}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRate ? `£${Number(labourRate).toFixed(2)}/hr` : 'Standard (£70/hr)'}</td></tr>
-          ${seasonalBonusMonths ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Bonus Months:</strong></td><td style="padding: 8px;">${seasonalBonusMonths} month(s)</td></tr>` : ''}
-        </table>
-        ${addons.length > 0 ? `
-        <h3 style="color: #333; margin-top: 20px;">Add-ons Included</h3>
-        <div style="padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
-          <div style="font-size: 14px; color: #166534;">${addons.map(a => `✅ ${a}`).join('<br/>')}</div>
-        </div>
-        ` : `
-        <div style="margin-top: 16px; padding: 12px 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <div style="font-size: 14px; color: #6b7280;">No add-ons selected</div>
-        </div>
-        `}
         <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
           <p style="margin: 0; color: #166534;"><strong>✓ ${isAgentSale ? `Lead converted to sale by ${resolvedAgentName}` : 'Sale completed'}</strong></p>
         </div>

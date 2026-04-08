@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'upgraded';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -99,9 +99,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
   
-  // Website Sales Day toggle - super_admin only
-  const { value: websiteSalesDay, updateConfig: updateWebsiteSalesDay } = useAdminConfig('website_sales_day');
-  
   
   // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
   // Sales Lead, Admin, Super Admin should NOT have delete by default
@@ -188,15 +185,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   useEffect(() => {
     setFilter('live');
     setActiveFilter('live');
-
-    const migrationTimer = window.setTimeout(() => {
-      // Run this after the first paint so it doesn't compete with the initial lead load
-      void migrateFromAbandonedCarts(true);
-    }, 1500);
-
-    return () => {
-      window.clearTimeout(migrationTimer);
-    };
+    // Auto-import orphaned abandoned carts so they appear as regular leads
+    migrateFromAbandonedCarts(true).catch(() => {});
   }, [setFilter, migrateFromAbandonedCarts]);
 
   // Handle filter change
@@ -292,39 +282,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Apply search filter
     if (debouncedSearchTerm) {
       const term = debouncedSearchTerm.toLowerCase();
-      result = result.filter(lead => {
-        const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').toLowerCase();
-        return (
-          lead.email.toLowerCase().includes(term) ||
-          fullName.includes(term) ||
-          (lead.first_name?.toLowerCase().includes(term)) ||
-          (lead.last_name?.toLowerCase().includes(term)) ||
-          (lead.phone?.toLowerCase().includes(term)) ||
-          (lead.vehicle_reg?.toLowerCase().includes(term)) ||
-          (lead.plan_interest?.toLowerCase().includes(term))
-        );
-      });
-
-      // When searching, also search across ALL statuses (not just current filter)
-      // so leads are always findable regardless of active filter
-      if (result.length === 0) {
-        const allLeads = leads.filter(lead => (lead.status as string) !== 'archived');
-        const fullSearch = allLeads.filter(lead => {
-          const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').toLowerCase();
-          return (
-            lead.email.toLowerCase().includes(term) ||
-            fullName.includes(term) ||
-            (lead.first_name?.toLowerCase().includes(term)) ||
-            (lead.last_name?.toLowerCase().includes(term)) ||
-            (lead.phone?.toLowerCase().includes(term)) ||
-            (lead.vehicle_reg?.toLowerCase().includes(term)) ||
-            (lead.plan_interest?.toLowerCase().includes(term))
-          );
-        });
-        if (fullSearch.length > 0) {
-          result = fullSearch;
-        }
-      }
+      result = result.filter(lead =>
+        lead.email.toLowerCase().includes(term) ||
+        (lead.first_name?.toLowerCase().includes(term)) ||
+        (lead.last_name?.toLowerCase().includes(term)) ||
+        (lead.phone?.toLowerCase().includes(term)) ||
+        (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+        (lead.plan_interest?.toLowerCase().includes(term))
+      );
     }
 
     result = [...result].sort((a, b) => {
@@ -356,21 +321,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter]);
 
   // Separate fresh leads from recovered (unworked) leads
-  // A lead is only "unworked" if it has NO signs of activity whatsoever:
-  // - no assignment, no step 2 completion, no status change, no calls, no notes
-  // Once any agent has touched it, it belongs in the main table.
   const isRecoveredLead = useCallback((lead: Lead) => {
-    if (!lead.abandoned_cart_id) return false;
-    if (lead.assigned_at) return false;
-    if (lead.step_two_completed_at) return false;
-    // Any status beyond 'new' means someone worked it
-    if (lead.status && lead.status !== 'new') return false;
-    // Any calls or notes mean it was worked
-    if (lead.call_count && lead.call_count > 0) return false;
-    if (lead.notes && lead.notes.trim() !== '') return false;
-    // Has an assigned agent means it was worked
-    if (lead.assigned_to) return false;
-    return true;
+    return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
   const freshLeads = useMemo(() => {
@@ -493,19 +445,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
     const isFullExportAllowed = userRole === 'admin' || userRole === 'super_admin';
+    const isSalesLeadExport = userRole === 'sales_lead';
     
-    // When leads are selected, export those specific leads.
-    // Otherwise, export ALL leads (not the filtered view) so admins get the full dataset
-    // and non-admins get up to 2 weeks of ALL leads regardless of current filter/view.
     let baseLeads = selectedLeads.size > 0 
-      ? leads.filter(lead => selectedLeads.has(lead.id))
-      : [...leads];
+      ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
+      : filteredLeads;
 
-    if (!isFullExportAllowed) {
-      // All non-admin/super_admin roles: max 2 weeks of data
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= twoWeeksAgo);
+    if (isSalesLeadExport) {
+      // Sales lead can only export up to 2 months of data
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= twoMonthsAgo);
+    } else if (!isFullExportAllowed) {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= sevenDaysAgo);
     }
 
     const leadsToExport = baseLeads;
@@ -533,7 +487,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } else {
       exportToExcel(exportData, { filename: 'leads', format: 'xlsx' });
     }
-  }, [selectedLeads, leads, exportToCSV, exportToExcel, userRole]);
+  }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel]);
 
   // Archive leads (soft-archive by setting status to 'archived')
   const handleArchiveSelected = useCallback(async () => {
@@ -553,7 +507,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     );
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     if (successCount > 0) {
-      toast.success(`Marked ${successCount} lead${successCount > 1 ? 's' : ''} as Fake / 404`);
+      toast.success(`Marked ${successCount} lead${successCount > 1 ? 's' : ''} as Fake 404`);
       setSelectedLeads(new Set());
     }
   }, [selectedLeads, updateLeadStatus]);
@@ -625,36 +579,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSelectedLeads(new Set());
     }
   }, [selectedLeads, autoAssignLead]);
-
-  // Bulk assign ALL today's leads to Website (for website sales day)
-  const handleBulkAssignWebsite = useCallback(async () => {
-    const WEBSITE_ID = 'e39499b8-f88c-4963-9f0d-63e1addb3025';
-    // Get all leads that are not already assigned to website
-    const todayLeads = freshLeads.filter(l => 
-      l.assigned_to !== WEBSITE_ID && l.status !== 'converted' && l.status !== 'fake_lead' && l.status !== 'lost'
-    );
-    
-    if (todayLeads.length === 0) {
-      toast.info('All leads are already assigned to Website');
-      return;
-    }
-    
-    const results = await Promise.allSettled(
-      todayLeads.map(l => assignLead(l.id, WEBSITE_ID))
-    );
-    
-    const successCount = results.filter(r => r.status === 'fulfilled').length;
-    if (successCount > 0) {
-      toast.success(`Assigned ${successCount} lead${successCount > 1 ? 's' : ''} to Website`);
-    }
-  }, [freshLeads, assignLead]);
-
-  const handleToggleWebsiteSalesDay = useCallback(async (value: boolean) => {
-    const success = await updateWebsiteSalesDay(value);
-    if (success) {
-      toast.success(value ? 'Website Sales Day enabled — all new leads will be treated as website sales' : 'Website Sales Day disabled — normal agent assignment resumed');
-    }
-  }, [updateWebsiteSalesDay]);
 
   // Memoize quote navigation handler
   const handleSendQuote = useCallback((lead: Lead) => {
@@ -925,10 +849,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
                     onBulkRestore={handleBulkRestore}
-                    isSuperAdmin={userRole === 'super_admin'}
-                    websiteSalesDay={websiteSalesDay}
-                    onToggleWebsiteSalesDay={userRole === 'super_admin' ? handleToggleWebsiteSalesDay : undefined}
-                    onBulkAssignWebsite={userRole === 'super_admin' ? handleBulkAssignWebsite : undefined}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
@@ -990,7 +910,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           </Card>
 
           {/* Unworked Leads Section — recovered leads separated from fresh */}
-          {recoveredLeads.length > 0 && isAdmin && (
+          {recoveredLeads.length > 0 && (
             <Card className="overflow-hidden border-2 border-border mt-4">
               <CardContent className="p-0">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border">

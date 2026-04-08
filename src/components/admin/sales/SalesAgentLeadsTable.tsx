@@ -136,7 +136,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
               <SelectItem value="contacted">Contacted</SelectItem>
               <SelectItem value="follow_up">Follow Up</SelectItem>
               <SelectItem value="quoted">Quoted</SelectItem>
-              <SelectItem value="converted">Sold</SelectItem>
+              <SelectItem value="converted">Converted</SelectItem>
               <SelectItem value="lost">Lost</SelectItem>
             </SelectContent>
           </Select>
@@ -181,20 +181,13 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <div>
-                          <p className="font-medium">
-                            {lead.first_name || 'Unknown'} {lead.last_name || ''}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {lead.plan_interest || 'No plan specified'}
-                          </p>
-                        </div>
-                        {lead.is_recreated && (
-                          <Badge className="text-[10px] px-1.5 py-0.5 bg-red-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
-                            <AlertTriangle className="h-3 w-3" />RECREATED
-                          </Badge>
-                        )}
+                      <div>
+                        <p className="font-medium">
+                          {lead.first_name || 'Unknown'} {lead.last_name || ''}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {lead.plan_interest || 'No plan specified'}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -254,7 +247,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                           <SelectItem value="contacted">Contacted</SelectItem>
                           <SelectItem value="follow_up">Follow Up</SelectItem>
                           <SelectItem value="quoted">Quoted</SelectItem>
-                          <SelectItem value="converted">Sold</SelectItem>
+                          <SelectItem value="converted">Converted</SelectItem>
                           <SelectItem value="lost">Lost</SelectItem>
                         </SelectContent>
                       </Select>

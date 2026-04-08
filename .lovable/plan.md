@@ -1,38 +1,64 @@
 
 
-# Add "RECREATED" Tag to Duplicated Leads
+## Plan: Stop Auto-Creating Warranty on Payment — Let Sales Complete Orders Manually
 
-## Problem
-When the dedup logic catches a returning customer and updates an existing lead in-place (instead of creating a duplicate), the agent currently sees a purple "Re-sub" badge but there's no explicit warning to **stop and check before calling**. If the dedup ever fails and a true duplicate slips through, there's no visual indicator at all.
+### Problem
+When a customer pays via a quote link (Stripe or Bumper), the system automatically:
+1. Creates a customer record (often a duplicate)
+2. Creates a warranty/policy
+3. Sends a welcome email with incorrect details
 
-## Solution
+The sales agent should instead review the paid order, correct any details, and manually trigger the customer record + email.
 
-### 1. Database: Add `is_recreated` flag
-- Add a `is_recreated BOOLEAN DEFAULT FALSE` column to `sales_leads`
-- In the `auto_create_lead_from_abandoned_cart()` trigger, wherever an existing lead is updated (every UPDATE path that increments `resubmission_count`), also set `is_recreated = TRUE`
-- In the `recover_orphaned_leads()` function, same treatment for its update paths
-- This flag stays `TRUE` permanently so agents always see the warning (unlike `resubmission_count` which just counts)
+### Current Flow
+```text
+Customer pays → stripe-webhook / process-quote-bumper-success
+  → handle-successful-payment (creates customer + policy + sends email)
+  → Paid order appears in "Paid Orders" tab (but damage already done)
+```
 
-### 2. Frontend: Show "RECREATED" badge in lead rows
+### New Flow
+```text
+Customer pays → stripe-webhook / process-quote-bumper-success
+  → Only update live_quotes status to "paid" (NO customer/policy creation)
+  → Redirect to thank-you page with quote details
+  → Order appears in "Paid Orders" tab with "⚠️ Needs Processing" badge
+  → Sales agent opens order → reviews/edits details → clicks "Complete Order"
+  → System creates customer (or links to existing) + policy + sends welcome email
+```
 
-**LeadTableRow.tsx** (admin New Leads table):
-- Add a prominent amber/red badge reading "RECREATED" next to existing badges (Re-sub, CUSTOMER, etc.)
-- Tooltip: "This lead was recreated from a returning customer — check notes before calling"
-- Positioned after the Re-sub badge in the badge cluster (lines ~697-720)
+### Changes Required
 
-**SalesAgentLeadsTable.tsx** (sales agent view):
-- Add the same "RECREATED" badge in the Customer column area so agents see it before calling
+**1. Stripe Webhook (`supabase/functions/stripe-webhook/index.ts`)**
+- For live_quote-sourced payments (`metadata.source === 'live_quote'`): instead of calling `handle-successful-payment`, just update the `live_quotes` record to `status: 'paid'` with the payment details (Stripe session ID, amount). Skip warranty creation and email entirely.
+- Non-quote payments (direct website checkout) remain unchanged.
 
-**useLeads.tsx**:
-- Add `is_recreated: boolean` to the Lead interface and map it in the query
+**2. Bumper Success Handler (`supabase/functions/process-quote-bumper-success/index.ts`)**
+- Remove the call to `handle-successful-payment` and the welcome email send.
+- Only update `live_quotes` to `status: 'paid'` with `payment_method: 'bumper'`.
+- Still redirect to the thank-you page with quote details (from `live_quotes` data, not from a newly created policy).
 
-### 3. Files Changed
-- 1 database migration (add column + update trigger functions)
-- `src/hooks/useLeads.tsx` — add field to Lead type and mapping
-- `src/components/admin/leads/LeadTableRow.tsx` — render RECREATED badge
-- `src/components/admin/sales/SalesAgentLeadsTable.tsx` — render RECREATED badge
-- `src/integrations/supabase/types.ts` — auto-updated by migration
+**3. Paid Orders Tab — Add "Complete Order" Action (`src/components/admin/PaidOrderEditDialog.tsx`)**
+- Add a new "Complete Order & Send Email" button that:
+  - Calls `confirm-external-payment` (which already handles customer creation, duplicate detection, policy creation, and welcome email)
+  - Passes all the edited details from the dialog form
+  - On success, updates the `live_quotes` record with the policy number
+  - Shows success confirmation
+- Add visual distinction: orders without a `customer_id` or `policy_id` show a prominent "Needs Processing" status badge instead of "Paid"
 
-### Technical Detail
-The `is_recreated` flag is set at the database level inside the trigger, so it works regardless of whether the lead comes from an abandoned cart, a price-match callback, or the recovery cron. The flag is write-once (set to TRUE, never reset) so it persists as a permanent audit trail.
+**4. Paid Orders Tab — Status Indicators (`src/components/admin/PaidOrdersTab.tsx`)**
+- Update `getStatusBadge` to show amber "Needs Processing" for paid orders that have no `customer_id` or `policy_id`
+- Sort unprocessed orders to the top
+
+### Technical Details
+
+- The `confirm-external-payment` edge function already has full duplicate detection logic (matches by email + reg plate), creates or updates customers, creates policies, and optionally sends welcome emails. This is the ideal function for the sales agent to trigger manually.
+- The thank-you page continues to work because it reads from URL params (populated from `live_quotes` data), not from the customer/policy tables.
+- No database migration needed — `live_quotes` already has the `status`, `paid_at`, `payment_method`, and `policy_number` columns.
+
+### Files to Edit
+1. `supabase/functions/stripe-webhook/index.ts` — Skip `handle-successful-payment` for live_quote payments
+2. `supabase/functions/process-quote-bumper-success/index.ts` — Remove warranty creation, keep redirect
+3. `src/components/admin/PaidOrderEditDialog.tsx` — Add "Complete Order & Send Email" button
+4. `src/components/admin/PaidOrdersTab.tsx` — Add "Needs Processing" status, sort unprocessed first
 

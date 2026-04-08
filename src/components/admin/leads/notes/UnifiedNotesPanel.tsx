@@ -120,49 +120,32 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     await commitNote(quickNoteRef.current, { silent: true });
   }, [commitNote]);
 
-  const persistPendingNoteLocally = useCallback(() => {
-    const currentDraft = quickNoteRef.current;
-    if (!currentDraft.trim()) return;
-
-    queuePendingNote(currentDraft);
-    persistDraft(currentDraft);
-  }, [persistDraft, queuePendingNote]);
-
   // Auto-save unsaved note on unmount (e.g. collapsing the panel)
   useEffect(() => {
     return () => {
-      persistPendingNoteLocally();
       void flushPendingNote();
     };
-  }, [leadId, flushPendingNote, persistPendingNoteLocally]);
+  }, [leadId, flushPendingNote]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        persistPendingNoteLocally();
         void flushPendingNote();
       }
     };
 
     const handlePageHide = () => {
-      persistPendingNoteLocally();
       void flushPendingNote();
-    };
-
-    const handleBeforeUnload = () => {
-      persistPendingNoteLocally();
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pagehide', handlePageHide);
-    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handlePageHide);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [flushPendingNote, persistPendingNoteLocally]);
+  }, [flushPendingNote]);
 
   // Reset state when lead changes
   useEffect(() => {
@@ -181,16 +164,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   }, [quickNoteValue, persistDraft]);
 
   useEffect(() => {
-    const pendingQueueItems = readPendingQueuedNotes()
-      .filter(note => note.leadId === leadId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const pendingQueueItem = readPendingQueuedNotes().find(note => note.leadId === leadId);
+    if (!pendingQueueItem) return;
 
-    if (pendingQueueItems.length === 0) return;
-
-    const latestPendingItem = pendingQueueItems[pendingQueueItems.length - 1];
-    pendingDraftIdRef.current = latestPendingItem.id;
-    setQuickNoteValue(prev => prev || latestPendingItem.noteText);
-  }, [leadId]);
+    pendingDraftIdRef.current = pendingQueueItem.id;
+    setQuickNoteValue(prev => prev || pendingQueueItem.noteText);
+    void commitNote(pendingQueueItem.noteText, { silent: true });
+  }, [leadId, commitNote]);
 
   // Safety reset: if isSaving is stuck for >10s, auto-reset
   useEffect(() => {

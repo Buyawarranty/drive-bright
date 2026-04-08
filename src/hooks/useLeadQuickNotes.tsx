@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 
 const quickNotesCache = new Map<string, QuickNote[]>();
 export const PENDING_NOTE_QUEUE_STORAGE_KEY = 'lead-quick-note-pending-queue';
-const NOTE_REQUEST_TIMEOUT_MS = 8000;
 
 export interface PendingQueuedNote {
   id: string;
@@ -49,46 +48,6 @@ export const writePendingQueuedNotes = (notes: PendingQueuedNote[]) => {
   }
 };
 
-const withTimeout = async <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error(message)), ms);
-      }),
-    ]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-};
-
-const mergeQueuedNotesIntoNotes = (leadId: string, existingNotes: QuickNote[]): QuickNote[] => {
-  const queuedNotes = readPendingQueuedNotes()
-    .filter(note => note.leadId === leadId)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  if (queuedNotes.length === 0) return existingNotes;
-
-  const existingNoteTexts = new Set(existingNotes.map(note => note.note_text.trim()));
-
-  const pendingNotes: QuickNote[] = queuedNotes
-    .filter(note => !existingNoteTexts.has(note.noteText.trim()))
-    .map(note => ({
-      id: `temp_queued_${note.id}`,
-      lead_id: leadId,
-      note_text: note.noteText,
-      is_pinned: false,
-      created_by: '',
-      created_at: note.createdAt,
-      updated_at: note.createdAt,
-      author: null,
-    }));
-
-  return [...pendingNotes, ...existingNotes];
-};
-
 const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 
@@ -99,7 +58,6 @@ let cacheExpiry = 0;
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const hasFetchedRef = useRef(false);
   const notesRef = useRef<QuickNote[]>([]);
   const isSavingRef = useRef(false);
@@ -132,12 +90,12 @@ export const useLeadQuickNotes = (leadId: string) => {
       return;
     }
 
-    const cachedNotes = mergeQueuedNotesIntoNotes(leadId, quickNotesCache.get(leadId) || []);
-    const hasCachedNotes = quickNotesCache.has(leadId) || cachedNotes.length > 0;
+    const cachedNotes = quickNotesCache.get(leadId);
+    const hasCachedNotes = quickNotesCache.has(leadId);
 
     hasFetchedRef.current = hasCachedNotes;
     setLoading(!hasCachedNotes);
-    updateNotes(cachedNotes);
+    updateNotes(cachedNotes || []);
   }, [leadId, updateNotes]);
 
   // Session validation removed — RLS policies handle authorization, and
@@ -162,15 +120,11 @@ export const useLeadQuickNotes = (leadId: string) => {
     try {
       // Skip session check on refetch to avoid latency — RLS will gate access
       if (isAbandonedCart) {
-        const { data: cartData, error: cartError } = await withTimeout(
-          (async () => await supabase
-            .from('abandoned_carts')
-            .select('contact_notes, updated_at')
-            .eq('id', actualId)
-            .maybeSingle())(),
-          NOTE_REQUEST_TIMEOUT_MS,
-          'Loading notes timed out'
-        );
+        const { data: cartData, error: cartError } = await supabase
+          .from('abandoned_carts')
+          .select('contact_notes, updated_at')
+          .eq('id', actualId)
+          .maybeSingle();
 
         if (cartError) throw cartError;
 
@@ -185,28 +139,24 @@ export const useLeadQuickNotes = (leadId: string) => {
             updated_at: cartData.updated_at || new Date().toISOString(),
             author: null
           };
-          updateNotes(mergeQueuedNotesIntoNotes(leadId, [syntheticNote]));
+          updateNotes([syntheticNote]);
         } else {
-          updateNotes(mergeQueuedNotesIntoNotes(leadId, []));
+          updateNotes([]);
         }
       } else {
-        const [quickNotesResult, leadResult] = await withTimeout(
-          Promise.all([
-            supabase
-              .from('lead_quick_notes')
-              .select('*')
-              .eq('lead_id', leadId)
-              .order('is_pinned', { ascending: false })
-              .order('created_at', { ascending: false }),
-            supabase
-              .from('sales_leads')
-              .select('notes, updated_at')
-              .eq('id', leadId)
-              .maybeSingle()
-          ]),
-          NOTE_REQUEST_TIMEOUT_MS,
-          'Loading notes timed out'
-        );
+        const [quickNotesResult, leadResult] = await Promise.all([
+          supabase
+            .from('lead_quick_notes')
+            .select('*')
+            .eq('lead_id', leadId)
+            .order('is_pinned', { ascending: false })
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('sales_leads')
+            .select('notes, updated_at')
+            .eq('id', leadId)
+            .maybeSingle()
+        ]);
 
         if (quickNotesResult.error) throw quickNotesResult.error;
 
@@ -255,7 +205,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         }
 
-        updateNotes(mergeQueuedNotesIntoNotes(leadId, allNotes));
+        updateNotes(allNotes);
       }
       
       hasFetchedRef.current = true;
@@ -406,7 +356,6 @@ export const useLeadQuickNotes = (leadId: string) => {
   const addNote = async (noteText: string) => {
     try {
       isSavingRef.current = true;
-      setIsSaving(true);
       const adminUser = await getAuthenticatedAdmin();
       
       if (isAbandonedCart) {
@@ -482,14 +431,12 @@ export const useLeadQuickNotes = (leadId: string) => {
       throw error;
     } finally {
       isSavingRef.current = false;
-      setIsSaving(false);
     }
   };
 
   const updateNote = async (noteId: string, noteText: string) => {
     try {
       isSavingRef.current = true;
-      setIsSaving(true);
       if (isAbandonedCart) {
         const { error } = await supabase
           .from('abandoned_carts')
@@ -515,7 +462,6 @@ export const useLeadQuickNotes = (leadId: string) => {
       toast.error('Failed to update note');
     } finally {
       isSavingRef.current = false;
-      setIsSaving(false);
     }
   };
 
@@ -556,7 +502,6 @@ export const useLeadQuickNotes = (leadId: string) => {
   const deleteNote = async (noteId: string) => {
     try {
       isSavingRef.current = true;
-      setIsSaving(true);
       if (isAbandonedCart) {
         const { error } = await supabase
           .from('abandoned_carts')
@@ -583,7 +528,6 @@ export const useLeadQuickNotes = (leadId: string) => {
       toast.error('Failed to delete note');
     } finally {
       isSavingRef.current = false;
-      setIsSaving(false);
     }
   };
 
@@ -596,7 +540,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     deleteNote,
     refetch: () => fetchNotes(true),
     isAbandonedCart,
-    isSaving,
+    isSaving: isSavingRef.current,
     flushPendingQuickNotes: flushAllPendingQuickNotes
   };
 };
