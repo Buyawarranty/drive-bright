@@ -9,7 +9,7 @@ import {
   Bell, BellRing, Clock, Calendar as CalendarIcon, 
   Sun, Sunrise, CalendarDays, X, Check, AlarmClock, Loader2
 } from 'lucide-react';
-import { format, isToday, isTomorrow, isPast, formatDistanceToNow } from 'date-fns';
+import { format, isToday, isTomorrow, isPast, formatDistanceToNow, setHours, setMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
   const [showCustom, setShowCustom] = useState(false);
   const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
   const [customTime, setCustomTime] = useState('09:00');
+  const [presetTime, setPresetTime] = useState('');
   const [label, setLabel] = useState('');
   const [labelSaveState, setLabelSaveState] = useState<LabelSaveState>('idle');
   const [showSnoozeOptions, setShowSnoozeOptions] = useState(false);
@@ -60,8 +61,62 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
   const handleLabelKeyDown = (e: React.KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
-      // Trigger immediate preset selection
       handlePresetSelect('today');
+    }
+  };
+
+  const getPresetTimeWithOverride = (preset: ReminderPreset): Date => {
+    const now = new Date();
+    let baseDate: Date;
+    let defaultHours: number;
+    let defaultMinutes: number;
+
+    switch (preset) {
+      case 'today':
+        baseDate = now;
+        defaultHours = 17;
+        defaultMinutes = 0;
+        break;
+      case 'tomorrow':
+        baseDate = new Date(now);
+        baseDate.setDate(baseDate.getDate() + 1);
+        defaultHours = 9;
+        defaultMinutes = 0;
+        break;
+      case 'next_week':
+        baseDate = new Date(now);
+        baseDate.setDate(baseDate.getDate() + 7);
+        defaultHours = 9;
+        defaultMinutes = 0;
+        break;
+      default:
+        return now;
+    }
+
+    if (presetTime) {
+      const [h, m] = presetTime.split(':').map(Number);
+      if (!isNaN(h) && !isNaN(m)) {
+        return setMinutes(setHours(baseDate, h), m);
+      }
+    }
+
+    return setMinutes(setHours(baseDate, defaultHours), defaultMinutes);
+  };
+
+  const getPresetTimeLabel = (preset: ReminderPreset): string => {
+    if (presetTime) {
+      const [h, m] = presetTime.split(':').map(Number);
+      if (!isNaN(h) && !isNaN(m)) {
+        const d = new Date();
+        d.setHours(h, m);
+        return format(d, 'h:mm a');
+      }
+    }
+    switch (preset) {
+      case 'today': return '5:00 PM';
+      case 'tomorrow': return '9:00 AM';
+      case 'next_week': return 'Mon 9:00 AM';
+      default: return '';
     }
   };
 
@@ -71,12 +126,15 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       return;
     }
     
+    const reminderTime = getPresetTimeWithOverride(preset);
+
     setLabelSaveState('saving');
     try {
-      await createReminder(leadId, preset, undefined, label || undefined);
+      await createReminder(leadId, 'custom', reminderTime, label || undefined);
       setLabelSaveState('saved');
       toast.success('Reminder set ✓', { duration: 1500 });
       setLabel('');
+      setPresetTime('');
       setOpen(false);
     } catch (error) {
       setLabelSaveState('error');
@@ -99,6 +157,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       setCustomDate(undefined);
       setCustomTime('09:00');
       setLabel('');
+      setPresetTime('');
       setShowCustom(false);
       setOpen(false);
     } catch (error) {
@@ -334,6 +393,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
         setShowCustom(false);
         setCustomDate(undefined);
         setLabel('');
+        setPresetTime('');
         setLabelSaveState('idle');
       }
     }}>
@@ -415,6 +475,35 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 {getLabelSaveIndicator()}
               </div>
             </div>
+
+            {/* Time override input */}
+            <div className="flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <Input
+                type="time"
+                value={presetTime}
+                onChange={(e) => setPresetTime(e.target.value)}
+                className="flex-1 h-8 text-sm"
+                aria-label="Set specific time"
+                placeholder="Use default time"
+              />
+              {presetTime && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setPresetTime('')}
+                  aria-label="Clear time"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            {presetTime && (
+              <p className="text-[10px] text-muted-foreground -mt-1 ml-6">
+                All presets below will use this time
+              </p>
+            )}
             
             {/* Preset options */}
             <div className="space-y-1">
@@ -425,7 +514,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               >
                 <Sun className="h-4 w-4 text-amber-500" />
                 <span className="flex-1 text-left">Later today</span>
-                <span className="text-xs text-muted-foreground">5:00 PM</span>
+                <span className="text-xs text-muted-foreground">{getPresetTimeLabel('today')}</span>
               </Button>
               <Button
                 variant="ghost"
@@ -434,7 +523,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               >
                 <Sunrise className="h-4 w-4 text-orange-500" />
                 <span className="flex-1 text-left">Tomorrow</span>
-                <span className="text-xs text-muted-foreground">9:00 AM</span>
+                <span className="text-xs text-muted-foreground">{getPresetTimeLabel('tomorrow')}</span>
               </Button>
               <Button
                 variant="ghost"
@@ -443,7 +532,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               >
                 <CalendarDays className="h-4 w-4 text-blue-500" />
                 <span className="flex-1 text-left">Next week</span>
-                <span className="text-xs text-muted-foreground">Mon 9:00 AM</span>
+                <span className="text-xs text-muted-foreground">{getPresetTimeLabel('next_week')}</span>
               </Button>
               <Button
                 variant="ghost"

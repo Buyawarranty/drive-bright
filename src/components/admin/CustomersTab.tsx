@@ -58,6 +58,7 @@ import { PurchaseSourceBadge } from './PurchaseSourceBadge';
 import { PrintableWarrantyLetter } from './PrintableWarrantyLetter';
 import { PaymentDueDatePicker } from './PaymentDueDatePicker';
 import { CancellationsTab } from './CancellationsTab';
+import { RemindMePopover } from './leads/RemindMePopover';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { format } from 'date-fns';
@@ -5140,8 +5141,10 @@ Please log in and change your password after first login.`;
                           <Key className="h-4 w-4" />
                         )}
                       </Button>
-                      
-                      
+
+                      <RemindMePopover leadId={`customer_${customer.id}`} />
+                       
+                       
                     </div>
                   </TableCell>
                 </TableRow>

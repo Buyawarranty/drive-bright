@@ -62,13 +62,16 @@ export const useLeadReminders = (leadId?: string) => {
 
       const reminderData = data || [];
       
-      // Separate regular leads and abandoned cart leads
+      // Separate regular leads, abandoned cart leads, and customer leads
       const regularLeadIds: string[] = [];
       const cartIds: string[] = [];
+      const customerIds: string[] = [];
       
       reminderData.forEach((reminder: any) => {
         if (reminder.lead_id.startsWith('cart_')) {
           cartIds.push(reminder.lead_id.replace('cart_', ''));
+        } else if (reminder.lead_id.startsWith('customer_')) {
+          customerIds.push(reminder.lead_id.replace('customer_', ''));
         } else {
           regularLeadIds.push(reminder.lead_id);
         }
@@ -77,6 +80,7 @@ export const useLeadReminders = (leadId?: string) => {
       // Batch fetch all leads in single queries
       let leadsMap: Record<string, any> = {};
       let cartsMap: Record<string, any> = {};
+      let customersMap: Record<string, any> = {};
 
       if (regularLeadIds.length > 0) {
         const { data: leadsData } = await supabase
@@ -100,11 +104,36 @@ export const useLeadReminders = (leadId?: string) => {
         });
       }
 
+      if (customerIds.length > 0) {
+        const { data: customersData } = await supabase
+          .from('customers')
+          .select('id, email, name, first_name, last_name, registration_plate')
+          .in('id', customerIds);
+        
+        (customersData || []).forEach((customer: any) => {
+          customersMap[customer.id] = customer;
+        });
+      }
+
       // Map reminders with their lead data
       const remindersWithLeads = reminderData.map((reminder: any) => {
         const isAbandonedCart = reminder.lead_id.startsWith('cart_');
+        const isCustomer = reminder.lead_id.startsWith('customer_');
         
-        if (isAbandonedCart) {
+        if (isCustomer) {
+          const custId = reminder.lead_id.replace('customer_', '');
+          const custData = customersMap[custId];
+          return {
+            ...reminder,
+            status: reminder.status as LeadReminder['status'],
+            lead: custData ? {
+              email: custData.email,
+              first_name: custData.first_name || custData.name?.split(' ')[0] || null,
+              last_name: custData.last_name || custData.name?.split(' ').slice(1).join(' ') || null,
+              vehicle_reg: custData.registration_plate
+            } : null
+          };
+        } else if (isAbandonedCart) {
           const cartId = reminder.lead_id.replace('cart_', '');
           const cartData = cartsMap[cartId];
           return {

@@ -64,13 +64,19 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
   };
 
   const getLeadName = (reminder: LeadReminder) => {
-    if (!reminder.lead) return 'Unknown Lead';
+    if (!reminder.lead) return 'Unknown';
     const firstName = reminder.lead.first_name;
     const lastName = reminder.lead.last_name;
     if (firstName || lastName) {
       return `${firstName || ''} ${lastName || ''}`.trim();
     }
     return reminder.lead.email.split('@')[0];
+  };
+
+  const getReminderSource = (reminder: LeadReminder): string | null => {
+    if (reminder.lead_id.startsWith('customer_')) return 'Customer';
+    if (reminder.lead_id.startsWith('cart_')) return 'Cart';
+    return null;
   };
 
   const handleSnooze = async (reminderId: string, preset: ReminderPreset) => {
@@ -143,6 +149,11 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm truncate">{getLeadName(reminder)}</span>
+              {getReminderSource(reminder) && (
+                <Badge variant="outline" className="text-[9px] px-1 py-0 flex-shrink-0">
+                  {getReminderSource(reminder)}
+                </Badge>
+              )}
               <Badge className={cn("text-[10px] px-1.5 py-0 flex-shrink-0", status.color)}>
                 {status.label}
               </Badge>
