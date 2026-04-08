@@ -325,11 +325,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
+  const canSeeUnworked = isAdminOrSuperAdmin || userRole === 'sales_lead';
+
   const freshLeads = useMemo(() => {
     // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
     if (filter === 'recovered') return [];
+    // Sales agents see all leads in one list (no separate unworked section)
+    if (!canSeeUnworked) return filteredLeads;
     return filteredLeads.filter(lead => !isRecoveredLead(lead));
-  }, [filteredLeads, isRecoveredLead, filter]);
+  }, [filteredLeads, isRecoveredLead, filter, canSeeUnworked]);
 
   const recoveredLeads = useMemo(() => {
     if (filter === 'recovered') return filteredLeads.filter(lead => isRecoveredLead(lead));
@@ -909,8 +913,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </CardContent>
           </Card>
 
-          {/* Unworked Leads Section — recovered leads separated from fresh */}
-          {recoveredLeads.length > 0 && (
+          {/* Unworked Leads Section — only visible to admin/super_admin/sales_lead */}
+          {canSeeUnworked && recoveredLeads.length > 0 && (
             <Card className="overflow-hidden border-2 border-border mt-4">
               <CardContent className="p-0">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border">
