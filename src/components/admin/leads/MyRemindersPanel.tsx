@@ -149,6 +149,11 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm truncate">{getLeadName(reminder)}</span>
+              {getReminderSource(reminder) && (
+                <Badge variant="outline" className="text-[9px] px-1 py-0 flex-shrink-0">
+                  {getReminderSource(reminder)}
+                </Badge>
+              )}
               <Badge className={cn("text-[10px] px-1.5 py-0 flex-shrink-0", status.color)}>
                 {status.label}
               </Badge>
