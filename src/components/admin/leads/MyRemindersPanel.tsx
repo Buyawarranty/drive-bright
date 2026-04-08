@@ -64,13 +64,19 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
   };
 
   const getLeadName = (reminder: LeadReminder) => {
-    if (!reminder.lead) return 'Unknown Lead';
+    if (!reminder.lead) return 'Unknown';
     const firstName = reminder.lead.first_name;
     const lastName = reminder.lead.last_name;
     if (firstName || lastName) {
       return `${firstName || ''} ${lastName || ''}`.trim();
     }
     return reminder.lead.email.split('@')[0];
+  };
+
+  const getReminderSource = (reminder: LeadReminder): string | null => {
+    if (reminder.lead_id.startsWith('customer_')) return 'Customer';
+    if (reminder.lead_id.startsWith('cart_')) return 'Cart';
+    return null;
   };
 
   const handleSnooze = async (reminderId: string, preset: ReminderPreset) => {
