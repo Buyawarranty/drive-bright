@@ -136,6 +136,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       setLabel('');
       setPresetTime('');
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       setLabelSaveState('error');
       toast.error("Couldn't set reminder. Try again.");
@@ -160,6 +161,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       setPresetTime('');
       setShowCustom(false);
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       setLabelSaveState('error');
       toast.error("Couldn't set reminder. Try again.");
