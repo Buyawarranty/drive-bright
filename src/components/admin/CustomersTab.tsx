@@ -748,11 +748,16 @@ export const CustomersTab = () => {
     const isSalesSearching = debouncedSearchTerm && 
       (currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead');
 
-    if (filterByAgent !== 'all' && !isSalesSearching) {
-      if (filterByAgent === 'unassigned') {
+    // For sales agents: enforce own-agent filter when no explicit agent selection or search bypass
+    const effectiveAgentFilter = (currentAdminUser?.role === 'sales' && filterByAgent === 'all' && !isSalesSearching)
+      ? currentAdminUser.id  // Default to own deals even if somehow reset to 'all'
+      : filterByAgent;
+
+    if (effectiveAgentFilter !== 'all' && !isSalesSearching) {
+      if (effectiveAgentFilter === 'unassigned') {
         filtered = filtered.filter(customer => !customer.assigned_to);
       } else {
-        filtered = filtered.filter(customer => customer.assigned_to === filterByAgent);
+        filtered = filtered.filter(customer => customer.assigned_to === effectiveAgentFilter);
       }
     }
 
@@ -766,20 +771,33 @@ export const CustomersTab = () => {
     }
 
     // Apply date range filter — sales agents bypass when searching (so they can find any customer)
+    // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
     const isSalesAgentSearching = debouncedSearchTerm && currentAdminUser?.role === 'sales';
-    if (dateRange?.from && !isSalesAgentSearching) {
-      filtered = filtered.filter(customer => {
-        const signupDate = new Date(customer.signup_date);
-        const fromDate = new Date(dateRange.from!);
-        fromDate.setHours(0, 0, 0, 0);
-        
-        if (dateRange.to) {
-          const toDate = new Date(dateRange.to);
-          toDate.setHours(23, 59, 59, 999);
-          return signupDate >= fromDate && signupDate <= toDate;
-        }
-        return signupDate >= fromDate;
-      });
+    if (!isSalesAgentSearching) {
+      let effectiveDateRange = dateRange;
+      
+      // Hard enforcement: sales agents are locked to 2 months max
+      if (currentAdminUser?.role === 'sales' && !effectiveDateRange?.from) {
+        const twoMonthsAgo = new Date();
+        twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+        twoMonthsAgo.setHours(0, 0, 0, 0);
+        effectiveDateRange = { from: twoMonthsAgo, to: new Date() };
+      }
+      
+      if (effectiveDateRange?.from) {
+        filtered = filtered.filter(customer => {
+          const signupDate = new Date(customer.signup_date);
+          const fromDate = new Date(effectiveDateRange!.from!);
+          fromDate.setHours(0, 0, 0, 0);
+          
+          if (effectiveDateRange!.to) {
+            const toDate = new Date(effectiveDateRange!.to);
+            toDate.setHours(23, 59, 59, 999);
+            return signupDate >= fromDate && signupDate <= toDate;
+          }
+          return signupDate >= fromDate;
+        });
+      }
     }
 
     // Apply sorting - due today activations always come first
