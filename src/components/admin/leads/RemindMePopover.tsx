@@ -21,7 +21,7 @@ interface RemindMePopoverProps {
 type LabelSaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false }) => {
-  const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder } = useLeadReminders(leadId);
+  const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder, deleteReminder } = useLeadReminders(leadId);
   const [open, setOpen] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
@@ -354,32 +354,48 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
+                    onClick={() => setShowSnoozeOptions(true)}
+                  >
+                    <AlarmClock className="h-3.5 w-3.5" />
+                    Snooze
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
+                    onClick={handleDismiss}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Dismiss
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
+                    onClick={handleComplete}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    Done
+                  </Button>
+                </div>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
-                  onClick={() => setShowSnoozeOptions(true)}
+                  className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={async () => {
+                    if (currentReminder) {
+                      await deleteReminder(currentReminder.id);
+                      setOpen(false);
+                      window.dispatchEvent(new CustomEvent('reminder-changed'));
+                    }
+                  }}
                 >
-                  <AlarmClock className="h-3.5 w-3.5" />
-                  Snooze
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
-                  onClick={handleDismiss}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  Dismiss
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
-                  onClick={handleComplete}
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  Done
+                  Cancel Reminder
                 </Button>
               </div>
             )}
