@@ -2724,6 +2724,7 @@ export const CustomersTab = () => {
   }
 
   return (
+    <div className="space-y-6">
       {/* Revenue by Date is now inline in the filter row below */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
