@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { getLeadFeedDayRange, getTodayLeadFeedSelectionDate, isTodayLeadFeedRange, isYesterdayLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
-export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent';
+export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
 export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'website';
 
 interface SalesUser {
@@ -512,6 +512,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
+              {(filter as string) === 'reminders' && (
+                <>
+                  <SelectItem value="reminder_soonest">Reminder — Soonest</SelectItem>
+                  <SelectItem value="reminder_latest">Reminder — Latest</SelectItem>
+                </>
+              )}
               <SelectItem value="newest">Newest first</SelectItem>
               <SelectItem value="latest_submitted">Latest Submitted</SelectItem>
               <SelectItem value="oldest">Oldest first</SelectItem>
