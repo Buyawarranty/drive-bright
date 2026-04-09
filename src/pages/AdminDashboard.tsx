@@ -564,7 +564,7 @@ const AdminDashboardInner: React.FC<{
         </div>
       )}
       
-      <ReminderDuePopup onNavigate={(leadId, type) => {
+      <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => {
         if (type === 'customer') {
           handleTabChange('customers');
         } else {
