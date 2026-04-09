@@ -382,7 +382,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Separate fresh leads from recovered (unworked) leads
   const isRecoveredLead = useCallback((lead: Lead) => {
-    return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
+    // A lead is "recovered/unworked" only if it came from an abandoned cart,
+    // was never assigned to any agent, and never completed step 2
+    return !!lead.abandoned_cart_id && !lead.assigned_to && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
   const canSeeUnworked = userRole === 'super_admin';
