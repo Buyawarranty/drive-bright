@@ -570,8 +570,14 @@ export const PolicyDocumentsTab: React.FC = () => {
                       <Button size="sm" variant="default" disabled={isSaving} onClick={async () => {
                         setIsSaving(true);
                         try {
+                          // Parse first/last name from full name for sync trigger
+                          const nameParts = (editData.name || '').trim().split(' ');
+                          const firstName = nameParts[0] || '';
+                          const lastName = nameParts.slice(1).join(' ') || '';
                           const { error } = await supabase.from('customers').update({
                             name: editData.name,
+                            first_name: firstName,
+                            last_name: lastName,
                             email: editData.email,
                             phone: editData.phone || null,
                             flat_number: editData.flat_number || null,
