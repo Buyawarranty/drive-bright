@@ -4890,36 +4890,48 @@ Please log in and change your password after first login.`;
                          stripeSessionId={customer.stripe_session_id}
                        />
                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <InlineWarrantyUpgrade
-                            customerId={customer.id}
-                            customerEmail={customer.email}
-                            customerName={customer.name}
-                            registrationPlate={customer.registration_plate}
-                            field="excess"
-                            currentValue={customer.voluntary_excess || 100}
-                            onUpdate={fetchCustomers}
-                          />
-                          {customer.manual_upgrade_at && (
-                            <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                          )}
-                        </div>
-                      </TableCell>
                        <TableCell>
                          <div className="flex items-center gap-1">
+                           {isSalesAgent ? (
+                             <span className="text-sm">£{customer.voluntary_excess || 100}</span>
+                           ) : (
+                           <>
                            <InlineWarrantyUpgrade
                              customerId={customer.id}
                              customerEmail={customer.email}
                              customerName={customer.name}
                              registrationPlate={customer.registration_plate}
-                             field="claim_limit"
-                             currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                             field="excess"
+                             currentValue={customer.voluntary_excess || 100}
                              onUpdate={fetchCustomers}
                            />
                            {customer.manual_upgrade_at && (
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
+                           </>
+                           )}
+                         </div>
+                       </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {isSalesAgent ? (
+                              <span className="text-sm">£{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}</span>
+                            ) : (
+                            <>
+                            <InlineWarrantyUpgrade
+                              customerId={customer.id}
+                              customerEmail={customer.email}
+                              customerName={customer.name}
+                              registrationPlate={customer.registration_plate}
+                              field="claim_limit"
+                              currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                              onUpdate={fetchCustomers}
+                            />
+                            {customer.manual_upgrade_at && (
+                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
+                            )}
+                            </>
+                            )}
                          </div>
                        </TableCell>
                        <TableCell>
