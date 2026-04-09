@@ -500,15 +500,26 @@ const handler = async (req: Request): Promise<Response> => {
         return 'Gold';
       } else if (planLower.includes('platinum')) {
         return 'Platinum';
+      } else if (planLower.includes('premium') && planLower.includes('suv')) {
+        return 'Premium SUV Plan';
+      } else if (planLower.includes('premium') && planLower.includes('van')) {
+        return 'Premium Van Plan';
+      } else if (planLower.includes('premium') && planLower.includes('motorbike')) {
+        return 'Premium Motorbike Plan';
+      } else if (planLower.includes('premium') && planLower.includes('car')) {
+        return 'Premium Car Plan';
+      } else if (planLower.includes('premium')) {
+        return 'Premium';
       } else if (planLower.includes('phev') || planLower.includes('hybrid')) {
-        return 'PHEV';
+        return 'PHEV Hybrid Extended Warranty';
       } else if (planLower.includes('ev') || planLower.includes('electric')) {
-        return 'EV';
+        return 'EV Extended Warranty';
       } else if (planLower.includes('motorbike') || planLower.includes('motorcycle')) {
-        return 'Motorbike';
+        return 'Motorbike Extended Warranty';
       }
       
-      return planType.charAt(0).toUpperCase() + planType.slice(1).toLowerCase();
+      // Capitalize each word as fallback
+      return planType.replace(/\b\w/g, c => c.toUpperCase());
     };
 
     const periodInMonths = calculatePeriodInMonths(policy.payment_type);
@@ -622,7 +633,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <strong>Expiry Date:</strong> ${formatDate(policyEndDate)}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
-                <strong>Claim Limit:</strong> £${(() => { const cl = policy.claim_limit || customerDetails?.claim_limit || 1250; return cl === 750 ? '1,000' : cl.toLocaleString(); })()} per claim
+                <strong>Claim Limit:</strong> £${(() => { const cl = policy.claim_limit || customerDetails?.claim_limit || 1250; return cl.toLocaleString(); })()} per claim
               </li>
               <li style="margin-bottom: 8px; color: #333;">
                 <strong>Voluntary Excess:</strong> £${policy.voluntary_excess ?? customerDetails?.voluntary_excess ?? 0}
