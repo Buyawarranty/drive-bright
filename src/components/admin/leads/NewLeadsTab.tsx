@@ -332,6 +332,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     result = [...result].sort((a, b) => {
       switch (sortOption) {
+        case 'reminder_soonest': {
+          const aTime = reminderTimesMap[a.id] ? new Date(reminderTimesMap[a.id]).getTime() : Infinity;
+          const bTime = reminderTimesMap[b.id] ? new Date(reminderTimesMap[b.id]).getTime() : Infinity;
+          return aTime - bTime;
+        }
+        case 'reminder_latest': {
+          const aTime = reminderTimesMap[a.id] ? new Date(reminderTimesMap[a.id]).getTime() : 0;
+          const bTime = reminderTimesMap[b.id] ? new Date(reminderTimesMap[b.id]).getTime() : 0;
+          return bTime - aTime;
+        }
         case 'newest':
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
         case 'latest_submitted':
