@@ -2713,8 +2713,8 @@ export const CustomersTab = () => {
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
         <div className="flex space-x-2">
-          {/* Quick Customer Signup Button */}
-          <QuickCustomerSignupButton />
+          {/* Quick Customer Signup Button - hidden for sales agents */}
+          {!isSalesAgent && <QuickCustomerSignupButton />}
           
           <Button 
             onClick={fetchCustomers} 
@@ -2749,8 +2749,8 @@ export const CustomersTab = () => {
             </DropdownMenu>
           )}
           
-          {/* Debug Info Button */}
-          {debugInfo && (
+          {/* Debug Info Button - hidden for sales agents */}
+          {debugInfo && !isSalesAgent && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="flex items-center space-x-2 text-gray-600">
@@ -2767,7 +2767,8 @@ export const CustomersTab = () => {
             </Popover>
           )}
 
-          {/* Order Management Guide Button */}
+          {/* Order Management Guide Button - hidden for sales agents */}
+          {!isSalesAgent && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="flex items-center space-x-2 text-gray-600">
@@ -2798,6 +2799,7 @@ export const CustomersTab = () => {
               </div>
             </PopoverContent>
           </Popover>
+          )}
         </div>
       </div>
 
@@ -2810,6 +2812,8 @@ export const CustomersTab = () => {
             >
               Active Orders
             </TabsTrigger>
+            {!isSalesAgent && (
+            <>
             <TabsTrigger 
               value="cancellations"
               className="h-9 px-3 bg-red-50 text-red-700 border border-red-200 rounded-md text-xs data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
@@ -2824,6 +2828,8 @@ export const CustomersTab = () => {
               <Archive className="h-3.5 w-3.5" />
               Archive
             </TabsTrigger>
+            </>
+            )}
           </TabsList>
         </div>
 
@@ -2884,7 +2890,8 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source */}
+             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source - hidden for sales agents */}
+            {!isSalesAgent && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               {/* Filter by Tag */}
               <div className="space-y-1">
@@ -3034,6 +3041,7 @@ export const CustomersTab = () => {
                 </Select>
                </div>
             </div>
+            )}
 
              {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
             <div className="flex items-end gap-4 flex-wrap">
@@ -3047,10 +3055,10 @@ export const CustomersTab = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead') && (
+                      {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales') && (
                         <>
                           <SelectItem value="all">All Agents</SelectItem>
-                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {!isSalesAgent && <SelectItem value="unassigned">Unassigned</SelectItem>}
                         </>
                       )}
                       {adminUsers
