@@ -3057,9 +3057,10 @@ export const CustomersTab = () => {
                         .map(user => {
                           const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+                          const isSalesAgentRole = currentAdminUser?.role === 'sales';
                           return (
                             <SelectItem key={user.id} value={user.id}>
-                              {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
+                              {displayName}{!isSalesAgentRole && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
                             </SelectItem>
                           );
                         })}
@@ -3067,7 +3068,8 @@ export const CustomersTab = () => {
                   </Select>
                 </div>
 
-                {/* Deals Period Selector */}
+                {/* Deals Period Selector - hidden for sales agents */}
+                {currentAdminUser?.role !== 'sales' && (
                 <div className="space-y-1 w-[160px]">
                   <Label className="text-sm font-medium">Deals Period</Label>
                   <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
@@ -3085,6 +3087,7 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                )}
                 </>
               )}
 
