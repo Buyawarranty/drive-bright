@@ -183,7 +183,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   useEffect(() => {
     fetchReminderLeadIds();
     const interval = setInterval(fetchReminderLeadIds, 60000);
-    const handleReminderChanged = () => fetchReminderLeadIds();
+    const handleReminderChanged = () => {
+      // Small delay to ensure DB write is committed before refetch
+      setTimeout(() => fetchReminderLeadIds(), 300);
+    };
     window.addEventListener('reminder-changed', handleReminderChanged);
     return () => {
       clearInterval(interval);
