@@ -244,6 +244,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
+    // Handle reminders filter before the switch since it's not a LeadStatus
+    if ((filter as string) === 'reminders') {
+      return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
+    }
     switch (filter) {
       case 'all':
       case 'all_leads':
