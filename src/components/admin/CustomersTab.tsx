@@ -565,10 +565,15 @@ export const CustomersTab = () => {
     }
   }, [availableTags, customers.length]);
 
-  // Auto-select own agent filter for sales agents
+  // Auto-select own agent filter for sales agents + restrict to 2 months
   useEffect(() => {
     if (currentAdminUser && currentAdminUser.role === 'sales') {
       setFilterByAgent(currentAdminUser.id);
+      // Restrict sales agents to last 2 months of data by default
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      twoMonthsAgo.setHours(0, 0, 0, 0);
+      setDateRange({ from: twoMonthsAgo, to: new Date() });
     }
   }, [currentAdminUser]);
 
