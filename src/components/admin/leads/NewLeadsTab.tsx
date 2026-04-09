@@ -148,6 +148,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
+  const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   
   // Source filter visibility: admin, super_admin, and lead_gen only
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
