@@ -154,36 +154,42 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
 
   // Fetch active reminder lead IDs for the current admin user
-  useEffect(() => {
-    const fetchReminderLeadIds = async () => {
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) return;
-        const { data: adminUser } = await supabase
-          .from('admin_users')
-          .select('id')
-          .eq('user_id', userData.user.id)
-          .maybeSingle();
-        if (!adminUser?.id) return;
-        const { data } = await (supabase
-          .from('lead_reminders' as any)
-          .select('lead_id, reminder_time')
-          .eq('user_id', adminUser.id)
-          .in('status', ['pending', 'snoozed']) as any);
-        if (data) {
-          setReminderLeadIds(new Set((data as any[]).map((r: any) => r.lead_id)));
-          const timesMap: Record<string, string> = {};
-          (data as any[]).forEach((r: any) => { timesMap[r.lead_id] = r.reminder_time; });
-          setReminderTimesMap(timesMap);
-        }
-      } catch (err) {
-        console.error('Error fetching reminder lead IDs:', err);
+  const fetchReminderLeadIds = useCallback(async () => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .maybeSingle();
+      if (!adminUser?.id) return;
+      const { data } = await (supabase
+        .from('lead_reminders' as any)
+        .select('lead_id, reminder_time')
+        .eq('user_id', adminUser.id)
+        .in('status', ['pending', 'snoozed']) as any);
+      if (data) {
+        setReminderLeadIds(new Set((data as any[]).map((r: any) => r.lead_id)));
+        const timesMap: Record<string, string> = {};
+        (data as any[]).forEach((r: any) => { timesMap[r.lead_id] = r.reminder_time; });
+        setReminderTimesMap(timesMap);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching reminder lead IDs:', err);
+    }
+  }, []);
+
+  useEffect(() => {
     fetchReminderLeadIds();
     const interval = setInterval(fetchReminderLeadIds, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    const handleReminderChanged = () => fetchReminderLeadIds();
+    window.addEventListener('reminder-changed', handleReminderChanged);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('reminder-changed', handleReminderChanged);
+    };
+  }, [fetchReminderLeadIds]);
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
