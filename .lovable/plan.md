@@ -1,38 +1,38 @@
 
 
-## Plan: Restrict Unworked Leads Section to Super Admin Only + Duplicate Prevention
+## Plan: Reminder Due Popup Notifications
 
-**Problem**: The "Unworked Leads" section is currently visible to `admin`, `super_admin`, and `sales_lead` roles. It should only be visible to `super_admin`. When these leads merge into the main list for other roles, duplicates can appear, and assignment must be preserved.
+**Problem**: When a reminder becomes due, nothing happens — agents must manually check the reminders panel. The request is for an automatic popup when a reminder is due, which is clickable to navigate to that lead/customer, and dismissible with an X button.
 
 ### Changes
 
-**File: `src/components/admin/leads/NewLeadsTab.tsx`**
+**1. New component: `src/components/admin/leads/ReminderDuePopup.tsx`**
+- A fixed-position notification bar/toast that appears at the top of the dashboard when any reminder is overdue or due now
+- Polls the `lead_reminders` table every 60 seconds for reminders where `reminder_time <= now` and `status = 'pending'`
+- Displays: lead/customer name, the reminder label/note, and time it was due
+- **Clickable**: clicking the notification navigates to the New Leads tab and highlights/scrolls to that lead (or Customers tab for customer reminders)
+- **Dismissible**: X button on each notification calls `dismissReminder` or `completeReminder`
+- Stacks multiple due reminders vertically if more than one is due
+- Styled as a prominent banner (e.g., amber/orange background for due, red for overdue) — persistent until dismissed, not auto-fading like toasts
 
-1. **Restrict visibility to `super_admin` only** (~line 328):
-   - Change `canSeeUnworked` from `isAdminOrSuperAdmin || userRole === 'sales_lead'` to `userRole === 'super_admin'`
+**2. File: `src/hooks/useLeadReminders.tsx`**
+- Add a new hook or extend existing: `useDueReminders()` — fetches only reminders where `reminder_time <= now` and status is `pending` or `snoozed` with `snoozed_until <= now`
+- Polls every 60 seconds using `setInterval`
+- Returns the list of due reminders with lead data attached
 
-2. **Deduplicate merged leads** (~line 330-336): When `!canSeeUnworked` and recovered leads merge into `freshLeads`, deduplicate by checking if a recovered lead shares the same email/phone as an existing fresh lead. If a duplicate is found:
-   - Keep only the original (assigned) lead, discard the recovered duplicate
-   - Mark duplicates with a flag (e.g., `isDuplicate: true`) so they display a "DUPLICATE" badge
-   - Ensure the lead retains its current `assigned_to` value — never overwrite an existing assignment with the recovered lead's data
+**3. File: `src/components/admin/leads/NewLeadsTab.tsx` or parent dashboard component**
+- Mount `<ReminderDuePopup />` at the top of the dashboard layout
+- Pass `onNavigateToLead` callback that switches to the correct tab and scrolls/highlights the lead row
 
-3. **Duplicate badge display**: In the lead row rendering, show a small "DUPLICATE" badge (similar to existing "RECREATED" badge) when a merged recovered lead is flagged as duplicate, so super admins reviewing the data understand the state.
+### UX Flow
+1. Agent is working in the dashboard
+2. A reminder becomes due at 2:00 PM
+3. Within 60 seconds, a popup banner slides in at the top: "Reminder: Call Christopher Lyons — due 2:00 PM" with an X button
+4. Agent clicks the banner → navigates to that lead in the New Leads list
+5. Or agent clicks X → reminder is marked complete/dismissed and banner disappears
 
-### Logic Detail
-```
-freshLeads memo:
-  if (!canSeeUnworked):
-    - Combine filteredLeads (all leads)
-    - Group by normalized email + phone
-    - For groups with multiple entries, keep the one with assignment/activity, flag others as duplicate
-    - Duplicates inherit the assigned agent from the original lead
-  if (canSeeUnworked):
-    - Keep current behavior: split into fresh vs recovered
-```
-
-### Result
-- Only `super_admin` sees the separate "Unworked Leads" section
-- All other roles (admin, sales_lead, sales) see one unified list with no duplicates
-- Duplicates are auto-assigned to the agent who owns the original lead
-- No risk of two agents calling the same customer
+### Technical Details
+- Fixed positioning (`fixed top-4 right-4 z-50`) so it's visible regardless of scroll
+- Uses existing `useLeadReminders` infrastructure (same data fetching, same dismiss/complete functions)
+- No database changes needed — uses existing `lead_reminders` table and status fields
 
