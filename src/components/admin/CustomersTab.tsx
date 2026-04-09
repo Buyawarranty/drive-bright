@@ -383,8 +383,11 @@ export const CustomersTab = () => {
   });
 
   // Compute today's sales and date-filtered revenue (super_admin only)
-  const isSuperAdmin = currentAdminUser?.role === 'super_admin';
-  const isSalesAgent = currentAdminUser?.role === 'sales';
+  const normalizedRole = currentAdminUser?.role?.trim().toLowerCase() || '';
+  const isSuperAdmin = normalizedRole === 'super_admin';
+  const isSalesAgent = normalizedRole === 'sales';
+  const isSalesLead = normalizedRole === 'sales_lead';
+  const isSalesScopedRole = isSalesAgent || isSalesLead;
   
   // Track whether role has been determined to prevent flash of unrestricted UI
   const isRoleLoaded = !!currentAdminUser;
@@ -571,24 +574,24 @@ export const CustomersTab = () => {
 
   // Auto-select own agent filter for sales agents + keep their period locked to 60 days max
   useEffect(() => {
-    if (currentAdminUser?.role !== 'sales') return;
+    if (!isSalesAgent || !currentAdminUser) return;
 
     setFilterByAgent((prev) => (prev === 'all' ? currentAdminUser.id : prev));
 
     if (totalSalesDateFilter === 'all') {
       setTotalSalesDateFilter('60days');
     }
-  }, [currentAdminUser, totalSalesDateFilter]);
+  }, [currentAdminUser, isSalesAgent, totalSalesDateFilter]);
 
   // Keep the shared customer date filter in sync with the Deals Period dropdown for all roles
   useEffect(() => {
-    const selectedPeriod = currentAdminUser?.role === 'sales' && totalSalesDateFilter === 'all'
+    const selectedPeriod = isSalesAgent && totalSalesDateFilter === 'all'
       ? '60days'
       : totalSalesDateFilter;
 
     const range = getAgentCountsDateRange(selectedPeriod);
     setDateRange(range ? { from: range.start, to: range.end } : undefined);
-  }, [currentAdminUser?.role, totalSalesDateFilter]);
+  }, [isSalesAgent, totalSalesDateFilter]);
 
   // Listen for URL search parameter changes
   useEffect(() => {
@@ -603,7 +606,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -626,7 +629,7 @@ export const CustomersTab = () => {
     // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
-      const isSalesRole = currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead';
+      const isSalesRole = isSalesScopedRole;
 
       filtered = filtered.filter(customer => {
         // Core fields available to all roles
@@ -695,7 +698,7 @@ export const CustomersTab = () => {
     }
 
     // Hide "Claim Made" customers from sales agents and sales leads
-    if (currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead') {
+    if (isSalesScopedRole) {
       filtered = filtered.filter(customer => customer.status?.toLowerCase() !== 'claim_made');
     }
 
@@ -754,11 +757,10 @@ export const CustomersTab = () => {
     }
 
     // Apply agent filter — skip when sales/sales_lead is actively searching
-    const isSalesSearching = debouncedSearchTerm && 
-      (currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'sales_lead');
+    const isSalesSearching = !!debouncedSearchTerm && isSalesScopedRole;
 
     // For sales agents: enforce own-agent filter when no explicit agent selection or search bypass
-    const effectiveAgentFilter = (currentAdminUser?.role === 'sales' && filterByAgent === 'all' && !isSalesSearching)
+    const effectiveAgentFilter = (isSalesAgent && filterByAgent === 'all' && !isSalesSearching)
       ? currentAdminUser.id  // Default to own deals even if somehow reset to 'all'
       : filterByAgent;
 
@@ -781,12 +783,12 @@ export const CustomersTab = () => {
 
     // Apply date range filter — sales agents bypass when searching (so they can find any customer)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
-    const isSalesAgentSearching = debouncedSearchTerm && currentAdminUser?.role === 'sales';
+    const isSalesAgentSearching = !!debouncedSearchTerm && isSalesAgent;
     if (!isSalesAgentSearching) {
       let effectiveDateRange = dateRange;
       
       // Hard enforcement: sales agents are locked to the selected period, capped at 2 months max
-      if (currentAdminUser?.role === 'sales') {
+      if (isSalesAgent) {
         const lockedRange = getAgentCountsDateRange(totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter) || getAgentCountsDateRange('60days');
         if (lockedRange) {
           effectiveDateRange = { from: lockedRange.start, to: lockedRange.end };
@@ -837,7 +839,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole]);
 
   const getCurrentUser = async () => {
     try {
@@ -929,7 +931,7 @@ export const CustomersTab = () => {
 
   const fetchAgentDealCounts = async () => {
     try {
-      const range = getAgentCountsDateRange(totalSalesDateFilter);
+      const range = getAgentCountsDateRange(isSalesAgent && totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter);
 
       let activeQuery = supabase
         .from('customers')
@@ -2930,7 +2932,7 @@ export const CustomersTab = () => {
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                     <SelectItem value="refunded">Refunded</SelectItem>
                     <SelectItem value="cancelled_and_refunded">Cancelled & Refunded</SelectItem>
-                    {currentAdminUser?.role !== 'sales' && currentAdminUser?.role !== 'sales_lead' && (
+                    {!isSalesScopedRole && (
                       <SelectItem value="claim_made">Claim Made</SelectItem>
                     )}
                   </SelectContent>
@@ -3114,7 +3116,7 @@ export const CustomersTab = () => {
                         .map(user => {
                           const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
-                          const isSalesAgentRole = currentAdminUser?.role === 'sales';
+                          const isSalesAgentRole = isSalesAgent;
                           return (
                             <SelectItem key={user.id} value={user.id}>
                               {displayName}{!isSalesAgentRole && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
@@ -3140,7 +3142,7 @@ export const CustomersTab = () => {
                       <SelectItem value="30days">Last 30 Days</SelectItem>
                       <SelectItem value="60days">Last 60 Days</SelectItem>
                       <SelectItem value="this_month">This Month</SelectItem>
-                      {currentAdminUser?.role !== 'sales' && <SelectItem value="all">All Time</SelectItem>}
+                      {!isSalesAgent && <SelectItem value="all">All Time</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
@@ -3201,7 +3203,7 @@ export const CustomersTab = () => {
               )}
 
               {/* Activity summary - hidden for sales agents */}
-              {currentAdminUser?.role !== 'sales' && (
+              {!isSalesAgent && (
               <div className="flex items-end pb-0.5 ml-auto">
                 <span className="text-sm text-muted-foreground">
                   Showing {filteredCustomers.length} of {customers.length} customers
@@ -3358,8 +3360,12 @@ export const CustomersTab = () => {
                     setFilterByPlan('all');
                     setFilterByStatus('all');
                     setFilterByTag('all');
-                    setFilterBySource('website'); // Reset to default Website (BAW)
-                    setDateRange(undefined);
+                    setFilterByWarrantyPeriod('all');
+                    setFilterBySource(isSalesAgent ? 'all_view' : 'website');
+                    setFilterByAgent(isSalesAgent && currentAdminUser ? currentAdminUser.id : 'all');
+                    setTotalSalesDateFilter(isSalesAgent ? '60days' : '30days');
+                    const resetRange = isSalesAgent ? getAgentCountsDateRange('60days') : null;
+                    setDateRange(resetRange ? { from: resetRange.start, to: resetRange.end } : undefined);
                     setSelectedCustomers(new Set());
                   }}
                   className="text-xs"
