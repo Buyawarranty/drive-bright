@@ -383,8 +383,16 @@ export const CustomersTab = () => {
     return { from: today, to: today };
   });
 
+  // ViewAs impersonation support — override role and admin ID when impersonating
+  const { isImpersonating, viewAsAgent, effectiveRole: viewAsEffectiveRole, effectiveAdminUserId } = useViewAs();
+
   // Compute today's sales and date-filtered revenue (super_admin only)
-  const normalizedRole = currentAdminUser?.role?.trim().toLowerCase() || '';
+  const normalizedRole = isImpersonating && viewAsAgent
+    ? viewAsAgent.role?.trim().toLowerCase() || ''
+    : currentAdminUser?.role?.trim().toLowerCase() || '';
+  const effectiveAdminId = isImpersonating && viewAsAgent
+    ? viewAsAgent.id
+    : currentAdminUser?.id;
   const isSuperAdmin = normalizedRole === 'super_admin';
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
