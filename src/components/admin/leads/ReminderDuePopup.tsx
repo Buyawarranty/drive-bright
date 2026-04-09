@@ -13,10 +13,9 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate, activeT
   const [autoDismissed, setAutoDismissed] = useState<Set<string>>(new Set());
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  // Only show on new-leads tab
-  if (activeTab !== 'new-leads') return null;
-
-  const visibleReminders = dueReminders.filter(r => !autoDismissed.has(r.id));
+  const visibleReminders = (activeTab === 'new-leads')
+    ? dueReminders.filter(r => !autoDismissed.has(r.id))
+    : [];
 
   // Auto-dismiss after 10 seconds
   useEffect(() => {
