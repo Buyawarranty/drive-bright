@@ -794,6 +794,7 @@ serve(async (req) => {
         customer_id: customerData2.id,
         user_id: userId,
         email: userEmail,
+        customer_full_name: customerName, // Store customer name on policy for dashboard display
         plan_type: planName.toLowerCase(), // Use the actual plan name in lowercase for customer_policies table
         payment_type: paymentType,
         policy_number: warrantyReference,
