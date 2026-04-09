@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -33,6 +33,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { supabase } from '@/integrations/supabase/client';
 
 import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange } from '@/lib/leadFeedDate';
 
@@ -146,9 +147,39 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   
   // Source filter visibility: admin, super_admin, and lead_gen only
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
+
+  // Fetch active reminder lead IDs for the current admin user
+  useEffect(() => {
+    const fetchReminderLeadIds = async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) return;
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', userData.user.id)
+          .maybeSingle();
+        if (!adminUser?.id) return;
+        const { data } = await (supabase
+          .from('lead_reminders' as any)
+          .select('lead_id')
+          .eq('user_id', adminUser.id)
+          .in('status', ['pending', 'snoozed']) as any);
+        if (data) {
+          setReminderLeadIds(new Set((data as any[]).map((r: any) => r.lead_id)));
+        }
+      } catch (err) {
+        console.error('Error fetching reminder lead IDs:', err);
+      }
+    };
+    fetchReminderLeadIds();
+    const interval = setInterval(fetchReminderLeadIds, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
@@ -213,6 +244,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
+    // Handle reminders filter before the switch since it's not a LeadStatus
+    if ((filter as string) === 'reminders') {
+      return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
+    }
     switch (filter) {
       case 'all':
       case 'all_leads':
@@ -229,7 +264,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       case 'callbacks':
         return inputLeads.filter(lead => lead.is_callback === true);
       case 'recovered':
-        // Recovered = migrated orphan carts (no assigned_at and no step_two_completed_at)
         return inputLeads.filter(lead => !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at);
       case 'urgent_callback':
       case 'quote_sent':
@@ -241,7 +275,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       default:
         return inputLeads.filter(lead => lead.status === filter);
     }
-  }, [filter]);
+  }, [filter, reminderLeadIds]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => (lead.status as string) !== 'archived'),
@@ -423,12 +457,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           (l.status as string) !== 'archived'
       ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
+      reminders: dateFilteredLeadsForCounts.filter(l => reminderLeadIds.has(l.id)).length,
       recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredLeadsForCounts.filter(l => !l.lead_source || l.lead_source === 'website').length,
     };
-  }, [dateFilteredLeadsForCounts]);
+  }, [dateFilteredLeadsForCounts, reminderLeadIds]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({

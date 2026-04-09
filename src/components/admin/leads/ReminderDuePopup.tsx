@@ -54,7 +54,7 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
             key={reminder.id}
             onClick={() => handleClick(reminder)}
             className={`
-              rounded-lg shadow-lg border cursor-pointer transition-all hover:scale-[1.02] animate-in slide-in-from-right
+              rounded-lg shadow-lg border cursor-pointer transition-all hover:scale-[1.02]
               ${isOverdue 
                 ? 'bg-red-50 border-red-300 hover:bg-red-100' 
                 : 'bg-amber-50 border-amber-300 hover:bg-amber-100'
