@@ -67,6 +67,7 @@ import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
@@ -382,8 +383,16 @@ export const CustomersTab = () => {
     return { from: today, to: today };
   });
 
+  // ViewAs impersonation support — override role and admin ID when impersonating
+  const { isImpersonating, viewAsAgent, effectiveRole: viewAsEffectiveRole, effectiveAdminUserId } = useViewAs();
+
   // Compute today's sales and date-filtered revenue (super_admin only)
-  const normalizedRole = currentAdminUser?.role?.trim().toLowerCase() || '';
+  const normalizedRole = isImpersonating && viewAsAgent
+    ? viewAsAgent.role?.trim().toLowerCase() || ''
+    : currentAdminUser?.role?.trim().toLowerCase() || '';
+  const effectiveAdminId = isImpersonating && viewAsAgent
+    ? viewAsAgent.id
+    : currentAdminUser?.id;
   const isSuperAdmin = normalizedRole === 'super_admin';
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
@@ -574,14 +583,16 @@ export const CustomersTab = () => {
 
   // Auto-select own agent filter for sales agents + keep their period locked to 60 days max
   useEffect(() => {
-    if (!isSalesAgent || !currentAdminUser) return;
+    if (!isSalesAgent) return;
+    const agentId = effectiveAdminId;
+    if (!agentId) return;
 
-    setFilterByAgent((prev) => (prev === 'all' ? currentAdminUser.id : prev));
+    setFilterByAgent((prev) => (prev === 'all' ? agentId : prev));
 
     if (totalSalesDateFilter === 'all') {
       setTotalSalesDateFilter('60days');
     }
-  }, [currentAdminUser, isSalesAgent, totalSalesDateFilter]);
+  }, [effectiveAdminId, isSalesAgent, totalSalesDateFilter]);
 
   // Keep the shared customer date filter in sync with the Deals Period dropdown for all roles
   useEffect(() => {
@@ -606,7 +617,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -761,7 +772,7 @@ export const CustomersTab = () => {
 
     // For sales agents: enforce own-agent filter when no explicit agent selection or search bypass
     const effectiveAgentFilter = (isSalesAgent && filterByAgent === 'all' && !isSalesSearching)
-      ? currentAdminUser.id  // Default to own deals even if somehow reset to 'all'
+      ? (effectiveAdminId || currentAdminUser.id)  // Default to own deals even if somehow reset to 'all'
       : filterByAgent;
 
     if (effectiveAgentFilter !== 'all' && !isSalesSearching) {
@@ -839,7 +850,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
