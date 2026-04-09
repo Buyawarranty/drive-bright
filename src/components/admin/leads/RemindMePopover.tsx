@@ -271,7 +271,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
   };
 
   // If there's an active reminder, show reminder badge
-  if (currentReminder && !open) {
+  if (currentReminder) {
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
