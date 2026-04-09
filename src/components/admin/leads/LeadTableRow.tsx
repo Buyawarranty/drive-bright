@@ -695,18 +695,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 bg-purple-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 animate-pulse">
-                  <RotateCw className="h-3 w-3" />Re-sub
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-purple-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <RotateCw className="h-3 w-3" />x{Math.min((lead.resubmission_count || 0) + 1, 10)}{(lead.resubmission_count || 0) >= 10 ? '+' : ''}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
-                Returning customer — resubmitted {(lead.resubmission_count || 0) > 9 ? '9+' : `${lead.resubmission_count}x`}{lead.last_resubmitted_at ? ` (last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')})` : ''}
+                Submitted {(lead.resubmission_count || 0) + 1} times{lead.last_resubmitted_at ? ` — last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')}` : ''}
               </TooltipContent>
             </Tooltip>
           )}
           {lead.application_count > 1 && !(lead.resubmission_count || 0) && (
             <Badge className="text-[10px] px-1.5 py-0.5 bg-orange-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
-              <Flame className="h-3 w-3" />{lead.application_count > 9 ? '9+' : `${lead.application_count}x`}
+              <Flame className="h-3 w-3" />x{lead.application_count > 9 ? '9+' : `${lead.application_count}`}
             </Badge>
           )}
           {displayName ? (
