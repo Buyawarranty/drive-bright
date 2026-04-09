@@ -772,7 +772,7 @@ export const CustomersTab = () => {
 
     // For sales agents: enforce own-agent filter when no explicit agent selection or search bypass
     const effectiveAgentFilter = (isSalesAgent && filterByAgent === 'all' && !isSalesSearching)
-      ? currentAdminUser.id  // Default to own deals even if somehow reset to 'all'
+      ? (effectiveAdminId || currentAdminUser.id)  // Default to own deals even if somehow reset to 'all'
       : filterByAgent;
 
     if (effectiveAgentFilter !== 'all' && !isSalesSearching) {
