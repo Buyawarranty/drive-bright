@@ -384,6 +384,7 @@ export const CustomersTab = () => {
 
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
+  const isSalesAgent = currentAdminUser?.role === 'sales';
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin) return null;
@@ -3347,7 +3348,7 @@ export const CustomersTab = () => {
               <TableHead>Dur.</TableHead>
               <TableHead>Start Date</TableHead>
               
-              <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>
+              {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
               <TableHead className="bg-purple-50">Source</TableHead>
@@ -4265,6 +4266,7 @@ Please log in and change your password after first login.`;
                                             customer={editingCustomer}
                                             policy={editingCustomer.customer_policies[0]}
                                           />
+                                          {!isSalesAgent && (
                                           <Button
                                             onClick={() => {
                                               setUpgradeCustomer(editingCustomer);
@@ -4276,6 +4278,7 @@ Please log in and change your password after first login.`;
                                             <Sparkles className="h-4 w-4 text-amber-500" />
                                             <span className="text-amber-600">Manual Upgrade</span>
                                           </Button>
+                                          )}
                                         </div>
                                         
                                         {/* Show manual upgrade badge if upgraded */}
@@ -4817,6 +4820,7 @@ Please log in and change your password after first login.`;
                     </TableCell>
                     {/* Future Activation Column - moved to name cell */}
                     {/* Upgrade Column */}
+                    {!isSalesAgent && (
                     <TableCell className="text-center">
                       <InlineUpgradeCell
                         customerId={customer.id}
@@ -4839,6 +4843,7 @@ Please log in and change your password after first login.`;
                         consequential={customer.consequential}
                       />
                     </TableCell>
+                    )}
                     <TableCell className="text-center">
                       {customer.customer_policies?.[0]?.policy_start_date || customer.signup_date ? (
                         <div className="text-sm">
@@ -4885,36 +4890,48 @@ Please log in and change your password after first login.`;
                          stripeSessionId={customer.stripe_session_id}
                        />
                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <InlineWarrantyUpgrade
-                            customerId={customer.id}
-                            customerEmail={customer.email}
-                            customerName={customer.name}
-                            registrationPlate={customer.registration_plate}
-                            field="excess"
-                            currentValue={customer.voluntary_excess || 100}
-                            onUpdate={fetchCustomers}
-                          />
-                          {customer.manual_upgrade_at && (
-                            <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                          )}
-                        </div>
-                      </TableCell>
                        <TableCell>
                          <div className="flex items-center gap-1">
+                           {isSalesAgent ? (
+                             <span className="text-sm">£{customer.voluntary_excess || 100}</span>
+                           ) : (
+                           <>
                            <InlineWarrantyUpgrade
                              customerId={customer.id}
                              customerEmail={customer.email}
                              customerName={customer.name}
                              registrationPlate={customer.registration_plate}
-                             field="claim_limit"
-                             currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                             field="excess"
+                             currentValue={customer.voluntary_excess || 100}
                              onUpdate={fetchCustomers}
                            />
                            {customer.manual_upgrade_at && (
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
+                           </>
+                           )}
+                         </div>
+                       </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {isSalesAgent ? (
+                              <span className="text-sm">£{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}</span>
+                            ) : (
+                            <>
+                            <InlineWarrantyUpgrade
+                              customerId={customer.id}
+                              customerEmail={customer.email}
+                              customerName={customer.name}
+                              registrationPlate={customer.registration_plate}
+                              field="claim_limit"
+                              currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                              onUpdate={fetchCustomers}
+                            />
+                            {customer.manual_upgrade_at && (
+                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
+                            )}
+                            </>
+                            )}
                          </div>
                        </TableCell>
                        <TableCell>
