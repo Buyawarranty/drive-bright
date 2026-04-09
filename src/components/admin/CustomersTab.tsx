@@ -606,7 +606,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [applyFiltersAndSort]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -2940,8 +2940,8 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source - hidden for sales-scoped roles */}
-            {!isSalesScopedRole && (
+             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source - hidden for sales agents */}
+            {!isSalesAgent && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               {/* Filter by Tag */}
               <div className="space-y-1">
@@ -3108,7 +3108,7 @@ export const CustomersTab = () => {
                       {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                         <>
                           <SelectItem value="all">All Agents</SelectItem>
-                          {!isSalesScopedRole && <SelectItem value="unassigned">Unassigned</SelectItem>}
+                          {!isSalesAgent && <SelectItem value="unassigned">Unassigned</SelectItem>}
                         </>
                       )}
                       {adminUsers
