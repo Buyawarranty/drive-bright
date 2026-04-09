@@ -583,14 +583,16 @@ export const CustomersTab = () => {
 
   // Auto-select own agent filter for sales agents + keep their period locked to 60 days max
   useEffect(() => {
-    if (!isSalesAgent || !currentAdminUser) return;
+    if (!isSalesAgent) return;
+    const agentId = effectiveAdminId;
+    if (!agentId) return;
 
-    setFilterByAgent((prev) => (prev === 'all' ? currentAdminUser.id : prev));
+    setFilterByAgent((prev) => (prev === 'all' ? agentId : prev));
 
     if (totalSalesDateFilter === 'all') {
       setTotalSalesDateFilter('60days');
     }
-  }, [currentAdminUser, isSalesAgent, totalSalesDateFilter]);
+  }, [effectiveAdminId, isSalesAgent, totalSalesDateFilter]);
 
   // Keep the shared customer date filter in sync with the Deals Period dropdown for all roles
   useEffect(() => {
