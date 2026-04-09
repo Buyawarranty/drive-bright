@@ -2884,7 +2884,8 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source */}
+             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source - hidden for sales agents */}
+            {!isSalesAgent && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               {/* Filter by Tag */}
               <div className="space-y-1">
@@ -3034,6 +3035,7 @@ export const CustomersTab = () => {
                 </Select>
                </div>
             </div>
+            )}
 
              {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
             <div className="flex items-end gap-4 flex-wrap">
