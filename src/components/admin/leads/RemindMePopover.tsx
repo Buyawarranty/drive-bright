@@ -21,7 +21,7 @@ interface RemindMePopoverProps {
 type LabelSaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false }) => {
-  const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder } = useLeadReminders(leadId);
+  const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder, deleteReminder } = useLeadReminders(leadId);
   const [open, setOpen] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
