@@ -565,10 +565,15 @@ export const CustomersTab = () => {
     }
   }, [availableTags, customers.length]);
 
-  // Auto-select own agent filter for sales agents
+  // Auto-select own agent filter for sales agents + restrict to 2 months
   useEffect(() => {
     if (currentAdminUser && currentAdminUser.role === 'sales') {
       setFilterByAgent(currentAdminUser.id);
+      // Restrict sales agents to last 2 months of data by default
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      twoMonthsAgo.setHours(0, 0, 0, 0);
+      setDateRange({ from: twoMonthsAgo, to: new Date() });
     }
   }, [currentAdminUser]);
 
@@ -756,8 +761,9 @@ export const CustomersTab = () => {
       });
     }
 
-    // Apply date range filter
-    if (dateRange?.from) {
+    // Apply date range filter — sales agents bypass when searching (so they can find any customer)
+    const isSalesAgentSearching = debouncedSearchTerm && currentAdminUser?.role === 'sales';
+    if (dateRange?.from && !isSalesAgentSearching) {
       filtered = filtered.filter(customer => {
         const signupDate = new Date(customer.signup_date);
         const fromDate = new Date(dateRange.from!);
@@ -3051,9 +3057,10 @@ export const CustomersTab = () => {
                         .map(user => {
                           const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+                          const isSalesAgentRole = currentAdminUser?.role === 'sales';
                           return (
                             <SelectItem key={user.id} value={user.id}>
-                              {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
+                              {displayName}{!isSalesAgentRole && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
                             </SelectItem>
                           );
                         })}
@@ -3061,7 +3068,8 @@ export const CustomersTab = () => {
                   </Select>
                 </div>
 
-                {/* Deals Period Selector */}
+                {/* Deals Period Selector - hidden for sales agents */}
+                {currentAdminUser?.role !== 'sales' && (
                 <div className="space-y-1 w-[160px]">
                   <Label className="text-sm font-medium">Deals Period</Label>
                   <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
@@ -3079,6 +3087,7 @@ export const CustomersTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                )}
                 </>
               )}
 
@@ -3135,12 +3144,14 @@ export const CustomersTab = () => {
                 </div>
               )}
 
-              {/* Activity summary */}
+              {/* Activity summary - hidden for sales agents */}
+              {currentAdminUser?.role !== 'sales' && (
               <div className="flex items-end pb-0.5 ml-auto">
                 <span className="text-sm text-muted-foreground">
                   Showing {filteredCustomers.length} of {customers.length} customers
                 </span>
               </div>
+              )}
             </div>
 
             {/* Results Summary and Bulk Actions */}
