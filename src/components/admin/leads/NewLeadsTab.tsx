@@ -396,32 +396,45 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (canSeeUnworked) return filteredLeads.filter(lead => !isRecoveredLead(lead));
     
     // All other roles: merge recovered leads into main list but deduplicate
-    // Group by normalized email, keep the one with assignment/activity, discard duplicates
-    const seen = new Map<string, number>();
+    // Group by normalized email AND phone, keep the one with assignment/activity, discard duplicates
+    const seenByEmail = new Map<string, number>();
+    const seenByPhone = new Map<string, number>();
     const result: typeof filteredLeads = [];
     
+    const normalizePhone = (phone: string | null | undefined) => {
+      if (!phone) return null;
+      const digits = phone.replace(/[^0-9]/g, '');
+      return digits.length >= 10 ? digits.slice(-10) : null;
+    };
+    
+    const hasActivity = (lead: typeof filteredLeads[0]) => 
+      lead.assigned_to || lead.call_count > 0 || lead.notes;
+    
     for (const lead of filteredLeads) {
-      const key = lead.email?.toLowerCase()?.trim();
-      if (!key) {
-        result.push(lead);
-        continue;
-      }
+      const emailKey = lead.email?.toLowerCase()?.trim() || null;
+      const phoneKey = normalizePhone(lead.phone);
       
-      const existingIdx = seen.get(key);
+      // Check if we've seen this lead by email or phone
+      const existingByEmail = emailKey ? seenByEmail.get(emailKey) : undefined;
+      const existingByPhone = phoneKey ? seenByPhone.get(phoneKey) : undefined;
+      const existingIdx = existingByEmail ?? existingByPhone;
+      
       if (existingIdx === undefined) {
-        seen.set(key, result.length);
+        const idx = result.length;
+        if (emailKey) seenByEmail.set(emailKey, idx);
+        if (phoneKey) seenByPhone.set(phoneKey, idx);
         result.push(lead);
       } else {
         // Keep the one with assignment or more activity
         const existing = result[existingIdx];
-        const existingHasActivity = existing.assigned_to || existing.call_count > 0 || existing.notes;
-        const currentHasActivity = lead.assigned_to || lead.call_count > 0 || lead.notes;
-        
-        if (!existingHasActivity && currentHasActivity) {
+        if (!hasActivity(existing) && hasActivity(lead)) {
           // Replace with the one that has activity
           result[existingIdx] = lead;
+          // Update index references
+          if (emailKey) seenByEmail.set(emailKey, existingIdx);
+          if (phoneKey) seenByPhone.set(phoneKey, existingIdx);
         }
-        // Otherwise keep existing (which has activity or was first) — discard the duplicate
+        // Otherwise keep existing — discard the duplicate
       }
     }
     
