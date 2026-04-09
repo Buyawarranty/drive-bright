@@ -944,7 +944,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </CardContent>
           </Card>
 
-          {/* Unworked Leads Section — only visible to admin/super_admin/sales_lead */}
+          {/* Unworked Leads Section — only visible to super_admin */}
           {canSeeUnworked && recoveredLeads.length > 0 && (
             <Card className="overflow-hidden border-2 border-border mt-4">
               <CardContent className="p-0">
