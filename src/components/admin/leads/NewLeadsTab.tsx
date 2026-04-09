@@ -325,14 +325,45 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
-  const canSeeUnworked = isAdminOrSuperAdmin || userRole === 'sales_lead';
+  const canSeeUnworked = userRole === 'super_admin';
 
   const freshLeads = useMemo(() => {
     // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
     if (filter === 'recovered') return [];
-    // Sales agents see all leads in one list (no separate unworked section)
-    if (!canSeeUnworked) return filteredLeads;
-    return filteredLeads.filter(lead => !isRecoveredLead(lead));
+    // Super admin sees separate unworked section — exclude recovered from main list
+    if (canSeeUnworked) return filteredLeads.filter(lead => !isRecoveredLead(lead));
+    
+    // All other roles: merge recovered leads into main list but deduplicate
+    // Group by normalized email, keep the one with assignment/activity, discard duplicates
+    const seen = new Map<string, number>();
+    const result: typeof filteredLeads = [];
+    
+    for (const lead of filteredLeads) {
+      const key = lead.email?.toLowerCase()?.trim();
+      if (!key) {
+        result.push(lead);
+        continue;
+      }
+      
+      const existingIdx = seen.get(key);
+      if (existingIdx === undefined) {
+        seen.set(key, result.length);
+        result.push(lead);
+      } else {
+        // Keep the one with assignment or more activity
+        const existing = result[existingIdx];
+        const existingHasActivity = existing.assigned_to || existing.call_count > 0 || existing.contact_notes;
+        const currentHasActivity = lead.assigned_to || lead.call_count > 0 || lead.contact_notes;
+        
+        if (!existingHasActivity && currentHasActivity) {
+          // Replace with the one that has activity
+          result[existingIdx] = lead;
+        }
+        // Otherwise keep existing (which has activity or was first) — discard the duplicate
+      }
+    }
+    
+    return result;
   }, [filteredLeads, isRecoveredLead, filter, canSeeUnworked]);
 
   const recoveredLeads = useMemo(() => {
