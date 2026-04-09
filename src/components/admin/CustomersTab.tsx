@@ -2749,8 +2749,8 @@ export const CustomersTab = () => {
             </DropdownMenu>
           )}
           
-          {/* Debug Info Button */}
-          {debugInfo && (
+          {/* Debug Info Button - hidden for sales agents */}
+          {debugInfo && !isSalesAgent && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="flex items-center space-x-2 text-gray-600">
@@ -2767,7 +2767,8 @@ export const CustomersTab = () => {
             </Popover>
           )}
 
-          {/* Order Management Guide Button */}
+          {/* Order Management Guide Button - hidden for sales agents */}
+          {!isSalesAgent && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="flex items-center space-x-2 text-gray-600">
@@ -2798,6 +2799,7 @@ export const CustomersTab = () => {
               </div>
             </PopoverContent>
           </Popover>
+          )}
         </div>
       </div>
 
