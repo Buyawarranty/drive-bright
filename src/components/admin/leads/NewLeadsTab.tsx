@@ -228,7 +228,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
     setActiveFilter(newFilter);
     setFilter(newFilter as any);
-  }, [setFilter]);
+    // Auto-switch sort when entering/leaving reminders view
+    if (newFilter === 'reminders') {
+      setSortOption('reminder_soonest');
+    } else if (sortOption === 'reminder_soonest' || sortOption === 'reminder_latest') {
+      setSortOption('latest_submitted');
+    }
+  }, [setFilter, sortOption]);
 
   const hasMountedDateRangeRef = React.useRef(false);
 
