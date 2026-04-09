@@ -352,8 +352,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       } else {
         // Keep the one with assignment or more activity
         const existing = result[existingIdx];
-        const existingHasActivity = existing.assigned_to || existing.call_count > 0 || existing.contact_notes;
-        const currentHasActivity = lead.assigned_to || lead.call_count > 0 || lead.contact_notes;
+        const existingHasActivity = existing.assigned_to || existing.call_count > 0 || existing.notes;
+        const currentHasActivity = lead.assigned_to || lead.call_count > 0 || lead.notes;
         
         if (!existingHasActivity && currentHasActivity) {
           // Replace with the one that has activity
