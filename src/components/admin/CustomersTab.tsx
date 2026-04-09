@@ -3144,12 +3144,14 @@ export const CustomersTab = () => {
                 </div>
               )}
 
-              {/* Activity summary */}
+              {/* Activity summary - hidden for sales agents */}
+              {currentAdminUser?.role !== 'sales' && (
               <div className="flex items-end pb-0.5 ml-auto">
                 <span className="text-sm text-muted-foreground">
                   Showing {filteredCustomers.length} of {customers.length} customers
                 </span>
               </div>
+              )}
             </div>
 
             {/* Results Summary and Bulk Actions */}
