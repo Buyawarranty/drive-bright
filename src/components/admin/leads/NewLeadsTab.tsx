@@ -785,6 +785,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold tracking-tight">Leads</h1>
           <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
+          {userRole === 'super_admin' && (
           <Button
             variant="outline"
             size="sm"
@@ -795,6 +796,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
             {isRestoring ? 'Restoring...' : 'Restore All Leads'}
           </Button>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -962,7 +964,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
-                    onBulkRestore={handleBulkRestore}
+                    onBulkRestore={userRole === 'super_admin' ? handleBulkRestore : undefined}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
