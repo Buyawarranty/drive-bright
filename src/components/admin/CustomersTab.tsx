@@ -3091,7 +3091,7 @@ export const CustomersTab = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales') && (
+                      {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                         <>
                           <SelectItem value="all">All Agents</SelectItem>
                           {!isSalesAgent && <SelectItem value="unassigned">Unassigned</SelectItem>}
