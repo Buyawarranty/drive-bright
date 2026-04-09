@@ -3082,7 +3082,7 @@ export const CustomersTab = () => {
              {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
             <div className="flex items-end gap-4 flex-wrap">
               {/* Filter by Agent */}
-              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales') && (
+              {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                 <>
                 <div className="space-y-1 w-[220px]">
                   <Label className="text-sm font-medium">Sales by Agent</Label>
