@@ -569,26 +569,25 @@ export const CustomersTab = () => {
     }
   }, [availableTags, customers.length]);
 
-  // Auto-select own agent filter for sales agents + restrict to 2 months
-  useEffect(() => {
-    if (currentAdminUser && currentAdminUser.role === 'sales') {
-      setFilterByAgent(currentAdminUser.id);
-      setTotalSalesDateFilter('60days');
-      // Restrict sales agents to last 2 months of data by default
-      const twoMonthsAgo = new Date();
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
-      twoMonthsAgo.setHours(0, 0, 0, 0);
-      setDateRange({ from: twoMonthsAgo, to: new Date() });
-    }
-  }, [currentAdminUser]);
-
+  // Auto-select own agent filter for sales agents + keep their period locked to 60 days max
   useEffect(() => {
     if (currentAdminUser?.role !== 'sales') return;
 
-    const lockedRange = getAgentCountsDateRange(totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter) || getAgentCountsDateRange('60days');
-    if (!lockedRange) return;
+    setFilterByAgent((prev) => (prev === 'all' ? currentAdminUser.id : prev));
 
-    setDateRange({ from: lockedRange.start, to: lockedRange.end });
+    if (totalSalesDateFilter === 'all') {
+      setTotalSalesDateFilter('60days');
+    }
+  }, [currentAdminUser, totalSalesDateFilter]);
+
+  // Keep the shared customer date filter in sync with the Deals Period dropdown for all roles
+  useEffect(() => {
+    const selectedPeriod = currentAdminUser?.role === 'sales' && totalSalesDateFilter === 'all'
+      ? '60days'
+      : totalSalesDateFilter;
+
+    const range = getAgentCountsDateRange(selectedPeriod);
+    setDateRange(range ? { from: range.start, to: range.end } : undefined);
   }, [currentAdminUser?.role, totalSalesDateFilter]);
 
   // Listen for URL search parameter changes
@@ -838,7 +837,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, tagAssignmentsCache, refundedCustomerIds, currentAdminUser]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser]);
 
   const getCurrentUser = async () => {
     try {
