@@ -13,6 +13,7 @@ import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useUserPresence } from '@/hooks/useUserPresence';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
+import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -572,6 +573,14 @@ const AdminDashboardInner: React.FC<{
         </div>
       )}
       
+      <ReminderDuePopup onNavigate={(leadId, type) => {
+        if (type === 'customer') {
+          handleTabChange('customers');
+        } else {
+          handleTabChange('new-leads');
+        }
+      }} />
+
       <div className="flex-1 flex flex-col lg:flex-row">
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
