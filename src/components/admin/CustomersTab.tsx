@@ -385,6 +385,9 @@ export const CustomersTab = () => {
   // Compute today's sales and date-filtered revenue (super_admin only)
   const isSuperAdmin = currentAdminUser?.role === 'super_admin';
   const isSalesAgent = currentAdminUser?.role === 'sales';
+  
+  // Track whether role has been determined to prevent flash of unrestricted UI
+  const isRoleLoaded = !!currentAdminUser;
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin) return null;
@@ -2704,6 +2707,21 @@ export const CustomersTab = () => {
       default: return 'Unknown';
     }
   };
+
+  // Don't render the full UI until role is determined (prevents flash of unrestricted features for sales agents)
+  if (!isRoleLoaded) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
+          <Button variant="outline" disabled className="flex items-center space-x-2">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <span>Loading...</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
