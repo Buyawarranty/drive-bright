@@ -148,6 +148,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
+  const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   
   // Source filter visibility: admin, super_admin, and lead_gen only
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
@@ -166,11 +167,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         if (!adminUser?.id) return;
         const { data } = await (supabase
           .from('lead_reminders' as any)
-          .select('lead_id')
+          .select('lead_id, reminder_time')
           .eq('user_id', adminUser.id)
           .in('status', ['pending', 'snoozed']) as any);
         if (data) {
           setReminderLeadIds(new Set((data as any[]).map((r: any) => r.lead_id)));
+          const timesMap: Record<string, string> = {};
+          (data as any[]).forEach((r: any) => { timesMap[r.lead_id] = r.reminder_time; });
+          setReminderTimesMap(timesMap);
         }
       } catch (err) {
         console.error('Error fetching reminder lead IDs:', err);
@@ -224,7 +228,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
     setActiveFilter(newFilter);
     setFilter(newFilter as any);
-  }, [setFilter]);
+    // Auto-switch sort when entering/leaving reminders view
+    if (newFilter === 'reminders') {
+      setSortOption('reminder_soonest');
+    } else if (sortOption === 'reminder_soonest' || sortOption === 'reminder_latest') {
+      setSortOption('latest_submitted');
+    }
+  }, [setFilter, sortOption]);
 
   const hasMountedDateRangeRef = React.useRef(false);
 
@@ -328,6 +338,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     result = [...result].sort((a, b) => {
       switch (sortOption) {
+        case 'reminder_soonest': {
+          const aTime = reminderTimesMap[a.id] ? new Date(reminderTimesMap[a.id]).getTime() : Infinity;
+          const bTime = reminderTimesMap[b.id] ? new Date(reminderTimesMap[b.id]).getTime() : Infinity;
+          return aTime - bTime;
+        }
+        case 'reminder_latest': {
+          const aTime = reminderTimesMap[a.id] ? new Date(reminderTimesMap[a.id]).getTime() : 0;
+          const bTime = reminderTimesMap[b.id] ? new Date(reminderTimesMap[b.id]).getTime() : 0;
+          return bTime - aTime;
+        }
         case 'newest':
           return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
         case 'latest_submitted':
@@ -352,7 +372,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter]);
+  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap]);
 
   // Separate fresh leads from recovered (unworked) leads
   const isRecoveredLead = useCallback((lead: Lead) => {
