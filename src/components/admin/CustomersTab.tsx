@@ -573,6 +573,7 @@ export const CustomersTab = () => {
   useEffect(() => {
     if (currentAdminUser && currentAdminUser.role === 'sales') {
       setFilterByAgent(currentAdminUser.id);
+      setTotalSalesDateFilter('60days');
       // Restrict sales agents to last 2 months of data by default
       const twoMonthsAgo = new Date();
       twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
@@ -580,6 +581,15 @@ export const CustomersTab = () => {
       setDateRange({ from: twoMonthsAgo, to: new Date() });
     }
   }, [currentAdminUser]);
+
+  useEffect(() => {
+    if (currentAdminUser?.role !== 'sales') return;
+
+    const lockedRange = getAgentCountsDateRange(totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter) || getAgentCountsDateRange('60days');
+    if (!lockedRange) return;
+
+    setDateRange({ from: lockedRange.start, to: lockedRange.end });
+  }, [currentAdminUser?.role, totalSalesDateFilter]);
 
   // Listen for URL search parameter changes
   useEffect(() => {
@@ -776,12 +786,12 @@ export const CustomersTab = () => {
     if (!isSalesAgentSearching) {
       let effectiveDateRange = dateRange;
       
-      // Hard enforcement: sales agents are locked to 2 months max
-      if (currentAdminUser?.role === 'sales' && !effectiveDateRange?.from) {
-        const twoMonthsAgo = new Date();
-        twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
-        twoMonthsAgo.setHours(0, 0, 0, 0);
-        effectiveDateRange = { from: twoMonthsAgo, to: new Date() };
+      // Hard enforcement: sales agents are locked to the selected period, capped at 2 months max
+      if (currentAdminUser?.role === 'sales') {
+        const lockedRange = getAgentCountsDateRange(totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter) || getAgentCountsDateRange('60days');
+        if (lockedRange) {
+          effectiveDateRange = { from: lockedRange.start, to: lockedRange.end };
+        }
       }
       
       if (effectiveDateRange?.from) {
@@ -906,6 +916,9 @@ export const CustomersTab = () => {
       case 'last30':
       case '30days':
         return { start: new Date(todayStart.getTime() - 29 * 86400000), end: todayEnd };
+      case 'last60':
+      case '60days':
+        return { start: new Date(todayStart.getTime() - 59 * 86400000), end: todayEnd };
       case 'month':
       case 'this_month':
         return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
@@ -3113,8 +3126,7 @@ export const CustomersTab = () => {
                   </Select>
                 </div>
 
-                {/* Deals Period Selector - hidden for sales agents */}
-                {currentAdminUser?.role !== 'sales' && (
+                {/* Deals Period Selector */}
                 <div className="space-y-1 w-[160px]">
                   <Label className="text-sm font-medium">Deals Period</Label>
                   <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
@@ -3127,12 +3139,12 @@ export const CustomersTab = () => {
                       <SelectItem value="7days">Last 7 Days</SelectItem>
                       <SelectItem value="14days">Last 14 Days</SelectItem>
                       <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="60days">Last 60 Days</SelectItem>
                       <SelectItem value="this_month">This Month</SelectItem>
-                      <SelectItem value="all">All Time</SelectItem>
+                      {currentAdminUser?.role !== 'sales' && <SelectItem value="all">All Time</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
-                )}
                 </>
               )}
 
