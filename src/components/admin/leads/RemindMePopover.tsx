@@ -275,8 +275,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 gap-1.5 px-2 transition-all duration-150 hover:scale-105 hover:shadow-sm",
-              status?.urgent && "animate-pulse"
+              "h-7 gap-1.5 px-2 transition-all duration-150 hover:scale-105 hover:shadow-sm"
             )}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
