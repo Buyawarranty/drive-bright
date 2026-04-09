@@ -2713,8 +2713,8 @@ export const CustomersTab = () => {
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
         <div className="flex space-x-2">
-          {/* Quick Customer Signup Button */}
-          <QuickCustomerSignupButton />
+          {/* Quick Customer Signup Button - hidden for sales agents */}
+          {!isSalesAgent && <QuickCustomerSignupButton />}
           
           <Button 
             onClick={fetchCustomers} 
@@ -2810,6 +2810,8 @@ export const CustomersTab = () => {
             >
               Active Orders
             </TabsTrigger>
+            {!isSalesAgent && (
+            <>
             <TabsTrigger 
               value="cancellations"
               className="h-9 px-3 bg-red-50 text-red-700 border border-red-200 rounded-md text-xs data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
@@ -2824,6 +2826,8 @@ export const CustomersTab = () => {
               <Archive className="h-3.5 w-3.5" />
               Archive
             </TabsTrigger>
+            </>
+            )}
           </TabsList>
         </div>
 
