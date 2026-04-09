@@ -761,8 +761,9 @@ export const CustomersTab = () => {
       });
     }
 
-    // Apply date range filter
-    if (dateRange?.from) {
+    // Apply date range filter — sales agents bypass when searching (so they can find any customer)
+    const isSalesAgentSearching = debouncedSearchTerm && currentAdminUser?.role === 'sales';
+    if (dateRange?.from && !isSalesAgentSearching) {
       filtered = filtered.filter(customer => {
         const signupDate = new Date(customer.signup_date);
         const fromDate = new Date(dateRange.from!);
