@@ -265,6 +265,21 @@ serve(async (req) => {
         let saleType = 'Web';
         if (gclid) saleType = 'G';
         else if (fbclid) saleType = 'F';
+        // Get timing info
+        let leadCreatedAt = '';
+        try {
+          const { data: earliestLead } = await supabase
+            .from('sales_leads')
+            .select('created_at')
+            .ilike('email', userEmail)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (earliestLead?.created_at) {
+            leadCreatedAt = new Date(earliestLead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) { /* ignore */ }
+        const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -294,6 +309,11 @@ serve(async (req) => {
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${regPlate}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleData?.make || 'Unknown'}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleData?.model || 'Unknown'}</td></tr>
+            </table>
+            <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
             </table>
             <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
               <p style="margin: 0; color: #166534;"><strong>✓ Payment Assist sale completed</strong></p>
@@ -363,6 +383,11 @@ serve(async (req) => {
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${userEmail}</td></tr>
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerData.phone || customerData.mobile || 'N/A'}</td></tr>
+              </table>
+              <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
               </table>
               <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
                 <p style="margin: 0; color: #166534;"><strong>✓ Lead converted to sale by ${agentName}</strong></p>

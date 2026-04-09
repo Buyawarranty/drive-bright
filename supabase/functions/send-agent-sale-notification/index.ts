@@ -83,6 +83,12 @@ serve(async (req: Request) => {
     const customerEmail = lead.email;
     const customerPhone = lead.phone || customer?.phone || "N/A";
 
+    // Get timing info
+    const leadCreatedAt = lead.created_at 
+      ? new Date(lead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '';
+    const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎯 New Agent Sale - Lead Converted</h2>
@@ -124,6 +130,12 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${regPlate}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${lead.vehicle_make || customer?.vehicle_make || 'Unknown'}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${lead.vehicle_model || customer?.vehicle_model || 'Unknown'}</td></tr>
+        </table>
+
+        <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
         </table>
 
         <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">

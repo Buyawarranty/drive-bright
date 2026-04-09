@@ -1336,6 +1336,33 @@ export const CustomersTab = () => {
         toast.success(`Loaded ${directData.length} customers`);
       }
       
+      // Fetch lead dates from sales_leads for all customers (by email)
+      const customerEmails = directData?.map((c: any) => c.email?.toLowerCase()).filter(Boolean) || [];
+      let leadDateMap: Record<string, string> = {};
+      if (customerEmails.length > 0) {
+        try {
+          // Fetch in batches of 200 to stay under query limits
+          for (let i = 0; i < customerEmails.length; i += 200) {
+            const batch = customerEmails.slice(i, i + 200);
+            const { data: leadsData } = await supabase
+              .from('sales_leads')
+              .select('email, created_at')
+              .in('email', batch)
+              .order('created_at', { ascending: true });
+            if (leadsData) {
+              for (const lead of leadsData) {
+                const key = lead.email?.toLowerCase();
+                if (key && !leadDateMap[key]) {
+                  leadDateMap[key] = lead.created_at; // earliest lead date
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch lead dates:', e);
+        }
+      }
+
       // Process the data to flatten the customer_policies relationship
       const processedData = directData?.map((customer: any) => ({
         ...customer,
@@ -1345,7 +1372,8 @@ export const CustomersTab = () => {
         policy_status: customer.customer_policies?.[0]?.status || null,
         policy_start_date: customer.customer_policies?.[0]?.policy_start_date || null,
         warranties_2000_scheduled_for: customer.customer_policies?.[0]?.warranties_2000_scheduled_for || null,
-        last_login: customer.last_login || null
+        last_login: customer.last_login || null,
+        lead_date: leadDateMap[customer.email?.toLowerCase()] || null
       })) || [];
 
       const { recoveredRows, recoveredCount } = await recoverMissingPhones(processedData);
@@ -3402,6 +3430,7 @@ export const CustomersTab = () => {
                 />
               </TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -4635,14 +4664,28 @@ Please log in and change your password after first login.`;
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {format(new Date(customer.signup_date), 'dd/MM/yyyy')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {format(new Date(customer.signup_date), 'HH:mm')}
-                    </div>
-                  </TableCell>
+                   <TableCell>
+                     {(customer as any).lead_date ? (
+                       <>
+                         <div className="text-sm">
+                           {format(new Date((customer as any).lead_date), 'dd/MM/yyyy')}
+                         </div>
+                         <div className="text-xs text-muted-foreground">
+                           {format(new Date((customer as any).lead_date), 'HH:mm')}
+                         </div>
+                       </>
+                     ) : (
+                       <span className="text-xs text-muted-foreground">—</span>
+                     )}
+                   </TableCell>
+                   <TableCell>
+                     <div className="text-sm">
+                       {format(new Date(customer.signup_date), 'dd/MM/yyyy')}
+                     </div>
+                     <div className="text-xs text-muted-foreground">
+                       {format(new Date(customer.signup_date), 'HH:mm')}
+                     </div>
+                   </TableCell>
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
                     {customer.phone ? (

@@ -1011,7 +1011,23 @@ serve(async (req) => {
         const saleValueDisplay = typeof saleValue === 'number' ? `£${saleValue.toFixed(2)}` : saleValue;
 
         const regPlate = vehicleData?.regNumber || 'Unknown';
-        
+
+        // Look up when the lead first came in
+        let leadCreatedAt = '';
+        try {
+          const { data: leadData } = await supabaseClient
+            .from('sales_leads')
+            .select('created_at')
+            .ilike('email', userEmail)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (leadData?.created_at) {
+            leadCreatedAt = new Date(leadData.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) { /* ignore */ }
+        const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Warranty Sale</h2>
@@ -1067,6 +1083,12 @@ serve(async (req) => {
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Final:</strong></td><td style="padding: 8px;">£${customerData.final_amount || 'N/A'}</td></tr>
             </table>
             ` : ''}
+
+            <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
+            </table>
 
             <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
               <p style="margin: 0; color: #166534;"><strong>✓ Status:</strong> Policy created and sent to Warranties 2000</p>
@@ -1167,6 +1189,12 @@ serve(async (req) => {
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentMethod}</td></tr>
                 <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
+              </table>
+
+              <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+                <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
               </table>
 
               <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
