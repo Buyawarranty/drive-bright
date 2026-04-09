@@ -347,15 +347,6 @@ const AdminDashboard = () => {
   const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
       case 'customers':
-        const hasOwnOnlyPermission = effectiveUserPermissions && effectiveUserPermissions['tab_customers_own-only'] === true;
-        const hasFullAccessPermission = effectiveUserPermissions && effectiveUserPermissions['tab_customers_own-only'] === false;
-        
-        if (hasFullAccessPermission) {
-          return <CustomersTab />;
-        }
-        if (hasOwnOnlyPermission || (effectiveUserRole === 'sales' && !hasFullAccessPermission)) {
-          return <SalesCustomerManagement />;
-        }
         return <CustomersTab />;
       case 'plans':
         return <PlansTab />;
