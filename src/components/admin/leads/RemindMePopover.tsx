@@ -136,6 +136,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       setLabel('');
       setPresetTime('');
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       setLabelSaveState('error');
       toast.error("Couldn't set reminder. Try again.");
@@ -160,6 +161,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       setPresetTime('');
       setShowCustom(false);
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       setLabelSaveState('error');
       toast.error("Couldn't set reminder. Try again.");
@@ -173,6 +175,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       toast.success('Snoozed ✓', { duration: 1500 });
       setShowSnoozeOptions(false);
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       toast.error("Couldn't snooze. Try again.");
     }
@@ -184,6 +187,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       await dismissReminder(currentReminder.id);
       toast.success('Dismissed', { duration: 1500 });
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       toast.error("Couldn't dismiss. Try again.");
     }
@@ -195,6 +199,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       await completeReminder(currentReminder.id);
       toast.success('Done ✓', { duration: 1500 });
       setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
       toast.error("Couldn't complete. Try again.");
     }
