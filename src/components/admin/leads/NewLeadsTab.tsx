@@ -167,11 +167,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         if (!adminUser?.id) return;
         const { data } = await (supabase
           .from('lead_reminders' as any)
-          .select('lead_id')
+          .select('lead_id, reminder_time')
           .eq('user_id', adminUser.id)
           .in('status', ['pending', 'snoozed']) as any);
         if (data) {
           setReminderLeadIds(new Set((data as any[]).map((r: any) => r.lead_id)));
+          const timesMap: Record<string, string> = {};
+          (data as any[]).forEach((r: any) => { timesMap[r.lead_id] = r.reminder_time; });
+          setReminderTimesMap(timesMap);
         }
       } catch (err) {
         console.error('Error fetching reminder lead IDs:', err);
