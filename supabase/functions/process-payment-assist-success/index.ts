@@ -265,6 +265,21 @@ serve(async (req) => {
         let saleType = 'Web';
         if (gclid) saleType = 'G';
         else if (fbclid) saleType = 'F';
+        // Get timing info
+        let leadCreatedAt = '';
+        try {
+          const { data: earliestLead } = await supabase
+            .from('sales_leads')
+            .select('created_at')
+            .ilike('email', userEmail)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (earliestLead?.created_at) {
+            leadCreatedAt = new Date(earliestLead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) { /* ignore */ }
+        const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
