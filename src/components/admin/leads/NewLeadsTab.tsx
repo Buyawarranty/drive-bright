@@ -264,10 +264,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       case 'callbacks':
         return inputLeads.filter(lead => lead.is_callback === true);
       case 'recovered':
-        // Recovered = migrated orphan carts (no assigned_at and no step_two_completed_at)
         return inputLeads.filter(lead => !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at);
-      case 'reminders':
-        return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
       case 'urgent_callback':
       case 'quote_sent':
       case 'contacted':
