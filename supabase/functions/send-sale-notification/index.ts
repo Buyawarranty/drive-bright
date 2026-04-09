@@ -46,16 +46,32 @@ serve(async (req: Request) => {
     let resolvedAgentId = agentId || null;
     let saleType = saleSource || 'Web';
 
-    // Look up lead to check for agent attribution
+    // Look up when the lead first came in
     const { data: matchedLead } = await supabase
       .from('sales_leads')
-      .select('id, assigned_to, lead_source')
+      .select('id, assigned_to, lead_source, created_at')
       .ilike('email', customerEmail)
       .not('assigned_to', 'is', null)
       .neq('assigned_to', DEFAULT_SUPPORT_ID)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    // Also get the earliest lead date
+    let leadCreatedAt = '';
+    try {
+      const { data: earliestLead } = await supabase
+        .from('sales_leads')
+        .select('created_at')
+        .ilike('email', customerEmail)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (earliestLead?.created_at) {
+        leadCreatedAt = new Date(earliestLead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      }
+    } catch (e) { /* ignore */ }
+    const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     const isAgentSale = !!(matchedLead?.assigned_to) || (resolvedAgentId && resolvedAgentId !== DEFAULT_SUPPORT_ID);
     const effectiveAgentId = resolvedAgentId || matchedLead?.assigned_to;
@@ -114,6 +130,11 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${reg}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleMake || 'Unknown'}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleModel || 'Unknown'}</td></tr>
+        </table>
+        <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
         </table>
         <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
           <p style="margin: 0; color: #166534;"><strong>✓ ${isAgentSale ? `Lead converted to sale by ${resolvedAgentName}` : 'Sale completed'}</strong></p>
