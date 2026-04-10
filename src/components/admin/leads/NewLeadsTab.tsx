@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -502,6 +502,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
       reminders: dateFilteredLeadsForCounts.filter(l => reminderLeadIds.has(l.id)).length,
+      due_today: dateFilteredLeadsForCounts.filter(l => {
+        const rt = reminderTimesMap[l.id];
+        if (!rt) return false;
+        const d = new Date(rt);
+        return isToday(d) || isPast(d);
+      }).length,
       recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
