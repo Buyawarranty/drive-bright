@@ -272,7 +272,7 @@ const AdminDashboard = () => {
       const { data, error } = rolesResult;
       const adminUserData = permissionsResult.data;
 
-      const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen'];
+      const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts'];
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
@@ -282,7 +282,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll'];
+      const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
       const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
       setUserRole(primaryRole);

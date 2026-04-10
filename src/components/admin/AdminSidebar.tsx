@@ -306,8 +306,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
-      // Accounts/Payroll: customers, timesheets (with approvals), analytics, user permissions, account
+      // Accounts Manager/Payroll: customers, timesheets (with approvals), analytics, user permissions, account
       const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'account'];
+      return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
+    }
+
+    if (userRole === 'accounts') {
+      // Accounts role: new leads, quotes, customers, discount codes, claims, policy letters, timesheets
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'claims', 'policy-documents', 'timesheets', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
@@ -365,7 +371,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = getVisibleTabs();
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts') {
       setTabs(visibleTabs);
       return;
     }

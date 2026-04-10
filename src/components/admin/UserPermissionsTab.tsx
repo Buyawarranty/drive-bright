@@ -130,6 +130,16 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads': true,
     'tab_new-leads_view': true,
   },
+  accounts: {
+    'tab_new-leads': true,
+    'tab_get-quote': true,
+    'tab_customers': true,
+    'tab_discount-codes': true,
+    'tab_claims': true,
+    'tab_policy-documents': true,
+    'tab_timesheets': true,
+    'tab_customers_view': true,
+  },
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: {},
   guest: {},
@@ -882,6 +892,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
+                    <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -1071,6 +1082,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
+                    <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
