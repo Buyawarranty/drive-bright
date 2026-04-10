@@ -59,6 +59,7 @@ interface LeadTableRowProps {
   onRequestAccess?: (reason: string) => void;
   isLeadGenView?: boolean;
   userRole?: string | null;
+  reminderTime?: string;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -130,9 +131,24 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
-const getRowUrgencyClass = (lead: Lead): string => {
+const getRowUrgencyClass = (lead: Lead, reminderTime?: string): string => {
   if (lead.is_paid) return 'bg-green-50 hover:bg-green-100/70';
   if ((lead.resubmission_count || 0) > 0) return 'bg-purple-50 hover:bg-purple-100/70';
+  
+  // Reminder-based urgency colouring
+  if (reminderTime) {
+    const reminderDate = new Date(reminderTime);
+    if (isPast(reminderDate)) {
+      const overdueMin = differenceInHours(new Date(), reminderDate);
+      // Overdue reminder — red tint (stronger than SLA overdue)
+      return 'bg-red-50 hover:bg-red-100/70';
+    }
+    if (isToday(reminderDate)) {
+      // Due today — amber tint
+      return 'bg-amber-50 hover:bg-amber-100/70';
+    }
+  }
+  
   const sla = getUrgencySLA(lead);
   if (sla.priority === 0) return 'bg-red-50 hover:bg-red-100/70';
   if (sla.priority === 1) return 'bg-amber-50 hover:bg-amber-100/70';
