@@ -1224,7 +1224,8 @@ Questions? Call 0330 229 5040`;
           rentalIncluded: getAutoIncludedAddOns(paymentType).includes('rental'),
           additionalNotes,
           freeExtendedCover, // Pass the free extended cover selection
-          createdByName: 'Admin'
+          createdByName: 'Admin',
+          customerDob: customerDob || null
         }
       });
 
