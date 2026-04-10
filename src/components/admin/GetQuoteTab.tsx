@@ -2229,7 +2229,7 @@ Questions? Call 0330 229 5040`;
                       </PopoverTrigger>
                       <PopoverContent className="w-72 text-sm" side="right">
                         <p className="font-medium mb-1">Why do we need this?</p>
-                        <p className="text-muted-foreground">Used to verify the customer's identity when they call us or make a claim. This is for admin purposes only and is not shared with the customer.</p>
+                        <p className="text-muted-foreground">We use your date of birth to securely verify your identity when you make a claim or contact us. This helps protect your policy from unauthorised use.</p>
                       </PopoverContent>
                     </Popover>
                   </div>
