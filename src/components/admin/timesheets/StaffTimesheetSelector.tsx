@@ -52,8 +52,9 @@ export function StaffTimesheetSelector({ currentUserId, selectedUserId, onUserCh
       admin: 'Admin',
       sales: 'Sales',
       sales_lead: 'Sales Lead',
-      accounts_manager: 'Accounts',
+      accounts_manager: 'Accounts Manager',
       accounts_payroll: 'Payroll',
+      accounts: 'Accounts',
       member: 'Member',
       viewer: 'Viewer',
     };
