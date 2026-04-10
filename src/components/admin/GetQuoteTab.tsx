@@ -95,6 +95,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
@@ -2209,6 +2210,88 @@ Questions? Call 0330 229 5040`;
                       placeholder="07xxx xxxxxx"
                       className="bg-blue-50 border-blue-200 focus:border-blue-400"
                     />
+                  </div>
+                </div>
+
+                {/* Date of Birth - Optional */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <Label>Date of Birth</Label>
+                    <span className="text-xs text-muted-foreground">(optional)</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button type="button" className="text-muted-foreground hover:text-foreground">
+                          <Info className="w-3.5 h-3.5" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 text-sm" side="right">
+                        <p className="font-medium mb-1">Why do we need this?</p>
+                        <p className="text-muted-foreground">Used to verify the customer's identity when they call us or make a claim. This is for admin purposes only and is not shared with the customer.</p>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex gap-2 items-center max-w-md">
+                    <Select
+                      value={customerDob ? new Date(customerDob).getDate().toString() : ''}
+                      onValueChange={(day) => {
+                        const current = customerDob ? new Date(customerDob) : new Date(1990, 0, 1);
+                        current.setDate(parseInt(day));
+                        setCustomerDob(format(current, 'yyyy-MM-dd'));
+                      }}
+                    >
+                      <SelectTrigger className="w-[80px] bg-blue-50 border-blue-200">
+                        <SelectValue placeholder="Day" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                          <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={customerDob ? new Date(customerDob).getMonth().toString() : ''}
+                      onValueChange={(month) => {
+                        const current = customerDob ? new Date(customerDob) : new Date(1990, 0, 1);
+                        current.setMonth(parseInt(month));
+                        setCustomerDob(format(current, 'yyyy-MM-dd'));
+                      }}
+                    >
+                      <SelectTrigger className="w-[120px] bg-blue-50 border-blue-200">
+                        <SelectValue placeholder="Month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                          <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={customerDob ? new Date(customerDob).getFullYear().toString() : ''}
+                      onValueChange={(year) => {
+                        const current = customerDob ? new Date(customerDob) : new Date(1990, 0, 1);
+                        current.setFullYear(parseInt(year));
+                        setCustomerDob(format(current, 'yyyy-MM-dd'));
+                      }}
+                    >
+                      <SelectTrigger className="w-[100px] bg-blue-50 border-blue-200">
+                        <SelectValue placeholder="Year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - 17 - i).map(y => (
+                          <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {customerDob && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCustomerDob('')}
+                        className="text-muted-foreground hover:text-destructive px-2"
+                      >
+                        ✕
+                      </Button>
+                    )}
                   </div>
                 </div>
 

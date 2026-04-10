@@ -1266,7 +1266,8 @@ export const CustomersTab = () => {
           ga_client_id: null,
           payment_due_date: null,
           google_ads_conversion_uploaded_at: null,
-          google_ads_conversion_status: null
+          google_ads_conversion_status: null,
+          customer_dob: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
