@@ -39,6 +39,7 @@ interface LeadsTableProps {
   onRequestPaidAccess?: (leadId: string, reason: string) => void;
   isLeadGenView?: boolean;
   userRole?: string | null;
+  reminderTimesMap?: Record<string, string>;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
