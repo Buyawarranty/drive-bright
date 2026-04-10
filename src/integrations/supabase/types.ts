@@ -2153,6 +2153,7 @@ export type Database = {
           country: string | null
           county: string | null
           created_at: string
+          customer_dob: string | null
           deleted_at: string | null
           deleted_by: string | null
           discount_amount: number | null
@@ -2233,6 +2234,7 @@ export type Database = {
           country?: string | null
           county?: string | null
           created_at?: string
+          customer_dob?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           discount_amount?: number | null
@@ -2313,6 +2315,7 @@ export type Database = {
           country?: string | null
           county?: string | null
           created_at?: string
+          customer_dob?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           discount_amount?: number | null
@@ -3529,6 +3532,7 @@ export type Database = {
           created_by: string | null
           created_by_name: string | null
           currency: string | null
+          customer_dob: string | null
           customer_email: string
           customer_name: string
           customer_phone: string | null
@@ -3573,6 +3577,7 @@ export type Database = {
           created_by?: string | null
           created_by_name?: string | null
           currency?: string | null
+          customer_dob?: string | null
           customer_email: string
           customer_name: string
           customer_phone?: string | null
@@ -3617,6 +3622,7 @@ export type Database = {
           created_by?: string | null
           created_by_name?: string | null
           currency?: string | null
+          customer_dob?: string | null
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
