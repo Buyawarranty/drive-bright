@@ -514,7 +514,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
-              {(filter as string) === 'reminders' && (
+              {((filter as string) === 'reminders' || (filter as string) === 'due_today') && (
                 <>
                   <SelectItem value="reminder_soonest">Reminder — Soonest</SelectItem>
                   <SelectItem value="reminder_latest">Reminder — Latest</SelectItem>
