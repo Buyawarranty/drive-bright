@@ -17,9 +17,16 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate, activeT
     ? dueReminders.filter(r => !autoDismissed.has(r.id))
     : [];
 
-  // Auto-dismiss after 10 seconds
+  // Auto-dismiss after 10 seconds — but ONLY for non-overdue reminders
+  // Overdue reminders persist until manually dismissed (no animation/pulsing)
   useEffect(() => {
     visibleReminders.forEach((reminder) => {
+      const overdueMin = differenceInMinutes(new Date(), new Date(reminder.reminder_time));
+      const isOverdue = overdueMin > 5;
+      
+      // Overdue reminders persist — don't auto-dismiss
+      if (isOverdue) return;
+      
       if (!timersRef.current.has(reminder.id)) {
         const timer = setTimeout(() => {
           setAutoDismissed(prev => new Set([...prev, reminder.id]));
