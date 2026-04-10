@@ -3435,6 +3435,7 @@ export const CustomersTab = () => {
               <TableHead>Purchase Date</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
+              <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>Ref</TableHead>
