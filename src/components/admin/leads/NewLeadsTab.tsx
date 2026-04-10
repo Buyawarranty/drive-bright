@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
@@ -266,6 +267,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Handle reminders filter before the switch since it's not a LeadStatus
     if ((filter as string) === 'reminders') {
       return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
+    }
+    if ((filter as string) === 'due_today') {
+      return inputLeads.filter(lead => {
+        const rt = reminderTimesMap[lead.id];
+        if (!rt) return false;
+        const d = new Date(rt);
+        return isToday(d) || isPast(d);
+      });
     }
     switch (filter) {
       case 'all':
