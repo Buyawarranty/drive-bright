@@ -4698,6 +4698,13 @@ Please log in and change your password after first login.`;
                     ) : 'N/A'}
                   </TableCell>
                   <TableCell>
+                    {customer.customer_dob ? (
+                      <span className="text-sm">{format(new Date(customer.customer_dob), 'dd/MM/yyyy')}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-1.5">
                       <NumberPlate plateNumber={customer.registration_plate} />
                       {isDuplicate(customer.registration_plate) && (
