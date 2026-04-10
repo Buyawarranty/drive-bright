@@ -135,6 +135,7 @@ const SkodaWarranty = lazy(() => import("./pages/SkodaWarranty"));
 const BMWWarranty = lazy(() => import("./pages/BMWWarranty"));
 const UsedCarWarrantyUK = lazy(() => import("./pages/UsedCarWarrantyUK"));
 const DynamicLandingPage = lazy(() => import("./pages/DynamicLandingPage"));
+const WarrantyTransfer = lazy(() => import("./pages/WarrantyTransfer"));
 
 // Admin and auth pages
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -227,6 +228,7 @@ const App = () => {
                     <Route path="/claims/" element={<Claims />} />
                     <Route path="/make-a-claim/" element={<Claims />} />
                     <Route path="/cancel-warranty" element={<CancelWarranty />} />
+                    <Route path="/warranty-transfer/" element={<WarrantyTransfer />} />
                     <Route path="/contact-us/" element={<ContactUs />} />
                     <Route path="/complaints/" element={<Complaints />} />
                     <Route path="/thewarrantyhub/" element={<Blog />} />
