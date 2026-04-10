@@ -1009,6 +1009,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     isLeadGenView={isLeadGenUser}
                     hideAssignedColumn={hideAssignedColumnForAgents}
                     userRole={userRole}
+                    reminderTimesMap={reminderTimesMap}
                   />
                   
                   {/* Lightweight Footer Pagination */}
@@ -1064,6 +1065,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   isLeadGenView={isLeadGenUser}
                   hideAssignedColumn={hideAssignedColumnForAgents}
                   userRole={userRole}
+                  reminderTimesMap={reminderTimesMap}
                 />
 
                 <LeadsTableFooter

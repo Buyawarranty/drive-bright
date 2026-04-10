@@ -923,7 +923,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.showSourceColumn === nextProps.showSourceColumn &&
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
     prevProps.hasApprovedAccess === nextProps.hasApprovedAccess &&
-    prevProps.isLeadGenView === nextProps.isLeadGenView
+    prevProps.isLeadGenView === nextProps.isLeadGenView &&
+    prevProps.reminderTime === nextProps.reminderTime
   );
 });
 
