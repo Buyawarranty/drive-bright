@@ -303,7 +303,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       default:
         return inputLeads.filter(lead => lead.status === filter);
     }
-  }, [filter, reminderLeadIds]);
+  }, [filter, reminderLeadIds, reminderTimesMap]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => (lead.status as string) !== 'archived'),
