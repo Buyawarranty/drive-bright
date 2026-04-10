@@ -72,6 +72,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onRequestPaidAccess,
   isLeadGenView = false,
   userRole,
+  reminderTimesMap = {},
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -150,6 +151,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
                   isLeadGenView={isLeadGenView}
                   userRole={userRole}
+                  reminderTime={reminderTimesMap[lead.id]}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
