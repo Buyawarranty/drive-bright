@@ -239,7 +239,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     setActiveFilter(newFilter);
     setFilter(newFilter as any);
     // Auto-switch sort when entering/leaving reminders view
-    if (newFilter === 'reminders') {
+    if (newFilter === 'reminders' || newFilter === 'due_today') {
       setSortOption('reminder_soonest');
     } else if (sortOption === 'reminder_soonest' || sortOption === 'reminder_latest') {
       setSortOption('latest_submitted');
