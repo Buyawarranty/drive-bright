@@ -123,7 +123,8 @@ serve(async (req) => {
       rentalIncluded,
       additionalNotes,
       freeExtendedCover,
-      createdByName
+      createdByName,
+      customerDob
     } = body;
 
     logStep("Request data", { customerEmail, vehicleData: vehicleData?.regNumber, paymentType, claimLimit, boostAddon, labourRate, freeExtendedCover });
@@ -186,7 +187,8 @@ serve(async (req) => {
         access_token: accessToken,
         status: 'sent',
         created_by_name: createdByName || null,
-        share_link: `https://buyawarranty.co.uk/quote/${accessToken}`
+        share_link: `https://buyawarranty.co.uk/quote/${accessToken}`,
+        customer_dob: customerDob || null
       })
       .select()
       .single();

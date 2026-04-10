@@ -201,6 +201,7 @@ interface Customer {
   payment_due_date?: string | null;
   // Purchase source tracking
   purchase_source?: string | null;
+  customer_dob?: string | null;
   admin_users?: {
     id: string;
     email: string;
@@ -1266,7 +1267,8 @@ export const CustomersTab = () => {
           ga_client_id: null,
           payment_due_date: null,
           google_ads_conversion_uploaded_at: null,
-          google_ads_conversion_status: null
+          google_ads_conversion_status: null,
+          customer_dob: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
@@ -3434,6 +3436,7 @@ export const CustomersTab = () => {
               <TableHead>Purchase Date</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
+              <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>Ref</TableHead>
@@ -4694,6 +4697,13 @@ Please log in and change your password after first login.`;
                         {customer.phone}
                       </span>
                     ) : 'N/A'}
+                  </TableCell>
+                  <TableCell>
+                    {customer.customer_dob ? (
+                      <span className="text-sm">{format(new Date(customer.customer_dob), 'dd/MM/yyyy')}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
