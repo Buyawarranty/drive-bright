@@ -31,7 +31,8 @@ const SalesLogin = () => {
         
         const userRoles = roles?.map(r => r.role) || [];
         
-        if (userRoles.includes('sales') || userRoles.includes('sales_lead') || userRoles.includes('admin') || userRoles.includes('super_admin') || userRoles.includes('member') || userRoles.includes('lead_gen')) {
+        const staffRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts'];
+        if (userRoles.some(r => staffRoles.includes(r))) {
           navigate('/admin-dashboard/', { replace: true });
           return;
         }
@@ -74,7 +75,8 @@ const SalesLogin = () => {
       }
 
       const userRoles = roles?.map(r => r.role) || [];
-      const hasAccess = userRoles.includes('sales') || userRoles.includes('sales_lead') || userRoles.includes('admin') || userRoles.includes('super_admin') || userRoles.includes('member') || userRoles.includes('lead_gen');
+      const staffRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts'];
+      const hasAccess = userRoles.some(r => staffRoles.includes(r));
 
       if (!hasAccess) {
         // Sign out the user since they don't have sales access
