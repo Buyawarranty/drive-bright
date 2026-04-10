@@ -12,6 +12,7 @@ const roleBadgeColors: Record<string, string> = {
   sales_lead: 'bg-indigo-100 text-indigo-800',
   lead_gen: 'bg-teal-100 text-teal-800',
   accounts_manager: 'bg-amber-100 text-amber-800',
+  accounts: 'bg-orange-100 text-orange-800',
   blog_writer: 'bg-green-100 text-green-800',
 };
 
