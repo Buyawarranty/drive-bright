@@ -69,6 +69,12 @@ const Footer = () => {
               >
                 Contact Us
               </a>
+              <a 
+                href="/warranty-transfer" 
+                className="text-white hover:text-[#eb4b00] transition-colors font-medium"
+              >
+                Warranty Transfer
+              </a>
             </div>
 
             {/* Social media links */}
