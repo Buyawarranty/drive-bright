@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
@@ -11,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -238,7 +239,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     setActiveFilter(newFilter);
     setFilter(newFilter as any);
     // Auto-switch sort when entering/leaving reminders view
-    if (newFilter === 'reminders') {
+    if (newFilter === 'reminders' || newFilter === 'due_today') {
       setSortOption('reminder_soonest');
     } else if (sortOption === 'reminder_soonest' || sortOption === 'reminder_latest') {
       setSortOption('latest_submitted');
@@ -267,6 +268,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if ((filter as string) === 'reminders') {
       return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
     }
+    if ((filter as string) === 'due_today') {
+      return inputLeads.filter(lead => {
+        const rt = reminderTimesMap[lead.id];
+        if (!rt) return false;
+        const d = new Date(rt);
+        return isToday(d) || isPast(d);
+      });
+    }
     switch (filter) {
       case 'all':
       case 'all_leads':
@@ -294,7 +303,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       default:
         return inputLeads.filter(lead => lead.status === filter);
     }
-  }, [filter, reminderLeadIds]);
+  }, [filter, reminderLeadIds, reminderTimesMap]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => (lead.status as string) !== 'archived'),
@@ -502,6 +511,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       ).length,
       fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
       reminders: dateFilteredLeadsForCounts.filter(l => reminderLeadIds.has(l.id)).length,
+      due_today: dateFilteredLeadsForCounts.filter(l => {
+        const rt = reminderTimesMap[l.id];
+        if (!rt) return false;
+        const d = new Date(rt);
+        return isToday(d) || isPast(d);
+      }).length,
       recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
@@ -1009,6 +1024,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     isLeadGenView={isLeadGenUser}
                     hideAssignedColumn={hideAssignedColumnForAgents}
                     userRole={userRole}
+                    reminderTimesMap={reminderTimesMap}
                   />
                   
                   {/* Lightweight Footer Pagination */}
@@ -1064,6 +1080,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   isLeadGenView={isLeadGenUser}
                   hideAssignedColumn={hideAssignedColumnForAgents}
                   userRole={userRole}
+                  reminderTimesMap={reminderTimesMap}
                 />
 
                 <LeadsTableFooter

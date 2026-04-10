@@ -286,7 +286,13 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
             onMouseLeave={handleMouseLeave}
             aria-label="View reminder"
           >
-            <BellRing className={cn("h-3.5 w-3.5", status?.urgent && "text-amber-500")} />
+            <BellRing className={cn(
+              "h-3.5 w-3.5",
+              status?.label === 'Overdue' ? "text-red-500" :
+              status?.label === 'Today' ? "text-amber-500" :
+              status?.label === 'Tomorrow' ? "text-yellow-500" :
+              "text-blue-500"
+            )} />
             <Badge className={cn("text-[10px] px-1.5 py-0", status?.color)}>
               {status?.label}
             </Badge>

@@ -26,8 +26,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -51,6 +51,7 @@ interface LeadsFiltersProps {
     fake: number;
     reminders: number;
     recovered: number;
+    due_today: number;
     source_google?: number;
     source_facebook?: number;
     source_organic?: number;
@@ -100,6 +101,7 @@ const STATUS_PILLS: {
   { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
   { value: 'fake', label: 'Fake 404', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
   { value: 'reminders', label: 'Reminders', icon: '⏰', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'reminders' },
+  { value: 'due_today', label: 'Due Today', icon: '🔔', colorClass: 'data-[state=active]:bg-orange-500 data-[state=active]:text-white', countKey: 'due_today' },
   { value: 'recovered', label: 'Recovered', icon: '🔄', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'recovered' },
 ];
 
@@ -246,7 +248,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders');
+    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today');
   };
 
   const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
@@ -512,7 +514,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
-              {(filter as string) === 'reminders' && (
+              {((filter as string) === 'reminders' || (filter as string) === 'due_today') && (
                 <>
                   <SelectItem value="reminder_soonest">Reminder — Soonest</SelectItem>
                   <SelectItem value="reminder_latest">Reminder — Latest</SelectItem>

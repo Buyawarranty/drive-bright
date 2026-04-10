@@ -19,7 +19,7 @@ import { CopyButton } from './CopyButton';
 import { CallCountCell } from './CallCountCell';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
-  Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
+  Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote,
   CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe
 } from 'lucide-react';
@@ -59,6 +59,7 @@ interface LeadTableRowProps {
   onRequestAccess?: (reason: string) => void;
   isLeadGenView?: boolean;
   userRole?: string | null;
+  reminderTime?: string;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -130,9 +131,24 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
-const getRowUrgencyClass = (lead: Lead): string => {
+const getRowUrgencyClass = (lead: Lead, reminderTime?: string): string => {
   if (lead.is_paid) return 'bg-green-50 hover:bg-green-100/70';
   if ((lead.resubmission_count || 0) > 0) return 'bg-purple-50 hover:bg-purple-100/70';
+  
+  // Reminder-based urgency colouring
+  if (reminderTime) {
+    const reminderDate = new Date(reminderTime);
+    if (isPast(reminderDate)) {
+      const overdueMin = differenceInHours(new Date(), reminderDate);
+      // Overdue reminder — red tint (stronger than SLA overdue)
+      return 'bg-red-50 hover:bg-red-100/70';
+    }
+    if (isToday(reminderDate)) {
+      // Due today — amber tint
+      return 'bg-amber-50 hover:bg-amber-100/70';
+    }
+  }
+  
   const sla = getUrgencySLA(lead);
   if (sla.priority === 0) return 'bg-red-50 hover:bg-red-100/70';
   if (sla.priority === 1) return 'bg-amber-50 hover:bg-amber-100/70';
@@ -284,6 +300,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onRequestAccess,
   isLeadGenView = false,
   userRole,
+  reminderTime,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -347,7 +364,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   return (
     <TableRow className={cn(
       "transition-colors border-b border-border/30 group", 
-      getRowUrgencyClass(lead),
+      getRowUrgencyClass(lead, reminderTime),
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40"
@@ -692,6 +709,32 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </Tooltip>
           )}
           {isOverdue && !suspiciousFlags.length && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+          {reminderTime && isPast(new Date(reminderTime)) && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-red-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <Clock className="h-3 w-3" />
+                  OVERDUE
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Reminder overdue — {formatDistanceToNow(new Date(reminderTime), { addSuffix: true })}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {reminderTime && isToday(new Date(reminderTime)) && !isPast(new Date(reminderTime)) && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-amber-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <Clock className="h-3 w-3" />
+                  DUE
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Reminder due today at {format(new Date(reminderTime), 'h:mm a')}
+              </TooltipContent>
+            </Tooltip>
+          )}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
@@ -880,7 +923,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.showSourceColumn === nextProps.showSourceColumn &&
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
     prevProps.hasApprovedAccess === nextProps.hasApprovedAccess &&
-    prevProps.isLeadGenView === nextProps.isLeadGenView
+    prevProps.isLeadGenView === nextProps.isLeadGenView &&
+    prevProps.reminderTime === nextProps.reminderTime
   );
 });
 
