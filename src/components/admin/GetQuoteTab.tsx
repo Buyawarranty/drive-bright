@@ -1015,6 +1015,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setVehicleData(null);
       setCustomerEmail('');
       setCustomerName('');
+      setCustomerDob('');
       setPaymentType('24months');
       setExcessAmount(100);
       setClaimLimit(2000);
@@ -1855,6 +1856,7 @@ Questions? Call 0330 229 5040`;
     setCustomerEmail('');
     setCustomerName('');
     setCustomerPhone('');
+    setCustomerDob('');
     setPaymentType('24months');
     setExcessAmount(100);
     setClaimLimit(2000);
