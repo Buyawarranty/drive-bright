@@ -201,6 +201,7 @@ interface Customer {
   payment_due_date?: string | null;
   // Purchase source tracking
   purchase_source?: string | null;
+  customer_dob?: string | null;
   admin_users?: {
     id: string;
     email: string;
