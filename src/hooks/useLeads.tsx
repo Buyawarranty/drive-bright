@@ -639,7 +639,19 @@ export const useLeads = (options?: UseLeadsOptions) => {
     };
   }, [authLoading, user?.id, flushPendingStatusUpdates]);
 
-  // One-time setup for realtime, polling, and visibility listeners
+  // Re-fetch when the server-side date filter changes (e.g. user picks a different day)
+  const dateFilterKeyRef = useRef(dateFilterKey);
+  useEffect(() => {
+    if (dateFilterKeyRef.current === dateFilterKey) {
+      dateFilterKeyRef.current = dateFilterKey;
+      return; // Skip the very first render — initial fetch already handles it
+    }
+    dateFilterKeyRef.current = dateFilterKey;
+    if (!authLoading && user?.id) {
+      fetchLeadsRef.current();
+    }
+  }, [dateFilterKey, authLoading, user?.id]);
+
   useEffect(() => {
     if (authLoading || !user?.id) return;
 
