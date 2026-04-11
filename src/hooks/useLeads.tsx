@@ -204,6 +204,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
   // Store server date filter as a ref so fetchLeads doesn't re-create on every date change
   const serverDateFilterRef = useRef(options?.serverDateFilter);
   serverDateFilterRef.current = options?.serverDateFilter;
+
+  // Stable key that changes when the date filter boundaries change — triggers re-fetch
+  const dateFilterKey = useMemo(() => {
+    const f = options?.serverDateFilter;
+    if (!f?.from && !f?.to) return 'all';
+    return `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
+  }, [options?.serverDateFilter]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -632,7 +639,19 @@ export const useLeads = (options?: UseLeadsOptions) => {
     };
   }, [authLoading, user?.id, flushPendingStatusUpdates]);
 
-  // One-time setup for realtime, polling, and visibility listeners
+  // Re-fetch when the server-side date filter changes (e.g. user picks a different day)
+  const dateFilterKeyRef = useRef(dateFilterKey);
+  useEffect(() => {
+    if (dateFilterKeyRef.current === dateFilterKey) {
+      dateFilterKeyRef.current = dateFilterKey;
+      return; // Skip the very first render — initial fetch already handles it
+    }
+    dateFilterKeyRef.current = dateFilterKey;
+    if (!authLoading && user?.id) {
+      fetchLeadsRef.current();
+    }
+  }, [dateFilterKey, authLoading, user?.id]);
+
   useEffect(() => {
     if (authLoading || !user?.id) return;
 
