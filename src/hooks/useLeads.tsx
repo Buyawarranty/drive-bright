@@ -379,7 +379,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
             assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
             abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
           `)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false });
 
         // Apply server-side date filter to reduce dataset size
         const dateFilter = serverDateFilterRef.current;
