@@ -34,7 +34,6 @@ interface Customer {
   assigned_to: string | null;
   updated_at: string | null;
   gclid: string | null;
-  fbclid: string | null;
 }
 
 interface AdminUser {
@@ -94,7 +93,7 @@ export const AnalyticsTab = () => {
       const { data, error } = await fetchAllRows(() =>
         supabase
           .from('customers')
-          .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid, fbclid')
+          .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid')
           .not('email', 'ilike', '%@test.com%')
           .not('email', 'ilike', '%testuser%')
           .not('email', 'ilike', '%guest@%')
@@ -296,9 +295,8 @@ export const AnalyticsTab = () => {
   const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'pure' => {
     const source = customer.purchase_source?.toLowerCase() || '';
     const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
-    const hasFbclid = !!(customer.fbclid && String(customer.fbclid).trim() !== '');
     if (source === 'google_ads' || hasGclid) return 'google';
-    if (source === 'facebook_ads' || hasFbclid) return 'facebook';
+    if (source === 'facebook_ads') return 'facebook';
     return 'pure';
   };
 
