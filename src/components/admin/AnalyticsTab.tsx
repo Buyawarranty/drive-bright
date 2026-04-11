@@ -101,6 +101,8 @@ export const AnalyticsTab = () => {
           .not('name', 'eq', 'Test Customer')
           .not('name', 'eq', 'Guest Customer')
           .eq('is_deleted', false)
+          .order('signup_date', { ascending: false })
+          .order('id', { ascending: false })
       );
 
       if (error) {
