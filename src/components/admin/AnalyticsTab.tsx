@@ -70,6 +70,7 @@ export const AnalyticsTab = () => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid';
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -86,14 +87,18 @@ export const AnalyticsTab = () => {
   }, []);
 
   const fetchAnalyticsData = async () => {
+    setLoading(true);
+
     try {
       console.log('Fetching analytics data...');
-      
-      // Match CustomersTab filtering exactly — use batch fetch to avoid 1000-row limit
+
+      let customersData: Customer[] = [];
+
+      // Primary path: batch fetch for full dataset beyond the 1000-row limit
       const { data, error } = await fetchAllRows(() =>
         supabase
           .from('customers')
-          .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid')
+          .select(customerSelect)
           .not('email', 'ilike', '%@test.com%')
           .not('email', 'ilike', '%testuser%')
           .not('email', 'ilike', '%guest@%')
@@ -105,22 +110,49 @@ export const AnalyticsTab = () => {
       );
 
       if (error) {
-        console.error('Error fetching customers:', error);
-        throw error;
+        console.error('Error fetching customers via batch query:', error);
+
+        // Fallback path: use a direct query so analytics still loads if the batch query breaks
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('customers')
+          .select(customerSelect)
+          .not('email', 'ilike', '%@test.com%')
+          .not('email', 'ilike', '%testuser%')
+          .not('email', 'ilike', '%guest@%')
+          .not('name', 'eq', 'Test Customer')
+          .not('name', 'eq', 'Guest Customer')
+          .eq('is_deleted', false)
+          .order('updated_at', { ascending: false })
+          .limit(3000);
+
+        if (fallbackError) {
+          console.error('Fallback analytics customer query failed:', fallbackError);
+          throw fallbackError;
+        }
+
+        customersData = fallbackData || [];
+      } else {
+        customersData = data || [];
       }
 
       // Also filter out specific test names not caught by DB query
-      const realCustomers = (data || []).filter(c => !isTestOrder(c.name, c.email));
+      const realCustomers = customersData.filter(c => !isTestOrder(c.name, c.email));
       console.log('Real customers (matching Customer Dashboard):', realCustomers.length);
       
       setCustomers(realCustomers);
 
-      // Fetch admin users for agent analytics
-      const { data: usersData } = await supabase
+      // Fetch admin users separately so a permissions issue here does not blank the whole analytics tab
+      const { data: usersData, error: usersError } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email')
         .eq('is_active', true);
-      setAdminUsers(usersData || []);
+
+      if (usersError) {
+        console.error('Error fetching admin users for analytics:', usersError);
+        setAdminUsers([]);
+      } else {
+        setAdminUsers(usersData || []);
+      }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
