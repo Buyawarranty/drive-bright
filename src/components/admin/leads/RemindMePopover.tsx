@@ -34,6 +34,9 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const [smartInput, setSmartInput] = useState('');
+  const [parsedResult, setParsedResult] = useState<ReturnType<typeof parseNaturalDate>>(null);
+  const smartInputRef = useRef<HTMLInputElement>(null);
 
   // Autosave label after 700ms
   const handleLabelChange = (value: string) => {
