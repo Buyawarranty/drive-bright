@@ -95,8 +95,6 @@ export function parseNaturalDate(input: string): ParsedDate | null {
     } else {
       targetDate.setMinutes(targetDate.getMinutes() + amount);
     }
-    // For "in X hours" we don't override time since it's relative
-    const { format } = require('date-fns');
     return {
       date: targetDate,
       preview: formatPreview(targetDate),
