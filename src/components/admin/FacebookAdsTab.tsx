@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target } from 'lucide-react';
+import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
 import { DateRangeFilter } from './DateRangeFilter';

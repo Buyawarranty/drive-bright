@@ -217,13 +217,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               phone: phone.trim() || null,
               step_abandoned: 2,
               updated_at: new Date().toISOString(),
-              ...(storedFbclid || storedGclid || utmSource ? {
-                cart_metadata: {
-                  ...(storedFbclid ? { fbclid: storedFbclid } : {}),
-                  ...(storedGclid ? { gclid: storedGclid } : {}),
-                  ...(utmSource ? { utm_source: utmSource } : {}),
+              ...(() => {
+                const fb = storedFbclid || getStoredFbclid();
+                const gc = storedGclid || getStoredGclid();
+                if (fb || gc || utmSource) {
+                  return {
+                    cart_metadata: {
+                      ...(fb ? { fbclid: fb } : {}),
+                      ...(gc ? { gclid: gc } : {}),
+                      ...(utmSource ? { utm_source: utmSource } : {}),
+                    }
+                  };
                 }
-              } : {})
+                return {};
+              })()
             })
             .eq('id', existingCarts[0].id);
           
@@ -262,6 +269,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         if (cartInsertError) {
           console.error('Error creating abandoned cart, retrying via track-abandoned-cart edge function:', cartInsertError);
 
+          const fallbackFbclid = getStoredFbclid();
+          const fallbackGclid = getStoredGclid();
           const { error: fallbackTrackError } = await supabase.functions.invoke('track-abandoned-cart', {
             body: {
               full_name: firstName.trim(),
@@ -274,6 +283,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               mileage: vehicleData?.mileage,
               vehicle_type: vehicleData?.vehicleType || 'car',
               step_abandoned: 2,
+              ...(fallbackFbclid ? { fbclid: fallbackFbclid } : {}),
+              ...(fallbackGclid ? { gclid: fallbackGclid } : {}),
             }
           });
 
