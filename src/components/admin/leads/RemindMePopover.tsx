@@ -526,6 +526,49 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
           <div className="space-y-3">
             <p className="font-medium text-sm">Remind me</p>
             
+            {/* Smart natural language input */}
+            <div className="space-y-1.5">
+              <div className="relative">
+                <Sparkles className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-purple-400" />
+                <Input
+                  ref={smartInputRef}
+                  placeholder='Try "next tuesday 9pm"'
+                  value={smartInput}
+                  onChange={(e) => handleSmartInputChange(e.target.value)}
+                  onKeyDown={handleSmartKeyDown}
+                  className="text-sm pl-8 pr-16"
+                  aria-label="Type when to remind you"
+                  autoFocus
+                />
+                {parsedResult && (
+                  <Button
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 px-2 text-[10px]"
+                    onClick={handleSmartSubmit}
+                  >
+                    Set
+                  </Button>
+                )}
+              </div>
+              {parsedResult && (
+                <div className="flex items-center gap-1.5 px-1">
+                  <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                  <span className="text-[11px] text-green-600 font-medium">{parsedResult.preview}</span>
+                </div>
+              )}
+              {smartInput.length > 2 && !parsedResult && (
+                <p className="text-[10px] text-muted-foreground px-1">
+                  Try: "tomorrow 2pm", "next friday 9am", "in 3 hours"
+                </p>
+              )}
+            </div>
+
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[10px] text-muted-foreground px-1">or choose</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
             {/* Label input with autosave feedback */}
             <div className="relative">
               <Input
@@ -541,35 +584,6 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 {getLabelSaveIndicator()}
               </div>
             </div>
-
-            {/* Time override input */}
-            <div className="flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              <Input
-                type="time"
-                value={presetTime}
-                onChange={(e) => setPresetTime(e.target.value)}
-                className="flex-1 h-8 text-sm"
-                aria-label="Set specific time"
-                placeholder="Use default time"
-              />
-              {presetTime && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setPresetTime('')}
-                  aria-label="Clear time"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-            {presetTime && (
-              <p className="text-[10px] text-muted-foreground -mt-1 ml-6">
-                All presets below will use this time
-              </p>
-            )}
             
             {/* Preset options */}
             <div className="space-y-1">
