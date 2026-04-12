@@ -7,11 +7,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { 
   Bell, BellRing, Clock, Calendar as CalendarIcon, 
-  Sun, Sunrise, CalendarDays, X, Check, AlarmClock, Loader2
+  Sun, Sunrise, CalendarDays, X, Check, AlarmClock, Loader2, Sparkles
 } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast, formatDistanceToNow, setHours, setMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { parseNaturalDate } from '@/lib/parseNaturalDate';
 
 interface RemindMePopoverProps {
   leadId: string;
