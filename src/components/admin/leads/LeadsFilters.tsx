@@ -55,6 +55,9 @@ interface LeadsFiltersProps {
     source_google?: number;
     source_facebook?: number;
     source_organic?: number;
+    source_google_live?: number;
+    source_facebook_live?: number;
+    source_organic_live?: number;
   };
   showRecoveredPill?: boolean;
   dateRange?: { from: Date | undefined; to: Date | undefined };
@@ -383,12 +386,21 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               </SelectItem>
               <SelectItem value="google_ad">
                 <span className="text-emerald-700 font-bold">G</span> Google Ads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-emerald-100 text-emerald-800">{leadCounts.source_google ?? 0}</Badge>
+                {(leadCounts.source_google_live ?? 0) !== (leadCounts.source_google ?? 0) && (
+                  <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_google_live ?? 0} live)</span>
+                )}
               </SelectItem>
               <SelectItem value="social_ad">
                 <span className="text-blue-700 font-bold">F</span> Facebook Ads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-blue-100 text-blue-800">{leadCounts.source_facebook ?? 0}</Badge>
+                {(leadCounts.source_facebook_live ?? 0) !== (leadCounts.source_facebook ?? 0) && (
+                  <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_facebook_live ?? 0} live)</span>
+                )}
               </SelectItem>
               <SelectItem value="website">
                 <span className="text-muted-foreground font-medium">O</span> Organic <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.source_organic ?? 0}</Badge>
+                {(leadCounts.source_organic_live ?? 0) !== (leadCounts.source_organic ?? 0) && (
+                  <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_organic_live ?? 0} live)</span>
+                )}
               </SelectItem>
             </SelectContent>
           </Select>

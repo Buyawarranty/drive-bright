@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target } from 'lucide-react';
+import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
 import { DateRangeFilter } from './DateRangeFilter';
@@ -46,6 +46,7 @@ export const FacebookAdsTab: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
       queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
       queryClient.invalidateQueries({ queryKey: ['fb-paid-customers'] });
+      queryClient.invalidateQueries({ queryKey: ['fb-reconciliation'] });
       setLastRefresh(new Date());
     }, AUTO_REFRESH_INTERVAL);
     return () => clearInterval(interval);
@@ -56,6 +57,7 @@ export const FacebookAdsTab: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
     queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
     queryClient.invalidateQueries({ queryKey: ['fb-paid-customers'] });
+    queryClient.invalidateQueries({ queryKey: ['fb-reconciliation'] });
     setLastRefresh(new Date());
   };
 
@@ -163,6 +165,55 @@ export const FacebookAdsTab: React.FC = () => {
         .not('status', 'ilike', '%refunded%');
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  // Fetch lead reconciliation data: sales_leads with social_ad source + terminal-blocked logs
+  const { data: fbReconciliation } = useQuery({
+    queryKey: ['fb-reconciliation', dateRange],
+    queryFn: async () => {
+      const { data: socialLeads, error: slErr } = await supabase
+        .from('sales_leads')
+        .select('id, status')
+        .eq('lead_source', 'social_ad')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString());
+      if (slErr) throw slErr;
+
+      const { count: blockedCount, error: blErr } = await supabase
+        .from('system_event_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_type', 'lead_blocked_by_terminal')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString());
+      if (blErr) console.error('Error fetching blocked count:', blErr);
+
+      const { data: allCarts, error: acErr } = await supabase
+        .from('abandoned_carts')
+        .select('id, cart_metadata')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString());
+      if (acErr) throw acErr;
+
+      const noMetadataCount = (allCarts || []).filter(c => !c.cart_metadata).length;
+      const leads = socialLeads || [];
+      const statusBreakdown = {
+        new: leads.filter(l => l.status === 'new').length,
+        contacted: leads.filter(l => l.status === 'contacted').length,
+        follow_up: leads.filter(l => l.status === 'follow_up').length,
+        converted: leads.filter(l => l.status === 'converted').length,
+        lost: leads.filter(l => l.status === 'lost').length,
+        fake: leads.filter(l => l.status === 'fake_lead').length,
+        other: leads.filter(l => !['new', 'contacted', 'follow_up', 'converted', 'lost', 'fake_lead'].includes(l.status)).length,
+      };
+
+      return {
+        totalSalesLeads: leads.length,
+        liveLeads: leads.filter(l => !['lost', 'fake_lead'].includes(l.status)).length,
+        blockedByTerminal: blockedCount || 0,
+        noMetadata: noMetadataCount,
+        statusBreakdown,
+      };
     },
   });
 
@@ -399,6 +450,75 @@ export const FacebookAdsTab: React.FC = () => {
             <div className="text-center p-4 bg-background rounded-lg border min-w-[120px] border-green-300">
               <p className="text-3xl font-bold text-green-700">{isLoading ? '...' : `£${revenueStats.totalRevenue.toFixed(0)}`}</p>
               <p className="text-xs text-muted-foreground mt-1">Revenue</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lead Reconciliation Card */}
+      <Card className="border-amber-200 bg-amber-50/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-700" />
+            Lead Reconciliation — Facebook vs CRM
+          </CardTitle>
+          <CardDescription>
+            Explains why Facebook Ads Manager count differs from CRM numbers
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <div className="p-3 rounded-lg border bg-blue-50 text-center">
+              <p className="text-2xl font-bold text-blue-700">{isLoading ? '...' : totalLeads}</p>
+              <p className="text-xs text-muted-foreground mt-1">Carts with FBCLID</p>
+              <p className="text-[10px] text-muted-foreground">(abandoned_carts)</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-background text-center">
+              <p className="text-2xl font-bold">{isLoading ? '...' : fbReconciliation?.totalSalesLeads ?? '...'}</p>
+              <p className="text-xs text-muted-foreground mt-1">Sales Leads Created</p>
+              <p className="text-[10px] text-muted-foreground">(social_ad source)</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-emerald-50 text-center">
+              <p className="text-2xl font-bold text-emerald-700">{isLoading ? '...' : fbReconciliation?.liveLeads ?? '...'}</p>
+              <p className="text-xs text-muted-foreground mt-1">Live Leads</p>
+              <p className="text-[10px] text-muted-foreground">(excl. lost/fake)</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-red-50 text-center">
+              <p className="text-2xl font-bold text-red-700">{isLoading ? '...' : fbReconciliation?.blockedByTerminal ?? '...'}</p>
+              <p className="text-xs text-muted-foreground mt-1">Blocked (Terminal)</p>
+              <p className="text-[10px] text-muted-foreground">(repeat visitors)</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-gray-50 text-center">
+              <p className="text-2xl font-bold text-gray-600">{isLoading ? '...' : fbReconciliation?.noMetadata ?? '...'}</p>
+              <p className="text-xs text-muted-foreground mt-1">No Metadata</p>
+              <p className="text-[10px] text-muted-foreground">(missing attribution)</p>
+            </div>
+          </div>
+
+          {/* Status breakdown */}
+          {fbReconciliation && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">New: {fbReconciliation.statusBreakdown.new}</Badge>
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Contacted: {fbReconciliation.statusBreakdown.contacted}</Badge>
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200">Follow-up: {fbReconciliation.statusBreakdown.follow_up}</Badge>
+              <Badge className="bg-green-100 text-green-800 border-green-200">Converted: {fbReconciliation.statusBreakdown.converted}</Badge>
+              <Badge className="bg-gray-100 text-gray-800 border-gray-200">Lost: {fbReconciliation.statusBreakdown.lost}</Badge>
+              <Badge className="bg-red-100 text-red-800 border-red-200">Fake: {fbReconciliation.statusBreakdown.fake}</Badge>
+              {fbReconciliation.statusBreakdown.other > 0 && (
+                <Badge className="bg-muted text-muted-foreground">Other: {fbReconciliation.statusBreakdown.other}</Badge>
+              )}
+            </div>
+          )}
+
+          {/* Timezone note */}
+          <div className="p-3 rounded-lg bg-muted/50 border flex items-start gap-2">
+            <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p><strong>Why numbers differ from Facebook Ads Manager:</strong></p>
+              <p>• <strong>CRM uses UK/London timezone</strong> (currently BST, UTC+1). Facebook Ads Manager may use a different timezone for your ad account, causing 1–2 lead differences at day boundaries.</p>
+              <p>• <strong>Deduplication:</strong> The CRM merges repeat submissions from the same email/phone into one lead. Facebook counts every form interaction separately.</p>
+              <p>• <strong>Terminal guard:</strong> Returning visitors who already have a Sold/Lost/Fake lead are blocked from creating new leads (logged above as "Blocked").</p>
+              <p>• <strong>Missing attribution:</strong> Some carts are created without FBCLID metadata attached, so they don't appear in the Facebook filter even though the visitor came from FB.</p>
             </div>
           </div>
         </CardContent>
