@@ -46,6 +46,7 @@ export const FacebookAdsTab: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
       queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
       queryClient.invalidateQueries({ queryKey: ['fb-paid-customers'] });
+      queryClient.invalidateQueries({ queryKey: ['fb-reconciliation'] });
       setLastRefresh(new Date());
     }, AUTO_REFRESH_INTERVAL);
     return () => clearInterval(interval);
@@ -56,6 +57,7 @@ export const FacebookAdsTab: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['fb-leads'] });
     queryClient.invalidateQueries({ queryKey: ['fb-step2-attempts'] });
     queryClient.invalidateQueries({ queryKey: ['fb-paid-customers'] });
+    queryClient.invalidateQueries({ queryKey: ['fb-reconciliation'] });
     setLastRefresh(new Date());
   };
 
