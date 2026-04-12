@@ -521,6 +521,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredLeadsForCounts.filter(l => !l.lead_source || l.lead_source === 'website').length,
+      source_google_live: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      source_facebook_live: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      source_organic_live: dateFilteredLeadsForCounts.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
     };
   }, [dateFilteredLeadsForCounts, reminderLeadIds]);
 
