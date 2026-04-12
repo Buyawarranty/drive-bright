@@ -69,6 +69,40 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     }
   };
 
+  // Smart input change handler - parse natural language
+  const handleSmartInputChange = (value: string) => {
+    setSmartInput(value);
+    const result = parseNaturalDate(value);
+    setParsedResult(result);
+  };
+
+  // Submit smart/natural language reminder
+  const handleSmartSubmit = async () => {
+    if (!parsedResult) return;
+    setLabelSaveState('saving');
+    try {
+      await createReminder(leadId, 'custom', parsedResult.date, label || undefined);
+      setLabelSaveState('saved');
+      toast.success('Reminder set ✓', { duration: 1500 });
+      setSmartInput('');
+      setParsedResult(null);
+      setLabel('');
+      setPresetTime('');
+      setOpen(false);
+      window.dispatchEvent(new CustomEvent('reminder-changed'));
+    } catch (error) {
+      setLabelSaveState('error');
+      toast.error("Couldn't set reminder. Try again.");
+    }
+  };
+
+  const handleSmartKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && parsedResult) {
+      e.preventDefault();
+      handleSmartSubmit();
+    }
+  };
+
   const getPresetTimeWithOverride = (preset: ReminderPreset): Date => {
     const now = new Date();
     let baseDate: Date;
