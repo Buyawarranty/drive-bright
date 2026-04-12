@@ -458,6 +458,8 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
         setCustomDate(undefined);
         setLabel('');
         setPresetTime('');
+        setSmartInput('');
+        setParsedResult(null);
         setLabelSaveState('idle');
       }
     }}>
