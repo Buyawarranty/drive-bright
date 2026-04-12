@@ -166,6 +166,55 @@ export const FacebookAdsTab: React.FC = () => {
     },
   });
 
+  // Fetch lead reconciliation data: sales_leads with social_ad source + terminal-blocked logs
+  const { data: fbReconciliation } = useQuery({
+    queryKey: ['fb-reconciliation', dateRange],
+    queryFn: async () => {
+      const { data: socialLeads, error: slErr } = await supabase
+        .from('sales_leads')
+        .select('id, status')
+        .eq('lead_source', 'social_ad')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString());
+      if (slErr) throw slErr;
+
+      const { count: blockedCount, error: blErr } = await supabase
+        .from('system_event_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_type', 'lead_blocked_by_terminal')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString());
+      if (blErr) console.error('Error fetching blocked count:', blErr);
+
+      const { data: allCarts, error: acErr } = await supabase
+        .from('abandoned_carts')
+        .select('id, cart_metadata')
+        .gte('created_at', dateFrom.toISOString())
+        .lte('created_at', dateTo.toISOString());
+      if (acErr) throw acErr;
+
+      const noMetadataCount = (allCarts || []).filter(c => !c.cart_metadata).length;
+      const leads = socialLeads || [];
+      const statusBreakdown = {
+        new: leads.filter(l => l.status === 'new').length,
+        contacted: leads.filter(l => l.status === 'contacted').length,
+        follow_up: leads.filter(l => l.status === 'follow_up').length,
+        converted: leads.filter(l => l.status === 'converted').length,
+        lost: leads.filter(l => l.status === 'lost').length,
+        fake: leads.filter(l => l.status === 'fake_lead').length,
+        other: leads.filter(l => !['new', 'contacted', 'follow_up', 'converted', 'lost', 'fake_lead'].includes(l.status)).length,
+      };
+
+      return {
+        totalSalesLeads: leads.length,
+        liveLeads: leads.filter(l => !['lost', 'fake_lead'].includes(l.status)).length,
+        blockedByTerminal: blockedCount || 0,
+        noMetadata: noMetadataCount,
+        statusBreakdown,
+      };
+    },
+  });
+
   // Count conversions from FB leads
   const fbConvertedLeads = useMemo(() => {
     return (fbLeads || []).filter(l => l.is_converted);
