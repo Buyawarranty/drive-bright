@@ -2527,54 +2527,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           })()}
         </div>
 
-        {/* Conversion-Optimized Trust & Action Section */}
+        {/* Cover Details Section */}
         <div id="your-cover-details" className="pt-2 pb-6 md:pt-4 md:pb-10 space-y-4">
-          
-          {/* Main Trust & CTA Card */}
-          <div className="bg-gradient-to-br from-green-100 via-green-50 to-white rounded-2xl border-2 border-green-200 p-6 md:p-8 shadow-lg">
-            
-            {/* Trust Signals Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
-                <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <span className="font-bold text-green-800 text-lg">94%</span>
-                  <p className="text-base text-gray-600">of claims approved fast</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 w-full hover:opacity-90 transition-opacity"
-                >
-                  <TrustpilotHeader className="scale-90" />
-                  <div>
-                    <span className="font-bold text-gray-800 text-sm">Five‑Star Service</span>
-                    <p className="text-xs text-gray-500">Rated Excellent by UK drivers</p>
-                  </div>
-                </a>
-              </div>
-              
-              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
-                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div>
-                  <span className="font-bold text-orange-600">14-Day</span>
-                  <p className="text-sm text-gray-600">Money-back guarantee</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
           {/* Crystal Clear Cover Card - Original Design */}
           <div className="bg-card rounded-xl border-2 border-border p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
