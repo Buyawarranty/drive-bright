@@ -124,14 +124,7 @@ serve(async (req) => {
       }
     }
 
-    // Check minimum order requirement for specific codes
-    if (discountCode.code === 'BUS' && orderAmount < 300) {
-      logStep("Order below minimum for BUS code", { code, orderAmount, minimumRequired: 300 });
-      return new Response(JSON.stringify({
-        valid: false,
-        error: "The BUS code is only applicable to orders over £300"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Minimum order requirements removed for BUS code
         status: 200,
       });
     }
