@@ -71,7 +71,10 @@ export const ClaimsTab = () => {
   const [readinessFilter, setReadinessFilter] = useState('all');
   const [warrantyFilter, setWarrantyFilter] = useState('all');
   const [costRange, setCostRange] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('search') || '';
+  });
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
