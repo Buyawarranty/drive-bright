@@ -824,8 +824,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 const { data, error } = await supabase.rpc('recover_leads_from_step2', { p_lookback_hours: 48 });
                 if (error) throw error;
                 const result = data as any;
+                const parts = [];
+                if (result.updated_leads) parts.push(`${result.updated_leads} leads fixed`);
+                if (result.created_new) parts.push(`${result.created_new} new leads created`);
+                if (result.duplicates_merged) parts.push(`${result.duplicates_merged} duplicates merged`);
+                if (result.updated_carts) parts.push(`${result.updated_carts} carts updated`);
                 toast.success(
-                  `Recovery complete: ${result.updated_leads || 0} leads fixed, ${result.created_new || 0} new leads created`,
+                  `Recovery complete: ${parts.length ? parts.join(', ') : 'no changes needed'}`,
                   { id: 'recover-leads', duration: 8000 }
                 );
                 fetchLeads();
