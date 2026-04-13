@@ -22,6 +22,7 @@ const timeZoneDateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
+  hour12: false,
   hourCycle: 'h23',
 });
 
@@ -29,11 +30,15 @@ const parseTimeZoneParts = (date: Date): TimeZoneParts => {
   const parts = timeZoneDateTimeFormatter.formatToParts(date);
   const getValue = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(part => part.type === type)?.value || 0);
 
+  // Some environments return hour=24 for midnight with certain hourCycle settings.
+  // Normalise to 0-23 range to prevent offset calculation errors.
+  const rawHour = getValue('hour');
+
   return {
     year: getValue('year'),
     month: getValue('month'),
     day: getValue('day'),
-    hour: getValue('hour'),
+    hour: rawHour === 24 ? 0 : rawHour,
     minute: getValue('minute'),
     second: getValue('second'),
   };
