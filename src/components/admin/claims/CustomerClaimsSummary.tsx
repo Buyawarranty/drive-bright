@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PoundSterling, FileText, Plus, AlertCircle, CheckCircle2, Clock, X, Eye } from 'lucide-react';
+import { PoundSterling, FileText, Plus, AlertCircle, CheckCircle2, Clock, X, Eye, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { AddClaimDialog } from './AddClaimDialog';
 
@@ -110,9 +111,18 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
 
   // Single metric view for separate columns
   if (showOnly === 'claimsMade') {
+    const searchTerm = vehicleReg || customerEmail || '';
     return (
       <div className="flex flex-col gap-1">
-        <Badge variant="outline" className="font-mono">
+        <Badge
+          variant="outline"
+          className="font-mono cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => {
+            window.location.href = `/admin-dashboard/?tab=claims&search=${encodeURIComponent(searchTerm)}`;
+          }}
+          title="Click to view claim details"
+        >
+          <ExternalLink className="w-3 h-3 mr-1" />
           {totalClaims} claim{totalClaims !== 1 ? 's' : ''}
         </Badge>
         <Button
