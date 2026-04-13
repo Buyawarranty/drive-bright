@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PoundSterling, FileText, Plus, AlertCircle, CheckCircle2, Clock, X, Eye } from 'lucide-react';
+import { PoundSterling, FileText, Plus, AlertCircle, CheckCircle2, Clock, X, Eye, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { AddClaimDialog } from './AddClaimDialog';
 
