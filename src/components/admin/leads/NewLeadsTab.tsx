@@ -21,7 +21,7 @@ import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
@@ -804,6 +804,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           <h1 className="text-lg font-bold tracking-tight">Leads</h1>
           <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
           {userRole === 'super_admin' && (
+          <>
           <Button
             variant="outline"
             size="sm"
@@ -814,6 +815,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
             {isRestoring ? 'Restoring...' : 'Restore All Leads'}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                toast.loading('Recovering missing lead data...', { id: 'recover-leads' });
+                const { data, error } = await supabase.rpc('recover_leads_from_step2', { p_lookback_hours: 48 });
+                if (error) throw error;
+                const result = data as any;
+                toast.success(
+                  `Recovery complete: ${result.updated_leads || 0} leads fixed, ${result.created_new || 0} new leads created`,
+                  { id: 'recover-leads', duration: 8000 }
+                );
+                fetchLeads();
+              } catch (err: any) {
+                toast.error(`Recovery failed: ${err.message}`, { id: 'recover-leads' });
+              }
+            }}
+            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-emerald-400 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-500"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Recover Missing Data
+          </Button>
+          </>
           )}
         </div>
         
