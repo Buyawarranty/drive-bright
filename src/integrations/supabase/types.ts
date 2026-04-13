@@ -6190,6 +6190,7 @@ export type Database = {
         Returns: Json
       }
       auto_expire_discount_codes: { Args: never; Returns: number }
+      backfill_lead_data_from_step2: { Args: never; Returns: Json }
       calculate_lead_priority_score: {
         Args: {
           p_cart_value: number
@@ -6281,6 +6282,10 @@ export type Database = {
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
       process_scheduled_sms: { Args: never; Returns: number }
+      recover_leads_from_step2: {
+        Args: { p_lookback_hours?: number }
+        Returns: Json
+      }
       recover_orphaned_leads: { Args: never; Returns: Json }
       recover_single_lead: {
         Args: { p_agent_id?: string; p_cart_id: string }
