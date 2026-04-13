@@ -881,6 +881,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
       )}
 
+      {/* Paid Date */}
+      {!isLeadGenView && (
+      <TableCell>
+        {lead.payment_date ? (
+          <span className="text-xs text-muted-foreground">
+            {format(new Date(lead.payment_date), 'MMM d, yyyy HH:mm')}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      )}
+
       {/* Last Activity */}
       {!isLeadGenView && (
       <TableCell>
@@ -890,7 +903,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
       )}
 
-      {/* Date Created */}
+      {/* Lead Date (Created) */}
       {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground">
