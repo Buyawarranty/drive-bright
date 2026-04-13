@@ -525,12 +525,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
         const settings = JSON.parse(savedQuoteSettings);
         console.log('📧 Restoring quote settings from email link:', settings);
         
-        // Only restore if we don't have previous props (user came from email, not back navigation)
-        if (!previousPaymentType && !previousClaimLimit && !previousLabourRate) {
+        // Only skip restoration if we have FULL previous data from back navigation
+        // (all three props set). If only partial (e.g. just paymentType from email restore), allow localStorage restoration
+        if (!(previousPaymentType && previousClaimLimit && previousLabourRate)) {
           if (settings.paymentType && ['12months', '24months', '36months'].includes(settings.paymentType)) {
             setPaymentType(settings.paymentType);
           }
-          if (settings.claimLimit && [750, 2000, 5000].includes(settings.claimLimit)) {
+          if (settings.claimLimit && [750, 1250, 2000, 5000].includes(settings.claimLimit)) {
             setSelectedClaimLimit(settings.claimLimit);
           }
           if (settings.labourRate && [50, 70, 100, 200].includes(settings.labourRate)) {
