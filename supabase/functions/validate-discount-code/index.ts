@@ -124,11 +124,6 @@ serve(async (req) => {
       }
     }
 
-    // Minimum order requirements removed for BUS code
-        status: 200,
-      });
-    }
-
     // Calculate discount amount with minimum price floor (£1 minimum for Stripe)
     const MINIMUM_FINAL_AMOUNT = 1; // £1 minimum - Stripe requires at least £0.50 GBP
     
