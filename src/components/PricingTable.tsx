@@ -2573,57 +2573,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
 
-            {/* Price Summary & CTA */}
-            <div className="bg-white rounded-xl border-2 border-green-300 p-4 md:p-6">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col md:flex-row md:items-stretch gap-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
-                      Your Platinum Plan – {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover
-                    </h3>
-                    <div className="flex flex-col">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-gray-900">
-                          Total:
-                        </span>
-                        <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
-                      </div>
-                      <span className="text-sm text-black">(12 easy payments)</span>
-                    </div>
-                    {(() => {
-                      const payInFull = displayMonthlyPrice * 12; // monthly × 12
-                      const stripeSavings = Math.floor(payInFull * 0.10);
-                      const coverLabel = paymentType === '12months' ? '1-Year Cover' : paymentType === '24months' ? '2-Year Cover' : '3-Year Cover';
-                      return (
-                        <p className="text-sm text-black mt-1">
-                          <span className="font-bold text-green-600">Pay in full £{payInFull}</span> <span className="text-gray-600">– You save £{stripeSavings} today</span> <span className="text-gray-700">– {coverLabel}</span>
-                        </p>
-                      );
-                    })()}
-                  </div>
-                  
-                  <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
-                    <Button
-                      onClick={handleSelectPlan}
-                      className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced w-full md:w-auto"
-                    >
-                      <span className="md:hidden">Checkout securely</span>
-                      <span className="hidden md:inline">Continue to secure payment</span>
-                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                    </Button>
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                      <Lock className="w-3 h-3" />
-                      <span>Secure checkout – SSL encrypted</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Urgency micro-copy */}
-              <p className="text-center md:text-left text-sm text-green-700 mt-3 font-medium">
-                ⚡ You're covered in 60 seconds – no payment taken until confirmation
-              </p>
-            </div>
           </div>
 
           {/* Crystal Clear Cover Card - Original Design */}
