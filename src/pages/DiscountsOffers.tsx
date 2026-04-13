@@ -92,7 +92,7 @@ const DiscountsOffers: React.FC = () => {
 
   const formatDiscountShort = (type: string, value: number, code?: string) => {
     if (type === 'percentage') return `${value}% off your warranty`;
-    if (code === 'BUS') return `£${value} off your warranty (orders over £300)`;
+    if (code === 'BUS') return `£${value} off your warranty`;
     return `£${value} off your warranty`;
   };
 
