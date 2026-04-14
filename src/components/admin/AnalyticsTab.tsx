@@ -65,10 +65,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  // Default to "This Month"
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const now = new Date();
+    return { from: startOfMonth(now), to: endOfMonth(now) };
+  });
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>(null);
+  const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid';
