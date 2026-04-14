@@ -120,6 +120,47 @@ export const FacebookAdsTab: React.FC = () => {
     },
   });
 
+  // Separate query for the leads summary bar (driven by leadsDateRange)
+  const leadsDateFrom = useMemo(() => {
+    if (!leadsDateRange?.from) return null;
+    const d = new Date(leadsDateRange.from);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [leadsDateRange]);
+
+  const leadsDateTo = useMemo(() => {
+    if (!leadsDateRange?.to) {
+      if (!leadsDateRange?.from) return null;
+      const d = new Date(leadsDateRange.from);
+      d.setHours(23, 59, 59, 999);
+      return d;
+    }
+    const d = new Date(leadsDateRange.to);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, [leadsDateRange]);
+
+  const { data: summaryLeadsCount, isLoading: summaryLeadsLoading } = useQuery({
+    queryKey: ['fb-leads-summary', leadsDateFrom?.toISOString(), leadsDateTo?.toISOString()],
+    queryFn: async () => {
+      if (!leadsDateFrom || !leadsDateTo) return 0;
+      const { data, error } = await supabase
+        .from('abandoned_carts')
+        .select('id, cart_metadata')
+        .gte('created_at', leadsDateFrom.toISOString())
+        .lte('created_at', leadsDateTo.toISOString());
+      if (error) throw error;
+      return (data || []).filter((lead) => {
+        const meta = lead.cart_metadata as Record<string, any> | null;
+        if (!meta) return false;
+        if (meta.fbclid) return true;
+        const src = (meta.utm_source || '').toLowerCase();
+        return src === 'facebook' || src === 'fb' || src === 'ig';
+      }).length;
+    },
+    enabled: !!leadsDateFrom && !!leadsDateTo,
+  });
+
   // Fetch Step 2 attempts in the period
   const { data: step2Attempts, isLoading: attemptsLoading } = useQuery({
     queryKey: ['fb-step2-attempts', dateRange],
