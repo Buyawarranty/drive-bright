@@ -1052,6 +1052,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </div>
         </CardContent>
       </Card>
+      </>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
