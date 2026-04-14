@@ -793,9 +793,10 @@ export const CustomersTab = () => {
       });
     }
 
-    // Apply date range filter — sales agents bypass when searching (so they can find any customer)
+    // Apply date range filter — bypass when actively searching (so users can find any customer by name/email/reg)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
-    const isSalesAgentSearching = !!debouncedSearchTerm && isSalesAgent;
+    const isActivelySearching = !!debouncedSearchTerm;
+    const isSalesAgentSearching = isActivelySearching && isSalesAgent;
     if (!isSalesAgentSearching) {
       let effectiveDateRange = dateRange;
       
