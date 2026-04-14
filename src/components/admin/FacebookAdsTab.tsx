@@ -341,7 +341,47 @@ export const FacebookAdsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with date filter + refresh */}
+      {/* Top-level Leads Summary with Date Picker */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-blue-200 bg-blue-50/30">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <Facebook className="h-5 w-5 text-blue-700" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-blue-900">
+              Facebook Leads: {leadsLoading ? '...' : totalLeads}
+            </p>
+            <p className="text-xs text-muted-foreground">Leads from Facebook/Instagram ads in selected period</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={leadsDateRange?.from && leadsDateRange?.to && 
+              startOfDay(leadsDateRange.from).getTime() === startOfDay(new Date()).getTime() && 
+              startOfDay(leadsDateRange.to).getTime() === startOfDay(new Date()).getTime() ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setLeadsDateRange({ from: new Date(), to: new Date() })}
+            className="text-xs"
+          >
+            Today
+          </Button>
+          <Button
+            variant={leadsDateRange?.from && leadsDateRange?.to && 
+              startOfDay(leadsDateRange.from).getTime() === startOfDay(subDays(new Date(), 1)).getTime() && 
+              startOfDay(leadsDateRange.to).getTime() === startOfDay(subDays(new Date(), 1)).getTime() ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { const y = subDays(new Date(), 1); setLeadsDateRange({ from: y, to: y }); }}
+            className="text-xs"
+          >
+            Yesterday
+          </Button>
+          <DateRangeFilter
+            dateRange={leadsDateRange}
+            onDateRangeChange={setLeadsDateRange}
+          />
+        </div>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
