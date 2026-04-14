@@ -149,9 +149,12 @@ const Protected = () => {
       bgClass: 'bg-red-100 text-red-700',
       hoverClass: 'hover:bg-red-200',
       components: [
-        'Tyres', 'Brake pads', 'Bulbs', 'Wiper blades',
-        'Filters and fluids', 'Paintwork or cosmetic damage',
-        'Routine service items', 'Cosmetic or trim related items'
+        'Pre-existing faults',
+        'Routine servicing and maintenance',
+        'Tyres, brake pads, and wear & tear items',
+        'Accidental damage or accident repairs',
+        'Motor trader-owned or operated vehicles',
+        'Hire and reward use (taxis, rentals, couriers)'
       ],
       showPdf: false,
       isExclusion: true,
