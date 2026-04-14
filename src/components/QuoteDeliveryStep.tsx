@@ -220,12 +220,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               ...(() => {
                 const fb = storedFbclid || getStoredFbclid();
                 const gc = storedGclid || getStoredGclid();
-                if (fb || gc || utmSource) {
+                const fbRef = !fb ? getStoredFbReferrer() : null;
+                if (fb || gc || utmSource || fbRef) {
                   return {
                     cart_metadata: {
                       ...(fb ? { fbclid: fb } : {}),
                       ...(gc ? { gclid: gc } : {}),
                       ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...(fbRef ? { fb_referrer: fbRef } : {}),
                     }
                   };
                 }
@@ -257,13 +259,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
-            ...(storedFbclid || storedGclid || utmSource ? {
-              cart_metadata: {
-                ...(storedFbclid ? { fbclid: storedFbclid } : {}),
-                ...(storedGclid ? { gclid: storedGclid } : {}),
-                ...(utmSource ? { utm_source: utmSource } : {}),
-              }
-            } : {})
+            ...((() => {
+                const fbRef = !storedFbclid ? getStoredFbReferrer() : null;
+                if (storedFbclid || storedGclid || utmSource || fbRef) {
+                  return {
+                    cart_metadata: {
+                      ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                      ...(storedGclid ? { gclid: storedGclid } : {}),
+                      ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...(fbRef ? { fb_referrer: fbRef } : {}),
+                    }
+                  };
+                }
+                return {};
+              })())
           });
 
         if (cartInsertError) {
