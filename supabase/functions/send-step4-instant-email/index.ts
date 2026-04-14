@@ -165,16 +165,17 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate promo code section HTML (only for reminder emails)
     const promoCodeSection = isReminderEmail ? `
       <!-- Promo Code Section -->
-      <div style="background-color: #fff0f3; border: 2px solid #e91e63; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-        <p style="color: #880e4f; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
+      <div style="background-color: #FFF8E7; border: 2px solid #FF7A00; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <p style="color: #1A1A1A; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
           Complete your purchase now and save £50!
         </p>
-        <p style="color: #880e4f; font-size: 14px; margin: 0 0 12px 0;">
+        <p style="color: #1A1A1A; font-size: 14px; margin: 0 0 12px 0;">
           Use this code at checkout – <strong>valid for 24 hours only</strong>:
         </p>
-        <a href="https://buyawarranty.co.uk?promo=SAVE50NOW" style="background-color: #e91e63; color: #fff; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px; text-decoration: none; cursor: pointer;">
+        <a href="https://buyawarranty.co.uk?promo=SAVE50NOW" style="background-color: #1A1A1A; color: #fff; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px; text-decoration: none; cursor: pointer;">
           SAVE50NOW
         </a>
+        <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">Minimum order £350</p>
       </div>
     ` : '';
 

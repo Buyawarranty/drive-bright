@@ -119,9 +119,9 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                           Save £50 today with code
                         </p>
                         <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 10px 28px; text-decoration: none; border-radius: 4px; font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace;">SAVE50NOW</a>
-                        <p style="font-size: 12px; color: #777777; margin: 10px 0 0 0;">
-                          Tap to copy &bull; Valid for 24 hours
-                        </p>
+                         <p style="font-size: 12px; color: #777777; margin: 10px 0 0 0;">
+                           Tap to copy &bull; Valid for 24 hours &bull; Minimum order £350
+                         </p>
                       </td>
                     </tr>
                   </table>
