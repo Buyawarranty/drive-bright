@@ -935,6 +935,8 @@ export const CustomersTab = () => {
       case 'month':
       case 'this_month':
         return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
+      case 'last_month':
+        return { start: new Date(now.getFullYear(), now.getMonth() - 1, 1), end: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999) };
       case 'all':
       default:
         return null;
@@ -3183,6 +3185,7 @@ export const CustomersTab = () => {
                       <SelectItem value="30days">Last 30 Days</SelectItem>
                       <SelectItem value="60days">Last 60 Days</SelectItem>
                       <SelectItem value="this_month">This Month</SelectItem>
+                      <SelectItem value="last_month">Last Month</SelectItem>
                       {!isSalesAgent && <SelectItem value="all">All Time</SelectItem>}
                     </SelectContent>
                   </Select>
@@ -3202,6 +3205,7 @@ export const CustomersTab = () => {
                       { label: 'Today', getRange: () => { const d = new Date(); return { from: d, to: d }; } },
                       { label: 'Yesterday', getRange: () => { const d = new Date(); d.setDate(d.getDate() - 1); return { from: d, to: d }; } },
                       { label: 'This Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now }; } },
+                      { label: 'Last Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth() - 1, 1), to: new Date(now.getFullYear(), now.getMonth(), 0) }; } },
                       { label: 'All Time', getRange: () => undefined as DateRange | undefined },
                     ].map((preset) => {
                       const isActive = (() => {
