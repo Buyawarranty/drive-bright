@@ -373,7 +373,7 @@ const AdminDashboard = () => {
       case 'emails':
         return <UnifiedEmailHub />;
       case 'analytics':
-        return <AnalyticsTab />;
+        return <AnalyticsTab userRole={effectiveUserRole} />;
       case 'page-analytics':
         return <PageAnalyticsTab />;
       case 'google-ads':
