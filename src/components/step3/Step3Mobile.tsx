@@ -301,11 +301,11 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const hasAddOnsSelected = useMemo(() => {
     const autoIncluded = paymentType ? getAutoIncludedAddOns(paymentType) : [];
     // Check if any add-on is selected that isn't auto-included, OR if boost is enabled
-    const hasManualAddOns = Object.entries(selectedProtectionAddOns).some(
+    const hasManualAddOns = Object.entries(effectiveAddOns).some(
       ([key, value]) => value && !autoIncluded.includes(key)
     );
     return hasManualAddOns || boostAddon;
-  }, [selectedProtectionAddOns, paymentType, boostAddon]);
+  }, [effectiveAddOns, paymentType, boostAddon]);
 
   // Handle continue
   const handleContinue = async () => {
