@@ -580,6 +580,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       }
     }
 
+    // Calculate AOV for each month
+    months.forEach(m => {
+      m.aov = m.salesCount > 0 ? Math.round(m.revenue / m.salesCount) : 0;
+    });
+
     return months;
   }, [customers, selectedMonth, sourceFilter]);
 
