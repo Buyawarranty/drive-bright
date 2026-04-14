@@ -211,17 +211,34 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   }, [vehicleData, paymentType]);
 
 
+  // CRITICAL: Compute "effective add-ons" synchronized with paymentType to prevent race condition.
+  // When switching durations, paymentType updates immediately but selectedProtectionAddOns
+  // updates asynchronously via useEffect, causing a brief frame with wrong prices.
+  const effectiveAddOns = useMemo(() => {
+    if (!paymentType) return selectedProtectionAddOns;
+    const autoIncluded = getAutoIncludedAddOns(paymentType);
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const normalized = { ...selectedProtectionAddOns };
+    
+    autoIncluded.forEach(key => { normalized[key] = true; });
+    allPossibleAutoIncluded.forEach(key => {
+      if (!autoIncluded.includes(key)) {
+        const wasAutoInOther = getAutoIncludedAddOns('24months').includes(key) || 
+                               getAutoIncludedAddOns('36months').includes(key);
+        if (wasAutoInOther) {
+          normalized[key] = false;
+        }
+      }
+    });
+    
+    return normalized;
+  }, [paymentType, selectedProtectionAddOns]);
+
   // Calculate total price for a term using centralized functions
-  // IMPORTANT: Each term uses its OWN appropriate claim limit
-  // But user's other selections (labour rate, boost, excess) apply consistently to all cards
+  // All cards use the user's selected claim limit for consistent pricing
   const calculateTotalPrice = useCallback((term: string = paymentType || '24months') => {
-    // Get the appropriate claim limit for THIS specific term
-    // For the selected term: use user's selection
-    // For non-selected terms: use the appropriate default for that duration
-    const isSelectedTerm = term === paymentType;
-    const termClaimLimit = isSelectedTerm 
-      ? (selectedClaimLimit || 2000) 
-      : 2000;
+    // Always use user's selected claim limit for ALL terms to prevent price jumps when switching
+    const termClaimLimit = selectedClaimLimit || 2000;
     
     const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit);
     
@@ -232,9 +249,22 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     
-    // Apply user's selections consistently to ALL cards for fair comparison
-    // Only claim limit differs between cards (based on promo defaults)
-    const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
+    // Compute effective add-ons for THIS specific term (not relying on async state)
+    const termAutoIncluded = getAutoIncludedAddOns(term);
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const termAddOns = { ...selectedProtectionAddOns };
+    termAutoIncluded.forEach(key => { termAddOns[key] = true; });
+    allPossibleAutoIncluded.forEach(key => {
+      if (!termAutoIncluded.includes(key)) {
+        const wasAutoInOther = getAutoIncludedAddOns('24months').includes(key) || 
+                               getAutoIncludedAddOns('36months').includes(key);
+        if (wasAutoInOther) {
+          termAddOns[key] = false;
+        }
+      }
+    });
+    
+    const addOnPrice = calculateAddOnPrice(termAddOns, term, durationMonths);
     const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     
      // £3000 and £5000 claim limit surcharge
