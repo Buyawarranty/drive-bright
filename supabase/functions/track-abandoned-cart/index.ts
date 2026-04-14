@@ -54,6 +54,7 @@ interface AbandonedCartData {
   // Facebook/Google ad attribution
   fbclid?: string;
   gclid?: string;
+  fb_referrer?: string;
 }
 
 async function triggerWhatsAppMessage(supabase: any, supabaseUrl: string, supabaseServiceKey: string, cartData: AbandonedCartData) {
