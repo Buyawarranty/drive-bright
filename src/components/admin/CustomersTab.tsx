@@ -570,10 +570,10 @@ export const CustomersTab = () => {
     fetchAvailableTags();
   }, []);
 
-  // Re-fetch agent deal counts when Total Sales date filter changes
+  // Re-fetch agent deal counts when date filters change
   useEffect(() => {
     fetchAgentDealCounts();
-  }, [totalSalesDateFilter]);
+  }, [totalSalesDateFilter, dateRange]);
 
   // Fetch tag assignments after tags and customers are loaded
   useEffect(() => {
@@ -945,7 +945,17 @@ export const CustomersTab = () => {
 
   const fetchAgentDealCounts = async () => {
     try {
-      const range = getAgentCountsDateRange(isSalesAgent && totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter);
+      // Prefer the explicit dateRange (from DateRangeFilter) over the dropdown period
+      let range: { start: Date; end: Date } | null = null;
+      if (dateRange?.from) {
+        const from = new Date(dateRange.from);
+        from.setHours(0, 0, 0, 0);
+        const to = dateRange.to ? new Date(dateRange.to) : new Date(from);
+        to.setHours(23, 59, 59, 999);
+        range = { start: from, end: to };
+      } else {
+        range = getAgentCountsDateRange(isSalesAgent && totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter);
+      }
 
       let activeQuery = supabase
         .from('customers')
