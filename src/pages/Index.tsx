@@ -21,7 +21,7 @@ import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmD
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
 import { captureGclid, getStoredGclid } from '@/utils/gclidCapture';
-import { captureFbclid, getStoredFbclid } from '@/utils/fbclidCapture';
+import { captureFbclid, getStoredFbclid, getStoredFbReferrer } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
