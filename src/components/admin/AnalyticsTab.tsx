@@ -1066,7 +1066,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Total Revenue by Month (Last 12 Months)</CardTitle>
+            <CardTitle>Total Revenue & AOV by Month (Last 12 Months)</CardTitle>
             <CardDescription className="mt-1">
               Click on any bar to filter all data by that month
             </CardDescription>
@@ -1085,20 +1085,26 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart 
+            <ComposedChart 
               data={monthlyRevenue} 
               onClick={handleBarClick}
               style={{ cursor: 'pointer' }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tickFormatter={(value) => `£${value.toLocaleString()}`} />
+              <YAxis yAxisId="left" tickFormatter={(value) => `£${value.toLocaleString()}`} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${value}`} />
               <Tooltip 
-                formatter={(value: number) => [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, 'Revenue']}
+                formatter={(value: number, name: string) => {
+                  const label = name === 'revenue' ? 'Revenue' : name === 'aov' ? 'Avg Order Value' : name;
+                  return [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, label];
+                }}
                 labelStyle={{ fontWeight: 'bold' }}
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
               />
+              <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value} />
               <Bar 
+                yAxisId="left"
                 dataKey="revenue" 
                 radius={[4, 4, 0, 0]}
                 fill="#10b981"
@@ -1116,7 +1122,16 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                   />
                 ))}
               </Bar>
-            </BarChart>
+              <Line 
+                yAxisId="right"
+                type="monotone" 
+                dataKey="aov" 
+                stroke="#f59e0b" 
+                strokeWidth={2.5}
+                dot={{ fill: '#f59e0b', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
