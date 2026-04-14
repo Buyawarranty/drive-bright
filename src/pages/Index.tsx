@@ -1243,6 +1243,7 @@ const Index = () => {
       
       const fbclid = getStoredFbclid();
       const gclid = getStoredGclid();
+      const fbReferrer = getStoredFbReferrer();
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
@@ -1260,6 +1261,7 @@ const Index = () => {
           step_abandoned: step,
           ...(fbclid ? { fbclid } : {}),
           ...(gclid ? { gclid } : {}),
+          ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);
