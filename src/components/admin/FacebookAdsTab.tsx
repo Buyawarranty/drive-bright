@@ -144,19 +144,15 @@ export const FacebookAdsTab: React.FC = () => {
     queryKey: ['fb-leads-summary', leadsDateFrom?.toISOString(), leadsDateTo?.toISOString()],
     queryFn: async () => {
       if (!leadsDateFrom || !leadsDateTo) return 0;
-      const { data, error } = await supabase
-        .from('abandoned_carts')
-        .select('id, cart_metadata')
+      // Query sales_leads with social_ad source (consistent with how Google Ads tab works)
+      const { count, error } = await supabase
+        .from('sales_leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('lead_source', 'social_ad')
         .gte('created_at', leadsDateFrom.toISOString())
         .lte('created_at', leadsDateTo.toISOString());
       if (error) throw error;
-      return (data || []).filter((lead) => {
-        const meta = lead.cart_metadata as Record<string, any> | null;
-        if (!meta) return false;
-        if (meta.fbclid) return true;
-        const src = (meta.utm_source || '').toLowerCase();
-        return src === 'facebook' || src === 'fb' || src === 'ig';
-      }).length;
+      return count || 0;
     },
     enabled: !!leadsDateFrom && !!leadsDateTo,
   });
