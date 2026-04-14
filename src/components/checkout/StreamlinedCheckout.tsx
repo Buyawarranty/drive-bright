@@ -916,6 +916,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             step_abandoned: 4,
             ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
             ...(getStoredGclid() ? { gclid: getStoredGclid() } : {}),
+            ...(!getStoredFbclid() && getStoredFbReferrer() ? { fb_referrer: getStoredFbReferrer() } : {}),
           }
         });
       } catch (error) {
