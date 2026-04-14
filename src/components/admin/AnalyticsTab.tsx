@@ -788,7 +788,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </Card>
       </div>
 
-      {/* Website Sales Breakdown by Channel */}
+      {!isSalesLead && (
+      <>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
