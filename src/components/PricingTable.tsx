@@ -835,17 +835,43 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return adjustedPrice;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData]);
 
-  // Memoized add-on price calculation
+  // CRITICAL: Compute "effective add-ons" synchronized with paymentType to prevent race condition.
+  // When switching durations, paymentType updates immediately but selectedProtectionAddOns
+  // updates asynchronously via useEffect, causing a brief frame with wrong prices.
+  // This memo normalizes add-ons inline, eliminating the price fluctuation.
+  const effectiveAddOns = useMemo(() => {
+    const autoIncluded = getAutoIncludedAddOns(paymentType);
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const normalized = { ...selectedProtectionAddOns };
+    
+    // Ensure auto-included add-ons for current paymentType are always true
+    autoIncluded.forEach(key => { normalized[key] = true; });
+    
+    // Reset add-ons that were auto-included for OTHER durations but not this one
+    allPossibleAutoIncluded.forEach(key => {
+      if (!autoIncluded.includes(key)) {
+        const wasAutoInOther = getAutoIncludedAddOns('24months').includes(key) || 
+                               getAutoIncludedAddOns('36months').includes(key);
+        if (wasAutoInOther) {
+          normalized[key] = false;
+        }
+      }
+    });
+    
+    return normalized;
+  }, [paymentType, selectedProtectionAddOns]);
+
+  // Memoized add-on price calculation - uses effectiveAddOns to avoid race condition
   const addOnPrice = useMemo(() => {
     const durationMonths = DURATION_MONTHS[paymentType as PaymentPeriod] || 12;
-    return calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
-  }, [paymentType, selectedProtectionAddOns]);
+    return calculateAddOnPrice(effectiveAddOns, paymentType, durationMonths);
+  }, [paymentType, effectiveAddOns]);
 
   // Memoized one-time add-on price (transfer cover only - not included in monthly)
   const oneTimeAddOnPrice = useMemo(() => {
     const autoIncluded = getAutoIncludedAddOns(paymentType);
-    return selectedProtectionAddOns.transfer && !autoIncluded.includes('transfer') ? 19 : 0;
-  }, [paymentType, selectedProtectionAddOns]);
+    return effectiveAddOns.transfer && !autoIncluded.includes('transfer') ? 19 : 0;
+  }, [paymentType, effectiveAddOns]);
 
   // Memoized recurring add-on price (excludes one-time add-ons)
   const recurringAddOnPrice = useMemo(() => {
