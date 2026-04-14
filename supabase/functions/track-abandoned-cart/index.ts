@@ -273,6 +273,7 @@ const handler = async (req: Request): Promise<Response> => {
           protection_addons: cartData.protection_addons,
           ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
           ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
+          ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
         },
         updated_at: new Date().toISOString()
       };
