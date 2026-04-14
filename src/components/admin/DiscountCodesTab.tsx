@@ -747,6 +747,9 @@ export function DiscountCodesTab() {
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">£</span>
                       )}
                     </div>
+                    {formData.type === 'fixed' && (
+                      <p className="text-xs text-amber-600">⚠️ Fixed (£) discounts require a minimum order of £350</p>
+                    )}
                   </div>
                 </div>
 
