@@ -61,7 +61,8 @@ const isTestOrder = (name: string, email: string): boolean => {
   return TEST_NAMES.some(testName => lowerName.includes(testName));
 };
 
-export const AnalyticsTab = () => {
+export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
+  const isSalesLead = userRole === 'sales_lead';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
