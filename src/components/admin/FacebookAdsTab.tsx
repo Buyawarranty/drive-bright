@@ -17,7 +17,7 @@ export const FacebookAdsTab: React.FC = () => {
   const [dateRange, setDateRange] = useState<string>('last7');
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 6),
+    from: new Date(),
     to: new Date(),
   });
   const queryClient = useQueryClient();

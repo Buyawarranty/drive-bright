@@ -36,7 +36,7 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   const [salesFilter, setSalesFilter] = useState<'all' | 'with_gclid' | 'no_gclid' | 'uploaded' | 'pending'>('all');
   const [salesPage, setSalesPage] = useState(0);
   const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 6),
+    from: new Date(),
     to: new Date(),
   });
   const SALES_PER_PAGE = 25;
