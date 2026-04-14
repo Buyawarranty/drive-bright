@@ -319,7 +319,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setTimeout(async () => {
         try {
           const { data, error } = await supabase.functions.invoke('validate-discount-code', {
-            body: { code: savedPromo, vehicleReg: vehicleData.regNumber }
+            body: { code: savedPromo, vehicleReg: vehicleData.regNumber, orderAmount: bumperTotalPrice }
           });
           if (error || !data?.valid) {
             setPromoCodeError(data?.error || data?.message || 'Invalid promo code');
@@ -1164,7 +1164,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         body: { 
           code: promoCodeInput.toUpperCase(), 
           vehicleReg: vehicleData.regNumber,
-          customerEmail: customerData.email?.trim().toLowerCase() || undefined
+          customerEmail: customerData.email?.trim().toLowerCase() || undefined,
+          orderAmount: selectedPayment === 'full' ? stripeTotalPrice : bumperTotalPrice
         }
       });
       

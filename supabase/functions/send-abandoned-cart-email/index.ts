@@ -154,7 +154,7 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       <div style="background-color: #FFF8E7; border: 2px solid #FF7A00; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
         <p style="color: #1A1A1A; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
         <a href="https://buyawarranty.co.uk?promo=${promoCode}" style="background-color: #1A1A1A; color: #fff; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace; text-decoration: none; cursor: pointer;">${promoCode}</a>
-        <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">Tap to copy &bull; <strong>Valid for 24 hours</strong></p>
+        <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">Tap to copy &bull; <strong>Valid for 24 hours</strong> &bull; Minimum order £350</p>
       </div>
       ` : ''}
 
