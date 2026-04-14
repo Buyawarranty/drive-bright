@@ -124,6 +124,19 @@ serve(async (req) => {
       }
     }
 
+    // Check minimum spend for fixed/monetary discount codes (£350 minimum)
+    const MINIMUM_SPEND_FOR_FIXED = 350;
+    if (discountCode.type === 'fixed' && orderAmount && orderAmount < MINIMUM_SPEND_FOR_FIXED) {
+      logStep("Order amount below minimum spend for fixed discount", { code, orderAmount, minimumSpend: MINIMUM_SPEND_FOR_FIXED });
+      return new Response(JSON.stringify({
+        valid: false,
+        error: `Minimum order of £${MINIMUM_SPEND_FOR_FIXED} required to use this code. Your current order is £${orderAmount}.`
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // Calculate discount amount with minimum price floor (£1 minimum for Stripe)
     const MINIMUM_FINAL_AMOUNT = 1; // £1 minimum - Stripe requires at least £0.50 GBP
     
