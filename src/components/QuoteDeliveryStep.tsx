@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
-import { getStoredFbclid } from '@/utils/fbclidCapture';
+import { getStoredFbclid, getStoredFbReferrer } from '@/utils/fbclidCapture';
 import { getStoredGclid } from '@/utils/gclidCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
@@ -220,12 +220,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               ...(() => {
                 const fb = storedFbclid || getStoredFbclid();
                 const gc = storedGclid || getStoredGclid();
-                if (fb || gc || utmSource) {
+                const fbRef = !fb ? getStoredFbReferrer() : null;
+                if (fb || gc || utmSource || fbRef) {
                   return {
                     cart_metadata: {
                       ...(fb ? { fbclid: fb } : {}),
                       ...(gc ? { gclid: gc } : {}),
                       ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...(fbRef ? { fb_referrer: fbRef } : {}),
                     }
                   };
                 }
@@ -257,13 +259,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
-            ...(storedFbclid || storedGclid || utmSource ? {
-              cart_metadata: {
-                ...(storedFbclid ? { fbclid: storedFbclid } : {}),
-                ...(storedGclid ? { gclid: storedGclid } : {}),
-                ...(utmSource ? { utm_source: utmSource } : {}),
-              }
-            } : {})
+            ...((() => {
+                const fbRef = !storedFbclid ? getStoredFbReferrer() : null;
+                if (storedFbclid || storedGclid || utmSource || fbRef) {
+                  return {
+                    cart_metadata: {
+                      ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                      ...(storedGclid ? { gclid: storedGclid } : {}),
+                      ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...(fbRef ? { fb_referrer: fbRef } : {}),
+                    }
+                  };
+                }
+                return {};
+              })())
           });
 
         if (cartInsertError) {

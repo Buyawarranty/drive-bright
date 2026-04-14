@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
-import { getStoredFbclid } from '@/utils/fbclidCapture';
+import { getStoredFbclid, getStoredFbReferrer } from '@/utils/fbclidCapture';
 import { getTrackingData, getStoredGclid } from '@/utils/gclidCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
@@ -916,6 +916,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             step_abandoned: 4,
             ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
             ...(getStoredGclid() ? { gclid: getStoredGclid() } : {}),
+            ...(!getStoredFbclid() && getStoredFbReferrer() ? { fb_referrer: getStoredFbReferrer() } : {}),
           }
         });
       } catch (error) {
