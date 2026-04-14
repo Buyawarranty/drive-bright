@@ -2222,11 +2222,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           </li>
                           <li className="flex items-start gap-2">
                             <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700">Routine servicing and maintenance (such as fluids or brake pads)</span>
+                            <span className="text-gray-700">Routine servicing and maintenance</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700">Vehicles used for hire or reward (including taxis, rentals, or couriers)</span>
+                            <span className="text-gray-700">Tyres, brake pads, and wear & tear items</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Accidental damage or accident repairs</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Motor trader-owned or operated vehicles</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Hire and reward use (taxis, rentals, couriers)</span>
                           </li>
                         </ul>
                         
