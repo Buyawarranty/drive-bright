@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList, Line, ComposedChart } from 'recharts';
 import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
@@ -534,6 +534,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
         revenue: 0,
+        salesCount: 0,
+        aov: 0,
         isSelected: false
       };
     }).reverse();
@@ -565,6 +567,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         const monthData = months.find(m => m.monthKey === monthKey);
         if (monthData) {
           monthData.revenue += Number(customer.final_amount) || 0;
+          monthData.salesCount += 1;
         }
       }
     });
