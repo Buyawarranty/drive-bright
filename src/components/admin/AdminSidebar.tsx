@@ -300,8 +300,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales_lead') {
-      // Sales leads: manage team, assign leads, view customers, quotes, tips, account
-      const salesLeadTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'selling-tips', 'timesheets', 'account'];
+      // Sales leads: manage team, assign leads, view customers, quotes, tips, analytics (restricted), account
+      const salesLeadTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'timesheets', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
