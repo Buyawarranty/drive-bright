@@ -61,7 +61,8 @@ const isTestOrder = (name: string, email: string): boolean => {
   return TEST_NAMES.some(testName => lowerName.includes(testName));
 };
 
-export const AnalyticsTab = () => {
+export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
+  const isSalesLead = userRole === 'sales_lead';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
@@ -787,7 +788,8 @@ export const AnalyticsTab = () => {
         </Card>
       </div>
 
-      {/* Website Sales Breakdown by Channel */}
+      {!isSalesLead && (
+      <>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1050,6 +1052,8 @@ export const AnalyticsTab = () => {
           </div>
         </CardContent>
       </Card>
+      </>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -1109,6 +1113,8 @@ export const AnalyticsTab = () => {
         </CardContent>
       </Card>
 
+      {!isSalesLead && (
+      <>
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -1282,7 +1288,6 @@ export const AnalyticsTab = () => {
                     <p className="text-xs text-gray-500">
                       {new Date(customer.signup_date).toLocaleDateString()}
                     </p>
-                    {/* Only show amount for active customers - hide for cancelled/refunded/test */}
                     {customer.final_amount && !isRevenueLost(customer.status) ? (
                       <p className="text-xs font-semibold text-green-600">
                         £{Number(customer.final_amount).toLocaleString()}
@@ -1311,6 +1316,8 @@ export const AnalyticsTab = () => {
       <div className="mt-8">
         <ApiConnectivityTest />
       </div>
+      </>
+      )}
     </div>
   );
 };
