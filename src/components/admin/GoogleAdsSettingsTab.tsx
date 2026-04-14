@@ -36,7 +36,7 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
   const [salesFilter, setSalesFilter] = useState<'all' | 'with_gclid' | 'no_gclid' | 'uploaded' | 'pending'>('all');
   const [salesPage, setSalesPage] = useState(0);
   const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 6),
+    from: new Date(),
     to: new Date(),
   });
   const SALES_PER_PAGE = 25;
@@ -238,7 +238,48 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
         </div>
       )}
 
-      {/* Strategy Overview */}
+      {/* Top-level Leads Summary with Date Picker */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-emerald-200 bg-emerald-50/30">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-100 rounded-lg">
+            <Users className="h-5 w-5 text-emerald-700" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-emerald-900">
+              Google Ads Leads: {gLeadsLoading ? '...' : (googleAdsLeads?.length || 0)}
+            </p>
+            <p className="text-xs text-muted-foreground">Leads from Google Ads in selected period</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={leadsDateRange?.from && leadsDateRange?.to && 
+              startOfDay(leadsDateRange.from).getTime() === startOfDay(new Date()).getTime() && 
+              startOfDay(leadsDateRange.to).getTime() === startOfDay(new Date()).getTime() ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setLeadsDateRange({ from: new Date(), to: new Date() })}
+            className="text-xs"
+          >
+            Today
+          </Button>
+          <Button
+            variant={leadsDateRange?.from && leadsDateRange?.to && 
+              startOfDay(leadsDateRange.from).getTime() === startOfDay(subDays(new Date(), 1)).getTime() && 
+              startOfDay(leadsDateRange.to).getTime() === startOfDay(subDays(new Date(), 1)).getTime() ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { const y = subDays(new Date(), 1); setLeadsDateRange({ from: y, to: y }); }}
+            className="text-xs"
+          >
+            Yesterday
+          </Button>
+          <DateRangeFilter
+            dateRange={leadsDateRange}
+            onDateRangeChange={setLeadsDateRange}
+          />
+        </div>
+      </div>
+
+
       <Card className="border-primary/20 bg-primary/5">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
