@@ -390,7 +390,7 @@ export const FacebookAdsTab: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-semibold text-blue-900">
-              Facebook Leads: {leadsLoading ? '...' : totalLeads}
+              Facebook Leads: {summaryLeadsLoading ? '...' : (summaryLeadsCount ?? 0)}
             </p>
             <p className="text-xs text-muted-foreground">Leads from Facebook/Instagram ads in selected period</p>
           </div>
