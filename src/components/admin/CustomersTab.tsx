@@ -797,7 +797,7 @@ export const CustomersTab = () => {
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
     const isActivelySearching = !!debouncedSearchTerm;
     const isSalesAgentSearching = isActivelySearching && isSalesAgent;
-    if (!isSalesAgentSearching) {
+    if (!isActivelySearching || (isSalesAgent && !isSalesAgentSearching)) {
       let effectiveDateRange = dateRange;
       
       // Hard enforcement: sales agents are locked to the selected period, capped at 2 months max
