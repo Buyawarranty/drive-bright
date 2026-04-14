@@ -747,6 +747,9 @@ export function DiscountCodesTab() {
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">£</span>
                       )}
                     </div>
+                    {formData.type === 'fixed' && (
+                      <p className="text-xs text-amber-600">⚠️ Fixed (£) discounts require a minimum order of £350</p>
+                    )}
                   </div>
                 </div>
 
@@ -1006,8 +1009,8 @@ export function DiscountCodesTab() {
                                 <Copy className="h-3 w-3" />
                               </Button>
                             </div>
-                            {code.code === 'BUS' && (
-                              <span className="text-xs text-amber-600 font-medium">Min. order £300</span>
+                            {code.type === 'fixed' && (
+                              <span className="text-xs text-amber-600 font-medium">Min. order £350</span>
                             )}
                           </div>
                         </TableCell>
