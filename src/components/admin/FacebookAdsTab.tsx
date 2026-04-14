@@ -120,6 +120,43 @@ export const FacebookAdsTab: React.FC = () => {
     },
   });
 
+  // Separate query for the leads summary bar (driven by leadsDateRange)
+  const leadsDateFrom = useMemo(() => {
+    if (!leadsDateRange?.from) return null;
+    const d = new Date(leadsDateRange.from);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [leadsDateRange]);
+
+  const leadsDateTo = useMemo(() => {
+    if (!leadsDateRange?.to) {
+      if (!leadsDateRange?.from) return null;
+      const d = new Date(leadsDateRange.from);
+      d.setHours(23, 59, 59, 999);
+      return d;
+    }
+    const d = new Date(leadsDateRange.to);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, [leadsDateRange]);
+
+  const { data: summaryLeadsCount, isLoading: summaryLeadsLoading } = useQuery({
+    queryKey: ['fb-leads-summary', leadsDateFrom?.toISOString(), leadsDateTo?.toISOString()],
+    queryFn: async () => {
+      if (!leadsDateFrom || !leadsDateTo) return 0;
+      // Query sales_leads with social_ad source (consistent with how Google Ads tab works)
+      const { count, error } = await supabase
+        .from('sales_leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('lead_source', 'social_ad')
+        .gte('created_at', leadsDateFrom.toISOString())
+        .lte('created_at', leadsDateTo.toISOString());
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!leadsDateFrom && !!leadsDateTo,
+  });
+
   // Fetch Step 2 attempts in the period
   const { data: step2Attempts, isLoading: attemptsLoading } = useQuery({
     queryKey: ['fb-step2-attempts', dateRange],
@@ -349,7 +386,7 @@ export const FacebookAdsTab: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-semibold text-blue-900">
-              Facebook Leads: {leadsLoading ? '...' : totalLeads}
+              Facebook Leads: {summaryLeadsLoading ? '...' : (summaryLeadsCount ?? 0)}
             </p>
             <p className="text-xs text-muted-foreground">Leads from Facebook/Instagram ads in selected period</p>
           </div>
