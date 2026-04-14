@@ -1006,8 +1006,8 @@ export function DiscountCodesTab() {
                                 <Copy className="h-3 w-3" />
                               </Button>
                             </div>
-                            {code.code === 'BUS' && (
-                              <span className="text-xs text-amber-600 font-medium">Min. order £300</span>
+                            {code.type === 'fixed' && (
+                              <span className="text-xs text-amber-600 font-medium">Min. order £350</span>
                             )}
                           </div>
                         </TableCell>
