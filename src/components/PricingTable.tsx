@@ -1029,9 +1029,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
       // Get base price for selected duration using the pricing matrix
       const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, selectedPaymentType);
       
-      // Calculate add-on prices using centralized utility
-      const totalAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
-      const oneTimeAddonTotal = selectedProtectionAddOns.transfer && !getAutoIncludedAddOns(paymentType).includes('transfer') ? 19 : 0;
+      // Calculate add-on prices using effectiveAddOns (race-condition-safe)
+      const totalAddOnPrice = calculateAddOnPrice(effectiveAddOns, paymentType, durationMonths);
+      const oneTimeAddonTotal = effectiveAddOns.transfer && !getAutoIncludedAddOns(paymentType).includes('transfer') ? 19 : 0;
       const recurringAddonTotal = totalAddOnPrice - oneTimeAddonTotal;
       
       // Calculate total price for selected duration with vehicle adjustments applied
