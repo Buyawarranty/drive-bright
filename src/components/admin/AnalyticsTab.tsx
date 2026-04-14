@@ -1113,6 +1113,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardContent>
       </Card>
 
+      {!isSalesLead && (
+      <>
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -1286,7 +1288,6 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     <p className="text-xs text-gray-500">
                       {new Date(customer.signup_date).toLocaleDateString()}
                     </p>
-                    {/* Only show amount for active customers - hide for cancelled/refunded/test */}
                     {customer.final_amount && !isRevenueLost(customer.status) ? (
                       <p className="text-xs font-semibold text-green-600">
                         £{Number(customer.final_amount).toLocaleString()}
@@ -1315,6 +1316,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       <div className="mt-8">
         <ApiConnectivityTest />
       </div>
+      </>
+      )}
     </div>
   );
 };
