@@ -97,10 +97,8 @@ const DesktopStickyBottomBar: React.FC<DesktopStickyBottomBarProps> = ({
             ) : (
               <span className="flex items-center gap-1.5">
                 <Lock className="w-4 h-4" />
-                {selectedPayment === 'monthly' 
-                  ? `Activate cover – first payment £${monthlyPrice} now` 
-                  : selectedPayment === 'full'
-                  ? `Activate cover – pay £${fullPrice} now`
+                {selectedPayment 
+                  ? 'Activate my cover'
                   : 'Select payment option'}
               </span>
             )}
