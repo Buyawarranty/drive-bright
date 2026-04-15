@@ -2261,6 +2261,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             savings={savings}
             isLoading={isLoading}
             onPayClick={() => processPayment(selectedPayment || undefined)}
+            onPaymentChange={async (payment) => {
+              setSelectedPayment(payment);
+              selectedPaymentRef.current = payment;
+              setPaymentError('');
+              if (payment === 'full') {
+                setTimeout(() => processPayment('full'), 100);
+              }
+            }}
           />
         </div>
       </div>
