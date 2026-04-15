@@ -306,10 +306,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             ) : (
               <span className="flex items-center gap-2">
                 <Lock className="w-5 h-5" />
-                {selectedPayment === 'monthly' 
-                  ? `Activate cover – first payment £${monthlyPrice} today` 
-                  : selectedPayment === 'full'
-                  ? `Activate cover – pay £${fullPrice} now`
+                {selectedPayment 
+                  ? 'Activate my cover'
                   : 'Select payment option'}
               </span>
             )}
