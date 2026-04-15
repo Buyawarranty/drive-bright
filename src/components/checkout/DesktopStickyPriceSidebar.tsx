@@ -152,9 +152,9 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
               <span className="flex items-center justify-center gap-2">
                 <Lock className="w-4 h-4" />
                 {selectedPayment === 'monthly' 
-                  ? `Pay £${monthlyPrice} today` 
+                  ? `Activate cover – first payment £${monthlyPrice} today` 
                   : selectedPayment === 'full'
-                  ? `Pay £${fullPrice} now`
+                  ? `Activate cover – pay £${fullPrice} now`
                   : 'Select payment option'}
               </span>
             )}
