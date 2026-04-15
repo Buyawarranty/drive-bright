@@ -288,39 +288,33 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         </div>
       </div>
 
-      {/* Promo Code Section */}
-      <div className="mt-6">
-        <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm text-[#1a1a1a] hover:text-gray-700 transition-colors py-2">
-            <Tag className="w-4 h-4" />
-            <span>Have a promo code?</span>
-            {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="mt-3">
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Enter code"
-                value={promoCodeInput}
-                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
-                className="flex-1 h-11 text-base uppercase"
-                disabled={isValidatingPromoCode}
-              />
-              <Button
-                type="button"
-                onClick={onApplyPromoCode}
-                disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                className="h-11 px-5 bg-[#DFF5E3] hover:bg-[#d0efd5] text-[#1a4d24] border border-[#6BBF7B] font-semibold"
-              >
-                {isValidatingPromoCode ? 'Checking...' : 'Apply'}
-              </Button>
-            </div>
-            {promoCodeError && (
-              <p className="text-destructive text-sm mt-2">{promoCodeError}</p>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
+      {/* Promo Code Section — always visible */}
+      <div className="mt-6 bg-[#FFFBF0] border border-[#FFD980] rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Tag className="w-4 h-4 text-[#FF8C00]" />
+          <span className="text-sm font-bold text-[#1a1a1a]">Have a promo code?</span>
+        </div>
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="Enter code"
+            value={promoCodeInput}
+            onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+            className="flex-1 h-11 text-base uppercase bg-white"
+            disabled={isValidatingPromoCode}
+          />
+          <Button
+            type="button"
+            onClick={onApplyPromoCode}
+            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+            className="h-11 px-5 bg-[#FF8C00] hover:bg-[#e57e00] text-white font-semibold"
+          >
+            {isValidatingPromoCode ? 'Checking...' : 'Apply'}
+          </Button>
+        </div>
+        {promoCodeError && (
+          <p className="text-destructive text-sm mt-2">{promoCodeError}</p>
+        )}
       </div>
 
       {/* Discount Applied Row */}
