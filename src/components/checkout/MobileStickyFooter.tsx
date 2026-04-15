@@ -67,9 +67,9 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           disabled={isLoading || !selectedPayment}
           aria-label={
             selectedPayment === 'monthly'
-              ? `Pay £${monthlyPrice} today`
+              ? `Activate cover – first payment £${monthlyPrice} today`
               : selectedPayment === 'full'
-              ? `Pay £${fullPrice} now`
+              ? `Activate cover – pay £${fullPrice} now`
               : 'Select payment option'
           }
           className="w-full py-5 text-base font-bold rounded-xl animate-breathing"
@@ -91,9 +91,9 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             <span className="flex items-center gap-1.5">
               <Lock className="w-4 h-4" />
               {selectedPayment === 'monthly' 
-                ? `Pay £${monthlyPrice} today` 
+                ? `Activate cover – first payment £${monthlyPrice} today` 
                 : selectedPayment === 'full'
-                ? `Pay £${fullPrice} now`
+                ? `Activate cover – pay £${fullPrice} now`
                 : 'Select payment option'}
             </span>
           )}

@@ -136,15 +136,15 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               size="lg"
               aria-label={
                 selectedPayment === 'full'
-                  ? `Pay £${fullPrice} now`
-                  : `Pay £${monthlyPrice} today`
+                  ? `Activate cover – pay £${fullPrice} now`
+                  : `Activate cover – first payment £${monthlyPrice} today`
               }
               className="text-base lg:text-lg font-semibold px-6 lg:px-8 py-3 lg:py-3.5 text-white rounded-xl whitespace-nowrap animate-breathing"
               style={{ backgroundColor: selectedPayment === 'monthly' ? '#FF6B00' : '#0BA360' }}
             >
               {selectedPayment === 'full' 
-                ? `Pay £${fullPrice} now`
-                : `Pay £${monthlyPrice} today`
+                ? `Activate cover – pay £${fullPrice} now`
+                : `Activate cover – first payment £${monthlyPrice} today`
               }
               <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
             </Button>
