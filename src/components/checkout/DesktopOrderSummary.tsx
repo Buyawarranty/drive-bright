@@ -159,7 +159,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-500">Parts covered</span>
-                  <span className="font-semibold text-[#1a1a1a]">200+ · all systems</span>
+                  <span className="font-semibold text-[#1a1a1a]">Comprehensive cover</span>
                 </div>
               </div>
             </div>
