@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
+import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,7 +54,23 @@ interface ClaimSubmission {
   warranty_start_date?: string;
 }
 
-export const ClaimsTab = () => {
+interface ClaimsTabProps {
+  notifications?: AdminNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
+  onNavigateToTab?: (tab: string) => void;
+  userRole?: string | null;
+}
+
+export const ClaimsTab = ({
+  notifications = [],
+  unreadCount = 0,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onNavigateToTab,
+  userRole,
+}: ClaimsTabProps) => {
   const { toast } = useToast();
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -294,7 +312,17 @@ export const ClaimsTab = () => {
             {claims.length} total claims · {filteredClaims.length} shown
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {/* Notification Bell for admin/super_admin */}
+          {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
+            <AdminNotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAsRead={onMarkAsRead}
+              onMarkAllAsRead={onMarkAllAsRead}
+              onNavigateToTab={onNavigateToTab}
+            />
+          )}
           <Button
             variant="outline"
             size="sm"

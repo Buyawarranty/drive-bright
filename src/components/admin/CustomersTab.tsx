@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
+import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -297,7 +299,23 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
   );
 };
 
-export const CustomersTab = () => {
+interface CustomersTabProps {
+  notifications?: AdminNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
+  onNavigateToTab?: (tab: string) => void;
+  userRole?: string | null;
+}
+
+export const CustomersTab = ({
+  notifications = [],
+  unreadCount = 0,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onNavigateToTab,
+  userRole,
+}: CustomersTabProps) => {
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV: exportDataToCSV, exportToExcel } = useDataExport();
   const canExport = canExportTab('customers');
@@ -2816,11 +2834,20 @@ export const CustomersTab = () => {
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
-        <div className="flex space-x-2">
-          {/* Quick Customer Signup Button - hidden for sales agents */}
+        <div className="flex items-center space-x-2">
+          {/* Notification Bell for admin/super_admin */}
+          {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
+            <AdminNotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAsRead={onMarkAsRead}
+              onMarkAllAsRead={onMarkAllAsRead}
+              onNavigateToTab={onNavigateToTab}
+            />
+          )}
           {!isSalesAgent && <QuickCustomerSignupButton />}
           
-          <Button 
+          <Button
             onClick={fetchCustomers} 
             variant="outline"
             className="flex items-center space-x-2"

@@ -347,7 +347,16 @@ const AdminDashboard = () => {
   const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
       case 'customers':
-        return <CustomersTab />;
+        return (
+          <CustomersTab
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onMarkAsRead={markAsRead}
+            onMarkAllAsRead={markAllAsRead}
+            onNavigateToTab={handleTabChange}
+            userRole={effectiveUserRole}
+          />
+        );
       case 'plans':
         return <PlansTab />;
       case 'bulk-pricing':
@@ -359,7 +368,16 @@ const AdminDashboard = () => {
       case 'referrals':
         return <ReferralsTab />;
       case 'claims':
-        return <ClaimsTab />;
+        return (
+          <ClaimsTab
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onMarkAsRead={markAsRead}
+            onMarkAllAsRead={markAllAsRead}
+            onNavigateToTab={handleTabChange}
+            userRole={effectiveUserRole}
+          />
+        );
       case 'reviews':
         return <ReviewsTab />;
       case 'contact':
