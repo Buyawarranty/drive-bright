@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Check, Lock, Star } from 'lucide-react';
+import { Shield, Check, Lock, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
 interface DesktopOrderSummaryProps {
   planName: string;
@@ -126,6 +127,9 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 : 'Select payment option'}
             </Button>
             
+            {/* 14-day guarantee */}
+            <DesktopGuarantee />
+
             {/* SSL + Trustpilot Footer */}
             <div className="mt-4 text-center">
               <p className="text-xs text-gray-500 flex items-center justify-center gap-1.5 mb-3">
