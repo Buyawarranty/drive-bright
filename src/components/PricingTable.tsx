@@ -128,12 +128,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   const [plans, setPlans] = useState<Plan[]>([]);
   // Initialize payment type from previous selection, defaulting to 24 months
-  const initialPaymentType = previousPaymentType || '12months';
+  const initialPaymentType = previousPaymentType || '24months';
   console.log('🎯 PricingTable mount - previousPaymentType:', previousPaymentType, 'initialPaymentType:', initialPaymentType);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(initialPaymentType);
   // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise default to £100
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
-    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 150
+    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
   );
   const [selectedAddOns, setSelectedAddOns] = useState<{[planId: string]: {[addon: string]: boolean}}>(
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
@@ -256,7 +256,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   );
   
   // New state for labour rate selection - restore from previous if available
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 50);
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 70);
   
   // NOTE: Add-on auto-inclusion on payment type change is handled by a single useEffect below (around line 490)
   // to avoid duplicate state updates that cause pricing inconsistencies when navigating between steps
