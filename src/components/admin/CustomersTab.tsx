@@ -2834,11 +2834,20 @@ export const CustomersTab = ({
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
-        <div className="flex space-x-2">
-          {/* Quick Customer Signup Button - hidden for sales agents */}
+        <div className="flex items-center space-x-2">
+          {/* Notification Bell for admin/super_admin */}
+          {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
+            <AdminNotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAsRead={onMarkAsRead}
+              onMarkAllAsRead={onMarkAllAsRead}
+              onNavigateToTab={onNavigateToTab}
+            />
+          )}
           {!isSalesAgent && <QuickCustomerSignupButton />}
           
-          <Button 
+          <Button
             onClick={fetchCustomers} 
             variant="outline"
             className="flex items-center space-x-2"
