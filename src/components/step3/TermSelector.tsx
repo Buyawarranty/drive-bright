@@ -18,6 +18,8 @@ interface TermSelectorProps {
   getPriceForTerm: (term: string) => number;
   getTotalForTerm: (term: string) => number;
   hasAddOnsSelected?: boolean;
+  vehicleModel?: string;
+  vehicleType?: string;
 }
 
 const TermSelector: React.FC<TermSelectorProps> = ({
@@ -26,8 +28,11 @@ const TermSelector: React.FC<TermSelectorProps> = ({
   availableDurations,
   getPriceForTerm,
   getTotalForTerm,
-  hasAddOnsSelected = false
+  hasAddOnsSelected = false,
+  vehicleModel,
+  vehicleType
 }) => {
+  const recommendedLabel = `Recommended for your ${(vehicleModel && vehicleModel.toLowerCase() !== 'unknown') ? vehicleModel : (vehicleType || 'vehicle')}`;
   const [showAllOptions, setShowAllOptions] = useState(false);
 
   // Pay in full price = monthly × 12 (what user actually pays)
@@ -107,7 +112,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               {/* Badge */}
               {term.isPopular && (
                 <span className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  Most popular
+                  {recommendedLabel}
                 </span>
               )}
               {term.isBestValue && (

@@ -432,6 +432,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           getPriceForTerm={calculateMonthlyPrice}
           getTotalForTerm={calculateTotalPrice}
           hasAddOnsSelected={hasAddOnsSelected}
+          vehicleModel={vehicleData?.model}
+          vehicleType={vehicleData?.vehicleType}
         />
 
         {/* Price Help Trigger */}
