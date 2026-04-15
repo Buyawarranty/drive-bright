@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Check, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Car, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 
@@ -8,6 +8,7 @@ interface PlanSummaryCardProps {
   vehicleReg: string;
   vehicleMake?: string;
   vehicleModel?: string;
+  vehicleYear?: string;
   duration: string;
   claimLimit: number;
   labourRate: number;
@@ -20,6 +21,7 @@ interface PlanSummaryCardProps {
   onPayClick?: () => void;
   onChangePlan: () => void;
   isMobile?: boolean;
+  startDate?: Date | null;
 }
 
 const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
@@ -27,6 +29,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   vehicleReg,
   vehicleMake,
   vehicleModel,
+  vehicleYear,
   duration,
   claimLimit,
   labourRate,
@@ -39,14 +42,22 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   onPayClick,
   onChangePlan,
   isMobile = false,
+  startDate,
 }) => {
   const [isOpen, setIsOpen] = React.useState(true);
+  const vehicleTitle = [vehicleYear, vehicleMake, vehicleModel].filter(Boolean).join(' ');
+  const displayClaimLimitText = getDisplayClaimLimit(claimLimit);
 
-  const displayClaimLimitText = () => {
-    return getDisplayClaimLimit(claimLimit);
+  const months = duration.toLowerCase().includes('2 year') ? 24 
+    : duration.toLowerCase().includes('3 year') ? 36 
+    : 12;
+
+  const formatStartDate = (date: Date) => {
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+    const formatted = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    return isToday ? `Today, ${formatted}` : formatted;
   };
-
-  const vehicleDisplay = [vehicleMake, vehicleModel].filter(Boolean).join(' ') || vehicleReg;
 
   // Mobile: Collapsible accordion
   if (isMobile) {
@@ -55,9 +66,8 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger className="w-full">
             <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-                <span className="font-semibold text-[#1a1a1a]">Your Plan Summary</span>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-[#1a1a1a]">Your order summary</span>
               </div>
               <div className="text-gray-500">
                 {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -67,65 +77,74 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           
           <CollapsibleContent>
             <div className="px-4 pb-4 border-t border-[#E5E5E5] pt-3">
-              {/* 14-day guarantee banner */}
-              <div className="bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
-                <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                <span className="text-xs text-[#1a1a1a]">Cancel anytime within 14 days for a full refund</span>
-              </div>
-
-              {/* Plan Details */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-600 flex-shrink-0">Plan:</span>
-                  <span className="font-semibold text-[#1a1a1a] text-right truncate">Comprehensive</span>
-                </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-600 flex-shrink-0">Duration:</span>
-                  <span className="font-semibold text-[#1a1a1a] text-right truncate">{duration}</span>
-                </div>
-                {duration.toLowerCase().includes('2 year') && (
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-gray-600 flex-shrink-0">Payments:</span>
-                    <span className="font-semibold text-[#0BA360] text-right truncate">No payments in year 2</span>
+              {/* Vehicle & Plan Details Card */}
+              <div className="border border-[#E5E5E5] rounded-lg p-3 mb-3">
+                {/* Vehicle Header */}
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Car className="w-4 h-4 text-gray-500" />
+                    <span className="font-semibold text-[#1a1a1a] text-sm">
+                      {vehicleTitle || vehicleReg}
+                    </span>
                   </div>
-                )}
-                {duration.toLowerCase().includes('3 year') && (
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-gray-600 flex-shrink-0">Payments:</span>
-                    <span className="font-semibold text-[#0BA360] text-right truncate">No payments in years 2 and 3</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-600 flex-shrink-0">Vehicle:</span>
-                  <span 
-                    className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black flex-shrink-0"
-                    style={{ backgroundColor: '#FCD34D' }}
+                  <button
+                    onClick={onChangePlan}
+                    className="text-xs font-semibold text-[#C4841D] hover:text-[#A36A15] transition-colors"
                   >
-                    {vehicleReg}
-                  </span>
+                    Change plan
+                  </button>
                 </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-600 flex-shrink-0">Claim Limit:</span>
-                  <span className="font-semibold text-[#1a1a1a] text-right">{displayClaimLimitText()}</span>
-                </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-600 flex-shrink-0">Labour Rate:</span>
-                  <span className="font-semibold text-[#1a1a1a] text-right">£{labourRate}/hour</span>
-                </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-600 flex-shrink-0">Excess:</span>
-                  <span className="font-semibold text-[#1a1a1a] text-right">£{excess}</span>
+                
+                <div className="h-px bg-[#E5E5E5] mb-2.5" />
+                
+                {/* Spec Table */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Cover duration</span>
+                    <span className="font-semibold text-[#1a1a1a]">{duration}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Claim limit</span>
+                    <span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Your excess</span>
+                    <span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Labour rate</span>
+                    <span className="font-semibold text-[#1a1a1a]">Up to £{labourRate}/hr</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Parts covered</span>
+                    <span className="font-semibold text-[#1a1a1a]">200+ · all systems</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Change Plan Link */}
-              <button
-                onClick={onChangePlan}
-                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#1a1a1a] mt-3"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Change plan
-              </button>
+              {/* Pricing */}
+              {selectedPayment === 'monthly' && (
+                <div className="mb-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
+                    <span className="text-xl font-bold text-[#1a1a1a]">£{monthlyPrice}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Then £{monthlyPrice}/month × {months - 1} · Total £{totalPrice} · 0% APR
+                  </p>
+                </div>
+              )}
+
+              {/* Cover Start Date */}
+              {startDate && (
+                <div className="border border-[#FFD7A8] bg-[#FFF8F0] rounded-lg px-3 py-2.5 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#C4841D] flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-[#C4841D] font-medium">Cover start date</p>
+                    <p className="text-sm font-bold text-[#1a1a1a]">{formatStartDate(startDate)}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -133,67 +152,27 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
     );
   }
 
-  // Desktop: Full card with header
+  // Desktop: Full card (fallback, main desktop uses DesktopOrderSummary)
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
       <div className="p-5 sm:p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Shield className="w-6 h-6 text-[#0BA360] flex-shrink-0" />
-            <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
-              Almost done – just a few details
-            </h2>
+        <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">Your order summary</h2>
+        
+        <div className="border border-[#E5E5E5] rounded-lg p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Car className="w-4 h-4 text-gray-500" />
+              <span className="font-semibold text-[#1a1a1a] text-sm">{vehicleTitle || vehicleReg}</span>
+            </div>
+            <button onClick={onChangePlan} className="text-xs font-semibold text-[#C4841D]">Change plan</button>
           </div>
-          <button
-            onClick={onChangePlan}
-            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#1a1a1a] border border-[#E5E5E5] rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Change
-          </button>
-        </div>
-
-        {/* 14-day guarantee banner */}
-        <div className="bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
-          <Check className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-          <span className="text-sm text-[#1a1a1a]">Cancel anytime within 14 days for a full refund</span>
-        </div>
-
-        {/* Order Summary - Combined Details */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Plan:</span>
-            <span className="font-semibold text-[#1a1a1a]">Comprehensive</span>
-          </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Duration:</span>
-            <span className="font-semibold text-[#1a1a1a]">{duration}</span>
-          </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Vehicle:</span>
-            <span className="font-semibold text-[#1a1a1a] uppercase">{vehicleDisplay}</span>
-          </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Registration:</span>
-            <span 
-              className="font-mono font-bold text-xs uppercase px-2 py-1 rounded border-2 border-black tracking-wider"
-              style={{ backgroundColor: '#FCD34D' }}
-            >
-              {vehicleReg}
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Claim Limit:</span>
-            <span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText()}</span>
-          </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Labour Rate:</span>
-            <span className="font-semibold text-[#1a1a1a]">£{labourRate}/hour</span>
-          </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-gray-600">Excess:</span>
-            <span className="font-semibold text-[#1a1a1a]">£{excess}</span>
+          <div className="h-px bg-[#E5E5E5] mb-3" />
+          <div className="space-y-2.5 text-sm">
+            <div className="flex justify-between"><span className="text-gray-500">Cover duration</span><span className="font-semibold text-[#1a1a1a]">{duration}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Claim limit</span><span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Your excess</span><span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Labour rate</span><span className="font-semibold text-[#1a1a1a]">Up to £{labourRate}/hr</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Parts covered</span><span className="font-semibold text-[#1a1a1a]">200+ · all systems</span></div>
           </div>
         </div>
       </div>
