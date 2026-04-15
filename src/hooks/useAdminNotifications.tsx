@@ -157,6 +157,8 @@ export const useAdminNotifications = (userRole?: string | null) => {
       })
       .subscribe();
 
+    const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+
     const claimsChannel = supabase
       .channel('admin-claims')
       .on('postgres_changes', {
@@ -165,10 +167,13 @@ export const useAdminNotifications = (userRole?: string | null) => {
         table: 'claims_submissions',
       }, (payload) => {
         const data = payload.new as { name: string; email: string };
-        toast.warning('New Claim Submitted', {
-          description: `${data.name} (${data.email})`,
-          duration: 5000,
-        });
+        // Only show claim toast for admin/super_admin
+        if (isAdminRole) {
+          toast.warning('New Claim Submitted', {
+            description: `${data.name} (${data.email})`,
+            duration: 5000,
+          });
+        }
         fetchNotifications();
       })
       .subscribe();
