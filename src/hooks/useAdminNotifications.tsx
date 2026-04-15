@@ -19,7 +19,7 @@ interface CountState {
   resubmissions: number;
 }
 
-export const useAdminNotifications = () => {
+export const useAdminNotifications = (userRole?: string | null) => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [counts, setCounts] = useState<CountState>({ contacts: 0, claims: 0, customers: 0, resubmissions: 0 });
   const [loading, setLoading] = useState(true);
@@ -141,6 +141,8 @@ export const useAdminNotifications = () => {
   useEffect(() => {
     fetchNotifications();
 
+    const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+
     const contactChannel = supabase
       .channel('admin-contacts')
       .on('postgres_changes', {
@@ -149,10 +151,12 @@ export const useAdminNotifications = () => {
         table: 'contact_submissions',
       }, (payload) => {
         const data = payload.new as { name: string; email: string };
-        toast.info('New Contact Submission', {
-          description: `${data.name} (${data.email})`,
-          duration: 5000,
-        });
+        if (isAdminRole) {
+          toast.info('New Contact Submission', {
+            description: `${data.name} (${data.email})`,
+            duration: 5000,
+          });
+        }
         fetchNotifications();
       })
       .subscribe();
@@ -165,10 +169,13 @@ export const useAdminNotifications = () => {
         table: 'claims_submissions',
       }, (payload) => {
         const data = payload.new as { name: string; email: string };
-        toast.warning('New Claim Submitted', {
-          description: `${data.name} (${data.email})`,
-          duration: 5000,
-        });
+        // Only show claim toast for admin/super_admin
+        if (isAdminRole) {
+          toast.warning('New Claim Submitted', {
+            description: `${data.name} (${data.email})`,
+            duration: 5000,
+          });
+        }
         fetchNotifications();
       })
       .subscribe();
@@ -227,7 +234,7 @@ export const useAdminNotifications = () => {
       supabase.removeChannel(customersChannel);
       supabase.removeChannel(resubChannel);
     };
-  }, [fetchNotifications]);
+  }, [fetchNotifications, userRole]);
 
   const markAsRead = useCallback((notificationId: string) => {
     setReadIds(prev => {
