@@ -399,7 +399,9 @@ serve(async (req) => {
       ga_client_id: trackingData?.clientId || metadata?.ga_client_id || null,
       purchase_source: (trackingData?.gclid || metadata?.gclid) ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : 'website')),
       // Default all website sales to support@buyawarranty.co.uk
-      assigned_to: 'e39499b8-f88c-4963-9f0d-63e1addb3025'
+      assigned_to: 'e39499b8-f88c-4963-9f0d-63e1addb3025',
+      // Customer date of birth for identity verification
+      customer_dob: customerData?.customer_dob || metadata?.customer_dob || null
     };
 
     // Detect Facebook Ads attribution from abandoned cart metadata

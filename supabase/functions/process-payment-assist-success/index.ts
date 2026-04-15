@@ -143,7 +143,9 @@ serve(async (req) => {
       postcode: customerData.postcode || null,
       country: customerData.country || 'United Kingdom',
       // Seasonal bonus
-      seasonal_bonus_months: protectionAddOns.seasonalBonusMonths || 0
+      seasonal_bonus_months: protectionAddOns.seasonalBonusMonths || 0,
+      // Customer date of birth for identity verification
+      customer_dob: customerData.customer_dob || null
     };
 
     // CRITICAL: Check for duplicate by email + reg plate before inserting
