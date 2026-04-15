@@ -1692,7 +1692,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-sm font-bold text-black">(12 payments only)</span>
                     </div>
                     <p className="text-sm font-semibold text-[#FF7A00] mt-0.5">
-                      Only £{((displayedMonthlyPrice * 12) / (durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365)).toFixed(2)}/day
+                      Only {(() => { const daily = (displayedMonthlyPrice * 12) / (durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365); return daily < 1 ? `${Math.round(daily * 100)}p` : `£${daily.toFixed(2)}`; })()}/day
                     </p>
                     
                     {/* Equivalent cost per month of cover - shown only for multi-year plans */}
