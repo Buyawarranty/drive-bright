@@ -352,14 +352,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       )}
 
       {/* 14-day money-back guarantee */}
-      {!hidePayButton && <InlineGuarantee />}
+      {!hidePayButton && <InlineGuarantee accepted={termsAccepted} setAccepted={setTermsAccepted} />}
 
       {/* Pay Button - Hidden when embedded checkout is showing */}
       {!hidePayButton && (
         <div className="mt-5">
           <Button
             onClick={onPayClick}
-            disabled={isLoading || !selectedPayment}
+            disabled={isLoading || !selectedPayment || !termsAccepted}
             className={`w-full py-6 text-lg font-bold rounded-xl animate-breathing hover:opacity-90 ${
               !selectedPayment 
                 ? 'bg-gray-400' 
