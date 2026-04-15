@@ -168,6 +168,7 @@ serve(async (req) => {
         customer_building_name: customerData?.building_name || '',
         customer_flat_number: customerData?.flat_number || '',
         customer_building_number: customerData?.building_number || '',
+        customer_dob: customerData?.customer_dob || '',
         
         // Vehicle details
         vehicle_reg: vehicleData?.regNumber || customerData?.vehicle_reg || '',
