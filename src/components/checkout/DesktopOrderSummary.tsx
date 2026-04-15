@@ -20,6 +20,7 @@ interface DesktopOrderSummaryProps {
   savings: number;
   isLoading: boolean;
   onPayClick: () => void;
+  onPaymentChange?: (payment: 'monthly' | 'full') => void;
 }
 
 const DesktopGuarantee = () => {
@@ -76,6 +77,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
   savings,
   isLoading,
   onPayClick,
+  onPaymentChange,
 }) => {
   const vehicleDisplay = [vehicleMake, vehicleModel].filter(Boolean).join(' ') || vehicleReg;
 
