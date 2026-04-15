@@ -1861,60 +1861,107 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   🔒 Required for identity verification — this protects your warranty from unauthorised claims.
                 </p>
                 <div className="grid grid-cols-3 gap-3">
-                  <select
-                    value={customerData.dob_day || ''}
-                    onChange={(e) => handleInputChange('dob_day', e.target.value)}
-                    onBlur={() => {
-                      if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
-                        handleFieldBlur('dob');
-                      }
-                    }}
-                    className={`h-11 sm:h-12 text-base rounded-md border bg-background px-3 appearance-none ${
-                      fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
-                      (customerData.dob_day ? 'border-[hsl(var(--success))]' : 'border-input')
-                    }`}
-                  >
-                    <option value="">Day</option>
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                      <option key={d} value={d.toString().padStart(2, '0')}>{d}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={customerData.dob_month || ''}
-                    onChange={(e) => handleInputChange('dob_month', e.target.value)}
-                    onBlur={() => {
-                      if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
-                        handleFieldBlur('dob');
-                      }
-                    }}
-                    className={`h-11 sm:h-12 text-base rounded-md border bg-background px-3 appearance-none ${
-                      fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
-                      (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-input')
-                    }`}
-                  >
-                    <option value="">Month</option>
-                    {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
-                      <option key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={customerData.dob_year || ''}
-                    onChange={(e) => handleInputChange('dob_year', e.target.value)}
-                    onBlur={() => {
-                      if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
-                        handleFieldBlur('dob');
-                      }
-                    }}
-                    className={`h-11 sm:h-12 text-base rounded-md border bg-background px-3 appearance-none ${
-                      fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
-                      (customerData.dob_year ? 'border-[hsl(var(--success))]' : 'border-input')
-                    }`}
-                  >
-                    <option value="">Year</option>
-                    {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
-                      <option key={y} value={y.toString()}>{y}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <Input
+                      id="dob_day"
+                      list="dob-days"
+                      inputMode="numeric"
+                      placeholder="DD"
+                      autoComplete="bday-day"
+                      maxLength={2}
+                      value={customerData.dob_day || ''}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const num = parseInt(val);
+                        if (val === '' || (num >= 0 && num <= 31)) {
+                          handleInputChange('dob_day', val);
+                        }
+                      }}
+                      onBlur={() => {
+                        if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
+                          handleFieldBlur('dob');
+                        }
+                      }}
+                      className={`h-11 sm:h-12 text-base ${
+                        fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                        (customerData.dob_day ? 'border-[hsl(var(--success))]' : 'border-input')
+                      }`}
+                    />
+                    <datalist id="dob-days">
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                        <option key={d} value={d.toString().padStart(2, '0')} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="dob_month"
+                      list="dob-months"
+                      placeholder="MM"
+                      autoComplete="bday-month"
+                      value={customerData.dob_month || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Allow typing a number directly
+                        const numOnly = val.replace(/\D/g, '');
+                        if (numOnly && parseInt(numOnly) >= 1 && parseInt(numOnly) <= 12) {
+                          handleInputChange('dob_month', numOnly.padStart(2, '0'));
+                        } else {
+                          // Check if they picked a month name from datalist
+                          const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                          const idx = months.findIndex(m => m.toLowerCase() === val.toLowerCase());
+                          if (idx >= 0) {
+                            handleInputChange('dob_month', (idx + 1).toString().padStart(2, '0'));
+                          } else {
+                            handleInputChange('dob_month', val);
+                          }
+                        }
+                      }}
+                      onBlur={() => {
+                        if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
+                          handleFieldBlur('dob');
+                        }
+                      }}
+                      className={`h-11 sm:h-12 text-base ${
+                        fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                        (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-input')
+                      }`}
+                    />
+                    <datalist id="dob-months">
+                      {['01 - January','02 - February','03 - March','04 - April','05 - May','06 - June','07 - July','08 - August','09 - September','10 - October','11 - November','12 - December'].map((m, i) => (
+                        <option key={i} value={(i + 1).toString().padStart(2, '0')} label={m} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="dob_year"
+                      list="dob-years"
+                      inputMode="numeric"
+                      placeholder="YYYY"
+                      autoComplete="bday-year"
+                      maxLength={4}
+                      value={customerData.dob_year || ''}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        handleInputChange('dob_year', val);
+                      }}
+                      onBlur={() => {
+                        if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
+                          handleFieldBlur('dob');
+                        }
+                      }}
+                      className={`h-11 sm:h-12 text-base ${
+                        fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                        (customerData.dob_year && customerData.dob_year.length === 4 ? 'border-[hsl(var(--success))]' : 'border-input')
+                      }`}
+                    />
+                    <datalist id="dob-years">
+                      {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
+                        <option key={y} value={y.toString()} />
+                      ))}
+                    </datalist>
+                  </div>
                 </div>
                 {fieldErrors.dob && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
