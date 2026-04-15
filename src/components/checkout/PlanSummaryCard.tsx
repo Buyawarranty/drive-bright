@@ -123,7 +123,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500">Parts covered</span>
-                    <span className="font-semibold text-[#1a1a1a]">200+ · all systems</span>
+                    <span className="font-semibold text-[#1a1a1a]">Comprehensive cover</span>
                   </div>
                 </div>
               </div>
@@ -178,7 +178,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
             <div className="flex justify-between"><span className="text-gray-500">Claim limit</span><span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Your excess</span><span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Labour rate</span><span className="font-semibold text-[#1a1a1a]">Up to £{labourRate}/hr</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Parts covered</span><span className="font-semibold text-[#1a1a1a]">200+ · all systems</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Parts covered</span><span className="font-semibold text-[#1a1a1a]">Comprehensive cover</span></div>
           </div>
         </div>
       </div>
