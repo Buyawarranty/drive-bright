@@ -2392,6 +2392,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             vehicleReg={vehicleData.regNumber}
             vehicleMake={vehicleData.make}
             vehicleModel={vehicleData.model}
+            vehicleYear={vehicleData.year}
             duration={getDurationText()}
             claimLimit={updatedPricingData.claimLimit || 2000}
             labourRate={pricingData.labourRate || 70}
@@ -2403,6 +2404,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             savings={savings}
             isLoading={isLoading}
             onPayClick={() => processPayment(selectedPayment || undefined)}
+            onChangePlan={onBack}
+            startDate={startDate}
             onPaymentChange={async (payment) => {
               setSelectedPayment(payment);
               selectedPaymentRef.current = payment;
