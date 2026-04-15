@@ -158,10 +158,8 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               }}
             >
               <Lock className="w-4 h-4 mr-2" />
-              {selectedPayment === 'monthly' 
-                ? `Pay £${monthlyPrice} today`
-                : selectedPayment === 'full'
-                ? `Pay £${fullPrice} now`
+              {selectedPayment 
+                ? 'Activate my cover'
                 : 'Select payment option'}
             </Button>
             
