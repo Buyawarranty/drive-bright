@@ -1005,6 +1005,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
         break;
       }
+      case 'dob': {
+        if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) {
+          error = 'Please enter your date of birth.';
+          isValid = false;
+        } else {
+          const year = parseInt(customerData.dob_year);
+          const currentYear = new Date().getFullYear();
+          if (year > currentYear - 18) {
+            error = 'You must be at least 18 years old.';
+            isValid = false;
+          }
+        }
+        break;
+      }
       case 'email': {
         const val = getValue('email');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
