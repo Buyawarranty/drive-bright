@@ -38,7 +38,7 @@ interface HowToPaySectionProps {
 
 const InlineGuarantee = () => {
   const [expanded, setExpanded] = useState(false);
-  const [accepted, setAccepted] = useState(false);
+  const [accepted, setAccepted] = useState(true);
 
   return (
     <div className="mt-5">
