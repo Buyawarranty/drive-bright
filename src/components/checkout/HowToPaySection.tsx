@@ -132,6 +132,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   totalDiscountAmount,
   hidePayButton = false,
 }) => {
+  const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
   return (
