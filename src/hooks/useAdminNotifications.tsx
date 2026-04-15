@@ -149,10 +149,12 @@ export const useAdminNotifications = (userRole?: string | null) => {
         table: 'contact_submissions',
       }, (payload) => {
         const data = payload.new as { name: string; email: string };
-        toast.info('New Contact Submission', {
-          description: `${data.name} (${data.email})`,
-          duration: 5000,
-        });
+        if (isAdminRole) {
+          toast.info('New Contact Submission', {
+            description: `${data.name} (${data.email})`,
+            duration: 5000,
+          });
+        }
         fetchNotifications();
       })
       .subscribe();
