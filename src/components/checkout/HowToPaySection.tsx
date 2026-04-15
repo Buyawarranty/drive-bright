@@ -83,7 +83,7 @@ const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAcce
             </div>
             <div className="flex items-start gap-2.5">
               <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#1a1a1a]">After 14 days, any refunds are <span className="font-semibold">pro-rated</span> based on time remaining</p>
+              <p className="text-sm text-[#1a1a1a]">After 14 days, refunds are calculated <span className="font-semibold">pro-rata</span> based on time remaining, less any claims made</p>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3">Designed to keep things fair for everyone.</p>
