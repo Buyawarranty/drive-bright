@@ -1122,7 +1122,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
+    const requiredFields = ['first_name', 'last_name', 'dob', 'email', 'phone', 'mileage'];
     let allValid = true;
     
     requiredFields.forEach(field => {
