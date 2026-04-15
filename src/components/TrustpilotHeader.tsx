@@ -1,30 +1,51 @@
-import React from 'react';
-import { OptimizedImage } from '@/components/OptimizedImage';
-import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
-import buyAWarrantyLogo from '/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png';
+import React, { useEffect, useRef } from 'react';
 
 interface TrustpilotHeaderProps {
   className?: string;
 }
 
 const TrustpilotHeader: React.FC<TrustpilotHeaderProps> = ({ className = "" }) => {
+  const widgetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Load Trustpilot script if not already loaded
+    if (!(window as any).Trustpilot) {
+      const script = document.createElement('script');
+      script.src = '//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
+      script.async = true;
+      script.onload = () => {
+        if (widgetRef.current && (window as any).Trustpilot) {
+          (window as any).Trustpilot.loadFromElement(widgetRef.current, true);
+        }
+      };
+      document.head.appendChild(script);
+    } else {
+      if (widgetRef.current) {
+        (window as any).Trustpilot.loadFromElement(widgetRef.current, true);
+      }
+    }
+  }, []);
+
   return (
     <div className={`flex justify-center items-center ${className}`}>
-      <a 
-        href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="transition-opacity hover:opacity-80"
+      <div
+        ref={widgetRef}
+        className="trustpilot-widget"
+        data-locale="en-US"
+        data-template-id="5419b6ffb0d04a076446a9af"
+        data-businessunit-id="6586c764848940568d554a08"
+        data-style-height="20px"
+        data-style-width="100%"
+        data-token="e64ec9bd-7fd7-450c-a0d0-dceef5f14b5e"
       >
-        <OptimizedImage 
-          src={trustpilotLogo} 
-          alt="Trustpilot 5 stars" 
-          className="h-auto w-15 object-contain"
-          priority={false}
-          width={120}
-          height={37}
-        />
-      </a>
+        <a
+          href="https://www.trustpilot.com/review/buyawarranty.co.uk"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Trustpilot
+        </a>
+      </div>
     </div>
   );
 };
