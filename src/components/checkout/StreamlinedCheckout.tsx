@@ -1900,45 +1900,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </datalist>
                   </div>
                   <div className="relative">
-                    <Input
+                    <select
                       id="dob_month"
-                      list="dob-months"
-                      placeholder="MM"
                       autoComplete="bday-month"
                       value={customerData.dob_month || ''}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        // Allow typing a number directly
-                        const numOnly = val.replace(/\D/g, '');
-                        if (numOnly && parseInt(numOnly) >= 1 && parseInt(numOnly) <= 12) {
-                          handleInputChange('dob_month', numOnly.padStart(2, '0'));
-                        } else {
-                          // Check if they picked a month name from datalist
-                          const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-                          const idx = months.findIndex(m => m.toLowerCase() === val.toLowerCase());
-                          if (idx >= 0) {
-                            handleInputChange('dob_month', (idx + 1).toString().padStart(2, '0'));
-                          } else {
-                            handleInputChange('dob_month', val);
-                          }
-                        }
+                        handleInputChange('dob_month', e.target.value);
                       }}
                       onBlur={() => {
                         if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
                           handleFieldBlur('dob');
                         }
                       }}
-                      className={`h-11 sm:h-12 text-base ${
+                      className={`flex h-11 sm:h-12 w-full rounded-md border bg-[#F5F5F5] px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${
                         fieldErrors.dob && !customerData.dob_month ? 'border-destructive ring-1 ring-destructive' : 
                         fieldErrors.dob && customerData.dob_month ? 'border-[hsl(var(--success))]' :
-                        (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-input')
+                        (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-gray-200')
                       }`}
-                    />
-                    <datalist id="dob-months">
-                      {['01 - January','02 - February','03 - March','04 - April','05 - May','06 - June','07 - July','08 - August','09 - September','10 - October','11 - November','12 - December'].map((m, i) => (
-                        <option key={i} value={(i + 1).toString().padStart(2, '0')} label={m} />
+                    >
+                      <option value="" disabled>Month</option>
+                      {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                        <option key={i} value={(i + 1).toString().padStart(2, '0')}>{m}</option>
                       ))}
-                    </datalist>
+                    </select>
                   </div>
                   <div className="relative">
                     <Input
