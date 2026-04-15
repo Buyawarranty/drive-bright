@@ -55,29 +55,8 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
         </h2>
       </div>
 
-      {/* Brief Bullet List */}
+      {/* Brief info */}
       <div className="space-y-2.5 mb-4">
-        <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-          <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-          <span>
-            {vehicleDisplay && (
-              <>
-                <span className="font-medium">{vehicleDisplay.toUpperCase()}</span>
-                {' '}
-              </>
-            )}
-            <span 
-              className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black inline-block"
-              style={{ backgroundColor: '#FCD34D' }}
-            >
-              {vehicleReg}
-            </span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-          <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-          <span>Comprehensive – {duration} cover</span>
-        </div>
         {duration.toLowerCase().includes('2 year') && (
           <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
             <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
