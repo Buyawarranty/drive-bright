@@ -1886,7 +1886,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }
                       }}
                       className={`h-11 sm:h-12 text-base ${
-                        fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                        fieldErrors.dob && !customerData.dob_day ? 'border-destructive ring-1 ring-destructive' : 
+                        fieldErrors.dob && customerData.dob_day ? 'border-[hsl(var(--success))]' :
                         (customerData.dob_day ? 'border-[hsl(var(--success))]' : 'border-input')
                       }`}
                     />
@@ -1926,7 +1927,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }
                       }}
                       className={`h-11 sm:h-12 text-base ${
-                        fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                        fieldErrors.dob && !customerData.dob_month ? 'border-destructive ring-1 ring-destructive' : 
+                        fieldErrors.dob && customerData.dob_month ? 'border-[hsl(var(--success))]' :
                         (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-input')
                       }`}
                     />
@@ -1955,7 +1957,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }
                       }}
                       className={`h-11 sm:h-12 text-base ${
-                        fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                        fieldErrors.dob && (!customerData.dob_year || customerData.dob_year.length < 4) ? 'border-destructive ring-1 ring-destructive' : 
+                        fieldErrors.dob && customerData.dob_year && customerData.dob_year.length === 4 ? 'border-[hsl(var(--success))]' :
                         (customerData.dob_year && customerData.dob_year.length === 4 ? 'border-[hsl(var(--success))]' : 'border-input')
                       }`}
                     />
