@@ -1691,6 +1691,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
                       <span className="text-sm font-bold text-black">(12 payments only)</span>
                     </div>
+                    <p className="text-sm font-semibold text-[#FF7A00] mt-0.5">
+                      Only £{((displayedMonthlyPrice * 12) / 365).toFixed(2)}/day
+                    </p>
                     
                     {/* Equivalent cost per month of cover - shown only for multi-year plans */}
                     {durationId === '24months' && (
