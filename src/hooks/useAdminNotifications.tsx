@@ -141,6 +141,8 @@ export const useAdminNotifications = (userRole?: string | null) => {
   useEffect(() => {
     fetchNotifications();
 
+    const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+
     const contactChannel = supabase
       .channel('admin-contacts')
       .on('postgres_changes', {
@@ -158,8 +160,6 @@ export const useAdminNotifications = (userRole?: string | null) => {
         fetchNotifications();
       })
       .subscribe();
-
-    const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
 
     const claimsChannel = supabase
       .channel('admin-claims')
