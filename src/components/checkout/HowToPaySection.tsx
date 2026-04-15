@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Lock, Check, Tag, ChevronDown, ChevronUp, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -283,9 +283,12 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         </div>
       )}
 
+      {/* 14-day money-back guarantee */}
+      {!hidePayButton && <InlineGuarantee />}
+
       {/* Pay Button - Hidden when embedded checkout is showing */}
       {!hidePayButton && (
-        <div className="mt-6">
+        <div className="mt-5">
           <Button
             onClick={onPayClick}
             disabled={isLoading || !selectedPayment}
