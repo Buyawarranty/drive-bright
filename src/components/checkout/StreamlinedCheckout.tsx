@@ -138,6 +138,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       city: '',
       postcode: '',
       mileage: '',
+      dob_day: '',
+      dob_month: '',
+      dob_year: '',
       marketing_opt_in: false,
       privacy_policy_accepted: false,
       terms_conditions_accepted: false,
@@ -536,9 +539,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
-      customerData.mileage
+      customerData.mileage &&
+      customerData.dob_day && customerData.dob_month && customerData.dob_year
     );
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage, customerData.dob_day, customerData.dob_month, customerData.dob_year]);
   
   // Check if address is complete (required fields)
   // Check if address is complete - simplified fields
@@ -570,6 +574,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!customerData.mileage) count++;
+    if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) count++;
     return count;
   }, [customerData]);
 
@@ -1000,6 +1005,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
         break;
       }
+      case 'dob': {
+        if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) {
+          error = 'Please enter your date of birth.';
+          isValid = false;
+        } else {
+          const year = parseInt(customerData.dob_year);
+          const currentYear = new Date().getFullYear();
+          if (year > currentYear - 18) {
+            error = 'You must be at least 18 years old.';
+            isValid = false;
+          }
+        }
+        break;
+      }
       case 'email': {
         const val = getValue('email');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1103,7 +1122,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
+    const requiredFields = ['first_name', 'last_name', 'dob', 'email', 'phone', 'mileage'];
     let allValid = true;
     
     requiredFields.forEach(field => {
@@ -1833,6 +1852,76 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   )}
                 </div>
+              </div>
+
+              {/* Date of Birth */}
+              <div className="mt-4">
+                <Label className="text-sm font-medium text-foreground/80">Date of Birth *</Label>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                  🔒 Required for identity verification — this protects your warranty from unauthorised claims.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  <select
+                    value={customerData.dob_day || ''}
+                    onChange={(e) => handleInputChange('dob_day', e.target.value)}
+                    onBlur={() => {
+                      if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
+                        handleFieldBlur('dob');
+                      }
+                    }}
+                    className={`h-11 sm:h-12 text-base rounded-md border bg-background px-3 appearance-none ${
+                      fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                      (customerData.dob_day ? 'border-[hsl(var(--success))]' : 'border-input')
+                    }`}
+                  >
+                    <option value="">Day</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d.toString().padStart(2, '0')}>{d}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={customerData.dob_month || ''}
+                    onChange={(e) => handleInputChange('dob_month', e.target.value)}
+                    onBlur={() => {
+                      if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
+                        handleFieldBlur('dob');
+                      }
+                    }}
+                    className={`h-11 sm:h-12 text-base rounded-md border bg-background px-3 appearance-none ${
+                      fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                      (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-input')
+                    }`}
+                  >
+                    <option value="">Month</option>
+                    {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                      <option key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={customerData.dob_year || ''}
+                    onChange={(e) => handleInputChange('dob_year', e.target.value)}
+                    onBlur={() => {
+                      if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
+                        handleFieldBlur('dob');
+                      }
+                    }}
+                    className={`h-11 sm:h-12 text-base rounded-md border bg-background px-3 appearance-none ${
+                      fieldErrors.dob ? 'border-destructive ring-1 ring-destructive' : 
+                      (customerData.dob_year ? 'border-[hsl(var(--success))]' : 'border-input')
+                    }`}
+                  >
+                    <option value="">Year</option>
+                    {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
+                      <option key={y} value={y.toString()}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+                {fieldErrors.dob && (
+                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.dob}
+                  </p>
+                )}
               </div>
             </div>
 
