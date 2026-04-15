@@ -36,9 +36,8 @@ interface HowToPaySectionProps {
   hidePayButton?: boolean;
 }
 
-const InlineGuarantee = () => {
+const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAccepted: (v: boolean) => void }) => {
   const [expanded, setExpanded] = useState(false);
-  const [accepted, setAccepted] = useState(true);
 
   return (
     <div className="mt-5">
@@ -92,15 +91,20 @@ const InlineGuarantee = () => {
       )}
 
       {/* Checkbox */}
-      <label className="flex items-start gap-3 mt-3 cursor-pointer select-none">
+      <label className={`flex items-start gap-3 mt-3 cursor-pointer select-none rounded-lg p-2 -mx-2 transition-colors ${!accepted ? 'bg-red-50' : ''}`}>
         <input
           type="checkbox"
           checked={accepted}
           onChange={(e) => setAccepted(e.target.checked)}
           className="mt-0.5 w-5 h-5 rounded border-gray-300 text-[#0BA360] focus:ring-[#0BA360] accent-[#0BA360] cursor-pointer"
         />
-        <span className="text-sm text-[#1a1a1a]">I understand the cancellation terms</span>
+        <span className={`text-sm ${!accepted ? 'text-red-600 font-medium' : 'text-[#1a1a1a]'}`}>
+          I understand the cancellation terms
+        </span>
       </label>
+      {!accepted && (
+        <p className="text-xs text-red-500 mt-1 ml-10 animate-fade-in">Please accept the cancellation terms to continue</p>
+      )}
     </div>
   );
 };
@@ -128,6 +132,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   totalDiscountAmount,
   hidePayButton = false,
 }) => {
+  const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
   return (
@@ -347,14 +352,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       )}
 
       {/* 14-day money-back guarantee */}
-      {!hidePayButton && <InlineGuarantee />}
+      {!hidePayButton && <InlineGuarantee accepted={termsAccepted} setAccepted={setTermsAccepted} />}
 
       {/* Pay Button - Hidden when embedded checkout is showing */}
       {!hidePayButton && (
         <div className="mt-5">
           <Button
             onClick={onPayClick}
-            disabled={isLoading || !selectedPayment}
+            disabled={isLoading || !selectedPayment || !termsAccepted}
             className={`w-full py-6 text-lg font-bold rounded-xl animate-breathing hover:opacity-90 ${
               !selectedPayment 
                 ? 'bg-gray-400' 
