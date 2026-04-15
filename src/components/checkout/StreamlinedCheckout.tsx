@@ -32,7 +32,6 @@ import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
 import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
-import MoneyBackGuarantee from '@/components/checkout/MoneyBackGuarantee';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -2176,8 +2175,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             />
           </div>
 
-          {/* 14-day money-back guarantee */}
-          <MoneyBackGuarantee />
+          {/* 14-day guarantee now inside HowToPaySection */}
 
           {/* ==================== INLINE STRIPE PAYMENT ==================== */}
           {(() => {
