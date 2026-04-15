@@ -1324,7 +1324,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         {/* Hero Section - Trust Badges & Pricing */}
         <div className="text-center space-y-3">
           <p className="text-sm sm:text-base text-muted-foreground">
-            All plans include <strong>full comprehensive cover</strong> - choose your length of cover
+            All plans include <button type="button" onClick={() => document.getElementById('whats-covered')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="font-bold underline underline-offset-2 decoration-success/60 hover:decoration-success cursor-pointer transition-colors text-foreground"><strong>full comprehensive cover</strong></button> - choose your length of cover
             and level of protection
           </p>
 

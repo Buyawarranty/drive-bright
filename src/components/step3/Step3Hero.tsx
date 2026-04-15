@@ -21,7 +21,7 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
       {/* Hero Text */}
       <div className="text-center mb-4">
         <p className="text-sm sm:text-base text-muted-foreground">
-          All plans include <strong>full comprehensive cover</strong> - choose your length of cover
+          All plans include <button type="button" onClick={() => document.getElementById('whats-covered')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="font-bold underline underline-offset-2 decoration-success/60 hover:decoration-success cursor-pointer transition-colors text-foreground"><strong>full comprehensive cover</strong></button> - choose your length of cover
           and level of protection
         </p>
       </div>
