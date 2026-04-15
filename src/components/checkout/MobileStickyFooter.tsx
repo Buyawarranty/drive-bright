@@ -40,17 +40,17 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           <div className="flex items-center justify-center gap-2 text-xs text-gray-600">
             <span className="flex items-center gap-1">
               <Shield className="w-3 h-3 text-[#0BA360]" />
-              Instant cover
+              Easy Claims
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Lock className="w-3 h-3 text-[#0BA360]" />
+              Secure
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3 text-[#0BA360]" />
-              14-day refund
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1">
-              <Shield className="w-3 h-3 text-[#0BA360]" />
-              Easy Claims
+              Instant Activation
             </span>
           </div>
         </div>
@@ -99,17 +99,17 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         <div className="flex items-center justify-center gap-2 mt-1.5 text-xs text-gray-600">
           <span className="flex items-center gap-1">
             <Shield className="w-3 h-3 text-[#0BA360]" />
-            Instant cover
-          </span>
-          <span>·</span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-[#0BA360]" />
-            14-day refund
+            Easy Claims
           </span>
           <span>·</span>
           <span className="flex items-center gap-1">
             <Lock className="w-3 h-3 text-[#0BA360]" />
             Secure
+          </span>
+          <span>·</span>
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3 text-[#0BA360]" />
+            Instant Activation
           </span>
         </div>
       </div>
