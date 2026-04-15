@@ -210,8 +210,6 @@ const DiscountsOffers: React.FC = () => {
         keywords="buy a warranty discount code, buyawarranty promo code, car warranty promo code UK, buy a warranty voucher code, vehicle warranty discount code, warranty coupon code, buy a warranty offers, car warranty deal UK, buyawarranty discount, warranty promo code 2026, car warranty discount, promo code car warranty"
         canonical="https://buyawarranty.co.uk/discount-promo-offers/"
       />
-      <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-      <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
 
       {/* JSON-LD Structured Data */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offerCatalogSchema) }} />
