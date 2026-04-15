@@ -134,18 +134,11 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               onClick={onPayClick}
               disabled={isLoading}
               size="lg"
-              aria-label={
-                selectedPayment === 'full'
-                  ? `Activate cover – pay £${fullPrice} now`
-                  : `Activate cover – first payment £${monthlyPrice} today`
-              }
+              aria-label="Activate my cover"
               className="text-base lg:text-lg font-semibold px-6 lg:px-8 py-3 lg:py-3.5 text-white rounded-xl whitespace-nowrap animate-breathing"
               style={{ backgroundColor: selectedPayment === 'monthly' ? '#FF6B00' : '#0BA360' }}
             >
-              {selectedPayment === 'full' 
-                ? `Activate cover – pay £${fullPrice} now`
-                : `Activate cover – first payment £${monthlyPrice} today`
-              }
+              Activate my cover
               <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
             </Button>
             <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 whitespace-nowrap">
