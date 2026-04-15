@@ -312,7 +312,17 @@ export const ClaimsTab = ({
             {claims.length} total claims · {filteredClaims.length} shown
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {/* Notification Bell for admin/super_admin */}
+          {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
+            <AdminNotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAsRead={onMarkAsRead}
+              onMarkAllAsRead={onMarkAllAsRead}
+              onNavigateToTab={onNavigateToTab}
+            />
+          )}
           <Button
             variant="outline"
             size="sm"
