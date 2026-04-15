@@ -86,6 +86,12 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                     <span className="font-semibold text-[#1a1a1a] text-sm">
                       {vehicleTitle || vehicleReg}
                     </span>
+                    <span 
+                      className="font-mono font-bold text-[10px] uppercase px-1.5 py-0.5 rounded border border-black tracking-wider"
+                      style={{ backgroundColor: '#FCD34D' }}
+                    >
+                      {vehicleReg}
+                    </span>
                   </div>
                   <button
                     onClick={onChangePlan}
