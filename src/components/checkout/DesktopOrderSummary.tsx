@@ -22,6 +22,44 @@ interface DesktopOrderSummaryProps {
   onPayClick: () => void;
 }
 
+const DesktopGuarantee = () => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="mt-4">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg px-3 py-2 text-left transition-all hover:bg-[#E8FAF0]"
+      >
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+          <span className="text-xs font-bold text-[#1a1a1a]">14-day money-back guarantee</span>
+        </div>
+        {expanded ? <ChevronUp className="w-3.5 h-3.5 text-gray-500" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-500" />}
+      </button>
+      {expanded && (
+        <div className="mt-2 border border-[#E5E5E5] rounded-lg p-3 text-xs animate-fade-in">
+          <p className="text-gray-600 mb-2">Enjoy full flexibility when you start your cover:</p>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
+              <p className="text-[#1a1a1a]">Cancel within 14 days for a <span className="font-semibold">full refund</span> if no claim has been made</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
+              <p className="text-[#1a1a1a]">If a claim is made within 14 days, a small <span className="font-semibold">£40 handling fee</span> plus any assessment costs</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
+              <p className="text-[#1a1a1a]">After 14 days, any refunds are <span className="font-semibold">pro-rated</span> based on time remaining</p>
+            </div>
+          </div>
+          <p className="text-gray-500 mt-2">Designed to keep things fair for everyone.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
   planName,
   vehicleReg,
