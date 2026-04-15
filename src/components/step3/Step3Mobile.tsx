@@ -79,7 +79,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 }) => {
   // State
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(
-    previousPaymentType || '12months'
+    previousPaymentType || '24months'
   );
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
@@ -88,7 +88,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousClaimLimit || 2000
   );
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(
-    previousLabourRate ?? 50
+    previousLabourRate ?? 70
   );
   const [boostAddon, setBoostAddon] = useState(previousBoostAddon !== undefined ? previousBoostAddon : false);
   const [selectedProtectionAddOns, setSelectedProtectionAddOns] = useState<{ [key: string]: boolean }>(
