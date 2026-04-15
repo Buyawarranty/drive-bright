@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Check, Calendar as CalendarIcon } from 'lucide-react';
+import { CheckCircle, Check, Calendar as CalendarIcon, Car } from 'lucide-react';
 import { format, isToday, startOfDay, addDays, isBefore, isAfter } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -9,7 +9,11 @@ interface DesktopPlanHeaderProps {
   vehicleReg: string;
   vehicleMake?: string;
   vehicleModel?: string;
+  vehicleYear?: string;
   duration: string;
+  claimLimit: number;
+  labourRate: number;
+  excess: number;
   startDate?: Date;
   onStartDateChange?: (date: Date | undefined) => void;
 }
@@ -18,12 +22,16 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
   vehicleReg,
   vehicleMake,
   vehicleModel,
+  vehicleYear,
   duration,
+  claimLimit,
+  labourRate,
+  excess,
   startDate,
   onStartDateChange,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const vehicleDisplay = [vehicleMake, vehicleModel].filter(Boolean).join(' ') || '';
+  const vehicleDisplay = [vehicleYear, vehicleMake?.toUpperCase(), vehicleModel?.toUpperCase()].filter(Boolean).join(' ') || '';
   const today = startOfDay(new Date());
   const maxDate = addDays(today, 365);
   
@@ -45,6 +53,10 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
     return isBefore(dateStart, today) || isAfter(dateStart, maxDate);
   };
 
+  const displayClaimLimit = claimLimit >= 2000 
+    ? `£${claimLimit.toLocaleString()}` 
+    : `£${claimLimit.toLocaleString()}`;
+
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 sm:p-6">
       {/* Success Header */}
@@ -53,6 +65,41 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
         <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
           Almost done – just a few details
         </h2>
+      </div>
+
+      {/* Vehicle & Plan Info */}
+      <div className="bg-[#FAFAFA] rounded-lg p-4 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Car className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-semibold text-[#1a1a1a]">{vehicleDisplay}</span>
+          {vehicleReg && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded border border-[#D4A843] bg-[#FFF8E7] text-xs font-bold text-[#1a1a1a] tracking-wide">
+              {vehicleReg.toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="space-y-1.5 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Cover duration</span>
+            <span className="font-semibold text-[#1a1a1a]">{duration}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Claim limit</span>
+            <span className="font-semibold text-[#1a1a1a]">{displayClaimLimit}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Your excess</span>
+            <span className="font-semibold text-[#1a1a1a]">£{excess} per claim</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Labour rate</span>
+            <span className="font-semibold text-[#1a1a1a]">Up to £{labourRate}/hr</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Parts covered</span>
+            <span className="font-semibold text-[#1a1a1a]">Comprehensive cover</span>
+          </div>
+        </div>
       </div>
 
       {/* Brief info */}
