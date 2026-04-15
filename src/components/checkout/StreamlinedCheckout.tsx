@@ -138,6 +138,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       city: '',
       postcode: '',
       mileage: '',
+      dob_day: '',
+      dob_month: '',
+      dob_year: '',
       marketing_opt_in: false,
       privacy_policy_accepted: false,
       terms_conditions_accepted: false,
@@ -536,9 +539,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
-      customerData.mileage
+      customerData.mileage &&
+      customerData.dob_day && customerData.dob_month && customerData.dob_year
     );
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage, customerData.dob_day, customerData.dob_month, customerData.dob_year]);
   
   // Check if address is complete (required fields)
   // Check if address is complete - simplified fields
@@ -570,6 +574,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!customerData.mileage) count++;
+    if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) count++;
     return count;
   }, [customerData]);
 
