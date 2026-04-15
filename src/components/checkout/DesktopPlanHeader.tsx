@@ -51,7 +51,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
       <div className="flex items-start gap-3 mb-4">
         <CheckCircle className="w-6 h-6 text-[#0BA360] flex-shrink-0 mt-0.5" />
         <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
-          Your comprehensive vehicle plan is ready.
+          Almost done – just a few details
         </h2>
       </div>
 

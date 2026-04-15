@@ -1677,18 +1677,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             />
           </section>
 
-          {/* ==================== SECTION 1: PAYMENT METHOD SELECTOR ==================== */}
-          <section className="mt-6 sm:mt-8 lg:mt-8">
-            <PaymentMethodSelector
-              selectedPayment={selectedPayment}
-              onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
-              monthlyPrice={discountedMonthlyPrice}
-              totalPrice={displayBumperTotal}
-              originalPrice={bumperTotalPrice}
-              fullPrice={discountedStripePrice}
-              savings={savings}
-            />
-          </section>
+          {/* Payment method selection moved to HowToPaySection */}
 
           {/* Key Cover Highlights - Mobile Only */}
           <section className="mt-6 sm:mt-8 lg:hidden">
