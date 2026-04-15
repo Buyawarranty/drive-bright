@@ -91,14 +91,14 @@ const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAcce
       )}
 
       {/* Checkbox */}
-      <label className={`flex items-start gap-3 mt-3 cursor-pointer select-none rounded-lg p-2 -mx-2 transition-colors ${!accepted ? 'bg-red-50' : ''}`}>
+      <label className={`flex items-center gap-3 mt-3 cursor-pointer select-none rounded-lg p-2 -mx-2 transition-colors ${!accepted ? 'bg-red-50' : ''}`}>
         <input
           type="checkbox"
           checked={accepted}
           onChange={(e) => setAccepted(e.target.checked)}
-          className="mt-0.5 w-5 h-5 rounded border-gray-300 text-[#0BA360] focus:ring-[#0BA360] accent-[#0BA360] cursor-pointer"
+          className="w-5 h-5 rounded border-gray-300 text-[#0BA360] focus:ring-[#0BA360] accent-[#0BA360] cursor-pointer flex-shrink-0"
         />
-        <span className={`text-sm ${!accepted ? 'text-red-600 font-medium' : 'text-[#1a1a1a]'}`}>
+        <span className={`text-sm leading-5 ${!accepted ? 'text-red-600 font-medium' : 'text-[#1a1a1a]'}`}>
           I understand the cancellation terms
         </span>
       </label>
