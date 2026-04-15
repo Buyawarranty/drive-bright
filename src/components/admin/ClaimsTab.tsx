@@ -52,7 +52,23 @@ interface ClaimSubmission {
   warranty_start_date?: string;
 }
 
-export const ClaimsTab = () => {
+interface ClaimsTabProps {
+  notifications?: AdminNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
+  onNavigateToTab?: (tab: string) => void;
+  userRole?: string | null;
+}
+
+export const ClaimsTab = ({
+  notifications = [],
+  unreadCount = 0,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onNavigateToTab,
+  userRole,
+}: ClaimsTabProps) => {
   const { toast } = useToast();
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);

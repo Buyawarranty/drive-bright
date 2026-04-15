@@ -297,7 +297,23 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
   );
 };
 
-export const CustomersTab = () => {
+interface CustomersTabProps {
+  notifications?: AdminNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
+  onNavigateToTab?: (tab: string) => void;
+  userRole?: string | null;
+}
+
+export const CustomersTab = ({
+  notifications = [],
+  unreadCount = 0,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onNavigateToTab,
+  userRole,
+}: CustomersTabProps) => {
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV: exportDataToCSV, exportToExcel } = useDataExport();
   const canExport = canExportTab('customers');
