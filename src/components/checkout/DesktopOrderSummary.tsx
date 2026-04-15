@@ -97,32 +97,53 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
             
             <div className="h-px bg-border mb-4" />
             
+            {/* Payment Toggle Tabs */}
+            {onPaymentChange && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => onPaymentChange('monthly')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all border-2 ${
+                    selectedPayment === 'monthly'
+                      ? 'border-[#FF6B00] bg-[#FFF5EB] text-[#FF6B00]'
+                      : 'border-[#E5E5E5] bg-white text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => onPaymentChange('full')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all border-2 ${
+                    selectedPayment === 'full'
+                      ? 'border-[#0BA360] bg-[#F0FDF4] text-[#0BA360]'
+                      : 'border-[#E5E5E5] bg-white text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  Pay in Full
+                  <span className="block text-[10px] font-medium mt-0.5">Save £{savings}</span>
+                </button>
+              </div>
+            )}
+
             {/* Dynamic Payment Section based on selection */}
             {selectedPayment === 'monthly' ? (
-              <>
-                {/* Monthly Payment Summary */}
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600">Today's payment:</p>
-                  <p className="text-3xl font-bold text-[#1a1a1a]">£{monthlyPrice}</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Then £{monthlyPrice}/month • 12 payments • 0% APR
-                  </p>
-                </div>
-              </>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600">Today's payment:</p>
+                <p className="text-3xl font-bold text-[#1a1a1a]">£{monthlyPrice}</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Then £{monthlyPrice}/month • 12 payments • 0% APR
+                </p>
+              </div>
             ) : selectedPayment === 'full' ? (
-              <>
-                {/* Pay in Full Summary */}
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600">Today's payment:</p>
-                  <p className="text-3xl font-bold text-[#1a1a1a]">£{fullPrice}</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    One-off payment • <span className="text-[#0BA360] font-medium">Save £{savings} (10% off)</span>
-                  </p>
-                </div>
-              </>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600">Today's payment:</p>
+                <p className="text-3xl font-bold text-[#1a1a1a]">£{fullPrice}</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  One-off payment • <span className="text-[#0BA360] font-medium">Save £{savings} (10% off)</span>
+                </p>
+              </div>
             ) : (
               <div className="mb-4 bg-gray-50 border border-[#E5E5E5] rounded-lg p-3 text-center">
-                <p className="text-sm text-gray-600">Select payment method on left</p>
+                <p className="text-sm text-gray-600">Choose a payment option above</p>
               </div>
             )}
             
