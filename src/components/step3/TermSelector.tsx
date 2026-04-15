@@ -128,6 +128,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
                     <span className="text-sm font-bold text-muted-foreground">(12 easy payments)</span>
                   </div>
+                  <p className="text-sm font-semibold text-[#FF7A00] mt-0.5">
+                    Only £{((term.monthlyPrice * 12) / 365).toFixed(2)}/day
+                  </p>
                   
                   {/* Approx cost per month for multi-year plans */}
                   {term.id === '24months' && (
