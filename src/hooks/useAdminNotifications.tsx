@@ -234,7 +234,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
       supabase.removeChannel(customersChannel);
       supabase.removeChannel(resubChannel);
     };
-  }, [fetchNotifications]);
+  }, [fetchNotifications, userRole]);
 
   const markAsRead = useCallback((notificationId: string) => {
     setReadIds(prev => {
