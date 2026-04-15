@@ -1686,7 +1686,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               vehicleReg={vehicleData.regNumber}
               vehicleMake={vehicleData.make}
               vehicleModel={vehicleData.model}
+              vehicleYear={vehicleData.year}
               duration={getDurationText()}
+              claimLimit={updatedPricingData.claimLimit || 2000}
+              labourRate={pricingData.labourRate || 50}
+              excess={updatedPricingData.voluntaryExcess || 100}
               startDate={startDate}
               onStartDateChange={(date) => {
                 setStartDate(date);
