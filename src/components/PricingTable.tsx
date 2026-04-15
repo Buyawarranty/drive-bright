@@ -1529,7 +1529,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               { 
                 id: '24months', 
                 label: '2-year cover', 
-                badge: 'MOST POPULAR', 
+                badge: `RECOMMENDED FOR YOUR ${(vehicleData?.model && vehicleData.model.toLowerCase() !== 'unknown') ? vehicleData.model.toUpperCase() : (vehicleData?.vehicleType?.toUpperCase() || 'VEHICLE')}`, 
                 planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
