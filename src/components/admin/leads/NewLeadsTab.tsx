@@ -848,16 +848,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Notification Bell */}
-          {onMarkAsRead && onMarkAllAsRead && (
-            <AdminNotificationBell
-              notifications={notifications}
-              unreadCount={unreadCount}
-              onMarkAsRead={onMarkAsRead}
-              onMarkAllAsRead={onMarkAllAsRead}
-              onNavigateToTab={onNavigateToTab}
-            />
-          )}
+          {/* Notification Bell — sales roles only see lead-related notifications */}
+          {onMarkAsRead && onMarkAllAsRead && (() => {
+            const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+            const filtered = isAdminRole
+              ? notifications
+              : notifications.filter(n => n.type !== 'claim' && n.type !== 'contact');
+            const filteredUnread = filtered.filter(n => !n.is_read).length;
+            return (
+              <AdminNotificationBell
+                notifications={filtered}
+                unreadCount={filteredUnread}
+                onMarkAsRead={onMarkAsRead}
+                onMarkAllAsRead={onMarkAllAsRead}
+                onNavigateToTab={onNavigateToTab}
+              />
+            );
+          })()}
           
           {/* Export Button */}
           {canExport && (

@@ -19,7 +19,7 @@ interface CountState {
   resubmissions: number;
 }
 
-export const useAdminNotifications = () => {
+export const useAdminNotifications = (userRole?: string | null) => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [counts, setCounts] = useState<CountState>({ contacts: 0, claims: 0, customers: 0, resubmissions: 0 });
   const [loading, setLoading] = useState(true);
