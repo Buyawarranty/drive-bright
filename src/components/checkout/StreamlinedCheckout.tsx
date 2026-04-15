@@ -1375,8 +1375,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             first_name: firstName,
             last_name: lastName,
             final_amount: finalPrice,
+            customer_dob: customerData.dob_year && customerData.dob_month && customerData.dob_day 
+              ? `${customerData.dob_year}-${customerData.dob_month}-${customerData.dob_day}` : null,
             // Address fields - mapped for API compatibility
-            // Addr1 = address_line_1 (street + building), Addr2 = address_line_2 (optional)
             street: addressData.address_line_1 || '',
             building_name: '',
             building_number: '',
@@ -1498,6 +1499,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             first_name: firstName,
             last_name: lastName,
             final_amount: finalPrice,
+            customer_dob: customerData.dob_year && customerData.dob_month && customerData.dob_day 
+              ? `${customerData.dob_year}-${customerData.dob_month}-${customerData.dob_day}` : null,
             // Address fields - mapped for API compatibility
             street: addressData.address_line_1 || '',
             building_name: '',
