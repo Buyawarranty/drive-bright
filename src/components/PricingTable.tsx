@@ -202,8 +202,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       const possibleBaseLimit = previousClaimLimit - 1000;
       if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
     }
-    // Default to £750 (AutoCare Basic / £1,000 display) for lowest monthly price
-    return 750;
+    // Default to £2000 per claim
+    return 2000;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
