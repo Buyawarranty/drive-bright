@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Check, Lock, Car, Calendar } from 'lucide-react';
+import { CheckCircle, Check, Lock, Car, Calendar, ChevronDown, ChevronUp, Shield } from 'lucide-react';
 
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 
