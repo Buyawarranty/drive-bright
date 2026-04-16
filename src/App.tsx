@@ -153,6 +153,15 @@ const UpdateAdminCredentials = lazy(() => import("./pages/UpdateAdminCredentials
 const RequestAccess = lazy(() => import("./pages/RequestAccess"));
 const SalesLogin = lazy(() => import("./pages/SalesLogin"));
 
+// Dealer Portal pages
+const DealerHome = lazy(() => import("./pages/dealer-portal/DealerHome"));
+const DealerSignup = lazy(() => import("./pages/dealer-portal/DealerSignup"));
+const DealerLogin = lazy(() => import("./pages/dealer-portal/DealerLogin"));
+const DealerDashboard = lazy(() => import("./pages/dealer-portal/DealerDashboard"));
+const DealerCreateQuote = lazy(() => import("./pages/dealer-portal/DealerCreateQuote"));
+const DealerQuotesList = lazy(() => import("./pages/dealer-portal/DealerQuotesList"));
+const DealerWarrantiesList = lazy(() => import("./pages/dealer-portal/DealerWarrantiesList"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
