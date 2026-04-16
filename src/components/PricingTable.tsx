@@ -1706,7 +1706,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   )}
 
                   {/* Duration Title */}
-                  <h4 className="text-xl font-bold text-gray-900 mb-1">
+                  <h4 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1 leading-tight tracking-tight">
                     {duration.label}
                   </h4>
                   <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
