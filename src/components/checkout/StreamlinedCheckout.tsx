@@ -2044,7 +2044,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               <div className="flex items-center gap-2 mb-1.5">
                 <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current mileage</Label>
                 {mileagePreFilled && motMileage && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#E6F4EA] text-[#1B7A3D] text-xs font-medium">
                     Pre-filled from MOT
                   </span>
                 )}
@@ -2052,10 +2052,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               
               {/* MOT Pre-fill Info Box */}
               {mileagePreFilled && motMileage && motDate && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mb-3">
+                <div className="bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mb-3">
                   <div className="flex items-start gap-2 sm:gap-3">
-                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-blue-800">
+                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-[#0BA360] flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-[#1a1a1a]">
                       Your last MOT recorded <span className="font-bold">{Number(motMileage).toLocaleString('en-GB')} miles</span> in {format(new Date(motDate), 'MMMM yyyy')}. We've pre-filled this below — select a closer estimate if your mileage has changed since.
                     </p>
                   </div>
