@@ -111,7 +111,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
             >
               {/* Badge */}
               {term.isPopular && (
-                <span className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                <span className="absolute -top-2.5 right-4 text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#333333', color: '#ffffff' }}>
                   {recommendedLabel}
                 </span>
               )}

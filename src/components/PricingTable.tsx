@@ -1653,8 +1653,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Badge */}
                   {duration.badge && (
                     <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                      durationId === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
-                    }`}>
+                      durationId === '24months' ? 'text-white' : 'bg-green-600 text-white'
+                    }`} style={durationId === '24months' ? { backgroundColor: '#333333' } : undefined}>
                       {duration.badge}
                     </span>
                   )}
