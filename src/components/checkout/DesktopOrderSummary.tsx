@@ -277,7 +277,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
               >
                 <span>Rated</span>
-                <span className="text-[#00B67A] font-semibold">"Excellent"</span>
+                <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
                 <span>on</span>
                 <img 
                   src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
