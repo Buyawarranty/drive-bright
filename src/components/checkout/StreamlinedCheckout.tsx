@@ -1707,12 +1707,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
           {/* Payment method selection moved to HowToPaySection */}
 
-          {/* Key Cover Highlights - Mobile Only */}
-          <section className="mt-6 sm:mt-8 lg:hidden">
-            <CoverHighlights planName={formatPlanName()} />
-          </section>
-
-          {/* Cover Start Date - Mobile Only (Desktop has it integrated in header) */}
+          {/* Cover Start Date - Mobile Only (hidden on lg since PlanHeader has it) */}
           <section id="start-date-section" className="mt-6 sm:mt-8 lg:hidden">
             <Card className="border border-[#E5E5E5] bg-white rounded-xl">
               <CardContent className="p-4 sm:p-5">
