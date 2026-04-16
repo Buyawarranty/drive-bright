@@ -349,6 +349,17 @@ const App = () => {
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
                     <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
                     <Route path="/steptest" element={<StepTest />} />
+                    
+                    {/* Dealer Portal */}
+                    <Route path="/dealer-portal" element={<DealerHome />} />
+                    <Route path="/dealer-portal/" element={<DealerHome />} />
+                    <Route path="/dealer-portal/signup" element={<DealerSignup />} />
+                    <Route path="/dealer-portal/login" element={<DealerLogin />} />
+                    <Route path="/dealer-portal/dashboard" element={<DealerDashboard />} />
+                    <Route path="/dealer-portal/quotes/create" element={<DealerCreateQuote />} />
+                    <Route path="/dealer-portal/quotes" element={<DealerQuotesList />} />
+                    <Route path="/dealer-portal/warranties" element={<DealerWarrantiesList />} />
+
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
