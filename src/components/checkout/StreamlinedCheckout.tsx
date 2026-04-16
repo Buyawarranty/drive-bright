@@ -539,10 +539,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
-      customerData.mileage &&
-      customerData.dob_day && customerData.dob_month && customerData.dob_year
+      customerData.mileage
     );
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage, customerData.dob_day, customerData.dob_month, customerData.dob_year]);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
   
   // Check if address is complete (required fields)
   // Check if address is complete - simplified fields
@@ -574,7 +573,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!customerData.mileage) count++;
-    if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) count++;
     return count;
   }, [customerData]);
 
@@ -1002,20 +1000,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         } else if (val.trim().length < 2) {
           error = 'Last name must be at least 2 characters';
           isValid = false;
-        }
-        break;
-      }
-      case 'dob': {
-        if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) {
-          error = 'Please enter your date of birth.';
-          isValid = false;
-        } else {
-          const year = parseInt(customerData.dob_year);
-          const currentYear = new Date().getFullYear();
-          if (year > currentYear - 18) {
-            error = 'You must be at least 18 years old.';
-            isValid = false;
-          }
         }
         break;
       }
