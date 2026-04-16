@@ -1835,6 +1835,288 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
+        {/* Labour Rate Selection - NEW */}
+        <div className="bg-gray-50 rounded-lg p-4 sm:p-8 border border-gray-200 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              2
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <Settings className="w-5 h-5 flex-shrink-0" />
+              Choose your labour rate
+            </h2>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mb-4">
+            Pick the hourly rate that works best for your repair needs.
+          </p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              onClick={() => setSelectedLabourRate(50)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 50
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£50 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Local Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Affordable option for smaller garages.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(70)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 70
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£70 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Independent Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Ideal for your trusted local garage.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(100)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 100
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£100 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Approved Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Covers most garages nationwide.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(200)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 200
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£200 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Expert Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Choose Your Excess Amount */}
+        <div id="excess-amount-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
+          validationErrors.voluntaryExcess ? 'border-2 border-red-500' : ''
+        }`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              3
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <MousePointerClick className="w-5 h-5 scale-x-[-1] flex-shrink-0" />
+              Choose your excess amount
+            </h2>
+          </div>
+          
+          {validationErrors.voluntaryExcess && (
+            <Alert variant="destructive" className="mb-4 ml-11">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-600 font-medium">
+                Please select your excess amount before continuing.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <div className="flex gap-1.5 flex-wrap justify-start ml-11">
+            {[0, 50, 100, 150].map((amount) => (
+              <button
+                key={amount}
+                onClick={() => {
+                  toggleVoluntaryExcess(amount);
+                  setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+                }}
+                className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-center relative min-w-[50px] text-sm ${
+                  voluntaryExcess === amount
+                    ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                }`}
+              >
+                <div className="text-base font-bold text-black">£{amount}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Claim Limit Selection */}
+        <div id="claim-limit-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
+          validationErrors.claimLimit ? 'border-2 border-red-500' : ''
+        }`}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              4
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+              Choose your claim limit 🚗
+            </h2>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="ml-2 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm">
+                  <Info className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-green-600">Details</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="w-[90vw] max-w-[624px] p-5 rounded-xl" hideCloseButton>
+                <DialogClose className="absolute right-3 top-3 rounded-full p-1.5 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
+                  <X className="h-4 w-4 text-white" strokeWidth={3} />
+                  <span className="sr-only">Close</span>
+                </DialogClose>
+                
+                <DialogHeader className="pr-8">
+                  <DialogTitle className="flex items-center gap-2 text-sm font-bold">
+                    <ShieldCheck className="w-4 h-4 text-green-600" />
+                    Claim limit – what you are covered for
+                  </DialogTitle>
+                </DialogHeader>
+                
+                <div className="space-y-2 pt-1 text-xs">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Your claim limit is the maximum amount we pay towards each repair, including <span className="font-semibold text-foreground">parts and labour</span>.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Most repairs cost between <span className="font-semibold text-foreground">£700 and £1,100</span>, so many customers are fully covered.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { val: '£1,000', label: 'Essential Cover', desc: 'Smaller repairs & everyday faults.' },
+                      { val: '£2,000', label: 'Most Popular', desc: 'Common repairs & higher value jobs.', highlight: true },
+                      { val: '£3,000', label: 'Strong Protection', desc: 'Extra reassurance for costlier repairs.' },
+                      { val: '£5,000', label: 'Maximum Protection', desc: 'Hybrid, luxury or specialist vehicles.' },
+                    ].map((t) => (
+                      <div key={t.val} className={`rounded-lg border p-2 ${t.highlight ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-bold text-foreground text-xs">{t.val}</span>
+                          <span className={`text-[10px] font-semibold ${t.highlight ? 'text-success' : 'text-muted-foreground'}`}>({t.label})</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{t.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[11px] text-muted-foreground">
+                    Higher limits cover larger repairs like <span className="font-medium text-foreground">engines, gearboxes & hybrid systems</span>.
+                  </p>
+
+                  <div className="bg-muted/50 border border-border rounded-lg p-2.5 space-y-1">
+                    <h5 className="font-semibold text-foreground text-xs">How your claim is paid</h5>
+                    <p className="text-[11px] text-muted-foreground">With a <span className="font-bold text-foreground">£2,000</span> limit:</p>
+                    <div className="text-[11px] space-y-0.5">
+                      <p className="text-muted-foreground"><span className="font-medium text-foreground">Under limit (£1,800):</span> We pay <span className="font-semibold text-success">£1,800</span>, you pay excess only.</p>
+                      <p className="text-muted-foreground"><span className="font-medium text-foreground">Over limit (£2,400):</span> We pay <span className="font-semibold text-success">£2,000</span>, you pay <span className="font-semibold text-foreground">£400</span> + excess.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 text-[10px] text-muted-foreground font-medium">
+                    <span>✓ No hidden fees</span>
+                    <span>✓ Parts & labour included</span>
+                    <span>✓ Protect from day one</span>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          {validationErrors.claimLimit && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-600 font-medium">
+                Please choose a claim limit to continue.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <p className="text-lg font-medium text-gray-600 mb-4 flex items-center gap-2">
+            <Wrench className="w-5 h-5 flex-shrink-0" /> Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗
+          </p>
+
+          {/* Claim Limit Tier Cards */}
+          {(() => {
+            const isPremium = isPremiumVehicle(vehicleData?.make);
+            const visibleTiers = isPremium 
+              ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
+              : [...CLAIM_LIMIT_TIERS];
+            
+            // Determine displayed selection - now direct since we set claim limit directly
+            const displayedLimit = selectedClaimLimit;
+            
+            return (
+              <div className={cn(
+                "grid gap-4",
+                visibleTiers.length <= 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+              )}>
+                {visibleTiers.map((tier) => {
+                  const isSelected = displayedLimit === tier.value;
+                  const isPopular = tier.popular;
+                  
+                  return (
+                    <div 
+                      key={tier.value}
+                      className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
+                        isSelected
+                          ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                          : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
+                      }`}
+                      onClick={() => {
+                        // Set claim limit directly - surcharge handles pricing for £3000/£5000
+                        setSelectedClaimLimit(tier.value);
+                        setBoostAddon(false);
+                        setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+                      }}
+                    >
+                      {isPopular && (
+                        <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                          MOST POPULAR
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="text-base font-semibold text-gray-500 mb-1">{tier.name}</h4>
+                          <div className="text-3xl font-bold text-black">
+                            £{(tier.displayValue ?? tier.value).toLocaleString()} <span className="text-base">per claim</span>
+                          </div>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                        }`}>
+                          {isSelected && <Check className="w-4 h-4 text-white" />}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+
         {/* Price Help Trigger - Above Comprehensive Cover */}
         <div>
           <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
@@ -2285,288 +2567,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </CollapsibleContent>
           </Collapsible>
-        </div>
-
-        {/* Labour Rate Selection - NEW */}
-        <div className="bg-gray-50 rounded-lg p-4 sm:p-8 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              2
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              Choose your labour rate
-            </h2>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mb-4">
-            Pick the hourly rate that works best for your repair needs.
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={() => setSelectedLabourRate(50)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 50
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£50 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Local Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Affordable option for smaller garages.</p>
-            </button>
-            
-            <button
-              onClick={() => setSelectedLabourRate(70)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 70
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£70 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Independent Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Ideal for your trusted local garage.</p>
-            </button>
-            
-            <button
-              onClick={() => setSelectedLabourRate(100)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 100
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£100 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Approved Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Covers most garages nationwide.</p>
-            </button>
-            
-            <button
-              onClick={() => setSelectedLabourRate(200)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 200
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£200 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Expert Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
-            </button>
-          </div>
-        </div>
-
-        {/* Choose Your Excess Amount */}
-        <div id="excess-amount-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
-          validationErrors.voluntaryExcess ? 'border-2 border-red-500' : ''
-        }`}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              3
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <MousePointerClick className="w-5 h-5 scale-x-[-1] flex-shrink-0" />
-              Choose your excess amount
-            </h2>
-          </div>
-          
-          {validationErrors.voluntaryExcess && (
-            <Alert variant="destructive" className="mb-4 ml-11">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-red-600 font-medium">
-                Please select your excess amount before continuing.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="flex gap-1.5 flex-wrap justify-start ml-11">
-            {[0, 50, 100, 150].map((amount) => (
-              <button
-                key={amount}
-                onClick={() => {
-                  toggleVoluntaryExcess(amount);
-                  setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-                }}
-                className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-center relative min-w-[50px] text-sm ${
-                  voluntaryExcess === amount
-                    ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
-                }`}
-              >
-                <div className="text-base font-bold text-black">£{amount}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Claim Limit Selection */}
-        <div id="claim-limit-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
-          validationErrors.claimLimit ? 'border-2 border-red-500' : ''
-        }`}>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              4
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-              Choose your claim limit 🚗
-            </h2>
-            
-            <Dialog>
-              <DialogTrigger asChild>
-                <button className="ml-2 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm">
-                  <Info className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-medium text-green-600">Details</span>
-                </button>
-              </DialogTrigger>
-              <DialogContent className="w-[90vw] max-w-[624px] p-5 rounded-xl" hideCloseButton>
-                <DialogClose className="absolute right-3 top-3 rounded-full p-1.5 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
-                  <X className="h-4 w-4 text-white" strokeWidth={3} />
-                  <span className="sr-only">Close</span>
-                </DialogClose>
-                
-                <DialogHeader className="pr-8">
-                  <DialogTitle className="flex items-center gap-2 text-sm font-bold">
-                    <ShieldCheck className="w-4 h-4 text-green-600" />
-                    Claim limit – what you are covered for
-                  </DialogTitle>
-                </DialogHeader>
-                
-                <div className="space-y-2 pt-1 text-xs">
-                  <p className="text-muted-foreground leading-relaxed">
-                    Your claim limit is the maximum amount we pay towards each repair, including <span className="font-semibold text-foreground">parts and labour</span>.
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Most repairs cost between <span className="font-semibold text-foreground">£700 and £1,100</span>, so many customers are fully covered.
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { val: '£1,000', label: 'Essential Cover', desc: 'Smaller repairs & everyday faults.' },
-                      { val: '£2,000', label: 'Most Popular', desc: 'Common repairs & higher value jobs.', highlight: true },
-                      { val: '£3,000', label: 'Strong Protection', desc: 'Extra reassurance for costlier repairs.' },
-                      { val: '£5,000', label: 'Maximum Protection', desc: 'Hybrid, luxury or specialist vehicles.' },
-                    ].map((t) => (
-                      <div key={t.val} className={`rounded-lg border p-2 ${t.highlight ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
-                        <div className="flex items-baseline gap-1">
-                          <span className="font-bold text-foreground text-xs">{t.val}</span>
-                          <span className={`text-[10px] font-semibold ${t.highlight ? 'text-success' : 'text-muted-foreground'}`}>({t.label})</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{t.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <p className="text-[11px] text-muted-foreground">
-                    Higher limits cover larger repairs like <span className="font-medium text-foreground">engines, gearboxes & hybrid systems</span>.
-                  </p>
-
-                  <div className="bg-muted/50 border border-border rounded-lg p-2.5 space-y-1">
-                    <h5 className="font-semibold text-foreground text-xs">How your claim is paid</h5>
-                    <p className="text-[11px] text-muted-foreground">With a <span className="font-bold text-foreground">£2,000</span> limit:</p>
-                    <div className="text-[11px] space-y-0.5">
-                      <p className="text-muted-foreground"><span className="font-medium text-foreground">Under limit (£1,800):</span> We pay <span className="font-semibold text-success">£1,800</span>, you pay excess only.</p>
-                      <p className="text-muted-foreground"><span className="font-medium text-foreground">Over limit (£2,400):</span> We pay <span className="font-semibold text-success">£2,000</span>, you pay <span className="font-semibold text-foreground">£400</span> + excess.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 text-[10px] text-muted-foreground font-medium">
-                    <span>✓ No hidden fees</span>
-                    <span>✓ Parts & labour included</span>
-                    <span>✓ Protect from day one</span>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-          
-          {validationErrors.claimLimit && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-red-600 font-medium">
-                Please choose a claim limit to continue.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <p className="text-lg font-medium text-gray-600 mb-4 flex items-center gap-2">
-            <Wrench className="w-5 h-5 flex-shrink-0" /> Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗
-          </p>
-
-          {/* Claim Limit Tier Cards */}
-          {(() => {
-            const isPremium = isPremiumVehicle(vehicleData?.make);
-            const visibleTiers = isPremium 
-              ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
-              : [...CLAIM_LIMIT_TIERS];
-            
-            // Determine displayed selection - now direct since we set claim limit directly
-            const displayedLimit = selectedClaimLimit;
-            
-            return (
-              <div className={cn(
-                "grid gap-4",
-                visibleTiers.length <= 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-              )}>
-                {visibleTiers.map((tier) => {
-                  const isSelected = displayedLimit === tier.value;
-                  const isPopular = tier.popular;
-                  
-                  return (
-                    <div 
-                      key={tier.value}
-                      className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                        isSelected
-                          ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                          : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-                      }`}
-                      onClick={() => {
-                        // Set claim limit directly - surcharge handles pricing for £3000/£5000
-                        setSelectedClaimLimit(tier.value);
-                        setBoostAddon(false);
-                        setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-                      }}
-                    >
-                      {isPopular && (
-                        <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                          MOST POPULAR
-                        </div>
-                      )}
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="text-base font-semibold text-gray-500 mb-1">{tier.name}</h4>
-                          <div className="text-3xl font-bold text-black">
-                            £{(tier.displayValue ?? tier.value).toLocaleString()} <span className="text-base">per claim</span>
-                          </div>
-                        </div>
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                        }`}>
-                          {isSelected && <Check className="w-4 h-4 text-white" />}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
         </div>
 
         {/* Cover Details Section */}
