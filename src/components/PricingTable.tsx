@@ -2864,7 +2864,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
                           <span className="font-bold text-green-600">Pay in full £{payInFull}</span>
                           <span className="text-gray-600 whitespace-nowrap">– You save £{stripeSavings} today</span>
-                          <span className="text-gray-500">– One-time payment</span>
                         </div>
                       </div>
                       
