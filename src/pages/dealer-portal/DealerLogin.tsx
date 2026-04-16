@@ -74,6 +74,7 @@ const DealerLogin = () => {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

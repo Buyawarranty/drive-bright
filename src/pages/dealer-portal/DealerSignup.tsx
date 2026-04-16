@@ -107,6 +107,7 @@ const DealerSignup = () => {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
