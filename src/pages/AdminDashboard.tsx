@@ -50,6 +50,7 @@ const VehicleStatsTab = lazy(() => import('@/components/admin/VehicleStatsTab').
 const SalesScoreboardTab = lazy(() => import('@/components/admin/scoreboard/SalesScoreboardTab'));
 const MarketingAnalyticsTab = lazy(() => import('@/components/admin/MarketingAnalyticsTab').then(m => ({ default: m.MarketingAnalyticsTab })));
 const LeadBackupRecoveryTab = lazy(() => import('@/components/admin/LeadBackupRecoveryTab'));
+const DiscountsGivenTab = lazy(() => import('@/components/admin/DiscountsGivenTab'));
 
 // Tab loading spinner
 const TabFallback = () => (
@@ -433,6 +434,8 @@ const AdminDashboard = () => {
         return <SalesScoreboardTab />;
       case 'testing':
         return <TestingTabContent />;
+      case 'discounts-given':
+        return <DiscountsGivenTab />;
       case 'account':
         return <AccountSettings />;
       default:
