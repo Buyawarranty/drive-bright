@@ -579,6 +579,13 @@ const Index = () => {
       toast.success(`Voucher ${code} has been applied — your discount will show at checkout`, {
         duration: 6000,
         id: 'promo-applied',
+        style: {
+          background: '#E91E63',
+          color: '#ffffff',
+          fontWeight: '600',
+          borderRadius: '8px',
+          border: 'none',
+        },
       });
 
       // Clean param from URL
