@@ -392,14 +392,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Pre-fill mileage from MOT data if customer hasn't entered one
   useEffect(() => {
-    if (motMileage && !mileagePreFilled && !customerData.mileage) {
-      console.log('✅ Pre-filling mileage from MOT:', motMileage);
-      setCustomerData(prev => ({
-        ...prev,
-        mileage: String(motMileage)
-      }));
-      setValidatedFields(prev => ({ ...prev, mileage: true }));
-      setMileagePreFilled(true);
+    if (motMileage && !mileagePreFilled) {
+      if (!customerData.mileage) {
+        console.log('✅ Pre-filling mileage from MOT:', motMileage);
+        setCustomerData(prev => ({
+          ...prev,
+          mileage: String(motMileage)
+        }));
+        setValidatedFields(prev => ({ ...prev, mileage: true }));
+        setMileagePreFilled(true);
+      } else if (String(customerData.mileage) === String(motMileage)) {
+        // Mileage already matches MOT (e.g. restored from localStorage) — show pre-fill UI
+        setMileagePreFilled(true);
+      }
     }
   }, [motMileage, mileagePreFilled, customerData.mileage]);
 
