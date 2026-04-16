@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
+import { DealerPublicHeader } from '@/components/dealer/DealerPublicHeader';
 
 const DealerLogin = () => {
   const [email, setEmail] = useState('');
@@ -37,7 +38,9 @@ const DealerLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gray-950 flex flex-col">
+      <DealerPublicHeader />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
       <SEOHead title="Dealer Login | BuyAWarranty" description="Sign in to your dealer portal." />
       <Card className="w-full max-w-md bg-gray-900 border-gray-800">
         <CardHeader className="text-center">
@@ -71,6 +74,7 @@ const DealerLogin = () => {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
