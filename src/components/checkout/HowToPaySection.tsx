@@ -86,7 +86,7 @@ const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAcce
               <p className="text-sm text-[#1a1a1a]">After 14 days, refunds are calculated <span className="font-semibold">pro-rata</span> based on time remaining, less any claims made</p>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-3">Designed to keep things fair for everyone.</p>
+          <p className="text-sm text-gray-500 mt-3">Designed to keep things fair for everyone.</p>
         </div>
       )}
 
