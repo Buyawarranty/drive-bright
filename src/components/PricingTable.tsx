@@ -1654,9 +1654,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   className={cn(
                     "relative p-6 pt-7 rounded-2xl border-2 transition-all pointer-events-auto cursor-pointer hover:shadow-lg",
                     isPopular
-                      ? "border-[#FF7A00] bg-gradient-to-b from-[#FFF4EA] to-[#FFFBF6] shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
+                      ? "border-[#FF7A00] bg-white shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                       : isSelected
-                        ? "border-success bg-success/5 shadow-lg"
+                        ? "border-success bg-white shadow-lg"
                         : "border-gray-300 bg-white hover:border-orange-300"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
