@@ -249,11 +249,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   onClick={() => handleContinue(term.id)}
                   className={cn(
                     "w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 font-bold text-base transition-all shadow-sm hover:shadow-md",
-                    term.isPopular
+                    (term.isPopular || isSelected)
                       ? "bg-[#FF7A00] text-white hover:bg-[#e66e00]"
-                      : isSelected
-                        ? "bg-success text-success-foreground hover:opacity-90"
-                        : "bg-foreground text-background hover:opacity-90"
+                      : "bg-foreground text-background hover:opacity-90"
                   )}
                 >
                   Continue with {term.label}
