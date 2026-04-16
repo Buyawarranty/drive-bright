@@ -1032,7 +1032,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const val = getValue('mileage');
         const mileage = parseInt(val || '0');
         if (!val) {
-          error = 'Please enter your current mileage.';
+          error = 'We just need your current mileage to get you the right cover 😊';
           isValid = false;
         } else if (mileage < 1000) {
           // Don't show "minimum" error while user is still typing short values
