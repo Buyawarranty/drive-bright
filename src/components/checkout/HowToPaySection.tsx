@@ -417,7 +417,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             alt="Trustpilot" 
             className="h-5 object-contain"
           />
-          <span>Rated Excellent</span>
+          <span className="text-[#1a1a1a] font-semibold">Rated Excellent</span>
         </a>
       </div>
     </section>
