@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Check, Lock, Car, Calendar } from 'lucide-react';
+import { CheckCircle, Check, Lock, Car, Calendar, ChevronDown, ChevronUp, Shield } from 'lucide-react';
 
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 
@@ -29,25 +29,50 @@ interface DesktopOrderSummaryProps {
 }
 
 const DesktopGuarantee = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div className="mt-4 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-3">
-      <div className="flex items-center gap-2 mb-3">
-        <CheckCircle className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-        <span className="text-xs font-bold text-[#1a1a1a]">14-day peace of mind guarantee</span>
-      </div>
-      <div className="space-y-3 mb-3">
-        <div className="flex items-start gap-2">
-          <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-[#1a1a1a]">Not happy? <span className="font-semibold">Full refund within 14 days</span> — no questions asked, as long as no claim has been made</p>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+          <span className="text-xs font-bold text-[#1a1a1a]">14-day money-back guarantee</span>
         </div>
-        <div className="flex items-start gap-2">
-          <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-[#1a1a1a]">If a claim has been submitted within 14 days, a <span className="font-semibold">£40 assessment fee</span> applies on cancellation — to cover the cost of processing your claim</p>
+        <div className="flex items-center gap-2">
+          {!isExpanded && (
+            <span className="text-xs text-gray-500">Full refund if no claim is made.</span>
+          )}
+          <span className="text-xs font-semibold text-[#0BA360]">
+            {isExpanded ? '' : 'See details'}
+          </span>
+          {isExpanded ? (
+            <ChevronUp className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0" />
+          )}
         </div>
-      </div>
-      <div className="border-t border-[#C8F3D2] pt-2">
-        <p className="text-xs text-gray-500">After 14 days, unused cover is refundable pro-rata.</p>
-      </div>
+      </button>
+
+      {isExpanded && (
+        <div className="mt-3">
+          <div className="space-y-3 mb-3">
+            <div className="flex items-start gap-2">
+              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-[#1a1a1a]">Not happy? <span className="font-semibold">Full refund within 14 days</span> — no questions asked, as long as no claim has been made</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-[#1a1a1a]">If a claim has been submitted within 14 days, a <span className="font-semibold">£40 assessment fee</span> applies on cancellation — to cover the cost of processing your claim</p>
+            </div>
+          </div>
+          <div className="border-t border-[#C8F3D2] pt-2">
+            <p className="text-xs text-gray-500">After 14 days, unused cover is refundable pro-rata.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
