@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search, Car, Home } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -1718,7 +1718,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             
             {/* Section Header: About you */}
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">About you</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><User className="w-5 h-5" /> About you</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
@@ -1845,7 +1845,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Section Divider - Your Address */}
             <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">Your Address</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Home className="w-5 h-5" /> Your address</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
@@ -2029,7 +2029,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Section Divider - Your Vehicle */}
             <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">Your Vehicle</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Car className="w-5 h-5" /> Your vehicle</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
