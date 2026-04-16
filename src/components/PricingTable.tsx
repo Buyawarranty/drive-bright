@@ -1656,7 +1656,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     isPopular
                       ? "border-[#FF7A00] bg-white shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                       : isSelected
-                        ? "border-success bg-white shadow-lg"
+                        ? "border-[#FF7A00] bg-white shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                         : "border-gray-300 bg-white hover:border-orange-300"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
