@@ -32,6 +32,12 @@ const ConditionalSeasonalBanner = () => {
 };
 
 // Component to conditionally hide footer during checkout steps and admin pages
+const ConditionalStickyNavigation = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/dealer-portal')) return null;
+  return <StickyNavigation />;
+};
+
 const ConditionalFooter = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -202,7 +208,7 @@ const App = () => {
             <PageViewLogger />
             <CookieBanner />
             <div className="min-h-screen flex flex-col w-full">
-              <StickyNavigation />
+              <ConditionalStickyNavigation />
               <ConditionalSeasonalBanner />
               <main className="flex-1 pb-16 w-full overflow-x-hidden">
                 <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
