@@ -27,16 +27,10 @@ const MoneyBackGuarantee: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-[#C8F3D2] pt-3 flex items-center justify-between">
+      <div className="border-t border-[#C8F3D2] pt-3">
         <p className="text-xs text-gray-500">
           After 14 days, unused cover is refundable pro-rata.
         </p>
-        <a
-          href="/cancellation-policy"
-          className="text-xs font-semibold text-[#1a1a1a] flex items-center gap-1 hover:underline whitespace-nowrap ml-2"
-        >
-          Full terms <span aria-hidden>→</span>
-        </a>
       </div>
     </div>
   );
