@@ -2478,6 +2478,149 @@ export type Database = {
           },
         ]
       }
+      dealer_quotes: {
+        Row: {
+          created_at: string
+          customer_name: string
+          dealer_id: string
+          id: string
+          mileage: string | null
+          plan_type: string
+          price: number | null
+          status: string
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_reg: string
+          warranty_duration: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          dealer_id: string
+          id?: string
+          mileage?: string | null
+          plan_type: string
+          price?: number | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg: string
+          warranty_duration: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          dealer_id?: string
+          id?: string
+          mileage?: string | null
+          plan_type?: string
+          price?: number | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string
+          warranty_duration?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_quotes_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealer_warranties: {
+        Row: {
+          created_at: string
+          customer_name: string
+          dealer_id: string
+          end_date: string
+          id: string
+          quote_id: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          vehicle_reg: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          dealer_id: string
+          end_date: string
+          id?: string
+          quote_id?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          vehicle_reg: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          dealer_id?: string
+          end_date?: string
+          id?: string
+          quote_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          vehicle_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_warranties_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_warranties_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "dealer_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealers: {
+        Row: {
+          company_name: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       discount_code_usage: {
         Row: {
           customer_email: string
