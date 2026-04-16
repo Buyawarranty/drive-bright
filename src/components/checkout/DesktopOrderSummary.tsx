@@ -45,9 +45,8 @@ const DesktopGuarantee = () => {
           <p className="text-xs text-[#1a1a1a]">If a claim has been submitted within 14 days, a <span className="font-semibold">£40 assessment fee</span> applies on cancellation — to cover the cost of processing your claim</p>
         </div>
       </div>
-      <div className="border-t border-[#C8F3D2] pt-2 flex items-center justify-between">
+      <div className="border-t border-[#C8F3D2] pt-2">
         <p className="text-[10px] text-gray-500">After 14 days, unused cover is refundable pro-rata.</p>
-        <a href="/cancellation-policy" className="text-[10px] font-semibold text-[#1a1a1a] hover:underline whitespace-nowrap ml-2">Full terms →</a>
       </div>
     </div>
   );
