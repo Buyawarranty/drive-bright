@@ -1635,6 +1635,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
+              const dailyPriceLabel = (() => {
+                const daily = (displayedMonthlyPrice * 12) / (durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365);
+                return daily < 1 ? `${Math.round(daily * 100)}p` : `£${daily.toFixed(2)}`;
+              })();
+              const stripeSavings = Math.floor(displayedAnnualPrice * 0.10);
+              const isPopular = durationId === '24months';
+              const isBestValue = durationId === '36months';
+
               return (
                 <div
                   key={durationId}
@@ -1643,25 +1651,36 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     isUserPaymentTypeChange.current = true;
                     setPaymentType(durationId);
                   }}
-                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg ${
-                    isSelected
-                      ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                      : 'border-gray-300 hover:border-orange-300'
-                  }`}
+                  className={cn(
+                    "relative p-6 pt-7 rounded-2xl border-2 transition-all pointer-events-auto cursor-pointer hover:shadow-lg",
+                    isPopular
+                      ? "border-[#FF7A00] bg-gradient-to-b from-[#FFF4EA] to-[#FFFBF6] shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
+                      : isSelected
+                        ? "border-success bg-success/5 shadow-lg"
+                        : "border-gray-300 bg-white hover:border-orange-300"
+                  )}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
-                  {/* Badge */}
-                  {duration.badge && (
-                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                      durationId === '24months' ? 'text-white' : 'bg-green-600 text-white'
-                    }`} style={durationId === '24months' ? { backgroundColor: '#333333' } : undefined}>
-                      {duration.badge}
-                    </span>
+                  {/* Top badge — improved styling, brand-orange for popular, green for best value */}
+                  {isPopular && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+                      <span className="inline-flex items-center gap-1.5 bg-[#FF7A00] text-white text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
+                        <Star className="w-3.5 h-3.5 fill-white" />
+                        PERFECT FOR YOUR {(vehicleData?.model && vehicleData.model.toLowerCase() !== 'unknown') ? vehicleData.model.toUpperCase() : (vehicleData?.vehicleType?.toUpperCase() || 'VEHICLE')}
+                      </span>
+                    </div>
                   )}
-                  
+                  {isBestValue && (
+                    <div className="absolute -top-3 right-4 z-10">
+                      <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                        BEST VALUE
+                      </span>
+                    </div>
+                  )}
+
                   {/* Selection Checkbox - Top Right */}
-                  <div 
-                    className="absolute top-4 right-4 cursor-pointer"
+                  <div
+                    className="absolute top-4 right-4 cursor-pointer z-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       isUserPaymentTypeChange.current = true;
@@ -1670,88 +1689,106 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   >
                     <div className={cn(
                       "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                      isSelected 
-                        ? "bg-green-500 border-green-500" 
+                      isSelected
+                        ? "bg-green-500 border-green-500"
                         : "bg-white border-gray-300 hover:border-green-400"
                     )}>
                       {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                     </div>
                   </div>
 
+                  {/* Most popular choice — social proof */}
+                  {isPopular && (
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
+                      <span className="text-sm font-semibold text-green-700">Most popular choice</span>
+                    </div>
+                  )}
+
                   {/* Duration Title */}
                   <h4 className="text-xl font-bold text-gray-900 mb-1">
                     {duration.label}
                   </h4>
                   <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
-                  
-                  {/* Price Section */}
+
+                  {/* Price Section — DAILY PRICE IS HERO */}
                   <div className="mb-4">
-                    {/* Price Headline */}
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
-                      <span className="text-sm font-bold text-black">(12 payments only)</span>
+                    <div className="text-xs font-bold text-[#FF7A00] uppercase tracking-wide mb-0.5">Only</div>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-4xl sm:text-5xl font-extrabold text-[#FF7A00] leading-none">
+                        {dailyPriceLabel}
+                      </span>
+                      <span className="text-xl sm:text-2xl font-bold text-[#FF7A00] leading-none">/day</span>
                     </div>
-                    <p className="text-sm font-semibold text-[#FF7A00] mt-0.5">
-                      Only {(() => { const daily = (displayedMonthlyPrice * 12) / (durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365); return daily < 1 ? `${Math.round(daily * 100)}p` : `£${daily.toFixed(2)}`; })()}/day
-                    </p>
-                    
-                    {/* Equivalent cost per month of cover - shown only for multi-year plans */}
+                    <div className="mt-2 flex items-baseline gap-2 flex-wrap">
+                      <span className="text-base sm:text-lg font-semibold text-black">£{displayedMonthlyPrice}/month</span>
+                      <span className="text-xs sm:text-sm font-medium text-gray-600">(12 payments only)</span>
+                    </div>
+
+                    {/* Equivalent cost per month of cover */}
                     {durationId === '24months' && (
-                      <p className="text-sm font-bold text-gray-500 mt-1">
-                        Approx. £{Math.floor(displayedMonthlyPrice / 2)}/month over 2 years
-                      </p>
+                      <div className="inline-block bg-white/70 border border-gray-200 rounded-full px-3 py-1 mt-2">
+                        <p className="text-xs sm:text-sm font-semibold text-gray-600">
+                          Approx. £{Math.floor(displayedMonthlyPrice / 2)}/month over 2 years
+                        </p>
+                      </div>
                     )}
                     {durationId === '36months' && (
-                      <p className="text-sm font-bold text-gray-500 mt-1">
-                        Approx. £{Math.floor(displayedMonthlyPrice / 3)}/month over 3 years
-                      </p>
+                      <div className="inline-block bg-white/70 border border-gray-200 rounded-full px-3 py-1 mt-2">
+                        <p className="text-xs sm:text-sm font-semibold text-gray-600">
+                          Approx. £{Math.floor(displayedMonthlyPrice / 3)}/month over 3 years
+                        </p>
+                      </div>
                     )}
-                    
-                    {/* Free year benefit lines with ticks */}
+
+                    {/* Free year benefit lines */}
                     {durationId === '24months' && (
-                      <>
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="space-y-1 mt-3">
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" strokeWidth={3} />
                           <span className="text-sm font-medium text-black">No payments in year 2</span>
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" strokeWidth={3} />
                           <span className="text-sm font-medium text-black">Includes extra benefits</span>
                         </div>
-                      </>
+                      </div>
                     )}
                     {durationId === '36months' && (
-                      <>
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="space-y-1 mt-3">
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" strokeWidth={3} />
                           <span className="text-sm font-medium text-black">No payments in years 2 & 3</span>
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" strokeWidth={3} />
                           <span className="text-sm font-medium text-black">Includes extra benefits</span>
                         </div>
-                      </>
+                      </div>
                     )}
-                    
-                    {/* Total price */}
-                    <div className="text-sm mt-2">
-                      <span className="font-bold text-black">
-                        Pay in full £{displayedAnnualPrice}
-                      </span>
-                    </div>
-                    
-                    {/* 10% Stripe discount savings line */}
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-sm font-bold text-green-600">You save £{Math.floor(displayedAnnualPrice * 0.10)} today</span>
+
+                    {/* AMPLIFIED savings panel */}
+                    <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 mt-4">
+                      <div>
+                        <div className="text-xs font-semibold text-green-700 uppercase tracking-wide">Save</div>
+                        <div className="text-2xl sm:text-3xl font-extrabold text-green-700 leading-none mt-0.5">
+                          £{stripeSavings} today
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs text-gray-500">Pay in full</div>
+                        <div className="text-sm font-bold text-black">£{displayedAnnualPrice - stripeSavings}</div>
+                        <div className="text-xs text-red-500 line-through">£{displayedAnnualPrice}</div>
+                      </div>
                     </div>
                   </div>
-                  
+
                   {/* What's Included Collapsible */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    <CollapsibleTrigger className="w-full mb-4">
-                      <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
+                    <CollapsibleTrigger className="w-full mb-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-between w-full border border-gray-300 bg-white rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
                         <span className="text-sm font-medium text-gray-800">See What's Included</span>
-                        <ChevronDown 
+                        <ChevronDown
                           className={cn(
                             "w-5 h-5 text-gray-600 transition-transform duration-300",
                             isExpanded && "transform rotate-180"
@@ -1759,7 +1796,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         />
                       </div>
                     </CollapsibleTrigger>
-                    
+
                     <CollapsibleContent className="mb-4">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
                         {duration.features.map((feature, idx) => {
@@ -1784,28 +1821,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
-                  
-                  {/* CTA Button with Hover Effect and Arrow */}
+
+                  {/* Forward-driving CTA — replaces dead-end "Selected" */}
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       isUserPaymentTypeChange.current = true;
                       setPaymentType(durationId);
+                      // Scroll to next section to keep momentum
+                      setTimeout(() => {
+                        const next = document.getElementById('duration-price-section');
+                        const nextSibling = next?.nextElementSibling as HTMLElement | null;
+                        if (nextSibling) nextSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 50);
                     }}
                     className={cn(
                       "w-full mb-1.5 font-bold text-base py-6 transition-all duration-300 group",
-                      isSelected
-                        ? "bg-black hover:bg-black/90 text-white shadow-lg border-2 border-black"
-                        : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
+                      "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
                     )}
                     size="lg"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span>{isSelected ? 'Selected' : 'Select this plan'}</span>
-                      {!isSelected && <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
+                      <span>Continue with {duration.label}</span>
+                      <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />
                     </div>
                   </Button>
-                  
+
                   {/* Email Quote Link */}
                   <button
                     onClick={(e) => {
@@ -1817,7 +1858,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <Mail className="w-4 h-4 text-orange-500" />
                     <span className="underline">Email me this quote</span>
                   </button>
-                  
+
                   {/* See Full Cover Details Link */}
                   <button
                     onClick={(e) => {
