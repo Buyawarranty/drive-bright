@@ -1686,6 +1686,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   }
                 }
               }}
+              onEditPlan={onBack}
             />
           </section>
 
@@ -1718,7 +1719,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             
             {/* Section Header: About you */}
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><User className="w-5 h-5" /> About you</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><User className="w-5 h-5 text-[#0BA360]" /> About you</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
@@ -1845,7 +1846,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Section Divider - Your Address */}
             <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Home className="w-5 h-5" /> Your address</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Home className="w-5 h-5 text-[#0BA360]" /> Your address</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
@@ -2029,7 +2030,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Section Divider - Your Vehicle */}
             <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Car className="w-5 h-5" /> Your vehicle</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a] flex items-center gap-2"><Car className="w-5 h-5 text-[#0BA360]" /> Your vehicle</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 

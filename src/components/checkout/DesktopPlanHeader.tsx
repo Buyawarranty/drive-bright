@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Check, Calendar as CalendarIcon, Car } from 'lucide-react';
+import { CheckCircle, Check, Calendar as CalendarIcon, Car, Pencil } from 'lucide-react';
 import { format, isToday, startOfDay, addDays, isBefore, isAfter } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -16,6 +16,7 @@ interface DesktopPlanHeaderProps {
   excess: number;
   startDate?: Date;
   onStartDateChange?: (date: Date | undefined) => void;
+  onEditPlan?: () => void;
 }
 
 const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
@@ -29,6 +30,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
   excess,
   startDate,
   onStartDateChange,
+  onEditPlan,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const vehicleDisplay = [vehicleYear, vehicleMake?.toUpperCase(), vehicleModel?.toUpperCase()].filter(Boolean).join(' ') || '';
@@ -69,13 +71,24 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
 
       {/* Vehicle & Plan Info */}
       <div className="bg-[#FAFAFA] rounded-lg p-4 mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Car className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-semibold text-[#1a1a1a]">{vehicleDisplay}</span>
-          {vehicleReg && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded border border-[#D4A843] bg-[#FFF8E7] text-xs font-bold text-[#1a1a1a] tracking-wide">
-              {vehicleReg.toUpperCase()}
-            </span>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Car className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-semibold text-[#1a1a1a]">{vehicleDisplay}</span>
+            {vehicleReg && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded border border-[#D4A843] bg-[#FFF8E7] text-xs font-bold text-[#1a1a1a] tracking-wide">
+                {vehicleReg.toUpperCase()}
+              </span>
+            )}
+          </div>
+          {onEditPlan && (
+            <button
+              onClick={onEditPlan}
+              className="flex items-center gap-1 text-xs font-semibold text-[#C4841D] hover:text-[#A36A15] transition-colors"
+            >
+              <Pencil className="w-3 h-3" />
+              Edit
+            </button>
           )}
         </div>
         <div className="space-y-1.5 text-sm">
