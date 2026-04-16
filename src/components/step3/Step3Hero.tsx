@@ -45,7 +45,7 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
           From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - <strong>tailored to your car, your garage, your budget</strong>
         </p>
         <p className="text-sm text-muted-foreground mt-1">
-          All plans include 12 interest-free payments. Longer cover = better value, locked in today's price.
+          12 interest-free payments  ·  Longer cover = better value, locked in today's price
         </p>
       </div>
       
