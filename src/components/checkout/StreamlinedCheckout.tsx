@@ -1857,8 +1857,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                 </div>
               </div>
-
-
+            </div>
 
             {/* Section Divider - Your Address */}
             <div className="mt-10 mb-6">
