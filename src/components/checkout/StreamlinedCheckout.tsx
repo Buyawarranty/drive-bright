@@ -2036,8 +2036,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
             <div>
-              <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
-              <div className="flex gap-2 mt-1.5">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current mileage</Label>
+                {mileagePreFilled && motMileage && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                    Pre-filled from MOT
+                  </span>
+                )}
+              </div>
+              
+              {/* MOT Pre-fill Info Box */}
+              {mileagePreFilled && motMileage && motDate && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mb-3">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-blue-800">
+                      Your last MOT recorded <span className="font-bold">{Number(motMileage).toLocaleString('en-GB')} miles</span> in {format(new Date(motDate), 'MMMM yyyy')}. We've pre-filled this below — select a closer estimate if your mileage has changed since.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
                 <div className="relative flex-1">
                   {motLoading ? (
                     <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
@@ -2059,10 +2079,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }}
                         onBlur={() => handleFieldBlur('mileage')}
                         required
-                        className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
+                        className={`h-11 sm:h-12 text-base pr-10 ${mileagePreFilled ? 'border-[#0BA360] border-2 bg-[#F0FDF4]' : ''} ${getInputValidationClass('mileage')}`}
                       />
                       {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))] pointer-events-none" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
                     </div>
                   )}
@@ -2086,15 +2106,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </select>
               </div>
               
-              {/* MOT Pre-fill Info Badge */}
-              {mileagePreFilled && motMileage && motDate && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                  <Info className="w-3.5 h-3.5" />
-                  <span>
-                    Pre-filled from your last MOT ({format(new Date(motDate), 'MMM yyyy')})
-                  </span>
-                </div>
-              )}
+              {/* Mileage info note */}
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>Your mileage is used for policy records only — it doesn't affect your price.</span>
+              </div>
               
               {customerData.mileage && Number(customerData.mileage) > 150000 && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
