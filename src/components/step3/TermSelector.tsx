@@ -158,7 +158,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                         <span className="text-sm font-semibold text-success">Most popular choice</span>
                       </div>
                     )}
-                    <h4 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                    <h4 className="text-3xl sm:text-4xl font-extrabold text-foreground leading-tight tracking-tight">
                       {term.label}
                     </h4>
                     <p className="text-sm text-muted-foreground mt-0.5">Platinum Complete Plan</p>
