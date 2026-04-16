@@ -143,12 +143,21 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
 
               {/* Cover Start Date */}
               {startDate && (
-                <div className="border border-[#FFD7A8] bg-[#FFF8F0] rounded-lg px-3 py-2.5 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#C4841D] flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-[#C4841D] font-medium">Cover start date</p>
-                    <p className="text-sm font-bold text-[#1a1a1a]">{formatStartDate(startDate)}</p>
+                <div className="border border-[#FFD7A8] bg-[#FFF8F0] rounded-lg px-3 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-[#C4841D] flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-[#C4841D] font-medium">Cover start date</p>
+                      <p className="text-sm font-bold text-[#1a1a1a]">{formatStartDate(startDate)}</p>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('start-date-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                    className="text-xs font-semibold text-[#C4841D] hover:text-[#A06A15] underline underline-offset-2 transition-colors"
+                  >
+                    Edit
+                  </button>
                 </div>
               )}
             </div>
