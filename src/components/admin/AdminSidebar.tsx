@@ -263,6 +263,12 @@ const defaultTabs: Tab[] = [
     description: 'Leaderboard, awards and sales competition'
   },
   {
+    id: 'discounts-given',
+    label: 'Discounts Given',
+    icon: Percent,
+    description: 'Track agent discounts vs retail pricing'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
