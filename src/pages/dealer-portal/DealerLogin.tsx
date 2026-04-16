@@ -21,7 +21,6 @@ const DealerLogin = () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // Verify dealer exists
       const { data: dealer } = await supabase.from('dealers').select('id').limit(1).maybeSingle();
       if (!dealer) {
         await supabase.auth.signOut();
@@ -38,36 +37,37 @@ const DealerLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
       <SEOHead title="Dealer Login | BuyAWarranty" description="Sign in to your dealer portal." />
-      <Card className="w-full max-w-md border-2">
+      <Card className="w-full max-w-md bg-gray-900 border-gray-800">
         <CardHeader className="text-center">
           <Link to="/dealer-portal/" className="inline-block mb-4">
-            <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-8 mx-auto" />
+            <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-8 mx-auto brightness-0 invert" />
           </Link>
-          <CardTitle className="text-2xl font-bold">Dealer Login</CardTitle>
-          <CardDescription>Sign in to your dealer portal</CardDescription>
+          <span className="inline-block text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded mb-2">DEALER PORTAL</span>
+          <CardTitle className="text-2xl font-bold text-white">Dealer Login</CardTitle>
+          <CardDescription className="text-gray-400">Sign in to your dealer portal</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Email</label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="dealer@example.com" required />
+              <label className="text-sm font-medium text-gray-300">Email</label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="dealer@example.com" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Password</label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required />
+              <label className="text-sm font-medium text-gray-300">Password</label>
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
           <div className="text-center mt-4">
-            <Link to="/forgot-password/" className="text-sm text-orange-600 hover:underline">Forgot password?</Link>
+            <Link to="/forgot-password/" className="text-sm text-orange-400 hover:underline">Forgot password?</Link>
           </div>
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6">
             Don't have an account?{' '}
-            <Link to="/dealer-portal/signup" className="text-orange-600 hover:underline font-medium">Create one</Link>
+            <Link to="/dealer-portal/signup" className="text-orange-400 hover:underline font-medium">Create one</Link>
           </p>
         </CardContent>
       </Card>

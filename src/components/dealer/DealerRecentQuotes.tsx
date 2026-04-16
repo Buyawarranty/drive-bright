@@ -20,9 +20,9 @@ interface DealerRecentQuotesProps {
 
 export const DealerRecentQuotes: React.FC<DealerRecentQuotesProps> = ({ quotes }) => {
   return (
-    <Card className="border-2">
+    <Card className="bg-gray-900 border-gray-800">
       <CardHeader>
-        <CardTitle className="text-lg font-bold text-gray-800">Recent Quotes</CardTitle>
+        <CardTitle className="text-lg font-bold text-white">Recent Quotes</CardTitle>
       </CardHeader>
       <CardContent>
         {quotes.length === 0 ? (
@@ -30,27 +30,27 @@ export const DealerRecentQuotes: React.FC<DealerRecentQuotesProps> = ({ quotes }
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Vehicle</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
+              <TableRow className="border-gray-800 hover:bg-transparent">
+                <TableHead className="text-gray-400">Customer</TableHead>
+                <TableHead className="text-gray-400">Vehicle</TableHead>
+                <TableHead className="text-gray-400">Price</TableHead>
+                <TableHead className="text-gray-400">Status</TableHead>
+                <TableHead className="text-gray-400">Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {quotes.slice(0, 5).map((quote) => (
-                <TableRow key={quote.id}>
-                  <TableCell className="font-medium">{quote.customer_name}</TableCell>
-                  <TableCell>
+                <TableRow key={quote.id} className="border-gray-800 hover:bg-gray-800/50">
+                  <TableCell className="font-medium text-white">{quote.customer_name}</TableCell>
+                  <TableCell className="text-gray-300">
                     {quote.vehicle_reg}
                     {quote.vehicle_make && ` - ${quote.vehicle_make}`}
                     {quote.vehicle_model && ` ${quote.vehicle_model}`}
                   </TableCell>
-                  <TableCell>{quote.price ? `£${Number(quote.price).toFixed(2)}` : '—'}</TableCell>
+                  <TableCell className="text-gray-300">{quote.price ? `£${Number(quote.price).toFixed(2)}` : '—'}</TableCell>
                   <TableCell>
                     <Badge variant={quote.status === 'converted' ? 'default' : 'secondary'}
-                      className={quote.status === 'converted' ? 'bg-green-500' : 'bg-amber-100 text-amber-800'}
+                      className={quote.status === 'converted' ? 'bg-green-500' : 'bg-amber-500/20 text-amber-400'}
                     >
                       {quote.status === 'converted' ? 'Converted' : 'Pending'}
                     </Badge>
