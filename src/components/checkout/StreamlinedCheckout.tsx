@@ -539,10 +539,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
-      customerData.mileage &&
-      customerData.dob_day && customerData.dob_month && customerData.dob_year
+      customerData.mileage
     );
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage, customerData.dob_day, customerData.dob_month, customerData.dob_year]);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
   
   // Check if address is complete (required fields)
   // Check if address is complete - simplified fields
@@ -574,7 +573,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!customerData.mileage) count++;
-    if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) count++;
     return count;
   }, [customerData]);
 
@@ -1002,20 +1000,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         } else if (val.trim().length < 2) {
           error = 'Last name must be at least 2 characters';
           isValid = false;
-        }
-        break;
-      }
-      case 'dob': {
-        if (!customerData.dob_day || !customerData.dob_month || !customerData.dob_year) {
-          error = 'Please enter your date of birth.';
-          isValid = false;
-        } else {
-          const year = parseInt(customerData.dob_year);
-          const currentYear = new Date().getFullYear();
-          if (year > currentYear - 18) {
-            error = 'You must be at least 18 years old.';
-            isValid = false;
-          }
         }
         break;
       }
@@ -1856,110 +1840,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   )}
                 </div>
-              </div>
-
-              {/* Date of Birth */}
-              <div className="mt-4">
-                <Label className="text-sm font-medium text-foreground/80">Date of Birth *</Label>
-                <p className="text-xs text-muted-foreground mt-0.5 mb-2">
-                  🔒 Required for identity verification — this protects your warranty from unauthorised claims.
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="relative">
-                    <Input
-                      id="dob_day"
-                      list="dob-days"
-                      inputMode="numeric"
-                      placeholder="DD"
-                      autoComplete="bday-day"
-                      maxLength={2}
-                      value={customerData.dob_day || ''}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        const num = parseInt(val);
-                        if (val === '' || (num >= 0 && num <= 31)) {
-                          handleInputChange('dob_day', val);
-                        }
-                      }}
-                      onBlur={() => {
-                        if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
-                          handleFieldBlur('dob');
-                        }
-                      }}
-                      className={`h-11 sm:h-12 text-base ${
-                        fieldErrors.dob && !customerData.dob_day ? 'border-destructive ring-1 ring-destructive' : 
-                        fieldErrors.dob && customerData.dob_day ? 'border-[hsl(var(--success))]' :
-                        (customerData.dob_day ? 'border-[hsl(var(--success))]' : 'border-input')
-                      }`}
-                    />
-                    <datalist id="dob-days">
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                        <option key={d} value={d.toString().padStart(2, '0')} />
-                      ))}
-                    </datalist>
-                  </div>
-                  <div className="relative">
-                    <select
-                      id="dob_month"
-                      autoComplete="bday-month"
-                      value={customerData.dob_month || ''}
-                      onChange={(e) => {
-                        handleInputChange('dob_month', e.target.value);
-                      }}
-                      onBlur={() => {
-                        if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
-                          handleFieldBlur('dob');
-                        }
-                      }}
-                      className={`flex h-11 sm:h-12 w-full rounded-md border bg-[#F5F5F5] px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${
-                        fieldErrors.dob && !customerData.dob_month ? 'border-destructive ring-1 ring-destructive' : 
-                        fieldErrors.dob && customerData.dob_month ? 'border-[hsl(var(--success))]' :
-                        (customerData.dob_month ? 'border-[hsl(var(--success))]' : 'border-gray-200')
-                      }`}
-                    >
-                      <option value="" disabled>Month</option>
-                      {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
-                        <option key={i} value={(i + 1).toString().padStart(2, '0')}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="dob_year"
-                      list="dob-years"
-                      inputMode="numeric"
-                      placeholder="YYYY"
-                      autoComplete="bday-year"
-                      maxLength={4}
-                      value={customerData.dob_year || ''}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                        handleInputChange('dob_year', val);
-                      }}
-                      onBlur={() => {
-                        if (customerData.dob_day && customerData.dob_month && customerData.dob_year) {
-                          handleFieldBlur('dob');
-                        }
-                      }}
-                      className={`h-11 sm:h-12 text-base ${
-                        fieldErrors.dob && (!customerData.dob_year || customerData.dob_year.length < 4) ? 'border-destructive ring-1 ring-destructive' : 
-                        fieldErrors.dob && customerData.dob_year && customerData.dob_year.length === 4 ? 'border-[hsl(var(--success))]' :
-                        (customerData.dob_year && customerData.dob_year.length === 4 ? 'border-[hsl(var(--success))]' : 'border-input')
-                      }`}
-                    />
-                    <datalist id="dob-years">
-                      {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
-                        <option key={y} value={y.toString()} />
-                      ))}
-                    </datalist>
-                  </div>
-                </div>
-                {fieldErrors.dob && (
-                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {fieldErrors.dob}
-                  </p>
-                )}
               </div>
             </div>
 
