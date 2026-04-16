@@ -38,7 +38,6 @@ const DealerSignup = () => {
       if (error) throw error;
 
       if (data.user) {
-        // Create dealer profile
         const { error: dealerError } = await supabase.from('dealers').insert({
           user_id: data.user.id,
           name: form.name,
@@ -62,45 +61,46 @@ const DealerSignup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
       <SEOHead title="Dealer Signup | BuyAWarranty" description="Create your dealer account in 60 seconds." />
-      <Card className="w-full max-w-md border-2">
+      <Card className="w-full max-w-md bg-gray-900 border-gray-800">
         <CardHeader className="text-center">
           <Link to="/dealer-portal/" className="inline-block mb-4">
-            <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-8 mx-auto" />
+            <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-8 mx-auto brightness-0 invert" />
           </Link>
-          <CardTitle className="text-2xl font-bold">Create Dealer Account</CardTitle>
-          <CardDescription>Get started in 60 seconds</CardDescription>
+          <span className="inline-block text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded mb-2">DEALER PORTAL</span>
+          <CardTitle className="text-2xl font-bold text-white">Create Dealer Account</CardTitle>
+          <CardDescription className="text-gray-400">Get started in 60 seconds</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Full Name *</label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="John Smith" required />
+              <label className="text-sm font-medium text-gray-300">Full Name *</label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="John Smith" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Email *</label>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="dealer@example.com" required />
+              <label className="text-sm font-medium text-gray-300">Email *</label>
+              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="dealer@example.com" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Phone</label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="07700 900000" />
+              <label className="text-sm font-medium text-gray-300">Phone</label>
+              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="07700 900000" className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Company Name *</label>
-              <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} placeholder="ABC Motors Ltd" required />
+              <label className="text-sm font-medium text-gray-300">Company Name *</label>
+              <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} placeholder="ABC Motors Ltd" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Password *</label>
-              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" required />
+              <label className="text-sm font-medium text-gray-300">Password *</label>
+              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
               {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{' '}
-            <Link to="/dealer-portal/login" className="text-orange-600 hover:underline font-medium">Sign in</Link>
+            <Link to="/dealer-portal/login" className="text-orange-400 hover:underline font-medium">Sign in</Link>
           </p>
         </CardContent>
       </Card>

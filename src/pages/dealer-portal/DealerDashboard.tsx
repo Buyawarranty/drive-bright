@@ -50,7 +50,7 @@ const DealerDashboard = () => {
     <DealerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-white">
             Welcome back{dealer?.name ? `, ${dealer.name}` : ''}
           </h1>
           <p className="text-gray-500 text-sm">{dealer?.company_name}</p>
@@ -67,10 +67,10 @@ const DealerDashboard = () => {
           <Button onClick={() => navigate('/dealer-portal/quotes/create')} className="bg-orange-500 hover:bg-orange-600 text-white">
             <FilePlus className="h-4 w-4 mr-2" /> Create Quote
           </Button>
-          <Button variant="outline" onClick={() => navigate('/dealer-portal/quotes')}>
+          <Button variant="outline" onClick={() => navigate('/dealer-portal/quotes')} className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white">
             <FileText className="h-4 w-4 mr-2" /> View Quotes
           </Button>
-          <Button variant="outline" onClick={() => navigate('/dealer-portal/warranties')}>
+          <Button variant="outline" onClick={() => navigate('/dealer-portal/warranties')} className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white">
             <Shield className="h-4 w-4 mr-2" /> View Warranties
           </Button>
         </div>
