@@ -123,7 +123,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 term.isPopular
                   ? "border-[#FF7A00] bg-card shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                   : isSelected
-                    ? "border-success bg-card"
+                    ? "border-[#FF7A00] bg-card shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                     : "border-border bg-card"
               )}
             >
