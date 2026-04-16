@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEOHead } from '@/components/SEOHead';
 import { OptimizedImage } from '@/components/OptimizedImage';
-import { Check, Zap, TrendingUp, LayoutDashboard, UserPlus, FileText, Shield, Car, Truck, Battery, Bike } from 'lucide-react';
+import { Check, Zap, TrendingUp, LayoutDashboard, UserPlus, FileText, Shield, Car, Truck, Battery, Bike, Phone } from 'lucide-react';
 
 const DealerHome = () => {
   return (
