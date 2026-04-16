@@ -28,7 +28,7 @@ const MoneyBackGuarantee: React.FC = () => {
 
       {/* Footer */}
       <div className="border-t border-[#C8F3D2] pt-3">
-        <p className="text-xs text-gray-500">
+        <p className="text-sm text-gray-500">
           After 14 days, unused cover is refundable pro-rata.
         </p>
       </div>

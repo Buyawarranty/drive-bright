@@ -46,7 +46,7 @@ const DesktopGuarantee = () => {
         </div>
       </div>
       <div className="border-t border-[#C8F3D2] pt-2">
-        <p className="text-[10px] text-gray-500">After 14 days, unused cover is refundable pro-rata.</p>
+        <p className="text-xs text-gray-500">After 14 days, unused cover is refundable pro-rata.</p>
       </div>
     </div>
   );
