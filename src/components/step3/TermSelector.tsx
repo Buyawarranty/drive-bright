@@ -166,10 +166,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   <div className={cn(
                     "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
                     isSelected
-                      ? "bg-success border-success"
+                      ? "bg-[#FF7A00] border-[#FF7A00]"
                       : "border-border bg-card"
                   )}>
-                    {isSelected && <Check className="w-4 h-4 text-success-foreground" strokeWidth={3} />}
+                    {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                   </div>
                 </div>
 
