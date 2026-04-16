@@ -39,6 +39,7 @@ const ConditionalFooter = () => {
   
   // Hide footer on admin routes
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isDealerDashboard = location.pathname.startsWith('/dealer-portal/dashboard') || location.pathname.startsWith('/dealer-portal/quotes') || location.pathname.startsWith('/dealer-portal/warranties');
   
   // Hide footer on brand landing pages (Google Ads pages)
   const isBrandLanding = location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/';
@@ -50,7 +51,7 @@ const ConditionalFooter = () => {
   // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
   
-  if (isCheckoutStep || isAdminRoute || isBrandLanding || isQuotePage) return null;
+  if (isCheckoutStep || isAdminRoute || isBrandLanding || isQuotePage || isDealerDashboard) return null;
   return <WebsiteFooter />;
 };
 
@@ -151,6 +152,15 @@ const SetupAdmin = lazy(() => import("./pages/SetupAdmin"));
 const UpdateAdminCredentials = lazy(() => import("./pages/UpdateAdminCredentials"));
 const RequestAccess = lazy(() => import("./pages/RequestAccess"));
 const SalesLogin = lazy(() => import("./pages/SalesLogin"));
+
+// Dealer Portal pages
+const DealerHome = lazy(() => import("./pages/dealer-portal/DealerHome"));
+const DealerSignup = lazy(() => import("./pages/dealer-portal/DealerSignup"));
+const DealerLogin = lazy(() => import("./pages/dealer-portal/DealerLogin"));
+const DealerDashboard = lazy(() => import("./pages/dealer-portal/DealerDashboard"));
+const DealerCreateQuote = lazy(() => import("./pages/dealer-portal/DealerCreateQuote"));
+const DealerQuotesList = lazy(() => import("./pages/dealer-portal/DealerQuotesList"));
+const DealerWarrantiesList = lazy(() => import("./pages/dealer-portal/DealerWarrantiesList"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -339,6 +349,17 @@ const App = () => {
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
                     <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
                     <Route path="/steptest" element={<StepTest />} />
+                    
+                    {/* Dealer Portal */}
+                    <Route path="/dealer-portal" element={<DealerHome />} />
+                    <Route path="/dealer-portal/" element={<DealerHome />} />
+                    <Route path="/dealer-portal/signup" element={<DealerSignup />} />
+                    <Route path="/dealer-portal/login" element={<DealerLogin />} />
+                    <Route path="/dealer-portal/dashboard" element={<DealerDashboard />} />
+                    <Route path="/dealer-portal/quotes/create" element={<DealerCreateQuote />} />
+                    <Route path="/dealer-portal/quotes" element={<DealerQuotesList />} />
+                    <Route path="/dealer-portal/warranties" element={<DealerWarrantiesList />} />
+
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

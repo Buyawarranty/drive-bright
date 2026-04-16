@@ -1,0 +1,78 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { SEOHead } from '@/components/SEOHead';
+
+const DealerLogin = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      // Verify dealer exists
+      const { data: dealer } = await supabase.from('dealers').select('id').limit(1).maybeSingle();
+      if (!dealer) {
+        await supabase.auth.signOut();
+        toast({ title: 'Access denied', description: 'No dealer account found for this email.', variant: 'destructive' });
+        return;
+      }
+
+      navigate('/dealer-portal/dashboard');
+    } catch (error: any) {
+      toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <SEOHead title="Dealer Login | BuyAWarranty" description="Sign in to your dealer portal." />
+      <Card className="w-full max-w-md border-2">
+        <CardHeader className="text-center">
+          <Link to="/dealer-portal/" className="inline-block mb-4">
+            <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-8 mx-auto" />
+          </Link>
+          <CardTitle className="text-2xl font-bold">Dealer Login</CardTitle>
+          <CardDescription>Sign in to your dealer portal</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="dealer@example.com" required />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Password</label>
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required />
+            </div>
+            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+          <div className="text-center mt-4">
+            <Link to="/forgot-password/" className="text-sm text-orange-600 hover:underline">Forgot password?</Link>
+          </div>
+          <p className="text-center text-sm text-gray-600 mt-6">
+            Don't have an account?{' '}
+            <Link to="/dealer-portal/signup" className="text-orange-600 hover:underline font-medium">Create one</Link>
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default DealerLogin;
