@@ -123,7 +123,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 term.isPopular
                   ? "border-[#FF7A00] bg-card shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                   : isSelected
-                    ? "border-success bg-card"
+                    ? "border-[#FF7A00] bg-card shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                     : "border-border bg-card"
               )}
             >
@@ -166,10 +166,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   <div className={cn(
                     "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
                     isSelected
-                      ? "bg-success border-success"
+                      ? "bg-[#FF7A00] border-[#FF7A00]"
                       : "border-border bg-card"
                   )}>
-                    {isSelected && <Check className="w-4 h-4 text-success-foreground" strokeWidth={3} />}
+                    {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                   </div>
                 </div>
 
@@ -249,11 +249,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   onClick={() => handleContinue(term.id)}
                   className={cn(
                     "w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 font-bold text-base transition-all shadow-sm hover:shadow-md",
-                    term.isPopular
+                    (term.isPopular || isSelected)
                       ? "bg-[#FF7A00] text-white hover:bg-[#e66e00]"
-                      : isSelected
-                        ? "bg-success text-success-foreground hover:opacity-90"
-                        : "bg-foreground text-background hover:opacity-90"
+                      : "bg-foreground text-background hover:opacity-90"
                   )}
                 >
                   Continue with {term.label}
