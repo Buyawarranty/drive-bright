@@ -1430,9 +1430,9 @@ const Index = () => {
                 paymentType={selectedPlan.paymentType}
                 planName={selectedPlan.name}
                 pricingData={{
-                  basePrice: selectedPlan.pricingData.totalPrice || 0,
-                  totalPrice: selectedPlan.pricingData.totalPrice || 0,
-                  ...selectedPlan.pricingData
+                  basePrice: selectedPlan.pricingData?.totalPrice || 0,
+                  totalPrice: selectedPlan.pricingData?.totalPrice || 0,
+                  ...(selectedPlan.pricingData || {})
                 }}
                 onNext={handleCustomerDetailsComplete}
                 onBack={() => handleBackToStep(3)}
