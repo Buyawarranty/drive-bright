@@ -2568,6 +2568,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </CollapsibleContent>
           </Collapsible>
         </div>
+
         {/* Cover Details Section */}
         <div id="your-cover-details" className="pt-2 pb-6 md:pt-4 md:pb-10 space-y-4">
           {/* Crystal Clear Cover Card - Original Design */}
