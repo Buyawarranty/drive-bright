@@ -121,9 +121,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               className={cn(
                 "relative rounded-2xl border-2 transition-all",
                 term.isPopular
-                  ? "border-[#FF7A00] bg-gradient-to-b from-[#FFF4EA] to-[#FFFBF6] shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
+                  ? "border-[#FF7A00] bg-card shadow-[0_4px_20px_-8px_rgba(255,122,0,0.35)]"
                   : isSelected
-                    ? "border-success bg-success/5"
+                    ? "border-success bg-card"
                     : "border-border bg-card"
               )}
             >
