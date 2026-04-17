@@ -265,13 +265,28 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </span>
                 </div>
                 <p className="text-base font-bold text-[#1a1a1a]">Pay in full</p>
-                <p className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mt-1 leading-none">
-                  £{fullPrice}
-                </p>
-                <p className="text-sm text-gray-600 mt-2">One simple payment</p>
-                <p className="text-sm text-[#0BA360] font-semibold mt-1">Equivalent to {fullPencePerDay}p/day</p>
-                <p className="text-sm text-[#0BA360] font-semibold">You save £{savings}!</p>
-                
+
+                {/* One payment today highlight */}
+                <div className="mt-3 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-3">
+                  <p className="text-xs font-bold text-[#0BA360] uppercase tracking-wide">One payment today</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mt-1 leading-none">
+                    £{fullPrice}
+                  </p>
+                  {savings > 0 && (
+                    <>
+                      <p className="text-sm text-[#0BA360] font-semibold mt-2">You save £{savings} instantly</p>
+                      <p className="text-sm text-gray-400 line-through">was £{originalPrice}</p>
+                    </>
+                  )}
+                </div>
+
+                {/* Per-day reassurance */}
+                <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <p className="text-sm text-[#1a1a1a]">
+                    Equivalent to just <span className="font-bold">{fullPencePerDay}p per day</span> — your cheapest option
+                  </p>
+                </div>
+
                 {/* Benefits */}
                 <div className="mt-3 space-y-1.5">
                   <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
