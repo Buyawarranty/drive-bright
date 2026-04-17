@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowRight, Star, Lock, ChevronUp, ChevronDown } from 'lucide-react';
+import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import { Button } from '@/components/ui/button';
 import { PaymentPeriod } from '@/lib/pricingMatrix';
 import { cn } from '@/lib/utils';
@@ -71,90 +72,66 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   const coverYears = paymentPeriod === '12months' ? 'One' : paymentPeriod === '24months' ? 'Two' : 'Three';
   const coverText = `${coverYears}-Year Cover`;
 
+  // Pence per day calc
+  const pencePerDay = Math.round((monthlyPrice * 12) / 365);
+  
+  // Savings vs monthly (pay in full discount)
+  const savingsVsMonthly = stripeSavings;
+  
+  const planLabelMap: Record<string, string> = {
+    '12months': '1-Year Platinum Cover',
+    '24months': '2-Year Platinum Cover',
+    '36months': '3-Year Platinum Cover',
+  };
+  const planLabel = planLabelMap[paymentPeriod] || '2-Year Platinum Cover';
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
       {/* Desktop Layout */}
-      <div className="hidden md:block max-w-6xl mx-auto px-6 py-5">
-        <div className="flex items-center justify-between gap-8">
+      <div className="hidden md:block max-w-6xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between gap-6">
           
-          {/* Left Section - Trustpilot */}
-          <div className="flex flex-col items-start gap-1 min-w-[160px]">
-            <a 
-              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex flex-col items-start gap-0.5 hover:opacity-80 transition-opacity"
-            >
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-bold text-[#00b67a]">★</span>
-                <span className="text-sm font-semibold text-gray-800">Trustpilot</span>
-              </div>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
-                ))}
-              </div>
-            </a>
-          </div>
-
-          {/* Centre Section - Primary Pricing Block (Hero) */}
-          <div className="flex flex-col items-center gap-0.5">
-            {/* Monthly Price - Hero */}
-            <div className={cn(
-              "flex items-baseline gap-2 transition-all duration-300",
-              isPulsing && "animate-pulse scale-105"
-            )}>
-              <span className="text-sm font-medium text-gray-600">Total:</span>
-              <span className="text-3xl font-bold text-gray-900">£{monthlyPrice} / month</span>
-              <span className="text-lg text-gray-600">– 0% APR</span>
+          {/* 1. Trustpilot */}
+          <a 
+            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex flex-col items-start gap-1 hover:opacity-80 transition-opacity flex-shrink-0"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-base font-bold text-gray-900">Excellent</span>
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-5" />
             </div>
-            
-            {paymentPeriod === '12months' && (
-              <span className="text-sm text-gray-600">Only 12 payments • Total <span className="font-bold text-gray-900">£{payInFull}</span></span>
-            )}
-            {paymentPeriod === '24months' && (
-              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years • Total <span className="font-bold text-gray-900">£{payInFull}</span></span>
-            )}
-            {paymentPeriod === '36months' && (
-              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years • Total <span className="font-bold text-gray-900">£{payInFull}</span></span>
-            )}
-            
-            {/* Pay in full with 10% discount savings */}
-            <div className="flex flex-col items-center gap-0.5 mt-1">
-              <span className="text-base font-bold text-gray-900">Pay in Full: £{payInFull - stripeSavings}</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm text-red-500 line-through">£{payInFull}</span>
-                <span className="text-sm font-bold text-green-600">Save £{stripeSavings}</span>
-                <span className="text-sm text-gray-500">(10% off)</span>
-              </div>
+            <span className="text-sm text-gray-700">4.8 out of 5</span>
+          </a>
+
+          {/* 2. Your summary */}
+          <div className="flex flex-col items-start gap-0.5 border-l border-gray-200 pl-6">
+            <span className="text-xs text-gray-500">Your summary</span>
+            <span className="text-base font-bold text-gray-900">{planLabel}</span>
+            <span className="text-xs text-gray-600">Local Garages (£50/hour)</span>
+          </div>
+
+          {/* 3. Price block */}
+          <div className={cn(
+            "flex flex-col items-start gap-0.5 border-l border-gray-200 pl-6 transition-all duration-300",
+            isPulsing && "animate-pulse"
+          )}>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-orange-500">{pencePerDay}p/day</span>
             </div>
-          </div>
-
-          {/* Centre-Right Section - Cover Badge */}
-          <div className="flex flex-col items-center gap-1.5">
-            {paymentPeriod === '24months' && (
-              <>
-                <span className="text-lg font-bold text-gray-900">Year 2 FREE 🎉</span>
-                <span className="text-sm text-gray-600">{coverText}</span>
-              </>
-            )}
-            {paymentPeriod === '36months' && (
-              <>
-                <span className="text-lg font-bold text-gray-900">Years 2 & 3 FREE 🎉</span>
-                <span className="text-sm text-gray-600">{coverText}</span>
-              </>
-            )}
-            {paymentPeriod === '12months' && (
-              <span className="text-lg font-bold text-gray-900">{coverText}</span>
+            <span className="text-sm text-gray-700">£{monthlyPrice}/month (12 payments)</span>
+            {savingsVsMonthly > 0 && (
+              <span className="text-sm font-semibold text-green-600">You save £{savingsVsMonthly} today</span>
             )}
           </div>
 
-          {/* Right Section - CTA */}
-          <div className="flex flex-col items-end gap-2 min-w-[200px]">
+          {/* 4. CTA */}
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-6 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
             >
               {isLoading ? (
                 'Loading...'
@@ -167,7 +144,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </Button>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <Lock className="w-3.5 h-3.5" />
-              <span>Secure checkout – No hidden fees</span>
+              <span>Secure checkout – 14 days to cancel</span>
             </div>
           </div>
         </div>
@@ -255,22 +232,11 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Main row: Price + CTA */}
           <div className="flex items-center justify-between gap-3">
             {/* Left: Price Hero */}
-            <div className="flex-shrink-0">
-              <div className={cn(
-                "flex items-baseline gap-1 transition-all duration-300",
-                isPulsing && "animate-pulse"
-              )}>
-                <span className="text-xs text-gray-600">Total:</span>
-                <span className="text-xl font-bold text-gray-900">£{monthlyPrice} / mo</span>
-              </div>
-              {paymentPeriod === '12months' && (
-                <p className="text-xs text-gray-600">Only 12 payments • Total <span className="font-bold text-gray-900">£{payInFull}</span></p>
-              )}
-              {paymentPeriod === '24months' && (
-                <p className="text-xs text-gray-600">≈ £{Math.floor(monthlyPrice / 2)}/mo over 2 yrs</p>
-              )}
-              {paymentPeriod === '36months' && (
-                <p className="text-xs text-gray-600">≈ £{Math.floor(monthlyPrice / 3)}/mo over 3 yrs</p>
+            <div className={cn("flex-shrink-0 transition-all duration-300", isPulsing && "animate-pulse")}>
+              <div className="text-xl font-bold text-orange-500">{pencePerDay}p/day</div>
+              <p className="text-xs text-gray-700">£{monthlyPrice}/month (12 payments)</p>
+              {savingsVsMonthly > 0 && (
+                <p className="text-xs font-semibold text-green-600">Save £{savingsVsMonthly} today</p>
               )}
             </div>
 
@@ -278,17 +244,23 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
-                  Checkout
+                  Continue
                   <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                 </>
               )}
             </Button>
+          </div>
+
+          {/* Security reassurance */}
+          <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
+            <Lock className="w-3 h-3" />
+            <span>Secure checkout – 14 days to cancel</span>
           </div>
 
           {/* Security reassurance */}
