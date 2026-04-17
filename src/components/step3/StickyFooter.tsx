@@ -89,49 +89,58 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
       {/* Desktop Layout */}
       <div className="hidden md:block max-w-6xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between gap-6">
-          
+        <div className="flex items-stretch justify-between gap-6 divide-x divide-gray-200">
+
           {/* 1. Trustpilot */}
-          <a 
-            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-            target="_blank" 
+          <a
+            href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+            target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-start gap-1 hover:opacity-80 transition-opacity flex-shrink-0"
+            className="flex flex-col items-center justify-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0 px-2"
           >
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-gray-900">Excellent</span>
-              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-5" />
+              <span className="text-sm font-bold text-gray-900">Excellent</span>
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4" />
             </div>
-            <span className="text-sm text-gray-700">4.8 out of 5</span>
+            <span className="text-xs text-gray-600">Easy Claims</span>
           </a>
 
-          {/* 2. Your summary */}
-          <div className="flex flex-col items-start gap-0.5 border-l border-gray-200 pl-6">
-            <span className="text-xs text-gray-500">Your summary</span>
-            <span className="text-base font-bold text-gray-900">{planLabel}</span>
-            <span className="text-xs text-gray-600">Local Garages (£50/hour)</span>
-          </div>
-
-          {/* 3. Price block */}
+          {/* 2. Total / Pay in full */}
           <div className={cn(
-            "flex flex-col items-start gap-0.5 border-l border-gray-200 pl-6 transition-all duration-300",
+            "flex flex-col items-center justify-center text-center px-4 flex-1 transition-all duration-300",
             isPulsing && "animate-pulse"
           )}>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-orange-500">{pencePerDay}p/day</span>
+            <div className="flex items-baseline gap-1.5 flex-wrap justify-center">
+              <span className="text-xl font-bold text-gray-900">Total: £{monthlyPrice}/Month</span>
+              <span className="text-sm text-gray-600">– 0% APR</span>
             </div>
-            <span className="text-sm text-gray-700">£{monthlyPrice}/month (12 payments)</span>
-            {savingsVsMonthly > 0 && (
-              <span className="text-sm font-semibold text-green-600">You save £{savingsVsMonthly} today</span>
+            <span className="text-xs text-gray-600">Only 12 payments</span>
+            <div className="text-sm font-semibold text-green-600 mt-0.5">Pay in full £{payInFull - stripeSavings}</div>
+            {stripeSavings > 0 && (
+              <span className="text-xs text-gray-600">– You save £{stripeSavings} today</span>
+            )}
+          </div>
+
+          {/* 3. Cover summary */}
+          <div className="flex flex-col items-center justify-center text-center px-4 flex-shrink-0">
+            <span className="text-base font-bold text-gray-900">{coverText}</span>
+            {paymentPeriod === '24months' && (
+              <span className="text-xs text-gray-600">No payments in year 2</span>
+            )}
+            {paymentPeriod === '36months' && (
+              <span className="text-xs text-gray-600">No payments in years 2 & 3</span>
+            )}
+            {paymentPeriod === '12months' && (
+              <span className="text-xs text-gray-600">Local Garages (£50/hour)</span>
             )}
           </div>
 
           {/* 4. CTA */}
-          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+          <div className="flex flex-col items-center justify-center gap-1.5 flex-shrink-0 pl-6">
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
             >
               {isLoading ? (
                 'Loading...'
@@ -229,22 +238,29 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             )}
           </button>
 
-          {/* Main row: Price + CTA */}
+          {/* Main row: Trustpilot + Price + CTA */}
           <div className="flex items-center justify-between gap-3">
-            {/* Left: Price Hero */}
+            {/* Left: Total price */}
             <div className={cn("flex-shrink-0 transition-all duration-300", isPulsing && "animate-pulse")}>
-              <div className="text-xl font-bold text-orange-500">{pencePerDay}p/day</div>
-              <p className="text-xs text-gray-700">£{monthlyPrice}/month (12 payments)</p>
-              {savingsVsMonthly > 0 && (
-                <p className="text-xs font-semibold text-green-600">Save £{savingsVsMonthly} today</p>
+              <div className="text-base font-bold text-gray-900">Total: £{monthlyPrice}/Month</div>
+              <p className="text-[11px] text-gray-600">12 payments · 0% APR</p>
+              {stripeSavings > 0 && (
+                <p className="text-[11px] font-semibold text-green-600">
+                  Pay in full £{payInFull - stripeSavings} · Save £{stripeSavings}
+                </p>
               )}
+              <p className="text-[11px] text-gray-700 font-medium mt-0.5">
+                {coverText}
+                {paymentPeriod === '24months' && ' · No payments yr 2'}
+                {paymentPeriod === '36months' && ' · No payments yrs 2 & 3'}
+              </p>
             </div>
 
             {/* Right: CTA Button */}
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
             >
               {isLoading ? (
                 'Loading...'
@@ -261,12 +277,6 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
             <Lock className="w-3 h-3" />
             <span>Secure checkout – 14 days to cancel</span>
-          </div>
-
-          {/* Security reassurance */}
-          <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
-            <Lock className="w-3 h-3" />
-            <span>Secure checkout – No hidden fees</span>
           </div>
         </div>
       </div>
