@@ -235,7 +235,7 @@ export const CancellationsTab: React.FC<{
     }
 
     return filtered;
-  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch]);
+  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch, canSeeAll, currentAdminUser?.id]);
 
   const pagination = usePagination(filteredRecords, { initialPageSize: 50 });
 
@@ -289,8 +289,40 @@ export const CancellationsTab: React.FC<{
 
   return (
     <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">Cancellations & Refunds</h1>
+        <p className="text-muted-foreground text-sm">
+          {canSeeAll
+            ? 'All cancelled and refunded warranties for commission reconciliation'
+            : 'Your cancelled and refunded warranties'}
+        </p>
+      </div>
+
+      {/* Quick Date Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          { key: 'today', label: 'Today' },
+          { key: 'yesterday', label: 'Yesterday' },
+          { key: 'this_month', label: 'This Month' },
+          { key: 'last_month', label: 'Last Month' },
+          { key: 'last_7', label: 'Last 7 Days' },
+          { key: 'last_30', label: 'Last 30 Days' },
+          { key: 'all', label: 'All Time' },
+        ] as { key: QuickRange; label: string }[]).map(t => (
+          <Button
+            key={t.key}
+            size="sm"
+            variant={quickRange === t.key ? 'default' : 'outline'}
+            onClick={() => handleQuickRange(t.key)}
+          >
+            {t.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Summary Cards */}
       <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3')}>
+
         <Card className="p-3">
           <p className="text-xs text-muted-foreground">Total</p>
           <p className="text-2xl font-bold">{filteredRecords.length}</p>
