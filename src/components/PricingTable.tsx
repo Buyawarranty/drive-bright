@@ -2857,9 +2857,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         )}
                       </div>
 
+                      {/* Spacer */}
+                      <div className="flex-1 border-r border-gray-100" />
+
                       {/* SECTION 4: Pay in full pill */}
                       {stripeSavings > 0 && (
-                        <div className="flex items-center px-4 lg:px-5 py-4 border-r border-gray-100 min-w-fit">
+                        <div className="flex items-center px-3 lg:px-4 py-4 border-r border-gray-100 flex-shrink-0">
                           <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 lg:px-4 py-2.5">
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
