@@ -26,18 +26,36 @@ const DealerSignup = () => {
       return;
     }
 
+    // Block free/personal email providers — dealers must use an official dealership domain
+    const personalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'live.com', 'icloud.com', 'aol.com', 'msn.com', 'protonmail.com', 'gmx.com', 'mail.com', 'yandex.com'];
+    const emailDomain = form.email.split('@')[1]?.toLowerCase();
+    if (!emailDomain || personalDomains.includes(emailDomain)) {
+      toast({
+        title: 'Use your dealership email',
+        description: 'Please sign up with your official dealership email address (not a personal Gmail/Yahoo/etc).',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dealer-portal/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dealer-portal/login`,
           data: { dealer_name: form.name, company_name: form.company_name },
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Supabase returns "User already registered" — message it clearly for dealers
+        if (error.message?.toLowerCase().includes('already')) {
+          throw new Error('This email is already in use. Dealers must sign up with a different official dealership email address.');
+        }
+        throw error;
+      }
 
       if (data.user) {
         const { error: dealerError } = await supabase.from('dealers').insert({
@@ -52,15 +70,11 @@ const DealerSignup = () => {
           console.error('Dealer profile error:', dealerError);
         }
 
-        toast({ title: 'Account created!', description: 'Welcome to the Dealer Portal.' });
-        const redirect = searchParams.get('redirect');
-        const reg = searchParams.get('reg') || localStorage.getItem('dealerPendingReg');
-        if (redirect) {
-          const target = reg ? `${redirect}?reg=${encodeURIComponent(reg)}` : redirect;
-          navigate(target);
-        } else {
-          navigate('/dealer-portal/dashboard');
-        }
+        toast({
+          title: 'Check your email',
+          description: 'We sent a confirmation link to your dealership email. Click it to activate your account, then sign in.',
+        });
+        navigate('/dealer-portal/login');
       }
     } catch (error: any) {
       toast({ title: 'Signup failed', description: error.message, variant: 'destructive' });

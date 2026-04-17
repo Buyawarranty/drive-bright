@@ -16,12 +16,26 @@ const DealerLogin = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setUnconfirmedEmail(null);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.toLowerCase().includes('email not confirmed')) {
+          setUnconfirmedEmail(email);
+          toast({
+            title: 'Email not confirmed',
+            description: 'Please click the confirmation link we emailed you, then sign in.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        throw error;
+      }
 
       const { data: dealer } = await supabase.from('dealers').select('id').limit(1).maybeSingle();
       if (!dealer) {
@@ -30,7 +44,6 @@ const DealerLogin = () => {
         return;
       }
 
-      // Honour redirect-back from hero
       const redirect = searchParams.get('redirect');
       const reg = searchParams.get('reg') || localStorage.getItem('dealerPendingReg');
       if (redirect) {
@@ -43,6 +56,20 @@ const DealerLogin = () => {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!unconfirmedEmail) return;
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: unconfirmedEmail,
+      options: { emailRedirectTo: `${window.location.origin}/dealer-portal/login` },
+    });
+    if (error) {
+      toast({ title: 'Could not resend', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Confirmation email sent', description: 'Check your inbox (and spam folder).' });
     }
   };
 
@@ -70,6 +97,18 @@ const DealerLogin = () => {
               <label className="text-sm font-medium text-gray-300">Password</label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
+            {unconfirmedEmail && (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+                <p className="mb-2">Your email <strong>{unconfirmedEmail}</strong> hasn't been confirmed yet. Check your inbox for the confirmation link.</p>
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  className="font-medium text-amber-100 underline hover:text-white"
+                >
+                  Resend confirmation email
+                </button>
+              </div>
+            )}
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
