@@ -2343,8 +2343,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       <MobileStickyFooter
         selectedPayment={selectedPayment}
         monthlyPrice={discountedMonthlyPrice}
+        totalPrice={bumperTotalPrice}
         fullPrice={discountedStripePrice}
         originalPrice={bumperTotalPrice}
+        paymentType={paymentType as '12months' | '24months' | '36months'}
         isLoading={isLoading}
         isFormValid={personalDetailsComplete && addressComplete}
         onPayClick={() => {
