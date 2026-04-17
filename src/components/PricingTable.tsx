@@ -2820,10 +2820,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     paymentType === '24months' ? '2-Year Platinum Cover' :
                     '3-Year Platinum Cover';
                   return (
-                    <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100">
 
                       {/* SECTION 1: Trustpilot */}
-                      <div className="flex items-center gap-3 px-4 lg:px-5 py-4 border-r border-gray-100 flex-shrink-0">
+                      <div className="flex items-center gap-3 px-4 py-3 border-r border-gray-100 flex-shrink-0">
                         <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
                           <Shield className="w-5 h-5 text-green-600" />
                         </div>
@@ -2839,51 +2839,48 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* SECTION 2: Your cover */}
-                      <div className="flex flex-col justify-center px-4 lg:px-6 py-4 border-r border-gray-100 min-w-fit">
+                      <div className="flex flex-col justify-center px-4 py-3 border-r border-gray-100 flex-shrink-0">
                         <span className="text-[11px] font-bold text-orange-500 tracking-wide uppercase">Your Cover</span>
                         <span className="text-base font-bold text-gray-900 whitespace-nowrap mt-0.5">{coverLabel}</span>
                         <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
                           <Wrench className="w-3 h-3" />
-                          <span>Local Garages (£50/hour)</span>
+                          <span className="whitespace-nowrap">Local Garages (£50/hour)</span>
                         </div>
                       </div>
 
                       {/* SECTION 3: Price */}
-                      <div className="flex flex-col items-start justify-center px-4 lg:px-6 py-4 border-r border-gray-100 flex-shrink-0">
-                        <span className="text-2xl lg:text-3xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
-                        <span className="text-xs lg:text-sm text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments)</span></span>
+                      <div className="flex flex-col items-start justify-center px-4 py-3 border-r border-gray-100 flex-1 min-w-0">
+                        <span className="text-2xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
+                        <span className="text-xs text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
                         {stripeSavings > 0 && (
-                          <span className="text-xs lg:text-sm font-semibold text-green-600 mt-0.5 whitespace-nowrap">You save £{stripeSavings} today</span>
+                          <span className="text-xs font-semibold text-green-600 mt-0.5 whitespace-nowrap">You save £{stripeSavings} today</span>
                         )}
                       </div>
 
-                      {/* Spacer */}
-                      <div className="flex-1 border-r border-gray-100" />
-
                       {/* SECTION 4: Pay in full pill */}
                       {stripeSavings > 0 && (
-                        <div className="flex items-center px-3 lg:px-4 py-4 border-r border-gray-100 flex-shrink-0">
-                          <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 lg:px-4 py-2.5">
+                        <div className="flex items-center px-3 py-3 border-r border-gray-100 flex-shrink-0">
+                          <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
-                              <span className="text-xs lg:text-sm text-gray-700 whitespace-nowrap">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
-                              <span className="text-xs lg:text-sm font-semibold text-green-600 whitespace-nowrap">Save £{stripeSavings} vs monthly</span>
+                              <span className="text-xs text-gray-700 whitespace-nowrap leading-tight">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
+                              <span className="text-xs font-semibold text-green-600 whitespace-nowrap leading-tight">Save £{stripeSavings} vs monthly</span>
                             </div>
                           </div>
                         </div>
                       )}
 
                       {/* SECTION 5: CTA */}
-                      <div className="flex flex-col items-center justify-center px-4 lg:px-6 py-4 min-w-fit">
+                      <div className="flex flex-col items-center justify-center px-4 py-3 flex-shrink-0">
                         <Button
                           onClick={handleSelectPlan}
                           size="lg"
-                          className="text-base lg:text-lg font-bold px-6 lg:px-8 py-3 lg:py-4 bg-orange-500 hover:bg-orange-600 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
+                          className="text-base font-bold px-6 py-3 bg-orange-500 hover:bg-orange-600 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
                         >
                           Continue to checkout
-                          <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
+                          <ArrowRight className="w-4 h-4 ml-2" strokeWidth={3} />
                         </Button>
-                        <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-gray-500 whitespace-nowrap">
                           <Lock className="h-3 w-3 flex-shrink-0" />
                           <span>Secure checkout – 14 days to cancel</span>
                         </div>
