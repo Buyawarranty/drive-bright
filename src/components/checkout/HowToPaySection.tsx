@@ -135,6 +135,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
+  // Per-day pricing
+  const monthlyPencePerDay = monthlyPrice > 0 ? Math.round((monthlyPrice * 12) / 365) : 0;
+  const fullPencePerDay = fullPrice > 0 ? Math.round(fullPrice / 365) : 0;
   return (
     <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
       {/* Header */}
@@ -172,11 +175,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Monthly</p>
-                <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-1">
-                  £{monthlyPrice}<span className="text-base font-normal text-gray-600">/mo</span>
+                <p className="text-base font-bold text-[#1a1a1a]">Monthly payments</p>
+                <p className="text-3xl sm:text-4xl font-bold text-[#FF6B00] mt-1 leading-none">
+                  {monthlyPencePerDay}p<span className="text-xl font-bold">/day</span>
                 </p>
-                <p className="text-sm text-gray-600 mt-1">Total £{totalPrice}</p>
+                <p className="text-sm text-[#1a1a1a] mt-2">
+                  £{monthlyPrice}/month <span className="text-gray-500">(12 payments only)</span>
+                </p>
+                <p className="text-sm text-gray-500">Total £{totalPrice}</p>
                 
                 {/* Benefits */}
                 <div className="mt-3 space-y-1.5">
@@ -194,13 +200,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </div>
                 </div>
 
-                {/* Bumper Logo */}
+                {/* Bumper Pill Badge */}
                 <div className="mt-4">
-                  <img 
-                    src={bumperLogo} 
-                    alt="Bumper" 
-                    className="h-6 object-contain"
-                  />
+                  <span className="inline-flex items-center bg-[#FF6B00] text-white text-xs font-bold px-4 py-1.5 rounded-full tracking-wider">
+                    BUMPER
+                  </span>
                 </div>
               </div>
 
@@ -225,7 +229,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           {/* Save 10% Badge */}
           <div className="absolute -top-3 left-4 z-10">
             <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
-              Save 10%
+              Save £{savings}
             </span>
           </div>
           
@@ -247,12 +251,13 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Pay in Full</p>
-                <p className="text-sm text-gray-500 line-through mt-1">Was £{originalPrice}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a]">
+                <p className="text-base font-bold text-[#1a1a1a]">Pay in full</p>
+                <p className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mt-1 leading-none">
                   £{fullPrice}
                 </p>
-                <p className="text-sm text-[#0BA360] font-medium">You save £{savings}!</p>
+                <p className="text-sm text-gray-600 mt-2">One simple payment</p>
+                <p className="text-sm text-[#0BA360] font-semibold mt-1">Equivalent to {fullPencePerDay}p/day</p>
+                <p className="text-sm text-[#0BA360] font-semibold">You save £{savings}!</p>
                 
                 {/* Benefits */}
                 <div className="mt-3 space-y-1.5">
