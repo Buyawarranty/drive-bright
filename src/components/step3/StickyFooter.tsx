@@ -238,22 +238,29 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             )}
           </button>
 
-          {/* Main row: Price + CTA */}
+          {/* Main row: Trustpilot + Price + CTA */}
           <div className="flex items-center justify-between gap-3">
-            {/* Left: Price Hero */}
+            {/* Left: Total price */}
             <div className={cn("flex-shrink-0 transition-all duration-300", isPulsing && "animate-pulse")}>
-              <div className="text-xl font-bold text-orange-500">{pencePerDay}p/day</div>
-              <p className="text-xs text-gray-700">£{monthlyPrice}/month (12 payments)</p>
-              {savingsVsMonthly > 0 && (
-                <p className="text-xs font-semibold text-green-600">Save £{savingsVsMonthly} today</p>
+              <div className="text-base font-bold text-gray-900">Total: £{monthlyPrice}/Month</div>
+              <p className="text-[11px] text-gray-600">12 payments · 0% APR</p>
+              {stripeSavings > 0 && (
+                <p className="text-[11px] font-semibold text-green-600">
+                  Pay in full £{payInFull - stripeSavings} · Save £{stripeSavings}
+                </p>
               )}
+              <p className="text-[11px] text-gray-700 font-medium mt-0.5">
+                {coverText}
+                {paymentPeriod === '24months' && ' · No payments yr 2'}
+                {paymentPeriod === '36months' && ' · No payments yrs 2 & 3'}
+              </p>
             </div>
 
             {/* Right: CTA Button */}
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
             >
               {isLoading ? (
                 'Loading...'
@@ -270,12 +277,6 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
             <Lock className="w-3 h-3" />
             <span>Secure checkout – 14 days to cancel</span>
-          </div>
-
-          {/* Security reassurance */}
-          <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
-            <Lock className="w-3 h-3" />
-            <span>Secure checkout – No hidden fees</span>
           </div>
         </div>
       </div>
