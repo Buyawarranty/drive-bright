@@ -191,6 +191,12 @@ export const CancellationsTab: React.FC<{
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
 
+    // Role-based visibility: non-full-view users only see their own
+    if (!canSeeAll) {
+      const myId = currentAdminUser?.id;
+      filtered = myId ? filtered.filter(r => r.assigned_to === myId) : [];
+    }
+
     // Date range filter (using updated_at — when the cancellation occurred)
     if (dateRange?.from) {
       const from = new Date(dateRange.from);
