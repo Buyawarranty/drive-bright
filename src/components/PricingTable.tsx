@@ -2823,7 +2823,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
 
                       {/* SECTION 1: Trustpilot */}
-                      <div className="flex items-center gap-3 px-4 lg:px-5 py-4 border-r border-gray-100 min-w-fit">
+                      <div className="flex items-center gap-3 px-4 lg:px-5 py-4 border-r border-gray-100 flex-shrink-0">
                         <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
                           <Shield className="w-5 h-5 text-green-600" />
                         </div>
@@ -2833,9 +2833,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           rel="noopener noreferrer"
                           className="flex flex-col items-start hover:opacity-80 transition-opacity"
                         >
-                          <span className="text-xs font-semibold text-gray-900">Excellent</span>
-                          <TrustpilotHeader className="scale-[0.55] origin-left -my-1" />
-                          <span className="text-[11px] text-gray-600">4.8 out of 5</span>
+                          <TrustpilotHeader className="scale-[0.6] origin-left -my-1" />
+                          <span className="text-[11px] text-gray-600 mt-0.5">4.8 out of 5</span>
                         </a>
                       </div>
 
@@ -2850,17 +2849,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* SECTION 3: Price */}
-                      <div className="flex-1 flex flex-col items-start justify-center px-4 lg:px-6 py-4 border-r border-gray-100 min-w-0">
-                        <span className="text-2xl lg:text-3xl font-bold text-orange-500 leading-none">{pencePerDay}p/day</span>
-                        <span className="text-xs lg:text-sm text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
+                      <div className="flex flex-col items-start justify-center px-4 lg:px-6 py-4 border-r border-gray-100 flex-shrink-0">
+                        <span className="text-2xl lg:text-3xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
+                        <span className="text-xs lg:text-sm text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments)</span></span>
                         {stripeSavings > 0 && (
                           <span className="text-xs lg:text-sm font-semibold text-green-600 mt-0.5 whitespace-nowrap">You save £{stripeSavings} today</span>
                         )}
                       </div>
 
+                      {/* Spacer */}
+                      <div className="flex-1 border-r border-gray-100" />
+
                       {/* SECTION 4: Pay in full pill */}
                       {stripeSavings > 0 && (
-                        <div className="flex items-center px-4 lg:px-5 py-4 border-r border-gray-100 min-w-fit">
+                        <div className="flex items-center px-3 lg:px-4 py-4 border-r border-gray-100 flex-shrink-0">
                           <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 lg:px-4 py-2.5">
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
