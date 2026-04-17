@@ -66,6 +66,7 @@ const ADMIN_TABS = [
   { id: 'testing', label: 'Testing', description: 'Test APIs and create test data' },
   { id: 'timesheets', label: 'Timesheets', description: 'Track work hours, deals and commissions' },
   { id: 'sales-scoreboard', label: 'Sales Scoreboard', description: 'Leaderboard, awards and sales competition' },
+  { id: 'discounts-given', label: 'Discounts Given', description: 'Track agent discounts vs retail pricing' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
