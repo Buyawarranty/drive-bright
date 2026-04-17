@@ -229,7 +229,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           {/* Save 10% Badge */}
           <div className="absolute -top-3 left-4 z-10">
             <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
-              Save 10%
+              Save £{savings}
             </span>
           </div>
           
