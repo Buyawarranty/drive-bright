@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { calculateTotalWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
-import { format } from 'date-fns';
-import { TrendingDown, TrendingUp, PoundSterling, Percent, Users } from 'lucide-react';
+import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
+import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CustomerRecord {
   id: string;
@@ -30,7 +32,6 @@ interface CustomerRecord {
   discount_amount: number | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
-  // Add-ons
   tyre_cover: boolean | null;
   wear_tear: boolean | null;
   europe_cover: boolean | null;
@@ -46,13 +47,26 @@ interface CustomerRecord {
 
 interface AdminUser {
   id: string;
+  user_id: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
 }
 
-// Calculate the retail price based on the customer's chosen cover
+// Maximum allowed discount % per duration
+const MAX_DISCOUNT_PCT: Record<string, number> = {
+  '12months': 5,
+  '24months': 7,
+  '36months': 10,
+};
+
+const DURATION_LABELS: Record<string, string> = {
+  '12months': '1 Year',
+  '24months': '2 Years',
+  '36months': '3 Years',
+};
+
 function calculateRetailPrice(customer: CustomerRecord): number | null {
   const paymentType = normalizePaymentType(customer.payment_type) as PaymentPeriod;
   const excess = customer.voluntary_excess ?? 100;
@@ -60,7 +74,6 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
   const labourRate = customer.labour_rate ?? 70;
   const durationMonths = DURATION_MONTHS[paymentType] || 12;
 
-  // Calculate base warranty price
   const { totalPrice: baseTotal } = calculateTotalWarrantyPrice({
     paymentPeriod: paymentType,
     voluntaryExcess: excess,
@@ -71,7 +84,6 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
     addOnPrice: 0,
   });
 
-  // Calculate add-on prices
   const selectedAddOns: Record<string, boolean> = {
     breakdown: !!customer.breakdown_recovery,
     rental: !!customer.vehicle_rental,
@@ -89,7 +101,6 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
   return baseTotal + addOnTotal;
 }
 
-// Test names to exclude
 const TEST_NAMES = ['kamran qureshi', 'prajwal chauhan', 'accepttest'];
 const isTestRecord = (customer: CustomerRecord): boolean => {
   const lowerName = customer.name?.toLowerCase() || '';
@@ -99,12 +110,52 @@ const isTestRecord = (customer: CustomerRecord): boolean => {
   return false;
 };
 
+// Roles allowed to see ALL agents' discounts
+const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
+
+type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'custom';
+
+const computeRange = (key: QuickRange): DateRange | undefined => {
+  const now = new Date();
+  switch (key) {
+    case 'today':
+      return { from: startOfDay(now), to: endOfDay(now) };
+    case 'yesterday': {
+      const y = subDays(now, 1);
+      return { from: startOfDay(y), to: endOfDay(y) };
+    }
+    case 'this_month':
+      return { from: startOfMonth(now), to: endOfDay(now) };
+    case 'last_month': {
+      const lm = subMonths(now, 1);
+      return { from: startOfMonth(lm), to: endOfMonth(lm) };
+    }
+    case 'last_7':
+      return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+    case 'last_30':
+      return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
+    default:
+      return undefined;
+  }
+};
+
 export const DiscountsGivenTab: React.FC = () => {
+  const { user, userRole } = useAuth();
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(computeRange('this_month'));
+
+  const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
+
+  // Find current admin_users.id for the logged in user
+  const currentAdminId = useMemo(() => {
+    if (!user?.id) return null;
+    const me = adminUsers.find(u => u.user_id === user.id);
+    return me?.id || null;
+  }, [user, adminUsers]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,7 +166,7 @@ export const DiscountsGivenTab: React.FC = () => {
             .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             .not('status', 'in', '("cancelled","refunded")'),
         ),
-        supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
+        supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
       ]);
 
       setCustomers((customersRes.data || []) as CustomerRecord[]);
@@ -133,11 +184,22 @@ export const DiscountsGivenTab: React.FC = () => {
     return map;
   }, [adminUsers]);
 
-  // Agents that are sales roles (not admin/super_admin)
   const salesAgents = useMemo(
     () => adminUsers.filter(u => !['admin', 'super_admin'].includes(u.role)),
     [adminUsers],
   );
+
+  const handleQuickRange = (key: QuickRange) => {
+    setQuickRange(key);
+    if (key !== 'custom') {
+      setDateRange(computeRange(key));
+    }
+  };
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    setQuickRange('custom');
+  };
 
   const enrichedCustomers = useMemo(() => {
     return customers
@@ -147,21 +209,28 @@ export const DiscountsGivenTab: React.FC = () => {
         const paid = c.final_amount || 0;
         const diff = retailPrice !== null ? paid - retailPrice : null;
         const pctDiff = retailPrice && retailPrice > 0 ? ((paid - retailPrice) / retailPrice) * 100 : null;
-        return { ...c, retailPrice, diff, pctDiff };
+        const normalizedPT = normalizePaymentType(c.payment_type);
+        const maxDiscount = MAX_DISCOUNT_PCT[normalizedPT] ?? 5;
+        // Discount % is positive when below retail
+        const discountPct = pctDiff !== null ? -pctDiff : null;
+        const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
+        return { ...c, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
       })
       .filter(c => {
-        // Date range filter
+        // Role-based visibility: non-full-view users only see their own
+        if (!canSeeAll) {
+          if (!currentAdminId || c.assigned_to !== currentAdminId) return false;
+        }
         if (dateRange?.from) {
           const d = new Date(c.signup_date);
           if (d < dateRange.from) return false;
           if (dateRange.to && d > dateRange.to) return false;
         }
-        // Agent filter
         if (selectedAgent !== 'all' && c.assigned_to !== selectedAgent) return false;
         return true;
       })
       .sort((a, b) => new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime());
-  }, [customers, dateRange, selectedAgent]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -169,6 +238,7 @@ export const DiscountsGivenTab: React.FC = () => {
     let totalRetail = 0;
     let discountCount = 0;
     let overchargeCount = 0;
+    let exceededCount = 0;
 
     enrichedCustomers.forEach(c => {
       if (c.diff !== null && c.retailPrice !== null) {
@@ -177,11 +247,12 @@ export const DiscountsGivenTab: React.FC = () => {
         totalRetail += c.retailPrice;
         if (c.diff < 0) discountCount++;
         if (c.diff > 0) overchargeCount++;
+        if (c.exceedsLimit) exceededCount++;
       }
     });
 
     const avgPct = totalRetail > 0 ? ((totalPaid - totalRetail) / totalRetail) * 100 : 0;
-    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, avgPct, count: enrichedCustomers.length };
+    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, count: enrichedCustomers.length };
   }, [enrichedCustomers]);
 
   if (loading) {
@@ -192,36 +263,94 @@ export const DiscountsGivenTab: React.FC = () => {
     );
   }
 
+  const quickTabs: { key: QuickRange; label: string }[] = [
+    { key: 'today', label: 'Today' },
+    { key: 'yesterday', label: 'Yesterday' },
+    { key: 'this_month', label: 'This Month' },
+    { key: 'last_month', label: 'Last Month' },
+    { key: 'last_7', label: 'Last 7 Days' },
+    { key: 'last_30', label: 'Last 30 Days' },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Discounts Given</h1>
-        <p className="text-muted-foreground">Track price differences between retail and what agents charged customers</p>
+        <p className="text-muted-foreground">
+          {canSeeAll
+            ? 'Track price differences between retail and what agents charged customers'
+            : 'Your personal discount activity vs retail pricing'}
+        </p>
+      </div>
+
+      {/* Discount Limits Guide */}
+      <Card className="border-2 border-primary/20 bg-primary/5">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold mb-2">Maximum Discount Guide</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-background rounded-md p-3 border">
+                  <p className="text-xs text-muted-foreground">1 Year Warranty</p>
+                  <p className="text-xl font-bold text-primary">5% max</p>
+                </div>
+                <div className="bg-background rounded-md p-3 border">
+                  <p className="text-xs text-muted-foreground">2 Year Warranty</p>
+                  <p className="text-xl font-bold text-primary">7% max</p>
+                </div>
+                <div className="bg-background rounded-md p-3 border">
+                  <p className="text-xs text-muted-foreground">3 Year Warranty</p>
+                  <p className="text-xl font-bold text-primary">10% max</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Sales above these thresholds are highlighted in red below.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Date Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {quickTabs.map(t => (
+          <Button
+            key={t.key}
+            size="sm"
+            variant={quickRange === t.key ? 'default' : 'outline'}
+            onClick={() => handleQuickRange(t.key)}
+          >
+            {t.label}
+          </Button>
+        ))}
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
-        <div className="w-64">
-          <label className="text-sm font-medium mb-1 block">Filter by Agent</label>
-          <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Agents" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Agents</SelectItem>
-              {salesAgents.map(a => (
-                <SelectItem key={a.id} value={a.id}>
-                  {`${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+        {canSeeAll && (
+          <div className="w-64">
+            <label className="text-sm font-medium mb-1 block">Filter by Agent</label>
+            <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Agents" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Agents</SelectItem>
+                {salesAgents.map(a => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {`${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        <DateRangeFilter dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
@@ -241,6 +370,13 @@ export const DiscountsGivenTab: React.FC = () => {
             <TrendingUp className="h-5 w-5 mx-auto mb-1 text-green-500" />
             <p className="text-2xl font-bold text-green-600">{totals.overchargeCount}</p>
             <p className="text-xs text-muted-foreground">Above Retail Sales</p>
+          </CardContent>
+        </Card>
+        <Card className={totals.exceededCount > 0 ? 'border-red-300 bg-red-50/40' : ''}>
+          <CardContent className="p-4 text-center">
+            <AlertTriangle className={`h-5 w-5 mx-auto mb-1 ${totals.exceededCount > 0 ? 'text-red-600' : 'text-muted-foreground'}`} />
+            <p className={`text-2xl font-bold ${totals.exceededCount > 0 ? 'text-red-700' : ''}`}>{totals.exceededCount}</p>
+            <p className="text-xs text-muted-foreground">Over Limit</p>
           </CardContent>
         </Card>
         <Card className={totals.totalDiff < 0 ? 'border-red-200 bg-red-50/30' : 'border-green-200 bg-green-50/30'}>
@@ -276,13 +412,14 @@ export const DiscountsGivenTab: React.FC = () => {
                   <TableHead className="bg-blue-50">Payment (Paid)</TableHead>
                   <TableHead className="bg-amber-50">Retail Price</TableHead>
                   <TableHead className="bg-purple-50">Retail Sold +-</TableHead>
+                  <TableHead>Limit</TableHead>
                   <TableHead>Agent</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {enrichedCustomers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={15} className="text-center py-8 text-muted-foreground">
                       No transactions found for the selected filters
                     </TableCell>
                   </TableRow>
@@ -291,12 +428,11 @@ export const DiscountsGivenTab: React.FC = () => {
                     {enrichedCustomers.map(c => {
                       const isDiscount = c.diff !== null && c.diff < 0;
                       const isOvercharge = c.diff !== null && c.diff > 0;
-                      const isExact = c.diff !== null && c.diff === 0;
-                      const normalizedPT = normalizePaymentType(c.payment_type);
-                      const durationLabel = normalizedPT === '12months' ? '12 Months' : normalizedPT === '24months' ? '24 Months' : '36 Months';
+                      const durationLabel = DURATION_LABELS[c.normalizedPT] || c.normalizedPT;
+                      const rowClass = c.exceedsLimit ? 'bg-red-50 hover:bg-red-100' : '';
 
                       return (
-                        <TableRow key={c.id}>
+                        <TableRow key={c.id} className={rowClass}>
                           <TableCell className="font-medium text-sm whitespace-nowrap">{c.name}</TableCell>
                           <TableCell className="text-xs whitespace-nowrap">{format(new Date(c.signup_date), 'dd/MM/yyyy')}</TableCell>
                           <TableCell className="font-mono text-xs">{c.registration_plate || '-'}</TableCell>
@@ -316,14 +452,27 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="bg-purple-50/50">
                             {c.diff !== null && c.pctDiff !== null ? (
                               <div className="flex flex-col items-start gap-0.5">
-                                <span className={`font-bold text-sm ${isDiscount ? 'text-red-600' : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
-                                  {isDiscount ? '' : isOvercharge ? '+' : ''}£{Math.abs(c.diff).toLocaleString()}
+                                <span className={`font-bold text-sm ${c.exceedsLimit ? 'text-red-700' : isDiscount ? 'text-red-600' : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                  {isOvercharge ? '+' : ''}£{Math.abs(c.diff).toLocaleString()}
                                 </span>
-                                <span className={`text-xs font-medium ${isDiscount ? 'text-red-500' : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
-                                  {isDiscount ? '' : isOvercharge ? '+' : ''}{c.pctDiff.toFixed(1)}%
+                                <span className={`text-xs font-medium ${c.exceedsLimit ? 'text-red-700' : isDiscount ? 'text-red-500' : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                  {isOvercharge ? '+' : ''}{c.pctDiff.toFixed(1)}%
                                 </span>
                               </div>
                             ) : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {c.exceedsLimit ? (
+                              <Badge variant="destructive" className="text-xs whitespace-nowrap">
+                                Over {c.maxDiscount}%
+                              </Badge>
+                            ) : isDiscount ? (
+                              <Badge variant="outline" className="text-xs whitespace-nowrap border-green-300 text-green-700">
+                                Within {c.maxDiscount}%
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-xs whitespace-nowrap">
                             {c.assigned_to ? agentMap[c.assigned_to] || 'Unknown' : '-'}
@@ -331,7 +480,6 @@ export const DiscountsGivenTab: React.FC = () => {
                         </TableRow>
                       );
                     })}
-                    {/* Totals Row */}
                     <TableRow className="bg-muted/50 font-bold border-t-2">
                       <TableCell colSpan={10} className="text-right text-sm">TOTALS</TableCell>
                       <TableCell className="bg-blue-100/50 text-sm">£{totals.totalPaid.toLocaleString()}</TableCell>
@@ -342,6 +490,7 @@ export const DiscountsGivenTab: React.FC = () => {
                           <span className="text-xs">{totals.avgPct >= 0 ? '+' : ''}{totals.avgPct.toFixed(1)}%</span>
                         </div>
                       </TableCell>
+                      <TableCell></TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   </>
