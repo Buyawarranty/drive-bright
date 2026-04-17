@@ -26,6 +26,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   fullPrice,
   savings,
   duration,
+  paymentType,
   isLoading,
   onPayClick,
   isVisible = true,
