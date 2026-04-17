@@ -232,22 +232,11 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Main row: Price + CTA */}
           <div className="flex items-center justify-between gap-3">
             {/* Left: Price Hero */}
-            <div className="flex-shrink-0">
-              <div className={cn(
-                "flex items-baseline gap-1 transition-all duration-300",
-                isPulsing && "animate-pulse"
-              )}>
-                <span className="text-xs text-gray-600">Total:</span>
-                <span className="text-xl font-bold text-gray-900">£{monthlyPrice} / mo</span>
-              </div>
-              {paymentPeriod === '12months' && (
-                <p className="text-xs text-gray-600">Only 12 payments • Total <span className="font-bold text-gray-900">£{payInFull}</span></p>
-              )}
-              {paymentPeriod === '24months' && (
-                <p className="text-xs text-gray-600">≈ £{Math.floor(monthlyPrice / 2)}/mo over 2 yrs</p>
-              )}
-              {paymentPeriod === '36months' && (
-                <p className="text-xs text-gray-600">≈ £{Math.floor(monthlyPrice / 3)}/mo over 3 yrs</p>
+            <div className={cn("flex-shrink-0 transition-all duration-300", isPulsing && "animate-pulse")}>
+              <div className="text-xl font-bold text-orange-500">{pencePerDay}p/day</div>
+              <p className="text-xs text-gray-700">£{monthlyPrice}/month (12 payments)</p>
+              {savingsVsMonthly > 0 && (
+                <p className="text-xs font-semibold text-green-600">Save £{savingsVsMonthly} today</p>
               )}
             </div>
 
@@ -255,17 +244,23 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
-                  Checkout
+                  Continue
                   <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                 </>
               )}
             </Button>
+          </div>
+
+          {/* Security reassurance */}
+          <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
+            <Lock className="w-3 h-3" />
+            <span>Secure checkout – 14 days to cancel</span>
           </div>
 
           {/* Security reassurance */}
