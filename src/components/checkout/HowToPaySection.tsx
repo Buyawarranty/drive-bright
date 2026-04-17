@@ -251,12 +251,13 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Pay in Full</p>
-                <p className="text-sm text-gray-500 line-through mt-1">Was £{originalPrice}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a]">
+                <p className="text-base font-bold text-[#1a1a1a]">Pay in full</p>
+                <p className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mt-1 leading-none">
                   £{fullPrice}
                 </p>
-                <p className="text-sm text-[#0BA360] font-medium">You save £{savings}!</p>
+                <p className="text-sm text-gray-600 mt-2">One simple payment</p>
+                <p className="text-sm text-[#0BA360] font-semibold mt-1">Equivalent to {fullPencePerDay}p/day</p>
+                <p className="text-sm text-[#0BA360] font-semibold">You save £{savings}!</p>
                 
                 {/* Benefits */}
                 <div className="mt-3 space-y-1.5">
