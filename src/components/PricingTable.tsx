@@ -2849,9 +2849,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* SECTION 3: Price */}
-                      <div className="flex-1 flex flex-col items-start justify-center px-4 lg:px-6 py-4 border-r border-gray-100 min-w-0">
-                        <span className="text-2xl lg:text-3xl font-bold text-orange-500 leading-none">{pencePerDay}p/day</span>
-                        <span className="text-xs lg:text-sm text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
+                      <div className="flex flex-col items-start justify-center px-4 lg:px-6 py-4 border-r border-gray-100 flex-shrink-0">
+                        <span className="text-2xl lg:text-3xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
+                        <span className="text-xs lg:text-sm text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments)</span></span>
                         {stripeSavings > 0 && (
                           <span className="text-xs lg:text-sm font-semibold text-green-600 mt-0.5 whitespace-nowrap">You save £{stripeSavings} today</span>
                         )}
