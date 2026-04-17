@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { DealerLayout } from '@/components/dealer/DealerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 const DealerCreateQuote = () => {
   const { dealer } = useDealerAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -24,6 +25,16 @@ const DealerCreateQuote = () => {
     plan_type: '',
     price: '',
   });
+
+  // Pre-fill reg from hero handoff (?reg= or localStorage)
+  useEffect(() => {
+    const regParam = searchParams.get('reg') || localStorage.getItem('dealerPendingReg');
+    if (regParam) {
+      setForm((prev) => ({ ...prev, vehicle_reg: regParam.toUpperCase() }));
+      localStorage.removeItem('dealerPendingReg');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

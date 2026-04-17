@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SEOHead } from '@/components/SEOHead';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { DealerPublicHeader } from '@/components/dealer/DealerPublicHeader';
+import { DealerRegHero } from '@/components/dealer/DealerRegHero';
 import { Check, Zap, TrendingUp, LayoutDashboard, UserPlus, FileText, Shield, Car, Truck, Battery, Bike } from 'lucide-react';
 
 const DealerHome = () => {
@@ -49,35 +50,9 @@ const DealerHome = () => {
                 </div>
               </div>
 
-              {/* Reg plate style CTA */}
+              {/* Reg plate hero CTA */}
               <div className="space-y-3 w-full max-w-md mx-auto lg:mx-0">
-                <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-gray-700 w-full">
-                  <div className="bg-blue-600 text-white font-bold px-2 sm:px-3 md:px-4 py-2 sm:py-4 flex items-center justify-center min-w-[45px] sm:min-w-[70px] md:min-w-[80px] h-[48px] sm:h-[60px] md:h-[66px]">
-                    <div className="flex flex-col items-center">
-                      <div className="text-xs sm:text-base md:text-lg leading-tight mb-1">🇬🇧</div>
-                      <div className="text-xs sm:text-sm md:text-base font-bold leading-none">UK</div>
-                    </div>
-                  </div>
-                  <Link
-                    to="/dealer-portal/signup"
-                    className="bg-yellow-400 flex-1 flex items-center justify-center text-base sm:text-xl md:text-2xl text-black font-black uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] hover:bg-yellow-300 transition-colors"
-                  >
-                    Start Selling →
-                  </Link>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Link to="/dealer-portal/signup" className="flex-1">
-                    <Button size="lg" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm sm:text-base py-5">
-                      Create Account in 60 Seconds
-                    </Button>
-                  </Link>
-                  <Link to="/dealer-portal/login" className="flex-1">
-                    <Button size="lg" variant="outline" className="w-full border-2 border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white font-bold text-sm sm:text-base py-5">
-                      Dealer Login
-                    </Button>
-                  </Link>
-                </div>
+                <DealerRegHero />
 
                 {/* Trust block */}
                 <div className="mt-3 sm:mt-5 bg-gray-900 border border-gray-800 rounded-xl shadow-sm px-5 py-4 text-center">
