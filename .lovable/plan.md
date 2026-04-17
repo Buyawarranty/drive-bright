@@ -1,77 +1,54 @@
 
-## What I found
 
-This is not primarily round-robin “changing its mind”.
+## Plan: Refactor Step 3 Sticky Bar UI
 
-There are 3 separate causes behind the same customer appearing under different people:
+**File:** `src/components/PricingTable.tsx` (lines 2741–2947 only)
 
-1. **Some reassignments are manual**
-   - The lead changelog shows real assignment flips done by staff.
-   - Example: lead `692bff87...` (`petervwilcox@aol.com`, reg `A10 WLX`) was changed:
-     - James → Ash
-     - then Ash → James
-   - Both changes were logged as user actions, not automatic round-robin.
+**Scope:** Pure visual/layout refactor of the sticky summary bar. No changes to pricing logic, calculations, handlers, props, or navigation. All `displayMonthlyPrice`, `stripeSavings`, `payInFullDiscounted`, `handleSelectPlan`, `paymentType` logic stays identical.
 
-2. **Orphan cart migration bypasses the assignment-protection logic**
-   - `auto_create_lead_from_abandoned_cart()` is correct: on dedup it updates the existing lead and intentionally keeps `assigned_to`.
-   - But `migrate_orphan_carts_to_leads()` directly inserts into `sales_leads` and does **not** run the same dedup/assignment-protection rules.
-   - That means the same customer can end up with multiple active `sales_leads` rows assigned to different agents.
+### Problems with current desktop layout
+1. All 5 sections use `flex-1` → equal width forces price (key info) into the same narrow column as the trust badge, making it feel cramped.
+2. `divide-x` lines + `flex-1` cause uneven visual weight; CTA button is squeezed.
+3. Padding inside sections (`px-5`) is fine but proportions are wrong.
+4. Trust block is centered horizontally with shield + text, when reference shows it more compactly left-aligned.
 
-3. **The leads UI deduplicates by newest email row, not by the “owner” row**
-   - `useLeads.tsx` keeps the most recent row per email.
-   - So if duplicate lead rows exist for the same email across agents, the visible row can appear to “switch owner” depending on which duplicate is newest.
-   - This conflicts with your intended rule: the original/active assigned lead should remain the canonical one.
+### Target proportions (desktop, left → right)
+Use weighted flex (instead of equal `flex-1`) to give price + CTA more room:
 
-## Root cause summary
+```text
+┌──────────┬───────────┬─────────────┬──────────────┬────────────────┐
+│  TRUST   │  COVER    │   PRICE     │  PAY IN FULL │      CTA       │
+│  ~14%    │   ~20%    │    ~22%     │     ~22%     │     ~22%       │
+│ flex:none│  flex:1   │   flex:1.2  │   flex:1.2   │  flex:1.3      │
+└──────────┴───────────┴─────────────┴──────────────┴────────────────┘
+   24px gap between sections, vertical divider lines, py-3.5 px-5
+```
 
-Your database logic already tries to preserve original ownership for repeat submissions, but one recovery path (`migrate_orphan_carts_to_leads`) bypasses that rule, and the frontend then surfaces the wrong duplicate as the visible lead.
+### Specific changes per section
 
-## Plan to fix
+1. **Container** — keep `divide-x divide-gray-200`, add `gap-0`, increase vertical padding to `py-3.5`, ensure `items-stretch` for full-height dividers.
 
-### 1) Stop creating duplicate active leads from orphan carts
-Update `migrate_orphan_carts_to_leads()` so it follows the **same dedup + assignment-preservation** logic as `auto_create_lead_from_abandoned_cart()`:
-- match by normalized email and normalized phone
-- if an active lead already exists, update that row instead of inserting a new one
-- never overwrite `assigned_to` during automated recovery
-- increment `resubmission_count` / refresh metadata on the existing row
+2. **Trust (Section 1)** — `flex-shrink-0` (no flex-1), tighten to ~180px width, left-align content, smaller shield circle (w-8 h-8), keep "Excellent / stars / 4.8 out of 5" stack.
 
-### 2) Make the UI show the correct “owner” row
-Update `useLeads.tsx` deduping so the canonical row is chosen by:
-1. assigned lead with activity/history
-2. then most recently updated
-3. then newest created row
+3. **Cover (Section 2)** — `flex-1`, left-aligned, label uppercase orange, title `text-base font-bold`, subtext with wrench icon `text-xs text-gray-600`. Add `mt-1` between rows for breathing room.
 
-This ensures the visible lead stays with the original assigned agent instead of jumping to whichever duplicate row is newest.
+4. **Price (Section 3)** — wider via `flex-[1.2]`. Stack: `text-3xl` daily price (was `text-2xl`), `text-xs` monthly line, `text-xs text-green-600` savings line. Add `gap-1` between lines for clear vertical rhythm.
 
-### 3) Keep manual reassignment as the only way ownership changes
-Preserve current manual reassignment tools, but keep automated flows from changing agent ownership unless a staff user explicitly changes assignee.
+5. **Pay in Full (Section 4)** — `flex-[1.2]`, center pill horizontally, slightly larger pill (`px-4 py-2.5`, `rounded-xl`), wallet icon `w-5 h-5`, two-line text stays.
 
-### 4) Clean up existing conflicting duplicates
-Add a one-time cleanup migration/data fix to identify active duplicate `sales_leads` for the same email/phone and:
-- keep the row with assignment/activity/history
-- archive or merge the weaker duplicate rows
-- preserve latest useful vehicle/cart details on the kept row
+6. **CTA (Section 5)** — `flex-[1.3]` so button has room, button stays `w-full` inside, add `gap-1.5` for "Secure checkout" subtext below button. Keep lock icon + text.
 
-### 5) Verify with changelog + sample records
-After implementation, verify:
-- repeat submissions stay on the same assigned lead
-- orphan migration no longer creates conflicting active rows
-- visible assignee in New Leads matches the canonical row
-- manual reassignments still work and remain audit-logged
+### Mobile (lines 2790–2843)
+Already stacks vertically and works — only minor tweak: increase gap between price row and CTA from `gap-2` to `gap-3` for breathing room, and ensure the "Pay in full" pill doesn't overlap the daily price by giving the price column `min-w-0 flex-1` and the pill `flex-shrink-0`. No structural changes.
 
-## Files / areas likely to change
+### What stays untouched
+- All IIFE calculation blocks (`months`, `totalContract`, `payInFull`, `stripeSavings`, `payInFullDiscounted`, `pencePerDayRaw`, `dailyPriceLabel`, `coverLabel`)
+- `handleSelectPlan`, `plansLoading`, `plansError`, `retryFetchPlans`
+- Loading and error states
+- Outer fixed positioning, `bg-gray-50 border-t-2 border-green-200`, z-index
+- Bottom padding spacer (line 2739)
+- "What's included" reassurance banner above
 
-- `supabase/migrations/...`  
-  - patch `migrate_orphan_carts_to_leads()`
-  - add duplicate cleanup/backfill
-- `src/hooks/useLeads.tsx`  
-  - fix canonical dedupe selection logic
-- optionally related admin lead recovery views if duplicate/archive behavior needs a badge or filter update
+### Risk
+Zero functional risk — only Tailwind class changes inside the existing JSX structure. Section numbering and order preserved so visual hierarchy remains predictable for users mid-funnel.
 
-## Expected outcome
-
-After this fix:
-- round-robin will only decide the **first valid owner**
-- repeat/returned leads will stay with that agent
-- only an explicit staff reassignment will move a lead to someone else
-- the dashboard will stop making duplicates look like ownership is changing
