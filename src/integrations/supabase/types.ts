@@ -2154,6 +2154,7 @@ export type Database = {
           county: string | null
           created_at: string
           customer_dob: string | null
+          dealer_id: string | null
           deleted_at: string | null
           deleted_by: string | null
           discount_amount: number | null
@@ -2235,6 +2236,7 @@ export type Database = {
           county?: string | null
           created_at?: string
           customer_dob?: string | null
+          dealer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           discount_amount?: number | null
@@ -2316,6 +2318,7 @@ export type Database = {
           county?: string | null
           created_at?: string
           customer_dob?: string | null
+          dealer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           discount_amount?: number | null
@@ -2390,6 +2393,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
             referencedColumns: ["id"]
           },
           {
@@ -2592,6 +2602,7 @@ export type Database = {
         Row: {
           company_name: string
           created_at: string
+          discount_pct: number
           email: string
           id: string
           name: string
@@ -2602,6 +2613,7 @@ export type Database = {
         Insert: {
           company_name: string
           created_at?: string
+          discount_pct?: number
           email: string
           id?: string
           name: string
@@ -2612,6 +2624,7 @@ export type Database = {
         Update: {
           company_name?: string
           created_at?: string
+          discount_pct?: number
           email?: string
           id?: string
           name?: string
