@@ -1666,7 +1666,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
                       <span className="inline-flex items-center gap-1.5 bg-[#FF7A00] text-white text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
                         <Star className="w-3.5 h-3.5 fill-white" />
-                        PERFECT FOR YOUR {(vehicleData?.model && vehicleData.model.toLowerCase() !== 'unknown') ? vehicleData.model.toUpperCase() : (vehicleData?.vehicleType?.toUpperCase() || 'VEHICLE')}
+                        MOST POPULAR CHOICE
                       </span>
                     </div>
                   )}
@@ -1697,11 +1697,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Most popular choice — social proof */}
+                  {/* Perfect for your vehicle — social proof */}
                   {isPopular && (
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
-                      <span className="text-sm font-semibold text-green-700">Most popular choice</span>
+                      <span className="text-sm font-semibold text-green-700">Perfect for your {(vehicleData?.model && vehicleData.model.toLowerCase() !== 'unknown') ? vehicleData.model : (vehicleData?.vehicleType || 'vehicle')}</span>
                     </div>
                   )}
 

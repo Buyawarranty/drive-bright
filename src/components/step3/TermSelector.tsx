@@ -132,7 +132,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
                   <span className="inline-flex items-center gap-1.5 bg-[#FF7A00] text-white text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
                     <Star className="w-3.5 h-3.5 fill-white" />
-                    PERFECT FOR YOUR {vehicleLabel.toUpperCase()}
+                    MOST POPULAR CHOICE
                   </span>
                 </div>
               )}
@@ -155,7 +155,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     {term.isPopular && (
                       <div className="flex items-center gap-1.5 mb-1.5">
                         <Check className="w-4 h-4 text-success" strokeWidth={3} />
-                        <span className="text-sm font-semibold text-success">Most popular choice</span>
+                        <span className="text-sm font-semibold text-success">Perfect for your {vehicleLabel}</span>
                       </div>
                     )}
                     <h4 className="text-3xl sm:text-4xl font-extrabold text-foreground leading-tight tracking-tight">
