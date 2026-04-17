@@ -97,6 +97,18 @@ const DealerLogin = () => {
               <label className="text-sm font-medium text-gray-300">Password</label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
             </div>
+            {unconfirmedEmail && (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+                <p className="mb-2">Your email <strong>{unconfirmedEmail}</strong> hasn't been confirmed yet. Check your inbox for the confirmation link.</p>
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  className="font-medium text-amber-100 underline hover:text-white"
+                >
+                  Resend confirmation email
+                </button>
+              </div>
+            )}
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
