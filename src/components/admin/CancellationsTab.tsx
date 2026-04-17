@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Search, CalendarIcon, RefreshCw, Download, Ban } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -18,6 +18,25 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 import { usePagination } from '@/hooks/usePagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useAuth } from '@/hooks/useAuth';
+
+const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
+
+type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'all' | 'custom';
+
+const computeQuickRange = (key: QuickRange): DateRange | undefined => {
+  const now = new Date();
+  switch (key) {
+    case 'today': return { from: startOfDay(now), to: endOfDay(now) };
+    case 'yesterday': { const y = subDays(now, 1); return { from: startOfDay(y), to: endOfDay(y) }; }
+    case 'this_month': return { from: startOfMonth(now), to: endOfDay(now) };
+    case 'last_month': { const lm = subMonths(now, 1); return { from: startOfMonth(lm), to: endOfMonth(lm) }; }
+    case 'last_7': return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+    case 'last_30': return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
+    case 'all': return undefined;
+    default: return undefined;
+  }
+};
 
 interface CancellationRecord {
   id: string;
@@ -51,13 +70,25 @@ const monthNames = [
 ];
 
 export const CancellationsTab: React.FC<{
-  adminUsers: AdminUser[];
-  currentAdminUser: AdminUser | null;
-}> = ({ adminUsers, currentAdminUser }) => {
+  adminUsers?: AdminUser[];
+  currentAdminUser?: AdminUser | null;
+}> = ({ adminUsers: adminUsersProp, currentAdminUser: currentAdminUserProp }) => {
   const { canExportTab } = usePermissions();
   const { exportToCSV: exportDataToCSV } = useDataExport();
+  const { user, userRole } = useAuth();
   const canExport = canExportTab('customers');
-  const isFinancialRole = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
+
+  const [loadedAdminUsers, setLoadedAdminUsers] = useState<AdminUser[]>([]);
+  const adminUsers = adminUsersProp ?? loadedAdminUsers;
+  const currentAdminUser = useMemo(() => {
+    if (currentAdminUserProp !== undefined && currentAdminUserProp !== null) return currentAdminUserProp;
+    if (!user?.id) return null;
+    return (adminUsers as any[]).find((u: any) => u.user_id === user.id) || null;
+  }, [currentAdminUserProp, user?.id, adminUsers]);
+
+  const isFinancialRole = userRole === 'super_admin' || userRole === 'admin'
+    || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
+  const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
   const [records, setRecords] = useState<CancellationRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +97,7 @@ export const CancellationsTab: React.FC<{
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
+  const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
 
   // Default to current month
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -75,6 +107,20 @@ export const CancellationsTab: React.FC<{
   const [selectedMonth, setSelectedMonth] = useState<string>(() => String(new Date().getMonth()));
   const [selectedYear, setSelectedYear] = useState<string>(() => String(new Date().getFullYear()));
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Self-load admin users when not provided via props
+  useEffect(() => {
+    if (adminUsersProp) return;
+    supabase.from('admin_users')
+      .select('id, user_id, email, first_name, last_name, role')
+      .eq('is_active', true)
+      .then(({ data }) => setLoadedAdminUsers((data || []) as any));
+  }, [adminUsersProp]);
+
+  const handleQuickRange = (key: QuickRange) => {
+    setQuickRange(key);
+    setDateRange(computeQuickRange(key));
+  };
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -145,6 +191,12 @@ export const CancellationsTab: React.FC<{
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
 
+    // Role-based visibility: non-full-view users only see their own
+    if (!canSeeAll) {
+      const myId = currentAdminUser?.id;
+      filtered = myId ? filtered.filter(r => r.assigned_to === myId) : [];
+    }
+
     // Date range filter (using updated_at — when the cancellation occurred)
     if (dateRange?.from) {
       const from = new Date(dateRange.from);
@@ -183,7 +235,7 @@ export const CancellationsTab: React.FC<{
     }
 
     return filtered;
-  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch]);
+  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch, canSeeAll, currentAdminUser?.id]);
 
   const pagination = usePagination(filteredRecords, { initialPageSize: 50 });
 
@@ -237,8 +289,40 @@ export const CancellationsTab: React.FC<{
 
   return (
     <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">Cancellations & Refunds</h1>
+        <p className="text-muted-foreground text-sm">
+          {canSeeAll
+            ? 'All cancelled and refunded warranties for commission reconciliation'
+            : 'Your cancelled and refunded warranties'}
+        </p>
+      </div>
+
+      {/* Quick Date Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          { key: 'today', label: 'Today' },
+          { key: 'yesterday', label: 'Yesterday' },
+          { key: 'this_month', label: 'This Month' },
+          { key: 'last_month', label: 'Last Month' },
+          { key: 'last_7', label: 'Last 7 Days' },
+          { key: 'last_30', label: 'Last 30 Days' },
+          { key: 'all', label: 'All Time' },
+        ] as { key: QuickRange; label: string }[]).map(t => (
+          <Button
+            key={t.key}
+            size="sm"
+            variant={quickRange === t.key ? 'default' : 'outline'}
+            onClick={() => handleQuickRange(t.key)}
+          >
+            {t.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Summary Cards */}
       <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3')}>
+
         <Card className="p-3">
           <p className="text-xs text-muted-foreground">Total</p>
           <p className="text-2xl font-bold">{filteredRecords.length}</p>
@@ -287,20 +371,22 @@ export const CancellationsTab: React.FC<{
             </Select>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-sm font-medium">Sales Agent</Label>
-            <Select value={filterByAgent} onValueChange={setFilterByAgent}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Agents</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {agentOptions.map(agent => {
-                  const name = [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
-                  return <SelectItem key={agent.id} value={agent.id}>{name}</SelectItem>;
-                })}
-              </SelectContent>
-            </Select>
-          </div>
+          {canSeeAll && (
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Sales Agent</Label>
+              <Select value={filterByAgent} onValueChange={setFilterByAgent}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Agents</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {agentOptions.map(agent => {
+                    const name = [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
+                    return <SelectItem key={agent.id} value={agent.id}>{name}</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-1">
             <Label className="text-sm font-medium">&nbsp;</Label>

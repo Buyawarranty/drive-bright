@@ -67,6 +67,7 @@ const ADMIN_TABS = [
   { id: 'timesheets', label: 'Timesheets', description: 'Track work hours, deals and commissions' },
   { id: 'sales-scoreboard', label: 'Sales Scoreboard', description: 'Leaderboard, awards and sales competition' },
   { id: 'discounts-given', label: 'Discounts Given', description: 'Track agent discounts vs retail pricing' },
+  { id: 'cancellations', label: 'Cancellations', description: 'Cancelled & refunded warranties (commission reconciliation)' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
