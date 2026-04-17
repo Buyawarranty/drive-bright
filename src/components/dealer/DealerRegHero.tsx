@@ -49,9 +49,9 @@ export const DealerRegHero: React.FC = () => {
       });
       navigate(`/dealer-portal/login?${params.toString()}`);
     } else {
-      // Logged in → straight to quote create
+      // Logged in → start the multi-step dealer journey
       localStorage.removeItem(PENDING_REG_KEY);
-      navigate(`/dealer-portal/quotes/create?reg=${encodeURIComponent(cleaned)}`);
+      navigate(`/dealer-portal/quote/vehicle?reg=${encodeURIComponent(cleaned)}`);
     }
   };
 
