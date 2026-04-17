@@ -56,8 +56,11 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
     );
   }
 
-  const pencePerDay = monthlyPrice > 0 ? Math.round((monthlyPrice * 12) / 365) : 0;
-  const savings = Math.max(0, monthlyPrice * 12 - fullPrice);
+  const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
+  const totalCoverDays = Math.round((months / 12) * 365);
+  const baseTotal = totalPrice && totalPrice > 0 ? totalPrice : monthlyPrice * 12;
+  const pencePerDay = baseTotal > 0 && totalCoverDays > 0 ? Math.round((baseTotal * 100) / totalCoverDays) : 0;
+  const savings = Math.max(0, baseTotal - fullPrice);
   const isMonthly = selectedPayment === 'monthly';
   const isFull = selectedPayment === 'full';
 
