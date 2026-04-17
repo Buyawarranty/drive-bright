@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Search, CalendarIcon, RefreshCw, Download, Ban } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -18,6 +18,25 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 import { usePagination } from '@/hooks/usePagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useAuth } from '@/hooks/useAuth';
+
+const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
+
+type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'all' | 'custom';
+
+const computeQuickRange = (key: QuickRange): DateRange | undefined => {
+  const now = new Date();
+  switch (key) {
+    case 'today': return { from: startOfDay(now), to: endOfDay(now) };
+    case 'yesterday': { const y = subDays(now, 1); return { from: startOfDay(y), to: endOfDay(y) }; }
+    case 'this_month': return { from: startOfMonth(now), to: endOfDay(now) };
+    case 'last_month': { const lm = subMonths(now, 1); return { from: startOfMonth(lm), to: endOfMonth(lm) }; }
+    case 'last_7': return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+    case 'last_30': return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
+    case 'all': return undefined;
+    default: return undefined;
+  }
+};
 
 interface CancellationRecord {
   id: string;
