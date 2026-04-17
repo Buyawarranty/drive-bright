@@ -371,20 +371,22 @@ export const CancellationsTab: React.FC<{
             </Select>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-sm font-medium">Sales Agent</Label>
-            <Select value={filterByAgent} onValueChange={setFilterByAgent}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Agents</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {agentOptions.map(agent => {
-                  const name = [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
-                  return <SelectItem key={agent.id} value={agent.id}>{name}</SelectItem>;
-                })}
-              </SelectContent>
-            </Select>
-          </div>
+          {canSeeAll && (
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Sales Agent</Label>
+              <Select value={filterByAgent} onValueChange={setFilterByAgent}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Agents</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {agentOptions.map(agent => {
+                    const name = [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
+                    return <SelectItem key={agent.id} value={agent.id}>{name}</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-1">
             <Label className="text-sm font-medium">&nbsp;</Label>
