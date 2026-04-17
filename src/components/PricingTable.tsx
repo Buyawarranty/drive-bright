@@ -1697,13 +1697,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Perfect for your vehicle — social proof */}
-                  {isPopular && (
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
-                      <span className="text-sm font-semibold text-green-700">Perfect for your {(vehicleData?.model && vehicleData.model.toLowerCase() !== 'unknown') ? vehicleData.model : (vehicleData?.vehicleType || 'vehicle')}</span>
-                    </div>
-                  )}
 
                   {/* Duration Title */}
                   <h4 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1 leading-tight tracking-tight">
