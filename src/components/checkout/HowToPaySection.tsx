@@ -135,6 +135,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
+  // Per-day pricing
+  const monthlyPencePerDay = monthlyPrice > 0 ? Math.round((monthlyPrice * 12) / 365) : 0;
+  const fullPencePerDay = fullPrice > 0 ? Math.round(fullPrice / 365) : 0;
   return (
     <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
       {/* Header */}
