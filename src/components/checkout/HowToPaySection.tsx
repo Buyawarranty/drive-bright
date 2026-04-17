@@ -175,11 +175,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Monthly</p>
-                <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-1">
-                  £{monthlyPrice}<span className="text-base font-normal text-gray-600">/mo</span>
+                <p className="text-base font-bold text-[#1a1a1a]">Monthly payments</p>
+                <p className="text-3xl sm:text-4xl font-bold text-[#FF6B00] mt-1 leading-none">
+                  {monthlyPencePerDay}p<span className="text-xl font-bold">/day</span>
                 </p>
-                <p className="text-sm text-gray-600 mt-1">Total £{totalPrice}</p>
+                <p className="text-sm text-[#1a1a1a] mt-2">
+                  £{monthlyPrice}/month <span className="text-gray-500">(12 payments only)</span>
+                </p>
+                <p className="text-sm text-gray-500">Total £{totalPrice}</p>
                 
                 {/* Benefits */}
                 <div className="mt-3 space-y-1.5">
@@ -197,13 +200,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </div>
                 </div>
 
-                {/* Bumper Logo */}
+                {/* Bumper Pill Badge */}
                 <div className="mt-4">
-                  <img 
-                    src={bumperLogo} 
-                    alt="Bumper" 
-                    className="h-6 object-contain"
-                  />
+                  <span className="inline-flex items-center bg-[#FF6B00] text-white text-xs font-bold px-4 py-1.5 rounded-full tracking-wider">
+                    BUMPER
+                  </span>
                 </div>
               </div>
 
