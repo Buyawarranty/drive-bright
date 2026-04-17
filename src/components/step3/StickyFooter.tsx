@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowRight, Star, Lock, ChevronUp, ChevronDown } from 'lucide-react';
+import trustpilotStars from '@/assets/trustpilot-4-5-stars.png';
 import { Button } from '@/components/ui/button';
 import { PaymentPeriod } from '@/lib/pricingMatrix';
 import { cn } from '@/lib/utils';
