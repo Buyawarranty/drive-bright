@@ -1449,7 +1449,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 Choose your cover duration
               </h2>
             </div>
-            <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">All parts included at no extra cost</span>
+            <span className="text-sm text-muted-foreground text-center w-full sm:w-auto sm:self-center">All parts included at no extra cost</span>
           </div>
           
 
