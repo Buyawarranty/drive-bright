@@ -1299,7 +1299,8 @@ export const CustomersTab = ({
           payment_due_date: null,
           google_ads_conversion_uploaded_at: null,
           google_ads_conversion_status: null,
-          customer_dob: null
+          customer_dob: null,
+          dealer_id: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];

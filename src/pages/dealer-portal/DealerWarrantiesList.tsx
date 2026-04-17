@@ -10,28 +10,38 @@ import { useDealerAuth } from '@/hooks/useDealerAuth';
 const DealerWarrantiesList = () => {
   const { dealer } = useDealerAuth();
 
+  // Source of truth = customers table filtered by dealer_id (matches admin view)
   const { data: warranties = [] } = useQuery({
     queryKey: ['dealer-warranties-list', dealer?.id],
     queryFn: async () => {
       if (!dealer?.id) return [];
       const { data } = await supabase
-        .from('dealer_warranties')
-        .select('*')
+        .from('customers')
+        .select('id, name, email, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, final_amount, payment_status, status, warranty_start_date, policy_end_date, signup_date')
         .eq('dealer_id', dealer.id)
-        .order('created_at', { ascending: false });
+        .order('signup_date', { ascending: false });
       return data || [];
     },
     enabled: !!dealer?.id,
   });
 
-  const statusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500 text-white';
-      case 'expired': return 'bg-gray-600 text-gray-300';
-      case 'cancelled': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-700 text-gray-400';
+  const renderStatus = (w: any) => {
+    if (w.payment_status === 'invoice_pending') {
+      return <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30">Awaiting invoice</Badge>;
     }
+    if (w.status === 'active') {
+      return <Badge className="bg-green-500 text-white">Active</Badge>;
+    }
+    if (w.status === 'expired') {
+      return <Badge className="bg-gray-600 text-gray-200">Expired</Badge>;
+    }
+    if (w.status === 'cancelled') {
+      return <Badge className="bg-red-500/20 text-red-300 border border-red-500/30">Cancelled</Badge>;
+    }
+    return <Badge className="bg-gray-700 text-gray-300">{w.status || 'Pending'}</Badge>;
   };
+
+  const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString('en-GB') : '—');
 
   return (
     <DealerLayout>
@@ -42,35 +52,47 @@ const DealerWarrantiesList = () => {
           <CardContent className="pt-6">
             {warranties.length === 0 ? (
               <p className="text-gray-500 text-sm text-center py-8">
-                No warranties yet. Convert a quote to create a warranty.
+                No warranties yet. Start a full quote to issue your first warranty.
               </p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400">Customer</TableHead>
-                    <TableHead className="text-gray-400">Vehicle</TableHead>
-                    <TableHead className="text-gray-400">Start Date</TableHead>
-                    <TableHead className="text-gray-400">End Date</TableHead>
-                    <TableHead className="text-gray-400">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {warranties.map((w: any) => (
-                    <TableRow key={w.id} className="border-gray-800 hover:bg-gray-800/50">
-                      <TableCell className="font-medium text-white">{w.customer_name}</TableCell>
-                      <TableCell className="text-gray-300">{w.vehicle_reg}</TableCell>
-                      <TableCell className="text-gray-300">{new Date(w.start_date).toLocaleDateString('en-GB')}</TableCell>
-                      <TableCell className="text-gray-300">{new Date(w.end_date).toLocaleDateString('en-GB')}</TableCell>
-                      <TableCell>
-                        <Badge className={statusColor(w.status)}>
-                          {w.status.charAt(0).toUpperCase() + w.status.slice(1)}
-                        </Badge>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-800 hover:bg-transparent">
+                      <TableHead className="text-gray-400">Customer</TableHead>
+                      <TableHead className="text-gray-400">Vehicle</TableHead>
+                      <TableHead className="text-gray-400">Plan</TableHead>
+                      <TableHead className="text-gray-400">Start</TableHead>
+                      <TableHead className="text-gray-400">End</TableHead>
+                      <TableHead className="text-gray-400 text-right">Amount</TableHead>
+                      <TableHead className="text-gray-400">Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {warranties.map((w: any) => (
+                      <TableRow key={w.id} className="border-gray-800 hover:bg-gray-800/50">
+                        <TableCell className="font-medium text-white">
+                          <div>{w.name}</div>
+                          <div className="text-xs text-gray-500">{w.email}</div>
+                        </TableCell>
+                        <TableCell className="text-gray-300">
+                          <div className="font-mono">{w.registration_plate}</div>
+                          {(w.vehicle_make || w.vehicle_model) && (
+                            <div className="text-xs text-gray-500">{w.vehicle_make} {w.vehicle_model}</div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-gray-300 capitalize">
+                          {w.plan_type} · {w.payment_type}mo
+                        </TableCell>
+                        <TableCell className="text-gray-300">{fmtDate(w.warranty_start_date || w.signup_date)}</TableCell>
+                        <TableCell className="text-gray-300">{fmtDate(w.policy_end_date)}</TableCell>
+                        <TableCell className="text-right text-white font-semibold">£{Number(w.final_amount || 0).toFixed(2)}</TableCell>
+                        <TableCell>{renderStatus(w)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>

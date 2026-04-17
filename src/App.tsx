@@ -45,7 +45,7 @@ const ConditionalFooter = () => {
   
   // Hide footer on admin routes
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const isDealerDashboard = location.pathname.startsWith('/dealer-portal/dashboard') || location.pathname.startsWith('/dealer-portal/quotes') || location.pathname.startsWith('/dealer-portal/warranties');
+  const isDealerDashboard = location.pathname.startsWith('/dealer-portal/dashboard') || location.pathname.startsWith('/dealer-portal/quotes') || location.pathname.startsWith('/dealer-portal/warranties') || location.pathname.startsWith('/dealer-portal/quote/');
   
   // Hide footer on brand landing pages (Google Ads pages)
   const isBrandLanding = location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/';
@@ -167,6 +167,12 @@ const DealerDashboard = lazy(() => import("./pages/dealer-portal/DealerDashboard
 const DealerCreateQuote = lazy(() => import("./pages/dealer-portal/DealerCreateQuote"));
 const DealerQuotesList = lazy(() => import("./pages/dealer-portal/DealerQuotesList"));
 const DealerWarrantiesList = lazy(() => import("./pages/dealer-portal/DealerWarrantiesList"));
+const DealerJourneyStep1 = lazy(() => import("./pages/dealer-portal/journey/Step1Vehicle"));
+const DealerJourneyStep2 = lazy(() => import("./pages/dealer-portal/journey/Step2Customer"));
+const DealerJourneyStep3 = lazy(() => import("./pages/dealer-portal/journey/Step3Pricing"));
+const DealerJourneyStep4 = lazy(() => import("./pages/dealer-portal/journey/Step4Checkout"));
+const DealerJourneyStep5 = lazy(() => import("./pages/dealer-portal/journey/Step5Confirmation"));
+import { DealerJourneyProvider } from "@/contexts/DealerJourneyContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -365,6 +371,12 @@ const App = () => {
                     <Route path="/dealer-portal/quotes/create" element={<DealerCreateQuote />} />
                     <Route path="/dealer-portal/quotes" element={<DealerQuotesList />} />
                     <Route path="/dealer-portal/warranties" element={<DealerWarrantiesList />} />
+                    {/* Dealer multi-step quote journey */}
+                    <Route path="/dealer-portal/quote/vehicle" element={<DealerJourneyProvider><DealerJourneyStep1 /></DealerJourneyProvider>} />
+                    <Route path="/dealer-portal/quote/customer" element={<DealerJourneyProvider><DealerJourneyStep2 /></DealerJourneyProvider>} />
+                    <Route path="/dealer-portal/quote/pricing" element={<DealerJourneyProvider><DealerJourneyStep3 /></DealerJourneyProvider>} />
+                    <Route path="/dealer-portal/quote/checkout" element={<DealerJourneyProvider><DealerJourneyStep4 /></DealerJourneyProvider>} />
+                    <Route path="/dealer-portal/quote/confirmation" element={<DealerJourneyProvider><DealerJourneyStep5 /></DealerJourneyProvider>} />
 
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
