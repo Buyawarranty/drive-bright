@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
@@ -269,6 +269,12 @@ const defaultTabs: Tab[] = [
     description: 'Track agent discounts vs retail pricing'
   },
   {
+    id: 'cancellations',
+    label: 'Cancellations',
+    icon: Ban,
+    description: 'Cancelled and refunded warranties for commission reconciliation'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
@@ -313,13 +319,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
       // Accounts Manager/Payroll: customers, timesheets (with approvals), analytics, user permissions, account
-      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
     if (userRole === 'accounts') {
       // Accounts role: new leads, quotes, customers, discount codes, claims, policy letters, timesheets
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'claims', 'policy-documents', 'timesheets', 'account'];
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'claims', 'policy-documents', 'timesheets', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
