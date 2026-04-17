@@ -2825,62 +2825,74 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   );
                 })()}
 
-                {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
+                {/* Desktop Layout - New 5-Section Design */}
                 {(() => {
-                  // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
+                  const payInFullDiscounted = payInFull - stripeSavings;
+                  const pencePerDay = Math.round(payInFull / 365);
+                  const coverLabel =
+                    paymentType === '12months' ? '1-Year Platinum Cover' :
+                    paymentType === '24months' ? '2-Year Platinum Cover' :
+                    '3-Year Platinum Cover';
                   return (
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                      
-                      {/* SECTION 1: Trust & Reassurance */}
-                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 min-w-fit">
-                        <a 
-                          href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                          target="_blank" 
+
+                      {/* SECTION 1: Trustpilot */}
+                      <div className="flex items-center gap-3 px-4 lg:px-5 py-4 border-r border-gray-100 min-w-fit">
+                        <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                          <Shield className="w-5 h-5 text-green-600" />
+                        </div>
+                        <a
+                          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                          target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:opacity-80 transition-opacity"
+                          className="flex flex-col items-start hover:opacity-80 transition-opacity"
                         >
-                          <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
+                          <span className="text-xs font-semibold text-gray-900">Excellent</span>
+                          <TrustpilotHeader className="scale-[0.55] origin-left -my-1" />
+                          <span className="text-[11px] text-gray-600">4.8 out of 5</span>
                         </a>
-                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">Easy Claims</div>
                       </div>
-                      
-                      {/* SECTION 2: Price */}
-                      <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
-                        <div className="text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
-                          Total: £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
-                        </div>
-                        <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
-                          Only 12 payments
-                        </div>
-                        <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
-                          <span className="font-bold text-green-600">Pay in full £{payInFull}</span>
-                          <span className="text-gray-600 whitespace-nowrap">– You save £{stripeSavings} today</span>
+
+                      {/* SECTION 2: Your cover */}
+                      <div className="flex flex-col justify-center px-4 lg:px-6 py-4 border-r border-gray-100 min-w-fit">
+                        <span className="text-[11px] font-bold text-orange-500 tracking-wide uppercase">Your Cover</span>
+                        <span className="text-base font-bold text-gray-900 whitespace-nowrap mt-0.5">{coverLabel}</span>
+                        <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
+                          <Wrench className="w-3 h-3" />
+                          <span>Local Garages (£50/hour)</span>
                         </div>
                       </div>
-                      
-                      {/* SECTION 3: Cover & Free Years */}
-                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
-                        <span className="font-bold text-gray-900 text-sm lg:text-base whitespace-nowrap">
-                          {paymentType === '12months' && '1-Year Cover'}
-                          {paymentType === '24months' && '2-Year Cover'}
-                          {paymentType === '36months' && '3-Year Cover'}
-                        </span>
-                        {paymentType !== '12months' && (
-                          <span className="text-gray-900 text-xs lg:text-sm font-bold mt-1 whitespace-nowrap">
-                            {paymentType === '24months' && 'No payments in year 2'}
-                            {paymentType === '36months' && 'No payments in years 2 & 3'}
-                          </span>
+
+                      {/* SECTION 3: Price */}
+                      <div className="flex-1 flex flex-col items-start justify-center px-4 lg:px-6 py-4 border-r border-gray-100 min-w-0">
+                        <span className="text-2xl lg:text-3xl font-bold text-orange-500 leading-none">{pencePerDay}p/day</span>
+                        <span className="text-xs lg:text-sm text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
+                        {stripeSavings > 0 && (
+                          <span className="text-xs lg:text-sm font-semibold text-green-600 mt-0.5 whitespace-nowrap">You save £{stripeSavings} today</span>
                         )}
                       </div>
-                      
-                      {/* SECTION 4: CTA */}
-                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 min-w-fit">
+
+                      {/* SECTION 4: Pay in full pill */}
+                      {stripeSavings > 0 && (
+                        <div className="flex items-center px-4 lg:px-5 py-4 border-r border-gray-100 min-w-fit">
+                          <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 lg:px-4 py-2.5">
+                            <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            <div className="flex flex-col">
+                              <span className="text-xs lg:text-sm text-gray-700 whitespace-nowrap">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
+                              <span className="text-xs lg:text-sm font-semibold text-green-600 whitespace-nowrap">Save £{stripeSavings} vs monthly</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* SECTION 5: CTA */}
+                      <div className="flex flex-col items-center justify-center px-4 lg:px-6 py-4 min-w-fit">
                         <Button
                           onClick={handleSelectPlan}
                           size="lg"
-                          className="text-base lg:text-lg font-semibold px-4 lg:px-8 py-3 lg:py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
+                          className="text-base lg:text-lg font-bold px-6 lg:px-8 py-3 lg:py-4 bg-orange-500 hover:bg-orange-600 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
                         >
                           Continue to checkout
                           <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
