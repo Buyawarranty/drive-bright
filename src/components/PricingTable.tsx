@@ -2860,28 +2860,37 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     paymentType === '24months' ? '2-Year Platinum Cover' :
                     '3-Year Platinum Cover';
                   return (
-                    <div className="hidden md:flex md:items-stretch md:flex-wrap lg:flex-nowrap w-full bg-white rounded-xl shadow-lg border border-gray-100 gap-y-2 px-2">
+                    <div className="hidden md:flex md:items-center w-full bg-white rounded-xl shadow-lg border border-gray-100">
 
-                      {/* SECTION 1: Trustpilot */}
-                      <div className="flex items-center gap-3 px-5 py-3 border-r border-gray-100 flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                      {/* SECTION 1: Trustpilot - Excellent above 4.8 */}
+                      <div className="flex items-center gap-3 px-4 py-2.5 border-r border-gray-100 flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
                           <Shield className="w-5 h-5 text-green-600" />
                         </div>
                         <a
                           href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex flex-col items-start hover:opacity-80 transition-opacity"
+                          className="flex flex-col items-start hover:opacity-80 transition-opacity leading-tight"
                         >
-                          <TrustpilotHeader className="scale-[0.6] origin-left -my-1" />
-                          <span className="text-[11px] text-gray-600 mt-0.5">4.8 out of 5</span>
+                          <span className="text-sm font-bold text-gray-900">Excellent</span>
+                          <div className="flex gap-0.5 my-0.5">
+                            {[0, 1, 2, 3, 4].map((i) => (
+                              <span key={i} className="inline-block w-3 h-3 bg-[#00B67A] flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 text-white fill-current">
+                                  <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z" />
+                                </svg>
+                              </span>
+                            ))}
+                          </div>
+                          <span className="text-[11px] text-gray-600">4.8 out of 5</span>
                         </a>
                       </div>
 
                       {/* SECTION 2: Your cover */}
-                      <div className="flex flex-col justify-center px-5 py-3 border-r border-gray-100 flex-shrink-0 min-w-0">
-                        <span className="text-[11px] font-bold text-orange-500 tracking-wide uppercase">Your Cover</span>
-                        <span className="text-base font-bold text-gray-900 whitespace-nowrap mt-0.5">{coverLabel}</span>
+                      <div className="flex flex-col justify-center px-4 py-2.5 border-r border-gray-100 flex-shrink-0">
+                        <span className="text-[11px] font-bold text-orange-500 tracking-wide uppercase leading-tight">Your Cover</span>
+                        <span className="text-base font-bold text-gray-900 whitespace-nowrap mt-0.5 leading-tight">{coverLabel}</span>
                         <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
                           <Wrench className="w-3 h-3" />
                           <span className="whitespace-nowrap">Local Garages (£50/hour)</span>
@@ -2889,7 +2898,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* SECTION 3: Price */}
-                      <div className="flex flex-col items-start justify-center px-5 py-3 border-r border-gray-100 flex-shrink-0 min-w-0">
+                      <div className="flex flex-col items-start justify-center px-4 py-2.5 border-r border-gray-100 flex-shrink-0">
                         <span className="text-2xl font-bold text-orange-500 leading-none whitespace-nowrap">{dailyPriceLabel}</span>
                         <span className="text-xs text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
                         {stripeSavings > 0 && (
@@ -2899,7 +2908,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* SECTION 4: Pay in full pill */}
                       {stripeSavings > 0 && (
-                        <div className="flex items-center px-5 py-3 flex-shrink-0">
+                        <div className="flex items-center px-4 py-2.5 flex-shrink-0">
                           <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
@@ -2910,17 +2919,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </div>
                       )}
 
-                      {/* SECTION 5: CTA */}
-                      <div className="flex flex-col items-center justify-center px-5 py-3 flex-shrink-0 ml-auto border-l border-gray-100">
+                      {/* SECTION 5: CTA - pushed to right edge inside the card */}
+                      <div className="flex flex-col items-center justify-center px-4 py-2.5 flex-shrink-0 ml-auto border-l border-gray-100">
                         <Button
                           onClick={handleSelectPlan}
                           size="lg"
-                          className="text-base font-bold px-6 py-3 bg-orange-500 hover:bg-orange-600 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
+                          className="text-sm font-bold px-5 py-2.5 bg-orange-500 hover:bg-orange-600 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
                         >
                           Continue to checkout
                           <ArrowRight className="w-4 h-4 ml-2" strokeWidth={3} />
                         </Button>
-                        <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-gray-500 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-500 whitespace-nowrap">
                           <Lock className="h-3 w-3 flex-shrink-0" />
                           <span>Secure checkout – 14 days to cancel</span>
                         </div>
