@@ -2779,7 +2779,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
                   const totalCoverDays = Math.round((months / 12) * 365);
-                  const pencePerDay = totalCoverDays > 0 ? Math.round((totalContract * 100) / totalCoverDays) : 0;
+                  const pencePerDayRaw = totalCoverDays > 0 ? (totalContract * 100) / totalCoverDays : 0;
+                  const dailyPriceLabel = pencePerDayRaw >= 100
+                    ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
+                    : `${Math.round(pencePerDayRaw)}p/day`;
                   const coverLabel =
                     paymentType === '12months' ? '1-Year Platinum Cover' :
                     paymentType === '24months' ? '2-Year Platinum Cover' :
