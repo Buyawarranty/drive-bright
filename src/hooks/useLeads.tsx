@@ -426,22 +426,35 @@ export const useLeads = (options?: UseLeadsOptions) => {
         .filter((lead: any) => !recentlyDeletedRef.current.has(lead.id))
         .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      // Deduplicate by email — keep only the most recent lead per email,
-      // carry the count so we know how many times they applied
+      // Deduplicate by email — pick the canonical "owner" row, not just the newest.
+      // Priority: assigned + has activity → assigned → has activity → most recently updated → newest created.
+      // This prevents duplicate rows from making ownership appear to switch between agents.
       const emailCounts: Record<string, number> = {};
-      const emailBestLead: Record<string, any> = {};
+      const emailGroups: Record<string, any[]> = {};
       allLeads.forEach((lead: any) => {
         const email = lead.email?.toLowerCase();
         if (email) {
           emailCounts[email] = (emailCounts[email] || 0) + 1;
-          // Keep the lead with the most recent activity (already sorted newest first)
-          if (!emailBestLead[email]) {
-            emailBestLead[email] = lead;
-          }
+          (emailGroups[email] ||= []).push(lead);
         }
       });
 
-      // Build deduplicated list: one row per email (most recent), plus leads without email
+      const scoreLead = (l: any) => {
+        const hasAssignee = l.assigned_to ? 0 : 1;
+        const hasActivity = (l.call_count > 0 || l.notes || l.last_contacted_at) ? 0 : 1;
+        return { hasAssignee, hasActivity };
+      };
+      const pickCanonical = (rows: any[]) =>
+        [...rows].sort((a, b) => {
+          const sa = scoreLead(a), sb = scoreLead(b);
+          if (sa.hasAssignee !== sb.hasAssignee) return sa.hasAssignee - sb.hasAssignee;
+          if (sa.hasActivity !== sb.hasActivity) return sa.hasActivity - sb.hasActivity;
+          const ua = new Date(a.updated_at || a.created_at).getTime();
+          const ub = new Date(b.updated_at || b.created_at).getTime();
+          if (ua !== ub) return ub - ua;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        })[0];
+
       const deduplicatedLeads: any[] = [];
       const seenEmails = new Set<string>();
       allLeads.forEach((lead: any) => {
@@ -449,7 +462,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (email) {
           if (!seenEmails.has(email)) {
             seenEmails.add(email);
-            deduplicatedLeads.push(lead);
+            deduplicatedLeads.push(pickCanonical(emailGroups[email]));
           }
         } else {
           deduplicatedLeads.push(lead);
