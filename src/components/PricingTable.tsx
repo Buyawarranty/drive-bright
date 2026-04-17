@@ -1671,8 +1671,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   )}
                   {isBestValue && (
-                    <div className="absolute -top-3 right-4 z-10">
-                      <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+                      <span className="inline-flex items-center gap-1.5 bg-green-600 text-white text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
                         BEST VALUE
                       </span>
                     </div>
