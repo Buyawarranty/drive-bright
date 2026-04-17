@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ const DealerLogin = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +30,15 @@ const DealerLogin = () => {
         return;
       }
 
-      navigate('/dealer-portal/dashboard');
+      // Honour redirect-back from hero
+      const redirect = searchParams.get('redirect');
+      const reg = searchParams.get('reg') || localStorage.getItem('dealerPendingReg');
+      if (redirect) {
+        const target = reg ? `${redirect}?reg=${encodeURIComponent(reg)}` : redirect;
+        navigate(target);
+      } else {
+        navigate('/dealer-portal/dashboard');
+      }
     } catch (error: any) {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
     } finally {

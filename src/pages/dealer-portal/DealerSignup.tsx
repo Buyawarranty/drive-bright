@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ const DealerSignup = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company_name: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +53,14 @@ const DealerSignup = () => {
         }
 
         toast({ title: 'Account created!', description: 'Welcome to the Dealer Portal.' });
-        navigate('/dealer-portal/dashboard');
+        const redirect = searchParams.get('redirect');
+        const reg = searchParams.get('reg') || localStorage.getItem('dealerPendingReg');
+        if (redirect) {
+          const target = reg ? `${redirect}?reg=${encodeURIComponent(reg)}` : redirect;
+          navigate(target);
+        } else {
+          navigate('/dealer-portal/dashboard');
+        }
       }
     } catch (error: any) {
       toast({ title: 'Signup failed', description: error.message, variant: 'destructive' });
