@@ -2809,7 +2809,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* Price + Pay in full row */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col min-w-0">
-                          <span className="text-xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
+                          <span className="text-xl font-bold text-orange-500 leading-none whitespace-nowrap">{dailyPriceLabel}</span>
                           <span className="text-[11px] text-gray-700">£{displayMonthlyPrice}/month (12 payments)</span>
                           {stripeSavings > 0 && (
                             <span className="text-[11px] font-semibold text-green-600">Save £{stripeSavings} today</span>
