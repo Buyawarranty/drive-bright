@@ -70,13 +70,25 @@ const monthNames = [
 ];
 
 export const CancellationsTab: React.FC<{
-  adminUsers: AdminUser[];
-  currentAdminUser: AdminUser | null;
-}> = ({ adminUsers, currentAdminUser }) => {
+  adminUsers?: AdminUser[];
+  currentAdminUser?: AdminUser | null;
+}> = ({ adminUsers: adminUsersProp, currentAdminUser: currentAdminUserProp }) => {
   const { canExportTab } = usePermissions();
   const { exportToCSV: exportDataToCSV } = useDataExport();
+  const { user, userRole } = useAuth();
   const canExport = canExportTab('customers');
-  const isFinancialRole = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
+
+  const [loadedAdminUsers, setLoadedAdminUsers] = useState<AdminUser[]>([]);
+  const adminUsers = adminUsersProp ?? loadedAdminUsers;
+  const currentAdminUser = useMemo(() => {
+    if (currentAdminUserProp !== undefined && currentAdminUserProp !== null) return currentAdminUserProp;
+    if (!user?.id) return null;
+    return (adminUsers as any[]).find((u: any) => u.user_id === user.id) || null;
+  }, [currentAdminUserProp, user?.id, adminUsers]);
+
+  const isFinancialRole = userRole === 'super_admin' || userRole === 'admin'
+    || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
+  const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
   const [records, setRecords] = useState<CancellationRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +97,7 @@ export const CancellationsTab: React.FC<{
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
+  const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
 
   // Default to current month
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -94,6 +107,20 @@ export const CancellationsTab: React.FC<{
   const [selectedMonth, setSelectedMonth] = useState<string>(() => String(new Date().getMonth()));
   const [selectedYear, setSelectedYear] = useState<string>(() => String(new Date().getFullYear()));
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Self-load admin users when not provided via props
+  useEffect(() => {
+    if (adminUsersProp) return;
+    supabase.from('admin_users')
+      .select('id, user_id, email, first_name, last_name, role')
+      .eq('is_active', true)
+      .then(({ data }) => setLoadedAdminUsers((data || []) as any));
+  }, [adminUsersProp]);
+
+  const handleQuickRange = (key: QuickRange) => {
+    setQuickRange(key);
+    setDateRange(computeQuickRange(key));
+  };
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
