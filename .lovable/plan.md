@@ -1,54 +1,31 @@
 
 
-## Plan: Refactor Step 3 Sticky Bar UI
+## Diagnosis: cancellation worked correctly — this is by design
 
-**File:** `src/components/PricingTable.tsx` (lines 2741–2947 only)
+I checked the database. The customer record (`accepttest accepttest`, B11 CSD, signup 17/04/2026 20:00) now has `status = 'Cancelled'` and was last updated at 20:08:02 — exactly when you cancelled. **The cancellation succeeded.**
 
-**Scope:** Pure visual/layout refactor of the sticky summary bar. No changes to pricing logic, calculations, handlers, props, or navigation. All `displayMonthlyPrice`, `stripeSavings`, `payInFullDiscounted`, `handleSelectPlan`, `paymentType` logic stays identical.
+The reason it's still visible: cancelled customers are **intentionally kept in the Customer Management list** with a highlighted "Cancelled" status. The `CancelWarrantyDialog` itself even tells you this:
 
-### Problems with current desktop layout
-1. All 5 sections use `flex-1` → equal width forces price (key info) into the same narrow column as the trust badge, making it feel cramped.
-2. `divide-x` lines + `flex-1` cause uneven visual weight; CTA button is squeezed.
-3. Padding inside sections (`px-5`) is fine but proportions are wrong.
-4. Trust block is centered horizontally with shield + text, when reference shows it more compactly left-aligned.
+> "Customer will remain visible. Cancelled/refunded customers stay in the dashboard with highlighted status. Use **Archive** to hide them."
 
-### Target proportions (desktop, left → right)
-Use weighted flex (instead of equal `flex-1`) to give price + CTA more room:
+This matches the project's archiving standard — cancellations preserve audit history and commission/unwind tracking; **Archive** is the action that removes a row from the visible list (`is_deleted = true`).
 
-```text
-┌──────────┬───────────┬─────────────┬──────────────┬────────────────┐
-│  TRUST   │  COVER    │   PRICE     │  PAY IN FULL │      CTA       │
-│  ~14%    │   ~20%    │    ~22%     │     ~22%     │     ~22%       │
-│ flex:none│  flex:1   │   flex:1.2  │   flex:1.2   │  flex:1.3      │
-└──────────┴───────────┴─────────────┴──────────────┴────────────────┘
-   24px gap between sections, vertical divider lines, py-3.5 px-5
-```
+### What you can do now
 
-### Specific changes per section
+Three possible paths — pick one:
 
-1. **Container** — keep `divide-x divide-gray-200`, add `gap-0`, increase vertical padding to `py-3.5`, ensure `items-stretch` for full-height dividers.
+**Option A — Archive this specific record now (no code change)**
+Open the row's actions menu and click **Archive**. The row will disappear from the list (it'll be soft-deleted like the 20+ older `buyawarranty1@gmail.com` test rows already in the DB).
 
-2. **Trust (Section 1)** — `flex-shrink-0` (no flex-1), tighten to ~180px width, left-align content, smaller shield circle (w-8 h-8), keep "Excellent / stars / 4.8 out of 5" stack.
+**Option B — Add a "Hide cancelled" filter toggle (small UI change)**
+Add a toggle/checkbox at the top of Customer Management called "Hide cancelled & refunded". When ON, the default `all` view filters out rows where `status` is `cancelled` or `refunded`. Off by default (preserves current behaviour and audit visibility). One-line filter addition in `CustomersTab.tsx` around line 715.
 
-3. **Cover (Section 2)** — `flex-1`, left-aligned, label uppercase orange, title `text-base font-bold`, subtext with wrench icon `text-xs text-gray-600`. Add `mt-1` between rows for breathing room.
+**Option C — Auto-archive on cancellation (changes documented behaviour)**
+Modify `CancelWarrantyDialog.tsx` so cancelling also sets `is_deleted = true`. This contradicts the existing "Customer remains visible" UX promise and the archiving standard memory, and would break the **Cancellations tab**, commission unwinds, and refund analytics that rely on these rows being queryable. **Not recommended.**
 
-4. **Price (Section 3)** — wider via `flex-[1.2]`. Stack: `text-3xl` daily price (was `text-2xl`), `text-xs` monthly line, `text-xs text-green-600` savings line. Add `gap-1` between lines for clear vertical rhythm.
+### My recommendation
 
-5. **Pay in Full (Section 4)** — `flex-[1.2]`, center pill horizontally, slightly larger pill (`px-4 py-2.5`, `rounded-xl`), wallet icon `w-5 h-5`, two-line text stays.
+**Option B** — it's the cleanest fix for your frustration without breaking unwind/commission tracking. You get a one-click way to hide cancelled rows when you don't want to see them, while audit trails remain intact.
 
-6. **CTA (Section 5)** — `flex-[1.3]` so button has room, button stays `w-full` inside, add `gap-1.5` for "Secure checkout" subtext below button. Keep lock icon + text.
-
-### Mobile (lines 2790–2843)
-Already stacks vertically and works — only minor tweak: increase gap between price row and CTA from `gap-2` to `gap-3` for breathing room, and ensure the "Pay in full" pill doesn't overlap the daily price by giving the price column `min-w-0 flex-1` and the pill `flex-shrink-0`. No structural changes.
-
-### What stays untouched
-- All IIFE calculation blocks (`months`, `totalContract`, `payInFull`, `stripeSavings`, `payInFullDiscounted`, `pencePerDayRaw`, `dailyPriceLabel`, `coverLabel`)
-- `handleSelectPlan`, `plansLoading`, `plansError`, `retryFetchPlans`
-- Loading and error states
-- Outer fixed positioning, `bg-gray-50 border-t-2 border-green-200`, z-index
-- Bottom padding spacer (line 2739)
-- "What's included" reassurance banner above
-
-### Risk
-Zero functional risk — only Tailwind class changes inside the existing JSX structure. Section numbering and order preserved so visual hierarchy remains predictable for users mid-funnel.
+Let me know which option you'd like and I'll implement it.
 
