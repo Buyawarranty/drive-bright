@@ -152,12 +152,6 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 {/* Header row: title + selection indicator */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    {term.isPopular && (
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <Check className="w-4 h-4 text-success" strokeWidth={3} />
-                        <span className="text-sm font-semibold text-success">Perfect for your {vehicleLabel}</span>
-                      </div>
-                    )}
                     <h4 className="text-3xl sm:text-4xl font-extrabold text-foreground leading-tight tracking-tight">
                       {term.label}
                     </h4>
