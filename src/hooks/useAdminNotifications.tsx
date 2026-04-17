@@ -221,7 +221,8 @@ export const useAdminNotifications = (userRole?: string | null) => {
           toast('🔥 Lead Came Back!', {
             description: `${name}${regInfo} resubmitted — act fast!`,
             duration: 10000,
-            className: '!bg-purple-600 !text-white !border-purple-700 [&_*]:!text-white',
+            closeButton: true,
+            className: '!bg-purple-600 !text-white !border-purple-700 !p-2 !min-h-0 !w-[220px] !text-[11px] [&_*]:!text-white [&_[data-title]]:!text-[11px] [&_[data-title]]:!font-semibold [&_[data-description]]:!text-[10px] [&_[data-description]]:!leading-tight',
           });
           fetchNotifications();
         }
