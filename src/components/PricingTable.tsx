@@ -2773,10 +2773,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - New compact design */}
                 {(() => {
+                  const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
+                  const totalContract = displayMonthlyPrice * months;
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
-                  const pencePerDay = Math.round(payInFull / 365);
+                  const totalCoverDays = Math.round((months / 12) * 365);
+                  const pencePerDay = totalCoverDays > 0 ? Math.round((totalContract * 100) / totalCoverDays) : 0;
                   const coverLabel =
                     paymentType === '12months' ? '1-Year Platinum Cover' :
                     paymentType === '24months' ? '2-Year Platinum Cover' :
@@ -2802,19 +2805,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* Price + Pay in full row */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-xl font-bold text-orange-500 leading-none">{pencePerDay}p/day</span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
                           <span className="text-[11px] text-gray-700">£{displayMonthlyPrice}/month (12 payments)</span>
                           {stripeSavings > 0 && (
                             <span className="text-[11px] font-semibold text-green-600">Save £{stripeSavings} today</span>
                           )}
                         </div>
                         {stripeSavings > 0 && (
-                          <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-2 py-1.5">
+                          <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-2 py-1.5 flex-shrink-0">
                             <Wallet className="w-4 h-4 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
-                              <span className="text-[10px] text-gray-700 leading-tight">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
-                              <span className="text-[10px] font-semibold text-green-600 leading-tight">Save £{stripeSavings}</span>
+                              <span className="text-[10px] text-gray-700 leading-tight whitespace-nowrap">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
+                              <span className="text-[10px] font-semibold text-green-600 leading-tight whitespace-nowrap">Save £{stripeSavings}</span>
                             </div>
                           </div>
                         )}
@@ -2839,16 +2842,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                 {/* Desktop Layout - New 5-Section Design */}
                 {(() => {
+                  const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
+                  const totalContract = displayMonthlyPrice * months;
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
-                  const pencePerDay = Math.round(payInFull / 365);
+                  const totalCoverDays = Math.round((months / 12) * 365);
+                  const pencePerDay = totalCoverDays > 0 ? Math.round((totalContract * 100) / totalCoverDays) : 0;
                   const coverLabel =
                     paymentType === '12months' ? '1-Year Platinum Cover' :
                     paymentType === '24months' ? '2-Year Platinum Cover' :
                     '3-Year Platinum Cover';
                   return (
-                    <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div className="hidden md:flex md:items-stretch md:flex-wrap lg:flex-nowrap w-full bg-white rounded-xl shadow-lg border border-gray-100 gap-y-2">
 
                       {/* SECTION 1: Trustpilot */}
                       <div className="flex items-center gap-3 px-4 py-3 border-r border-gray-100 flex-shrink-0">
@@ -2867,7 +2873,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* SECTION 2: Your cover */}
-                      <div className="flex flex-col justify-center px-4 py-3 border-r border-gray-100 flex-shrink-0">
+                      <div className="flex flex-col justify-center px-4 py-3 border-r border-gray-100 flex-shrink-0 min-w-0">
                         <span className="text-[11px] font-bold text-orange-500 tracking-wide uppercase">Your Cover</span>
                         <span className="text-base font-bold text-gray-900 whitespace-nowrap mt-0.5">{coverLabel}</span>
                         <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
@@ -2877,7 +2883,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* SECTION 3: Price */}
-                      <div className="flex flex-col items-start justify-center px-4 py-3 border-r border-gray-100 flex-1 min-w-0">
+                      <div className="flex flex-col items-start justify-center px-4 py-3 border-r border-gray-100 flex-shrink-0 min-w-0">
                         <span className="text-2xl font-bold text-orange-500 leading-none whitespace-nowrap">{pencePerDay}p/day</span>
                         <span className="text-xs text-gray-700 mt-1 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
                         {stripeSavings > 0 && (
@@ -2887,7 +2893,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* SECTION 4: Pay in full pill */}
                       {stripeSavings > 0 && (
-                        <div className="flex items-center px-3 py-3 border-r border-gray-100 flex-shrink-0">
+                        <div className="flex items-center px-3 py-3 border-r border-gray-100 flex-1 min-w-0 justify-center">
                           <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
                             <Wallet className="w-5 h-5 text-green-600 flex-shrink-0" />
                             <div className="flex flex-col">
@@ -2899,7 +2905,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       )}
 
                       {/* SECTION 5: CTA */}
-                      <div className="flex flex-col items-center justify-center px-4 py-3 flex-shrink-0">
+                      <div className="flex flex-col items-center justify-center px-4 py-3 flex-shrink-0 ml-auto">
                         <Button
                           onClick={handleSelectPlan}
                           size="lg"
