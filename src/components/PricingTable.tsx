@@ -2823,7 +2823,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
 
                       {/* SECTION 1: Trustpilot */}
-                      <div className="flex items-center gap-3 px-4 lg:px-5 py-4 border-r border-gray-100 min-w-fit">
+                      <div className="flex items-center gap-3 px-4 lg:px-5 py-4 border-r border-gray-100 flex-shrink-0">
                         <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
                           <Shield className="w-5 h-5 text-green-600" />
                         </div>
@@ -2833,9 +2833,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           rel="noopener noreferrer"
                           className="flex flex-col items-start hover:opacity-80 transition-opacity"
                         >
-                          <span className="text-xs font-semibold text-gray-900">Excellent</span>
-                          <TrustpilotHeader className="scale-[0.55] origin-left -my-1" />
-                          <span className="text-[11px] text-gray-600">4.8 out of 5</span>
+                          <TrustpilotHeader className="scale-[0.6] origin-left -my-1" />
+                          <span className="text-[11px] text-gray-600 mt-0.5">4.8 out of 5</span>
                         </a>
                       </div>
 
