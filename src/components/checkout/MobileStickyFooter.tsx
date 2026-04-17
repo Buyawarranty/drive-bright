@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 interface MobileStickyFooterProps {
   selectedPayment: 'monthly' | 'full' | null;
   monthlyPrice: number;
+  totalPrice?: number;
   fullPrice: number;
   originalPrice?: number;
+  paymentType?: '12months' | '24months' | '36months';
   isLoading: boolean;
   isFormValid: boolean;
   onPayClick: () => void;
@@ -18,7 +20,9 @@ interface MobileStickyFooterProps {
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   selectedPayment,
   monthlyPrice,
+  totalPrice,
   fullPrice,
+  paymentType = '12months',
   isLoading,
   onPayClick,
   minimised = false,
