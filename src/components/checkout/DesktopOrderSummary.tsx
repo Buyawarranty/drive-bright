@@ -212,20 +212,20 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               <div className="mb-4">
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
-                  <span className="text-2xl font-bold text-[#1a1a1a]">£{monthlyPrice}</span>
+                  <span className="text-2xl font-bold text-[#FF6B00]">{monthlyPencePerDay}p<span className="text-base">/day</span></span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Then £{monthlyPrice}/month × {months - 1} · Total £{totalPrice} · 0% APR
+                <p className="text-xs text-gray-500 mt-1">
+                  £{monthlyPrice}/month × {months === 12 ? 12 : 12} payments · Total £{totalPrice} · 0% APR
                 </p>
               </div>
             ) : selectedPayment === 'full' ? (
               <div className="mb-4">
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm font-bold text-[#1a1a1a]">Total payment today</span>
-                  <span className="text-2xl font-bold text-[#1a1a1a]">£{fullPrice}</span>
+                  <span className="text-2xl font-bold text-[#0BA360]">£{fullPrice}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  One-off payment · <span className="text-[#0BA360] font-medium">Save £{savings}</span>
+                <p className="text-xs text-gray-500 mt-1">
+                  Equivalent to {fullPencePerDay}p/day · <span className="text-[#0BA360] font-medium">Save £{savings}</span>
                 </p>
               </div>
             ) : (
