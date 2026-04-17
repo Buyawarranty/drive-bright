@@ -435,7 +435,15 @@ export const DiscountsGivenTab: React.FC = () => {
                         <TableRow key={c.id} className={rowClass}>
                           <TableCell className="font-medium text-sm whitespace-nowrap">{c.name}</TableCell>
                           <TableCell className="text-xs whitespace-nowrap">{format(new Date(c.signup_date), 'dd/MM/yyyy')}</TableCell>
-                          <TableCell className="font-mono text-xs">{c.registration_plate || '-'}</TableCell>
+                          <TableCell>
+                            {c.registration_plate ? (
+                              <span className="inline-block bg-[#FFD307] text-black font-bold font-mono text-xs px-2 py-1 rounded border border-black/20 tracking-wider uppercase">
+                                {c.registration_plate}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-xs whitespace-nowrap">{[c.vehicle_make, c.vehicle_model].filter(Boolean).join(' ') || '-'}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">{c.plan_type}</Badge>
