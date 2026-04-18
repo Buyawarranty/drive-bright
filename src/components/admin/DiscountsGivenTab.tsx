@@ -70,12 +70,47 @@ const DURATION_LABELS: Record<string, string> = {
   '36months': '3 Years',
 };
 
+function getVehicleAdjustment(customer: CustomerRecord, durationYears: number): number {
+  const make = (customer.vehicle_make || '').toLowerCase().replace(/dvla/gi, '').trim();
+  let adjustment = 0;
+
+  // Premium brand surcharge (Land Rover, Jaguar, Porsche, Tesla)
+  if (make === 'land rover' || make.startsWith('jaguar') || make === 'porsche' || make === 'tesla') {
+    if (durationYears === 1) adjustment += 300;
+    else if (durationYears === 2) adjustment += 500;
+    else if (durationYears === 3) adjustment += 700;
+  }
+
+  // Mileage and age surcharges (non-stacking, mileage takes precedence)
+  const mileageNum = customer.mileage
+    ? parseInt(String(customer.mileage).replace(/[^0-9]/g, ''))
+    : null;
+  const yearNum = customer.vehicle_year
+    ? parseInt(String(customer.vehicle_year).replace(/[^0-9]/g, ''))
+    : null;
+  const ageYears = yearNum ? new Date().getFullYear() - yearNum : null;
+
+  const mileageQualifies = mileageNum !== null && mileageNum > 120000 && mileageNum <= 150000;
+  const ageQualifies = ageYears !== null && ageYears > 12 && ageYears <= 15;
+
+  const surchargeByDuration = (y: number) => (y === 1 ? 100 : y === 2 ? 150 : y === 3 ? 200 : 0);
+
+  if (mileageQualifies || ageQualifies) {
+    adjustment += surchargeByDuration(durationYears);
+  }
+
+  return adjustment;
+}
+
 function calculateRetailPrice(customer: CustomerRecord): number | null {
   const paymentType = normalizePaymentType(customer.payment_type) as PaymentPeriod;
   const excess = customer.voluntary_excess ?? 100;
   const claimLimit = customer.claim_limit ?? 1250;
   const labourRate = customer.labour_rate ?? 70;
   const durationMonths = DURATION_MONTHS[paymentType] || 12;
+  const durationYears = Math.max(1, Math.round(durationMonths / 12));
+
+  const vehicleAdjustment = getVehicleAdjustment(customer, durationYears);
 
   const { totalPrice: baseTotal } = calculateTotalWarrantyPrice({
     paymentPeriod: paymentType,
@@ -83,7 +118,7 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
     claimLimit: claimLimit,
     labourRate: labourRate,
     boostEnabled: false,
-    vehicleAdjustment: 0,
+    vehicleAdjustment,
     addOnPrice: 0,
   });
 
