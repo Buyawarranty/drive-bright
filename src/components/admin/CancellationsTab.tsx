@@ -503,8 +503,18 @@ export const CancellationsTab: React.FC<{
                     </TableCell>
                   </TableRow>
                 ) : (
-                  pagination.paginatedData.map(record => (
-                    <TableRow key={record.id}>
+                  pagination.paginatedData.map(record => {
+                    const daysHeld = Math.floor(
+                      (new Date(record.updated_at).getTime() - new Date(record.created_at).getTime()) / (1000 * 60 * 60 * 24)
+                    );
+                    const rowHighlight =
+                      daysHeld <= 30
+                        ? 'bg-yellow-100 hover:bg-yellow-200'
+                        : daysHeld <= 60
+                          ? 'bg-red-100 hover:bg-red-200'
+                          : '';
+                    return (
+                    <TableRow key={record.id} className={rowHighlight}>
                       <TableCell>
                         <div>
                           <p className="font-medium text-sm">{record.name}</p>
@@ -514,9 +524,9 @@ export const CancellationsTab: React.FC<{
                       </TableCell>
                       <TableCell>
                         {record.registration_plate ? (
-                          <div className="inline-flex items-center border-2 border-foreground rounded-sm overflow-hidden font-mono text-xs font-bold shadow-sm">
-                            <div className="bg-accent text-accent-foreground px-2 py-0.5 tracking-wider">{record.registration_plate.toUpperCase()}</div>
-                          </div>
+                          <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
+                            {record.registration_plate.toUpperCase()}
+                          </span>
                         ) : (
                           <span className="text-muted-foreground text-xs">N/A</span>
                         )}
@@ -538,13 +548,15 @@ export const CancellationsTab: React.FC<{
                         </TableCell>
                       )}
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(record.updated_at), 'dd MMM yyyy')}
+                        <div>{format(new Date(record.updated_at), 'dd MMM yyyy')}</div>
+                        <div className="text-xs">{daysHeld} day{daysHeld === 1 ? '' : 's'} after purchase</div>
                       </TableCell>
                       <TableCell className="text-sm">
                         {getAgentName(record.assigned_to)}
                       </TableCell>
                     </TableRow>
-                  ))
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
