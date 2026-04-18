@@ -202,7 +202,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             .not('status', 'in', '("cancelled","refunded")'),
         ),
         supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
