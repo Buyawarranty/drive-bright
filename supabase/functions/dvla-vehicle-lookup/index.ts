@@ -367,24 +367,28 @@ serve(async (req) => {
     const regYear = getRegistrationYear(registrationNumber);
     console.log(`Registration ${registrationNumber} appears to be from year: ${regYear}`);
 
-    // Get access token for DVSA API
-    const accessToken = await getAccessToken();
-    
-    // Call DVSA API with retry logic
     let vehicleData;
     let lastError;
     const maxRetries = 3;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`DVSA API attempt ${attempt} for ${registrationNumber}`);
-        
-        vehicleData = await fetchDVSAVehicleData(registrationNumber, accessToken);
-        break; // Success, exit retry loop
-      } catch (error) {
-        lastError = error;
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`DVSA API attempt ${attempt} failed:`, errorMessage);
+
+    if (!hasValidDVSAConfig()) {
+      console.warn('DVSA config missing or placeholder values detected - skipping DVSA lookup and using fallback path');
+      lastError = new Error('Missing MOT API configuration');
+    } else {
+      // Get access token for DVSA API
+      const accessToken = await getAccessToken();
+
+      // Call DVSA API with retry logic
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`DVSA API attempt ${attempt} for ${registrationNumber}`);
+
+          vehicleData = await fetchDVSAVehicleData(registrationNumber, accessToken);
+          break; // Success, exit retry loop
+        } catch (error) {
+          lastError = error;
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error(`DVSA API attempt ${attempt} failed:`, errorMessage);
         
         if (errorMessage === 'Vehicle not found') {
           console.log(`Vehicle ${registrationNumber} not found in DVSA database - attempting DVLA fallback`);
