@@ -130,7 +130,7 @@ const BYDWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>BYD Extended Warranty UK: Electric Car Protection Plans</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Atto 3, Seal, Dolphin, Han, Tang covered. Battery, electric motor, electronics & more. From £${startingPrice}/month.`} />
+        <meta name="description" content="Discover BYD extended warranty plans designed for electric vehicles to reduce repair costs and ensure reliability." />
         <meta name="keywords" content="BYD extended warranty, BYD warranty UK, BYD Atto 3 warranty, BYD Seal warranty, BYD Dolphin warranty, BYD electric warranty, used BYD warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow" />

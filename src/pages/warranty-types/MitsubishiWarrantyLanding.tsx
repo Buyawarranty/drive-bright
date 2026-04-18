@@ -131,7 +131,7 @@ const MitsubishiWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Mitsubishi Extended Warranty UK | Instant Quote | BuyA Warranty</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Outlander, Eclipse Cross, ASX, L200 covered. Engine, 4WD, PHEV & more. Nationwide UK coverage. From £${startingPrice}/month.`} />
+        <meta name="description" content="Comprehensive Mitsubishi extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="keywords" content="Mitsubishi extended warranty, Mitsubishi warranty UK, Mitsubishi Outlander warranty, Mitsubishi L200 warranty, Mitsubishi Eclipse Cross warranty, Outlander PHEV warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow" />

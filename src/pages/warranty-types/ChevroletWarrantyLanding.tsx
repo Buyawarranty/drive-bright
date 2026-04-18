@@ -131,7 +131,7 @@ const ChevroletWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Chevrolet Extended Warranty UK | Instant Quote | BuyA Warranty</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Camaro, Corvette, Silverado, Captiva covered. Engine, transmission, electrics & more. From £${startingPrice}/month.`} />
+        <meta name="description" content="Comprehensive Chevrolet extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="keywords" content="Chevrolet extended warranty, Chevrolet warranty UK, Chevy Camaro warranty, Chevrolet Corvette warranty, Chevrolet Captiva warranty, used Chevrolet warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow" />

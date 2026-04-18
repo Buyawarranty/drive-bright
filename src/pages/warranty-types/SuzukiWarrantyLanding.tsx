@@ -131,7 +131,7 @@ const SuzukiWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Suzuki Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Swift, Vitara, Jimny, S-Cross covered. Engine, gearbox, electrics & more. Nationwide UK coverage. From £${startingPrice}/month.`} />
+        <meta name="description" content="Comprehensive Suzuki extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="keywords" content="Suzuki extended warranty, Suzuki warranty UK, Suzuki Swift warranty, Suzuki Vitara warranty, Suzuki Jimny warranty, used Suzuki warranty, Suzuki S-Cross warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow" />
