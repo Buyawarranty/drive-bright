@@ -2774,12 +2774,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {/* Mobile Layout - New compact design */}
                 {(() => {
                   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
-                  const totalContract = displayMonthlyPrice * months;
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
                   const totalCoverDays = Math.round((months / 12) * 365);
-                  const pencePerDayRaw = totalCoverDays > 0 ? (totalContract * 100) / totalCoverDays : 0;
+                  // Daily price uses payInFull (12 payments) divided by total cover days, matching the duration cards
+                  const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
                   const dailyPriceLabel = pencePerDayRaw >= 100
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
@@ -2846,12 +2846,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {/* Desktop Layout - New 5-Section Design */}
                 {(() => {
                   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
-                  const totalContract = displayMonthlyPrice * months;
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
                   const totalCoverDays = Math.round((months / 12) * 365);
-                  const pencePerDayRaw = totalCoverDays > 0 ? (totalContract * 100) / totalCoverDays : 0;
+                  // Daily price uses payInFull (12 payments) divided by total cover days, matching the duration cards
+                  const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
                   const dailyPriceLabel = pencePerDayRaw >= 100
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
