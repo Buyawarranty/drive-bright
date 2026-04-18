@@ -2903,6 +2903,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div className="flex-[1.2] flex flex-col items-start justify-center px-5 py-3.5 gap-1">
                         <span className="text-3xl font-bold text-orange-500 leading-none whitespace-nowrap">{dailyPriceLabel}</span>
                         <span className="text-xs text-gray-700 whitespace-nowrap">£{displayMonthlyPrice}/month <span className="text-gray-500">(12 payments only)</span></span>
+                        <span className="text-[11px] text-gray-500 whitespace-nowrap">Paid over 12 months · Covers {months} months</span>
                         {stripeSavings > 0 && (
                           <span className="text-xs font-semibold text-green-600 whitespace-nowrap">You save £{stripeSavings} today</span>
                         )}
