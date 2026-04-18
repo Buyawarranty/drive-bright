@@ -148,6 +148,7 @@ export const DiscountsGivenTab: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(computeRange('this_month'));
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
