@@ -280,8 +280,8 @@ const PeugeotWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Peugeot Extended Warranty UK | 208, 3008, 5008 Cover from £19/mo</title>
-        <meta name="description" content="Peugeot extended warranty from £19/month. Cover 208, 308, 3008, 5008, 508, e-208, e-2008 & all models. PureTech & EAT8 covered. Any UK garage. Instant quote." />
+        <title>Peugeot Extended Warranty UK | Reliable Cover | BuyA Warranty</title>
+        <meta name="description" content="Protect your Peugeot with an extended warranty from BuyA Warranty UK. Reliable cover, affordable plans and excellent customer service." />
         <meta name="keywords" content="peugeot extended warranty, peugeot warranty UK, peugeot 3008 warranty, peugeot 208 warranty, peugeot puretech warranty, peugeot electric warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/peugeot-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -290,8 +290,8 @@ const PeugeotWarrantyLanding: React.FC = () => {
         <meta name="geo.placename" content="United Kingdom" />
         <meta name="geo.position" content="51.5074;-0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
-        <meta property="og:title" content="Peugeot Extended Warranty UK | Instant Quotes from £19/month" />
-        <meta property="og:description" content="Comprehensive Peugeot warranty coverage. PureTech engine, EAT8 gearbox, electrics & more. All models covered including EV. Any UK garage." />
+        <meta property="og:title" content="Peugeot Extended Warranty UK | Reliable Cover | BuyA Warranty" />
+        <meta property="og:description" content="Protect your Peugeot with an extended warranty from BuyA Warranty UK. Reliable cover, affordable plans and excellent customer service." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/peugeot-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -301,8 +301,8 @@ const PeugeotWarrantyLanding: React.FC = () => {
         <meta property="og:site_name" content="Buy A Warranty" />
         <meta property="og:locale" content="en_GB" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Peugeot Extended Warranty UK | From £19/month" />
-        <meta name="twitter:description" content="UK's top-rated Peugeot warranty. 208, 3008, 5008 & all models. PureTech & EAT8 covered. 8,000+ components. Any garage." />
+        <meta name="twitter:title" content="Peugeot Extended Warranty UK | Reliable Cover | BuyA Warranty" />
+        <meta name="twitter:description" content="Protect your Peugeot with an extended warranty from BuyA Warranty UK. Reliable cover, affordable plans and excellent customer service." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta name="ai-content-declaration" content="This page provides information about Peugeot extended warranty services in the UK. Human-authored and fact-checked." />
         <meta name="author" content="Buy A Warranty" />

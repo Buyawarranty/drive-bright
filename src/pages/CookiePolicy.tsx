@@ -13,8 +13,8 @@ const CookiePolicy = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       <SEOHead 
-        title="Cookie Policy | Buy A Warranty UK"
-        description="Learn about how Buy A Warranty uses cookies and similar technologies on our website. Understand your privacy and cookie preferences."
+        title="Vehicle Warranty Cookies Policy UK | BuyA Warranty"
+        description="Learn how BuyA Warranty uses cookies to improve your vehicle warranty experience in the UK. Full policy on data privacy and site functionality."
         keywords="cookie policy, privacy, Buy A Warranty, cookies, website tracking, data protection"
         canonical="https://buyawarranty.co.uk/cookies"
       />

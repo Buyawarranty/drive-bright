@@ -118,8 +118,8 @@ const Terms = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <SEOHead 
-        title="Terms & Conditions | Buy A Warranty - Vehicle Warranty Terms"
-        description="Read our comprehensive terms and conditions for vehicle warranty coverage."
+        title="Car Warranty Terms UK | Full Conditions Explained | BuyA Warranty"
+        description="Full car warranty terms and conditions explained by BuyA Warranty UK. Clear details on coverage, exclusions, cancellations and your customer rights."
         keywords="terms and conditions, warranty terms, vehicle warranty"
         canonical={`${window.location.origin}/terms`}
       />

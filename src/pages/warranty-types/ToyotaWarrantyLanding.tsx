@@ -572,8 +572,8 @@ const ToyotaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Toyota Extended Warranty UK | Yaris, Corolla, RAV4, Prius from £19/mo</title>
-        <meta name="description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius, Camry or bZ4X with comprehensive extended warranty cover. Engine, gearbox, electrics and hybrid components covered. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
+        <title>Toyota Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Secure your Toyota with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="keywords" content="Toyota extended warranty, Toyota used car warranty, Toyota warranty UK, Toyota warranty cost, Toyota warranty quote, Toyota Yaris warranty, Toyota Corolla warranty, Toyota RAV4 warranty, Toyota C-HR warranty, Toyota Prius warranty, Toyota hybrid warranty, used Toyota warranty, second hand Toyota warranty, Toyota bZ4X warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/toyota-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -586,8 +586,8 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, C-HR, Prius from £19/mo" />
-        <meta property="og:description" content="Comprehensive Toyota warranty coverage for Yaris, Corolla, RAV4, C-HR, Prius, Camry and Hybrid Synergy Drive models. Engine, gearbox, electrics and more. Nationwide UK coverage with any VAT-registered garage." />
+        <meta property="og:title" content="Toyota Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta property="og:description" content="Secure your Toyota with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/toyota-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -598,8 +598,8 @@ const ToyotaWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Toyota Warranty UK | Yaris, Corolla, RAV4, Prius from £19/mo" />
-        <meta name="twitter:description" content="Protect your Toyota Yaris, Corolla, RAV4, C-HR, Prius with comprehensive extended warranty. Hybrid and EV models covered. Nationwide UK coverage. Get instant quote." />
+        <meta name="twitter:title" content="Toyota Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta name="twitter:description" content="Secure your Toyota with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Toyota extended warranty services in the UK, covering Yaris, Corolla, RAV4, C-HR, Prius, Camry, bZ4X, Land Cruiser, and Hilux models. Human-authored and fact-checked." />

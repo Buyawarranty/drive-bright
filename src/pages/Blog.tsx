@@ -93,8 +93,8 @@ const Blog = () => {
   return (
     <>
       <SEOHead 
-        title="Best Car Warranty UK | Expert Vehicle Protection Advice & Tips"
-        description="Get expert advice on car warranties across the UK. Compare car and van warranties in Manchester, Birmingham, London & nationwide. Affordable cover and peace of mind today."
+        title="Extended Car Warranty Quote UK | Instant | BuyA Warranty"
+        description="Get an instant extended car warranty quote from BuyA Warranty UK. Simple online process, competitive prices and full policy details in seconds."
         keywords="best car warranty UK, UK car warranty advice, car warranty Manchester, vehicle warranty Birmingham, van warranty London, car protection plans UK, affordable car cover UK, driving tips UK, car maintenance UK, used car warranty UK"
         canonical="https://buyawarranty.co.uk/thewarrantyhub"
         ogImage={pandaHeroImage}

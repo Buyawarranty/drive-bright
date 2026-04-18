@@ -75,8 +75,8 @@ const VolkswagenWarranty = () => {
   return (
     <>
       <SEOHead
-        title="Volkswagen Extended Warranty | Affordable VW Car Cover UK"
-        description="Protect your Volkswagen from costly repair bills with our extended warranty. Engine, gearbox, electrics and more covered. Get an instant online quote for any VW."
+        title="Volkswagen Extended Warranty UK: Reliable Cover for VW Cars"
+        description="Explore Volkswagen extended warranty plans that help manage repair costs, maintain performance, and provide long-term protection for your vehicle."
         keywords="volkswagen extended warranty, vw warranty UK, volkswagen warranty cost, vw golf warranty, vw tiguan warranty, vw passat warranty, vw transporter warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/"
       />

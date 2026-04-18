@@ -632,8 +632,8 @@ const BMWWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>BMW Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
-        <meta name="description" content="Protect your BMW with comprehensive extended warranty cover. All models from 1 Series to X7 and i Series covered. Engine, gearbox, electrics & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £29/month. Get your instant quote in 60 seconds." />
+        <title>BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Secure your BMW with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="keywords" content="BMW extended warranty, BMW used car warranty, BMW warranty UK, BMW warranty cost, BMW warranty quote, BMW 3 Series warranty, BMW X5 warranty, BMW i4 warranty, BMW X3 warranty, BMW 5 Series warranty, BMW electric warranty, BMW hybrid warranty, used BMW warranty, second hand BMW warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/bmw-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -648,8 +648,8 @@ const BMWWarrantyLanding: React.FC = () => {
         <meta httpEquiv="content-language" content="en-GB" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="BMW Extended Warranty UK | Instant Quotes from £29/month" />
-        <meta property="og:description" content="Comprehensive BMW warranty coverage. Engine, gearbox, electrics & more. All models covered including hybrid and electric. Nationwide UK coverage with any garage. Get your instant quote now." />
+        <meta property="og:title" content="BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta property="og:description" content="Secure your BMW with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/bmw-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -661,8 +661,8 @@ const BMWWarrantyLanding: React.FC = () => {
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="BMW Extended Warranty UK | From £29/month" />
-        <meta name="twitter:description" content="Protect your BMW with comprehensive extended warranty. All models covered. Nationwide UK coverage. Get instant quote." />
+        <meta name="twitter:title" content="BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta name="twitter:description" content="Secure your BMW with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         {/* AI Search Engine Optimization */}

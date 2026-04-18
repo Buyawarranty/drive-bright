@@ -672,8 +672,8 @@ const HybridWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Hybrid Car Warranty UK From £19/mo | Toyota, BMW, Kia & More</title>
-        <meta name="description" content="Get a hybrid vehicle warranty from £19/month. We cover Toyota Prius, RAV4 Hybrid, Kia Niro, BMW 330e, Volvo XC60 Recharge & 100+ hybrid models. Inverters, electric motors, battery management & 1,000+ parts. Unlimited claims at any UK garage. Quote in 60 seconds — 14-day money-back guarantee." />
+        <title>Hybrid Warranty UK | BuyA Warranty Protection</title>
+        <meta name="description" content="Buy hybrid warranty protection in the UK with BuyA Warranty. Comprehensive cover for hybrid systems, battery and mechanical parts." />
         <meta name="keywords" content="hybrid car warranty UK, hybrid vehicle warranty, plug-in hybrid warranty, PHEV warranty UK, Toyota hybrid warranty, Honda hybrid warranty, Kia Niro warranty, Hyundai hybrid warranty, BMW 330e warranty, Volvo hybrid warranty, Lexus hybrid warranty, hybrid powertrain cover, hybrid battery warranty UK, used hybrid warranty, second hand hybrid warranty, hybrid extended warranty, hybrid motor warranty, inverter warranty, e-CVT warranty, mild hybrid warranty, self charging hybrid warranty, hybrid car breakdown cover, cheap hybrid warranty UK, best hybrid warranty UK, hybrid warranty near me" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/hybrid-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -706,8 +706,8 @@ const HybridWarrantyLanding: React.FC = () => {
         <meta name="ai-purpose" content="To help UK hybrid vehicle owners find affordable extended warranty protection for their HEV, PHEV, or mild hybrid car" />
 
         {/* Open Graph — unique, keyword-rich, click-worthy */}
-        <meta property="og:title" content="Hybrid Car Warranty From £19/mo — Toyota, BMW, Kia, Volvo & 100+ Models Covered" />
-        <meta property="og:description" content="UK's specialist hybrid warranty. Covers electric motors, inverters, battery management & 1,000+ parts on any HEV, PHEV or mild hybrid. Unlimited claims, any garage, no excess options. Instant quote in 60 seconds." />
+        <meta property="og:title" content="Hybrid Warranty UK | BuyA Warranty Protection" />
+        <meta property="og:description" content="Buy hybrid warranty protection in the UK with BuyA Warranty. Comprehensive cover for hybrid systems, battery and mechanical parts." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/hybrid-warranty/" />
         <meta property="og:type" content="product" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -723,8 +723,8 @@ const HybridWarrantyLanding: React.FC = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@buyawarranty" />
         <meta name="twitter:creator" content="@buyawarranty" />
-        <meta name="twitter:title" content="Hybrid Car Warranty UK — From £19/mo | 100+ Models Covered" />
-        <meta name="twitter:description" content="Specialist hybrid warranty for Toyota, BMW, Kia, Volvo & more. Electric motors, inverters, battery systems covered. Unlimited claims, any UK garage. Quote in 60 seconds." />
+        <meta name="twitter:title" content="Hybrid Warranty UK | BuyA Warranty Protection" />
+        <meta name="twitter:description" content="Buy hybrid warranty protection in the UK with BuyA Warranty. Comprehensive cover for hybrid systems, battery and mechanical parts." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta name="twitter:image:alt" content="Hybrid Vehicle Warranty UK — Buy A Warranty — From £19 per month" />
 

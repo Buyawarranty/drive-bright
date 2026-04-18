@@ -1048,8 +1048,8 @@ const CustomerDashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <SEOHead 
-          title="Customer Dashboard | BuyAWarranty Account Portal"
-          description="Access your warranty policies, download documents, manage your account details, and get support for your vehicle warranty coverage."
+          title="Car Warranty Dashboard UK | Manage Policy | BuyA Warranty"
+          description="Manage your policy easily in the BuyA Warranty customer dashboard. Track your UK car warranty, claims and renewals in one secure place."
           keywords="customer dashboard, warranty portal, policy documents, account management, vehicle warranty"
         />
         {/* Minimal Header */}

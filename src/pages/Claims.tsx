@@ -313,8 +313,8 @@ Additional Information: ${formData.additionalInfo}
   return (
     <>
       <SEOHead
-        title="Make a Claim - Buy a Warranty"
-        description="Submit your warranty claim easily. Fast, simple, hassle-free process. We've got you covered!"
+        title="Get Car Warranty UK | Easy Online Instant Quote | BuyA Warranty"
+        description="Get car warranty cover quickly and easily with BuyA Warranty UK. Simple online process, instant quotes and immediate protection for your vehicle."
         keywords="warranty claim, car warranty claim, vehicle warranty support, customer service"
       />
 

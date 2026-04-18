@@ -584,8 +584,8 @@ const VanWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Van warranty UK | From £19/mo | Buy A Warranty</title>
-        <meta name="description" content="Keep your business moving with comprehensive van warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter & all major makes. Engine, turbo, gearbox, DPF covered. Claim limits up to £5,000. Zero excess available. Same-day cover. Free 30-second quote." />
+        <title>Van Extended Warranty UK | Comprehensive Cover | BuyA Warranty</title>
+        <meta name="description" content="Protect your van with a comprehensive extended warranty in the UK from BuyA Warranty. Tailored cover for commercial and private use." />
         <meta name="keywords" content="van warranty UK, commercial van warranty, Ford Transit warranty, Mercedes Sprinter warranty, VW Transporter warranty, Vauxhall Vivaro warranty, van extended warranty, used van warranty, van breakdown cover, courier van warranty, trade van warranty, high mileage van warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -596,8 +596,8 @@ const VanWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Van warranty UK | Keep your business moving | From £19/mo" />
-        <meta property="og:description" content="Comprehensive van warranty. Engine, turbo, gearbox, DPF & more. All major makes covered. Nationwide UK. Same-day cover. Get your free quote." />
+        <meta property="og:title" content="Van Extended Warranty UK | Comprehensive Cover | BuyA Warranty" />
+        <meta property="og:description" content="Protect your van with a comprehensive extended warranty in the UK from BuyA Warranty. Tailored cover for commercial and private use." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -607,8 +607,8 @@ const VanWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Van warranty UK | From £19/month" />
-        <meta name="twitter:description" content="Keep your van on the road with comprehensive warranty cover. All major makes. Same-day cover. Free instant quote." />
+        <meta name="twitter:title" content="Van Extended Warranty UK | Comprehensive Cover | BuyA Warranty" />
+        <meta name="twitter:description" content="Protect your van with a comprehensive extended warranty in the UK from BuyA Warranty. Tailored cover for commercial and private use." />
         
         <meta name="ai-content-declaration" content="UK commercial van warranty information. Human-authored and fact-checked." />
         <meta name="author" content="Buy A Warranty" />

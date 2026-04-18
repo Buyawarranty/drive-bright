@@ -77,8 +77,8 @@ const NissanWarranty = () => {
   return (
     <>
       <SEOHead
-        title="Nissan Extended Warranty | Cover for Used and New Nissans"
-        description="Protect your Nissan from costly repairs with comprehensive extended warranty cover. Includes engine, gearbox, electrics and more. Get an instant online quote today."
+        title="Nissan Extended Warranty UK: Reliable Cover for Nissan Cars"
+        description="Discover Nissan extended warranty plans that help reduce repair costs and ensure reliable performance for your vehicle."
         keywords="nissan extended warranty, nissan warranty UK, used nissan warranty, nissan qashqai warranty, nissan juke warranty, nissan leaf warranty, nissan micra warranty, nissan x trail warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/nissan/"
       />

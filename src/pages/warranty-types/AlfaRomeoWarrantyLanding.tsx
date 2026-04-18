@@ -125,8 +125,8 @@ const AlfaRomeoWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty. Giulia, Stelvio, Giulietta, Tonale, 4C covered. Engine, gearbox, electrics & more. From £${startingPrice}/month.`} />
+        <title>Alfa Romeo Extended Warranty UK: Premium Car Cover Plans</title>
+        <meta name="description" content="Explore Alfa Romeo extended warranty plans that help protect performance vehicles and reduce repair expenses." />
         <meta name="keywords" content="Alfa Romeo warranty, Alfa Romeo extended warranty UK, Alfa Romeo Giulia warranty, Alfa Romeo Stelvio warranty, Alfa Romeo Giulietta warranty, used Alfa Romeo warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow" />

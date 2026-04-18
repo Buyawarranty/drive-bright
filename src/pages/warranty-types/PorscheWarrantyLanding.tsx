@@ -130,8 +130,8 @@ const PorscheWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. 911, Cayenne, Macan, Panamera, Taycan covered. Engine, PDK gearbox, electrics & more. Nationwide UK coverage. From £${startingPrice}/month.`} />
+        <title>Porsche Extended Warranty UK | Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Comprehensive Porsche extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="keywords" content="Porsche extended warranty, Porsche warranty UK, Porsche 911 warranty, Porsche Cayenne warranty, Porsche Macan warranty, Porsche Taycan warranty, used Porsche warranty, Porsche PDK warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow" />

@@ -154,15 +154,15 @@ const SsangYongWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
-        <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. All models covered including Korando, Rexton, Tivoli, Torres, and Musso. Engine, gearbox, 4x4 systems & more. Nationwide UK coverage. Prices from £${startingPrice}/month.`} />
+        <title>SsangYong Extended Warranty UK: Reliable Car Protection Plans</title>
+        <meta name="description" content="Explore SsangYong extended warranty plans that help reduce repair costs and ensure dependable vehicle ownership." />
         <meta name="keywords" content={`${brandName} extended warranty, ${brandName} used car warranty, ${brandName} warranty UK, ${brandName} warranty cost, ${brandName} Rexton warranty, ${brandName} Korando warranty, used ${brandName} warranty`} />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="geo.region" content="GB" />
         <meta httpEquiv="content-language" content="en-GB" />
         <meta property="og:title" content={`${brandName} Extended Warranty UK | Instant Quotes from £${startingPrice}/month`} />
-        <meta property="og:description" content={`Comprehensive ${brandName} warranty coverage. Engine, gearbox, 4x4 systems & more. All models covered. Nationwide UK coverage.`} />
+        <meta property="og:description" content="Explore SsangYong extended warranty plans that help reduce repair costs and ensure dependable vehicle ownership." />
         <meta property="og:url" content={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="en_GB" />

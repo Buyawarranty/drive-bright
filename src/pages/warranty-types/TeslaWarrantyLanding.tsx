@@ -134,21 +134,21 @@ const TeslaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Tesla Extended Warranty UK | Model 3, Model Y, Model S, Model X from £19/mo</title>
-        <meta name="description" content="Protect your Tesla Model 3, Model Y, Model S or Model X with comprehensive extended warranty cover. Drive unit, power electronics, on-board charger and suspension covered. Nationwide UK coverage, any VAT-registered garage. Prices from £19/month." />
+        <title>Tesla Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Comprehensive Tesla extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="keywords" content="Tesla extended warranty, Tesla warranty UK, Tesla Model 3 warranty, Tesla Model Y warranty, Tesla Model S warranty, Tesla Model X warranty, used Tesla warranty, Tesla EV warranty, electric car warranty UK" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/tesla-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="geo.region" content="GB" /><meta name="geo.placename" content="United Kingdom" /><meta httpEquiv="content-language" content="en-GB" />
-        <meta property="og:title" content="Tesla warranty UK — Model 3, Y, S, X covered from £19/mo | Buy A Warranty" />
-        <meta property="og:description" content="Comprehensive Tesla warranty for Model 3, Model Y, Model S and Model X. Drive unit, electronics, suspension covered. Nationwide UK coverage from £19/month." />
+        <meta property="og:title" content="Tesla Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta property="og:description" content="Comprehensive Tesla extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/tesla-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:site_name" content="Buy A Warranty" /><meta property="og:locale" content="en_GB" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Tesla warranty UK — Model 3, Y, S, X covered from £19/mo" />
-        <meta name="twitter:description" content="Protect your Tesla with comprehensive extended warranty. All EV components covered. Nationwide UK coverage." />
+        <meta name="twitter:title" content="Tesla Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta name="twitter:description" content="Comprehensive Tesla extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="ai-content-declaration" content="This content is human-authored, fact-checked, and regularly updated" />
         <meta name="ai-summary" content="Buy A Warranty offers Tesla extended warranty plans in the UK from £19/month covering Model 3, Model Y, Model S, and Model X. Coverage includes drive unit, power electronics, on-board charger, suspension, and electrical systems. Use any VAT-registered garage nationwide." />
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>

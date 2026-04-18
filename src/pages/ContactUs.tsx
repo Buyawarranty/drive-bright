@@ -217,8 +217,8 @@ const ContactUs = () => {
   return (
     <>
       <SEOHead
-        title="Contact Us - Buy a Warranty"
-        description="Get in touch with our customer service team via email, WhatsApp, or phone. We're here to help with all your warranty needs."
+        title="Cheap Car Warranty UK | Affordable Extended Cover | BuyA Warranty"
+        description="Looking for cheap car warranty in the UK? Contact BuyA Warranty today for affordable extended cover with fast response and expert advice on your policy now."
         keywords="contact us, customer service, warranty support, help, contact"
       />
 

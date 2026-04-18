@@ -14,8 +14,8 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       <SEOHead 
-        title="Privacy Policy | Buy A Warranty UK"
-        description="Learn how Buy A Warranty protects your privacy and handles your personal data. Understand your rights under UK GDPR and how we use your information."
+        title="UK Car Warranty Privacy Policy | BuyA Warranty"
+        description="Read our UK car warranty privacy policy at BuyA Warranty. How we protect your personal data when you buy or manage your extended car warranty."
         keywords="privacy policy, data protection, Buy A Warranty, GDPR, personal data, privacy rights"
         canonical="https://buyawarranty.co.uk/privacy"
       />

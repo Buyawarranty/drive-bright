@@ -680,8 +680,8 @@ const FAQ = () => {
   return (
     <>
       <SEOHead 
-        title="FAQ's - Frequently Asked Questions | BuyAWarranty.co.uk"
-        description="Find answers to common questions about car warranties, claims, coverage, and more. Get help with warranty plans, repairs, and customer support."
+        title="Vehicle Warranty Services FAQ UK | BuyA Warranty Help"
+        description="Find answers to all your questions about vehicle warranty services at BuyA Warranty. Comprehensive FAQ on coverage, claims, and UK car warranty options with expert advice."
         keywords="car warranty FAQ, warranty questions, car insurance claims, vehicle warranty coverage, warranty help"
         canonical="https://buyawarranty.co.uk/faq/"
       />

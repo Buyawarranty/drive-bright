@@ -463,8 +463,8 @@ const AudiWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Audi Extended Warranty UK | Used Audi Warranty Cover from £25/mo</title>
-        <meta name="description" content="Get a used Audi extended warranty from £25/month. Covers A3, A4, A5, A6, Q3, Q5, Q7, Q8, TT and e-tron. S tronic gearbox, quattro drivetrain, TFSI/TDI engines and EV components included. Any VAT-registered garage across England, Scotland, Wales and Northern Ireland. Instant online quote in 60 seconds." />
+        <title>Audi Extended Warranty UK | Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Secure your Audi with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="keywords" content="Audi extended warranty, Audi used car warranty, Audi warranty UK, Audi warranty cost, Audi A4 warranty, Audi Q5 warranty, Audi e-tron warranty, Audi A3 warranty, Audi Q7 warranty, Audi S tronic warranty, used Audi warranty, second hand Audi warranty, Audi aftermarket warranty, Audi warranty cover, Audi breakdown cover, Audi mechanical warranty, Audi warranty quote online" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -480,8 +480,8 @@ const AudiWarrantyLanding: React.FC = () => {
         <html lang="en-GB" />
         
         {/* Open Graph — unique to this page */}
-        <meta property="og:title" content="Used Audi Extended Warranty UK — A3 to Q8 & e-tron Cover | Buy A Warranty" />
-        <meta property="og:description" content="Protect your used Audi from unexpected repair bills. S tronic, quattro, TFSI/TDI and EV components covered. Use any garage in England, Scotland, Wales or Northern Ireland. Plans from £25/mo — get your instant quote now." />
+        <meta property="og:title" content="Audi Extended Warranty UK | Instant Quote | BuyA Warranty" />
+        <meta property="og:description" content="Secure your Audi with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/audi-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -493,8 +493,8 @@ const AudiWarrantyLanding: React.FC = () => {
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Used Audi Extended Warranty UK — Cover from £25/mo" />
-        <meta name="twitter:description" content="All Audi models covered including A3, A4, Q5, Q7, e-tron. S tronic, quattro, TFSI/TDI and EV components. Any UK garage. Instant quote." />
+        <meta name="twitter:title" content="Audi Extended Warranty UK | Instant Quote | BuyA Warranty" />
+        <meta name="twitter:description" content="Secure your Audi with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta name="twitter:image:alt" content="Buy A Warranty — Audi extended warranty cover UK" />
         
