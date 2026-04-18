@@ -56,7 +56,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.dvla-vehicle-lookup]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-bumper-checkout]
 verify_jwt = false
