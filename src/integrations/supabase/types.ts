@@ -2491,13 +2491,22 @@ export type Database = {
       dealer_quotes: {
         Row: {
           created_at: string
+          customer_address: Json | null
+          customer_email: string | null
           customer_name: string
+          customer_phone: string | null
           dealer_id: string
+          dealer_price: number | null
+          discount_pct: number | null
           id: string
           mileage: string | null
+          paid_at: string | null
+          payment_method: string | null
           plan_type: string
           price: number | null
+          retail_price: number | null
           status: string
+          stripe_session_id: string | null
           updated_at: string
           vehicle_make: string | null
           vehicle_model: string | null
@@ -2506,13 +2515,22 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_address?: Json | null
+          customer_email?: string | null
           customer_name: string
+          customer_phone?: string | null
           dealer_id: string
+          dealer_price?: number | null
+          discount_pct?: number | null
           id?: string
           mileage?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
           plan_type: string
           price?: number | null
+          retail_price?: number | null
           status?: string
+          stripe_session_id?: string | null
           updated_at?: string
           vehicle_make?: string | null
           vehicle_model?: string | null
@@ -2521,13 +2539,22 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_address?: Json | null
+          customer_email?: string | null
           customer_name?: string
+          customer_phone?: string | null
           dealer_id?: string
+          dealer_price?: number | null
+          discount_pct?: number | null
           id?: string
           mileage?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
           plan_type?: string
           price?: number | null
+          retail_price?: number | null
           status?: string
+          stripe_session_id?: string | null
           updated_at?: string
           vehicle_make?: string | null
           vehicle_model?: string | null
