@@ -2773,7 +2773,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - New compact design */}
                 {(() => {
-                  const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
+                  // Defensive: default to 24 months if paymentType is unset (matches "Most Popular" preselection)
+                  const months = paymentType === '36months' ? 36 : paymentType === '12months' ? 12 : 24;
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
@@ -2784,8 +2785,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
                   const coverLabel =
-                    paymentType === '12months' ? '1-Year Platinum Cover' :
-                    paymentType === '24months' ? '2-Year Platinum Cover' :
+                    months === 12 ? '1-Year Platinum Cover' :
+                    months === 24 ? '2-Year Platinum Cover' :
                     '3-Year Platinum Cover';
                   return (
                     <div className="flex flex-col md:hidden gap-2 w-full">
@@ -2845,7 +2846,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                 {/* Desktop Layout - New 5-Section Design */}
                 {(() => {
-                  const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
+                  // Defensive: default to 24 months if paymentType is unset (matches "Most Popular" preselection)
+                  const months = paymentType === '36months' ? 36 : paymentType === '12months' ? 12 : 24;
                   const payInFull = displayMonthlyPrice * 12;
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
@@ -2856,8 +2858,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
                   const coverLabel =
-                    paymentType === '12months' ? '1-Year Platinum Cover' :
-                    paymentType === '24months' ? '2-Year Platinum Cover' :
+                    months === 12 ? '1-Year Platinum Cover' :
+                    months === 24 ? '2-Year Platinum Cover' :
                     '3-Year Platinum Cover';
                   return (
                     <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100 divide-x divide-gray-200 gap-0">
