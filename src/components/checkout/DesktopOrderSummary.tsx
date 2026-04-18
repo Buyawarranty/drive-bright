@@ -107,9 +107,10 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
     : duration.toLowerCase().includes('3 year') ? 36 
     : 12;
 
-  // Per-day pricing - based on total cost over the entire cover duration
+  // Per-day pricing - MUST derive from monthlyPrice * 12 (actual paid) for consistency with Step 3
   const totalCoverDays = Math.round((months / 12) * 365);
-  const monthlyPencePerDay = totalPrice > 0 && totalCoverDays > 0 ? Math.round((totalPrice * 100) / totalCoverDays) : 0;
+  const monthlyPaidTotal = monthlyPrice * 12;
+  const monthlyPencePerDay = monthlyPaidTotal > 0 && totalCoverDays > 0 ? Math.round((monthlyPaidTotal * 100) / totalCoverDays) : 0;
   const fullPencePerDay = fullPrice > 0 && totalCoverDays > 0 ? Math.round((fullPrice * 100) / totalCoverDays) : 0;
 
   const formatStartDate = (date: Date) => {
