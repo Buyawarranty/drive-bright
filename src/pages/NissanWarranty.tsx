@@ -78,7 +78,7 @@ const NissanWarranty = () => {
     <>
       <SEOHead
         title="Nissan Extended Warranty UK: Reliable Cover for Nissan Cars"
-        description="Discover Volkswagen extended warranty plans that help reduce repair costs and ensure reliable performance for your vehicle."
+        description="Discover Nissan extended warranty plans that help reduce repair costs and ensure reliable performance for your vehicle."
         keywords="nissan extended warranty, nissan warranty UK, used nissan warranty, nissan qashqai warranty, nissan juke warranty, nissan leaf warranty, nissan micra warranty, nissan x trail warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/nissan/"
       />

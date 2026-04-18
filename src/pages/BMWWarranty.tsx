@@ -76,8 +76,8 @@ const BMWWarranty: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Protect your Skoda with a comprehensive extended warranty in the UK from BuyA Warranty. Fast claims, affordable pricing and full mechanical cover with instant quote today."
-        description=""
+        title="BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty"
+        description="Protect your BMW with a comprehensive extended warranty in the UK from BuyA Warranty. Fast claims, affordable pricing and full mechanical cover with instant quote today."
         keywords="BMW warranty, BMW extended warranty, used BMW warranty, BMW car warranty UK, BMW warranty cost, BMW mechanical warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/bmw/"
         geoRegion="GB"

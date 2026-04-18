@@ -72,7 +72,7 @@ const FordWarranty = () => {
     <>
       <SEOHead
         title="Ford Extended Warranty UK: Affordable Cover for Ford Cars"
-        description="Get Mercedes Benz extended warranty plans that reduce repair costs and ensure premium protection for long-term vehicle ownership confidence."
+        description="Get Ford extended warranty plans that reduce repair costs and ensure premium protection for long-term vehicle ownership confidence."
         keywords="ford extended warranty, ford warranty UK, used ford warranty, ford fiesta warranty, ford focus warranty, ford puma warranty, ford kuga warranty, ford transit warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/ford/"
       />
