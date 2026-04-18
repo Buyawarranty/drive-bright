@@ -132,7 +132,7 @@ const CancelWarranty = () => {
   if (isStaySuccess) {
     return (
       <>
-        <SEOHead title="Welcome Back! - Buy a Warranty" description="Thank you for staying with us" />
+        <SEOHead title="Car Warranty Plan UK | Cancel & Manage Easily | BuyA Warranty" description="Cancel or manage your car warranty plan easily with BuyA Warranty UK. Simple process, clear terms and full refund options where eligible." />
         <div className="min-h-screen bg-white py-16 px-6">
           <div className="max-w-[720px] mx-auto bg-[#f0faf4] border-2 border-[#009A44] rounded-lg p-8 text-center">
             <div className="text-6xl mb-4">🎉</div>

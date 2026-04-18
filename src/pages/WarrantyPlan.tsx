@@ -78,8 +78,8 @@ const WarrantyPlan = () => {
   return (
     <>
       <SEOHead
-        title="Platinum Warranty Plan - Buy a Warranty"
-        description="Comprehensive Platinum warranty coverage for Cars, Vans, SUVs and Motorcycles. Mechanical & electrical breakdown protection with unlimited claims."
+        title="12 Month Car Warranty UK | Affordable Cover | BuyA Warranty"
+        description="Get 12 month car warranty protection in the UK with BuyA Warranty. Affordable cover, flexible terms and reliable mechanical breakdown insurance."
         keywords="platinum warranty plan, car warranty, vehicle warranty, mechanical breakdown, electrical coverage"
       />
       
