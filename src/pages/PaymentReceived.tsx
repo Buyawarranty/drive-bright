@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { CheckCircle, Clock, Phone, Mail } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Helmet } from 'react-helmet-async';
+
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
 
 const PaymentReceived = () => {
   const params = new URLSearchParams(window.location.search);
@@ -11,6 +17,26 @@ const PaymentReceived = () => {
   const vehicleModel = params.get('vehicle_model') || '';
   const amount = params.get('final_amount') || '';
   const paymentMethod = params.get('source') || params.get('payment') || '';
+  const transactionId =
+    params.get('transaction_id') ||
+    params.get('order_id') ||
+    params.get('policy_number') ||
+    params.get('warranty_number') ||
+    '';
+
+  const pushedRef = useRef(false);
+  useEffect(() => {
+    if (pushedRef.current) return;
+    pushedRef.current = true;
+    const value = parseFloat(amount);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'purchase',
+      transaction_id: transactionId,
+      value: isNaN(value) ? 0 : value,
+      currency: 'GBP',
+    });
+  }, [amount, transactionId]);
 
   return (
     <>
