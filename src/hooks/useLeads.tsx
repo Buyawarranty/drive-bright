@@ -556,8 +556,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
         isFetchingRef.current = false;
         return;
       }
-      console.error('Error fetching leads:', error);
-      toast.error('Failed to load leads');
+      console.error('[Leads] Error fetching leads:', error);
+      const errMsg = (error as any)?.message || (error as any)?.details || 'Unknown error';
+      toast.error(`Failed to load leads: ${errMsg}`);
     } finally {
       // ALWAYS clear loading state — never leave spinner stuck
       if (loadingTimeoutRef.current) {
