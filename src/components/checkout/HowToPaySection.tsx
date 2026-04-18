@@ -194,7 +194,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   <p className="text-xs text-gray-600 mt-0.5">
                     then £{monthlyPrice}/month ({Math.max(0, 12 - 1)} remaining)
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Total £{totalPrice}</p>
+                  <p className="text-xs text-gray-500 mt-1">Paid over 12 months · Covers {planDurationMonths} months</p>
                 </div>
 
                 {/* Benefits */}
