@@ -238,23 +238,39 @@ function getRegistrationYear(registration: string): number | null {
   return null;
 }
 
+function isMissingOrPlaceholder(value: string | null | undefined): boolean {
+  if (!value) return true;
+  const normalized = value.trim();
+  return !normalized || normalized === 'PLACEHOLDER_VALUE_TO_BE_REPLACED';
+}
+
+function hasValidDVSAConfig(): boolean {
+  return ![
+    Deno.env.get('MOT_CLIENT_ID'),
+    Deno.env.get('MOT_CLIENT_SECRET'),
+    Deno.env.get('MOT_TOKEN_URL'),
+    Deno.env.get('MOT_SCOPE_URL'),
+    Deno.env.get('MOT_API_KEY'),
+  ].some(isMissingOrPlaceholder);
+}
+
 async function getAccessToken(): Promise<string> {
   const clientId = Deno.env.get('MOT_CLIENT_ID');
   const clientSecret = Deno.env.get('MOT_CLIENT_SECRET');
   const tokenUrl = Deno.env.get('MOT_TOKEN_URL');
   const scopeUrl = Deno.env.get('MOT_SCOPE_URL');
 
-  if (!clientId || !clientSecret || !tokenUrl || !scopeUrl) {
+  if ([clientId, clientSecret, tokenUrl, scopeUrl].some(isMissingOrPlaceholder)) {
     throw new Error('Missing MOT API configuration');
   }
 
   const params = new URLSearchParams();
-  params.append('client_id', clientId);
-  params.append('client_secret', clientSecret);
-  params.append('scope', scopeUrl);
+  params.append('client_id', clientId!);
+  params.append('client_secret', clientSecret!);
+  params.append('scope', scopeUrl!);
   params.append('grant_type', 'client_credentials');
 
-  const response = await fetch(tokenUrl, {
+  const response = await fetch(tokenUrl!, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -351,111 +367,111 @@ serve(async (req) => {
     const regYear = getRegistrationYear(registrationNumber);
     console.log(`Registration ${registrationNumber} appears to be from year: ${regYear}`);
 
-    // Get access token for DVSA API
-    const accessToken = await getAccessToken();
-    
-    // Call DVSA API with retry logic
     let vehicleData;
     let lastError;
     const maxRetries = 3;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`DVSA API attempt ${attempt} for ${registrationNumber}`);
-        
-        vehicleData = await fetchDVSAVehicleData(registrationNumber, accessToken);
-        break; // Success, exit retry loop
-      } catch (error) {
-        lastError = error;
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`DVSA API attempt ${attempt} failed:`, errorMessage);
-        
-        if (errorMessage === 'Vehicle not found') {
-          console.log(`Vehicle ${registrationNumber} not found in DVSA database - attempting DVLA fallback`);
 
-          const regUpper = registrationNumber.toUpperCase();
+    if (!hasValidDVSAConfig()) {
+      console.warn('DVSA config missing or placeholder values detected - skipping DVSA lookup and using fallback path');
+      lastError = new Error('Missing MOT API configuration');
+    } else {
+      // Get access token for DVSA API
+      const accessToken = await getAccessToken();
 
-          // 1) Try DVLA VES fallback to fetch at least make/model
-          const dvla = await fetchDVLAFallback(registrationNumber);
-          if (dvla?.make) {
-            console.log('DVLA fallback returned data:', { make: dvla.make, model: dvla.model });
-            const validation = validateVehicleEligibility({ make: dvla.make, model: dvla.model || '', regNumber: registrationNumber });
-            const blocked = !validation.isValid;
+      // Call DVSA API with retry logic
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`DVSA API attempt ${attempt} for ${registrationNumber}`);
+
+          vehicleData = await fetchDVSAVehicleData(registrationNumber, accessToken);
+          break; // Success, exit retry loop
+        } catch (error) {
+          lastError = error;
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error(`DVSA API attempt ${attempt} failed:`, errorMessage);
+
+          if (errorMessage === 'Vehicle not found') {
+            console.log(`Vehicle ${registrationNumber} not found in DVSA database - attempting DVLA fallback`);
+
+            const regUpper = registrationNumber.toUpperCase();
+
+            const dvla = await fetchDVLAFallback(registrationNumber);
+            if (dvla?.make) {
+              console.log('DVLA fallback returned data:', { make: dvla.make, model: dvla.model });
+              const validation = validateVehicleEligibility({ make: dvla.make, model: dvla.model || '', regNumber: registrationNumber });
+              const blocked = !validation.isValid;
+              return new Response(JSON.stringify({
+                found: true,
+                blocked,
+                blockReason: blocked ? validation.errorMessage : undefined,
+                registrationNumber: regUpper,
+                make: dvla.make,
+                model: dvla.model || null,
+                fuelType: dvla.fuelType || null,
+                colour: dvla.colour || null,
+                yearOfManufacture: dvla.yearOfManufacture || null,
+                vehicleType: 'car'
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+
+            const override = MANUAL_OVERRIDES[regUpper];
+            if (override) {
+              console.log(`Using manual override for ${regUpper}:`, override);
+              return new Response(JSON.stringify({
+                found: true,
+                blocked: true,
+                blockReason: EXCLUSION_ERROR_MESSAGE,
+                registrationNumber: regUpper,
+                make: override.make,
+                model: override.model || null,
+                fuelType: override.fuelType || null,
+                colour: override.colour || null,
+                yearOfManufacture: override.year || null,
+                vehicleType: 'car'
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+
+            const premiumRegPatterns = [
+              /^WA\d{2}[A-Z]{3}$/i,
+              /^[A-Z]{2}0[0-9][A-Z]{3}$/i,
+            ];
+            const isPotentialPremium = premiumRegPatterns.some(pattern => pattern.test(registrationNumber));
+            if (isPotentialPremium) {
+              console.log(`Registration ${registrationNumber} matches premium vehicle pattern - blocking as precaution`);
+              return new Response(JSON.stringify({
+                found: true,
+                blocked: true,
+                blockReason: EXCLUSION_ERROR_MESSAGE,
+                registrationNumber: regUpper,
+                make: "Premium Vehicle",
+                model: "Unknown Model"
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+
             return new Response(JSON.stringify({
-              found: true,
-              blocked,
-              blockReason: blocked ? validation.errorMessage : undefined,
-              registrationNumber: regUpper,
-              make: dvla.make,
-              model: dvla.model || null,
-              fuelType: dvla.fuelType || null,
-              colour: dvla.colour || null,
-              yearOfManufacture: dvla.yearOfManufacture || null,
-              vehicleType: 'car'
+              found: false,
+              error: "Vehicle not found in DVSA database",
+              registrationNumber: regUpper
             }), {
               headers: { ...corsHeaders, "Content-Type": "application/json" },
               status: 200,
             });
           }
 
-          // 2) Check manual overrides for known registrations
-          const override = MANUAL_OVERRIDES[regUpper];
-          if (override) {
-            console.log(`Using manual override for ${regUpper}:`, override);
-            return new Response(JSON.stringify({
-              found: true,
-              blocked: true,
-              blockReason: EXCLUSION_ERROR_MESSAGE,
-              registrationNumber: regUpper,
-              make: override.make,
-              model: override.model || null,
-              fuelType: override.fuelType || null,
-              colour: override.colour || null,
-              yearOfManufacture: override.year || null,
-              vehicleType: 'car'
-            }), {
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 200,
-            });
+          if (attempt < maxRetries) {
+            const waitTime = Math.pow(2, attempt - 1) * 1000;
+            console.log(`Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
           }
-          
-          // 3) Pattern-based precautionary block for premium vehicles
-          const premiumRegPatterns = [
-            /^WA\d{2}[A-Z]{3}$/i,
-            /^[A-Z]{2}0[0-9][A-Z]{3}$/i,
-          ];
-          const isPotentialPremium = premiumRegPatterns.some(pattern => pattern.test(registrationNumber));
-          if (isPotentialPremium) {
-            console.log(`Registration ${registrationNumber} matches premium vehicle pattern - blocking as precaution`);
-            return new Response(JSON.stringify({
-              found: true,
-              blocked: true,
-              blockReason: EXCLUSION_ERROR_MESSAGE,
-              registrationNumber: regUpper,
-              make: "Premium Vehicle",
-              model: "Unknown Model"
-            }), {
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 200,
-            });
-          }
-
-          // 4) Otherwise, return not found
-          return new Response(JSON.stringify({
-            found: false,
-            error: "Vehicle not found in DVSA database",
-            registrationNumber: regUpper
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
-        }
-        
-        if (attempt < maxRetries) {
-          // Wait before retrying (exponential backoff)
-          const waitTime = Math.pow(2, attempt - 1) * 1000;
-          console.log(`Waiting ${waitTime}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       }
     }
