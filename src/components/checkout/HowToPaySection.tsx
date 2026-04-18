@@ -135,9 +135,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
-  // Per-day pricing - based on total cost over the entire cover duration
+  // Per-day pricing - MUST derive from monthlyPrice * 12 (actual paid amount) divided by total cover days
+  // This keeps the daily price identical to Step 3 regardless of cover length
   const totalCoverDays = Math.round((planDurationMonths / 12) * 365);
-  const monthlyPencePerDay = totalPrice > 0 && totalCoverDays > 0 ? Math.round((totalPrice * 100) / totalCoverDays) : 0;
+  const monthlyPaidTotal = monthlyPrice * 12;
+  const monthlyPencePerDay = monthlyPaidTotal > 0 && totalCoverDays > 0 ? Math.round((monthlyPaidTotal * 100) / totalCoverDays) : 0;
   const fullPencePerDay = fullPrice > 0 && totalCoverDays > 0 ? Math.round((fullPrice * 100) / totalCoverDays) : 0;
   return (
     <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
@@ -192,7 +194,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   <p className="text-xs text-gray-600 mt-0.5">
                     then £{monthlyPrice}/month ({Math.max(0, 12 - 1)} remaining)
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Total £{totalPrice}</p>
+                  <p className="text-xs text-gray-500 mt-1">Paid over 12 months · Covers {planDurationMonths} months</p>
                 </div>
 
                 {/* Benefits */}
