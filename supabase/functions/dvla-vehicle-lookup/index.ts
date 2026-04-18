@@ -238,23 +238,39 @@ function getRegistrationYear(registration: string): number | null {
   return null;
 }
 
+function isMissingOrPlaceholder(value: string | null): boolean {
+  if (!value) return true;
+  const normalized = value.trim();
+  return !normalized || normalized === 'PLACEHOLDER_VALUE_TO_BE_REPLACED';
+}
+
+function hasValidDVSAConfig(): boolean {
+  return ![
+    Deno.env.get('MOT_CLIENT_ID'),
+    Deno.env.get('MOT_CLIENT_SECRET'),
+    Deno.env.get('MOT_TOKEN_URL'),
+    Deno.env.get('MOT_SCOPE_URL'),
+    Deno.env.get('MOT_API_KEY'),
+  ].some(isMissingOrPlaceholder);
+}
+
 async function getAccessToken(): Promise<string> {
   const clientId = Deno.env.get('MOT_CLIENT_ID');
   const clientSecret = Deno.env.get('MOT_CLIENT_SECRET');
   const tokenUrl = Deno.env.get('MOT_TOKEN_URL');
   const scopeUrl = Deno.env.get('MOT_SCOPE_URL');
 
-  if (!clientId || !clientSecret || !tokenUrl || !scopeUrl) {
+  if ([clientId, clientSecret, tokenUrl, scopeUrl].some(isMissingOrPlaceholder)) {
     throw new Error('Missing MOT API configuration');
   }
 
   const params = new URLSearchParams();
-  params.append('client_id', clientId);
-  params.append('client_secret', clientSecret);
-  params.append('scope', scopeUrl);
+  params.append('client_id', clientId!);
+  params.append('client_secret', clientSecret!);
+  params.append('scope', scopeUrl!);
   params.append('grant_type', 'client_credentials');
 
-  const response = await fetch(tokenUrl, {
+  const response = await fetch(tokenUrl!, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
