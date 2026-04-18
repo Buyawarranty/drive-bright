@@ -358,6 +358,16 @@ export const DiscountsGivenTab: React.FC = () => {
           </div>
         )}
         <DateRangeFilter dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
+        <div className="relative w-72">
+          <label className="text-sm font-medium mb-1 block">Search</label>
+          <Search className="absolute left-3 top-[34px] h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Reg plate, name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       {/* Summary Cards */}
