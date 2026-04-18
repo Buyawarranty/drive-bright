@@ -62,7 +62,9 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 
   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
   const totalCoverDays = Math.round((months / 12) * 365);
-  const pencePerDay = totalPrice > 0 && totalCoverDays > 0 ? Math.round((totalPrice * 100) / totalCoverDays) : 0;
+  // Daily price MUST derive from monthlyPrice * 12 (actual paid) for consistency with Step 3
+  const baseTotal = monthlyPrice * 12;
+  const pencePerDay = baseTotal > 0 && totalCoverDays > 0 ? Math.round((baseTotal * 100) / totalCoverDays) : 0;
   const fullPencePerDay = fullPrice > 0 && totalCoverDays > 0 ? Math.round((fullPrice * 100) / totalCoverDays) : 0;
   const isMonthly = selectedPayment === 'monthly';
 
