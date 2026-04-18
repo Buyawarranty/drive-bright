@@ -833,10 +833,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                     <TableCell>
                       {customer.registration_plate ? (
                         <div className="inline-flex items-center">
-                          <span className="bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-l">
-                            GB
-                          </span>
-                          <span className="bg-yellow-400 text-black font-bold px-2 py-0.5 rounded-r text-sm">
+                          <span className="bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm">
                             {customer.registration_plate}
                           </span>
                         </div>

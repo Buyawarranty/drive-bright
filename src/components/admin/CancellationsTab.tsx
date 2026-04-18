@@ -515,7 +515,6 @@ export const CancellationsTab: React.FC<{
                       <TableCell>
                         {record.registration_plate ? (
                           <div className="inline-flex items-center border-2 border-foreground rounded-sm overflow-hidden font-mono text-xs font-bold shadow-sm">
-                            <div className="bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-normal">GB</div>
                             <div className="bg-accent text-accent-foreground px-2 py-0.5 tracking-wider">{record.registration_plate.toUpperCase()}</div>
                           </div>
                         ) : (
