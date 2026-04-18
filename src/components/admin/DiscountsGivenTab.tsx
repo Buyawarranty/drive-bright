@@ -11,8 +11,9 @@ import { DateRange } from 'react-day-picker';
 import { calculateTotalWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
-import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle } from 'lucide-react';
+import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { Input } from '@/components/ui/input';
 
 interface CustomerRecord {
   id: string;
