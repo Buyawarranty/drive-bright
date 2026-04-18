@@ -216,7 +216,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   <span className="text-2xl font-bold text-[#FF6B00]">{monthlyPencePerDay}p<span className="text-base">/day</span></span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  £{monthlyPrice}/month × {months === 12 ? 12 : 12} payments · Total £{totalPrice} · 0% APR
+                  £{monthlyPrice}/month × 12 payments · Paid over 12 months · Covers {months} months · 0% APR
                 </p>
               </div>
             ) : selectedPayment === 'full' ? (
