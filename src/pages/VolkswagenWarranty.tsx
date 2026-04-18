@@ -76,7 +76,7 @@ const VolkswagenWarranty = () => {
     <>
       <SEOHead
         title="Volkswagen Extended Warranty UK: Reliable Cover for VW Cars"
-        description="Explore Audi extended warranty plans that help manage repair costs, maintain performance, and provide long-term protection for your vehicle."
+        description="Explore Volkswagen extended warranty plans that help manage repair costs, maintain performance, and provide long-term protection for your vehicle."
         keywords="volkswagen extended warranty, vw warranty UK, volkswagen warranty cost, vw golf warranty, vw tiguan warranty, vw passat warranty, vw transporter warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/"
       />
