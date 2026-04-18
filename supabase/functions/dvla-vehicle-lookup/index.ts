@@ -238,7 +238,7 @@ function getRegistrationYear(registration: string): number | null {
   return null;
 }
 
-function isMissingOrPlaceholder(value: string | null): boolean {
+function isMissingOrPlaceholder(value: string | null | undefined): boolean {
   if (!value) return true;
   const normalized = value.trim();
   return !normalized || normalized === 'PLACEHOLDER_VALUE_TO_BE_REPLACED';
