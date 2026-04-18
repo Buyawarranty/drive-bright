@@ -229,10 +229,19 @@ export const DiscountsGivenTab: React.FC = () => {
           if (dateRange.to && d > dateRange.to) return false;
         }
         if (selectedAgent !== 'all' && c.assigned_to !== selectedAgent) return false;
+        if (searchTerm.trim()) {
+          const term = searchTerm.trim().toLowerCase().replace(/\s+/g, '');
+          const reg = (c.registration_plate || '').toLowerCase().replace(/\s+/g, '');
+          const name = (c.name || '').toLowerCase();
+          const email = (c.email || '').toLowerCase();
+          if (!reg.includes(term) && !name.includes(searchTerm.toLowerCase()) && !email.includes(searchTerm.toLowerCase())) {
+            return false;
+          }
+        }
         return true;
       })
       .sort((a, b) => new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime());
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
