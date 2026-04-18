@@ -33,6 +33,8 @@ interface CustomerRecord {
   discount_amount: number | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
+  vehicle_year: string | null;
+  mileage: string | null;
   tyre_cover: boolean | null;
   wear_tear: boolean | null;
   europe_cover: boolean | null;
