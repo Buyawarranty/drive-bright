@@ -557,14 +557,14 @@ const SkodaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Škoda Extended Warranty UK | Octavia, Kodiaq, Enyaq iV Cover from £22/mo</title>
-        <meta name="description" content="Škoda extended warranty from £22/month. Cover Octavia, Superb, Kodiaq, Karoq, Kamiq, Fabia, Scala, Enyaq iV & all models 2012-2026. DSG gearbox cover. Use any UK garage. 8,000+ components covered. Instant quote in 60 seconds." />
+        <title>Skoda Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Secure your Skoda with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="keywords" content="skoda extended warranty, skoda warranty UK, skoda octavia warranty, skoda superb warranty, skoda kodiaq warranty, skoda karoq warranty, skoda fabia warranty, skoda enyaq warranty, skoda DSG warranty, used skoda warranty, skoda car warranty, skoda electric car warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/skoda-warranty/" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Škoda Extended Warranty UK | #1 Rated Škoda Cover from £22/mo - Octavia, Kodiaq, Enyaq iV & DSG Protection" />
-        <meta property="og:description" content="Protect your Škoda with the UK's top-rated extended warranty. Cover Octavia, Superb, Kodiaq, Karoq, Fabia, Enyaq iV & all models. DSG gearbox included. 8,000+ components. Any UK garage." />
+        <meta property="og:title" content="Skoda Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta property="og:description" content="Secure your Skoda with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/skoda-warranty/" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -576,8 +576,8 @@ const SkodaWarrantyLanding: React.FC = () => {
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Škoda Extended Warranty UK | From £22/month" />
-        <meta name="twitter:description" content="UK's #1 rated Škoda warranty. Cover all models from 2012-2026 including DSG gearbox. 8,000+ components. Any garage. Instant quote." />
+        <meta name="twitter:title" content="Skoda Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta name="twitter:description" content="Secure your Skoda with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
 
         {/* AI & Bot directives */}

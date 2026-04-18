@@ -130,7 +130,7 @@ const InfinitiWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Infiniti Extended Warranty UK: Premium Vehicle Cover Plans</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Q50, Q60, QX50, QX70 covered. Engine, turbo, electrics & more. Nationwide UK coverage. From £${startingPrice}/month.`} />
         <meta name="keywords" content="Infiniti extended warranty, Infiniti warranty UK, Infiniti Q50 warranty, Infiniti QX70 warranty, Infiniti Q60 warranty, used Infiniti warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

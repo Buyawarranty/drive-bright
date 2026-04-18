@@ -130,7 +130,7 @@ const ChryslerWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Chrysler Extended Warranty UK: Reliable Car Cover Plans</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. 300C, Grand Voyager, Voyager, Pacifica covered. Engine, transmission, electrics & more. From £${startingPrice}/month.`} />
         <meta name="keywords" content="Chrysler extended warranty, Chrysler warranty UK, Chrysler 300C warranty, Chrysler Grand Voyager warranty, Chrysler Voyager warranty, used Chrysler warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

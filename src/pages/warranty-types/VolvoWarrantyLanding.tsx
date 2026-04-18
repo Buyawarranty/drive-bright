@@ -109,19 +109,19 @@ const VolvoWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Volvo Extended Warranty UK | XC60, XC90, XC40 Cover from £25/mo</title>
-        <meta name="description" content="Volvo extended warranty from £25/month. Cover XC40, XC60, XC90, S60, V60, V90, XC40 Recharge, C40 Recharge & all models. AWD, T8 hybrid & air suspension covered. Any UK garage." />
+        <title>Volvo Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
+        <meta name="description" content="Comprehensive Volvo extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="keywords" content="volvo extended warranty, volvo warranty UK, volvo xc60 warranty, volvo xc90 warranty, volvo xc40 warranty, volvo recharge warranty, volvo electric warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/volvo-warranty/" />
-        <meta property="og:title" content="Volvo Extended Warranty UK | Top-Rated Cover from £25/mo — XC60, XC90, XC40 Recharge & T8 Protection" />
-        <meta property="og:description" content="Protect your Volvo with the UK's top-rated extended warranty. AWD, T8 hybrid & air suspension covered. 8,000+ components. Any UK garage." />
+        <meta property="og:title" content="Volvo Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta property="og:description" content="Comprehensive Volvo extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta property="og:type" content="website" /><meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/volvo-warranty/" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Buy A Warranty" /><meta property="og:locale" content="en_GB" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Volvo Extended Warranty UK | From £25/month" />
-        <meta name="twitter:description" content="UK's top-rated Volvo warranty. XC40, XC60, XC90 & all models. AWD & T8 hybrid covered. 8,000+ components. Any garage." />
+        <meta name="twitter:title" content="Volvo Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
+        <meta name="twitter:description" content="Comprehensive Volvo extended warranty cover in the UK with BuyA Warranty. Tailored protection for luxury and performance vehicles with instant online quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta name="twitter:image:alt" content="Volvo Extended Warranty UK - Buy A Warranty" />
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />

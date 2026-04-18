@@ -563,14 +563,14 @@ const MGWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>MG Extended Warranty UK | ZS, HS, MG 4, MG 5 EV Cover from £24/mo</title>
-        <meta name="description" content="MG extended warranty from £24/month. Cover ZS, HS, MG 4, MG 5 EV, ZS EV, MG3, Cyberster & all models 2012-2026. Use any UK garage. 8,000+ components covered. Instant quote in 60 seconds." />
+        <title>MG Extended Warranty UK | BuyA Warranty Cover</title>
+        <meta name="description" content="Buy MG extended warranty cover in the UK from BuyA Warranty. Comprehensive protection for your MG vehicle with fast claims support." />
         <meta name="keywords" content="MG extended warranty, MG warranty UK, MG ZS warranty, MG HS warranty, MG 4 warranty, MG 5 EV warranty, MG ZS EV warranty, MG3 warranty, MG Cyberster warranty, used MG warranty, MG car warranty, MG electric car warranty, MG PHEV warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/mg-warranty/" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="MG Extended Warranty UK | Best-Rated MG Cover from £24/mo – ZS, HS, MG 4 & EV Models" />
-        <meta property="og:description" content="Protect your MG with the UK's top-rated extended warranty. Cover ZS, HS, MG 4, MG 5 EV, ZS EV & all models. 8,000+ components. Any UK garage. Instant quote." />
+        <meta property="og:title" content="MG Extended Warranty UK | BuyA Warranty Cover" />
+        <meta property="og:description" content="Buy MG extended warranty cover in the UK from BuyA Warranty. Comprehensive protection for your MG vehicle with fast claims support." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/mg-warranty/" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -582,8 +582,8 @@ const MGWarrantyLanding: React.FC = () => {
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="MG Extended Warranty UK | From £24/month" />
-        <meta name="twitter:description" content="UK's #1 rated MG warranty. Cover all models from 2012-2026. 8,000+ components. Any garage. Instant quote." />
+        <meta name="twitter:title" content="MG Extended Warranty UK | BuyA Warranty Cover" />
+        <meta name="twitter:description" content="Buy MG extended warranty cover in the UK from BuyA Warranty. Comprehensive protection for your MG vehicle with fast claims support." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
 
         {/* AI & Bot directives */}

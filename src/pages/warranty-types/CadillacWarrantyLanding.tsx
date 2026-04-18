@@ -130,7 +130,7 @@ const CadillacWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Cadillac Extended Warranty UK | Instant Quote | BuyA Warranty</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Escalade, CT5, XT5, XT4 covered. Engine, transmission, air suspension & more. Nationwide UK coverage. From £${startingPrice}/month.`} />
         <meta name="keywords" content="Cadillac extended warranty, Cadillac warranty UK, Cadillac Escalade warranty, Cadillac CT5 warranty, Cadillac XT5 warranty, used Cadillac warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

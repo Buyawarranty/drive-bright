@@ -131,7 +131,7 @@ const MiniWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Mini Extended Warranty UK: Cover for Mini Cooper Vehicles</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Cooper, Cooper S, Countryman, Clubman covered. Engine, turbo, electrics & more. Nationwide UK coverage. From £${startingPrice}/month.`} />
         <meta name="keywords" content="MINI extended warranty, MINI warranty UK, MINI Cooper warranty, MINI Countryman warranty, MINI Clubman warranty, used MINI warranty, MINI Cooper S warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

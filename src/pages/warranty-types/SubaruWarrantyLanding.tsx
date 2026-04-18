@@ -156,7 +156,7 @@ const SubaruWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Subaru Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. All models covered including Forester, Outback, XV, Impreza, WRX, and BRZ. Boxer engine, AWD, gearbox & more. Nationwide UK coverage. Prices from £${startingPrice}/month.`} />
         <meta name="keywords" content={`${brandName} extended warranty, ${brandName} used car warranty, ${brandName} warranty UK, ${brandName} warranty cost, ${brandName} Forester warranty, ${brandName} Outback warranty, used ${brandName} warranty`} />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

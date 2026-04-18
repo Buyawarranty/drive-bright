@@ -641,8 +641,8 @@ const MotorbikeWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Motorcycle Extended Warranty UK | Motorbike Warranty | Get Instant Quote</title>
-        <meta name="description" content="Protect your motorcycle with comprehensive extended warranty cover. All UK makes from Honda, Yamaha, Kawasaki, Triumph, BMW, Ducati & more. Engine, gearbox, electrics covered. From £18/month. Get your instant quote in 60 seconds." />
+        <title>Motorbike Warranty UK | Full Protection | BuyA Warranty</title>
+        <meta name="description" content="Get reliable motorbike warranty cover in the UK with BuyA Warranty. Full protection for your motorcycle against mechanical failures." />
         <meta name="keywords" content="motorcycle extended warranty, motorbike warranty UK, motorcycle warranty cost, Honda warranty, Yamaha warranty, Kawasaki warranty, Triumph warranty, BMW motorcycle warranty, Ducati warranty, KTM warranty, Harley-Davidson warranty, used motorcycle warranty, motorbike warranty quote" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -655,8 +655,8 @@ const MotorbikeWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Motorcycle Extended Warranty UK | From £18/month" />
-        <meta property="og:description" content="Comprehensive motorcycle warranty coverage. Engine, gearbox, electrics & more. All makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
+        <meta property="og:title" content="Motorbike Warranty UK | Full Protection | BuyA Warranty" />
+        <meta property="og:description" content="Get reliable motorbike warranty cover in the UK with BuyA Warranty. Full protection for your motorcycle against mechanical failures." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -667,8 +667,8 @@ const MotorbikeWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Motorcycle Extended Warranty UK | From £18/month" />
-        <meta name="twitter:description" content="Protect your motorcycle with comprehensive extended warranty. All makes covered. Nationwide UK coverage. Get instant quote." />
+        <meta name="twitter:title" content="Motorbike Warranty UK | Full Protection | BuyA Warranty" />
+        <meta name="twitter:description" content="Get reliable motorbike warranty cover in the UK with BuyA Warranty. Full protection for your motorcycle against mechanical failures." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about motorcycle extended warranty services in the UK. Human-authored and fact-checked." />

@@ -186,7 +186,7 @@ const SmartWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Smart Extended Warranty UK: Affordable Car Protection Plans</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. All models covered including ForTwo, ForFour, and electric EQ models. Engine, gearbox, electrics & more. Nationwide UK coverage. Prices from £${startingPrice}/month.`} />
         <meta name="keywords" content={`${brandName} extended warranty, ${brandName} used car warranty, ${brandName} warranty UK, ${brandName} warranty cost, ${brandName} ForTwo warranty, ${brandName} EQ warranty, used ${brandName} warranty`} />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

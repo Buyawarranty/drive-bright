@@ -517,8 +517,8 @@ const VolkswagenWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Volkswagen Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
-        <meta name="description" content="Protect your Volkswagen with comprehensive extended warranty cover. All models from Polo to Touareg and ID. Series covered. Engine, DSG gearbox, electrics & more. Nationwide UK coverage, any VAT-registered garage, unlimited claims. Prices from £19/month. Get your instant quote in 60 seconds." />
+        <title>Volkswagen Extended Warranty UK | Trusted Cover | BuyA Warranty</title>
+        <meta name="description" content="Buy Volkswagen extended warranty in the UK with BuyA Warranty. Trusted cover for your VW with fast claims and excellent service." />
         <meta name="keywords" content="Volkswagen extended warranty, VW used car warranty, VW warranty UK, Volkswagen warranty cost, VW warranty quote, VW Golf warranty, VW Tiguan warranty, VW ID.4 warranty, VW Polo warranty, VW Passat warranty, VW electric warranty, VW hybrid warranty, used VW warranty, second hand Volkswagen warranty, VW DSG warranty" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/volkswagen-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -531,8 +531,8 @@ const VolkswagenWarrantyLanding: React.FC = () => {
         <meta name="ICBM" content="51.5074, -0.1278" />
         <meta httpEquiv="content-language" content="en-GB" />
         
-        <meta property="og:title" content="Volkswagen Extended Warranty UK | Instant Quotes from £19/month" />
-        <meta property="og:description" content="Comprehensive VW warranty coverage. Engine, DSG gearbox, electrics & more. All models covered including hybrid and electric. Nationwide UK coverage with any garage. Get your instant quote now." />
+        <meta property="og:title" content="Volkswagen Extended Warranty UK | Trusted Cover | BuyA Warranty" />
+        <meta property="og:description" content="Buy Volkswagen extended warranty in the UK with BuyA Warranty. Trusted cover for your VW with fast claims and excellent service." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/volkswagen-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
@@ -543,8 +543,8 @@ const VolkswagenWarrantyLanding: React.FC = () => {
         <meta property="og:locale" content="en_GB" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Volkswagen Extended Warranty UK | From £19/month" />
-        <meta name="twitter:description" content="Protect your VW with comprehensive extended warranty. All models covered. Nationwide UK coverage. Get instant quote." />
+        <meta name="twitter:title" content="Volkswagen Extended Warranty UK | Trusted Cover | BuyA Warranty" />
+        <meta name="twitter:description" content="Buy Volkswagen extended warranty in the UK with BuyA Warranty. Trusted cover for your VW with fast claims and excellent service." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Volkswagen extended warranty services in the UK. Human-authored and fact-checked." />

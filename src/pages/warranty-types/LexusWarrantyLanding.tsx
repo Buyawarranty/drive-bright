@@ -126,7 +126,7 @@ const LexusWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Lexus Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty. NX, RX, IS, ES, LC, LS covered including hybrids. Engine, gearbox, electrics & more. From £${startingPrice}/month.`} />
         <meta name="keywords" content="Lexus warranty, Lexus extended warranty UK, Lexus RX warranty, Lexus NX warranty, Lexus IS warranty, Lexus hybrid warranty, used Lexus warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

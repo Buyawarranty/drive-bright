@@ -164,7 +164,7 @@ const DaciaWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Dacia Extended Warranty UK: Affordable Vehicle Cover Plans</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. All models covered including Duster, Sandero, Jogger, and Spring. Engine, gearbox, electrics & more. Nationwide UK coverage. Prices from £${startingPrice}/month.`} />
         <meta name="keywords" content={`${brandName} extended warranty, ${brandName} used car warranty, ${brandName} warranty UK, ${brandName} warranty cost, ${brandName} Duster warranty, ${brandName} Sandero warranty, used ${brandName} warranty`} />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />

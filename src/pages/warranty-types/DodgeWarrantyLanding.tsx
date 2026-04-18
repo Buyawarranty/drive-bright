@@ -129,7 +129,7 @@ const DodgeWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{brandName} Extended Warranty UK | Get Your Instant Quote | Buy A Warranty</title>
+        <title>Dodge Extended Warranty UK: Reliable Car Protection Plans</title>
         <meta name="description" content={`Protect your ${brandName} with comprehensive extended warranty cover. Charger, Challenger, Ram, Durango covered. HEMI engine, transmission, electrics & more. From £${startingPrice}/month.`} />
         <meta name="keywords" content="Dodge extended warranty, Dodge warranty UK, Dodge Charger warranty, Dodge Challenger warranty, Dodge Ram warranty, HEMI warranty, used Dodge warranty" />
         <link rel="canonical" href={`https://buyawarranty.co.uk/warranty-types/${brandSlug}/`} />
