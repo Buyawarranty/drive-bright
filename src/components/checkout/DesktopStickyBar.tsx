@@ -95,7 +95,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                     £{monthlyPrice}/month <span className="text-gray-500">(12 payments only)</span>
                   </span>
                   <span className="text-xs text-gray-500 whitespace-nowrap">
-                    Total £{totalPrice}
+                    Paid over 12 months · Covers {months} months
                   </span>
                 </>
               ) : (
