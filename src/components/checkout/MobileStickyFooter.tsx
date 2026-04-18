@@ -78,7 +78,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                     {pencePerDay}p/day
                   </span>
                   <span className="text-[11px] text-gray-600 leading-tight">
-                    £{monthlyPrice}/mo · 12 payments
+                    £{monthlyPrice}/mo · 12 payments · Covers {months} months
                   </span>
                 </>
               ) : (
