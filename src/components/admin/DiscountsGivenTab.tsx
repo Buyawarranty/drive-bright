@@ -11,8 +11,9 @@ import { DateRange } from 'react-day-picker';
 import { calculateTotalWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
-import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle } from 'lucide-react';
+import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { Input } from '@/components/ui/input';
 
 interface CustomerRecord {
   id: string;
@@ -147,6 +148,7 @@ export const DiscountsGivenTab: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(computeRange('this_month'));
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
@@ -227,10 +229,19 @@ export const DiscountsGivenTab: React.FC = () => {
           if (dateRange.to && d > dateRange.to) return false;
         }
         if (selectedAgent !== 'all' && c.assigned_to !== selectedAgent) return false;
+        if (searchTerm.trim()) {
+          const term = searchTerm.trim().toLowerCase().replace(/\s+/g, '');
+          const reg = (c.registration_plate || '').toLowerCase().replace(/\s+/g, '');
+          const name = (c.name || '').toLowerCase();
+          const email = (c.email || '').toLowerCase();
+          if (!reg.includes(term) && !name.includes(searchTerm.toLowerCase()) && !email.includes(searchTerm.toLowerCase())) {
+            return false;
+          }
+        }
         return true;
       })
       .sort((a, b) => new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime());
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -347,6 +358,16 @@ export const DiscountsGivenTab: React.FC = () => {
           </div>
         )}
         <DateRangeFilter dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
+        <div className="relative w-72">
+          <label className="text-sm font-medium mb-1 block">Search</label>
+          <Search className="absolute left-3 top-[34px] h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Reg plate, name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       {/* Summary Cards */}
