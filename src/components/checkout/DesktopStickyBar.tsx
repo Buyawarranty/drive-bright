@@ -88,14 +88,14 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             <div className="flex flex-col items-start border-l border-gray-200 pl-6">
               {isMonthly ? (
                 <>
-                  <span className="text-2xl font-bold text-[#FF6B00] leading-tight whitespace-nowrap">
-                    {pencePerDay}p/day
+                  <span className="text-2xl font-bold text-gray-900 leading-none whitespace-nowrap">
+                    £{monthlyPrice}/month
                   </span>
-                  <span className="text-sm text-gray-700 whitespace-nowrap">
-                    £{monthlyPrice}/month <span className="text-gray-500">(12 payments only)</span>
+                  <span className="text-sm text-gray-600 whitespace-nowrap mt-1">
+                    Equal to <span className="font-semibold text-gray-700">{pencePerDay}p/day</span>
                   </span>
                   <span className="text-xs text-gray-500 whitespace-nowrap">
-                    Paid over 12 months · Covers {months} months
+                    Paid over 12 months
                   </span>
                 </>
               ) : (
