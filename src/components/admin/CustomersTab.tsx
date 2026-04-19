@@ -4769,7 +4769,7 @@ Please log in and change your password after first login.`;
                     <TableCell>
                       {(() => {
                         const src = customer.purchase_source;
-                        if (src === 'google_ads' || customer.gclid) {
+                        if (src === 'google_ads' || (customer as any).gclid) {
                           return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Google</Badge>;
                         }
                         if (src === 'facebook_ads') {
