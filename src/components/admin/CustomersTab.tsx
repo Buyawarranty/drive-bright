@@ -3481,6 +3481,7 @@ export const CustomersTab = ({
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
+              {isSuperAdmin && <TableHead className="bg-purple-50">Source</TableHead>}
               <TableHead>Payment</TableHead>
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
