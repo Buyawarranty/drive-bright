@@ -237,7 +237,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] font-semibold text-foreground uppercase tracking-wide">Save</div>
+                    <div className="text-[10px] font-semibold text-foreground uppercase tracking-wide">Save 10%</div>
                     <div className="text-base sm:text-lg font-bold text-foreground leading-none mt-0.5">
                       £{stripeSavings} today
                     </div>
