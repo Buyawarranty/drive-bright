@@ -1634,10 +1634,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const trueDaily = (trueMonthly * 12) / daysPerYear;
               const dailyPriceLabel = trueDaily < 1 ? `${Math.round(trueDaily * 100)}p` : `£${trueDaily.toFixed(2)}`;
 
-              // Displayed monthly = floor(daily × 30) so it never exceeds the daily-implied cost
-              const displayedMonthlyPrice = trueDaily < 1
-                ? Math.floor((Math.round(trueDaily * 100) * 30) / 100)
-                : Math.floor(trueDaily * 30);
+              // Headline monthly = the actual instalment (paid over 12 months for ALL terms)
+              const displayedMonthlyPrice = trueMonthly;
 
               // Pay in full = true monthly × 12
               const displayedAnnualPrice = trueMonthly * 12;
