@@ -185,11 +185,14 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                       </span>
                     </div>
                     <div className="h-10 w-px bg-border" aria-hidden="true" />
-                    <div className="flex items-baseline gap-0.5">
-                      <span className="text-3xl sm:text-4xl font-extrabold text-gray-500 leading-none tracking-tight">
-                        {dailyPrice}
-                      </span>
-                      <span className="text-base font-medium text-gray-500 leading-none">/day</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] uppercase tracking-wide font-semibold text-gray-500 leading-none mb-1">Equivalent to</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-gray-500 leading-none tracking-tight">
+                          {dailyPrice}
+                        </span>
+                        <span className="text-base font-medium text-gray-500 leading-none">/day</span>
+                      </div>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mt-3">
