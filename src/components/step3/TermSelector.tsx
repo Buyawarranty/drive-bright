@@ -178,7 +178,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="flex items-baseline gap-1">
                       <span className="text-5xl sm:text-6xl font-extrabold text-foreground leading-none tracking-tight">
-                        £{Math.floor(term.monthlyPrice)}
+                        £{displayMonthly}
                       </span>
                       <span className="text-lg sm:text-xl font-medium text-muted-foreground leading-none">
                         /mo
@@ -186,10 +186,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                     <div className="h-10 w-px bg-border" aria-hidden="true" />
                     <div className="flex items-baseline gap-0.5">
-                      <span className="text-3xl sm:text-4xl font-extrabold text-[#FF7A00] leading-none tracking-tight">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-gray-500 leading-none tracking-tight">
                         {dailyPrice}
                       </span>
-                      <span className="text-base font-medium text-[#FF7A00] leading-none">/day</span>
+                      <span className="text-base font-medium text-gray-500 leading-none">/day</span>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mt-3">
