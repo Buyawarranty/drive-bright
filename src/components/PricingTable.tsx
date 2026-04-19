@@ -1626,19 +1626,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate total price with all adjustments including add-ons
               const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
               
-              // Calculate display monthly price (always divide by 12, round DOWN)
-              const displayedMonthlyPrice = Math.floor(totalPriceWithAdjustments / 12);
-              
-              // Pay in full = monthly × 12 (what user actually pays over 12 months)
-              const displayedAnnualPrice = displayedMonthlyPrice * 12;
-              
+              // Calculate true monthly (for savings/totals)
+              const trueMonthly = Math.floor(totalPriceWithAdjustments / 12);
+
+              // Daily rate derived from true annual
+              const daysPerYear = durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365;
+              const trueDaily = (trueMonthly * 12) / daysPerYear;
+              const dailyPriceLabel = trueDaily < 1 ? `${Math.round(trueDaily * 100)}p` : `£${trueDaily.toFixed(2)}`;
+
+              // Displayed monthly = floor(daily × 30) so it never exceeds the daily-implied cost
+              const displayedMonthlyPrice = trueDaily < 1
+                ? Math.floor((Math.round(trueDaily * 100) * 30) / 100)
+                : Math.floor(trueDaily * 30);
+
+              // Pay in full = true monthly × 12
+              const displayedAnnualPrice = trueMonthly * 12;
+
               // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
-              
-              const dailyPriceLabel = (() => {
-                const daily = (displayedMonthlyPrice * 12) / (durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365);
-                return daily < 1 ? `${Math.round(daily * 100)}p` : `£${daily.toFixed(2)}`;
-              })();
+
               const stripeSavings = Math.floor(displayedAnnualPrice * 0.10);
               const isPopular = durationId === '24months';
               const isBestValue = durationId === '36months';
@@ -1717,10 +1723,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       <div className="h-10 w-px bg-gray-300" aria-hidden="true" />
                       <div className="flex items-baseline gap-0.5">
-                        <span className="text-3xl sm:text-4xl font-extrabold text-[#FF7A00] leading-none tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-gray-500 leading-none tracking-tight">
                           {dailyPriceLabel}
                         </span>
-                        <span className="text-base font-medium text-[#FF7A00] leading-none">/day</span>
+                        <span className="text-base font-medium text-gray-500 leading-none">/day</span>
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 mt-3">12 payments only · 0% APR</p>
