@@ -100,7 +100,7 @@ const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAcce
           className="w-5 h-5 rounded border-gray-300 text-[#0BA360] focus:ring-[#0BA360] accent-[#0BA360] cursor-pointer flex-shrink-0"
         />
         <span className={`text-sm leading-5 ${!accepted ? 'text-red-600 font-medium' : 'text-[#1a1a1a]'}`}>
-          I understand the cancellation terms
+          I understand the 14 day money back guarantee
         </span>
       </label>
       {!accepted && (
