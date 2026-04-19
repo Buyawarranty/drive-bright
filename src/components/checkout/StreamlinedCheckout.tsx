@@ -1683,8 +1683,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             />
           </section>
 
-          {/* ==================== PLAN HEADER ==================== */}
-          <section>
+          {/* ==================== PLAN HEADER (desktop only) ==================== */}
+          <section className="hidden lg:block">
             <DesktopPlanHeader
               vehicleReg={vehicleData.regNumber}
               vehicleMake={vehicleData.make}
