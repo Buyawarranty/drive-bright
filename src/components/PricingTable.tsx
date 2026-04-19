@@ -2911,10 +2911,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div className="flex-1 flex flex-col justify-center px-5 py-3.5">
                         <span className="text-[11px] font-bold text-orange-500 tracking-wide uppercase leading-tight">Your Cover</span>
                         <span className="text-base font-bold text-gray-900 whitespace-nowrap mt-1 leading-tight">{coverLabel}</span>
-                        <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
-                          <Wrench className="w-3 h-3" />
-                          <span className="whitespace-nowrap">Local Garages (£50/hour)</span>
-                        </div>
                       </div>
 
                       {/* SECTION 3: Price */}
@@ -2924,9 +2920,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           Equal to <span className="font-semibold text-gray-700">{dailyPriceLabel}</span>
                         </span>
                         <span className="text-[11px] text-gray-500 whitespace-nowrap">Paid over 12 months</span>
-                        {stripeSavings > 0 && (
-                          <span className="text-xs font-semibold text-green-600 whitespace-nowrap">You save £{stripeSavings} today</span>
-                        )}
                       </div>
 
                       {/* SECTION 4: Pay in full pill */}
