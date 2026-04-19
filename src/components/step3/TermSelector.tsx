@@ -177,11 +177,11 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                       /mo
                     </span>
                   </div>
+                  <p className="text-sm font-bold text-gray-700 mt-1">
+                    Equivalent to {dailyPrice} per day
+                  </p>
                   <p className="text-sm text-muted-foreground mt-2">
                     12 payments only · 0% APR
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Equivalent to {dailyPrice}/day
                   </p>
                 </div>
 
