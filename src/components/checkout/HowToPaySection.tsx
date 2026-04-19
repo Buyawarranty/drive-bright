@@ -282,7 +282,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     </span>
                     <span className="text-lg sm:text-xl font-medium text-[#FF6B00] leading-none">/mo</span>
                   </div>
-                  <p className="text-sm text-[#1a1a1a] font-semibold mt-2">
+                  <p className="text-sm text-[#FF6B00] font-semibold mt-2">
+                    Equal to just {monthlyPencePerDay}p/day
+                  </p>
+                  <p className="text-sm text-[#1a1a1a] font-semibold mt-1">
                     £{monthlyPrice} today, then 11 monthly payments
                   </p>
                   <p className="text-xs text-gray-500 mt-1">12 payments total · covers {planDurationMonths} months</p>
@@ -304,10 +307,16 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </div>
                 </div>
 
-                {/* Trust signal — replaces BUMPER logo */}
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-gray-600">
-                  <Lock className="w-3.5 h-3.5 text-gray-500" />
-                  <span>Provided by our FCA-regulated finance partner</span>
+                {/* Trust signal + Bumper logo */}
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
+                    <Lock className="w-3.5 h-3.5 text-gray-500" />
+                    <span>FCA-regulated finance partner</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
+                    <img src={bumperLogo} alt="Bumper" className="h-4 object-contain" />
+                  </div>
                 </div>
               </div>
 
