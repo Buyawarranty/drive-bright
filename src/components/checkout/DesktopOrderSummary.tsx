@@ -214,7 +214,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-[#FF6B00] leading-none">
+                    <div className="text-2xl font-bold text-[#1a1a1a] leading-none">
                       £{monthlyPrice}<span className="text-sm font-medium">/mo</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
