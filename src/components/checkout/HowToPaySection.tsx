@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
+import stripeLogo from '@/assets/stripe-logo.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 
 interface HowToPaySectionProps {
