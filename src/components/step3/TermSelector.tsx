@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Star, ArrowRight } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Star, ArrowRight, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TermOption {
   id: '12months' | '24months' | '36months';
