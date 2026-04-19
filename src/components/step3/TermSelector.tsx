@@ -167,23 +167,22 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   </div>
                 </div>
 
-                {/* Price hierarchy: daily is HERO, monthly is supporting */}
+                {/* Price hierarchy: monthly £ is HERO (matches reference), daily is supporting */}
                 <div className="mb-3">
-                  <div className="text-xs font-bold text-[#FF7A00] uppercase tracking-wide mb-0.5">Only</div>
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#FF7A00] leading-none">
-                      {dailyPrice}
+                  <div className="flex items-baseline gap-1 flex-wrap">
+                    <span className="text-5xl sm:text-6xl font-extrabold text-foreground leading-none tracking-tight">
+                      £{term.monthlyPrice}
                     </span>
-                    <span className="text-xl sm:text-2xl font-bold text-[#FF7A00] leading-none">/day</span>
-                  </div>
-                  <div className="mt-2 flex items-baseline gap-2 flex-wrap">
-                    <span className="text-base sm:text-lg font-semibold text-foreground">
-                      £{term.monthlyPrice}/month
-                    </span>
-                    <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                      (12 payments only)
+                    <span className="text-lg sm:text-xl font-medium text-muted-foreground leading-none">
+                      /mo
                     </span>
                   </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    12 payments only · 0% APR
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Equivalent to {dailyPrice}/day
+                  </p>
                 </div>
 
                 {/* Approx cost per month for multi-year plans */}
