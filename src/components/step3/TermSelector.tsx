@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Star, ArrowRight } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Star, ArrowRight, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TermOption {
   id: '12months' | '24months' | '36months';
@@ -183,12 +184,31 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                     <div className="h-8 w-px bg-border" aria-hidden="true" />
                     <div className="flex flex-col items-start">
-                      <span className="text-xs font-semibold text-gray-500 leading-none mb-1">Just</span>
+                      <span className="text-xs font-semibold text-gray-500 leading-none mb-1">Equal to</span>
                       <div className="flex items-baseline gap-0.5">
                         <span className="text-2xl sm:text-3xl font-bold text-gray-500 leading-none tracking-tight">
                           {dailyPrice}
                         </span>
                         <span className="text-sm font-medium text-gray-500 leading-none">/day</span>
+                        {(term.id === '24months' || term.id === '36months') && (
+                          <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="ml-1 inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                                  aria-label="More info about daily price"
+                                >
+                                  <Info className="w-3.5 h-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+                                This works out at {dailyPrice} a day across your {term.id === '36months' ? '3 years' : '2 years'} of cover. As payments are spread over 12 months, your monthly instalment will be £{displayMonthly}.
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </div>
                       <span className="text-[11px] font-medium text-gray-500 mt-1">
                         over {term.id === '36months' ? '3 years' : term.id === '24months' ? '2 years' : '1 year'} of cover
