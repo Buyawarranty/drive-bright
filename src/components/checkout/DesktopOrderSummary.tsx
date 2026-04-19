@@ -213,9 +213,16 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               <div className="mb-4">
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
-                  <span className="text-2xl font-bold text-[#FF6B00]">{monthlyPencePerDay}p<span className="text-base">/day</span></span>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-[#FF6B00] leading-none">
+                      £{monthlyPrice}<span className="text-sm font-medium">/mo</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Equal to {monthlyPencePerDay}p/day
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-2">
                   £{monthlyPrice}/month × 12 payments · Paid over 12 months · Covers {months} months · 0% APR
                 </p>
               </div>
