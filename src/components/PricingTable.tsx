@@ -1714,8 +1714,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         /mo
                       </span>
                     </div>
+                    <p className="text-sm font-bold text-gray-700 mt-1">Equivalent to {dailyPriceLabel} per day</p>
                     <p className="text-sm text-gray-600 mt-2">12 payments only · 0% APR</p>
-                    <p className="text-sm text-gray-500">Equivalent to {dailyPriceLabel}/day</p>
 
                     {/* Equivalent cost per month of cover */}
                     {durationId === '24months' && (
