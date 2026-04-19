@@ -149,8 +149,93 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">How To Pay</h2>
       </div>
 
-      {/* Payment Cards - Side by Side */}
+      {/* Payment Cards - Side by Side. Pay-in-full leads (recommended). */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Pay in Full Card — RECOMMENDED */}
+        <div className="relative">
+          {/* Recommended Badge */}
+          <div className="absolute -top-3 left-4 z-10">
+            <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap shadow-sm">
+              ★ RECOMMENDED · SAVE £{savings}
+            </span>
+          </div>
+
+          <button
+            onClick={() => onPaymentChange('full')}
+            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+              selectedPayment === 'full'
+                ? 'border-[#0BA360] bg-white shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
+                : 'border-[#0BA360]/40 bg-white hover:border-[#0BA360]'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                {/* Platinum Plan Label */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                  <span className="text-sm font-semibold text-[#1a1a1a]">
+                    Platinum {planYears}-Year Cover
+                  </span>
+                </div>
+                <p className="text-base font-bold text-[#1a1a1a]">Pay in full · one payment</p>
+
+                {/* Hero: total price */}
+                <div className="mt-3 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-4">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-4xl sm:text-5xl font-extrabold text-[#0BA360] leading-none tracking-tight">
+                      £{fullPrice}
+                    </span>
+                    {savings > 0 && (
+                      <span className="text-base text-gray-400 line-through">£{originalPrice}</span>
+                    )}
+                  </div>
+                  {savings > 0 && (
+                    <p className="text-sm text-[#0BA360] font-bold mt-2">
+                      Save £{savings} instantly · 10% off
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">One payment today · covers {planDurationMonths} months</p>
+                </div>
+
+                {/* Benefits */}
+                <div className="mt-3 space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                    <span>Instant 10% saving</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                    <span>No ongoing payments to manage</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                    <span>No credit check required</span>
+                  </div>
+                </div>
+
+                {/* Trust signal — replaces "stripe" text */}
+                <div className="mt-4 flex items-center gap-1.5 text-xs text-gray-600">
+                  <Lock className="w-3.5 h-3.5 text-gray-500" />
+                  <span>Secure card payment · Apple Pay & Google Pay</span>
+                </div>
+              </div>
+
+              {/* Radio/Check indicator */}
+              <div
+                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'full'
+                    ? 'bg-[#0BA360] border-[#0BA360]'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
+                {selectedPayment === 'full' && (
+                  <Check className="w-4 h-4 text-white" />
+                )}
+              </div>
+            </div>
+          </button>
+        </div>
+
         {/* Monthly Card */}
         <div className="relative">
           {/* 0% APR Badge */}
@@ -159,7 +244,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               0% APR
             </span>
           </div>
-          
+
           <button
             onClick={() => onPaymentChange('monthly')}
             className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
@@ -169,7 +254,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             }`}
           >
             <div className="flex items-start justify-between gap-3">
-              {/* Content */}
               <div className="flex-1">
                 {/* Platinum Plan Label */}
                 <div className="flex items-center gap-2 mb-2">
@@ -178,50 +262,46 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Monthly payments</p>
+                <p className="text-base font-bold text-[#1a1a1a]">Spread the cost · 12 payments</p>
 
-                {/* Hero: pence per day (matches Step 3) */}
-                <div className="mt-3 bg-[#FFF5EB] border border-[#FFD7B5] rounded-lg p-3">
+                {/* Hero: monthly price (matches Step 3) */}
+                <div className="mt-3 bg-[#FFF5EB] border border-[#FFD7B5] rounded-lg p-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl sm:text-5xl font-bold text-[#FF6B00] leading-none">
-                      {monthlyPencePerDay}p
+                    <span className="text-4xl sm:text-5xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
+                      £{monthlyPrice}
                     </span>
-                    <span className="text-xl sm:text-2xl font-bold text-[#FF6B00] leading-none">/day</span>
+                    <span className="text-lg sm:text-xl font-medium text-[#FF6B00] leading-none">/mo</span>
                   </div>
-                  <p className="text-sm text-[#1a1a1a] mt-2">
-                    <span className="font-bold">£{monthlyPrice} today</span>
+                  <p className="text-sm text-[#1a1a1a] font-semibold mt-2">
+                    £{monthlyPrice} today, then 11 monthly payments
                   </p>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    then £{monthlyPrice}/month ({Math.max(0, 12 - 1)} remaining)
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">Paid over 12 months · Covers {planDurationMonths} months</p>
+                  <p className="text-xs text-gray-500 mt-1">12 payments total · covers {planDurationMonths} months</p>
                 </div>
 
                 {/* Benefits */}
                 <div className="mt-3 space-y-1.5">
                   <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                     <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>No credit impact</span>
+                    <span>0% interest, ever</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                     <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>12 payments only</span>
+                    <span>Soft credit check only — no impact on score</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                     <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>0% APR</span>
+                    <span>Cancel anytime within 14 days</span>
                   </div>
                 </div>
 
-                {/* Bumper Pill Badge */}
-                <div className="mt-4">
-                  <span className="inline-flex items-center bg-[#1a1a1a] text-white text-xs font-bold px-4 py-1.5 rounded-md tracking-wider">
-                    BUMPER
-                  </span>
+                {/* Trust signal — replaces BUMPER logo */}
+                <div className="mt-4 flex items-center gap-1.5 text-xs text-gray-600">
+                  <Lock className="w-3.5 h-3.5 text-gray-500" />
+                  <span>Provided by our FCA-regulated finance partner</span>
                 </div>
               </div>
 
-              {/* Radio/Check indicator - on right */}
+              {/* Radio/Check indicator */}
               <div
                 className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                   selectedPayment === 'monthly'
@@ -230,92 +310,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 }`}
               >
                 {selectedPayment === 'monthly' && (
-                  <Check className="w-4 h-4 text-white" />
-                )}
-              </div>
-            </div>
-          </button>
-        </div>
-
-        {/* Pay in Full Card */}
-        <div className="relative">
-          {/* Save 10% Badge */}
-          <div className="absolute -top-3 left-4 z-10">
-            <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
-              Save £{savings}
-            </span>
-          </div>
-          
-          <button
-            onClick={() => onPaymentChange('full')}
-            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
-              selectedPayment === 'full'
-                ? 'border-[#0BA360] bg-white'
-                : 'border-[#E5E5E5] bg-white hover:border-gray-300'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              {/* Content */}
-              <div className="flex-1">
-                {/* Platinum Plan Label */}
-                <div className="flex items-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                  <span className="text-sm font-semibold text-[#1a1a1a]">
-                    Platinum {planYears}-Year Cover
-                  </span>
-                </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Pay in full</p>
-
-                {/* Hero: pence per day (matches Step 3) */}
-                <div className="mt-3 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-3">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl sm:text-5xl font-bold text-[#0BA360] leading-none">
-                      {fullPencePerDay}p
-                    </span>
-                    <span className="text-xl sm:text-2xl font-bold text-[#0BA360] leading-none">/day</span>
-                  </div>
-                  <p className="text-sm text-[#1a1a1a] mt-2">
-                    <span className="font-bold">£{fullPrice} today</span>
-                  </p>
-                  {savings > 0 && (
-                    <>
-                      <p className="text-xs text-[#0BA360] font-semibold mt-0.5">You save £{savings} instantly</p>
-                      <p className="text-xs text-gray-400 line-through">was £{originalPrice}</p>
-                    </>
-                  )}
-                </div>
-
-                {/* Benefits */}
-                <div className="mt-3 space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>Instant 10% off</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>One simple payment</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>No ongoing payments</span>
-                  </div>
-                </div>
-
-                {/* Stripe Text */}
-                <div className="mt-4">
-                  <span className="text-[#635BFF] font-semibold text-sm">stripe</span>
-                </div>
-              </div>
-
-              {/* Radio/Check indicator - on right */}
-              <div
-                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'full'
-                    ? 'bg-[#0BA360] border-[#0BA360]'
-                    : 'border-gray-300 bg-white'
-                }`}
-              >
-                {selectedPayment === 'full' && (
                   <Check className="w-4 h-4 text-white" />
                 )}
               </div>
