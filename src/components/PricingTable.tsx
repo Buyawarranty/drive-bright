@@ -1704,19 +1704,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </h4>
                   <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
 
-                  {/* Price Section — DAILY PRICE IS HERO */}
+                  {/* Price Section — MONTHLY £ IS HERO, daily is supporting */}
                   <div className="mb-4">
-                    <div className="text-xs font-bold text-[#FF7A00] uppercase tracking-wide mb-0.5">Only</div>
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-4xl sm:text-5xl font-extrabold text-[#FF7A00] leading-none">
-                        {dailyPriceLabel}
+                    <div className="flex items-baseline gap-1 flex-wrap">
+                      <span className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none tracking-tight">
+                        £{displayedMonthlyPrice}
                       </span>
-                      <span className="text-xl sm:text-2xl font-bold text-[#FF7A00] leading-none">/day</span>
+                      <span className="text-lg sm:text-xl font-medium text-gray-500 leading-none">
+                        /mo
+                      </span>
                     </div>
-                    <div className="mt-2 flex items-baseline gap-2 flex-wrap">
-                      <span className="text-base sm:text-lg font-semibold text-black">£{displayedMonthlyPrice}/month</span>
-                      <span className="text-xs sm:text-sm font-medium text-gray-600">(12 payments only)</span>
-                    </div>
+                    <p className="text-sm text-gray-600 mt-2">12 payments only · 0% APR</p>
+                    <p className="text-sm text-gray-500">Equivalent to {dailyPriceLabel}/day</p>
 
                     {/* Equivalent cost per month of cover */}
                     {durationId === '24months' && (
