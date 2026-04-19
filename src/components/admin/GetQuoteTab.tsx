@@ -601,8 +601,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
+      const cleanReg2 = regNumber.replace(/\s/g, '').toUpperCase();
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: regNumber, skipAgeCheck: ageOverrideEnabled }
+        body: { registrationNumber: cleanReg2, skipAgeCheck: ageOverrideEnabled }
       });
       
       clearTimeout(timeoutId);
