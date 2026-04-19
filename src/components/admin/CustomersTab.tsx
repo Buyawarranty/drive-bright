@@ -1301,7 +1301,7 @@ export const CustomersTab = ({
           google_ads_conversion_status: null,
           customer_dob: null,
           dealer_id: null
-        }));
+        })) as any[];
         
         directData = [...directData, ...orphanedAsCustomers];
       }
