@@ -227,16 +227,16 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 {/* Pay-in-full panel: large price left, smaller savings right */}
                 <div className="bg-success/10 border border-success/30 rounded-xl px-4 py-3 flex items-center justify-between gap-3 mb-1">
                   <div>
-                    <div className="text-xs text-muted-foreground">Pay in full</div>
+                    <div className="text-xs text-foreground">Pay in full</div>
                     <div className="flex items-baseline gap-2 mt-0.5">
                       <span className="text-3xl sm:text-4xl font-extrabold text-foreground leading-none">£{payInFullPrice - stripeSavings}</span>
-                      <span className="text-sm text-red-500 line-through">£{payInFullPrice}</span>
+                      <span className="text-sm text-foreground/60 line-through">£{payInFullPrice}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">or £{displayMonthly}/month</div>
+                    <div className="text-xs text-foreground mt-1">or £{displayMonthly}/month</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] font-semibold text-success uppercase tracking-wide">Save</div>
-                    <div className="text-base sm:text-lg font-bold text-success leading-none mt-0.5">
+                    <div className="text-[10px] font-semibold text-foreground uppercase tracking-wide">Save</div>
+                    <div className="text-base sm:text-lg font-bold text-foreground leading-none mt-0.5">
                       £{stripeSavings} today
                     </div>
                   </div>
