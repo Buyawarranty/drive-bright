@@ -243,6 +243,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                       <span className="text-3xl sm:text-4xl font-extrabold text-foreground leading-none">£{payInFullPrice - stripeSavings}</span>
                       <span className="text-sm text-red-500 line-through">£{payInFullPrice}</span>
                     </div>
+                    <div className="text-xs text-muted-foreground mt-1">or £{displayMonthly}/month</div>
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] font-semibold text-success uppercase tracking-wide">Save</div>
