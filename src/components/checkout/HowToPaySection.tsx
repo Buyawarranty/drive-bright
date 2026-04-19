@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
+import stripeLogo from '@/assets/stripe-logo.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 
 interface HowToPaySectionProps {
@@ -189,8 +190,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                       <span className="text-base text-gray-400 line-through">£{originalPrice}</span>
                     )}
                   </div>
+                  <p className="text-sm text-[#0BA360] font-semibold mt-2">
+                    Equal to just {fullPencePerDay}p/day
+                  </p>
                   {savings > 0 && (
-                    <p className="text-sm text-[#0BA360] font-bold mt-2">
+                    <p className="text-sm text-[#0BA360] font-bold mt-1">
                       Save £{savings} instantly · 10% off
                     </p>
                   )}
@@ -213,10 +217,16 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </div>
                 </div>
 
-                {/* Trust signal — replaces "stripe" text */}
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-gray-600">
-                  <Lock className="w-3.5 h-3.5 text-gray-500" />
-                  <span>Secure card payment · Apple Pay & Google Pay</span>
+                {/* Trust signal + Stripe logo */}
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
+                    <Lock className="w-3.5 h-3.5 text-gray-500" />
+                    <span>Secure card payment · Apple Pay & Google Pay</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
+                    <img src={stripeLogo} alt="Stripe" className="h-4 object-contain" />
+                  </div>
                 </div>
               </div>
 
@@ -272,7 +282,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     </span>
                     <span className="text-lg sm:text-xl font-medium text-[#FF6B00] leading-none">/mo</span>
                   </div>
-                  <p className="text-sm text-[#1a1a1a] font-semibold mt-2">
+                  <p className="text-sm text-[#FF6B00] font-semibold mt-2">
+                    Equal to just {monthlyPencePerDay}p/day
+                  </p>
+                  <p className="text-sm text-[#1a1a1a] font-semibold mt-1">
                     £{monthlyPrice} today, then 11 monthly payments
                   </p>
                   <p className="text-xs text-gray-500 mt-1">12 payments total · covers {planDurationMonths} months</p>
@@ -294,10 +307,16 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </div>
                 </div>
 
-                {/* Trust signal — replaces BUMPER logo */}
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-gray-600">
-                  <Lock className="w-3.5 h-3.5 text-gray-500" />
-                  <span>Provided by our FCA-regulated finance partner</span>
+                {/* Trust signal + Bumper logo */}
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
+                    <Lock className="w-3.5 h-3.5 text-gray-500" />
+                    <span>FCA-regulated finance partner</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
+                    <img src={bumperLogo} alt="Bumper" className="h-4 object-contain" />
+                  </div>
                 </div>
               </div>
 
