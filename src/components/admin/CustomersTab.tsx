@@ -3481,6 +3481,7 @@ export const CustomersTab = ({
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
+              {isSuperAdmin && <TableHead className="bg-purple-50">Source</TableHead>}
               <TableHead>Payment</TableHead>
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
@@ -4764,9 +4765,23 @@ Please log in and change your password after first login.`;
                       )}
                     </div>
                   </TableCell>
+                  {isSuperAdmin && (
+                    <TableCell>
+                      {(() => {
+                        const src = customer.purchase_source;
+                        if (src === 'google_ads' || (customer as any).gclid) {
+                          return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Google</Badge>;
+                        }
+                        if (src === 'facebook_ads') {
+                          return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Facebook</Badge>;
+                        }
+                        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Organic</Badge>;
+                      })()}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
-                      <PurchaseSourceBadge 
+                      <PurchaseSourceBadge
                         source={customer.purchase_source} 
                         bumperOrderId={customer.bumper_order_id}
                         stripeSessionId={customer.stripe_session_id}
