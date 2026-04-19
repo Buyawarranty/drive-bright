@@ -183,13 +183,16 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                     <div className="h-8 w-px bg-border" aria-hidden="true" />
                     <div className="flex flex-col items-start">
-                      <span className="text-xs font-semibold text-gray-500 leading-none mb-1">Equal to</span>
+                      <span className="text-xs font-semibold text-gray-500 leading-none mb-1">Just</span>
                       <div className="flex items-baseline gap-0.5">
                         <span className="text-2xl sm:text-3xl font-bold text-gray-500 leading-none tracking-tight">
                           {dailyPrice}
                         </span>
                         <span className="text-sm font-medium text-gray-500 leading-none">/day</span>
                       </div>
+                      <span className="text-[11px] font-medium text-gray-500 mt-1">
+                        over {term.id === '36months' ? '3 years' : term.id === '24months' ? '2 years' : '1 year'} of cover
+                      </span>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mt-3">
