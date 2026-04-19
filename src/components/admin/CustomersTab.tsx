@@ -1303,7 +1303,7 @@ export const CustomersTab = ({
           dealer_id: null
         })) as any[];
         
-        directData = [...directData, ...orphanedAsCustomers];
+        directData = [...directData, ...orphanedAsCustomers] as typeof directData;
       }
       
       const directCount = directData.length;
