@@ -2876,10 +2876,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const dailyPriceLabel = pencePerDayRaw >= 100
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
-                  // Match duration-card display: monthly = floor(daily × 30) so it never exceeds the daily-implied cost
-                  const stickyDisplayMonthly = pencePerDayRaw < 100
-                    ? Math.floor((Math.round(pencePerDayRaw) * 30) / 100)
-                    : Math.floor((pencePerDayRaw / 100) * 30);
+                  // Headline monthly = the actual instalment (paid over 12 months for ALL terms)
+                  const stickyDisplayMonthly = displayMonthlyPrice;
                   const coverLabel =
                     months === 12 ? '1-Year Platinum Cover' :
                     months === 24 ? '2-Year Platinum Cover' :
