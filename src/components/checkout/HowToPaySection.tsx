@@ -178,12 +178,12 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Pay in full · one payment</p>
+                <p className="text-base font-bold text-[#1a1a1a]">Pay in full · save 10%</p>
 
                 {/* Hero: total price */}
                 <div className="mt-3 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-4">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#0BA360] leading-none tracking-tight">
+                    <span className="text-4xl sm:text-5xl font-extrabold text-[#1a1a1a] leading-none tracking-tight">
                       £{fullPrice}
                     </span>
                     {savings > 0 && (
@@ -277,10 +277,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 {/* Hero: monthly price (matches Step 3) */}
                 <div className="mt-3 bg-[#FFF5EB] border border-[#FFD7B5] rounded-lg p-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
+                    <span className="text-4xl sm:text-5xl font-extrabold text-[#1a1a1a] leading-none tracking-tight">
                       £{monthlyPrice}
                     </span>
-                    <span className="text-lg sm:text-xl font-medium text-[#FF6B00] leading-none">/mo</span>
+                    <span className="text-lg sm:text-xl font-medium text-[#1a1a1a] leading-none">/mo</span>
                   </div>
                   <p className="text-sm text-[#FF6B00] font-semibold mt-2">
                     Equal to just {monthlyPencePerDay}p/day
