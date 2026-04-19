@@ -4780,6 +4780,8 @@ Please log in and change your password after first login.`;
                     </TableCell>
                   )}
                   <TableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <PurchaseSourceBadge
                         source={customer.purchase_source} 
                         bumperOrderId={customer.bumper_order_id}
                         stripeSessionId={customer.stripe_session_id}
