@@ -526,7 +526,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         return;
       }
 
-      if (data?.error || !data?.make || !data?.model) {
+      if (data?.error || data?.found === false || !data?.make) {
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
@@ -557,7 +557,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         regNumber: regNumber.toUpperCase(),
         mileage: mileage,
         make: data.make,
-        model: data.model,
+        model: data.model || '',
         fuelType: data.fuelType || '',
         transmission: data.transmission || '',
         year: data.yearOfManufacture || data.year || '',
@@ -616,7 +616,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         return;
       }
 
-      if (data?.error || !data?.make || !data?.model) {
+      if (data?.error || data?.found === false || !data?.make) {
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
@@ -648,7 +648,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         regNumber: regNumber.toUpperCase(),
         mileage: effectiveMileage,
         make: data.make,
-        model: data.model,
+        model: data.model || '',
         fuelType: data.fuelType || '',
         transmission: data.transmission || '',
         year: data.yearOfManufacture || data.year || '',
@@ -670,7 +670,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       
       toast({
         title: "Vehicle Found",
-        description: `${data.make} ${data.model} (${data.yearOfManufacture || data.year}) - Ready to confirm order`,
+        description: `${data.make}${data.model ? ` ${data.model}` : ''} (${data.yearOfManufacture || data.year}) - Ready to confirm order`,
       });
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
