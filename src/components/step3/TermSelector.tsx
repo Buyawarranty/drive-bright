@@ -114,6 +114,12 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           const payInFullPrice = getPayInFullPrice(term.id);
           const stripeSavings = getStripeSavings(term.id);
           const dailyPrice = formatDaily(term.id, term.monthlyPrice);
+          // Display monthly = floor(daily × 30) so monthly never exceeds daily-implied cost
+          const days = term.id === '36months' ? 1095 : term.id === '24months' ? 730 : 365;
+          const trueDaily = (term.monthlyPrice * 12) / days;
+          const displayMonthly = trueDaily < 1
+            ? Math.floor((Math.round(trueDaily * 100) * 30) / 100)
+            : Math.floor(trueDaily * 30);
 
           return (
             <div
