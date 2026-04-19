@@ -1776,18 +1776,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     )}
 
-                    {/* AMPLIFIED savings panel */}
+                    {/* Pay-in-full panel: large price left, smaller savings right */}
                     <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 mt-4">
                       <div>
-                        <div className="text-xs font-semibold text-green-700 uppercase tracking-wide">Save</div>
-                        <div className="text-2xl sm:text-3xl font-extrabold text-green-700 leading-none mt-0.5">
-                          £{stripeSavings} today
+                        <div className="text-xs text-gray-500">Pay in full</div>
+                        <div className="flex items-baseline gap-2 mt-0.5">
+                          <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">£{displayedAnnualPrice - stripeSavings}</span>
+                          <span className="text-sm text-red-500 line-through">£{displayedAnnualPrice}</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs text-gray-500">Pay in full</div>
-                        <div className="text-sm font-bold text-black">£{displayedAnnualPrice - stripeSavings}</div>
-                        <div className="text-xs text-red-500 line-through">£{displayedAnnualPrice}</div>
+                        <div className="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Save</div>
+                        <div className="text-base sm:text-lg font-bold text-green-700 leading-none mt-0.5">
+                          £{stripeSavings} today
+                        </div>
                       </div>
                     </div>
                   </div>
