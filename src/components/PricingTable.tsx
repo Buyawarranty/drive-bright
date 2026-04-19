@@ -1784,6 +1784,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">£{displayedAnnualPrice - stripeSavings}</span>
                           <span className="text-sm text-red-500 line-through">£{displayedAnnualPrice}</span>
                         </div>
+                        <div className="text-xs text-gray-500 mt-1">or £{displayedMonthlyPrice}/month</div>
                       </div>
                       <div className="text-right">
                         <div className="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Save</div>
