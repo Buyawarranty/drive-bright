@@ -517,23 +517,25 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       clearTimeout(timeoutId);
       console.log('[GetQuote] DVLA lookup response:', { data, error });
 
-      if (error) {
-        console.error('DVLA lookup error:', error);
+      // Fallback: if DVLA/DVSA API fails or returns no make, proceed with reg-only data
+      // (same behaviour as the public homepage). Admin can fill make/model manually in Step 2.
+      if (error || data?.error || data?.found === false || !data?.make) {
+        console.warn('[GetQuote] Vehicle API unavailable - proceeding with manual entry fallback', { error, data });
         toast({
-          title: "Lookup Failed",
-          description: error.message || "Unable to connect to vehicle database. Please try again.",
-          variant: "destructive",
+          title: "Vehicle Lookup Unavailable",
+          description: "Could not auto-fetch vehicle details. Please enter make/model manually.",
         });
-        setIsLookingUp(false);
-        return;
-      }
-
-      if (data?.error || data?.found === false || !data?.make) {
-        toast({
-          title: "Vehicle Not Found",
-          description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
-          variant: "destructive",
+        setVehicleData({
+          regNumber: regNumber.toUpperCase(),
+          mileage: mileage,
+          make: '',
+          model: '',
+          fuelType: '',
+          transmission: '',
+          year: '',
+          vehicleType: '',
         });
+        setStep(2);
         setIsLookingUp(false);
         return;
       }
@@ -608,23 +610,32 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       
       clearTimeout(timeoutId);
 
-      if (error) {
-        console.error('DVLA lookup error:', error);
+      // Fallback: if API fails, proceed with reg-only data so admin can complete the order manually
+      if (error || data?.error || data?.found === false || !data?.make) {
+        console.warn('[QuickConfirm] Vehicle API unavailable - proceeding with manual entry', { error, data });
         toast({
-          title: "Lookup Failed",
-          description: error.message || "Unable to connect to vehicle database. Please try again.",
-          variant: "destructive",
+          title: "Vehicle Lookup Unavailable",
+          description: "Proceeding without auto-fetched details. Please verify vehicle info before confirming.",
         });
-        setIsQuickConfirming(false);
-        return;
-      }
-
-      if (data?.error || data?.found === false || !data?.make) {
-        toast({
-          title: "Vehicle Not Found",
-          description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
-          variant: "destructive",
+        setVehicleData({
+          regNumber: regNumber.toUpperCase(),
+          mileage: effectiveMileage,
+          make: '',
+          model: '',
+          fuelType: '',
+          transmission: '',
+          year: '',
+          vehicleType: '',
         });
+        setPaymentSource('');
+        setPaymentAmount('');
+        setPaymentDate(new Date().toISOString().split('T')[0]);
+        setPaymentConfirmed(false);
+        setPaymentNotes('');
+        setWarrantyStartDate(new Date());
+        setExternalPaymentStep('details');
+        setCompletionStatus(null);
+        setShowConfirmPaymentDialog(true);
         setIsQuickConfirming(false);
         return;
       }
