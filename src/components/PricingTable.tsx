@@ -2924,7 +2924,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* SECTION 3: Price */}
                       <div className="flex-[1.2] flex flex-col items-start justify-center px-5 py-3.5 gap-0.5">
-                        <span className="text-2xl font-bold text-gray-900 leading-none whitespace-nowrap">£{displayMonthlyPrice}/month</span>
+                        <span className="text-2xl font-bold text-gray-900 leading-none whitespace-nowrap">£{stickyDisplayMonthly}/month</span>
                         <span className="text-xs text-gray-600 whitespace-nowrap">
                           Equal to <span className="font-semibold text-gray-700">{dailyPriceLabel}</span>
                         </span>
