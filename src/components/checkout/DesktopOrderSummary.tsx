@@ -226,7 +226,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   <span className="text-2xl font-bold text-[#0BA360]">£{fullPrice}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Equivalent to {fullPencePerDay}p/day · <span className="text-[#0BA360] font-medium">Save £{savings}</span>
+                  Equal to {fullPencePerDay}p/day · <span className="text-[#0BA360] font-medium">Save £{savings}</span>
                 </p>
               </div>
             ) : (
