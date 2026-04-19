@@ -167,20 +167,26 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   </div>
                 </div>
 
-                {/* Price hierarchy: monthly £ is HERO (matches reference), daily is supporting */}
+                {/* Price hierarchy: monthly £ + daily pence side-by-side */}
                 <div className="mb-3">
-                  <div className="flex items-baseline gap-1 flex-wrap">
-                    <span className="text-5xl sm:text-6xl font-extrabold text-foreground leading-none tracking-tight">
-                      £{term.monthlyPrice}
-                    </span>
-                    <span className="text-lg sm:text-xl font-medium text-muted-foreground leading-none">
-                      /mo
-                    </span>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl sm:text-6xl font-extrabold text-foreground leading-none tracking-tight">
+                        £{Math.floor(term.monthlyPrice)}
+                      </span>
+                      <span className="text-lg sm:text-xl font-medium text-muted-foreground leading-none">
+                        /mo
+                      </span>
+                    </div>
+                    <div className="h-10 w-px bg-border" aria-hidden="true" />
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#FF7A00] leading-none tracking-tight">
+                        {dailyPrice}
+                      </span>
+                      <span className="text-base font-medium text-[#FF7A00] leading-none">/day</span>
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-gray-700 mt-1">
-                    Equivalent to {dailyPrice} per day
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-sm text-muted-foreground mt-3">
                     12 payments only · 0% APR
                   </p>
                 </div>

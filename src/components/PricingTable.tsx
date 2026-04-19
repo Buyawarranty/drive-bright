@@ -1704,18 +1704,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </h4>
                   <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
 
-                  {/* Price Section — MONTHLY £ IS HERO, daily is supporting */}
+                  {/* Price Section — MONTHLY £ side-by-side with daily pence */}
                   <div className="mb-4">
-                    <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none tracking-tight">
-                        £{displayedMonthlyPrice}
-                      </span>
-                      <span className="text-lg sm:text-xl font-medium text-gray-500 leading-none">
-                        /mo
-                      </span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none tracking-tight">
+                          £{displayedMonthlyPrice}
+                        </span>
+                        <span className="text-lg sm:text-xl font-medium text-gray-500 leading-none">
+                          /mo
+                        </span>
+                      </div>
+                      <div className="h-10 w-px bg-gray-300" aria-hidden="true" />
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-[#FF7A00] leading-none tracking-tight">
+                          {dailyPriceLabel}
+                        </span>
+                        <span className="text-base font-medium text-[#FF7A00] leading-none">/day</span>
+                      </div>
                     </div>
-                    <p className="text-sm font-bold text-gray-700 mt-1">Equivalent to {dailyPriceLabel} per day</p>
-                    <p className="text-sm text-gray-600 mt-2">12 payments only · 0% APR</p>
+                    <p className="text-sm text-gray-600 mt-3">12 payments only · 0% APR</p>
 
                     {/* Equivalent cost per month of cover */}
                     {durationId === '24months' && (
