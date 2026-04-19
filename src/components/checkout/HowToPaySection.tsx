@@ -276,11 +276,16 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
                 {/* Hero: monthly price (matches Step 3) */}
                 <div className="mt-3 bg-[#FFF5EB] border border-[#FFD7B5] rounded-lg p-4">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#1a1a1a] leading-none tracking-tight">
-                      £{monthlyPrice}
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl sm:text-5xl font-extrabold text-[#1a1a1a] leading-none tracking-tight">
+                        £{monthlyPrice}
+                      </span>
+                      <span className="text-lg sm:text-xl font-medium text-[#1a1a1a] leading-none">/mo</span>
+                    </div>
+                    <span className="text-sm text-gray-600 font-medium">
+                      · £{monthlyPrice * 12} total
                     </span>
-                    <span className="text-lg sm:text-xl font-medium text-[#1a1a1a] leading-none">/mo</span>
                   </div>
                   <p className="text-sm text-[#FF6B00] font-semibold mt-2">
                     Equal to just {monthlyPencePerDay}p/day
