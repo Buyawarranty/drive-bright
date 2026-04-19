@@ -197,14 +197,6 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   </p>
                 </div>
 
-                {/* Approx cost per month for multi-year plans */}
-                {(term.id === '24months' || term.id === '36months') && (
-                  <div className="inline-block bg-white/70 border border-border/60 rounded-full px-3 py-1 mb-3">
-                    <p className="text-xs sm:text-sm font-semibold text-gray-600">
-                      Approx. £{Math.floor(term.monthlyPrice / (term.id === '36months' ? 3 : 2))}/month over {term.id === '36months' ? '3' : '2'} years
-                    </p>
-                  </div>
-                )}
 
                 {/* Free year benefit */}
                 {term.id === '24months' && (
