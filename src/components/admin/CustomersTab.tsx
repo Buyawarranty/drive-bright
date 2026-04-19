@@ -413,6 +413,8 @@ export const CustomersTab = ({
     ? viewAsAgent.id
     : currentAdminUser?.id;
   const isSuperAdmin = normalizedRole === 'super_admin';
+  const isLeadGen = normalizedRole === 'lead_gen';
+  const canSeeSourceColumn = isSuperAdmin || isLeadGen;
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
@@ -3481,7 +3483,7 @@ export const CustomersTab = ({
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
-              {isSuperAdmin && <TableHead className="bg-purple-50">Source</TableHead>}
+              {canSeeSourceColumn && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Payment</TableHead>
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
@@ -4765,7 +4767,7 @@ Please log in and change your password after first login.`;
                       )}
                     </div>
                   </TableCell>
-                  {isSuperAdmin && (
+                  {canSeeSourceColumn && (
                     <TableCell>
                       {(() => {
                         const src = customer.purchase_source;
