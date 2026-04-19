@@ -196,11 +196,11 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                               <TooltipTrigger asChild>
                                 <button
                                   type="button"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="ml-1 inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+                                  className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
                                   aria-label="More info about daily price"
                                 >
-                                  <Info className="w-3.5 h-3.5" />
+                                  <Info className="w-3.5 h-3.5" strokeWidth={2.5} />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
