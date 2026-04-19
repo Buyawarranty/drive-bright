@@ -1717,10 +1717,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       <div className="h-10 w-px bg-gray-300" aria-hidden="true" />
                       <div className="flex items-baseline gap-0.5">
-                        <span className="text-3xl sm:text-4xl font-extrabold text-[#FF7A00] leading-none tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-gray-500 leading-none tracking-tight">
                           {dailyPriceLabel}
                         </span>
-                        <span className="text-base font-medium text-[#FF7A00] leading-none">/day</span>
+                        <span className="text-base font-medium text-gray-500 leading-none">/day</span>
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 mt-3">12 payments only · 0% APR</p>
