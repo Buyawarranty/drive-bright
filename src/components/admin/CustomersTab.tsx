@@ -384,6 +384,7 @@ export const CustomersTab = ({
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
   const [trustpilotReviewCustomer, setTrustpilotReviewCustomer] = useState<Customer | null>(null);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [archiveSimpleConfirm, setArchiveSimpleConfirm] = useState(false);
   const [archiveCustomers, setArchiveCustomers] = useState<Array<{
     id: string;
     name: string;
