@@ -398,7 +398,25 @@ serve(async (req) => {
             const dvla = await fetchDVLAFallback(registrationNumber);
             if (dvla?.make) {
               console.log('DVLA fallback returned data:', { make: dvla.make, model: dvla.model });
-              const validation = validateVehicleEligibility({ make: dvla.make, model: dvla.model || '', regNumber: registrationNumber });
+
+              // DVLA VES doesn't return model. Try DVSA one more time with delay to recover model.
+              let recoveredModel: string | null = dvla.model || null;
+              if (!recoveredModel) {
+                console.log('DVLA returned no model - retrying DVSA after delay to recover model');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                try {
+                  const retryToken = await getAccessToken();
+                  const retryData = await fetchDVSAVehicleData(registrationNumber, retryToken);
+                  if (retryData?.model) {
+                    recoveredModel = retryData.model;
+                    console.log('✅ DVSA retry recovered model:', recoveredModel);
+                  }
+                } catch (retryErr) {
+                  console.warn('DVSA model-recovery retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
+                }
+              }
+
+              const validation = validateVehicleEligibility({ make: dvla.make, model: recoveredModel || '', regNumber: registrationNumber });
               const blocked = !validation.isValid;
               return new Response(JSON.stringify({
                 found: true,
@@ -406,11 +424,13 @@ serve(async (req) => {
                 blockReason: blocked ? validation.errorMessage : undefined,
                 registrationNumber: regUpper,
                 make: dvla.make,
-                model: dvla.model || null,
+                model: recoveredModel,
                 fuelType: dvla.fuelType || null,
                 colour: dvla.colour || null,
                 yearOfManufacture: dvla.yearOfManufacture || null,
-                vehicleType: 'car'
+                vehicleType: 'car',
+                modelMissing: !recoveredModel,
+                source: recoveredModel ? 'dvla+dvsa_retry' : 'dvla_fallback'
               }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
@@ -484,7 +504,25 @@ serve(async (req) => {
       
       if (dvlaFallback?.make) {
         console.log('DVLA VES fallback succeeded:', { make: dvlaFallback.make, model: dvlaFallback.model });
-        const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: dvlaFallback.model || '', regNumber: registrationNumber });
+
+        // DVLA VES doesn't return model - try DVSA one more time with delay
+        let recoveredModel2: string | null = dvlaFallback.model || null;
+        if (!recoveredModel2) {
+          console.log('DVLA returned no model (post-DVSA-failure) - final DVSA retry');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          try {
+            const retryToken2 = await getAccessToken();
+            const retryData2 = await fetchDVSAVehicleData(registrationNumber, retryToken2);
+            if (retryData2?.model) {
+              recoveredModel2 = retryData2.model;
+              console.log('✅ Final DVSA retry recovered model:', recoveredModel2);
+            }
+          } catch (e2) {
+            console.warn('Final DVSA model-recovery retry failed:', e2 instanceof Error ? e2.message : e2);
+          }
+        }
+
+        const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: recoveredModel2 || '', regNumber: registrationNumber });
         const blocked = !validation.isValid;
         
         // Check vehicle age
@@ -508,13 +546,14 @@ serve(async (req) => {
           blockReason: blocked ? validation.errorMessage : undefined,
           registrationNumber: regUpper,
           make: dvlaFallback.make,
-          model: dvlaFallback.model || null,
+          model: recoveredModel2,
           fuelType: dvlaFallback.fuelType || null,
           colour: dvlaFallback.colour || null,
           yearOfManufacture: dvlaFallback.yearOfManufacture || null,
           manufactureDate: null,
           vehicleType: 'car',
-          source: 'dvla_fallback'
+          modelMissing: !recoveredModel2,
+          source: recoveredModel2 ? 'dvla+dvsa_retry' : 'dvla_fallback'
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
