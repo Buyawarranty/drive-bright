@@ -324,6 +324,35 @@ export const PostedLettersLog: React.FC = () => {
     }
   };
 
+  // Bulk mark selected as already posted
+  const bulkMarkAsPosted = async () => {
+    const ids = Array.from(selectedIds);
+    const pendingIds = filteredEntries
+      .filter(e => selectedIds.has(e.id) && !e.marked_sent_by)
+      .map(e => e.id);
+
+    if (pendingIds.length === 0) {
+      toast({ title: 'Nothing to update', description: 'Selected entries are already marked as posted.' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({
+        sent_at: new Date().toISOString(),
+        marked_sent_by: 'admin',
+      })
+      .in('id', pendingIds);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Marked as posted', description: `${pendingIds.length} letter${pendingIds.length !== 1 ? 's' : ''} marked as already posted.` });
+      setSelectedIds(new Set());
+      fetchLog();
+    }
+  };
+
   // Remove entry
   const removeEntry = async (id: string) => {
     const { error } = await supabase
@@ -528,14 +557,24 @@ export const PostedLettersLog: React.FC = () => {
           </CardTitle>
           <div className="flex items-center gap-2">
             {selectedIds.size > 0 && (
-              <Button
-                size="sm"
-                onClick={() => printBatchLabels(selectedEntries)}
-                className="gap-1 bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                Print {selectedIds.size} Label{selectedIds.size !== 1 ? 's' : ''}
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  onClick={bulkMarkAsPosted}
+                  className="gap-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Mark {selectedIds.size} as already posted
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => printBatchLabels(selectedEntries)}
+                  className="gap-1 bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  Print {selectedIds.size} Label{selectedIds.size !== 1 ? 's' : ''}
+                </Button>
+              </>
             )}
             <div className="relative w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
