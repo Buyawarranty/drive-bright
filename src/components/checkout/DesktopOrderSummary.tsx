@@ -215,7 +215,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-[#1a1a1a] leading-none">
-                      £{monthlyPrice}<span className="text-sm font-medium">/mo</span>
+                      £{monthlyPrice}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
                       Equal to {monthlyPencePerDay}p/day
