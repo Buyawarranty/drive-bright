@@ -803,6 +803,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold tracking-tight">Leads</h1>
           <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              toast.loading('Refreshing leads...', { id: 'refresh-leads' });
+              try {
+                await fetchLeads();
+                toast.success('Leads refreshed', { id: 'refresh-leads' });
+              } catch (e: any) {
+                toast.error(`Refresh failed: ${e.message}`, { id: 'refresh-leads' });
+              }
+            }}
+            disabled={loading}
+            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-blue-400 bg-blue-50 text-blue-800 hover:bg-blue-100 hover:border-blue-500"
+          >
+            <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+            {loading ? 'Refreshing...' : 'Refresh Page'}
+          </Button>
           {userRole === 'super_admin' && (
           <>
           <Button
