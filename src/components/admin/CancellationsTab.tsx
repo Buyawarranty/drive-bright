@@ -608,8 +608,52 @@ export const CancellationsTab: React.FC<{
                       <TableCell className="text-sm">
                         {getAgentName(record.assigned_to)}
                       </TableCell>
+                      <TableCell className="text-sm align-top">
+                        {editingNoteId === record.id ? (
+                          <div className="space-y-1">
+                            <Textarea
+                              value={editingNoteText}
+                              onChange={(e) => setEditingNoteText(e.target.value)}
+                              rows={2}
+                              className="text-sm min-w-[240px]"
+                              placeholder="Add cancellation note…"
+                              autoFocus
+                            />
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-7 px-2"
+                                onClick={() => saveNote(record.id)}
+                                disabled={savingNoteId === record.id}
+                              >
+                                <Check className="h-3 w-3 mr-1" /> Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2"
+                                onClick={cancelEditNote}
+                                disabled={savingNoteId === record.id}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEditNote(record)}
+                            className="group flex items-start gap-2 text-left w-full hover:bg-muted/50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                          >
+                            <span className={cn('flex-1 whitespace-pre-wrap', !record.cancellation_note && 'italic text-muted-foreground')}>
+                              {record.cancellation_note || 'Add note…'}
+                            </span>
+                            <Pencil className="h-3 w-3 mt-1 opacity-0 group-hover:opacity-60 shrink-0" />
+                          </button>
+                        )}
+                      </TableCell>
                     </TableRow>
-                    );
                   })
                 )}
               </TableBody>
