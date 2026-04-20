@@ -563,9 +563,9 @@ export const CancellationsTab: React.FC<{
                     );
                     const rowHighlight =
                       daysHeld <= 30
-                        ? 'bg-yellow-100 hover:bg-yellow-200'
+                        ? 'bg-yellow-50 hover:bg-yellow-100'
                         : daysHeld <= 60
-                          ? 'bg-red-100 hover:bg-red-200'
+                          ? 'bg-pink-50 hover:bg-pink-100'
                           : '';
                     return (
                     <TableRow key={record.id} className={rowHighlight}>
