@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Search, CalendarIcon, RefreshCw, Download, Ban } from 'lucide-react';
+import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -54,6 +56,8 @@ interface CancellationRecord {
   updated_at: string;
   assigned_to?: string;
   warranty_number?: string;
+  cancellation_note?: string | null;
+  cancellation_note_updated_at?: string | null;
 }
 
 interface AdminUser {
@@ -93,6 +97,54 @@ export const CancellationsTab: React.FC<{
   const [records, setRecords] = useState<CancellationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteText, setEditingNoteText] = useState('');
+  const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
+
+  const startEditNote = (record: CancellationRecord) => {
+    setEditingNoteId(record.id);
+    setEditingNoteText(record.cancellation_note || '');
+  };
+
+  const cancelEditNote = () => {
+    setEditingNoteId(null);
+    setEditingNoteText('');
+  };
+
+  const saveNote = async (recordId: string) => {
+    setSavingNoteId(recordId);
+    try {
+      const trimmed = editingNoteText.trim();
+      const nowIso = new Date().toISOString();
+      const { data: authData } = await supabase.auth.getUser();
+      const updaterId = authData?.user?.id ?? null;
+
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          cancellation_note: trimmed || null,
+          cancellation_note_updated_at: nowIso,
+          cancellation_note_updated_by: updaterId,
+        })
+        .eq('id', recordId);
+
+      if (error) throw error;
+
+      setRecords(prev => prev.map(r =>
+        r.id === recordId
+          ? { ...r, cancellation_note: trimmed || null, cancellation_note_updated_at: nowIso }
+          : r
+      ));
+      toast.success('Note saved');
+      cancelEditNote();
+    } catch (err) {
+      console.error('Error saving note:', err);
+      toast.error('Failed to save note');
+    } finally {
+      setSavingNoteId(null);
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
@@ -133,8 +185,7 @@ export const CancellationsTab: React.FC<{
 
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number')
-        .eq('is_deleted', false)
+        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at')
         .or('status.ilike.cancelled,status.ilike.refunded')
         .order('updated_at', { ascending: false })
         .limit(3000);
@@ -230,7 +281,8 @@ export const CancellationsTab: React.FC<{
         r.registration_plate?.toLowerCase().includes(term) ||
         r.warranty_number?.toLowerCase().includes(term) ||
         r.vehicle_make?.toLowerCase().includes(term) ||
-        r.vehicle_model?.toLowerCase().includes(term)
+        r.vehicle_model?.toLowerCase().includes(term) ||
+        r.cancellation_note?.toLowerCase().includes(term)
       );
     }
 
@@ -272,6 +324,7 @@ export const CancellationsTab: React.FC<{
       Amount: isFinancialRole ? (r.final_amount || 0) : 'N/A',
       'Cancelled/Refunded Date': format(new Date(r.updated_at), 'dd/MM/yyyy'),
       Agent: getAgentName(r.assigned_to),
+      Note: r.cancellation_note || '',
     }));
     exportDataToCSV(exportData, { filename: `cancellations-${format(new Date(), 'yyyy-MM-dd')}`, format: 'csv' });
   };
@@ -492,12 +545,13 @@ export const CancellationsTab: React.FC<{
                   {isFinancialRole && <TableHead>Amount</TableHead>}
                   <TableHead>Date</TableHead>
                   <TableHead>Agent</TableHead>
+                  <TableHead className="min-w-[260px]">Note</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pagination.paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isFinancialRole ? 8 : 7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={isFinancialRole ? 9 : 8} className="text-center py-8 text-muted-foreground">
                       <Ban className="h-8 w-8 mx-auto mb-2 opacity-40" />
                       No cancellations found for this period
                     </TableCell>
@@ -553,6 +607,51 @@ export const CancellationsTab: React.FC<{
                       </TableCell>
                       <TableCell className="text-sm">
                         {getAgentName(record.assigned_to)}
+                      </TableCell>
+                      <TableCell className="text-sm align-top">
+                        {editingNoteId === record.id ? (
+                          <div className="space-y-1">
+                            <Textarea
+                              value={editingNoteText}
+                              onChange={(e) => setEditingNoteText(e.target.value)}
+                              rows={2}
+                              className="text-sm min-w-[240px]"
+                              placeholder="Add cancellation note…"
+                              autoFocus
+                            />
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-7 px-2"
+                                onClick={() => saveNote(record.id)}
+                                disabled={savingNoteId === record.id}
+                              >
+                                <Check className="h-3 w-3 mr-1" /> Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2"
+                                onClick={cancelEditNote}
+                                disabled={savingNoteId === record.id}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEditNote(record)}
+                            className="group flex items-start gap-2 text-left w-full hover:bg-muted/50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                          >
+                            <span className={cn('flex-1 whitespace-pre-wrap', !record.cancellation_note && 'italic text-muted-foreground')}>
+                              {record.cancellation_note || 'Add note…'}
+                            </span>
+                            <Pencil className="h-3 w-3 mt-1 opacity-0 group-hover:opacity-60 shrink-0" />
+                          </button>
+                        )}
                       </TableCell>
                     </TableRow>
                     );

@@ -405,7 +405,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             <div className="flex-1 min-w-0">
               {(vehicleData.make || vehicleData.model) && (
                 <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                  {[vehicleData.make, (vehicleData.model && String(vehicleData.model).toLowerCase() !== 'unknown') ? vehicleData.model : null].filter(Boolean).join(' ')} {vehicleData.year && `(${vehicleData.year})`}
+                  {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
                 </p>
               )}
               <p className="text-xs sm:text-sm text-gray-500 truncate">
@@ -645,7 +645,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               Quote Sent Successfully!
             </DialogTitle>
             <DialogDescription className="text-center text-gray-600 mt-2">
-              Thank you for your interest! Our team will contact you soon with the best warranty offers for your {[vehicleData.make, (vehicleData.model && String(vehicleData.model).toLowerCase() !== 'unknown') ? vehicleData.model : null].filter(Boolean).join(' ')}.
+              Thank you for your interest! Our team will contact you soon with the best warranty offers for your {vehicleData.make} {vehicleData.model}.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-6">
