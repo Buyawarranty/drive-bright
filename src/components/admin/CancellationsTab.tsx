@@ -545,6 +545,7 @@ export const CancellationsTab: React.FC<{
                   {isFinancialRole && <TableHead>Amount</TableHead>}
                   <TableHead>Date</TableHead>
                   <TableHead>Agent</TableHead>
+                  <TableHead className="min-w-[260px]">Note</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
