@@ -25,6 +25,12 @@ interface ArchiveCustomerDialogProps {
     customer_id?: string;
   }>;
   onSuccess: () => void;
+  /**
+   * When true, skip the multi-action picker and show a simple
+   * "Are you sure you want to cancel this warranty?" confirmation.
+   * Portal access is automatically revoked on cancellation.
+   */
+  simpleConfirm?: boolean;
 }
 
 const ARCHIVE_REASONS = [
@@ -46,7 +52,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
   isOpen,
   onClose,
   customers,
-  onSuccess
+  onSuccess,
+  simpleConfirm = false
 }) => {
   const [action, setAction] = useState<ArchiveAction>('cancel');
   const [reason, setReason] = useState('');
@@ -72,7 +79,12 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!reason && action !== 'test' && action !== 'fake' && action !== 'duplicate') {
+    // In simple-confirm mode, force cancel action with a default reason
+    if (simpleConfirm) {
+      // No-op: action defaults to 'cancel'; we set a default reason below if missing
+    }
+    const effectiveReason = simpleConfirm && !reason ? 'Customer requested cancellation' : reason;
+    if (!effectiveReason && action !== 'test' && action !== 'fake' && action !== 'duplicate') {
       toast.error('Please select a reason');
       return;
     }
@@ -162,8 +174,9 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                 .eq('id', customer.policy_id);
             }
 
-            // Revoke portal access if selected
-            if (revokePortalAccess && customer.user_id && customer.policy_id) {
+            // Revoke portal access automatically on cancellation, or if explicitly selected for refund
+            const shouldRevoke = action === 'cancel' ? true : revokePortalAccess;
+            if (shouldRevoke && customer.user_id && customer.policy_id) {
               await supabase
                 .from('customer_policies')
                 .update({ user_id: null })
@@ -174,7 +187,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
           // Log the action as a note
           const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST PURCHASE ARCHIVED' : action === 'fake' ? 'FAKE LEAD ARCHIVED' : action === 'duplicate' ? 'DUPLICATE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
           const noteText = `WARRANTY ${actionLabel}\n` +
-            `Reason: ${reason}\n` +
+            `Reason: ${effectiveReason}\n` +
             `${action === 'refund' && refundAmount ? `Refund Amount: £${refundAmount}\n` : ''}` +
             `${additionalNotes ? `Notes: ${additionalNotes}\n` : ''}` +
             `Processed at: ${new Date().toLocaleString()}`;
@@ -269,6 +282,36 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       default: return `Cancel Warranty${count}`;
     }
   };
+
+  // Simple "Are you sure?" confirmation for the Cancel Warranty action
+  if (simpleConfirm) {
+    const target = isBulk
+      ? `${customers.length} warranties`
+      : (customers[0]?.name || customers[0]?.email || 'this warranty');
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Ban className="h-5 w-5" />
+              Cancel warranty?
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel {isBulk ? <strong>{target}</strong> : <><strong>{target}</strong>'s warranty</>}? Portal access will be revoked automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isProcessing}>
+              No
+            </Button>
+            <Button variant="destructive" onClick={handleSubmit} disabled={isProcessing}>
+              {isProcessing ? 'Cancelling…' : 'Yes, cancel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -443,8 +486,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                 />
               </div>
 
-              {/* Revoke Portal Access - only for cancel/refund */}
-              {action !== 'archive' && !isBulk && customers[0]?.user_id && (
+              {/* Revoke Portal Access - manual opt-in for refund only (cancel revokes automatically) */}
+              {action === 'refund' && !isBulk && customers[0]?.user_id && (
                 <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <Checkbox
                     id="revokeAccess"

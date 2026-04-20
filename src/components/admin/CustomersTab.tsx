@@ -384,6 +384,7 @@ export const CustomersTab = ({
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
   const [trustpilotReviewCustomer, setTrustpilotReviewCustomer] = useState<Customer | null>(null);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [archiveSimpleConfirm, setArchiveSimpleConfirm] = useState(false);
   const [archiveCustomers, setArchiveCustomers] = useState<Array<{
     id: string;
     name: string;
@@ -3366,6 +3367,7 @@ export const CustomersTab = ({
                                 user_id: c.customer_policies?.[0]?.user_id,
                                 customer_id: c.id
                               })));
+                              setArchiveSimpleConfirm(true);
                               setArchiveDialogOpen(true);
                             }}
                             className="text-red-600"
@@ -3385,6 +3387,7 @@ export const CustomersTab = ({
                                 user_id: c.customer_policies?.[0]?.user_id,
                                 customer_id: c.id
                               })));
+                              setArchiveSimpleConfirm(false);
                               setArchiveDialogOpen(true);
                             }}
                             className="text-amber-600"
@@ -3404,6 +3407,7 @@ export const CustomersTab = ({
                                 user_id: c.customer_policies?.[0]?.user_id,
                                 customer_id: c.id
                               })));
+                              setArchiveSimpleConfirm(false);
                               setArchiveDialogOpen(true);
                             }}
                             className="text-gray-600"
@@ -5272,6 +5276,7 @@ Please log in and change your password after first login.`;
                                     user_id: customer.customer_policies?.[0]?.user_id,
                                     customer_id: customer.id
                                   }]);
+                                  setArchiveSimpleConfirm(true);
                                   setArchiveDialogOpen(true);
                                 }}
                                 className="text-red-600"
@@ -5290,6 +5295,7 @@ Please log in and change your password after first login.`;
                                     user_id: customer.customer_policies?.[0]?.user_id,
                                     customer_id: customer.id
                                   }]);
+                                  setArchiveSimpleConfirm(false);
                                   setArchiveDialogOpen(true);
                                 }}
                                 className="text-amber-600"
@@ -5308,6 +5314,7 @@ Please log in and change your password after first login.`;
                                     user_id: customer.customer_policies?.[0]?.user_id,
                                     customer_id: customer.id
                                   }]);
+                                  setArchiveSimpleConfirm(false);
                                   setArchiveDialogOpen(true);
                                 }}
                                 className="text-gray-600"
@@ -5547,8 +5554,10 @@ Please log in and change your password after first login.`;
         onClose={() => {
           setArchiveDialogOpen(false);
           setArchiveCustomers([]);
+          setArchiveSimpleConfirm(false);
         }}
         customers={archiveCustomers}
+        simpleConfirm={archiveSimpleConfirm}
         onSuccess={() => {
           fetchCustomers();
           fetchDeletedCustomers();
