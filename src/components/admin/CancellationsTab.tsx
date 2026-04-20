@@ -324,6 +324,7 @@ export const CancellationsTab: React.FC<{
       Amount: isFinancialRole ? (r.final_amount || 0) : 'N/A',
       'Cancelled/Refunded Date': format(new Date(r.updated_at), 'dd/MM/yyyy'),
       Agent: getAgentName(r.assigned_to),
+      Note: r.cancellation_note || '',
     }));
     exportDataToCSV(exportData, { filename: `cancellations-${format(new Date(), 'yyyy-MM-dd')}`, format: 'csv' });
   };
