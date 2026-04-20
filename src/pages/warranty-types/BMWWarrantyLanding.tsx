@@ -921,7 +921,7 @@ const BMWWarrantyLanding: React.FC = () => {
                   className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 md:py-5 px-6 md:px-8 text-base md:text-lg rounded-xl shadow-lg animate-breathing"
                 >
                   <span className="flex items-center gap-2">
-                    Get my instant quote
+                    Get Your BMW Quote
                     <ArrowRight className="w-5 h-5" />
                   </span>
                 </Button>
@@ -1098,7 +1098,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 onClick={scrollToQuoteForm}
                 className="w-full sm:w-auto bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl animate-breathing shadow-lg shadow-orange-500/25"
               >
-                Get warranty quote for BMW
+                Get Your BMW Quote
                 <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
               </Button>
             </div>
@@ -1271,7 +1271,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 className="w-full bg-brand-orange text-white font-bold py-5 md:py-6 text-base md:text-xl rounded-xl shadow-lg animate-breathing"
               >
                 <span className="flex items-center justify-center gap-2 md:gap-3">
-                  Get my instant quote
+                  Get Your BMW Quote
                   <ArrowRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
                 </span>
               </Button>
