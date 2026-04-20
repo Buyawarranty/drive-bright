@@ -530,8 +530,21 @@ export const CancellationsTab: React.FC<{
         </div>
       ) : (
         <>
-          <div className="text-sm text-muted-foreground">
-            Showing {pagination.startIndex + 1}–{pagination.endIndex} of {filteredRecords.length} records · {displayDateLabel}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm text-muted-foreground">
+              Showing {pagination.startIndex + 1}–{pagination.endIndex} of {filteredRecords.length} records · {displayDateLabel}
+            </div>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="font-medium">Colour key:</span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block w-4 h-4 rounded border bg-yellow-50" />
+                Within 30 days
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block w-4 h-4 rounded border bg-pink-50" />
+                Within 60 days
+              </span>
+            </div>
           </div>
           <div className="rounded-md border">
             <Table>
