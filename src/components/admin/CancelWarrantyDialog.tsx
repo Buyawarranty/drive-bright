@@ -106,7 +106,7 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
             <strong>{customerName || policy.email}</strong>
             {policy.policy_number && <> (Policy {policy.policy_number})</>}.
             <br />
-            It will appear in the Cancellations tab. You can archive it later to hide it from the main list.
+            It will be removed from Customer Management and moved to the Cancellations tab.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
