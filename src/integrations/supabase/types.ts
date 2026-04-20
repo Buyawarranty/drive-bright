@@ -2148,6 +2148,9 @@ export type Database = {
           building_name: string | null
           building_number: string | null
           bumper_order_id: string | null
+          cancellation_note: string | null
+          cancellation_note_updated_at: string | null
+          cancellation_note_updated_by: string | null
           claim_limit: number | null
           consequential: boolean | null
           country: string | null
@@ -2231,6 +2234,9 @@ export type Database = {
           building_name?: string | null
           building_number?: string | null
           bumper_order_id?: string | null
+          cancellation_note?: string | null
+          cancellation_note_updated_at?: string | null
+          cancellation_note_updated_by?: string | null
           claim_limit?: number | null
           consequential?: boolean | null
           country?: string | null
@@ -2314,6 +2320,9 @@ export type Database = {
           building_name?: string | null
           building_number?: string | null
           bumper_order_id?: string | null
+          cancellation_note?: string | null
+          cancellation_note_updated_at?: string | null
+          cancellation_note_updated_by?: string | null
           claim_limit?: number | null
           consequential?: boolean | null
           country?: string | null
