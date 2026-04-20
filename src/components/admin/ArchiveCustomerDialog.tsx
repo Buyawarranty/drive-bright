@@ -52,7 +52,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
   isOpen,
   onClose,
   customers,
-  onSuccess
+  onSuccess,
+  simpleConfirm = false
 }) => {
   const [action, setAction] = useState<ArchiveAction>('cancel');
   const [reason, setReason] = useState('');
