@@ -281,7 +281,8 @@ export const CancellationsTab: React.FC<{
         r.registration_plate?.toLowerCase().includes(term) ||
         r.warranty_number?.toLowerCase().includes(term) ||
         r.vehicle_make?.toLowerCase().includes(term) ||
-        r.vehicle_model?.toLowerCase().includes(term)
+        r.vehicle_model?.toLowerCase().includes(term) ||
+        r.cancellation_note?.toLowerCase().includes(term)
       );
     }
 
