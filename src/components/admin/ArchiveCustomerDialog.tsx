@@ -283,6 +283,36 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
     }
   };
 
+  // Simple "Are you sure?" confirmation for the Cancel Warranty action
+  if (simpleConfirm) {
+    const target = isBulk
+      ? `${customers.length} warranties`
+      : (customers[0]?.name || customers[0]?.email || 'this warranty');
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Ban className="h-5 w-5" />
+              Cancel warranty?
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel {isBulk ? <strong>{target}</strong> : <><strong>{target}</strong>'s warranty</>}? Portal access will be revoked automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isProcessing}>
+              No
+            </Button>
+            <Button variant="destructive" onClick={handleSubmit} disabled={isProcessing}>
+              {isProcessing ? 'Cancelling…' : 'Yes, cancel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
