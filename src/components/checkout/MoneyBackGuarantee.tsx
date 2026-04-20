@@ -13,7 +13,7 @@ const MoneyBackGuarantee: React.FC = () => {
       >
         <div className="flex items-center gap-2.5">
           <CheckCircle className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-          <span className="text-sm font-bold text-[#1a1a1a]">14-day peace of mind guarantee</span>
+          <span className="text-sm font-bold text-[#1a1a1a]">Your 14-day peace of mind guarantee</span>
         </div>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
@@ -25,24 +25,31 @@ const MoneyBackGuarantee: React.FC = () => {
       {/* Collapsible content */}
       {isExpanded && (
         <div className="mt-4">
+          <p className="text-sm text-[#1a1a1a] mb-3">Enjoy full flexibility when you start your cover:</p>
           <div className="space-y-4 mb-4">
             <div className="flex items-start gap-2.5">
               <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
               <p className="text-sm text-[#1a1a1a]">
-                Not happy? <span className="font-semibold">Full refund within 14 days</span> — no questions asked, as long as no claim has been made
+                <span className="font-semibold">Cancel within 14 days</span> for a full refund if no claim has been made
               </p>
             </div>
             <div className="flex items-start gap-2.5">
               <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
               <p className="text-sm text-[#1a1a1a]">
-                If a claim has been submitted within 14 days, a <span className="font-semibold">£40 assessment fee</span> applies on cancellation — to cover the cost of processing your claim
+                If a claim is made within 14 days, a small <span className="font-semibold">£40 handling fee</span> plus any assessment costs
+              </p>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-[#1a1a1a]">
+                After 14 days, refunds are calculated <span className="font-semibold">pro-rata</span> based on time remaining, less any claims made
               </p>
             </div>
           </div>
 
           <div className="border-t border-[#C8F3D2] pt-3">
             <p className="text-sm text-gray-500">
-              After 14 days, unused cover is refundable pro-rata.
+              Designed to keep things fair for everyone.
             </p>
           </div>
         </div>
