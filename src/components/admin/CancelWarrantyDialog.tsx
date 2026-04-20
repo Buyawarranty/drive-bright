@@ -50,28 +50,39 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
 
       if (policyError) throw policyError;
 
-      // 2. Update linked customer status (keep visible, do NOT soft delete)
+      // 2. Update linked customer: mark Cancelled AND archive (remove from main list)
       if (policy.customer_id) {
         const { error: customerError } = await supabase
           .from('customers')
-          .update({ status: 'Cancelled', updated_at: nowIso })
+          .update({
+            status: 'Cancelled',
+            is_deleted: true,
+            deleted_at: nowIso,
+            updated_at: nowIso,
+          })
           .eq('id', policy.customer_id);
 
         if (customerError) {
           console.error('Error updating customer status:', customerError);
         }
 
-        // 3. Log a brief audit note
+        // 3. Also archive the policy so it disappears from active lists
+        await supabase
+          .from('customer_policies')
+          .update({ is_deleted: true, deleted_at: nowIso })
+          .eq('id', policy.id);
+
+        // 4. Log a brief audit note
         await supabase.from('admin_notes').insert({
           customer_id: policy.customer_id,
           note:
-            `WARRANTY CANCELLED\n` +
+            `WARRANTY CANCELLED & ARCHIVED\n` +
             `Policy: ${policy.policy_number || policy.id}\n` +
             `Cancelled at: ${new Date().toLocaleString()}`,
         });
       }
 
-      toast.success('Warranty cancelled — moved to Cancellations tab');
+      toast.success('Warranty cancelled and removed from list');
       onSuccess();
       onClose();
     } catch (error) {
