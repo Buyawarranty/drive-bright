@@ -218,7 +218,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                       £{monthlyPrice}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Equal to {monthlyPencePerDay}p/day
+                      Equal to {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over term
                     </div>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   <span className="text-2xl font-bold text-[#1a1a1a]">£{fullPrice}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Equal to {fullPencePerDay}p/day · <span className="text-[#0BA360] font-medium">Save £{savings}</span>
+                  Equal to {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over term · <span className="text-[#0BA360] font-medium">Save £{savings}</span>
                 </p>
               </div>
             ) : (

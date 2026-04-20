@@ -191,7 +191,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     )}
                   </div>
                   <p className="text-sm text-[#0BA360] font-semibold mt-2">
-                    Equal to just {fullPencePerDay}p/day
+                    Equal to just {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over term
                   </p>
                   {savings > 0 && (
                     <p className="text-sm text-[#0BA360] font-bold mt-1">
@@ -288,7 +288,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     </span>
                   </div>
                   <p className="text-sm text-[#FF6B00] font-semibold mt-2">
-                    Equal to just {monthlyPencePerDay}p/day
+                    Equal to just {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over term
                   </p>
                   <p className="text-sm text-[#1a1a1a] font-semibold mt-1">
                     £{monthlyPrice} today, then 11 monthly payments

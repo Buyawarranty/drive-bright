@@ -85,7 +85,8 @@ const TermSelector: React.FC<TermSelectorProps> = ({
   const formatDaily = (termId: string, monthlyPrice: number): string => {
     const days = termId === '36months' ? 1095 : termId === '24months' ? 730 : 365;
     const daily = (monthlyPrice * 12) / days;
-    return daily < 1 ? `${Math.round(daily * 100)}p` : `£${daily.toFixed(2)}`;
+    // Always show in £ format (e.g. 189p -> £1.89) when >= £1, otherwise pence
+    return daily >= 1 ? `£${daily.toFixed(2)}` : `${Math.round(daily * 100)}p`;
   };
 
   const handleContinue = (termId: '12months' | '24months' | '36months') => {
@@ -186,7 +187,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                         <span className="text-2xl sm:text-3xl font-bold text-gray-500 leading-none tracking-tight">
                           {dailyPrice}
                         </span>
-                        <span className="text-sm font-medium text-gray-500 leading-none">/day</span>
+                        <span className="text-sm font-medium text-gray-500 leading-none">/day over term</span>
                         {(term.id === '24months' || term.id === '36months') && (
                           <TooltipProvider delayDuration={100}>
                             <Tooltip>

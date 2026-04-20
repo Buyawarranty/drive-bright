@@ -92,7 +92,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                     £{monthlyPrice}/month
                   </span>
                   <span className="text-sm text-gray-600 whitespace-nowrap mt-1">
-                    Equal to <span className="font-semibold text-gray-700">{pencePerDay}p/day</span>
+                    Equal to <span className="font-semibold text-gray-700">{pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day over term</span>
                   </span>
                   <span className="text-xs text-gray-500 whitespace-nowrap">
                     Paid over 12 months
@@ -104,7 +104,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                     £{fullPrice}
                   </span>
                   <span className="text-sm text-gray-700 whitespace-nowrap">
-                    One simple payment <span className="text-gray-500">({fullPencePerDay}p/day)</span>
+                    One simple payment <span className="text-gray-500">({fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over term)</span>
                   </span>
                   {savings > 0 && (
                     <span className="text-xs font-semibold text-[#0BA360] whitespace-nowrap">
