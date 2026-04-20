@@ -169,8 +169,9 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                 .eq('id', customer.policy_id);
             }
 
-            // Revoke portal access if selected
-            if (revokePortalAccess && customer.user_id && customer.policy_id) {
+            // Revoke portal access automatically on cancellation, or if explicitly selected for refund
+            const shouldRevoke = action === 'cancel' ? true : revokePortalAccess;
+            if (shouldRevoke && customer.user_id && customer.policy_id) {
               await supabase
                 .from('customer_policies')
                 .update({ user_id: null })
