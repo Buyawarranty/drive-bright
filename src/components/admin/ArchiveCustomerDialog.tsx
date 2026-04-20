@@ -25,6 +25,12 @@ interface ArchiveCustomerDialogProps {
     customer_id?: string;
   }>;
   onSuccess: () => void;
+  /**
+   * When true, skip the multi-action picker and show a simple
+   * "Are you sure you want to cancel this warranty?" confirmation.
+   * Portal access is automatically revoked on cancellation.
+   */
+  simpleConfirm?: boolean;
 }
 
 const ARCHIVE_REASONS = [
