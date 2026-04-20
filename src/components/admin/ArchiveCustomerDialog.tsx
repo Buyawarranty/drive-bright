@@ -451,8 +451,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                 />
               </div>
 
-              {/* Revoke Portal Access - only for cancel/refund */}
-              {action !== 'archive' && !isBulk && customers[0]?.user_id && (
+              {/* Revoke Portal Access - manual opt-in for refund only (cancel revokes automatically) */}
+              {action === 'refund' && !isBulk && customers[0]?.user_id && (
                 <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <Checkbox
                     id="revokeAccess"
