@@ -176,15 +176,15 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 <div className="mb-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-foreground leading-none tracking-tight">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-foreground leading-none tracking-tight">
                         £{displayMonthly}/mo
                       </span>
                     </div>
-                    <div className="h-8 w-px bg-border" aria-hidden="true" />
+                    <div className="h-10 w-px bg-border" aria-hidden="true" />
                     <div className="flex flex-col items-start">
                       <span className="text-xs font-semibold text-gray-500 leading-none mb-1">Equal to</span>
                       <div className="flex items-baseline gap-0.5">
-                        <span className="text-2xl sm:text-3xl font-bold text-gray-500 leading-none tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-bold text-gray-500 leading-none tracking-tight">
                           {dailyPrice}
                         </span>
                         <span className="text-sm font-medium text-gray-500 leading-none">/day over term</span>
