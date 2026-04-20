@@ -97,6 +97,54 @@ export const CancellationsTab: React.FC<{
   const [records, setRecords] = useState<CancellationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteText, setEditingNoteText] = useState('');
+  const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
+
+  const startEditNote = (record: CancellationRecord) => {
+    setEditingNoteId(record.id);
+    setEditingNoteText(record.cancellation_note || '');
+  };
+
+  const cancelEditNote = () => {
+    setEditingNoteId(null);
+    setEditingNoteText('');
+  };
+
+  const saveNote = async (recordId: string) => {
+    setSavingNoteId(recordId);
+    try {
+      const trimmed = editingNoteText.trim();
+      const nowIso = new Date().toISOString();
+      const { data: authData } = await supabase.auth.getUser();
+      const updaterId = authData?.user?.id ?? null;
+
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          cancellation_note: trimmed || null,
+          cancellation_note_updated_at: nowIso,
+          cancellation_note_updated_by: updaterId,
+        })
+        .eq('id', recordId);
+
+      if (error) throw error;
+
+      setRecords(prev => prev.map(r =>
+        r.id === recordId
+          ? { ...r, cancellation_note: trimmed || null, cancellation_note_updated_at: nowIso }
+          : r
+      ));
+      toast.success('Note saved');
+      cancelEditNote();
+    } catch (err) {
+      console.error('Error saving note:', err);
+      toast.error('Failed to save note');
+    } finally {
+      setSavingNoteId(null);
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
