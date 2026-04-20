@@ -56,6 +56,8 @@ interface CancellationRecord {
   updated_at: string;
   assigned_to?: string;
   warranty_number?: string;
+  cancellation_note?: string | null;
+  cancellation_note_updated_at?: string | null;
 }
 
 interface AdminUser {
