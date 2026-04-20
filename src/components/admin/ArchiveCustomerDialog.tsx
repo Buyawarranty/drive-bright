@@ -79,7 +79,12 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!reason && action !== 'test' && action !== 'fake' && action !== 'duplicate') {
+    // In simple-confirm mode, force cancel action with a default reason
+    if (simpleConfirm) {
+      // No-op: action defaults to 'cancel'; we set a default reason below if missing
+    }
+    const effectiveReason = simpleConfirm && !reason ? 'Customer requested cancellation' : reason;
+    if (!effectiveReason && action !== 'test' && action !== 'fake' && action !== 'duplicate') {
       toast.error('Please select a reason');
       return;
     }
