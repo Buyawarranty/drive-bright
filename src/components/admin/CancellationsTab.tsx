@@ -654,6 +654,7 @@ export const CancellationsTab: React.FC<{
                         )}
                       </TableCell>
                     </TableRow>
+                    );
                   })
                 )}
               </TableBody>
