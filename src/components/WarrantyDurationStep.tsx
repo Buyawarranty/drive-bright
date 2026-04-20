@@ -390,7 +390,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
               <span className="font-semibold">{vehicleData.regNumber}</span>
             </div>
             <div className="flex-1 text-center">
-              <span>{vehicleData.make} {vehicleData.model}</span>
+              <span>{[vehicleData.make, (vehicleData.model && String(vehicleData.model).toLowerCase() !== 'unknown') ? vehicleData.model : null].filter(Boolean).join(' ')}</span>
             </div>
             <div className="flex-1 text-center">
               <span>{vehicleData.year}</span>

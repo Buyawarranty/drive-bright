@@ -53,7 +53,8 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
       <div className="bg-secondary rounded-xl p-4 border border-border">
         <div className="flex items-center justify-center gap-2 mb-3">
           <h2 className="font-semibold text-foreground text-center">
-            {vehicleData.year} {vehicleData.make} {vehicleData.model}
+            {[vehicleData.year, vehicleData.make, (vehicleData.model && String(vehicleData.model).toLowerCase() !== 'unknown') ? vehicleData.model : null]
+              .filter(Boolean).join(' ')}
           </h2>
           <Button
             onClick={onBack}
