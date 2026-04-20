@@ -324,6 +324,35 @@ export const PostedLettersLog: React.FC = () => {
     }
   };
 
+  // Bulk mark selected as already posted
+  const bulkMarkAsPosted = async () => {
+    const ids = Array.from(selectedIds);
+    const pendingIds = filteredEntries
+      .filter(e => selectedIds.has(e.id) && !e.marked_sent_by)
+      .map(e => e.id);
+
+    if (pendingIds.length === 0) {
+      toast({ title: 'Nothing to update', description: 'Selected entries are already marked as posted.' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({
+        sent_at: new Date().toISOString(),
+        marked_sent_by: 'admin',
+      })
+      .in('id', pendingIds);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Marked as posted', description: `${pendingIds.length} letter${pendingIds.length !== 1 ? 's' : ''} marked as already posted.` });
+      setSelectedIds(new Set());
+      fetchLog();
+    }
+  };
+
   // Remove entry
   const removeEntry = async (id: string) => {
     const { error } = await supabase
