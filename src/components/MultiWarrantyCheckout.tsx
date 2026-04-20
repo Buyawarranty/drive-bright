@@ -647,8 +647,9 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
 
   const formatVehicleDisplay = (item: CartItem) => {
     const { vehicleData } = item;
-    if (vehicleData.make && vehicleData.model) {
-      return `${vehicleData.year || ''} ${vehicleData.make} ${vehicleData.model}`.trim();
+    const hasModel = vehicleData.model && String(vehicleData.model).toLowerCase() !== 'unknown';
+    if (vehicleData.make) {
+      return [vehicleData.year || '', vehicleData.make, hasModel ? vehicleData.model : ''].filter(Boolean).join(' ').trim();
     }
     return vehicleData.regNumber;
   };

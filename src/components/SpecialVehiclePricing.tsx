@@ -350,7 +350,7 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
           {vehicleData.make && vehicleData.model && (
             <div className="mb-6 bg-white rounded-lg p-4 shadow-sm border max-w-md mx-auto">
               <p className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                {vehicleData.make} {vehicleData.model}
+                {[vehicleData.make, (vehicleData.model && String(vehicleData.model).toLowerCase() !== 'unknown') ? vehicleData.model : null].filter(Boolean).join(' ')}
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm sm:text-base text-gray-600">
                 {vehicleData.fuelType && <span><strong>Fuel:</strong> {vehicleData.fuelType}</span>}
