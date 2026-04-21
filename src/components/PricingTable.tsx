@@ -1993,20 +1993,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <Settings className="w-5 h-5 flex-shrink-0" />
               Choose your labour rate
             </h2>
+
+            <button
+              type="button"
+              onClick={() => setLabourRateDetailsOpen(true)}
+              className="ml-2 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm"
+            >
+              <Info className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span className="text-sm font-medium text-green-600">Details</span>
+            </button>
           </div>
-          
-          <p className="text-sm text-muted-foreground mb-3">
+
+          <p className="text-sm text-muted-foreground mb-4">
             Pick the hourly rate that works best for your repair needs.
           </p>
-
-          <button
-            type="button"
-            onClick={() => setLabourRateDetailsOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-success/40 bg-success/5 text-success text-sm font-semibold hover:bg-success/10 transition-colors mb-4"
-          >
-            <Info className="w-4 h-4" />
-            Details
-          </button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
