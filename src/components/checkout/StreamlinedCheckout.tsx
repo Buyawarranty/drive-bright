@@ -2151,10 +2151,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
 
-            {/* Required Note */}
-            <p className="text-xs text-muted-foreground mt-6">
-              * Required fields for your warranty policy documents.
-            </p>
           </section>
 
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
