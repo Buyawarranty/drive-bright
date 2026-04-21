@@ -2064,17 +2064,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 )}
               </div>
               
-              {/* MOT Pre-fill Info Box */}
-              {mileagePreFilled && motMileage && motDate && (
-                <div className="bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mb-3">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-[#0BA360] flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-[#1a1a1a]">
-                      Your last MOT recorded <span className="font-bold">{Number(motMileage).toLocaleString('en-GB')} miles</span> in {format(new Date(motDate), 'MMMM yyyy')}. We've pre-filled this below — select a closer estimate if your mileage has changed since.
-                    </p>
-                  </div>
-                </div>
-              )}
 
               <div className="flex gap-2">
                 <div className="relative flex-1">
