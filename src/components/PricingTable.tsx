@@ -1925,10 +1925,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
           {/* Claim Limit Tier Cards */}
           {(() => {
-            const isPremium = isPremiumVehicle(vehicleData?.make);
-            const visibleTiers = isPremium 
-              ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
-              : [...CLAIM_LIMIT_TIERS];
+            // £5000 is available to everyone, regardless of vehicle make
+            const visibleTiers = [...CLAIM_LIMIT_TIERS];
             
             // Determine displayed selection - now direct since we set claim limit directly
             const displayedLimit = selectedClaimLimit;
