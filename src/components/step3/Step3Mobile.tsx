@@ -441,12 +441,6 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
         </div>
 
-        <ExcessSelector
-          selectedExcess={voluntaryExcess}
-          onExcessChange={setVoluntaryExcess}
-          currentMonthlyPrice={currentMonthlyPrice}
-        />
-
         <ClaimLimitSelector
           selectedClaimLimit={selectedClaimLimit}
           onClaimLimitChange={setSelectedClaimLimit}
@@ -462,6 +456,12 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         <LabourRateSelector
           selectedLabourRate={selectedLabourRate}
           onLabourRateChange={setSelectedLabourRate}
+          currentMonthlyPrice={currentMonthlyPrice}
+        />
+
+        <ExcessSelector
+          selectedExcess={voluntaryExcess}
+          onExcessChange={setVoluntaryExcess}
           currentMonthlyPrice={currentMonthlyPrice}
         />
 

@@ -23,7 +23,7 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
     <div className="px-4 py-4 border-t border-border">
       <div className="flex items-center gap-2 mb-3">
         <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
-          4
+          3
         </div>
         <h3 className="font-semibold text-lg text-foreground">Choose Your Labour Rate</h3>
       </div>

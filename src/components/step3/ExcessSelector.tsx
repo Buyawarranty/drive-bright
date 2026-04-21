@@ -25,7 +25,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold flex-shrink-0">
-          2
+          4
         </div>
         <h3 className="font-semibold text-lg text-foreground">Choose Your Excess</h3>
       </div>

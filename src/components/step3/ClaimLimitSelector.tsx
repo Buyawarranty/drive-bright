@@ -50,7 +50,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-border">
       <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
         <div className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold flex-shrink-0">
-          3
+          2
         </div>
         <h3 className="font-semibold text-lg text-foreground">
           Set your claim limit 🚗
