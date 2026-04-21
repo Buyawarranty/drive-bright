@@ -248,7 +248,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         {/* Monthly Card */}
         <div className="relative">
           {/* 0% APR Badge */}
-          <div className="absolute -top-3 left-4 z-10">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
             <span className="bg-[#FF6B00] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
               0% APR
             </span>
