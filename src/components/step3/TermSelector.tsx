@@ -176,9 +176,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 <div className="mb-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl sm:text-4xl font-extrabold text-foreground leading-none tracking-tight">
-                        £{displayMonthly}/mo
+                      <span className="text-4xl sm:text-5xl font-extrabold text-foreground leading-none tracking-tight">
+                        £{displayMonthly}
                       </span>
+                      <span className="text-xl sm:text-2xl font-bold text-foreground leading-none">/mo</span>
                     </div>
                     <div className="h-10 w-px bg-border" aria-hidden="true" />
                     <div className="flex flex-col items-start">
@@ -250,7 +251,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   <div>
                     <div className="text-xs font-semibold text-foreground">Pay in full</div>
                     <div className="flex items-baseline gap-2 mt-0.5">
-                      <span className="text-3xl sm:text-4xl font-extrabold text-foreground leading-none">£{payInFullPrice - stripeSavings}</span>
+                      <span className="text-4xl sm:text-5xl font-extrabold text-foreground leading-none">£{payInFullPrice - stripeSavings}</span>
                       <span className="text-sm text-foreground/60 line-through">£{payInFullPrice}</span>
                     </div>
                   </div>
