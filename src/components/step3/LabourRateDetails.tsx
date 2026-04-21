@@ -328,7 +328,7 @@ const LabourRateDetails: React.FC<LabourRateDetailsProps> = ({
         </div>
 
         {/* Sticky footer CTA */}
-        <div className="border-t border-border bg-background px-5 sm:px-8 py-4 flex-shrink-0">
+        <div className="border-t border-border bg-background px-4 sm:px-8 py-4 flex-shrink-0">
           <button
             onClick={handleConfirm}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-success text-success-foreground font-bold text-base sm:text-lg px-5 py-3.5 sm:py-4 shadow-md hover:bg-success/90 transition-colors active:scale-[0.99]"
