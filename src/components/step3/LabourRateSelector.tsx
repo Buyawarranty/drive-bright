@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Info } from 'lucide-react';
+import LabourRateDetails from './LabourRateDetails';
 
 interface LabourRateSelectorProps {
   selectedLabourRate: number;
@@ -19,6 +21,8 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
   onLabourRateChange,
   currentMonthlyPrice
 }) => {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   return (
     <div className="px-4 py-4 border-t border-border">
       <div className="flex items-center gap-2 mb-3">
@@ -32,7 +36,7 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
         {labourRateOptions.map((option) => {
           const isSelected = selectedLabourRate === option.rate;
-          
+
           return (
             <button
               key={option.rate}
@@ -61,6 +65,16 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
         })}
       </div>
 
+      {/* Details Trigger - opens modal */}
+      <button
+        type="button"
+        onClick={() => setDetailsOpen(true)}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-success/40 bg-success/5 text-success text-sm font-semibold hover:bg-success/10 transition-colors mb-3"
+      >
+        <Info className="w-4 h-4" />
+        Details
+      </button>
+
       {/* Helper Text */}
       <p className="text-xs text-muted-foreground mb-2">
         Labour rate is what we pay per hour for repairs. Higher rate = more garage choice.
@@ -70,6 +84,13 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
       <div className="text-sm font-medium text-success animate-fade-in">
         Updated price: £{currentMonthlyPrice}/month
       </div>
+
+      <LabourRateDetails
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        selectedLabourRate={selectedLabourRate}
+        onConfirm={onLabourRateChange}
+      />
     </div>
   );
 };
