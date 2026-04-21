@@ -2774,10 +2774,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 hover:opacity-80"
+                          className="flex flex-col items-end hover:opacity-80 leading-tight flex-shrink-0"
+                          aria-label="Trustpilot rating: Excellent, 4.8 out of 5"
                         >
-                          <Shield className="w-4 h-4 text-green-600" />
-                          <span className="text-[11px] font-semibold text-gray-900">Excellent</span>
+                          <span className="text-[11px] font-bold text-gray-900">Excellent</span>
+                          <div className="flex gap-0.5 my-0.5">
+                            {[0, 1, 2, 3, 4].map((i) => (
+                              <span key={i} className="inline-block w-3 h-3 bg-[#00B67A] flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" className="w-2 h-2 text-white fill-current">
+                                  <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z" />
+                                </svg>
+                              </span>
+                            ))}
+                          </div>
+                          <span className="text-[9px] text-gray-600 leading-none">Trustpilot · 4.8/5</span>
                         </a>
                       </div>
 
