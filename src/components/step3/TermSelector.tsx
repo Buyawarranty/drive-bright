@@ -176,10 +176,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 <div className="mb-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl sm:text-4xl font-extrabold text-foreground leading-none">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-foreground leading-none">
                         £{displayMonthly}
                       </span>
-                      <span className="text-sm sm:text-base font-bold text-foreground leading-none">/mo</span>
+                      <span className="text-sm font-bold text-foreground leading-none">/mo</span>
                     </div>
                     <div className="h-10 w-px bg-border" aria-hidden="true" />
                     <div className="flex flex-col items-start">
