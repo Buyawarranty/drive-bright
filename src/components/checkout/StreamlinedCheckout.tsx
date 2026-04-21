@@ -2078,7 +2078,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         id="mileage"
                         type="text"
                         inputMode="numeric"
-                        placeholder="e.g. 52,000"
+                        placeholder="Enter your current mileage — a rough estimate is fine"
                         value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
                         onChange={(e) => {
                           const rawValue = e.target.value.replace(/[^0-9]/g, '');
