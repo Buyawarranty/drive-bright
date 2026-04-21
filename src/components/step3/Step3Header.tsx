@@ -6,7 +6,7 @@ interface Step3HeaderProps {
   currentStep: number;
 }
 
-const steps = ['Term', 'Excess', 'Claim', 'Labour', 'Extras', 'Checkout'];
+const steps = ['Term', 'Claim', 'Labour', 'Excess', 'Extras', 'Checkout'];
 
 const Step3Header: React.FC<Step3HeaderProps> = ({ currentStep }) => {
   return (
