@@ -264,8 +264,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">Spread the cost</h3>
-                <div className="flex items-center gap-2 mt-1 mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a] leading-7 min-h-[28px]">Spread the cost</h3>
+                <div className="flex items-center gap-2 mt-1 mb-2 min-h-[20px]">
                   <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                   <span className="text-sm font-semibold text-gray-600">
                     Platinum {planYears}-Year Cover
