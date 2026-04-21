@@ -25,11 +25,21 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
 
   return (
     <div className="px-4 py-4 border-t border-border">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
-          3
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold flex-shrink-0">
+            3
+          </div>
+          <h3 className="font-semibold text-lg text-foreground leading-tight">Choose Your Labour Rate</h3>
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Choose Your Labour Rate</h3>
+        <button
+          type="button"
+          onClick={() => setDetailsOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-success/40 bg-success/5 text-success text-sm font-semibold hover:bg-success/10 transition-colors flex-shrink-0"
+        >
+          <Info className="w-4 h-4" />
+          Details
+        </button>
       </div>
 
       {/* Labour Rate Chips */}
@@ -64,16 +74,6 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
           );
         })}
       </div>
-
-      {/* Details Trigger - opens modal */}
-      <button
-        type="button"
-        onClick={() => setDetailsOpen(true)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-success/40 bg-success/5 text-success text-sm font-semibold hover:bg-success/10 transition-colors mb-3"
-      >
-        <Info className="w-4 h-4" />
-        Details
-      </button>
 
       {/* Helper Text */}
       <p className="text-xs text-muted-foreground mb-2">
