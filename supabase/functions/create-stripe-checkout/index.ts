@@ -275,27 +275,16 @@ serve(async (req) => {
       quantity: 1,
     }];
 
-    // Apply discount code if provided
-    let coupon = null;
-    let discountAmount = 0;
-    let finalAmountAfterDiscount = totalAmount;
+    // IMPORTANT: totalAmount already arrives as the final approved price from checkout.
+    // Never apply a second Stripe-side coupon here, otherwise the same discount can be
+    // stacked twice and drive the real charge below the validated server floor.
+    const discountAmount = 0;
+    const finalAmountAfterDiscount = totalAmount;
     if (discountCode) {
-      try {
-        const coupons = await stripe.coupons.list({ limit: 100 });
-        coupon = coupons.data.find((c: any) => c.name === discountCode && c.valid);
-        if (coupon) {
-          // Calculate the actual discount amount
-          if (coupon.percent_off) {
-            discountAmount = totalAmount * (coupon.percent_off / 100);
-          } else if (coupon.amount_off) {
-            discountAmount = coupon.amount_off / 100; // amount_off is in pence
-          }
-          finalAmountAfterDiscount = Math.max(1, totalAmount - discountAmount);
-          logStep("Applied discount code", { discountCode, couponId: coupon.id, discountAmount, finalAmountAfterDiscount });
-        }
-      } catch (couponError) {
-        logStep("Failed to apply discount code", { discountCode, error: couponError });
-      }
+      logStep("Discount code recorded in metadata only; no additional Stripe coupon applied", {
+        discountCode,
+        totalAmount,
+      });
     }
 
     console.log("STRIPE DEBUG: Customer data:", { stripeCustomerId, customerEmail });
@@ -403,10 +392,6 @@ serve(async (req) => {
     } else if (customerEmail) {
       sessionData.customer_email = customerEmail;
       console.log("STRIPE DEBUG: Using customer email:", customerEmail);
-    }
-
-    if (coupon) {
-      sessionData.discounts = [{ coupon: coupon.id }];
     }
 
     // Add customer data to metadata if available
