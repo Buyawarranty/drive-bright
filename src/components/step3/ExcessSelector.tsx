@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Check, Info } from 'lucide-react';
+import ExcessDetails from './ExcessDetails';
 
 interface ExcessSelectorProps {
   selectedExcess: number | null;
@@ -20,15 +21,32 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   onExcessChange,
   currentMonthlyPrice
 }) => {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   return (
     <div className="px-4 sm:px-6 py-5 sm:py-6 border-t border-border">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
         <div className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold flex-shrink-0">
           4
         </div>
         <h3 className="font-semibold text-lg text-foreground">Choose Your Excess</h3>
+        <button
+          type="button"
+          onClick={() => setDetailsOpen(true)}
+          className="ml-auto sm:ml-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm"
+        >
+          <Info className="w-4 h-4 text-green-600" />
+          <span className="text-sm font-medium text-green-600">Details</span>
+        </button>
       </div>
+
+      <ExcessDetails
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        selectedExcess={selectedExcess}
+        onConfirm={onExcessChange}
+      />
 
       {/* Excess Chips - matched sizing with other selectors */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
