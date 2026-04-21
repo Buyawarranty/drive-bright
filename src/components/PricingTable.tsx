@@ -2120,6 +2120,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
             </button>
           </div>
+
+          <LabourRateDetails
+            open={labourRateDetailsOpen}
+            onOpenChange={setLabourRateDetailsOpen}
+            selectedLabourRate={selectedLabourRate}
+            onConfirm={setSelectedLabourRate}
+          />
         </div>
 
         {/* Choose Your Excess Amount */}
