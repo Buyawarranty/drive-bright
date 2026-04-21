@@ -1718,10 +1718,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="mb-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">
                           £{displayedMonthlyPrice}
                         </span>
-                        <span className="text-lg sm:text-xl font-medium text-gray-500 leading-none">
+                        <span className="text-sm sm:text-base font-medium text-gray-500 leading-none">
                           /mo
                         </span>
                       </div>
