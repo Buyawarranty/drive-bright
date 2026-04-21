@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import LabourRateDetails from '@/components/step3/LabourRateDetails';
 import ClaimLimitDetails from '@/components/step3/ClaimLimitDetails';
+import ExcessDetails from '@/components/step3/ExcessDetails';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -261,6 +262,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 70);
   const [labourRateDetailsOpen, setLabourRateDetailsOpen] = useState(false);
   const [claimLimitDetailsOpen, setClaimLimitDetailsOpen] = useState(false);
+  const [excessDetailsOpen, setExcessDetailsOpen] = useState(false);
   
   // NOTE: Add-on auto-inclusion on payment type change is handled by a single useEffect below (around line 490)
   // to avoid duplicate state updates that cause pricing inconsistencies when navigating between steps
@@ -2094,7 +2096,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <MousePointerClick className="w-5 h-5 scale-x-[-1] flex-shrink-0" />
               Choose your excess amount
             </h2>
+
+            <button
+              type="button"
+              onClick={() => setExcessDetailsOpen(true)}
+              className="ml-auto flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm flex-shrink-0"
+            >
+              <Info className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-green-600">Details</span>
+            </button>
           </div>
+
+          <ExcessDetails
+            open={excessDetailsOpen}
+            onOpenChange={setExcessDetailsOpen}
+            selectedExcess={voluntaryExcess}
+            onConfirm={(amt) => {
+              toggleVoluntaryExcess(amt);
+              setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+            }}
+          />
           
           {validationErrors.voluntaryExcess && (
             <Alert variant="destructive" className="mb-4 ml-11">

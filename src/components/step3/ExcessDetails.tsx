@@ -49,7 +49,7 @@ const ExcessDetails: React.FC<ExcessDetailsProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+      <DialogContent className="max-w-3xl w-[calc(100%-1rem)] sm:w-full max-h-[92vh] overflow-y-auto p-4 sm:p-8 rounded-2xl">
         {/* Header */}
         <div className="flex items-start gap-3 mb-2">
           <Star className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
