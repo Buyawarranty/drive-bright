@@ -1885,141 +1885,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
-        {/* Labour Rate Selection - NEW */}
-        <div className="bg-gray-50 rounded-lg p-4 sm:p-8 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              2
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              Choose your labour rate
-            </h2>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mb-4">
-            Pick the hourly rate that works best for your repair needs.
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={() => setSelectedLabourRate(50)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 50
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£50 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Local Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Affordable option for smaller garages.</p>
-            </button>
-            
-            <button
-              onClick={() => setSelectedLabourRate(70)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 70
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£70 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Independent Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Ideal for your trusted local garage.</p>
-            </button>
-            
-            <button
-              onClick={() => setSelectedLabourRate(100)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 100
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£100 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Approved Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Covers most garages nationwide.</p>
-            </button>
-            
-            <button
-              onClick={() => setSelectedLabourRate(200)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 200
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£200 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Expert Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
-            </button>
-          </div>
-        </div>
-
-        {/* Choose Your Excess Amount */}
-        <div id="excess-amount-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
-          validationErrors.voluntaryExcess ? 'border-2 border-red-500' : ''
-        }`}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              3
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <MousePointerClick className="w-5 h-5 scale-x-[-1] flex-shrink-0" />
-              Choose your excess amount
-            </h2>
-          </div>
-          
-          {validationErrors.voluntaryExcess && (
-            <Alert variant="destructive" className="mb-4 ml-11">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-red-600 font-medium">
-                Please select your excess amount before continuing.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="flex gap-1.5 flex-wrap justify-start ml-11">
-            {[0, 50, 100, 150].map((amount) => (
-              <button
-                key={amount}
-                onClick={() => {
-                  toggleVoluntaryExcess(amount);
-                  setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-                }}
-                className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-center relative min-w-[50px] text-sm ${
-                  voluntaryExcess === amount
-                    ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
-                }`}
-              >
-                <div className="text-base font-bold text-black">£{amount}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Claim Limit Selection */}
         <div id="claim-limit-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
           validationErrors.claimLimit ? 'border-2 border-red-500' : ''
         }`}>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              4
+              2
             </div>
             <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 flex-shrink-0" />
@@ -2165,6 +2037,134 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             );
           })()}
+        </div>
+
+        {/* Labour Rate Selection - NEW */}
+        <div className="bg-gray-50 rounded-lg p-4 sm:p-8 border border-gray-200 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              3
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <Settings className="w-5 h-5 flex-shrink-0" />
+              Choose your labour rate
+            </h2>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mb-4">
+            Pick the hourly rate that works best for your repair needs.
+          </p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              onClick={() => setSelectedLabourRate(50)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 50
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£50 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Local Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Affordable option for smaller garages.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(70)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 70
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£70 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Independent Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Ideal for your trusted local garage.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(100)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 100
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£100 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Approved Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Covers most garages nationwide.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(200)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 200
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£200 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Expert Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Choose Your Excess Amount */}
+        <div id="excess-amount-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
+          validationErrors.voluntaryExcess ? 'border-2 border-red-500' : ''
+        }`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              4
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <MousePointerClick className="w-5 h-5 scale-x-[-1] flex-shrink-0" />
+              Choose your excess amount
+            </h2>
+          </div>
+          
+          {validationErrors.voluntaryExcess && (
+            <Alert variant="destructive" className="mb-4 ml-11">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-600 font-medium">
+                Please select your excess amount before continuing.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <div className="flex gap-1.5 flex-wrap justify-start ml-11">
+            {[0, 50, 100, 150].map((amount) => (
+              <button
+                key={amount}
+                onClick={() => {
+                  toggleVoluntaryExcess(amount);
+                  setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+                }}
+                className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-center relative min-w-[50px] text-sm ${
+                  voluntaryExcess === amount
+                    ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                }`}
+              >
+                <div className="text-base font-bold text-black">£{amount}</div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Price Help Trigger - Above Comprehensive Cover */}
