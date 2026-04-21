@@ -201,8 +201,10 @@ interface Customer {
   payment_verified?: boolean;
   // Payment collection tracking
   payment_due_date?: string | null;
-  // Purchase source tracking
+  // Purchase source tracking (payment method)
   purchase_source?: string | null;
+  // Acquisition source (marketing channel: google_ads / facebook_ads / website)
+  acquisition_source?: string | null;
   customer_dob?: string | null;
   admin_users?: {
     id: string;
@@ -758,20 +760,22 @@ export const CustomersTab = ({
           // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
           return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
         } else if (filterBySource === 'website_google') {
-          // Website sale with Google Ads attribution
+          // Website sale with Google Ads attribution (use acquisition_source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const source = customer.purchase_source?.toLowerCase() || '';
-          return isWebsite && source === 'google_ads';
+          const acq = customer.acquisition_source?.toLowerCase() || '';
+          const hasGclid = !!(customer as any).gclid;
+          return isWebsite && (acq === 'google_ads' || hasGclid);
         } else if (filterBySource === 'website_facebook') {
           // Website sale with Facebook Ads attribution
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const source = customer.purchase_source?.toLowerCase() || '';
-          return isWebsite && source === 'facebook_ads';
+          const acq = customer.acquisition_source?.toLowerCase() || '';
+          return isWebsite && acq === 'facebook_ads';
         } else if (filterBySource === 'website_organic') {
-          // Website sale with no paid attribution (organic)
+          // Website sale with no paid attribution (organic / direct website)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const source = customer.purchase_source?.toLowerCase() || '';
-          return isWebsite && source !== 'google_ads' && source !== 'facebook_ads';
+          const acq = customer.acquisition_source?.toLowerCase() || '';
+          const hasGclid = !!(customer as any).gclid;
+          return isWebsite && acq !== 'google_ads' && acq !== 'facebook_ads' && !hasGclid;
         } else if (filterBySource === 'staff_purchase') {
           // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
           return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
@@ -4787,14 +4791,20 @@ Please log in and change your password after first login.`;
                   {canSeeSourceColumn && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
-                        const src = customer.purchase_source;
-                        if (src === 'google_ads' || (customer as any).gclid) {
+                        // Use acquisition_source (marketing channel from sales_leads),
+                        // not purchase_source (payment method). Fall back to gclid for Google.
+                        const acq = customer.acquisition_source?.toLowerCase();
+                        const hasGclid = !!(customer as any).gclid;
+                        if (acq === 'google_ads' || hasGclid) {
                           return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Google</Badge>;
                         }
-                        if (src === 'facebook_ads') {
+                        if (acq === 'facebook_ads') {
                           return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Facebook</Badge>;
                         }
-                        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Organic</Badge>;
+                        if (acq === 'website') {
+                          return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Website</Badge>;
+                        }
+                        return <Badge className="bg-gray-100 text-gray-500 border-gray-200 text-[10px]">Unknown</Badge>;
                       })()}
                     </TableCell>
                   )}
