@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { validateCheckoutPrice } from "../_shared/price-floor.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -213,7 +214,32 @@ serve(async (req) => {
       throw new Error("No pricing available: finalAmount not provided and no plan data found");
     }
 
-    logStep("Calculated pricing", { totalAmount, paymentType, voluntaryExcess });
+    // 🔒 SERVER-SIDE PRICE FLOOR — block client-supplied amounts that look manipulated.
+    // Allows legitimate discounts (promo + 10% pay-in-full + voluntary excess) but rejects
+    // anything below 50% of the recomputed plan price OR below the absolute floor.
+    const priceCheck = await validateCheckoutPrice(
+      { planId, paymentType, voluntaryExcess, finalAmount: Number(totalAmount) },
+      supabaseService,
+    );
+    if (!priceCheck.ok) {
+      logStep("🚨 PRICE MANIPULATION BLOCKED", {
+        submittedAmount: totalAmount,
+        serverBasePrice: priceCheck.serverBasePrice,
+        minimumAllowed: priceCheck.minimumAllowed,
+        customerEmail,
+        planId,
+        paymentType,
+        reason: priceCheck.reason,
+      });
+      return new Response(
+        JSON.stringify({
+          error: "Invalid price detected. Please refresh the page and try again. If the problem persists, contact support.",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    logStep("Calculated pricing", { totalAmount, paymentType, voluntaryExcess, serverBasePrice: priceCheck.serverBasePrice });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 

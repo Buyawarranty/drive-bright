@@ -153,6 +153,31 @@ serve(async (req) => {
     const totalAmount = finalAmount || 500; // Fallback amount
     const monthlyAmount = totalAmount; // For Bumper, this is the total amount spread over installments
 
+    // 🔒 SERVER-SIDE PRICE FLOOR — block manipulated finalAmount values
+    {
+      const { validateCheckoutPrice } = await import("../_shared/price-floor.ts");
+      const priceCheck = await validateCheckoutPrice(
+        { planId, paymentType: originalPaymentType, voluntaryExcess, finalAmount: Number(totalAmount) },
+      );
+      if (!priceCheck.ok) {
+        logStep("🚨 PRICE MANIPULATION BLOCKED (bumper)", {
+          submittedAmount: totalAmount,
+          serverBasePrice: priceCheck.serverBasePrice,
+          minimumAllowed: priceCheck.minimumAllowed,
+          customerEmail: customerData?.email,
+          planId,
+          reason: priceCheck.reason,
+        });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Invalid price detected. Please refresh the page and try again. If the problem persists, contact support.",
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     logStep("Using total amount for Bumper", { totalAmount, monthlyAmount, source: finalAmount ? "provided" : "fallback" });
 
     const bumperApiKey = Deno.env.get("BUMPER_API_KEY");
