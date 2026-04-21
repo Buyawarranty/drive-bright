@@ -1732,21 +1732,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                     <p className="text-sm text-gray-600 mt-3">12 payments only · 0% APR</p>
 
-                    {/* Equivalent cost per month of cover */}
-                    {durationId === '24months' && (
-                      <div className="inline-block bg-white/70 border border-gray-200 rounded-full px-3 py-1 mt-2">
-                        <p className="text-xs sm:text-sm font-semibold text-gray-600">
-                          Approx. £{Math.floor(displayedMonthlyPrice / 2)}/month over 2 years
-                        </p>
-                      </div>
-                    )}
-                    {durationId === '36months' && (
-                      <div className="inline-block bg-white/70 border border-gray-200 rounded-full px-3 py-1 mt-2">
-                        <p className="text-xs sm:text-sm font-semibold text-gray-600">
-                          Approx. £{Math.floor(displayedMonthlyPrice / 3)}/month over 3 years
-                        </p>
-                      </div>
-                    )}
+
+
 
                     {/* Free year benefit lines */}
                     {durationId === '24months' && (
