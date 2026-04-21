@@ -65,7 +65,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
           return (
             <div key={tier.value} className="relative pt-3">
               {isPopular && (
-                <span className="absolute -top-0 left-2 sm:left-3 z-10 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                <span className="absolute -top-0 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide whitespace-nowrap">
                   MOST POPULAR
                 </span>
               )}
