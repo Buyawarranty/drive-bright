@@ -18,8 +18,8 @@ import { getBasePrice as getMatrixBasePrice, type PaymentPeriod } from './pricin
 
 export const CLAIM_LIMIT_TIERS = [
   { value: 750, displayValue: 1000, name: 'AutoCare Basic', shortName: 'Basic', popular: false },
-  { value: 2000, displayValue: 2000, name: 'AutoCare Essential', shortName: 'Essential', popular: true },
-  { value: 3000, displayValue: 3000, name: 'AutoCare Elite', shortName: 'Elite', popular: false },
+  { value: 2000, displayValue: 2000, name: 'AutoCare Essential', shortName: 'Essential', popular: false },
+  { value: 3000, displayValue: 3000, name: 'AutoCare Elite', shortName: 'Elite', popular: true },
   { value: 5000, displayValue: 5000, name: 'AutoCare Premium', shortName: 'Premium', popular: false },
 ] as const;
 
