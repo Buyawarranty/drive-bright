@@ -2142,6 +2142,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          acquisition_source: string | null
           assigned_to: string | null
           breakdown_recovery: boolean | null
           brevo_contact_id: string | null
@@ -2228,6 +2229,7 @@ export type Database = {
           wear_tear: boolean | null
         }
         Insert: {
+          acquisition_source?: string | null
           assigned_to?: string | null
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
@@ -2314,6 +2316,7 @@ export type Database = {
           wear_tear?: boolean | null
         }
         Update: {
+          acquisition_source?: string | null
           assigned_to?: string | null
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
