@@ -171,14 +171,13 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                {/* Platinum Plan Label */}
-                <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">Pay in full · save 10%</h3>
+                <div className="flex items-center gap-2 mt-1 mb-2">
                   <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                  <span className="text-sm font-semibold text-[#1a1a1a]">
+                  <span className="text-sm font-semibold text-gray-600">
                     Platinum {planYears}-Year Cover
                   </span>
                 </div>
-                <p className="text-base font-bold text-[#1a1a1a]">Pay in full · save 10%</p>
 
                 {/* Hero: total price */}
                 <div className="mt-3 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-4">
