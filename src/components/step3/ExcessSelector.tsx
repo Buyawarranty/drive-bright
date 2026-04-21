@@ -34,10 +34,10 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
         <button
           type="button"
           onClick={() => setDetailsOpen(true)}
-          className="ml-auto sm:ml-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm"
+          className="ml-auto flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm flex-shrink-0"
         >
-          <Info className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium text-green-600">Details</span>
+          <Info className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-medium text-green-600">Details</span>
         </button>
       </div>
 
