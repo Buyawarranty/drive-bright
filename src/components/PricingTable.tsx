@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit3, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench, Lock, Star, Wallet } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import LabourRateDetails from '@/components/step3/LabourRateDetails';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -257,6 +258,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   
   // New state for labour rate selection - restore from previous if available
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 70);
+  const [labourRateDetailsOpen, setLabourRateDetailsOpen] = useState(false);
   
   // NOTE: Add-on auto-inclusion on payment type change is handled by a single useEffect below (around line 490)
   // to avoid duplicate state updates that cause pricing inconsistencies when navigating between steps
@@ -2038,10 +2040,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </h2>
           </div>
           
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-3">
             Pick the hourly rate that works best for your repair needs.
           </p>
-          
+
+          <button
+            type="button"
+            onClick={() => setLabourRateDetailsOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-success/40 bg-success/5 text-success text-sm font-semibold hover:bg-success/10 transition-colors mb-4"
+          >
+            <Info className="w-4 h-4" />
+            Details
+          </button>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={() => setSelectedLabourRate(50)}
@@ -2109,6 +2120,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
             </button>
           </div>
+
+          <LabourRateDetails
+            open={labourRateDetailsOpen}
+            onOpenChange={setLabourRateDetailsOpen}
+            selectedLabourRate={selectedLabourRate}
+            onConfirm={setSelectedLabourRate}
+          />
         </div>
 
         {/* Choose Your Excess Amount */}
