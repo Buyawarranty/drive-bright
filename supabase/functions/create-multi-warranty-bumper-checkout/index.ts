@@ -39,6 +39,46 @@ serve(async (req) => {
     actualTotalAmount = finalAmount || totalAmount;
     logStep("Request data", { itemCount: items.length, originalAmount, finalAmount, actualTotalAmount, customerData, discountCode });
 
+    // 🔒 SERVER-SIDE PRICE FLOOR — validate every item against DB plan price.
+    // Blocks tampered item.totalPrice / finalAmount values reaching Bumper.
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    for (const item of items) {
+      const submittedPrice = Number(item.totalPrice);
+      const floor = await validateCheckoutPrice(
+        {
+          planId: item.planName || item.planId,
+          paymentType: item.paymentType,
+          voluntaryExcess: item.voluntaryExcess,
+          finalAmount: submittedPrice,
+        },
+        supabaseService,
+      );
+      if (!floor.ok) {
+        logStep("PRICE MANIPULATION BLOCKED (bumper multi)", {
+          regNumber: item.vehicleData?.regNumber,
+          submittedPrice,
+          reason: floor.reason,
+          customerEmail: customerData?.email,
+        });
+        return new Response(
+          JSON.stringify({ error: floor.reason || "Invalid price detected on one of the warranties. Please refresh and try again." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+    const itemsSum = items.reduce((s: number, it: any) => s + Number(it.totalPrice || 0), 0);
+    if (actualTotalAmount && Math.abs(Number(actualTotalAmount) - itemsSum) > Math.max(5, itemsSum * 0.3)) {
+      logStep("finalAmount mismatch with items sum (bumper multi)", { actualTotalAmount, itemsSum });
+      return new Response(
+        JSON.stringify({ error: "Order total does not match item prices. Please refresh and try again." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Get authenticated user
     let user = null;
     let customerEmail = customerData?.email || "guest@buyawarranty.co.uk";
