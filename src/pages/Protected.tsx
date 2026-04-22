@@ -88,7 +88,7 @@ const faqs = [
   },
   {
     q: 'When does my cover start?',
-    a: 'Cover typically begins after a short qualifying period (usually 14 days) to protect against pre-existing faults. Your exact start date appears in your policy documents.',
+    a: 'Your cover starts immediately from the policy start date shown in your documents, so you’re protected right away. Please note that, like all warranties, pre-existing faults (anything wrong with your vehicle before the policy began) are not covered.',
   },
 ];
 
