@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle, Shield, Clock, ArrowRight, Fuel, Battery, Zap, Bike, X, FileText, Wrench, Phone, Settings, AlertTriangle, Ban, HelpCircle, Star, Plus, Cog, RefreshCw, Snowflake, Car, Disc, Thermometer, Smartphone, GitBranch, Wind, Droplets, CircleDot, Move3d, ShieldCheck, Sparkles } from 'lucide-react';
+import { CheckCircle, Shield, Clock, ArrowRight, Fuel, Battery, Zap, Bike, X, FileText, Wrench, Phone, Settings, AlertTriangle, Ban, HelpCircle, Star, Plus, Cog, RefreshCw, Snowflake, Car, Disc, Thermometer, Smartphone, GitBranch, Wind, Droplets, CircleDot, Move3d, ShieldCheck, Sparkles, ChevronDown } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -12,17 +12,18 @@ import HelpMeChooseModal from '@/components/cover-page/HelpMeChooseModal';
 // ----- Data for the new design sections -----
 const coverageCards = [
   { Icon: Cog, title: 'Engine', desc: 'All internal engine components including pistons, crankshaft, camshaft, oil pump, and cylinder head.' },
+  { Icon: GitBranch, title: 'Gearbox', desc: 'Manual or automatic. All internal gearbox components, torque convertor and selector forks.' },
+  { Icon: Wind, title: 'Turbo & Supercharger', desc: 'Turbocharger assembly, wastegate, intercooler and supercharger components covered.' },
+  { Icon: Zap, title: 'Electrical Systems & ECUs', desc: 'Engine control units, body control modules, and major electrical management systems.' },
+  { Icon: Car, title: 'Steering', desc: 'Power steering pump, rack and pinion, steering column and electric power steering motor.' },
+  { Icon: Droplets, title: 'Cooling System', desc: 'Water pump, radiator, thermostat, cooling fan and coolant hoses included.' },
+  // --- Below this point shown only when "see all" is expanded on mobile ---
   { Icon: RefreshCw, title: 'Clutch System', desc: 'Clutch plate, pressure plate, release bearing, and flywheel. Full clutch assembly covered.' },
   { Icon: Fuel, title: 'Fuel System', desc: 'Fuel pump, injectors, fuel pressure regulator and fuel rail covered in full.' },
   { Icon: Snowflake, title: 'Air Conditioning', desc: 'Compressor, condenser, evaporator, expansion valve, and receiver drier all included.' },
-  { Icon: Car, title: 'Steering', desc: 'Power steering pump, rack and pinion, steering column and electric power steering motor.' },
   { Icon: Disc, title: 'Braking System', desc: 'ABS module, brake servo, master cylinder, and brake callipers fully protected.' },
   { Icon: Thermometer, title: 'Heating & Ventilation', desc: 'Heater matrix, blower motor, temperature control module and associated parts.' },
   { Icon: Smartphone, title: 'Infotainment & Cameras', desc: 'Touchscreen, navigation unit, parking sensors, and reversing camera systems.' },
-  { Icon: GitBranch, title: 'Gearbox', desc: 'Manual or automatic. All internal gearbox components, torque convertor and selector forks.' },
-  { Icon: Wind, title: 'Turbo & Supercharger', desc: 'Turbocharger assembly, wastegate, intercooler and supercharger components covered.' },
-  { Icon: Droplets, title: 'Cooling System', desc: 'Water pump, radiator, thermostat, cooling fan and coolant hoses included.' },
-  { Icon: Zap, title: 'Electrical Systems & ECUs', desc: 'Engine control units, body control modules, and major electrical management systems.' },
   { Icon: Wrench, title: 'Suspension', desc: 'Shock absorbers, struts, control arms, ball joints, and suspension bushes covered.' },
   { Icon: Move3d, title: 'Drive System', desc: 'Driveshafts, CV joints, differential, prop shaft and transfer box components.' },
   { Icon: ShieldCheck, title: 'Safety Systems', desc: 'Airbag control module, seatbelt pre-tensioners, traction and stability control units.' },
@@ -96,6 +97,7 @@ const Protected = () => {
   const [platinumDocUrl, setPlatinumDocUrl] = useState<string>('');
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showAllParts, setShowAllParts] = useState(false);
   const coverageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -140,7 +142,7 @@ const Protected = () => {
 
   const openHelpModal = () => setShowHelpModal(true);
 
-  // Vehicle types kept exactly as before for the preserved section
+  // Vehicle types — exclusions removed (now live in Covered/Not Covered section)
   const vehicleTypes = [
     {
       id: 'petrol-diesel',
@@ -229,24 +231,9 @@ const Protected = () => {
       ],
       showPdf: true,
     },
-    {
-      id: 'not-covered',
-      title: "What Is Not Covered",
-      icon: X,
-      bgClass: 'bg-red-100 text-red-700',
-      hoverClass: 'hover:bg-red-200',
-      components: [
-        'Pre-existing faults',
-        'Routine servicing and maintenance',
-        'Tyres, brake pads, and wear & tear items',
-        'Accidental damage or accident repairs',
-        'Motor trader-owned or operated vehicles',
-        'Hire and reward use (taxis, rentals, couriers)'
-      ],
-      showPdf: false,
-      isExclusion: true,
-    },
   ];
+
+  const CORE_PARTS_COUNT = 6;
 
   return (
     <div className="min-h-screen bg-white">
@@ -255,7 +242,7 @@ const Protected = () => {
         description="See exactly what your warranty covers and what we pay. Unlimited claims, parts and labour included. Petrol, diesel, hybrid, EV and motorcycles."
       />
 
-      {/* ── HERO ── */}
+      {/* ── 1. HERO ── */}
       <section className="relative px-6 pt-14 pb-10 md:pt-16 md:pb-12 text-center overflow-hidden border-b border-gray-200">
         <div className="relative z-10 max-w-4xl mx-auto">
           <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
@@ -269,8 +256,8 @@ const Protected = () => {
             Know exactly what's covered
             <span className="block text-brand-orange">and what we pay.</span>
           </h1>
-          <p className="text-base md:text-lg text-foreground max-w-xl mx-auto mb-9 font-light">
-            Unlimited claims. Each repair covered up to your chosen limit. Parts and labour included.
+          <p className="text-base md:text-lg text-foreground max-w-2xl mx-auto mb-9 font-light">
+            A vehicle warranty for mechanical and electrical failures — <strong className="font-semibold">not breakdown cover</strong>. We pay your garage <strong className="font-semibold">directly</strong>, so you're never out of pocket. Parts and labour included.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
@@ -289,7 +276,7 @@ const Protected = () => {
         </div>
       </section>
 
-      {/* ── TRUST BAR ── */}
+      {/* ── 2. TRUST BAR ── */}
       <div className="flex justify-center gap-8 flex-wrap px-6 py-7 border-y border-border">
         <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
           <span className="text-lg">⭐</span>
@@ -309,7 +296,7 @@ const Protected = () => {
         </div>
       </div>
 
-      {/* ── COVERAGE GRID ── */}
+      {/* ── 3. COVERAGE GRID — most urgent question first ── */}
       <div ref={coverageRef}>
         <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
@@ -327,27 +314,43 @@ const Protected = () => {
           </p>
 
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {coverageCards.map((c, i) => (
-              <div
-                key={i}
-                className="group bg-white hover:bg-orange-50/40 border border-border rounded-2xl p-7 transition-colors relative overflow-hidden shadow-sm hover:shadow-md"
-              >
-                <div className="w-11 h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center mb-4">
-                  <c.Icon className="w-5 h-5 text-brand-orange" strokeWidth={2} />
-                </div>
-                <h3
-                  className="text-[17px] font-bold mb-1.5 text-foreground"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
+            {coverageCards.map((c, i) => {
+              // On mobile (single column), hide non-core cards behind toggle
+              const isCore = i < CORE_PARTS_COUNT;
+              const hiddenOnMobile = !isCore && !showAllParts;
+              return (
+                <div
+                  key={i}
+                  className={`group bg-white hover:bg-orange-50/40 border border-border rounded-2xl p-7 transition-colors relative overflow-hidden shadow-sm hover:shadow-md ${hiddenOnMobile ? 'hidden sm:block' : ''}`}
                 >
-                  {c.title}
-                </h3>
-                <p className="text-[13px] text-muted-foreground leading-relaxed">{c.desc}</p>
-              </div>
-            ))}
+                  <div className="w-11 h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center mb-4">
+                    <c.Icon className="w-5 h-5 text-brand-orange" strokeWidth={2} />
+                  </div>
+                  <h3
+                    className="text-[17px] font-bold mb-1.5 text-foreground"
+                    style={{ fontFamily: "'Syne', sans-serif" }}
+                  >
+                    {c.title}
+                  </h3>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">{c.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile-only "see all covered parts" toggle */}
+          <div className="mt-6 flex justify-center sm:hidden">
+            <button
+              onClick={() => setShowAllParts((v) => !v)}
+              className="inline-flex items-center gap-2 border border-brand-orange/40 bg-brand-orange/5 text-brand-orange px-5 py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange/10 transition-all"
+            >
+              {showAllParts ? 'Show fewer parts' : `See all covered parts (+${coverageCards.length - CORE_PARTS_COUNT})`}
+              <ChevronDown className={`w-4 h-4 transition-transform ${showAllParts ? 'rotate-180' : ''}`} />
+            </button>
           </div>
         </section>
 
-        {/* ── COVERED / NOT COVERED COLUMNS ── */}
+        {/* ── 4. COVERED / NOT COVERED COLUMNS ── */}
         <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
             At a glance
@@ -400,11 +403,118 @@ const Protected = () => {
               ))}
             </div>
           </div>
+
+          {/* High-performance exclusions — moved here from vehicle tabs */}
+          <div className="mt-8">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="high-performance" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline text-sky-700">
+                  <div className="flex items-center gap-3">
+                    <X className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-bold text-base sm:text-lg">Exclusions: High-Performance Cars</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-5 py-5 bg-white">
+                  <HighPerformanceExclusionsList />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
         </section>
 
-        {/* ============================================================ */}
-        {/* PRESERVED SECTION 1: Full coverage by vehicle type accordion  */}
-        {/* ============================================================ */}
+        {/* ── 5. CLAIM LIMITS — conversion decision point ── */}
+        <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
+          <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
+            Protection Levels
+            <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
+          </div>
+          <h2
+            className="font-bold tracking-tight leading-tight mb-3 text-foreground"
+            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
+          >
+            Choose how much we cover per repair
+          </h2>
+          <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
+            Most repairs cost £700 to £1,500. Higher limits protect you against expensive faults like engine and gearbox repairs.
+          </p>
+
+          {/* Mobile gets extra top padding so the "Recommended" badge isn't clipped */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 pt-4 md:pt-0">
+            {claimLimits.map((l, i) => (
+              <div
+                key={i}
+                className={`relative rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 ${
+                  l.popular
+                    ? 'border-brand-orange bg-brand-orange/5'
+                    : 'border-border bg-muted/40 hover:border-brand-orange/40'
+                }`}
+              >
+                {l.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap shadow-md">
+                    Recommended
+                  </span>
+                )}
+                <div
+                  className="text-2xl md:text-3xl font-extrabold text-foreground mb-1"
+                  style={{ fontFamily: "'Syne', sans-serif" }}
+                >
+                  {l.amount}
+                </div>
+                <div className="text-xs text-muted-foreground">{l.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl px-5 py-4 text-sm text-foreground">
+            💡 <strong>Quick example:</strong> A £1,300 repair with a £3,000 limit: fully covered.
+          </div>
+
+          {/* ── 6. REPAIR COSTS — directly below limits to confirm the choice ── */}
+          <div className="mt-16">
+            <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
+              Repair costs
+              <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
+            </div>
+            <h3
+              className="font-bold tracking-tight leading-tight mb-3 text-foreground"
+              style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(22px, 3vw, 32px)' }}
+            >
+              What repairs actually cost and what we pay
+            </h3>
+            <p className="text-base text-muted-foreground font-light max-w-xl mb-8">
+              Real examples of common faults so you know what to expect before you buy.
+            </p>
+
+            <div className="flex flex-col gap-3">
+              {repairExamples.map((r, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 bg-muted/40 border border-border rounded-2xl px-5 py-4 hover:border-brand-orange/30 hover:bg-muted/70 transition-colors"
+                >
+                  <div className="text-2xl flex-shrink-0">{r.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-[15px] text-foreground mb-0.5">{r.name}</div>
+                    <div className="text-xs text-muted-foreground">{r.desc}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div
+                      className="text-base md:text-lg font-bold text-brand-orange"
+                      style={{ fontFamily: "'Syne', sans-serif" }}
+                    >
+                      {r.range}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">avg UK garage</div>
+                    <span className="inline-block mt-1 bg-green-500/10 text-green-700 border border-green-500/25 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                      ✓ Covered
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 7. FULL COVERAGE BY VEHICLE TYPE ── */}
         <section className="py-12 bg-white border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
@@ -433,11 +543,7 @@ const Protected = () => {
                           const isBold = component.startsWith('Includes ALL');
                           return (
                             <li key={index} className="flex items-start gap-2 text-foreground">
-                              {vt.isExclusion ? (
-                                <X className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                              ) : (
-                                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                              )}
+                              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                               <span className={`text-sm leading-relaxed ${isBold ? 'font-bold' : ''}`}>{component}</span>
                             </li>
                           );
@@ -459,19 +565,6 @@ const Protected = () => {
                   </AccordionItem>
                 );
               })}
-
-              {/* High Performance Exclusions */}
-              <AccordionItem value="high-performance" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline text-sky-700">
-                  <div className="flex items-center gap-3">
-                    <X className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-bold text-base sm:text-lg">Exclusions: High-Performance Cars</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-5 py-5 bg-white">
-                  <HighPerformanceExclusionsList />
-                </AccordionContent>
-              </AccordionItem>
 
               {/* Modifications and Your Cover */}
               <AccordionItem value="modifications" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
@@ -563,152 +656,9 @@ const Protected = () => {
             </Accordion>
           </div>
         </section>
-
-        {/* ============================================================ */}
-        {/* PRESERVED SECTION 2: PDF Downloads — crystal clear            */}
-        {/* ============================================================ */}
-        <section className="py-12 bg-muted border-b border-gray-200">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                Your cover, made crystal clear
-              </h2>
-              <p className="text-sm text-muted-foreground">Download your warranty and terms documents.</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between bg-white border border-border rounded-xl px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-semibold text-foreground text-sm">Platinum Warranty Document</span>
-                </div>
-                {platinumDocUrl ? (
-                  <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" variant="outline" className="border-brand-orange text-brand-orange hover:bg-brand-orange/5 text-xs">
-                      Download PDF
-                    </Button>
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground text-xs">Loading...</span>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between bg-white border border-border rounded-xl px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-semibold text-foreground text-sm">Terms & Conditions</span>
-                </div>
-                {termsDocUrl ? (
-                  <a href={termsDocUrl} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50 text-xs">
-                      Download PDF
-                    </Button>
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground text-xs">Loading...</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
 
-      {/* ── CLAIM LIMITS ── */}
-      <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
-        <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
-          Protection Levels
-          <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
-        </div>
-        <h2
-          className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-          style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
-        >
-          Choose how much we cover per repair
-        </h2>
-        <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
-          Most repairs cost £700 to £1,500. Higher limits protect you against expensive faults like engine and gearbox repairs.
-        </p>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          {claimLimits.map((l, i) => (
-            <div
-              key={i}
-              className={`relative rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 ${
-                l.popular
-                  ? 'border-brand-orange bg-brand-orange/5'
-                  : 'border-border bg-muted/40 hover:border-brand-orange/40'
-              }`}
-            >
-              {l.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                  Recommended
-                </span>
-              )}
-              <div
-                className="text-2xl md:text-3xl font-extrabold text-foreground mb-1"
-                style={{ fontFamily: "'Syne', sans-serif" }}
-              >
-                {l.amount}
-              </div>
-              <div className="text-xs text-muted-foreground">{l.label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl px-5 py-4 text-sm text-foreground">
-          💡 <strong>Quick example:</strong> A £1,300 repair with a £3,000 limit: fully covered.
-        </div>
-
-        {/* ── REPAIR COSTS ── */}
-        <div className="mt-16">
-          <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
-            Repair costs
-            <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
-          </div>
-          <h3
-            className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(22px, 3vw, 32px)' }}
-          >
-            What repairs actually cost and what we pay
-          </h3>
-          <p className="text-base text-muted-foreground font-light max-w-xl mb-8">
-            Real examples of common faults so you know what to expect before you buy.
-          </p>
-
-          <div className="flex flex-col gap-3">
-            {repairExamples.map((r, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 bg-muted/40 border border-border rounded-2xl px-5 py-4 hover:border-brand-orange/30 hover:bg-muted/70 transition-colors"
-              >
-                <div className="text-2xl flex-shrink-0">{r.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-[15px] text-foreground mb-0.5">{r.name}</div>
-                  <div className="text-xs text-muted-foreground">{r.desc}</div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div
-                    className="text-base md:text-lg font-bold text-brand-orange"
-                    style={{ fontFamily: "'Syne', sans-serif" }}
-                  >
-                    {r.range}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">avg UK garage</div>
-                  <span className="inline-block mt-1 bg-green-500/10 text-green-700 border border-green-500/25 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
-                    ✓ Covered
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── TRUSTPILOT REVIEWS CAROUSEL ── */}
+      {/* ── 8. TRUSTPILOT REVIEWS — social proof after decision ── */}
       <section className="bg-white py-12 text-center border-b border-gray-200">
         <div className="relative max-w-7xl mx-auto px-6">
           <h2
@@ -741,7 +691,7 @@ const Protected = () => {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
+      {/* ── 9. FAQ — late-stage objection handling ── */}
       <section className="max-w-4xl mx-auto px-6 py-12 border-b border-gray-200">
         <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
           FAQ
@@ -773,9 +723,57 @@ const Protected = () => {
             </AccordionItem>
           ))}
         </Accordion>
+
+        {/* Document downloads — secondary trust signal alongside FAQ */}
+        <div className="mt-10 pt-8 border-t border-border">
+          <h3
+            className="font-bold text-foreground mb-2 text-lg"
+            style={{ fontFamily: "'Syne', sans-serif" }}
+          >
+            Your cover, made crystal clear
+          </h3>
+          <p className="text-sm text-muted-foreground mb-5">Download your warranty and terms documents.</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="flex items-center justify-between bg-muted/40 border border-border rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-foreground text-sm truncate">Platinum Warranty</span>
+              </div>
+              {platinumDocUrl ? (
+                <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="border-brand-orange text-brand-orange hover:bg-brand-orange/5 text-xs">
+                    PDF
+                  </Button>
+                </a>
+              ) : (
+                <span className="text-muted-foreground text-xs">Loading...</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between bg-muted/40 border border-border rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-foreground text-sm truncate">Terms & Conditions</span>
+              </div>
+              {termsDocUrl ? (
+                <a href={termsDocUrl} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50 text-xs">
+                    PDF
+                  </Button>
+                </a>
+              ) : (
+                <span className="text-muted-foreground text-xs">Loading...</span>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* ── FINAL CTA ── */}
+      {/* ── 10. FINAL CTA ── */}
       <section className="relative py-14 px-6 text-center overflow-hidden">
         <div className="relative z-10 max-w-3xl mx-auto">
           <h2
@@ -785,7 +783,7 @@ const Protected = () => {
             Ready to protect your vehicle?
           </h2>
           <p className="text-base text-muted-foreground mb-9">
-            Get your price in under 30 seconds and choose the cover that's right for you.
+            From just <strong className="text-foreground">60p per day</strong>. Get your price in under 30 seconds and choose the cover that's right for you.
           </p>
           <div className="flex flex-wrap gap-3 justify-center mb-5">
             <Link
