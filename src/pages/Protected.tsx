@@ -725,9 +725,10 @@ const Protected = () => {
           Everything you need to know about your cover and how it works.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-16 items-stretch">
-          {/* Left column - First half of FAQs */}
-          <div className="max-w-4xl">
+        {/* FAQ Grid with Panda in Middle */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-12 items-stretch">
+          {/* Left column - First 3 FAQs */}
+          <div>
             <Accordion type="single" collapsible className="space-y-3">
               {faqs.slice(0, 3).map((f, i) => (
                 <AccordionItem
@@ -747,7 +748,7 @@ const Protected = () => {
           </div>
 
           {/* Middle column - Panda mascot (100% bigger, centered vertically) */}
-          <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-center">
+          <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-center py-8">
             <img
               src={pandaThumbsUp}
               alt="Buyawarranty panda mascot giving a thumbs up"
@@ -756,8 +757,8 @@ const Protected = () => {
             />
           </div>
 
-          {/* Right column - Second half of FAQs */}
-          <div className="max-w-4xl lg:col-start-1">
+          {/* Right column - Last 3 FAQs */}
+          <div>
             <Accordion type="single" collapsible className="space-y-3">
               {faqs.slice(3).map((f, i) => (
                 <AccordionItem
