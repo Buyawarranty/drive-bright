@@ -91,7 +91,7 @@ const faqs = [
   },
   {
     q: 'When does my cover start?',
-    a: 'Your cover starts immediately from the policy start date shown in your documents, so you’re protected right away. Please note that, like all warranties, pre-existing faults (anything wrong with your vehicle before the policy began) are not covered.',
+    a: 'Your cover starts immediately from the policy start date shown in your documents, so you're protected right away. Please note that, like all warranties, pre-existing faults (anything wrong with your vehicle before the policy began) are not covered.',
   },
 ];
 
@@ -100,7 +100,7 @@ const Protected = () => {
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showAllParts, setShowAllParts] = useState(false);
-  const [selectedLimitIndex, setSelectedLimitIndex] = useState(2); // £3,000 default
+  const [selectedLimitIndex, setSelectedLimitIndex] = useState(2);
   const coverageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,7 +126,6 @@ const Protected = () => {
     fetchDocuments();
   }, []);
 
-  // Re-initialize Trustpilot widget on mount (SPA navigation safe)
   useEffect(() => {
     const tryLoad = () => {
       if ((window as any).Trustpilot) {
@@ -145,7 +144,6 @@ const Protected = () => {
 
   const openHelpModal = () => setShowHelpModal(true);
 
-  // Vehicle types — exclusions removed (now live in Covered/Not Covered section)
   const vehicleTypes = [
     {
       id: 'petrol-diesel',
@@ -253,10 +251,7 @@ const Protected = () => {
               <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
               Complete Coverage Guide
             </span>
-            <h1
-              className="font-bold leading-[1.05] tracking-tight mb-5 text-foreground"
-              style={{ fontSize: 'clamp(36px, 5.5vw, 64px)' }}
-            >
+            <h1 className="font-bold leading-[1.05] tracking-tight mb-5 text-foreground" style={{ fontSize: 'clamp(36px, 5.5vw, 64px)' }}>
               Know exactly what's covered
               <span className="block text-brand-orange">and what we pay.</span>
             </h1>
@@ -264,16 +259,10 @@ const Protected = () => {
               Protect against costly <strong className="font-semibold">mechanical and electrical failures</strong>. We pay your garage <strong className="font-semibold">directly</strong> so you are never out of pocket. Parts and labour included.
             </p>
             <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              <Link
-                to="/?step=1"
-                className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] shadow-[0_8px_30px_rgba(240,90,40,0.4)] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all"
-              >
+              <Link to="/?step=1" className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] shadow-[0_8px_30px_rgba(240,90,40,0.4)] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all">
                 Get my free quote <ArrowRight className="w-4 h-4" />
               </Link>
-              <button
-                onClick={scrollToCoverage}
-                className="inline-flex items-center gap-2 border border-border bg-transparent text-foreground px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-muted hover:-translate-y-0.5 transition-all"
-              >
+              <button onClick={scrollToCoverage} className="inline-flex items-center gap-2 border border-border bg-transparent text-foreground px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-muted hover:-translate-y-0.5 transition-all">
                 See what's covered ↓
               </button>
             </div>
@@ -283,12 +272,7 @@ const Protected = () => {
 
       {/* ── 2. TRUST BAR ── */}
       <div className="flex justify-center gap-8 flex-wrap px-6 py-7 border-y border-border">
-        <a
-          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:opacity-80 transition-opacity"
-        >
+        <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:opacity-80 transition-opacity">
           <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4 w-auto" />
           <span><strong className="text-foreground font-medium">4.8/5</strong> rated on Trustpilot</span>
         </a>
@@ -306,17 +290,14 @@ const Protected = () => {
         </div>
       </div>
 
-      {/* ── 3. COVERAGE GRID — most urgent question first ── */}
+      {/* ── 3. COVERAGE GRID ── */}
       <div ref={coverageRef}>
         <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
             Coverage
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
           </div>
-          <h2
-            className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
-          >
+          <h2 className="font-bold tracking-tight leading-tight mb-3 text-foreground" style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}>
             What your warranty actually covers
           </h2>
           <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
@@ -325,35 +306,22 @@ const Protected = () => {
 
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {coverageCards.map((c, i) => {
-              // On mobile (single column), hide non-core cards behind toggle
               const isCore = i < CORE_PARTS_COUNT;
               const hiddenOnMobile = !isCore && !showAllParts;
               return (
-                <div
-                  key={i}
-                  className={`group bg-white hover:bg-orange-50/40 border border-border rounded-2xl p-7 transition-colors relative overflow-hidden shadow-sm hover:shadow-md ${hiddenOnMobile ? 'hidden sm:block' : ''}`}
-                >
+                <div key={i} className={`group bg-white hover:bg-orange-50/40 border border-border rounded-2xl p-7 transition-colors relative overflow-hidden shadow-sm hover:shadow-md ${hiddenOnMobile ? 'hidden sm:block' : ''}`}>
                   <div className="w-11 h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center mb-4">
                     <c.Icon className="w-5 h-5 text-brand-orange" strokeWidth={2} />
                   </div>
-                  <h3
-                    className="text-[17px] font-bold mb-1.5 text-foreground"
-                   
-                  >
-                    {c.title}
-                  </h3>
+                  <h3 className="text-[17px] font-bold mb-1.5 text-foreground">{c.title}</h3>
                   <p className="text-[13px] text-muted-foreground leading-relaxed">{c.desc}</p>
                 </div>
               );
             })}
           </div>
 
-          {/* Mobile-only "see all covered parts" toggle */}
           <div className="mt-6 flex justify-center sm:hidden">
-            <button
-              onClick={() => setShowAllParts((v) => !v)}
-              className="inline-flex items-center gap-2 border border-brand-orange/40 bg-brand-orange/5 text-brand-orange px-5 py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange/10 transition-all"
-            >
+            <button onClick={() => setShowAllParts((v) => !v)} className="inline-flex items-center gap-2 border border-brand-orange/40 bg-brand-orange/5 text-brand-orange px-5 py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange/10 transition-all">
               {showAllParts ? 'Show fewer parts' : `See all covered parts (+${coverageCards.length - CORE_PARTS_COUNT})`}
               <ChevronDown className={`w-4 h-4 transition-transform ${showAllParts ? 'rotate-180' : ''}`} />
             </button>
@@ -366,10 +334,7 @@ const Protected = () => {
             At a glance
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
           </div>
-          <h2
-            className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
-          >
+          <h2 className="font-bold tracking-tight leading-tight mb-3 text-foreground" style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}>
             What we cover and what we don't
           </h2>
           <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
@@ -378,17 +343,11 @@ const Protected = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="bg-muted/40 rounded-2xl border border-border overflow-hidden">
-              <div
-                className="px-6 py-4 flex items-center gap-2.5 font-bold text-base border-b border-border bg-green-500/10 text-green-700"
-               
-              >
+              <div className="px-6 py-4 flex items-center gap-2.5 font-bold text-base border-b border-border bg-green-500/10 text-green-700">
                 <CheckCircle className="w-5 h-5" /> Covered
               </div>
               {coveredItems.map((it, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-6 py-3.5 text-sm border-b border-border last:border-b-0 hover:bg-muted/60 transition-colors"
-                >
+                <div key={i} className="flex items-center gap-3 px-6 py-3.5 text-sm border-b border-border last:border-b-0 hover:bg-muted/60 transition-colors">
                   <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <span className="text-foreground">{it}</span>
                 </div>
@@ -396,69 +355,42 @@ const Protected = () => {
             </div>
 
             <div className="bg-muted/40 rounded-2xl border border-border overflow-hidden">
-              <div
-                className="px-6 py-4 flex items-center gap-2.5 font-bold text-base border-b border-border bg-red-500/10 text-red-600"
-               
-              >
+              <div className="px-6 py-4 flex items-center gap-2.5 font-bold text-base border-b border-border bg-red-500/10 text-red-600">
                 <X className="w-5 h-5" /> Not Covered
               </div>
               {notCoveredItems.map((it, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-6 py-3.5 text-sm border-b border-border last:border-b-0 hover:bg-muted/60 transition-colors"
-                >
+                <div key={i} className="flex items-center gap-3 px-6 py-3.5 text-sm border-b border-border last:border-b-0 hover:bg-muted/60 transition-colors">
                   <X className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span className="text-foreground">{it}</span>
                 </div>
               ))}
             </div>
           </div>
-
         </section>
 
-        {/* ── 5. CLAIM LIMITS — conversion decision point ── */}
+        {/* ── 5. CLAIM LIMITS ── */}
         <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
             Protection Levels
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
           </div>
-          <h2
-            className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
-          >
+          <h2 className="font-bold tracking-tight leading-tight mb-3 text-foreground" style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}>
             Choose how much we cover per repair
           </h2>
           <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
             Most repairs cost £700 to £1,500. Higher limits protect you against expensive faults like engine and gearbox repairs.
           </p>
 
-          {/* Mobile gets extra top padding so the "Recommended" badge isn't clipped */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 pt-4 md:pt-0">
             {claimLimits.map((l, i) => {
               const isSelected = selectedLimitIndex === i;
               return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSelectedLimitIndex(i)}
-                  aria-pressed={isSelected}
-                  className={`relative rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:ring-offset-2 ${
-                    isSelected
-                      ? 'border-brand-orange bg-brand-orange/10 shadow-md ring-1 ring-brand-orange/30'
-                      : 'border-border bg-muted/40 hover:border-brand-orange/40'
-                  }`}
-                >
+                <button key={i} type="button" onClick={() => setSelectedLimitIndex(i)} aria-pressed={isSelected}
+                  className={`relative rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:ring-offset-2 ${isSelected ? 'border-brand-orange bg-brand-orange/10 shadow-md ring-1 ring-brand-orange/30' : 'border-border bg-muted/40 hover:border-brand-orange/40'}`}>
                   {l.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap shadow-md">
-                      Recommended
-                    </span>
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap shadow-md">Recommended</span>
                   )}
-                  <div
-                    className="text-2xl md:text-3xl font-extrabold text-foreground mb-1"
-                   
-                  >
-                    {l.amount}
-                  </div>
+                  <div className="text-2xl md:text-3xl font-extrabold text-foreground mb-1">{l.amount}</div>
                   <div className="text-xs text-muted-foreground">{l.label}</div>
                   {isSelected && (
                     <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-orange">
@@ -474,16 +406,13 @@ const Protected = () => {
             💡 <strong>Quick example:</strong> {claimLimits[selectedLimitIndex].example}
           </div>
 
-          {/* ── 6. REPAIR COSTS — directly below limits to confirm the choice ── */}
+          {/* ── 6. REPAIR COSTS ── */}
           <div className="mt-16">
             <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
               Repair costs
               <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
             </div>
-            <h3
-              className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-              style={{ fontSize: 'clamp(22px, 3vw, 32px)' }}
-            >
+            <h3 className="font-bold tracking-tight leading-tight mb-3 text-foreground" style={{ fontSize: 'clamp(22px, 3vw, 32px)' }}>
               What repairs actually cost and what we pay
             </h3>
             <p className="text-base text-muted-foreground font-light max-w-xl mb-8">
@@ -492,26 +421,16 @@ const Protected = () => {
 
             <div className="flex flex-col gap-3">
               {repairExamples.map((r, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 bg-muted/40 border border-border rounded-2xl px-5 py-4 hover:border-brand-orange/30 hover:bg-muted/70 transition-colors"
-                >
+                <div key={i} className="flex items-center gap-4 bg-muted/40 border border-border rounded-2xl px-5 py-4 hover:border-brand-orange/30 hover:bg-muted/70 transition-colors">
                   <div className="text-2xl flex-shrink-0">{r.icon}</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-[15px] text-foreground mb-0.5">{r.name}</div>
                     <div className="text-xs text-muted-foreground">{r.desc}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div
-                      className="text-base md:text-lg font-bold text-brand-orange"
-                     
-                    >
-                      {r.range}
-                    </div>
+                    <div className="text-base md:text-lg font-bold text-brand-orange">{r.range}</div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">avg UK garage</div>
-                    <span className="inline-block mt-1 bg-green-500/10 text-green-700 border border-green-500/25 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
-                      ✓ Covered
-                    </span>
+                    <span className="inline-block mt-1 bg-green-500/10 text-green-700 border border-green-500/25 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">✓ Covered</span>
                   </div>
                 </div>
               ))}
@@ -524,9 +443,7 @@ const Protected = () => {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Full coverage by vehicle type</h2>
-              <p className="text-sm text-muted-foreground">
-                Select your vehicle type to view everything that's covered.
-              </p>
+              <p className="text-sm text-muted-foreground">Select your vehicle type to view everything that's covered.</p>
             </div>
 
             <Accordion type="single" collapsible className="space-y-3">
@@ -534,9 +451,7 @@ const Protected = () => {
                 const Icon = vt.icon;
                 return (
                   <AccordionItem key={vt.id} value={vt.id} className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                    <AccordionTrigger
-                      className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-300 hover:no-underline ${vt.bgClass} ${vt.hoverClass}`}
-                    >
+                    <AccordionTrigger className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-300 hover:no-underline ${vt.bgClass} ${vt.hoverClass}`}>
                       <div className="flex items-center gap-3">
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="font-bold text-base sm:text-lg">{vt.title}</span>
@@ -555,15 +470,8 @@ const Protected = () => {
                         })}
                       </ul>
                       {vt.showPdf && platinumDocUrl && (
-                        <a
-                          href={platinumDocUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
-                        >
-                          <FileText className="w-4 h-4" />
-                          Download Full PDF
-                          <ArrowRight className="w-4 h-4" />
+                        <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm">
+                          <FileText className="w-4 h-4" /> Download Full PDF <ArrowRight className="w-4 h-4" />
                         </a>
                       )}
                     </AccordionContent>
@@ -587,14 +495,7 @@ const Protected = () => {
                         <h4 className="font-bold text-foreground">Modifications we're happy with</h4>
                       </div>
                       <ul className="space-y-2 pl-1">
-                        {[
-                          'Cosmetic upgrades such as body kits, spoilers, trims or badges',
-                          'Alloy wheels and tyres within safe manufacturer limits',
-                          'Interior upgrades including screens, lighting and seat changes',
-                          'Tow bars fitted correctly',
-                          'Parking sensors, dash cams and other small accessories',
-                          'Road‑legal lighting or exhaust upgrades that meet UK standards',
-                        ].map((item, i) => (
+                        {['Cosmetic upgrades such as body kits, spoilers, trims or badges', 'Alloy wheels and tyres within safe manufacturer limits', 'Interior upgrades including screens, lighting and seat changes', 'Tow bars fitted correctly', 'Parking sensors, dash cams and other small accessories', 'Road‑legal lighting or exhaust upgrades that meet UK standards'].map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                             <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                             <span>{item}</span>
@@ -610,14 +511,7 @@ const Protected = () => {
                       </div>
                       <p className="text-sm text-muted-foreground mb-3 pl-7">We can still cover the car, but not issues caused by these mods.</p>
                       <ul className="space-y-2 pl-1">
-                        {[
-                          'Engine remaps, tuning boxes or performance chips',
-                          'Turbo or supercharger upgrades',
-                          'Lowered or raised suspension and geometry changes',
-                          'Electrical rewiring or aftermarket electrics that cause faults',
-                          'Non‑legal exhaust systems or noise‑excessive systems',
-                          'Oversized wheels or tyres beyond safe limits',
-                        ].map((item, i) => (
+                        {['Engine remaps, tuning boxes or performance chips', 'Turbo or supercharger upgrades', 'Lowered or raised suspension and geometry changes', 'Electrical rewiring or aftermarket electrics that cause faults', 'Non‑legal exhaust systems or noise‑excessive systems', 'Oversized wheels or tyres beyond safe limits'].map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                             <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                             <span>{item}</span>
@@ -632,12 +526,7 @@ const Protected = () => {
                         <h4 className="font-bold text-foreground">Modifications we cannot cover</h4>
                       </div>
                       <ul className="space-y-2 pl-1">
-                        {[
-                          'Emissions removals or illegal changes (DPF/EGR delete)',
-                          'Illegal window tints that break UK light‑transmission rules',
-                          'Straight‑pipe exhausts that break emissions or noise limits',
-                          'Any modification that makes the car unsafe or illegal for UK roads',
-                        ].map((item, i) => (
+                        {['Emissions removals or illegal changes (DPF/EGR delete)', 'Illegal window tints that break UK light‑transmission rules', 'Straight‑pipe exhausts that break emissions or noise limits', 'Any modification that makes the car unsafe or illegal for UK roads'].map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                             <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                             <span>{item}</span>
@@ -648,27 +537,16 @@ const Protected = () => {
 
                     <div className="bg-muted rounded-lg p-4 border border-border">
                       <div className="flex items-start gap-3">
-                        <HelpCircle className="w-5 h-5 text-brand-orange mt-0.5 flex-shrink-0" />
+                        <HelpCircle className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-foreground text-sm">Not sure about a modification?</p>
-                          <p className="text-sm text-muted-foreground mt-1">Tell us what's been changed and we'll confirm what's covered. It only takes a moment and avoids claim delays.</p>
+                          <h4 className="font-bold text-foreground mb-1">Not sure about your modification?</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Give us a call on <a href="tel:03302295040" className="text-brand-orange hover:underline font-medium">0330 229 5040</a> or <button onClick={openHelpModal} className="text-brand-orange hover:underline font-medium">request a callback</button>. We'll review it with you and confirm if it affects your cover.
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* High-performance exclusions — placed after Modifications */}
-              <AccordionItem value="high-performance" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline text-sky-700">
-                  <div className="flex items-center gap-3">
-                    <X className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-bold text-base sm:text-lg">Exclusions: High-Performance Cars</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-5 py-5 bg-white">
-                  <HighPerformanceExclusionsList />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -676,54 +554,30 @@ const Protected = () => {
         </section>
       </div>
 
-      {/* ── 8. TRUSTPILOT REVIEWS — social proof after decision ── */}
-      <section className="bg-white py-12 text-center border-b border-gray-200">
-        <div className="relative max-w-7xl mx-auto px-6">
-          <h2
-            className="font-bold tracking-tight mb-6 text-foreground"
-            style={{ fontSize: 'clamp(24px, 3.5vw, 36px)' }}
-          >
-            What our customers say
-          </h2>
-          <div className="bg-white rounded-2xl p-4 md:p-6">
-            <div
-              className="trustpilot-widget"
-              data-locale="en-GB"
-              data-template-id="54ad5defc6454f065c28af8b"
-              data-businessunit-id="6586c764848940568d554a08"
-              data-style-height="240px"
-              data-style-width="100%"
-              data-stars="4,5"
-              data-review-languages="en"
-            >
-              <a
-                href="https://www.trustpilot.com/review/buyawarranty.co.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground"
-              >
-                Trustpilot
-              </a>
-            </div>
-          </div>
+      {/* ── 8. EXCLUSIONS ── */}
+      <section className="max-w-7xl mx-auto px-6 py-12 border-b border-gray-200 bg-white">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Exclusions explained</h2>
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto">Certain high-performance and modified vehicles may be excluded from coverage. Check your eligibility below.</p>
         </div>
+        <HighPerformanceExclusionsList />
       </section>
 
-      {/* ── 9. FAQ — late-stage objection handling ── */}
+      {/* ── 9. FAQ — with Panda in the middle ── */}
       <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
-        <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
-          FAQ
-          <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
+        {/* Header */}
+        <div className="mb-12">
+          <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
+            FAQ
+            <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
+          </div>
+          <h2 className="font-bold tracking-tight leading-tight mb-3 text-foreground" style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}>
+            Your questions answered
+          </h2>
+          <p className="text-base text-muted-foreground font-light max-w-xl">
+            Everything you need to know about your cover and how it works.
+          </p>
         </div>
-        <h2
-          className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-          style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
-        >
-          Your questions answered
-        </h2>
-        <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
-          Everything you need to know about your cover and how it works.
-        </p>
 
         {/* FAQ Grid with Panda in Middle */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-12 items-stretch">
@@ -731,11 +585,7 @@ const Protected = () => {
           <div>
             <Accordion type="single" collapsible className="space-y-3">
               {faqs.slice(0, 3).map((f, i) => (
-                <AccordionItem
-                  key={i}
-                  value={`faq-${i}`}
-                  className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
-                >
+                <AccordionItem key={i} value={`faq-${i}`} className="bg-white border border-border rounded-xl overflow-hidden shadow-sm">
                   <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white bg-brand-orange hover:bg-brand-orange/90 hover:no-underline [&>svg]:text-white">
                     {f.q}
                   </AccordionTrigger>
@@ -749,23 +599,14 @@ const Protected = () => {
 
           {/* Middle column - Panda mascot (100% bigger, centered vertically) */}
           <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-center py-8">
-            <img
-              src={pandaThumbsUp}
-              alt="Buyawarranty panda mascot giving a thumbs up"
-              className="w-96 xl:w-[28rem] h-auto object-contain drop-shadow-2xl"
-              loading="lazy"
-            />
+            <img src={pandaThumbsUp} alt="Buyawarranty panda mascot" className="w-96 xl:w-[28rem] h-auto object-contain drop-shadow-2xl" loading="lazy" />
           </div>
 
           {/* Right column - Last 3 FAQs */}
           <div>
             <Accordion type="single" collapsible className="space-y-3">
               {faqs.slice(3).map((f, i) => (
-                <AccordionItem
-                  key={i + 3}
-                  value={`faq-${i + 3}`}
-                  className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
-                >
+                <AccordionItem key={i + 3} value={`faq-${i + 3}`} className="bg-white border border-border rounded-xl overflow-hidden shadow-sm">
                   <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white bg-brand-orange hover:bg-brand-orange/90 hover:no-underline [&>svg]:text-white">
                     {f.q}
                   </AccordionTrigger>
@@ -778,14 +619,9 @@ const Protected = () => {
           </div>
         </div>
 
-        {/* Document downloads — secondary trust signal alongside FAQ */}
+        {/* Document downloads */}
         <div className="mt-10 pt-8 border-t border-border">
-          <h3
-            className="font-bold text-foreground mb-2 text-lg"
-           
-          >
-            Your cover, made crystal clear
-          </h3>
+          <h3 className="font-bold text-foreground mb-2 text-lg">Your cover, made crystal clear</h3>
           <p className="text-sm text-muted-foreground mb-5">Download your warranty and terms documents.</p>
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="flex items-center justify-between bg-muted/40 border border-border rounded-xl px-5 py-4">
@@ -797,15 +633,10 @@ const Protected = () => {
               </div>
               {platinumDocUrl ? (
                 <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-brand-orange text-brand-orange hover:bg-brand-orange/5 text-xs">
-                    PDF
-                  </Button>
+                  <Button size="sm" variant="outline" className="border-brand-orange text-brand-orange hover:bg-brand-orange/5 text-xs">PDF</Button>
                 </a>
-              ) : (
-                <span className="text-muted-foreground text-xs">Loading...</span>
-              )}
+              ) : <span className="text-muted-foreground text-xs">Loading...</span>}
             </div>
-
             <div className="flex items-center justify-between bg-muted/40 border border-border rounded-xl px-5 py-4">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -815,22 +646,15 @@ const Protected = () => {
               </div>
               {termsDocUrl ? (
                 <a href={termsDocUrl} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50 text-xs">
-                    PDF
-                  </Button>
+                  <Button size="sm" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50 text-xs">PDF</Button>
                 </a>
-              ) : (
-                <span className="text-muted-foreground text-xs">Loading...</span>
-              )}
-            </div>
+              ) : <span className="text-muted-foreground text-xs">Loading...</span>}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Help Me Choose modal */}
       <HelpMeChooseModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
-
       <ScrollToTopButton />
     </div>
   );
