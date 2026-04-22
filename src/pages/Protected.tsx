@@ -826,20 +826,9 @@ const Protected = () => {
               )}
             </div>
           </div>
-          </div>
-          </div>
-
-          {/* Panda mascot - desktop side placement */}
-          <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-start lg:pt-20">
-            <img
-              src={pandaThumbsUp}
-              alt="Buyawarranty panda mascot giving a thumbs up"
-              className="w-48 xl:w-56 h-auto object-contain drop-shadow-xl sticky top-24"
-              loading="lazy"
-            />
-          </div>
         </div>
-      </section>
+
+        {/* Document downloads — secondary trust signal alongside FAQ */}
 
 
       {/* Help Me Choose modal */}
