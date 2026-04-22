@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { validateCheckoutPrice } from "../_shared/price-floor.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +34,48 @@ serve(async (req) => {
           );
         }
       }
+    }
+
+    // 🔒 SERVER-SIDE PRICE FLOOR — validate every item against DB plan price.
+    // Blocks attackers tampering with item.totalPrice (e.g. setting it to £1).
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    for (const item of items) {
+      const submittedPrice = Number(item.totalPrice);
+      const floor = await validateCheckoutPrice(
+        {
+          planId: item.planName || item.planId,
+          paymentType: item.paymentType,
+          voluntaryExcess: item.voluntaryExcess,
+          finalAmount: submittedPrice,
+        },
+        supabaseService,
+      );
+      if (!floor.ok) {
+        console.error("[MULTI-WARRANTY] PRICE MANIPULATION BLOCKED", {
+          regNumber: item.vehicleData?.regNumber,
+          submittedPrice,
+          reason: floor.reason,
+          customerEmail: customerData?.email,
+        });
+        return new Response(
+          JSON.stringify({ error: floor.reason || "Invalid price detected on one of the warranties. Please refresh and try again." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Cross-check: sum of validated items should match submitted finalAmount within tolerance
+    const itemsSum = items.reduce((s: number, it: any) => s + Number(it.totalPrice || 0), 0);
+    if (finalAmount && Math.abs(Number(finalAmount) - itemsSum) > Math.max(5, itemsSum * 0.3)) {
+      console.error("[MULTI-WARRANTY] finalAmount mismatch with items sum", { finalAmount, itemsSum });
+      return new Response(
+        JSON.stringify({ error: "Order total does not match item prices. Please refresh and try again." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Create Supabase client
