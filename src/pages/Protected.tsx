@@ -121,6 +121,19 @@ const Protected = () => {
     fetchDocuments();
   }, []);
 
+  // Re-initialize Trustpilot widget on mount (SPA navigation safe)
+  useEffect(() => {
+    const tryLoad = () => {
+      if ((window as any).Trustpilot) {
+        const widgets = document.querySelectorAll('.trustpilot-widget');
+        widgets.forEach((w) => (window as any).Trustpilot.loadFromElement(w, true));
+      } else {
+        setTimeout(tryLoad, 300);
+      }
+    };
+    tryLoad();
+  }, []);
+
   const scrollToCoverage = () => {
     coverageRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
