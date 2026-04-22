@@ -76,6 +76,7 @@ serve(async (req) => {
         JSON.stringify({ error: "Order total does not match item prices. Please refresh and try again." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
 
     // Create Supabase client
     const supabaseClient = createClient(
