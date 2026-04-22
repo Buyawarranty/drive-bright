@@ -185,11 +185,11 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                   </TableCell>
 
                   {/* Customer Message */}
-                  <TableCell className="py-2">
+                  <TableCell className="py-2 align-top">
                     {claim.message ? (
-                      <span className="text-xs text-muted-foreground block truncate max-w-[180px]" title={claim.message}>
+                      <div className="text-xs text-foreground whitespace-pre-line max-w-[280px] leading-relaxed" title={claim.message}>
                         {claim.message}
-                      </span>
+                      </div>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
