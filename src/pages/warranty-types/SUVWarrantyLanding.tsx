@@ -25,8 +25,7 @@ const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
 
 // Assets
-import bmwLogo from '@/assets/logos/bmw.webp';
-import bmwHeroImage from '@/assets/bmw-used-car-extended-warranty.png';
+import suvHeroImage from '@/assets/car-warranty-uk-suv-warranty.png';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
@@ -35,11 +34,11 @@ import pandaMascot from '@/assets/warranty-panda-mascot.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
-import bmwWhyChooseUs from '@/assets/bmw-extended-used-car-warranty.webp';
-import bmwHighMileage from '@/assets/bmw-i3-warranty.webp';
+import suvWhyChooseUs from '@/assets/orange-suv-with-logo.png';
+import suvHighMileage from '@/assets/land-rover-range-rover-sport-warranty.png';
 
 // BMW Models covered (grouped by category)
-const bmwModelCategories = {
+const suvModelCategories = {
   'Series': {
     '1 Series': ['F20', 'F21', 'F40', 'F52'],
     '2 Series': ['F22', 'F23', 'F44', 'F45', 'F46', 'G42'],
@@ -69,7 +68,7 @@ const bmwModelCategories = {
   },
 };
 
-type ModelCategory = keyof typeof bmwModelCategories;
+type ModelCategory = keyof typeof suvModelCategories;
 
 // Coverage components data
 const coverageCategories = [
@@ -154,7 +153,7 @@ const coverageCategories = [
 ];
 
 // FAQs for schema
-const bmwFAQs = [
+const suvFAQs = [
   {
     question: "Is a BMW extended warranty worth it in the UK?",
     answer: "Yes, BMW repairs are among the most expensive in the UK due to advanced electronics and complex powertrains. Our extended warranty protects key components like the engine, gearbox, fuel injectors, and ECUs, preventing sudden repair bills with easy claims and fast payouts."
@@ -221,7 +220,7 @@ const testimonials = [
   }
 ];
 
-const BMWWarrantyLanding: React.FC = () => {
+const SUVWarrantyLanding: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -239,10 +238,10 @@ const BMWWarrantyLanding: React.FC = () => {
   // Filter models based on search query
   const filteredModels = useMemo(() => {
     const allModels = activeModelFilter === 'All'
-      ? Object.entries(bmwModelCategories).flatMap(([category, models]) => 
+      ? Object.entries(suvModelCategories).flatMap(([category, models]) => 
           Object.entries(models).map(([model, generations]) => ({ model, generations, category }))
         )
-      : Object.entries(bmwModelCategories[activeModelFilter]).map(([model, generations]) => ({ 
+      : Object.entries(suvModelCategories[activeModelFilter]).map(([model, generations]) => ({ 
           model, 
           generations, 
           category: activeModelFilter 
@@ -284,7 +283,7 @@ const BMWWarrantyLanding: React.FC = () => {
   };
 
   const handleGetQuote = async () => {
-    trackButtonClick('bmw_warranty_get_quote', { brand: 'BMW' });
+    trackButtonClick('suv_warranty_get_quote', { brand: 'SUV' });
     
     if (!regNumber.trim()) {
       toast({
@@ -336,7 +335,7 @@ const BMWWarrantyLanding: React.FC = () => {
         const vehicleData = {
           regNumber: regNumber,
           mileage: mileage,
-          make: data.make || 'BMW',
+          make: data.make || 'SUV',
           model: data.model,
           fuelType: data.fuelType,
           transmission: data.transmission,
@@ -513,7 +512,7 @@ const BMWWarrantyLanding: React.FC = () => {
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": bmwFAQs.map(faq => ({
+    "mainEntity": suvFAQs.map(faq => ({
       "@type": "Question",
       "name": faq.question,
       "acceptedAnswer": {
@@ -759,7 +758,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 {/* Hero Image */}
                 <div className="relative">
                   <OptimizedImage
-                    src={bmwHeroImage}
+                    src={suvHeroImage}
                     alt="BMW extended warranty UK - Professional BMW warranty coverage with Miles the Panda"
                     className="w-full h-auto"
                     priority={true}
@@ -1145,7 +1144,7 @@ const BMWWarrantyLanding: React.FC = () => {
               {/* Mascot - Miles the Panda with BMW */}
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
-                  src={bmwWhyChooseUs}
+                  src={suvWhyChooseUs}
                   alt="Miles the Panda mechanic with BMW - Why BMW owners choose us for extended warranty"
                   className="w-[400px] h-auto object-contain"
                   width={400}
@@ -1226,7 +1225,7 @@ const BMWWarrantyLanding: React.FC = () => {
               {/* Image on LEFT side */}
               <div className="flex justify-center">
                 <OptimizedImage 
-                  src={bmwHighMileage}
+                  src={suvHighMileage}
                   alt="BMW i3 with BuyAWarranty branding - High mileage BMW warranty coverage"
                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
                   width={448}
@@ -1396,4 +1395,4 @@ const BMWWarrantyLanding: React.FC = () => {
   );
 };
 
-export default BMWWarrantyLanding;
+export default SUVWarrantyLanding;
