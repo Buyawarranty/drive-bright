@@ -76,9 +76,9 @@ function getVehicleAdjustment(customer: CustomerRecord, durationYears: number): 
 
   // Premium brand surcharge (Land Rover, Jaguar, Porsche, Tesla)
   if (make === 'land rover' || make.startsWith('jaguar') || make === 'porsche' || make === 'tesla') {
-    if (durationYears === 1) adjustment += 300;
-    else if (durationYears === 2) adjustment += 500;
-    else if (durationYears === 3) adjustment += 700;
+    if (durationYears === 1) adjustment += 500;
+    else if (durationYears === 2) adjustment += 700;
+    else if (durationYears === 3) adjustment += 900;
   }
 
   // Mileage and age surcharges (non-stacking, mileage takes precedence)
