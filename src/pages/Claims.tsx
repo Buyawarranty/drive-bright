@@ -540,44 +540,32 @@ Additional Information: ${formData.additionalInfo}
                           <h3 className="text-xl font-bold text-gray-900">Current Mileage</h3>
                         </div>
                         <div>
-                          <Label htmlFor="mileagePreset" className="text-gray-700 font-medium text-sm mb-2 block">
+                          <Label htmlFor="currentMileage" className="text-gray-700 font-medium text-sm mb-2 block">
                             Enter current approximate mileage
                           </Label>
-                          <select
-                            id="mileagePreset"
-                            value={[10000,25000,50000,75000,100000,125000,150000,175000,200000].includes(formData.currentMileage) ? String(formData.currentMileage) : 'custom'}
-                            onChange={(e) => {
-                              if (e.target.value !== 'custom') {
-                                setFormData({ ...formData, currentMileage: parseInt(e.target.value) });
-                              }
-                            }}
-                            className="mt-1.5 h-11 w-full rounded-md border border-gray-300 bg-white px-3 focus:border-orange-500 focus:ring-orange-500 focus:outline-none mb-3"
-                          >
-                            <option value="10000">Up to 10,000 miles</option>
-                            <option value="25000">10,000 – 25,000 miles</option>
-                            <option value="50000">25,000 – 50,000 miles</option>
-                            <option value="75000">50,000 – 75,000 miles</option>
-                            <option value="100000">75,000 – 100,000 miles</option>
-                            <option value="125000">100,000 – 125,000 miles</option>
-                            <option value="150000">125,000 – 150,000 miles</option>
-                            <option value="175000">150,000 – 175,000 miles</option>
-                            <option value="200000">175,000 – 200,000 miles</option>
-                            <option value="custom">Enter exact mileage below</option>
-                          </select>
                           <Input
                             id="currentMileage"
                             name="currentMileage"
-                            type="number"
-                            placeholder="Or enter exact mileage (e.g., 52,340)"
-                            value={formData.currentMileage}
+                            type="text"
+                            inputMode="numeric"
+                            list="mileage-options"
+                            placeholder="e.g. 45,000"
+                            value={formData.currentMileage ? formData.currentMileage.toLocaleString('en-GB') : ''}
                             onChange={(e) => {
-                              const value = parseInt(e.target.value) || 0;
+                              const digits = e.target.value.replace(/[^0-9]/g, '');
+                              const value = digits ? parseInt(digits, 10) : 0;
                               setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
                             }}
-                            min={0}
-                            max={200000}
                             className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
                           />
+                          <datalist id="mileage-options">
+                            {Array.from({ length: 200 }, (_, i) => (i + 1) * 1000).map((m) => (
+                              <option key={m} value={m.toLocaleString('en-GB')} />
+                            ))}
+                          </datalist>
+                          <p className="mt-1.5 text-xs text-gray-500">
+                            Type your mileage or pick a value from the list (1,000-mile increments).
+                          </p>
                         </div>
                       </div>
 
