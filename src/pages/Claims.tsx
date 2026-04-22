@@ -467,9 +467,9 @@ Additional Information: ${formData.additionalInfo}
                               value={formData.email}
                               onChange={handleInputChange}
                               required
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
-                            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                            {errors.email && <p className="mt-1 text-sm text-[#FF385C]">{errors.email}</p>}
                           </div>
 
                           <div>
