@@ -511,7 +511,7 @@ Additional Information: ${formData.additionalInfo}
                                   }
                                 }}
                                 required
-                                className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                                className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                               />
                               {isLookingUpVehicle && (
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
@@ -519,7 +519,7 @@ Additional Information: ${formData.additionalInfo}
                                 </div>
                               )}
                             </div>
-                            {errors.vehicleReg && <p className="mt-1 text-sm text-red-600">{errors.vehicleReg}</p>}
+                            {errors.vehicleReg && <p className="mt-1 text-sm text-[#FF385C]">{errors.vehicleReg}</p>}
                             {vehicleDetails && (vehicleDetails.make || vehicleDetails.model) && (
                               <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
                                 <p className="text-sm text-green-700 font-medium">
