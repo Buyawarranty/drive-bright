@@ -326,11 +326,11 @@ const Protected = () => {
             All major mechanical and electrical parts needed to keep your car running, covered when they fail.
           </p>
 
-          <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {coverageCards.map((c, i) => (
               <div
                 key={i}
-                className="group bg-muted/40 hover:bg-muted/80 p-7 transition-colors relative overflow-hidden"
+                className="group bg-white hover:bg-orange-50/40 border border-border rounded-2xl p-7 transition-colors relative overflow-hidden shadow-sm hover:shadow-md"
               >
                 <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center text-xl mb-4">
                   {c.icon}
