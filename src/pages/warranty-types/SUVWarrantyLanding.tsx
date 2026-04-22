@@ -37,7 +37,7 @@ import pandaGarage from '@/assets/panda-garage-service.png';
 import suvWhyChooseUs from '@/assets/orange-suv-with-logo.png';
 import suvHighMileage from '@/assets/land-rover-range-rover-sport-warranty.png';
 
-// BMW Models covered (grouped by category)
+// Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 const suvModelCategories = {
   'Compact SUVs': {
@@ -913,7 +913,7 @@ const SUVWarrantyLanding: React.FC = () => {
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
 
-        {/* What BMW Repairs Actually Cost */}
+        {/* What SUV & 4x4 Repairs Actually Cost */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
@@ -993,7 +993,7 @@ const SUVWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* BMW Models Section - Premium Design */}
+        {/* SUV Models Section - Premium Design */}
         <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Section Header */}
@@ -1185,7 +1185,7 @@ const SUVWarrantyLanding: React.FC = () => {
                 ))}
               </div>
               
-              {/* Mascot - Miles the Panda with BMW */}
+              {/* Mascot - Miles the Panda */}
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
                   src={suvWhyChooseUs}
@@ -1286,7 +1286,7 @@ const SUVWarrantyLanding: React.FC = () => {
                   <span className="text-brand-orange">You're Covered</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">
-                  Once you have your BMW warranty, drive with complete peace of mind. If something 
+                  Once you have your SUV warranty, drive with complete peace of mind. If something 
                   goes wrong, simply call our claims team and we'll take care of everything.
                   We want to get you back on the road as soon as possible.
                 </p>
@@ -1322,15 +1322,15 @@ const SUVWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Additional BMW Cover Options Section */}
+        {/* Additional SUV Cover Options Section */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Additional BMW Cover Options
+                Additional SUV Cover Options
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-                Enhance your BMW warranty with these optional extras
+                Enhance your SUV warranty with these optional extras
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
@@ -1339,7 +1339,7 @@ const SUVWarrantyLanding: React.FC = () => {
                   <Car className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                 </div>
                 <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Courtesy Car</h3>
-                <p className="text-sm md:text-base text-gray-600">Keep moving while your BMW is being repaired</p>
+                <p className="text-sm md:text-base text-gray-600">Keep moving while your SUV is being repaired</p>
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
@@ -1368,12 +1368,12 @@ const SUVWarrantyLanding: React.FC = () => {
                   Nationwide UK Coverage
                 </h2>
                 <p className="text-base md:text-lg text-white mb-4 md:mb-6">
-                  Your BMW is covered wherever you drive in the United Kingdom. Our network of approved garages spans England, Scotland, Wales, and Northern Ireland.
+                  Your SUV or 4x4 is covered wherever you drive in the United Kingdom. Our network of approved garages spans England, Scotland, Wales and Northern Ireland.
                 </p>
                 <ul className="space-y-2 md:space-y-3 text-left max-w-md mx-auto md:mx-0">
                   {[
                     'Use any VAT-registered garage',
-                    'BMW dealer or Specialist garage',
+                    'Main dealer or independent SUV specialist',
                     'Recovery to nearest garage',
                     'Claims handled by our UK team',
                   ].map((item, index) => (
@@ -1405,10 +1405,10 @@ const SUVWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                What BMW Owners Say
+                What SUV & 4x4 Owners Say
               </h2>
               <p className="text-base md:text-lg text-gray-600">
-                Real reviews from real BMW drivers
+                Real reviews from real SUV and 4x4 drivers
               </p>
             </div>
 
