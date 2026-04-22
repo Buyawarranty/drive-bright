@@ -350,7 +350,7 @@ Additional Information: ${formData.additionalInfo}
             {/* What You'll Need */}
             <div className="mb-12">
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">What You'll Need</h2>
-              <div className="bg-white rounded-xl p-8 shadow-lg border border-orange-100">
+              <div className="bg-white rounded-xl p-5 sm:p-8 shadow-lg border border-orange-100">
                 <ul className="space-y-4 text-left text-gray-700">
                   <li className="flex items-start gap-3">
                     <span className="text-orange-500 font-bold mt-1">•</span>
