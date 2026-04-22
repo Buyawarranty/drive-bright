@@ -278,14 +278,6 @@ const Protected = () => {
               </button>
             </div>
           </div>
-          <div className="order-1 md:order-2 flex justify-center md:justify-end">
-            <img
-              src={pandaThumbsUp}
-              alt="Buyawarranty panda mascot giving a thumbs up"
-              className="w-44 sm:w-56 md:w-72 lg:w-80 h-auto object-contain drop-shadow-xl"
-              loading="eager"
-            />
-          </div>
         </div>
       </section>
 
