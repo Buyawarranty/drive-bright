@@ -376,6 +376,20 @@ const WarrantyTypes: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {/* SUV & 4x4 Card */}
+              <Link
+                to="/warranty-types/suv-warranty"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-orange-100">
+                  <Car className="h-8 w-8 text-orange-500" />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">SUV & 4x4</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
               {/* BMW Brand Card */}
               <Link 
                 to="/warranty-types/bmw-warranty"

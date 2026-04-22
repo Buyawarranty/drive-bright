@@ -91,6 +91,7 @@ const CarExtendedWarranty = lazy(() => import("./pages/CarExtendedWarranty"));
 const WarrantyTypes = lazy(() => import("./pages/WarrantyTypes"));
 const DiscountsOffers = lazy(() => import("./pages/DiscountsOffers"));
 const BMWWarrantyLanding = lazy(() => import("./pages/warranty-types/BMWWarrantyLanding"));
+const SUVWarrantyLanding = lazy(() => import("./pages/warranty-types/SUVWarrantyLanding"));
 const MercedesWarrantyLanding = lazy(() => import("./pages/warranty-types/MercedesWarrantyLanding"));
 const VanWarrantyLanding = lazy(() => import("./pages/warranty-types/VanWarrantyLanding"));
 const MotorbikeWarrantyLanding = lazy(() => import("./pages/warranty-types/MotorbikeWarrantyLanding"));
@@ -280,6 +281,8 @@ const App = () => {
                     <Route path="/warranty-types/" element={<WarrantyTypes />} />
                     <Route path="/warranty-types/bmw-warranty" element={<BMWWarrantyLanding />} />
                     <Route path="/warranty-types/bmw-warranty/" element={<BMWWarrantyLanding />} />
+                    <Route path="/warranty-types/suv-warranty" element={<SUVWarrantyLanding />} />
+                    <Route path="/warranty-types/suv-warranty/" element={<SUVWarrantyLanding />} />
                     <Route path="/warranty-types/mercedes-warranty" element={<MercedesWarrantyLanding />} />
                     <Route path="/warranty-types/mercedes-warranty/" element={<MercedesWarrantyLanding />} />
                     <Route path="/warranty-types/vans-warranty" element={<VanWarrantyLanding />} />
