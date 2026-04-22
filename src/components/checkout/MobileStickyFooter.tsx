@@ -153,7 +153,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           <span>·</span>
           <span className="flex items-center gap-1">
             <Shield className="w-3 h-3 text-[#0BA360]" />
-            14-day refund
+            Easy Claims
           </span>
         </div>
       </div>
