@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusionsList';
 import HelpMeChooseModal from '@/components/cover-page/HelpMeChooseModal';
+import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 
 // ----- Data for the new design sections -----
 const coverageCards = [
@@ -278,10 +279,15 @@ const Protected = () => {
 
       {/* ── 2. TRUST BAR ── */}
       <div className="flex justify-center gap-8 flex-wrap px-6 py-7 border-y border-border">
-        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-          <span className="text-lg">⭐</span>
+        <a
+          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:opacity-80 transition-opacity"
+        >
+          <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4 w-auto" />
           <span><strong className="text-foreground font-medium">4.8/5</strong> rated on Trustpilot</span>
-        </div>
+        </a>
         <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
           <span className="text-lg">🔧</span>
           <span><strong className="text-foreground font-medium">Approved garages</strong> across the UK</span>
