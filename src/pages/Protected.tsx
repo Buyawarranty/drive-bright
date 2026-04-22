@@ -711,9 +711,6 @@ const Protected = () => {
 
       {/* ── 9. FAQ — late-stage objection handling ── */}
       <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-start">
-          {/* FAQ Content - Left Column */}
-          <div className="max-w-4xl">
         <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
           FAQ
           <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
