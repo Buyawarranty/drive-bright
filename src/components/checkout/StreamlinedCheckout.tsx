@@ -2100,12 +2100,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current mileage</Label>
-                {mileagePreFilled && motMileage && (
+                {mileagePreFilled && mileagePrefillSource === 'mot' && motMileage && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#E6F4EA] text-[#1B7A3D] text-xs font-medium">
                     Pre-filled from MOT
                   </span>
+                )}
+                {mileagePreFilled && mileagePrefillSource === 'session' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#EEF4FF] text-[#1E40AF] text-xs font-medium">
+                    Pre-filled from your last entry
+                  </span>
+                )}
+                {mileagePreFilled && customerData.mileage && (
+                  <button
+                    type="button"
+                    onClick={handleClearMileage}
+                    className="text-xs font-medium text-muted-foreground hover:text-foreground underline underline-offset-2 ml-auto"
+                  >
+                    Clear & adjust
+                  </button>
                 )}
               </div>
               
