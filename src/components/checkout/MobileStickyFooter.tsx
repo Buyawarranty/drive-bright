@@ -75,10 +75,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               {isMonthly ? (
                 <>
                   <span className="text-xl font-bold text-[#FF6B00] leading-tight">
-                    {pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day over term
+                    £{monthlyPrice}/mo
                   </span>
                   <span className="text-[11px] text-gray-600 leading-tight">
-                    £{monthlyPrice}/mo · 12 payments · Covers {months} months
+                    {pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day · 12 payments · Covers {months === 12 ? '1 year' : months === 24 ? '2 years' : months === 36 ? '3 years' : `${months} months`}
                   </span>
                 </>
               ) : (
@@ -153,7 +153,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           <span>·</span>
           <span className="flex items-center gap-1">
             <Shield className="w-3 h-3 text-[#0BA360]" />
-            14-day refund
+            Easy Claims
           </span>
         </div>
       </div>
