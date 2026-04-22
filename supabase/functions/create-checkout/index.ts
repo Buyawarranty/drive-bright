@@ -114,51 +114,52 @@ serve(async (req) => {
       }
     };
 
-    // Calculate the server-side expected base price
+    // Calculate the server-side expected base price (used as a sanity reference)
     const periodData = pricingTable[paymentType as keyof typeof pricingTable] || pricingTable.yearly;
     const excessData = periodData[voluntaryExcess as keyof typeof periodData] || periodData[0];
     const serverBasePrice = excessData[planType as keyof typeof excessData] || excessData.basic;
 
-    // Set minimum allowed price: the base price minus maximum possible discounts
-    // Allow up to 30% discount (covers 5% Stripe discount + discount codes + add-on adjustments)
-    const minimumAllowedPrice = Math.floor(serverBasePrice * 0.50);
-    // Absolute floor: no warranty can be less than £50
-    const absoluteMinimumPrice = 50;
-
     let totalAmount = finalAmount || serverBasePrice;
 
-    // CRITICAL: Server-side price validation to prevent manipulation
-    if (totalAmount < absoluteMinimumPrice) {
-      logStep("PRICE MANIPULATION DETECTED", { 
-        submittedAmount: totalAmount, 
-        serverBasePrice, 
-        minimumAllowed: absoluteMinimumPrice,
+    // 🔒 SHARED SERVER-SIDE PRICE FLOOR — blocks £1 / tampered finalAmount values
+    // Cross-checks against special_vehicle_plans in DB and an absolute £25 floor.
+    const floorCheck = await validateCheckoutPrice(
+      { planId: planName || planType, paymentType, voluntaryExcess, finalAmount: Number(totalAmount) },
+      supabaseService,
+    );
+    if (!floorCheck.ok) {
+      logStep("PRICE MANIPULATION BLOCKED", {
+        submittedAmount: totalAmount,
+        serverBasePrice,
+        reason: floorCheck.reason,
         customerEmail,
         planType,
-        paymentType
+        paymentType,
       });
       return new Response(
-        JSON.stringify({ error: `Invalid price detected. The minimum price for this plan is £${absoluteMinimumPrice}. Please try again or contact support.` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: floorCheck.reason || "Invalid price detected. Please refresh and try again." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    if (totalAmount < minimumAllowedPrice) {
-      logStep("SUSPICIOUS PRICE - below expected range", { 
-        submittedAmount: totalAmount, 
-        serverBasePrice, 
-        minimumAllowed: minimumAllowedPrice,
+    // Belt-and-braces: also block anything below 50% of the hardcoded reference
+    const hardcodedFloor = Math.floor(serverBasePrice * 0.5);
+    if (totalAmount < hardcodedFloor) {
+      logStep("SUSPICIOUS PRICE - below hardcoded reference", {
+        submittedAmount: totalAmount,
+        serverBasePrice,
+        hardcodedFloor,
         customerEmail,
         planType,
-        paymentType
+        paymentType,
       });
       return new Response(
         JSON.stringify({ error: `The submitted price (£${totalAmount}) is significantly below the expected price (£${serverBasePrice}). Please refresh the page and try again.` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    logStep("Price validation passed", { totalAmount, serverBasePrice, minimumAllowed: minimumAllowedPrice });
+    logStep("Price validation passed", { totalAmount, serverBasePrice, floorCheck });
     
     // Convert to pence for Stripe
     const amount = totalAmount * 100;
