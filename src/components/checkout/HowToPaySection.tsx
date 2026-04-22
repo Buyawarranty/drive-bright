@@ -35,6 +35,8 @@ interface HowToPaySectionProps {
   totalDiscountAmount: number;
   // Hide CTA when embedded checkout is showing
   hidePayButton?: boolean;
+  // Hide the inline Trustpilot reviews slider (e.g. when shown elsewhere)
+  hideTrustpilot?: boolean;
 }
 
 const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAccepted: (v: boolean) => void }) => {
