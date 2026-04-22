@@ -247,7 +247,7 @@ const Protected = () => {
 
       {/* ── 1. HERO ── */}
       <section className="relative px-4 sm:px-6 pt-10 pb-10 md:pt-16 md:pb-12 overflow-hidden border-b border-gray-200">
-        <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 md:gap-12 items-center">
+        <div className="relative z-10 max-w-4xl mx-auto px-4">
           <div className="text-center md:text-left order-2 md:order-1">
             <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
@@ -277,14 +277,6 @@ const Protected = () => {
                 See what's covered ↓
               </button>
             </div>
-          </div>
-          <div className="order-1 md:order-2 flex justify-center md:justify-end">
-            <img
-              src={pandaThumbsUp}
-              alt="Buyawarranty panda mascot giving a thumbs up"
-              className="w-44 sm:w-56 md:w-72 lg:w-80 h-auto object-contain drop-shadow-xl"
-              loading="eager"
-            />
           </div>
         </div>
       </section>
@@ -718,7 +710,10 @@ const Protected = () => {
       </section>
 
       {/* ── 9. FAQ — late-stage objection handling ── */}
-      <section className="max-w-4xl mx-auto px-6 py-12 border-b border-gray-200">
+      <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-start">
+          {/* FAQ Content - Left Column */}
+          <div className="max-w-4xl">
         <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
           FAQ
           <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
@@ -795,6 +790,18 @@ const Protected = () => {
                 <span className="text-muted-foreground text-xs">Loading...</span>
               )}
             </div>
+          </div>
+          </div>
+          </div>
+
+          {/* Panda mascot - desktop side placement */}
+          <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-start lg:pt-20">
+            <img
+              src={pandaThumbsUp}
+              alt="Buyawarranty panda mascot giving a thumbs up"
+              className="w-48 xl:w-56 h-auto object-contain drop-shadow-xl sticky top-24"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
