@@ -791,7 +791,6 @@ const Protected = () => {
               )}
             </div>
           </div>
-          </div>
 
           {/* Panda mascot - desktop side placement */}
           <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-start lg:pt-20">
