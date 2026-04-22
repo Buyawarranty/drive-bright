@@ -455,8 +455,8 @@ const SUVWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": "BMW Extended Warranty UK",
-    "description": "Comprehensive extended warranty coverage for all BMW models including 1 Series, 2 Series, 3 Series, 4 Series, 5 Series, 6 Series, 7 Series, 8 Series, X1, X2, X3, X4, X5, X6, X7, i3, i4, i7, i8, iX, and iX3. Covers engine, gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
+    "name": "SUV & 4x4 Extended Warranty UK",
+    "description": "Comprehensive extended warranty for popular UK SUVs and 4x4s from 2011 to 2024 — Nissan Qashqai, Ford Kuga, Hyundai Tucson, Kia Sportage, VW Tiguan, Range Rover Sport, BMW X5, Audi Q5, Mercedes GLC, Volvo XC60, Jeep Wrangler, Land Rover Discovery and many more. Covers engine, gearbox, 4x4 transfer box, electrics and hybrid/EV components. Nationwide UK coverage with any VAT-registered garage.",
     "brand": {
       "@type": "Brand",
       "name": "Buy A Warranty"
@@ -480,7 +480,7 @@ const SUVWarrantyLanding: React.FC = () => {
       "price": "29",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
-      "url": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
+      "url": "https://buyawarranty.co.uk/warranty-types/suv-warranty/",
       "seller": {
         "@type": "Organization",
         "name": "Buy A Warranty"
@@ -518,15 +518,15 @@ const SUVWarrantyLanding: React.FC = () => {
     "category": "Vehicle Extended Warranty",
     "audience": {
       "@type": "Audience",
-      "audienceType": "BMW vehicle owners in the United Kingdom"
+      "audienceType": "SUV and 4x4 owners in the United Kingdom"
     }
   };
 
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "name": "BMW Extended Warranty Service",
-    "alternateName": "BMW Used Car Warranty",
+    "name": "SUV & 4x4 Extended Warranty Service",
+    "alternateName": "SUV Used Car Warranty",
     "provider": {
       "@type": "LocalBusiness",
       "name": "Buy A Warranty",
@@ -542,31 +542,31 @@ const SUVWarrantyLanding: React.FC = () => {
       "@type": "Country",
       "name": "United Kingdom"
     },
-    "description": "Extended warranty coverage for all BMW models including 1 Series, 3 Series, 5 Series, X Series, i Series and M models. Covers engine, transmission, electrical systems, turbocharger, and more. Nationwide UK coverage with any VAT-registered garage. 24/7 roadside assistance included.",
+    "description": "Extended warranty for SUV and 4x4 owners in the UK. Cover for compact SUVs, mid-size SUVs, large 7-seaters, premium SUVs, off-road 4x4s and electric/hybrid SUVs. Engine, transmission, transfer box, electrics and EV components included. Nationwide UK coverage. 24/7 roadside assistance included.",
     "serviceType": "Vehicle Extended Warranty",
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
-      "name": "BMW Warranty Plans",
+      "name": "SUV Warranty Plans",
       "itemListElement": [
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "1 Year BMW Warranty"
+            "name": "1 Year SUV Warranty"
           }
         },
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "2 Year BMW Warranty"
+            "name": "2 Year SUV Warranty"
           }
         },
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "3 Year BMW Warranty"
+            "name": "3 Year SUV Warranty"
           }
         }
       ]
@@ -605,8 +605,8 @@ const SUVWarrantyLanding: React.FC = () => {
       {
         "@type": "ListItem",
         "position": 3,
-        "name": "BMW Extended Warranty",
-        "item": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/"
+        "name": "SUV Extended Warranty",
+        "item": "https://buyawarranty.co.uk/warranty-types/suv-warranty/"
       }
     ]
   };
@@ -636,9 +636,9 @@ const SUVWarrantyLanding: React.FC = () => {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "BMW Extended Warranty UK - Get Instant Quote",
-    "description": "Protect your BMW with comprehensive extended warranty cover. All models from 1 Series to X7 and i Series. Nationwide UK coverage, approved garages, unlimited claims. Get your instant quote in 60 seconds.",
-    "url": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
+    "name": "SUV & 4x4 Extended Warranty UK - Get Instant Quote",
+    "description": "Protect your SUV or 4x4 with comprehensive extended warranty cover. Popular SUV models 2011-2024, all bodystyles and drivetrains. Nationwide UK coverage, approved garages, unlimited claims. Get your instant quote in 60 seconds.",
+    "url": "https://buyawarranty.co.uk/warranty-types/suv-warranty/",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Buy A Warranty",
@@ -646,10 +646,10 @@ const SUVWarrantyLanding: React.FC = () => {
     },
     "about": {
       "@type": "Thing",
-      "name": "BMW Extended Warranty"
+      "name": "SUV Extended Warranty"
     },
     "mentions": [
-      { "@type": "Brand", "name": "BMW" },
+      { "@type": "Thing", "name": "SUV" }, { "@type": "Thing", "name": "4x4" },
       { "@type": "Thing", "name": "Extended Warranty" },
       { "@type": "Thing", "name": "Vehicle Protection" }
     ],
@@ -667,15 +667,15 @@ const SUVWarrantyLanding: React.FC = () => {
   const howToSchema = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    "name": "How to Get a BMW Extended Warranty Quote",
-    "description": "Get an instant BMW extended warranty quote in 60 seconds",
+    "name": "How to Get an SUV Extended Warranty Quote",
+    "description": "Get an instant SUV or 4x4 extended warranty quote in 60 seconds",
     "totalTime": "PT1M",
     "step": [
       {
         "@type": "HowToStep",
         "position": 1,
         "name": "Enter Registration",
-        "text": "Enter your BMW registration number to look up your vehicle details automatically"
+        "text": "Enter your SUV registration number to look up your vehicle details automatically"
       },
       {
         "@type": "HowToStep",
@@ -695,10 +695,10 @@ const SUVWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty</title>
-        <meta name="description" content="Secure your BMW with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
-        <meta name="keywords" content="BMW extended warranty, BMW used car warranty, BMW warranty UK, BMW warranty cost, BMW warranty quote, BMW 3 Series warranty, BMW X5 warranty, BMW i4 warranty, BMW X3 warranty, BMW 5 Series warranty, BMW electric warranty, BMW hybrid warranty, used BMW warranty, second hand BMW warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/bmw-warranty/" />
+        <title>SUV Extended Warranty UK | 4x4 Cover from £21/mo | BuyAWarranty</title>
+        <meta name="description" content="Protect your SUV or 4x4 with a comprehensive UK extended warranty. Cover for popular SUVs 2011-2024 — Qashqai, Kuga, Tucson, Sportage, Range Rover, X5, Q5 and more. Instant quote in 60 seconds." />
+        <meta name="keywords" content="SUV warranty, SUV extended warranty UK, 4x4 warranty, used SUV warranty, second hand SUV warranty, Nissan Qashqai warranty, Ford Kuga warranty, Hyundai Tucson warranty, Kia Sportage warranty, Range Rover warranty, Land Rover warranty, BMW X5 warranty, Audi Q5 warranty, Mercedes GLC warranty, Volvo XC60 warranty, Jeep Wrangler warranty, hybrid SUV warranty, electric SUV warranty, 4x4 extended warranty UK" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/suv-warranty/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
         <meta name="bingbot" content="index, follow" />
@@ -711,25 +711,25 @@ const SUVWarrantyLanding: React.FC = () => {
         <meta httpEquiv="content-language" content="en-GB" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
-        <meta property="og:description" content="Secure your BMW with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
-        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/bmw-warranty/" />
+        <meta property="og:title" content="SUV Extended Warranty UK | 4x4 Cover from £21/mo | BuyAWarranty" />
+        <meta property="og:description" content="Protect your SUV or 4x4 with a comprehensive UK extended warranty. Cover for popular SUVs 2011-2024 — Qashqai, Kuga, Tucson, Sportage, Range Rover, X5, Q5 and more. Instant quote in 60 seconds." />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/suv-warranty/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="BMW Extended Warranty UK - Buy A Warranty" />
+        <meta property="og:image:alt" content="SUV & 4x4 Extended Warranty UK - Buy A Warranty" />
         <meta property="og:site_name" content="Buy A Warranty" />
         <meta property="og:locale" content="en_GB" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty" />
-        <meta name="twitter:description" content="Secure your BMW with a reliable extended warranty from BuyA Warranty UK. Comprehensive cover for repairs and breakdowns. Get your instant quote now." />
+        <meta name="twitter:title" content="SUV Extended Warranty UK | 4x4 Cover from £21/mo | BuyAWarranty" />
+        <meta name="twitter:description" content="Protect your SUV or 4x4 with a comprehensive UK extended warranty. Cover for popular SUVs 2011-2024 — Qashqai, Kuga, Tucson, Sportage, Range Rover, X5, Q5 and more. Instant quote in 60 seconds." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         {/* AI Search Engine Optimization */}
-        <meta name="ai-content-declaration" content="This page provides information about BMW extended warranty services in the UK. Human-authored and fact-checked." />
+        <meta name="ai-content-declaration" content="This page provides information about SUV and 4x4 extended warranty services in the UK. Human-authored and fact-checked." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
@@ -757,7 +757,7 @@ const SUVWarrantyLanding: React.FC = () => {
 
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Protect your BMW</span>
+                  <span className="text-gray-900">Protect your SUV</span>
                   <br />
                   <span className="text-brand-orange">in 60 seconds.</span>
                 </h1>
@@ -811,7 +811,7 @@ const SUVWarrantyLanding: React.FC = () => {
 
                   {/* Trademark Disclaimer */}
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
-                    BMW is a registered trademark of BMW AG. We are an independent warranty provider.
+                    We are an independent warranty provider. All vehicle marques and model names are the trademarks of their respective owners.
                   </p>
                   <TrustCallbackPanel />
                 </div>
@@ -823,7 +823,7 @@ const SUVWarrantyLanding: React.FC = () => {
                 <div className="relative">
                   <OptimizedImage
                     src={suvHeroImage}
-                    alt="BMW extended warranty UK - Professional BMW warranty coverage with Miles the Panda"
+                    alt="SUV extended warranty UK — protection for popular SUVs and 4x4s from 2011 to 2024"
                     className="w-full h-auto"
                     priority={true}
                     width={651}
@@ -895,12 +895,12 @@ const SUVWarrantyLanding: React.FC = () => {
 
         {/* Warranty Benefits Section - Matching Homepage Design */}
         <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
-          <WarrantyBenefitsSection headline="The Ultimate BMW Warranty." />
+          <WarrantyBenefitsSection headline="The Ultimate SUV & 4x4 Warranty." />
         </Suspense>
 
         {/* Vehicle Coverage Accordion Section - Matching Homepage */}
         <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
-          <VehicleCoverageSection headingPrefix="BMW" />
+          <VehicleCoverageSection headingPrefix="SUV" />
         </Suspense>
 
         {/* Cover Clarity Section - Your cover, made crystal clear */}
@@ -922,10 +922,10 @@ const SUVWarrantyLanding: React.FC = () => {
                 <span className="text-xs md:text-sm font-semibold text-red-700">Without warranty, you pay the full bill</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                What BMW repairs actually cost
+                What SUV & 4x4 repairs actually cost
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-                One breakdown could cost more than years of warranty cover. Here's what BMW owners pay without protection.
+                One breakdown could cost more than years of warranty cover. Here's what SUV and 4x4 owners pay without protection.
               </p>
             </div>
 
@@ -984,7 +984,7 @@ const SUVWarrantyLanding: React.FC = () => {
                   className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 md:py-5 px-6 md:px-8 text-base md:text-lg rounded-xl shadow-lg animate-breathing"
                 >
                   <span className="flex items-center gap-2">
-                    Get Your BMW Quote
+                    Get Your SUV Quote
                     <ArrowRight className="w-5 h-5" />
                   </span>
                 </Button>
@@ -1003,10 +1003,10 @@ const SUVWarrantyLanding: React.FC = () => {
                 Full Coverage Details
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-                All BMW Models Covered
+                All Popular SUV & 4x4 Models Covered (2011 – 2024)
               </h2>
               <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-                Select your BMW model to see tailored warranty options designed for premium performance vehicles.
+                Select your SUV or 4x4 model to see tailored warranty options — from compact crossovers to premium 4x4s, hybrid SUVs and full electric SUVs.
               </p>
             </div>
 
@@ -1068,7 +1068,7 @@ const SUVWarrantyLanding: React.FC = () => {
                         ? 'border-blue-500 ring-1 ring-blue-500/20 shadow-md scale-[1.02]'
                         : 'border-slate-200 hover:border-slate-300 hover:shadow-sm focus:ring-slate-400'
                     }`}
-                    aria-label={`BMW ${model}, chassis codes ${generations.join(', ')}`}
+                    aria-label={`${model}, model years ${generations.join(', ')}`}
                   >
                     {/* EV Badge */}
                     {isElectric && (
@@ -1087,7 +1087,7 @@ const SUVWarrantyLanding: React.FC = () => {
                     
                     {/* Model Name */}
                     <h3 className="text-[11px] md:text-xs font-bold text-slate-900 leading-tight mb-0.5 truncate">
-                      BMW {model}
+                      {model}
                     </h3>
                     
                     {/* Chassis Codes */}
@@ -1133,7 +1133,7 @@ const SUVWarrantyLanding: React.FC = () => {
                   <Car className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-900">BMW {selectedModel} selected</p>
+                  <p className="font-bold text-slate-900">{selectedModel} selected</p>
                   <p className="text-slate-500 text-xs md:text-sm">Step 1 of 2: Choose coverage →</p>
                 </div>
               </div>
@@ -1141,25 +1141,25 @@ const SUVWarrantyLanding: React.FC = () => {
                 onClick={scrollToQuoteForm}
                 className="w-full sm:w-auto bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl animate-breathing shadow-lg shadow-orange-500/25"
               >
-                Get Your BMW Quote
+                Get Your SUV Quote
                 <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* Why BMW Drivers Choose Us Section */}
+        {/* Why SUV & 4x4 Drivers Choose Us Section */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Why BMW Drivers Choose Us
+                Why SUV & 4x4 Drivers Choose Us
               </h2>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="inline-flex items-center gap-2 bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg animate-breathing mt-4"
               >
-                Get BMW Warranty
+                Get SUV Warranty
                 <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
@@ -1169,8 +1169,8 @@ const SUVWarrantyLanding: React.FC = () => {
                 {[
                   { icon: Wrench, title: 'Dealer-level repairs and diagnostics', desc: 'Professional repairs at any VAT-registered garage across the UK.' },
                   { icon: ThumbsUp, title: 'Transparent limits and zero hidden fees', desc: 'The price you see is the price you pay. No surprises.' },
-                  { icon: Users, title: 'UK support team that knows BMW systems', desc: 'Our friendly UK-based team handles claims quickly and fairly.' },
-                  { icon: Car, title: 'High mileage BMW warranty plans', desc: 'Cover vehicles up to 150,000 miles with no mileage restrictions during cover.' },
+                  { icon: Users, title: 'UK support team that knows SUV & 4x4 systems', desc: 'Our friendly UK-based team handles claims quickly and fairly.' },
+                  { icon: Car, title: 'High mileage SUV warranty plans', desc: 'Cover vehicles up to 150,000 miles with no mileage restrictions during cover.' },
                   { icon: Clock, title: 'Flexible monthly payments with no long contracts', desc: 'Cancel anytime and get a pro-rata refund. No lock-in.' },
                 ].map((benefit, index) => (
                   <div key={index} className="flex gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
@@ -1189,7 +1189,7 @@ const SUVWarrantyLanding: React.FC = () => {
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
                   src={suvWhyChooseUs}
-                  alt="Miles the Panda mechanic with BMW - Why BMW owners choose us for extended warranty"
+                  alt="Miles the Panda mechanic — why SUV and 4x4 owners choose us for extended warranty"
                   className="w-[400px] h-auto object-contain"
                   width={400}
                   height={300}
@@ -1212,7 +1212,7 @@ const SUVWarrantyLanding: React.FC = () => {
               {[
                 { step: 1, title: 'Diagnose', desc: 'Diagnose at any VAT-registered garage' },
                 { step: 2, title: 'Authorise', desc: 'We authorise eligible repairs quickly' },
-                { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your BMW' },
+                { step: 3, title: 'Repair', desc: 'You approve and the garage repairs your SUV' },
                 { step: 4, title: 'We Pay', desc: 'We pay the garage directly for covered items' },
               ].map((item, index) => (
                 <div key={index} className="text-center">
@@ -1227,7 +1227,7 @@ const SUVWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Your BMW Cover Made Crystal Clear Section */}
+        {/* Your SUV Cover Made Crystal Clear Section */}
         <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
@@ -1236,7 +1236,7 @@ const SUVWarrantyLanding: React.FC = () => {
                 <span className="text-xs md:text-sm font-semibold text-green-700">Transparent Coverage</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Your BMW cover, made <span className="text-brand-orange">crystal clear</span>
+                Your SUV cover, made <span className="text-brand-orange">crystal clear</span>
               </h2>
               <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
                 See what's included - clear terms, no jargon, no surprises.
@@ -1262,7 +1262,7 @@ const SUVWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* High Mileage BMW Section */}
+        {/* High Mileage SUV Section */}
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
@@ -1270,7 +1270,7 @@ const SUVWarrantyLanding: React.FC = () => {
               <div className="flex justify-center">
                 <OptimizedImage 
                   src={suvHighMileage}
-                  alt="BMW i3 with BuyAWarranty branding - High mileage BMW warranty coverage"
+                  alt="Range Rover Sport with BuyAWarranty branding — High mileage SUV & 4x4 warranty coverage"
                   className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
                   width={448}
                   height={300}
@@ -1279,10 +1279,10 @@ const SUVWarrantyLanding: React.FC = () => {
               {/* Text on RIGHT side */}
               <div className="text-center lg:text-left">
                 <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
-                  High Mileage BMW, No Problem!
+                  High Mileage SUV or 4x4? No Problem!
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
-                  Drive Your BMW With Confidence<br />
+                  Drive Your SUV With Confidence<br />
                   <span className="text-brand-orange">You're Covered</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">
@@ -1314,7 +1314,7 @@ const SUVWarrantyLanding: React.FC = () => {
                 className="w-full bg-brand-orange text-white font-bold py-5 md:py-6 text-base md:text-xl rounded-xl shadow-lg animate-breathing"
               >
                 <span className="flex items-center justify-center gap-2 md:gap-3">
-                  Get Your BMW Quote
+                  Get Your SUV Quote
                   <ArrowRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
                 </span>
               </Button>
