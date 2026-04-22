@@ -61,37 +61,18 @@ const Claims = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     setFormData({
       ...formData,
       [name]: value
     });
 
-    // Clear errors when user starts typing
+    // Clear the error for this field as soon as the user edits it
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         [name]: ''
-      });
-    }
-
-    // Real-time validation for email and phone
-    if (name === 'email' && value) {
-      if (!validateEmail(value)) {
-        setErrors({
-          ...errors,
-          email: 'Please enter a valid email address'
-        });
-      }
-    }
-
-    if (name === 'phone' && value) {
-      if (!validatePhone(value)) {
-        setErrors({
-          ...errors,
-          phone: 'Please enter a valid UK phone number (e.g., 07123456789 or +44 7123 456789)'
-        });
-      }
+      }));
     }
   };
 
