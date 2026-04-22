@@ -49,7 +49,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
           2
         </div>
         <h3 className="font-semibold text-lg text-foreground">
-          Set your claim limit 🚗
+          🔧 Choose how much we cover per repair — unlimited claims, parts & labour included 🚗
         </h3>
       </div>
 
