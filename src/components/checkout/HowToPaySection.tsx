@@ -134,6 +134,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   onRemoveDiscountCode,
   totalDiscountAmount,
   hidePayButton = false,
+  hideTrustpilot = false,
 }) => {
   const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
@@ -444,8 +445,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       )}
 
       {/* Trustpilot Slider Widget */}
-      <TrustpilotSliderWidget className="mt-4" />
-
+      {!hideTrustpilot && <TrustpilotSliderWidget className="mt-4" />}
       {/* Divider */}
       <div className="h-px bg-border mt-6 mb-5" />
 
