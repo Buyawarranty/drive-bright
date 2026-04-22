@@ -54,10 +54,10 @@ const notCoveredItems = [
 ];
 
 const claimLimits = [
-  { amount: '£1,000', label: 'Light cover' },
-  { amount: '£2,000', label: 'Popular choice' },
-  { amount: '£3,000', label: 'Best protection', popular: true },
-  { amount: '£5,000', label: 'Maximum cover' },
+  { amount: '£1,000', value: 1000, label: 'Light cover', example: 'A £900 alternator replacement with a £1,000 limit: fully covered.' },
+  { amount: '£2,000', value: 2000, label: 'Popular choice', example: 'A £1,800 turbo replacement with a £2,000 limit: fully covered.' },
+  { amount: '£3,000', value: 3000, label: 'Best protection', popular: true, example: 'A £1,300 repair with a £3,000 limit: fully covered.' },
+  { amount: '£5,000', value: 5000, label: 'Maximum cover', example: 'A £4,200 engine rebuild with a £5,000 limit: fully covered.' },
 ];
 
 const repairExamples = [
@@ -99,6 +99,7 @@ const Protected = () => {
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showAllParts, setShowAllParts] = useState(false);
+  const [selectedLimitIndex, setSelectedLimitIndex] = useState(2); // £3,000 default
   const coverageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -430,33 +431,44 @@ const Protected = () => {
 
           {/* Mobile gets extra top padding so the "Recommended" badge isn't clipped */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 pt-4 md:pt-0">
-            {claimLimits.map((l, i) => (
-              <div
-                key={i}
-                className={`relative rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 ${
-                  l.popular
-                    ? 'border-brand-orange bg-brand-orange/5'
-                    : 'border-border bg-muted/40 hover:border-brand-orange/40'
-                }`}
-              >
-                {l.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap shadow-md">
-                    Recommended
-                  </span>
-                )}
-                <div
-                  className="text-2xl md:text-3xl font-extrabold text-foreground mb-1"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
+            {claimLimits.map((l, i) => {
+              const isSelected = selectedLimitIndex === i;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setSelectedLimitIndex(i)}
+                  aria-pressed={isSelected}
+                  className={`relative rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:ring-offset-2 ${
+                    isSelected
+                      ? 'border-brand-orange bg-brand-orange/10 shadow-md ring-1 ring-brand-orange/30'
+                      : 'border-border bg-muted/40 hover:border-brand-orange/40'
+                  }`}
                 >
-                  {l.amount}
-                </div>
-                <div className="text-xs text-muted-foreground">{l.label}</div>
-              </div>
-            ))}
+                  {l.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap shadow-md">
+                      Recommended
+                    </span>
+                  )}
+                  <div
+                    className="text-2xl md:text-3xl font-extrabold text-foreground mb-1"
+                    style={{ fontFamily: "'Syne', sans-serif" }}
+                  >
+                    {l.amount}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{l.label}</div>
+                  {isSelected && (
+                    <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-orange">
+                      <CheckCircle className="w-3 h-3" /> Selected
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl px-5 py-4 text-sm text-foreground">
-            💡 <strong>Quick example:</strong> A £1,300 repair with a £3,000 limit: fully covered.
+          <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl px-5 py-4 text-sm text-foreground transition-all">
+            💡 <strong>Quick example:</strong> {claimLimits[selectedLimitIndex].example}
           </div>
 
           {/* ── 6. REPAIR COSTS — directly below limits to confirm the choice ── */}
