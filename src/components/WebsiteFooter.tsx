@@ -21,7 +21,7 @@ const WebsiteFooter = () => {
             Ready to Protect Your Vehicle?
           </h2>
           <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-            Get an instant quote and find the perfect warranty for your vehicle today.
+            Get an instant quote and find the perfect warranty for your vehicle today from 60p a day.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
