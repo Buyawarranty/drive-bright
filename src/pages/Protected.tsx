@@ -247,7 +247,7 @@ const Protected = () => {
 
       {/* ── 1. HERO ── */}
       <section className="relative px-4 sm:px-6 pt-10 pb-10 md:pt-16 md:pb-12 overflow-hidden border-b border-gray-200">
-        <div className="relative z-10 max-w-4xl mx-auto px-4">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 md:gap-12 items-center">
           <div className="text-center md:text-left order-2 md:order-1">
             <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
@@ -277,6 +277,14 @@ const Protected = () => {
                 See what's covered ↓
               </button>
             </div>
+          </div>
+          <div className="order-1 md:order-2 flex justify-center md:justify-end">
+            <img
+              src={pandaThumbsUp}
+              alt="Buyawarranty panda mascot giving a thumbs up"
+              className="w-48 sm:w-56 md:w-64 lg:w-80 xl:w-96 h-auto object-contain drop-shadow-xl"
+              loading="eager"
+            />
           </div>
         </div>
       </section>
