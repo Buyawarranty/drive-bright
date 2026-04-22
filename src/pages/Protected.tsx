@@ -91,7 +91,7 @@ const faqs = [
   },
   {
     q: 'When does my cover start?',
-    a: 'Your cover starts immediately from the policy start date shown in your documents, so you're protected right away. Please note that, like all warranties, pre-existing faults (anything wrong with your vehicle before the policy began) are not covered.',
+    a: "Your cover starts immediately from the policy start date shown in your documents, so you're protected right away. Please note that, like all warranties, pre-existing faults (anything wrong with your vehicle before the policy began) are not covered.",
   },
 ];
 
