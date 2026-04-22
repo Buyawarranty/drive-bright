@@ -253,7 +253,7 @@ const Protected = () => {
           </span>
           <h1
             className="font-bold leading-[1.05] tracking-tight mb-5 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(38px, 6vw, 72px)' }}
+            style={{ fontSize: 'clamp(38px, 6vw, 72px)' }}
           >
             Know exactly what's covered
             <span className="block text-brand-orange">and what we pay.</span>
@@ -312,7 +312,7 @@ const Protected = () => {
           </div>
           <h2
             className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
+            style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
           >
             What your warranty actually covers
           </h2>
@@ -335,7 +335,7 @@ const Protected = () => {
                   </div>
                   <h3
                     className="text-[17px] font-bold mb-1.5 text-foreground"
-                    style={{ fontFamily: "'Syne', sans-serif" }}
+                   
                   >
                     {c.title}
                   </h3>
@@ -365,7 +365,7 @@ const Protected = () => {
           </div>
           <h2
             className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
+            style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
           >
             What we cover and what we don't
           </h2>
@@ -377,7 +377,7 @@ const Protected = () => {
             <div className="bg-muted/40 rounded-2xl border border-border overflow-hidden">
               <div
                 className="px-6 py-4 flex items-center gap-2.5 font-bold text-base border-b border-border bg-green-500/10 text-green-700"
-                style={{ fontFamily: "'Syne', sans-serif" }}
+               
               >
                 <CheckCircle className="w-5 h-5" /> Covered
               </div>
@@ -395,7 +395,7 @@ const Protected = () => {
             <div className="bg-muted/40 rounded-2xl border border-border overflow-hidden">
               <div
                 className="px-6 py-4 flex items-center gap-2.5 font-bold text-base border-b border-border bg-red-500/10 text-red-600"
-                style={{ fontFamily: "'Syne', sans-serif" }}
+               
               >
                 <X className="w-5 h-5" /> Not Covered
               </div>
@@ -421,7 +421,7 @@ const Protected = () => {
           </div>
           <h2
             className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
+            style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
           >
             Choose how much we cover per repair
           </h2>
@@ -452,7 +452,7 @@ const Protected = () => {
                   )}
                   <div
                     className="text-2xl md:text-3xl font-extrabold text-foreground mb-1"
-                    style={{ fontFamily: "'Syne', sans-serif" }}
+                   
                   >
                     {l.amount}
                   </div>
@@ -479,7 +479,7 @@ const Protected = () => {
             </div>
             <h3
               className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-              style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(22px, 3vw, 32px)' }}
+              style={{ fontSize: 'clamp(22px, 3vw, 32px)' }}
             >
               What repairs actually cost and what we pay
             </h3>
@@ -501,7 +501,7 @@ const Protected = () => {
                   <div className="text-right flex-shrink-0">
                     <div
                       className="text-base md:text-lg font-bold text-brand-orange"
-                      style={{ fontFamily: "'Syne', sans-serif" }}
+                     
                     >
                       {r.range}
                     </div>
@@ -678,7 +678,7 @@ const Protected = () => {
         <div className="relative max-w-7xl mx-auto px-6">
           <h2
             className="font-bold tracking-tight mb-6 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px, 3.5vw, 36px)' }}
+            style={{ fontSize: 'clamp(24px, 3.5vw, 36px)' }}
           >
             What our customers say
           </h2>
@@ -714,7 +714,7 @@ const Protected = () => {
         </div>
         <h2
           className="font-bold tracking-tight leading-tight mb-3 text-foreground"
-          style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
+          style={{ fontSize: 'clamp(26px, 4vw, 44px)' }}
         >
           Your questions answered
         </h2>
@@ -743,7 +743,7 @@ const Protected = () => {
         <div className="mt-10 pt-8 border-t border-border">
           <h3
             className="font-bold text-foreground mb-2 text-lg"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+           
           >
             Your cover, made crystal clear
           </h3>
