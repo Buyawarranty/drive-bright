@@ -38,33 +38,93 @@ import suvWhyChooseUs from '@/assets/orange-suv-with-logo.png';
 import suvHighMileage from '@/assets/land-rover-range-rover-sport-warranty.png';
 
 // BMW Models covered (grouped by category)
+// Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 const suvModelCategories = {
-  'Series': {
-    '1 Series': ['F20', 'F21', 'F40', 'F52'],
-    '2 Series': ['F22', 'F23', 'F44', 'F45', 'F46', 'G42'],
-    '3 Series': ['F30', 'F31', 'F34', 'G20', 'G21'],
-    '4 Series': ['F32', 'F33', 'F36', 'G22', 'G23', 'G26'],
-    '5 Series': ['F10', 'F11', 'G30', 'G31'],
-    '6 Series': ['F06', 'F12', 'F13', 'G32'],
-    '7 Series': ['F01', 'F02', 'G11', 'G12'],
-    '8 Series': ['G14', 'G15', 'G16'],
+  'Compact SUVs': {
+    'Nissan Qashqai': ['2011-2024'],
+    'Vauxhall Mokka': ['2012-2024'],
+    'Renault Captur': ['2013-2024'],
+    'Peugeot 2008': ['2013-2024'],
+    'Ford Puma': ['2019-2024'],
+    'Hyundai Kona': ['2017-2024'],
+    'Mazda CX-3': ['2015-2024'],
+    'Toyota Yaris Cross': ['2021-2024'],
   },
-  'X Series SUVs': {
-    'X1': ['F48', 'U11'],
-    'X2': ['F39', 'U10'],
-    'X3': ['F25', 'G01'],
-    'X4': ['F26', 'G02'],
-    'X5': ['F15', 'G05'],
-    'X6': ['F16', 'G06'],
-    'X7': ['G07'],
+  'Mid-size SUVs': {
+    'Ford Kuga': ['2012-2024'],
+    'Hyundai Tucson': ['2015-2024'],
+    'Kia Sportage': ['2011-2024'],
+    'Nissan X-Trail': ['2014-2024'],
+    'Volkswagen Tiguan': ['2011-2024'],
+    'Skoda Karoq': ['2017-2024'],
+    'Honda CR-V': ['2012-2024'],
+    'Mazda CX-5': ['2012-2024'],
+    'Toyota RAV4': ['2013-2024'],
+    'Peugeot 3008': ['2016-2024'],
+    'Vauxhall Grandland': ['2017-2024'],
+    'Seat Ateca': ['2016-2024'],
   },
-  'Electric & Hybrid': {
-    'i3': ['I01'],
-    'i4': ['G26'],
-    'i7': ['G70'],
-    'i8': ['I12', 'I15'],
-    'iX': ['I20'],
-    'iX3': ['G08'],
+  'Large SUVs & 7-Seaters': {
+    'Kia Sorento': ['2015-2024'],
+    'Hyundai Santa Fe': ['2012-2024'],
+    'Skoda Kodiaq': ['2017-2024'],
+    'Volkswagen Touareg': ['2011-2024'],
+    'Volvo XC90': ['2015-2024'],
+    'Land Rover Discovery': ['2011-2024'],
+    'Land Rover Discovery Sport': ['2014-2024'],
+    'Nissan Pathfinder': ['2013-2024'],
+    'Peugeot 5008': ['2017-2024'],
+  },
+  'Premium SUVs': {
+    'BMW X3': ['2011-2024'],
+    'BMW X5': ['2011-2024'],
+    'Audi Q3': ['2011-2024'],
+    'Audi Q5': ['2011-2024'],
+    'Audi Q7': ['2011-2024'],
+    'Mercedes-Benz GLA': ['2014-2024'],
+    'Mercedes-Benz GLC': ['2015-2024'],
+    'Mercedes-Benz GLE': ['2011-2024'],
+    'Volvo XC60': ['2011-2024'],
+    'Volvo XC40': ['2018-2024'],
+    'Range Rover Sport': ['2011-2024'],
+    'Range Rover Evoque': ['2011-2024'],
+    'Lexus RX': ['2011-2024'],
+    'Lexus NX': ['2014-2024'],
+    'Porsche Macan': ['2014-2024'],
+    'Porsche Cayenne': ['2011-2024'],
+    'Jaguar F-Pace': ['2016-2024'],
+    'Jaguar E-Pace': ['2017-2024'],
+  },
+  '4x4 & Off-Road': {
+    'Jeep Wrangler': ['2011-2024'],
+    'Jeep Grand Cherokee': ['2011-2024'],
+    'Jeep Cherokee': ['2014-2024'],
+    'Jeep Renegade': ['2014-2024'],
+    'Land Rover Defender': ['2011-2024'],
+    'Toyota Land Cruiser': ['2011-2024'],
+    'Mitsubishi Outlander': ['2011-2024'],
+    'Mitsubishi Shogun': ['2011-2019'],
+    'SsangYong Korando': ['2011-2024'],
+    'Suzuki Vitara': ['2015-2024'],
+    'Suzuki Jimny': ['2018-2024'],
+    'Dacia Duster': ['2012-2024'],
+    'Subaru Forester': ['2013-2024'],
+    'Subaru Outback': ['2014-2024'],
+  },
+  'Hybrid & Electric SUVs': {
+    'Toyota RAV4 Hybrid': ['2016-2024'],
+    'Hyundai Kona Electric': ['2018-2024'],
+    'Kia Niro / e-Niro': ['2016-2024'],
+    'Volvo XC40 Recharge': ['2020-2024'],
+    'Audi e-tron / Q8 e-tron': ['2019-2024'],
+    'Mercedes-Benz EQC': ['2019-2024'],
+    'Jaguar I-Pace': ['2018-2024'],
+    'Tesla Model Y': ['2022-2024'],
+    'Ford Mustang Mach-E': ['2021-2024'],
+    'Nissan Ariya': ['2022-2024'],
+    'BMW iX3': ['2021-2024'],
+    'Skoda Enyaq': ['2021-2024'],
+    'Volkswagen ID.4': ['2021-2024'],
   },
 };
 
@@ -155,36 +215,40 @@ const coverageCategories = [
 // FAQs for schema
 const suvFAQs = [
   {
-    question: "Is a BMW extended warranty worth it in the UK?",
-    answer: "Yes, BMW repairs are among the most expensive in the UK due to advanced electronics and complex powertrains. Our extended warranty protects key components like the engine, gearbox, fuel injectors, and ECUs, preventing sudden repair bills with easy claims and fast payouts."
+    question: "Is an extended warranty for my SUV worth it in the UK?",
+    answer: "Yes. SUVs and 4x4s often have complex drivetrains, four-wheel-drive systems, air suspension and large turbocharged engines that can be expensive to repair. An extended SUV warranty protects the engine, gearbox, transfer box, ECUs and electrical systems, so a single fault doesn't lead to a four-figure repair bill."
   },
   {
-    question: "How much does a BMW extended warranty cost in the UK?",
-    answer: "Extended BMW warranty prices typically start from £24 a month, depending on your BMW model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    question: "How much does an SUV extended warranty cost in the UK?",
+    answer: "SUV warranty plans typically start from around £21 a month, depending on your make, model, age, mileage and chosen claim limit. We offer flexible monthly or annual plans for compact SUVs, mid-size SUVs, large 4x4s and premium SUVs."
   },
   {
-    question: "Can I buy a BMW extended warranty after my original warranty has expired?",
-    answer: "Yes, you can buy cover even if your BMW is outside its original 3-year manufacturer warranty, or if you purchased it used. We cover vehicles up to 150,000 miles and 15 years old."
+    question: "Which SUV and 4x4 models do you cover?",
+    answer: "We cover almost every popular SUV and 4x4 sold in the UK from 2011 to 2024, including the Nissan Qashqai, Ford Kuga, Hyundai Tucson, Kia Sportage, Volkswagen Tiguan, Range Rover Sport, BMW X5, Audi Q5, Mercedes GLC, Volvo XC60, Jeep Wrangler, Land Rover Discovery and many more."
   },
   {
-    question: "Can I use my own garage for BMW warranty repairs?",
-    answer: "Yes, absolutely. You can choose any VAT-registered garage across the UK instead of being restricted to BMW dealers. We have a network of approved garages nationwide."
+    question: "Do you cover four-wheel-drive (4x4) systems?",
+    answer: "Yes. Our cover includes 4x4 components such as the transfer box, propshaft, differentials, viscous coupling, drive shafts and CV joints — all the parts that make a 4x4 SUV go off-road and tow safely."
   },
   {
-    question: "Does the warranty cover hybrid and electric BMW models?",
-    answer: "Yes, our comprehensive plan includes cover for hybrid and electric components including the electric motor, battery management system, power electronics, on-board charger, and thermal management systems."
+    question: "Can I buy SUV warranty cover after the manufacturer warranty has expired?",
+    answer: "Yes. You can take out cover even if your SUV is well outside its original 3-year manufacturer warranty, or if you bought it second-hand. We cover SUVs and 4x4s up to 150,000 miles and 15 years old."
   },
   {
-    question: "Is roadside assistance included?",
-    answer: "Yes, our comprehensive plan includes 24/7 roadside assistance and recovery anywhere in the UK. If your BMW breaks down, we'll send help to get you back on the road or recover your vehicle to a garage."
+    question: "Can I use my own garage for SUV warranty repairs?",
+    answer: "Absolutely. You can choose any VAT-registered garage in the UK — main dealer, independent SUV specialist or your local trusted mechanic. We pay the garage directly so you're not left out of pocket."
   },
   {
-    question: "How do I make a claim on my BMW warranty?",
-    answer: "Simply call our UK-based claims team or submit a claim online. We aim to authorise repairs quickly so you're not left waiting. Your chosen garage contacts us directly, and we settle the bill with them."
+    question: "Does the warranty cover hybrid and electric SUV models?",
+    answer: "Yes. Our comprehensive plans include hybrid and electric SUV components such as the electric drive motor, hybrid battery management, power electronics, on-board charger and thermal management — perfect for cars like the Toyota RAV4 Hybrid, Kia e-Niro, Tesla Model Y and Audi e-tron."
   },
   {
-    question: "What's not covered by the warranty?",
-    answer: "Routine maintenance, wear and tear items (brake pads, tyres, wiper blades), pre-existing faults, and cosmetic damage are not covered. Our policy documents clearly outline all exclusions so there are no surprises."
+    question: "Is roadside assistance included for my 4x4?",
+    answer: "Yes. Our comprehensive plan includes 24/7 UK roadside assistance and recovery. If your SUV breaks down at home, on the school run or in the middle of nowhere, we'll get you back on the road or recover the vehicle to a garage."
+  },
+  {
+    question: "What isn't covered by the SUV warranty?",
+    answer: "Routine maintenance, wear and tear items (brake pads, tyres, wipers), pre-existing faults, modifications and cosmetic damage aren't covered. Our policy documents set out all exclusions clearly so there are no surprises."
   }
 ];
 
@@ -193,29 +257,29 @@ const testimonials = [
   {
     name: "James T.",
     location: "Manchester",
-    model: "BMW 330d",
-    text: "My 330d needed a new turbo at 85,000 miles. Would have cost me over £3,000 but my warranty covered everything. Brilliant service from start to finish.",
+    model: "Nissan Qashqai",
+    text: "My Qashqai needed a new turbo at 78,000 miles. Would have cost me over £2,400 but my SUV warranty covered everything. Brilliant service from start to finish.",
     rating: 5
   },
   {
     name: "Sarah M.",
     location: "Edinburgh",
-    model: "BMW X5",
-    text: "The peace of mind is worth every penny. When my X5's air suspension failed, they sorted it within days. No quibbles, no excess to pay.",
+    model: "Range Rover Sport",
+    text: "The peace of mind is worth every penny. When my Range Rover's air suspension failed, they sorted it within days. No quibbles, no excess to pay.",
     rating: 5
   },
   {
     name: "David K.",
     location: "Bristol",
-    model: "BMW 520i",
-    text: "I was sceptical about third-party warranties but Buy A Warranty proved me wrong. ECU issue fixed, £1,800 claim paid without any hassle.",
+    model: "Ford Kuga",
+    text: "I was sceptical about third-party warranties but Buy A Warranty proved me wrong. Gearbox issue on my Kuga fixed, £1,800 claim paid without any hassle.",
     rating: 5
   },
   {
     name: "Emma W.",
     location: "London",
-    model: "BMW i3",
-    text: "Finding warranty cover for my electric BMW was difficult until I found these guys. They cover all the EV components and the price is very reasonable.",
+    model: "Kia e-Niro",
+    text: "Finding warranty cover for my electric SUV was difficult until I found these guys. They cover all the EV components and the price is very reasonable.",
     rating: 5
   }
 ];
