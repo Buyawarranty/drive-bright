@@ -541,203 +541,52 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                       </div>
 
-                      {/* Section 2: Claim Details */}
+                      {/* Section 2: Mileage */}
                       <div>
                         <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
                             2
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900">Tell Us What Happened</h3>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-4">
-                          Share details about the issue so we can help you quickly
-                        </p>
-
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="faultDescription" className="text-gray-700 font-medium text-sm">
-                                Fault Description
-                              </Label>
-                              <Input
-                                id="faultDescription"
-                                name="faultDescription"
-                                type="text"
-                                placeholder="Brief description"
-                                value={formData.faultDescription}
-                                onChange={handleInputChange}
-                                className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                              />
-                            </div>
-
-                            <div>
-                              <Label htmlFor="dateOccurred" className="text-gray-700 font-medium text-sm">
-                                Date the issue occurred
-                              </Label>
-                              <Input
-                                id="dateOccurred"
-                                name="dateOccurred"
-                                type="date"
-                                value={formData.dateOccurred}
-                                onChange={handleInputChange}
-                                className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="currentMileage" className="text-gray-700 font-medium text-sm mb-2 block">
-                              Enter current approximate mileage
-                            </Label>
-                            <Input
-                              id="currentMileage"
-                              name="currentMileage"
-                              type="number"
-                              placeholder="e.g., 50000"
-                              value={formData.currentMileage}
-                              onChange={(e) => {
-                                const value = parseInt(e.target.value) || 0;
-                                setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
-                              }}
-                              min={0}
-                              max={200000}
-                              className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 mb-3"
-                            />
-                            <MileageSlider
-                              value={formData.currentMileage}
-                              onChange={(value) => setFormData({ ...formData, currentMileage: value })}
-                              min={0}
-                              max={200000}
-                            />
-                          </div>
-
-                          <div>
-                            <Label htmlFor="faultDetails" className="text-gray-700 font-medium text-sm">
-                              Describe the fault - What's not working as expected?
-                            </Label>
-                            <Textarea
-                              id="faultDetails"
-                              name="faultDetails"
-                              placeholder="Please provide as much detail as possible about the problem..."
-                              value={formData.faultDetails}
-                              onChange={handleInputChange}
-                              className="mt-1.5 min-h-[90px] border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
-                          </div>
-
-                          <div>
-                            <Label htmlFor="issueTiming" className="text-gray-700 font-medium text-sm">
-                              When was the issue noticed?
-                            </Label>
-                            <Textarea
-                              id="issueTiming"
-                              name="issueTiming"
-                              placeholder="While driving, after a service, during a routine check..."
-                              value={formData.issueTiming}
-                              onChange={handleInputChange}
-                              className="mt-1.5 min-h-[70px] border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
-                          </div>
-
-                        </div>
-                      </div>
-
-                      {/* Section 3: Supporting Documents */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
-                            3
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">Supporting Documents</h3>
+                          <h3 className="text-xl font-bold text-gray-900">Current Mileage</h3>
                         </div>
                         <div>
-                          <Label htmlFor="file-upload" className="text-gray-700 font-medium text-sm">
-                            Upload Documents (Optional)
+                          <Label htmlFor="mileagePreset" className="text-gray-700 font-medium text-sm mb-2 block">
+                            Enter current approximate mileage
                           </Label>
-                          <p className="text-gray-500 text-xs mb-2">
-                            Garage reports, photos, or other documents (Max 20MB)
-                          </p>
-                          
-                          {!uploadedFile ? (
-                            <div className="mt-1.5">
-                              <label htmlFor="file-upload" className="cursor-pointer">
-                                <div 
-                                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                                    isDragging 
-                                      ? 'border-orange-500 bg-orange-50' 
-                                      : 'border-gray-300 hover:border-orange-500'
-                                  }`}
-                                  onDragOver={handleDragOver}
-                                  onDragLeave={handleDragLeave}
-                                  onDrop={handleDrop}
-                                >
-                                  <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                                  <p className="mt-2 text-sm text-gray-600">
-                                    Click to upload or drag and drop
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    PDF, DOC, JPG, PNG up to 20MB
-                                  </p>
-                                </div>
-                              </label>
-                              <input
-                                id="file-upload"
-                                name="file-upload"
-                                type="file"
-                                className="hidden"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                onChange={handleFileUpload}
-                              />
-                            </div>
-                          ) : (
-                            <div className="mt-1.5 p-3 bg-gray-50 rounded-lg border flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <div className="text-orange-500">
-                                  <Upload className="h-5 w-5" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">{uploadedFile.name}</p>
-                                  <p className="text-xs text-gray-500">
-                                    {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                                  </p>
-                                </div>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={removeFile}
-                                className="text-gray-500 hover:text-red-500"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Section 4: Additional Information */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
-                            4
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">Anything Else You'd Like to Tell Us</h3>
-                        </div>
-                        <div>
-                          <Label htmlFor="additionalInfo" className="text-gray-700 font-medium text-sm">
-                            Additional Information (Optional)
-                          </Label>
-                          <p className="text-gray-500 text-xs mb-2">
-                            Is there anything else you'd like us to know?
-                          </p>
-                          <Textarea
-                            id="additionalInfo"
-                            name="additionalInfo"
-                            placeholder="Share any other details that might help us process your claim..."
-                            value={formData.additionalInfo}
-                            onChange={handleInputChange}
-                            className="mt-1.5 min-h-[100px] border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          <select
+                            id="mileagePreset"
+                            value={[10000,25000,50000,75000,100000,125000,150000,175000,200000].includes(formData.currentMileage) ? String(formData.currentMileage) : 'custom'}
+                            onChange={(e) => {
+                              if (e.target.value !== 'custom') {
+                                setFormData({ ...formData, currentMileage: parseInt(e.target.value) });
+                              }
+                            }}
+                            className="mt-1.5 h-11 w-full rounded-md border border-gray-300 bg-white px-3 focus:border-orange-500 focus:ring-orange-500 focus:outline-none mb-3"
+                          >
+                            <option value="10000">Up to 10,000 miles</option>
+                            <option value="25000">10,000 – 25,000 miles</option>
+                            <option value="50000">25,000 – 50,000 miles</option>
+                            <option value="75000">50,000 – 75,000 miles</option>
+                            <option value="100000">75,000 – 100,000 miles</option>
+                            <option value="125000">100,000 – 125,000 miles</option>
+                            <option value="150000">125,000 – 150,000 miles</option>
+                            <option value="175000">150,000 – 175,000 miles</option>
+                            <option value="200000">175,000 – 200,000 miles</option>
+                            <option value="custom">Enter exact mileage below</option>
+                          </select>
+                          <Input
+                            id="currentMileage"
+                            name="currentMileage"
+                            type="number"
+                            placeholder="Or enter exact mileage (e.g., 52,340)"
+                            value={formData.currentMileage}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 0;
+                              setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
+                            }}
+                            min={0}
+                            max={200000}
+                            className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
                           />
                         </div>
                       </div>
