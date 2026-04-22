@@ -379,7 +379,7 @@ Additional Information: ${formData.additionalInfo}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <a 
                   href="mailto:claims@buyawarranty.co.uk"
-                  className="group block p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                  className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
@@ -396,7 +396,7 @@ Additional Information: ${formData.additionalInfo}
 
                 <a 
                   href="tel:03302295045"
-                  className="group block p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                  className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
@@ -427,8 +427,8 @@ Additional Information: ${formData.additionalInfo}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Form Section - Takes 2 columns */}
                 <div className="lg:col-span-2">
-                  <div className="bg-white p-6 lg:p-8 rounded-xl shadow-lg">
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
+                    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
                       {/* Section 1: Contact Information */}
                       <div>
                         <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
