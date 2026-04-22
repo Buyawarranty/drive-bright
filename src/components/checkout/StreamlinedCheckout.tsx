@@ -28,6 +28,7 @@ import PlanSummaryCard from '@/components/checkout/PlanSummaryCard';
 import CoverHighlights from '@/components/checkout/CoverHighlights';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import HowToPaySection from '@/components/checkout/HowToPaySection';
+import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import Save50PromoPopup from '@/components/checkout/Save50PromoPopup';
 import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
 import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
@@ -2296,6 +2297,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               onRemoveDiscountCode={removePromoCode}
               totalDiscountAmount={totalDiscountAmount}
               hidePayButton={showEmbeddedCheckout && selectedPayment === 'full'}
+              hideTrustpilot={showEmbeddedCheckout && selectedPayment === 'full' && !!stripeClientSecret}
             />
           </div>
 
@@ -2364,6 +2366,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 />
               </StripeProvider>
             </section>
+          )}
+
+          {/* Trustpilot reviews — moved BELOW the Stripe panel when it's open */}
+          {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
+            <TrustpilotSliderWidget className="mt-6" />
           )}
           </div>{/* close bottomCtaRef wrapper */}
           </div>

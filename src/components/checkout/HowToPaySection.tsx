@@ -35,6 +35,8 @@ interface HowToPaySectionProps {
   totalDiscountAmount: number;
   // Hide CTA when embedded checkout is showing
   hidePayButton?: boolean;
+  // Hide the inline Trustpilot reviews slider (e.g. when shown elsewhere)
+  hideTrustpilot?: boolean;
 }
 
 const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAccepted: (v: boolean) => void }) => {
@@ -132,6 +134,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   onRemoveDiscountCode,
   totalDiscountAmount,
   hidePayButton = false,
+  hideTrustpilot = false,
 }) => {
   const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
@@ -442,8 +445,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       )}
 
       {/* Trustpilot Slider Widget */}
-      <TrustpilotSliderWidget className="mt-4" />
-
+      {!hideTrustpilot && <TrustpilotSliderWidget className="mt-4" />}
       {/* Divider */}
       <div className="h-px bg-border mt-6 mb-5" />
 
