@@ -763,12 +763,12 @@ const Protected = () => {
             <AccordionItem
               key={i}
               value={`faq-${i}`}
-              className="bg-brand-orange border border-brand-orange rounded-xl overflow-hidden shadow-sm"
+              className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
             >
-              <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white hover:no-underline hover:bg-brand-orange/90 [&>svg]:text-white">
+              <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white bg-brand-orange hover:bg-brand-orange/90 hover:no-underline [&>svg]:text-white">
                 {f.q}
               </AccordionTrigger>
-              <AccordionContent className="px-6 pb-5 pt-1 text-sm text-white/95 leading-relaxed">
+              <AccordionContent className="px-6 pb-5 pt-5 text-sm text-foreground leading-relaxed bg-white">
                 {f.a}
               </AccordionContent>
             </AccordionItem>
