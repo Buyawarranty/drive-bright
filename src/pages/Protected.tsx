@@ -54,10 +54,10 @@ const notCoveredItems = [
 ];
 
 const claimLimits = [
-  { amount: '£1,000', label: 'Light cover' },
-  { amount: '£2,000', label: 'Popular choice' },
-  { amount: '£3,000', label: 'Best protection', popular: true },
-  { amount: '£5,000', label: 'Maximum cover' },
+  { amount: '£1,000', value: 1000, label: 'Light cover', example: 'A £900 alternator replacement with a £1,000 limit: fully covered.' },
+  { amount: '£2,000', value: 2000, label: 'Popular choice', example: 'A £1,800 turbo replacement with a £2,000 limit: fully covered.' },
+  { amount: '£3,000', value: 3000, label: 'Best protection', popular: true, example: 'A £1,300 repair with a £3,000 limit: fully covered.' },
+  { amount: '£5,000', value: 5000, label: 'Maximum cover', example: 'A £4,200 engine rebuild with a £5,000 limit: fully covered.' },
 ];
 
 const repairExamples = [
@@ -99,6 +99,7 @@ const Protected = () => {
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showAllParts, setShowAllParts] = useState(false);
+  const [selectedLimitIndex, setSelectedLimitIndex] = useState(2); // £3,000 default
   const coverageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
