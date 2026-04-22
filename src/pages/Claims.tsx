@@ -581,6 +581,67 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                       </div>
 
+                      {/* Section 3: Supporting Documents */}
+                      <div>
+                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
+                            3
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900">Supporting Documents (Optional)</h3>
+                        </div>
+
+                        {!uploadedFile ? (
+                          <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                            className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+                              isDragging
+                                ? 'border-orange-500 bg-orange-50'
+                                : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
+                            }`}
+                          >
+                            <Upload className="mx-auto h-10 w-10 text-orange-500 mb-2" />
+                            <p className="text-sm font-medium text-gray-700">
+                              Click to upload or drag and drop
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              PDF, DOC, DOCX, JPG or PNG (max 20MB)
+                            </p>
+                            <input
+                              id="file-upload"
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
+                              onChange={handleFileUpload}
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <Upload className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{uploadedFile.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={removeFile}
+                              className="ml-3 flex-shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+                              aria-label="Remove file"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
                       <Button 
                         type="submit" 
                         disabled={isSubmitting}
