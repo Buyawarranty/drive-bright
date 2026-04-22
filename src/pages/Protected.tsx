@@ -9,6 +9,7 @@ import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusionsList';
 import HelpMeChooseModal from '@/components/cover-page/HelpMeChooseModal';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
+import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 
 // ----- Data for the new design sections -----
 const coverageCards = [
@@ -245,35 +246,45 @@ const Protected = () => {
       />
 
       {/* ── 1. HERO ── */}
-      <section className="relative px-6 pt-14 pb-10 md:pt-16 md:pb-12 text-center overflow-hidden border-b border-gray-200">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
-            Complete Coverage Guide
-          </span>
-          <h1
-            className="font-bold leading-[1.05] tracking-tight mb-5 text-foreground"
-            style={{ fontSize: 'clamp(38px, 6vw, 72px)' }}
-          >
-            Know exactly what's covered
-            <span className="block text-brand-orange">and what we pay.</span>
-          </h1>
-          <p className="text-base md:text-lg text-foreground max-w-2xl mx-auto mb-9 font-light">
-            Protect against costly <strong className="font-semibold">mechanical and electrical failures</strong>. We pay your garage <strong className="font-semibold">directly</strong> so you are never out of pocket. Parts and labour included.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link
-              to="/?step=1"
-              className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] shadow-[0_8px_30px_rgba(240,90,40,0.4)] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all"
+      <section className="relative px-4 sm:px-6 pt-10 pb-10 md:pt-16 md:pb-12 overflow-hidden border-b border-gray-200">
+        <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 md:gap-12 items-center">
+          <div className="text-center md:text-left order-2 md:order-1">
+            <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
+              Complete Coverage Guide
+            </span>
+            <h1
+              className="font-bold leading-[1.05] tracking-tight mb-5 text-foreground"
+              style={{ fontSize: 'clamp(36px, 5.5vw, 64px)' }}
             >
-              Get my free quote <ArrowRight className="w-4 h-4" />
-            </Link>
-            <button
-              onClick={scrollToCoverage}
-              className="inline-flex items-center gap-2 border border-border bg-transparent text-foreground px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-muted hover:-translate-y-0.5 transition-all"
-            >
-              See what's covered ↓
-            </button>
+              Know exactly what's covered
+              <span className="block text-brand-orange">and what we pay.</span>
+            </h1>
+            <p className="text-base md:text-lg text-foreground max-w-2xl mx-auto md:mx-0 mb-9 font-light">
+              Protect against costly <strong className="font-semibold">mechanical and electrical failures</strong>. We pay your garage <strong className="font-semibold">directly</strong> so you are never out of pocket. Parts and labour included.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <Link
+                to="/?step=1"
+                className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] shadow-[0_8px_30px_rgba(240,90,40,0.4)] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all"
+              >
+                Get my free quote <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button
+                onClick={scrollToCoverage}
+                className="inline-flex items-center gap-2 border border-border bg-transparent text-foreground px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-muted hover:-translate-y-0.5 transition-all"
+              >
+                See what's covered ↓
+              </button>
+            </div>
+          </div>
+          <div className="order-1 md:order-2 flex justify-center md:justify-end">
+            <img
+              src={pandaThumbsUp}
+              alt="Buyawarranty panda mascot giving a thumbs up"
+              className="w-44 sm:w-56 md:w-72 lg:w-80 h-auto object-contain drop-shadow-xl"
+              loading="eager"
+            />
           </div>
         </div>
       </section>
