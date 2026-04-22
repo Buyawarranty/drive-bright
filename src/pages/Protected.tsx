@@ -332,8 +332,8 @@ const Protected = () => {
                 key={i}
                 className="group bg-white hover:bg-orange-50/40 border border-border rounded-2xl p-7 transition-colors relative overflow-hidden shadow-sm hover:shadow-md"
               >
-                <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center text-xl mb-4">
-                  {c.icon}
+                <div className="w-11 h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center mb-4">
+                  <c.Icon className="w-5 h-5 text-brand-orange" strokeWidth={2} />
                 </div>
                 <h3
                   className="text-[17px] font-bold mb-1.5 text-foreground"
