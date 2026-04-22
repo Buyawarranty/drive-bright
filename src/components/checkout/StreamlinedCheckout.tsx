@@ -403,7 +403,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Fetch MOT mileage from database
   const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
-  
+  const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
+
   // Pre-fill mileage from MOT data if customer hasn't entered one
   useEffect(() => {
     if (motMileage && !mileagePreFilled) {
@@ -415,12 +416,56 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }));
         setValidatedFields(prev => ({ ...prev, mileage: true }));
         setMileagePreFilled(true);
+        setMileagePrefillSource('mot');
       } else if (String(customerData.mileage) === String(motMileage)) {
         // Mileage already matches MOT (e.g. restored from localStorage) — show pre-fill UI
         setMileagePreFilled(true);
+        setMileagePrefillSource('mot');
       }
     }
   }, [motMileage, mileagePreFilled, customerData.mileage]);
+
+  // Pre-fill mileage from previous session entry (if no MOT data available)
+  useEffect(() => {
+    if (motLoading || mileagePreFilled || customerData.mileage) return;
+    try {
+      const sessionMileage = sessionStorage.getItem('baw_last_mileage');
+      if (sessionMileage && /^\d+$/.test(sessionMileage)) {
+        console.log('✅ Pre-filling mileage from session:', sessionMileage);
+        setCustomerData(prev => ({ ...prev, mileage: sessionMileage }));
+        setValidatedFields(prev => ({ ...prev, mileage: true }));
+        setMileagePreFilled(true);
+        setMileagePrefillSource('session');
+      }
+    } catch (e) {
+      // sessionStorage unavailable — ignore
+    }
+  }, [motLoading, motMileage, mileagePreFilled, customerData.mileage]);
+
+  // Persist mileage to sessionStorage so it can be re-used in the same session
+  useEffect(() => {
+    try {
+      const m = String(customerData.mileage || '').replace(/[^0-9]/g, '');
+      if (m && Number(m) > 0) {
+        sessionStorage.setItem('baw_last_mileage', m);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [customerData.mileage]);
+
+  const handleClearMileage = () => {
+    setCustomerData(prev => ({ ...prev, mileage: '' }));
+    setValidatedFields(prev => ({ ...prev, mileage: false }));
+    setMileagePreFilled(false);
+    setMileagePrefillSource(null);
+    try { sessionStorage.removeItem('baw_last_mileage'); } catch (e) { /* ignore */ }
+    // Focus back on the input for quick re-entry
+    setTimeout(() => {
+      const el = document.getElementById('mileage') as HTMLInputElement | null;
+      el?.focus();
+    }, 0);
+  };
 
   // Calculate high mileage surcharge based on warranty duration
   const getHighMileageSurcharge = (enteredMileage: number): number => {
@@ -2055,12 +2100,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current mileage</Label>
-                {mileagePreFilled && motMileage && (
+                {mileagePreFilled && mileagePrefillSource === 'mot' && motMileage && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#E6F4EA] text-[#1B7A3D] text-xs font-medium">
                     Pre-filled from MOT
                   </span>
+                )}
+                {mileagePreFilled && mileagePrefillSource === 'session' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#EEF4FF] text-[#1E40AF] text-xs font-medium">
+                    Pre-filled from your last entry
+                  </span>
+                )}
+                {mileagePreFilled && customerData.mileage && (
+                  <button
+                    type="button"
+                    onClick={handleClearMileage}
+                    className="text-xs font-medium text-muted-foreground hover:text-foreground underline underline-offset-2 ml-auto"
+                  >
+                    Clear & adjust
+                  </button>
                 )}
               </div>
               
