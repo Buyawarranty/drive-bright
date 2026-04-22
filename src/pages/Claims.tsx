@@ -141,30 +141,41 @@ const Claims = () => {
   // DVLA vehicle lookup function
   const lookupVehicle = async (regPlate: string) => {
     const cleanReg = regPlate.replace(/\s/g, '').toUpperCase();
-    if (cleanReg.length < 2) return;
-    
+    if (cleanReg.length < 5) {
+      setVehicleDetails(null);
+      setErrors((prev) => ({ ...prev, vehicleReg: 'Please enter a valid UK registration plate.' }));
+      return;
+    }
+
     setIsLookingUpVehicle(true);
+    setErrors((prev) => ({ ...prev, vehicleReg: '' }));
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: cleanReg }
       });
-      
+
       if (error) {
         console.error('Vehicle lookup error:', error);
         setVehicleDetails(null);
+        setErrors((prev) => ({ ...prev, vehicleReg: "We couldn't verify that registration. Please double-check it." }));
         return;
       }
-      
-      if (data?.make || data?.model) {
+
+      if (data?.found && (data?.make || data?.model)) {
         setVehicleDetails({
           make: data.make,
           model: data.model,
           year: data.yearOfManufacture || data.manufactureYear
         });
+        setErrors((prev) => ({ ...prev, vehicleReg: '' }));
+      } else {
+        setVehicleDetails(null);
+        setErrors((prev) => ({ ...prev, vehicleReg: 'No vehicle found for that registration. Please check and try again.' }));
       }
     } catch (err) {
       console.error('Vehicle lookup failed:', err);
       setVehicleDetails(null);
+      setErrors((prev) => ({ ...prev, vehicleReg: "We couldn't verify that registration. Please try again." }));
     } finally {
       setIsLookingUpVehicle(false);
     }
@@ -194,6 +205,10 @@ const Claims = () => {
 
     if (!formData.vehicleReg.trim()) {
       newErrors.vehicleReg = 'Please pop in your vehicle registration.';
+    } else if (errors.vehicleReg) {
+      newErrors.vehicleReg = errors.vehicleReg;
+    } else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
+      newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
     }
 
     if (Object.keys(newErrors).length > 0) {
