@@ -728,22 +728,57 @@ const Protected = () => {
           Everything you need to know about your cover and how it works.
         </p>
 
-        <Accordion type="single" collapsible className="space-y-3">
-          {faqs.map((f, i) => (
-            <AccordionItem
-              key={i}
-              value={`faq-${i}`}
-              className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
-            >
-              <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white bg-brand-orange hover:bg-brand-orange/90 hover:no-underline [&>svg]:text-white">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="px-6 pb-5 pt-5 text-sm text-foreground leading-relaxed bg-white">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-16 items-stretch">
+          {/* Left column - First half of FAQs */}
+          <div className="max-w-4xl">
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqs.slice(0, 3).map((f, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`faq-${i}`}
+                  className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
+                >
+                  <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white bg-brand-orange hover:bg-brand-orange/90 hover:no-underline [&>svg]:text-white">
+                    {f.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-5 pt-5 text-sm text-foreground leading-relaxed bg-white">
+                    {f.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+
+          {/* Middle column - Panda mascot (100% bigger, centered vertically) */}
+          <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-center">
+            <img
+              src={pandaThumbsUp}
+              alt="Buyawarranty panda mascot giving a thumbs up"
+              className="w-96 xl:w-[28rem] h-auto object-contain drop-shadow-2xl"
+              loading="lazy"
+            />
+          </div>
+
+          {/* Right column - Second half of FAQs */}
+          <div className="max-w-4xl lg:col-start-1">
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqs.slice(3).map((f, i) => (
+                <AccordionItem
+                  key={i + 3}
+                  value={`faq-${i + 3}`}
+                  className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
+                >
+                  <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white bg-brand-orange hover:bg-brand-orange/90 hover:no-underline [&>svg]:text-white">
+                    {f.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-5 pt-5 text-sm text-foreground leading-relaxed bg-white">
+                    {f.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
 
         {/* Document downloads — secondary trust signal alongside FAQ */}
         <div className="mt-10 pt-8 border-t border-border">
