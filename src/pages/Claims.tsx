@@ -173,38 +173,47 @@ const Claims = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
+    // Validate all required fields together so every issue is shown at once
     const newErrors: {[key: string]: string} = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = 'Could you let us know your name?';
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = 'We just need an email so we can get back to you.';
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = 'That email doesn\'t look quite right — mind double-checking it?';
     }
-    
+
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = 'A contact number helps us reach you faster.';
     } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = 'Please enter a valid UK phone number (e.g., 07123456789 or +44 7123 456789)';
+      newErrors.phone = 'Hmm, that number doesn\'t look like a UK number. Try 07123 456789.';
     }
 
     if (!formData.vehicleReg.trim()) {
-      newErrors.vehicleReg = 'Vehicle registration is required';
+      newErrors.vehicleReg = 'Please pop in your vehicle registration.';
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast({
-        title: "Please check your information",
-        description: "Please correct the errors below and try again.",
+        title: "Just a few details missing",
+        description: "We've highlighted the fields below — please take a quick look.",
         variant: "destructive",
       });
+      // Scroll to the first error so it's visible on mobile
+      setTimeout(() => {
+        const firstErrorField = Object.keys(newErrors)[0];
+        const el = document.getElementById(firstErrorField);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
       return;
     }
+
 
     setIsSubmitting(true);
     
