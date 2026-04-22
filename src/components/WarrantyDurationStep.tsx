@@ -264,7 +264,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       planTitle: 'Platinum Complete Plan',
       features: [
         'All mechanical & electrical parts',
-        'Up to 10 claims per year',
+        'Unlimited claims',
         'Up to the value of your vehicle',
         'Labour costs covered',
         'Fault diagnostics',
