@@ -256,7 +256,7 @@ const Protected = () => {
       />
 
       {/* ── HERO ── */}
-      <section className="relative px-6 pt-20 pb-16 md:pt-24 md:pb-20 text-center overflow-hidden">
+      <section className="relative px-6 pt-14 pb-10 md:pt-16 md:pb-12 text-center overflow-hidden border-b border-gray-200">
         <div className="relative z-10 max-w-4xl mx-auto">
           <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
@@ -311,9 +311,7 @@ const Protected = () => {
 
       {/* ── COVERAGE GRID ── */}
       <div ref={coverageRef}>
-        <section className="max-w-6xl mx-auto px-6 py-20">
-          <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
-            Coverage
+        <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
           </div>
           <h2
@@ -348,9 +346,7 @@ const Protected = () => {
         </section>
 
         {/* ── COVERED / NOT COVERED COLUMNS ── */}
-        <section className="max-w-6xl mx-auto px-6 py-20">
-          <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
-            At a glance
+        <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
           </div>
           <h2
@@ -405,7 +401,7 @@ const Protected = () => {
         {/* ============================================================ */}
         {/* PRESERVED SECTION 1: Full coverage by vehicle type accordion  */}
         {/* ============================================================ */}
-        <section className="py-16 md:py-20 bg-white">
+        <section className="py-12 bg-white border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Full coverage by vehicle type</h2>
@@ -567,7 +563,7 @@ const Protected = () => {
         {/* ============================================================ */}
         {/* PRESERVED SECTION 2: PDF Downloads — crystal clear            */}
         {/* ============================================================ */}
-        <section className="py-16 md:py-20 bg-muted">
+        <section className="py-12 bg-muted border-b border-gray-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
@@ -618,7 +614,7 @@ const Protected = () => {
       </div>
 
       {/* ── CLAIM LIMITS ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
         <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
           Protection Levels
           <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
@@ -709,7 +705,7 @@ const Protected = () => {
       </section>
 
       {/* ── TRUSTPILOT REVIEWS CAROUSEL ── */}
-      <section className="bg-white py-16 md:py-20 text-center">
+      <section className="bg-white py-12 text-center border-b border-gray-200">
         <div className="relative max-w-7xl mx-auto px-6">
           <h2
             className="font-bold tracking-tight mb-6 text-foreground"
@@ -742,7 +738,7 @@ const Protected = () => {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="max-w-4xl mx-auto px-6 py-20">
+      <section className="max-w-4xl mx-auto px-6 py-12 border-b border-gray-200">
         <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
           FAQ
           <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
@@ -776,7 +772,7 @@ const Protected = () => {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="relative py-20 md:py-24 px-6 text-center overflow-hidden">
+      <section className="relative py-14 px-6 text-center overflow-hidden">
         <div className="relative z-10 max-w-3xl mx-auto">
           <h2
             className="font-extrabold tracking-tight mb-4 text-foreground"
