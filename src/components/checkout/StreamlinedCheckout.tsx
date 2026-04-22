@@ -653,30 +653,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
    const [isScrolledPastBottomCta, setIsScrolledPastBottomCta] = useState(false);
    const bottomCtaRef = React.useRef<HTMLDivElement>(null);
    
-    // IntersectionObserver to detect when bottom CTA is visible OR has been scrolled past
+    // Track when the bottom CTA button area is actually in view (not just the top of the section).
+    // The HowToPaySection wrapper is tall, so we only consider the CTA "visible" when its
+    // bottom edge has scrolled into the viewport — meaning the user can actually see the
+    // inline "Activate my cover" button. Only then do we minimise the floating sticky bar.
     useEffect(() => {
       const el = bottomCtaRef.current;
       if (!el) return;
-      
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsBottomCtaFullyVisible(true);
-            // Check if we're near the bottom of the page
-            const atBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-            setIsScrolledPastBottomCta(atBottom);
-          } else {
-            const rect = entry.boundingClientRect;
-            const scrolledPast = rect.bottom < window.innerHeight;
-            setIsBottomCtaFullyVisible(false);
-            setIsScrolledPastBottomCta(scrolledPast);
-          }
-        },
-        { threshold: 0.1 }
-      );
-      
-      observer.observe(el);
-      return () => observer.disconnect();
+
+      const handleCheck = () => {
+        const rect = el.getBoundingClientRect();
+        const viewportH = window.innerHeight;
+        // Inline CTA button sits near the bottom of this section. Consider it "visible"
+        // when the section's bottom is within the viewport (with a small buffer).
+        const ctaInView = rect.bottom <= viewportH + 80 && rect.bottom >= 120;
+        const scrolledPast = rect.bottom < 120;
+
+        setIsBottomCtaFullyVisible(ctaInView);
+        setIsScrolledPastBottomCta(scrolledPast);
+      };
+
+      handleCheck();
+      window.addEventListener('scroll', handleCheck, { passive: true });
+      window.addEventListener('resize', handleCheck);
+      return () => {
+        window.removeEventListener('scroll', handleCheck);
+        window.removeEventListener('resize', handleCheck);
+      };
     }, []);
    
    // Track scroll to show/hide desktop sticky bar
