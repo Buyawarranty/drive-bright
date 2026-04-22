@@ -233,7 +233,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-xs sm:max-w-sm lg:w-1/3 lg:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
         {/* Close button */}
         <button
           type="button"
