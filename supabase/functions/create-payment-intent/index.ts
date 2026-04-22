@@ -104,7 +104,13 @@ serve(async (req) => {
     {
       const { validateCheckoutPrice } = await import("../_shared/price-floor.ts");
       const priceCheck = await validateCheckoutPrice(
-        { planId: planId || planName, paymentType, voluntaryExcess, finalAmount: Number(totalAmount) },
+        {
+          planId: planId || planName,
+          paymentType,
+          voluntaryExcess,
+          claimLimit,
+          finalAmount: Number(totalAmount),
+        },
       );
       if (!priceCheck.ok) {
         logStep("🚨 PRICE MANIPULATION BLOCKED (payment-intent)", {
