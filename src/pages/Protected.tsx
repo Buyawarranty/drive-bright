@@ -827,9 +827,7 @@ const Protected = () => {
             </div>
           </div>
         </div>
-
-        {/* Document downloads — secondary trust signal alongside FAQ */}
-
+      </section>
 
       {/* Help Me Choose modal */}
       <HelpMeChooseModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
