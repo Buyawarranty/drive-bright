@@ -256,7 +256,7 @@ const Protected = () => {
             Know exactly what's covered
             <span className="block text-brand-orange">and what we pay.</span>
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-9 font-light">
+          <p className="text-base md:text-lg text-foreground max-w-xl mx-auto mb-9 font-light">
             Unlimited claims. Each repair covered up to your chosen limit. Parts and labour included.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
