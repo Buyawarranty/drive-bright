@@ -121,6 +121,19 @@ const Protected = () => {
     fetchDocuments();
   }, []);
 
+  // Re-initialize Trustpilot widget on mount (SPA navigation safe)
+  useEffect(() => {
+    const tryLoad = () => {
+      if ((window as any).Trustpilot) {
+        const widgets = document.querySelectorAll('.trustpilot-widget');
+        widgets.forEach((w) => (window as any).Trustpilot.loadFromElement(w, true));
+      } else {
+        setTimeout(tryLoad, 300);
+      }
+    };
+    tryLoad();
+  }, []);
+
   const scrollToCoverage = () => {
     coverageRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -244,13 +257,6 @@ const Protected = () => {
 
       {/* ── HERO ── */}
       <section className="relative px-6 pt-20 pb-16 md:pt-24 md:pb-20 text-center overflow-hidden">
-        <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(240,90,40,0.10) 0%, transparent 70%)',
-          }}
-        />
         <div className="relative z-10 max-w-4xl mx-auto">
           <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
@@ -263,7 +269,7 @@ const Protected = () => {
             Know exactly what's covered
             <span className="block text-brand-orange">and what we pay.</span>
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-9 font-light">
+          <p className="text-base md:text-lg text-foreground max-w-xl mx-auto mb-9 font-light">
             Unlimited claims. Each repair covered up to your chosen limit. Parts and labour included.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
@@ -320,7 +326,7 @@ const Protected = () => {
             All major mechanical and electrical parts needed to keep your car running, covered when they fail.
           </p>
 
-          <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]">
+          <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {coverageCards.map((c, i) => (
               <div
                 key={i}
@@ -351,10 +357,10 @@ const Protected = () => {
             className="font-bold tracking-tight leading-tight mb-3 text-foreground"
             style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(26px, 4vw, 44px)' }}
           >
-            What's in and what's out
+            What we cover and what we don't
           </h2>
           <p className="text-base text-muted-foreground font-light max-w-xl mb-12">
-            No ambiguity. Know exactly what your policy covers before you buy.
+            A clear, side-by-side list so you know exactly what your policy includes before you buy.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -702,28 +708,35 @@ const Protected = () => {
         </div>
       </section>
 
-      {/* ── TESTIMONIAL ── */}
-      <section className="bg-brand-orange py-16 md:py-20 text-center text-white relative overflow-hidden">
-        <div
-          className="absolute -top-8 left-1/2 -translate-x-1/2 text-white/10 leading-none pointer-events-none select-none"
-          style={{ fontFamily: "'Syne', sans-serif", fontSize: '280px' }}
-        >
-          "
-        </div>
-        <div className="relative max-w-3xl mx-auto px-6">
-          <div className="flex justify-center gap-1 mb-5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star key={s} className="w-5 h-5 fill-white text-white" />
-            ))}
-          </div>
-          <p
-            className="italic font-light mb-5 leading-snug"
-            style={{ fontSize: 'clamp(18px, 3vw, 26px)' }}
+      {/* ── TRUSTPILOT REVIEWS CAROUSEL ── */}
+      <section className="bg-brand-orange py-16 md:py-20 text-center text-white">
+        <div className="relative max-w-5xl mx-auto px-6">
+          <h2
+            className="font-bold tracking-tight mb-6 text-white"
+            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px, 3.5vw, 36px)' }}
           >
-            "My BMW needed a new water pump. The garage quoted £785. Buyawarranty approved the repair and I paid nothing. It was fast and easy."
-          </p>
-          <div className="text-sm text-white/80">
-            <strong className="text-white">Matt, Leeds</strong> · BMW 3 Series owner
+            What our customers say
+          </h2>
+          <div className="bg-white rounded-2xl p-4 md:p-6">
+            <div
+              className="trustpilot-widget"
+              data-locale="en-US"
+              data-template-id="539ad0ffdec7e10e686debd7"
+              data-businessunit-id="6586c764848940568d554a08"
+              data-style-height="350px"
+              data-style-width="100%"
+              data-token="cfaeda17-f5f3-4134-8d8e-4458b41bff40"
+              data-stars="4,5"
+              data-review-languages="en"
+            >
+              <a
+                href="https://www.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Trustpilot
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -764,13 +777,6 @@ const Protected = () => {
 
       {/* ── FINAL CTA ── */}
       <section className="relative py-20 md:py-24 px-6 text-center overflow-hidden">
-        <div
-          className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[600px] h-[600px] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse, rgba(240,90,40,0.07) 0%, transparent 70%)',
-          }}
-        />
         <div className="relative z-10 max-w-3xl mx-auto">
           <h2
             className="font-extrabold tracking-tight mb-4 text-foreground"
@@ -784,15 +790,15 @@ const Protected = () => {
           <div className="flex flex-wrap gap-3 justify-center mb-5">
             <Link
               to="/?step=1"
-              className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] shadow-[0_8px_30px_rgba(240,90,40,0.4)] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all"
             >
               Get my free quote <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href="tel:03002300046"
+              href="tel:03302295040"
               className="inline-flex items-center gap-2 border border-border bg-transparent text-foreground px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-muted hover:-translate-y-0.5 transition-all"
             >
-              <Phone className="w-4 h-4" /> 0300 230 0046
+              <Phone className="w-4 h-4" /> 0330 229 5040
             </a>
           </div>
           <p className="text-xs text-muted-foreground">
