@@ -124,7 +124,13 @@ serve(async (req) => {
     // 🔒 SHARED SERVER-SIDE PRICE FLOOR — blocks £1 / tampered finalAmount values
     // Cross-checks against special_vehicle_plans in DB and an absolute £25 floor.
     const floorCheck = await validateCheckoutPrice(
-      { planId: planName || planType, paymentType, voluntaryExcess, finalAmount: Number(totalAmount) },
+      {
+        planId: planName || planType,
+        paymentType,
+        voluntaryExcess,
+        claimLimit,
+        finalAmount: Number(totalAmount),
+      },
       supabaseService,
     );
     if (!floorCheck.ok) {
