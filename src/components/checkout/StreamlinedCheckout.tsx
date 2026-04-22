@@ -1381,7 +1381,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         scrollToFirstIncomplete();
       }, 200);
       
-      toast.error('Please complete all required fields including your address.');
+      toast.error('Please complete all required fields including your address.', {
+        id: 'checkout-required-fields',
+        duration: 6000,
+        closeButton: true,
+        dismissible: true,
+      });
       return;
     }
     
