@@ -205,6 +205,10 @@ const Claims = () => {
 
     if (!formData.vehicleReg.trim()) {
       newErrors.vehicleReg = 'Please pop in your vehicle registration.';
+    } else if (errors.vehicleReg) {
+      newErrors.vehicleReg = errors.vehicleReg;
+    } else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
+      newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
     }
 
     if (Object.keys(newErrors).length > 0) {
