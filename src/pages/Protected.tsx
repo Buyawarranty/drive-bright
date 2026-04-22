@@ -259,7 +259,7 @@ const Protected = () => {
             <span className="block text-brand-orange">and what we pay.</span>
           </h1>
           <p className="text-base md:text-lg text-foreground max-w-2xl mx-auto mb-9 font-light">
-            A vehicle warranty for mechanical and electrical failures — <strong className="font-semibold">not breakdown cover</strong>. We pay your garage <strong className="font-semibold">directly</strong>, so you're never out of pocket. Parts and labour included.
+            Protect against costly <strong className="font-semibold">mechanical and electrical failures</strong>. We pay your garage <strong className="font-semibold">directly</strong> so you are never out of pocket. Parts and labour included.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
