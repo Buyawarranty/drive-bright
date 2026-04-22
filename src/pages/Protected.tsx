@@ -709,10 +709,10 @@ const Protected = () => {
       </section>
 
       {/* ── TRUSTPILOT REVIEWS CAROUSEL ── */}
-      <section className="bg-brand-orange py-16 md:py-20 text-center text-white">
+      <section className="bg-white py-16 md:py-20 text-center">
         <div className="relative max-w-5xl mx-auto px-6">
           <h2
-            className="font-bold tracking-tight mb-6 text-white"
+            className="font-bold tracking-tight mb-6 text-foreground"
             style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px, 3.5vw, 36px)' }}
           >
             What our customers say
@@ -733,6 +733,7 @@ const Protected = () => {
                 href="https://www.trustpilot.com/review/buyawarranty.co.uk"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="text-foreground"
               >
                 Trustpilot
               </a>
@@ -757,17 +758,17 @@ const Protected = () => {
           Everything you need to know about your cover and how it works.
         </p>
 
-        <Accordion type="single" collapsible className="space-y-2">
+        <Accordion type="single" collapsible className="space-y-3">
           {faqs.map((f, i) => (
             <AccordionItem
               key={i}
               value={`faq-${i}`}
-              className="bg-muted/40 border border-border rounded-xl overflow-hidden hover:border-brand-orange/30 transition-colors"
+              className="bg-brand-orange border border-brand-orange rounded-xl overflow-hidden shadow-sm"
             >
-              <AccordionTrigger className="px-6 py-4 text-left font-medium text-[15px] text-foreground hover:no-underline">
+              <AccordionTrigger className="px-6 py-4 text-left font-bold text-[15px] text-white hover:no-underline hover:bg-brand-orange/90 [&>svg]:text-white">
                 {f.q}
               </AccordionTrigger>
-              <AccordionContent className="px-6 pb-5 text-sm text-muted-foreground leading-relaxed">
+              <AccordionContent className="px-6 pb-5 pt-1 text-sm text-white/95 leading-relaxed">
                 {f.a}
               </AccordionContent>
             </AccordionItem>
