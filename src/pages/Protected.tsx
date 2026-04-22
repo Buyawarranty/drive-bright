@@ -776,37 +776,6 @@ const Protected = () => {
         </div>
       </section>
 
-      {/* ── 10. FINAL CTA ── */}
-      <section className="relative py-14 px-6 text-center overflow-hidden">
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <h2
-            className="font-extrabold tracking-tight mb-4 text-foreground"
-            style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(28px, 5vw, 52px)' }}
-          >
-            Ready to protect your vehicle?
-          </h2>
-          <p className="text-base text-muted-foreground mb-9">
-            From just <strong className="text-foreground">60p per day</strong>. Get your price in under 30 seconds and choose the cover that's right for you.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center mb-5">
-            <Link
-              to="/?step=1"
-              className="inline-flex items-center gap-2 bg-brand-orange text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-brand-orange/90 hover:-translate-y-0.5 transition-all"
-            >
-              Get my free quote <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href="tel:03302295040"
-              className="inline-flex items-center gap-2 border border-border bg-transparent text-foreground px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-muted hover:-translate-y-0.5 transition-all"
-            >
-              <Phone className="w-4 h-4" /> 0330 229 5040
-            </a>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Prices from 60p per day · Cancel anytime · No claims excess on most plans
-          </p>
-        </div>
-      </section>
 
       {/* Help Me Choose modal */}
       <HelpMeChooseModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
