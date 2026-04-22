@@ -93,7 +93,7 @@ function getVehicleAdjustment(customer: CustomerRecord, durationYears: number): 
   const mileageQualifies = mileageNum !== null && mileageNum > 120000 && mileageNum <= 150000;
   const ageQualifies = ageYears !== null && ageYears > 12 && ageYears <= 15;
 
-  const surchargeByDuration = (y: number) => (y === 1 ? 100 : y === 2 ? 150 : y === 3 ? 200 : 0);
+  const surchargeByDuration = (y: number) => (y === 1 ? 200 : y === 2 ? 250 : y === 3 ? 300 : 0);
 
   if (mileageQualifies || ageQualifies) {
     adjustment += surchargeByDuration(durationYears);
