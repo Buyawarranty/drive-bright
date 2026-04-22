@@ -297,7 +297,7 @@ const Protected = () => {
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm text-muted-foreground hover:opacity-80 transition-opacity"
         >
-          <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4 w-auto" />
+          <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-7 w-auto" />
           <span><strong className="text-foreground font-medium">4.8/5</strong> rated on Trustpilot</span>
         </a>
         <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
