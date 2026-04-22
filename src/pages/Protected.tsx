@@ -825,6 +825,7 @@ const Protected = () => {
                 <span className="text-muted-foreground text-xs">Loading...</span>
               )}
             </div>
+            </div>
           </div>
         </div>
       </section>
