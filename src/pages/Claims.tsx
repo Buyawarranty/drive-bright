@@ -61,37 +61,18 @@ const Claims = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     setFormData({
       ...formData,
       [name]: value
     });
 
-    // Clear errors when user starts typing
+    // Clear the error for this field as soon as the user edits it
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         [name]: ''
-      });
-    }
-
-    // Real-time validation for email and phone
-    if (name === 'email' && value) {
-      if (!validateEmail(value)) {
-        setErrors({
-          ...errors,
-          email: 'Please enter a valid email address'
-        });
-      }
-    }
-
-    if (name === 'phone' && value) {
-      if (!validatePhone(value)) {
-        setErrors({
-          ...errors,
-          phone: 'Please enter a valid UK phone number (e.g., 07123456789 or +44 7123 456789)'
-        });
-      }
+      }));
     }
   };
 
@@ -192,38 +173,47 @@ const Claims = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
+    // Validate all required fields together so every issue is shown at once
     const newErrors: {[key: string]: string} = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = 'Could you let us know your name?';
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = 'We just need an email so we can get back to you.';
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = 'That email doesn\'t look quite right — mind double-checking it?';
     }
-    
+
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = 'A contact number helps us reach you faster.';
     } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = 'Please enter a valid UK phone number (e.g., 07123456789 or +44 7123 456789)';
+      newErrors.phone = 'Hmm, that number doesn\'t look like a UK number. Try 07123 456789.';
     }
 
     if (!formData.vehicleReg.trim()) {
-      newErrors.vehicleReg = 'Vehicle registration is required';
+      newErrors.vehicleReg = 'Please pop in your vehicle registration.';
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast({
-        title: "Please check your information",
-        description: "Please correct the errors below and try again.",
+        title: "Just a few details missing",
+        description: "We've highlighted the fields below — please take a quick look.",
         variant: "destructive",
       });
+      // Scroll to the first error so it's visible on mobile
+      setTimeout(() => {
+        const firstErrorField = Object.keys(newErrors)[0];
+        const el = document.getElementById(firstErrorField);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
       return;
     }
+
 
     setIsSubmitting(true);
     
@@ -320,9 +310,9 @@ Additional Information: ${formData.additionalInfo}
 
       <div className="min-h-screen bg-white">
         {/* Hero Section - UX Optimized with Orange Branding */}
-        <section className="bg-white py-16 lg:py-24 px-4">
+        <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
               Making a Claim
             </h1>
             <p className="text-xl lg:text-2xl font-semibold text-orange-600 mb-8">
@@ -360,7 +350,7 @@ Additional Information: ${formData.additionalInfo}
             {/* What You'll Need */}
             <div className="mb-12">
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">What You'll Need</h2>
-              <div className="bg-white rounded-xl p-8 shadow-lg border border-orange-100">
+              <div className="bg-white rounded-xl p-5 sm:p-8 shadow-lg border border-orange-100">
                 <ul className="space-y-4 text-left text-gray-700">
                   <li className="flex items-start gap-3">
                     <span className="text-orange-500 font-bold mt-1">•</span>
@@ -389,7 +379,7 @@ Additional Information: ${formData.additionalInfo}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <a 
                   href="mailto:claims@buyawarranty.co.uk"
-                  className="group block p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                  className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
@@ -406,7 +396,7 @@ Additional Information: ${formData.additionalInfo}
 
                 <a 
                   href="tel:03302295045"
-                  className="group block p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                  className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
@@ -437,8 +427,8 @@ Additional Information: ${formData.additionalInfo}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Form Section - Takes 2 columns */}
                 <div className="lg:col-span-2">
-                  <div className="bg-white p-6 lg:p-8 rounded-xl shadow-lg">
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
+                    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
                       {/* Section 1: Contact Information */}
                       <div>
                         <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
@@ -460,9 +450,9 @@ Additional Information: ${formData.additionalInfo}
                               value={formData.name}
                               onChange={handleInputChange}
                               required
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
-                            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                            {errors.name && <p className="mt-1 text-sm text-[#FF385C]">{errors.name}</p>}
                           </div>
 
                           <div>
@@ -477,9 +467,9 @@ Additional Information: ${formData.additionalInfo}
                               value={formData.email}
                               onChange={handleInputChange}
                               required
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
-                            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                            {errors.email && <p className="mt-1 text-sm text-[#FF385C]">{errors.email}</p>}
                           </div>
 
                           <div>
@@ -493,9 +483,9 @@ Additional Information: ${formData.additionalInfo}
                               placeholder="07123456789"
                               value={formData.phone}
                               onChange={handleInputChange}
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
-                            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                            {errors.phone && <p className="mt-1 text-sm text-[#FF385C]">{errors.phone}</p>}
                           </div>
 
                           <div>
@@ -521,7 +511,7 @@ Additional Information: ${formData.additionalInfo}
                                   }
                                 }}
                                 required
-                                className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                                className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                               />
                               {isLookingUpVehicle && (
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
@@ -529,7 +519,7 @@ Additional Information: ${formData.additionalInfo}
                                 </div>
                               )}
                             </div>
-                            {errors.vehicleReg && <p className="mt-1 text-sm text-red-600">{errors.vehicleReg}</p>}
+                            {errors.vehicleReg && <p className="mt-1 text-sm text-[#FF385C]">{errors.vehicleReg}</p>}
                             {vehicleDetails && (vehicleDetails.make || vehicleDetails.model) && (
                               <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
                                 <p className="text-sm text-green-700 font-medium">
@@ -652,7 +642,7 @@ Additional Information: ${formData.additionalInfo}
                   1
                 </div>
                 <p className="text-gray-700 text-lg leading-relaxed">
-                  Report the fault to us at <span className="font-semibold text-orange-500">0330 229 5045</span> (Mon-Fri 9am to 5:30pm) or complete the form on this page
+                  Report the fault to us at <span className="font-semibold text-orange-500">0330 229 5045</span> (Mon-Fri 9am to 6pm) or complete the form on this page
                 </p>
               </div>
               
