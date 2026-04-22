@@ -11,22 +11,22 @@ import HelpMeChooseModal from '@/components/cover-page/HelpMeChooseModal';
 
 // ----- Data for the new design sections -----
 const coverageCards = [
-  { icon: '⚙️', title: 'Engine', desc: 'All internal engine components including pistons, crankshaft, camshaft, oil pump, and cylinder head.' },
-  { icon: '🔄', title: 'Clutch System', desc: 'Clutch plate, pressure plate, release bearing, and flywheel. Full clutch assembly covered.' },
-  { icon: '⛽', title: 'Fuel System', desc: 'Fuel pump, injectors, fuel pressure regulator and fuel rail covered in full.' },
-  { icon: '❄️', title: 'Air Conditioning', desc: 'Compressor, condenser, evaporator, expansion valve, and receiver drier all included.' },
-  { icon: '🚗', title: 'Steering', desc: 'Power steering pump, rack and pinion, steering column and electric power steering motor.' },
-  { icon: '🛑', title: 'Braking System', desc: 'ABS module, brake servo, master cylinder, and brake callipers fully protected.' },
-  { icon: '🌡️', title: 'Heating & Ventilation', desc: 'Heater matrix, blower motor, temperature control module and associated parts.' },
-  { icon: '📱', title: 'Infotainment & Cameras', desc: 'Touchscreen, navigation unit, parking sensors, and reversing camera systems.' },
-  { icon: '🔻', title: 'Gearbox', desc: 'Manual or automatic. All internal gearbox components, torque convertor and selector forks.' },
-  { icon: '💨', title: 'Turbo & Supercharger', desc: 'Turbocharger assembly, wastegate, intercooler and supercharger components covered.' },
-  { icon: '🌊', title: 'Cooling System', desc: 'Water pump, radiator, thermostat, cooling fan and coolant hoses included.' },
-  { icon: '⚡', title: 'Electrical Systems & ECUs', desc: 'Engine control units, body control modules, and major electrical management systems.' },
-  { icon: '🔧', title: 'Suspension', desc: 'Shock absorbers, struts, control arms, ball joints, and suspension bushes covered.' },
-  { icon: '⚙️', title: 'Drive System', desc: 'Driveshafts, CV joints, differential, prop shaft and transfer box components.' },
-  { icon: '🛡️', title: 'Safety Systems', desc: 'Airbag control module, seatbelt pre-tensioners, traction and stability control units.' },
-  { icon: '✨', title: 'Everything Else', desc: "If it's essential to the smooth and safe running of your vehicle, it's normally covered." },
+  { Icon: Cog, title: 'Engine', desc: 'All internal engine components including pistons, crankshaft, camshaft, oil pump, and cylinder head.' },
+  { Icon: RefreshCw, title: 'Clutch System', desc: 'Clutch plate, pressure plate, release bearing, and flywheel. Full clutch assembly covered.' },
+  { Icon: Fuel, title: 'Fuel System', desc: 'Fuel pump, injectors, fuel pressure regulator and fuel rail covered in full.' },
+  { Icon: Snowflake, title: 'Air Conditioning', desc: 'Compressor, condenser, evaporator, expansion valve, and receiver drier all included.' },
+  { Icon: Car, title: 'Steering', desc: 'Power steering pump, rack and pinion, steering column and electric power steering motor.' },
+  { Icon: Disc, title: 'Braking System', desc: 'ABS module, brake servo, master cylinder, and brake callipers fully protected.' },
+  { Icon: Thermometer, title: 'Heating & Ventilation', desc: 'Heater matrix, blower motor, temperature control module and associated parts.' },
+  { Icon: Smartphone, title: 'Infotainment & Cameras', desc: 'Touchscreen, navigation unit, parking sensors, and reversing camera systems.' },
+  { Icon: GitBranch, title: 'Gearbox', desc: 'Manual or automatic. All internal gearbox components, torque convertor and selector forks.' },
+  { Icon: Wind, title: 'Turbo & Supercharger', desc: 'Turbocharger assembly, wastegate, intercooler and supercharger components covered.' },
+  { Icon: Droplets, title: 'Cooling System', desc: 'Water pump, radiator, thermostat, cooling fan and coolant hoses included.' },
+  { Icon: Zap, title: 'Electrical Systems & ECUs', desc: 'Engine control units, body control modules, and major electrical management systems.' },
+  { Icon: Wrench, title: 'Suspension', desc: 'Shock absorbers, struts, control arms, ball joints, and suspension bushes covered.' },
+  { Icon: Move3d, title: 'Drive System', desc: 'Driveshafts, CV joints, differential, prop shaft and transfer box components.' },
+  { Icon: ShieldCheck, title: 'Safety Systems', desc: 'Airbag control module, seatbelt pre-tensioners, traction and stability control units.' },
+  { Icon: Sparkles, title: 'Everything Else', desc: "If it's essential to the smooth and safe running of your vehicle, it's normally covered." },
 ];
 
 const coveredItems = [
