@@ -130,9 +130,6 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             {paymentPeriod === '36months' && (
               <span className="text-xs text-gray-600">No payments in years 2 & 3</span>
             )}
-            {paymentPeriod === '12months' && (
-              <span className="text-xs text-gray-600">Local Garages (£50/hour)</span>
-            )}
           </div>
 
           {/* 4. CTA */}
@@ -240,8 +237,17 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
           {/* Main row: Trustpilot + Price + CTA */}
           <div className="flex items-center justify-between gap-3">
-            {/* Left: Total price */}
+            {/* Left: Trustpilot + Total price */}
             <div className={cn("flex-shrink-0 transition-all duration-300", isPulsing && "animate-pulse")}>
+              <a
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 mb-1 hover:opacity-80 transition-opacity"
+              >
+                <span className="text-[11px] font-bold text-gray-900">Excellent</span>
+                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3" />
+              </a>
               <div className="text-base font-bold text-gray-900">Total: £{monthlyPrice}/Month</div>
               <p className="text-[11px] text-gray-600">12 payments · 0% APR</p>
               {stripeSavings > 0 && (
