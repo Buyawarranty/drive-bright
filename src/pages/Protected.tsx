@@ -710,7 +710,7 @@ const Protected = () => {
 
       {/* ── TRUSTPILOT REVIEWS CAROUSEL ── */}
       <section className="bg-white py-16 md:py-20 text-center">
-        <div className="relative max-w-5xl mx-auto px-6">
+        <div className="relative max-w-7xl mx-auto px-6">
           <h2
             className="font-bold tracking-tight mb-6 text-foreground"
             style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px, 3.5vw, 36px)' }}
@@ -720,12 +720,11 @@ const Protected = () => {
           <div className="bg-white rounded-2xl p-4 md:p-6">
             <div
               className="trustpilot-widget"
-              data-locale="en-US"
-              data-template-id="539ad0ffdec7e10e686debd7"
+              data-locale="en-GB"
+              data-template-id="54ad5defc6454f065c28af8b"
               data-businessunit-id="6586c764848940568d554a08"
-              data-style-height="350px"
+              data-style-height="240px"
               data-style-width="100%"
-              data-token="cfaeda17-f5f3-4134-8d8e-4458b41bff40"
               data-stars="4,5"
               data-review-languages="en"
             >
