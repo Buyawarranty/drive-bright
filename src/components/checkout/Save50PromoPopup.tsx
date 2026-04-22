@@ -1,0 +1,324 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Sparkles, Clock, Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+const CODE = 'SAVE50';
+const MIN_SPEND = 350;
+const COUNTDOWN_SECONDS = 15 * 60; // 15 minutes
+const INACTIVITY_MS = 20 * 1000; // 20 seconds
+const STORAGE_KEY = 'baw_save50_state_v1';
+
+type StoredState = {
+  status: 'shown' | 'dismissed' | 'applied';
+  email?: string;
+  shownAt?: number;
+  expiresAt?: number;
+};
+
+interface Save50PromoPopupProps {
+  orderTotal: number;
+  customerEmail?: string;
+  vehicleReg?: string;
+  hasDiscountApplied: boolean;
+  onApplied: (discount: {
+    code: string;
+    type: 'percentage' | 'fixed';
+    value: number;
+    stripe_coupon_id?: string;
+    stripe_promo_code_id?: string;
+  }) => void;
+}
+
+const readState = (): StoredState | null => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredState) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeState = (s: StoredState) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch {
+    /* ignore */
+  }
+};
+
+const formatTime = (s: number) => {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+};
+
+export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
+  orderTotal,
+  customerEmail,
+  vehicleReg,
+  hasDiscountApplied,
+  onApplied,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
+  const [isApplying, setIsApplying] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
+  const inactivityTimer = useRef<number | null>(null);
+  const hasShownThisSession = useRef(false);
+
+  // Check eligibility & decide whether to arm the inactivity timer
+  useEffect(() => {
+    if (hasDiscountApplied) return;
+    if (orderTotal < MIN_SPEND) return;
+
+    const stored = readState();
+
+    // Already used or dismissed permanently on this device
+    if (stored?.status === 'applied') return;
+    if (stored?.status === 'dismissed') return;
+
+    // If a previous session armed the timer, restore remaining time
+    if (stored?.status === 'shown' && stored.expiresAt) {
+      const remaining = Math.floor((stored.expiresAt - Date.now()) / 1000);
+      if (remaining <= 0) {
+        // Window already passed — burn the offer
+        writeState({ ...stored, status: 'dismissed' });
+        return;
+      }
+      // Re-open immediately with the existing timer
+      setSecondsLeft(remaining);
+      setIsOpen(true);
+      hasShownThisSession.current = true;
+      return;
+    }
+
+    // Arm 20s inactivity timer (any user interaction resets it)
+    const reset = () => {
+      if (hasShownThisSession.current) return;
+      if (inactivityTimer.current) window.clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = window.setTimeout(() => {
+        if (hasShownThisSession.current) return;
+        hasShownThisSession.current = true;
+        const expiresAt = Date.now() + COUNTDOWN_SECONDS * 1000;
+        writeState({
+          status: 'shown',
+          email: customerEmail,
+          shownAt: Date.now(),
+          expiresAt,
+        });
+        setSecondsLeft(COUNTDOWN_SECONDS);
+        setIsOpen(true);
+      }, INACTIVITY_MS);
+    };
+
+    const events = ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, reset));
+      if (inactivityTimer.current) window.clearTimeout(inactivityTimer.current);
+    };
+  }, [orderTotal, customerEmail, hasDiscountApplied]);
+
+  // Countdown
+  useEffect(() => {
+    if (!isOpen || isExpired) return;
+    const id = window.setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          setIsExpired(true);
+          const stored = readState();
+          if (stored && stored.status === 'shown') {
+            writeState({ ...stored, status: 'dismissed' });
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [isOpen, isExpired]);
+
+  // Lock body scroll while open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    const stored = readState();
+    // Mark dismissed so it can't reappear on this device
+    writeState({
+      status: 'dismissed',
+      email: customerEmail,
+      shownAt: stored?.shownAt,
+      expiresAt: stored?.expiresAt,
+    });
+  };
+
+  const handleApply = async () => {
+    if (isApplying || isExpired) return;
+    setIsApplying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-discount-code', {
+        body: {
+          code: CODE,
+          customerEmail: customerEmail?.trim().toLowerCase() || undefined,
+          vehicleReg: vehicleReg || undefined,
+          orderAmount: orderTotal,
+        },
+      });
+
+      if (error || !data?.valid) {
+        const msg = data?.error || 'This code can\'t be applied right now.';
+        toast.error(msg);
+        // If it's a "you've already used this code" rejection, lock it for this device
+        if (typeof msg === 'string' && /already used/i.test(msg)) {
+          writeState({ status: 'applied', email: customerEmail });
+        }
+        return;
+      }
+
+      const dc = data.discountCode;
+      onApplied({
+        code: CODE,
+        type: dc.type,
+        value: dc.value,
+        stripe_coupon_id: dc.stripe_coupon_id,
+        stripe_promo_code_id: dc.stripe_promo_code_id,
+      });
+
+      writeState({ status: 'applied', email: customerEmail });
+      toast.success('🎉 SAVE50 applied — £50 off your order!', {
+        style: {
+          background: '#E91E63',
+          color: '#ffffff',
+          fontWeight: '600',
+          borderRadius: '8px',
+          border: 'none',
+        },
+        duration: 5000,
+      });
+      setIsOpen(false);
+    } catch (err) {
+      console.error('[Save50PromoPopup] apply failed', err);
+      toast.error('Something went wrong applying the code.');
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="save50-title"
+    >
+      {/* Backdrop */}
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={handleClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+      />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={handleClose}
+          aria-label="Dismiss offer"
+          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-gray-100 flex items-center justify-center transition-colors shadow-sm"
+        >
+          <X className="w-5 h-5 text-gray-600" />
+        </button>
+
+        {/* Top accent band */}
+        <div className="bg-gradient-to-br from-[#FF8C00] via-[#FF6B00] to-[#E91E63] px-6 pt-7 pb-6 text-center text-white">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/20 backdrop-blur mb-3">
+            <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
+          </div>
+          <p className="text-sm font-semibold uppercase tracking-wider opacity-90">
+            One-time offer just for you
+          </p>
+          <h2 id="save50-title" className="text-3xl sm:text-4xl font-extrabold mt-1">
+            £50 OFF
+          </h2>
+          <p className="text-sm sm:text-base mt-1 opacity-95">your warranty today</p>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 sm:py-6">
+          {/* Code chip */}
+          <div className="flex items-center justify-between gap-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 mb-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">
+                Your code
+              </p>
+              <p className="text-xl font-extrabold text-gray-900 tracking-wider">{CODE}</p>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Clock className="w-4 h-4 text-[#E91E63]" />
+              <span className="font-semibold">
+                {isExpired ? 'Expired' : formatTime(secondsLeft)}
+              </span>
+            </div>
+          </div>
+
+          {/* Bullets */}
+          <ul className="space-y-2 mb-5 text-sm text-gray-700">
+            <li className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
+              <span>Applies instantly — no need to type anything.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
+              <span>One-time use — can only be redeemed on this order.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
+              <span>Valid for the next 15 minutes only.</span>
+            </li>
+          </ul>
+
+          {/* CTA */}
+          {isExpired ? (
+            <button
+              type="button"
+              onClick={handleClose}
+              className="w-full h-12 rounded-xl bg-gray-200 text-gray-600 font-semibold text-base"
+            >
+              Offer expired — close
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={isApplying}
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#E91E63] text-white font-bold text-base shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isApplying ? 'Applying…' : 'Apply £50 off now'}
+            </button>
+          )}
+
+          <p className="text-[11px] text-center text-gray-500 mt-3">
+            Minimum spend £{MIN_SPEND}. Not combinable with other codes.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Save50PromoPopup;

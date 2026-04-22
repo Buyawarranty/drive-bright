@@ -28,6 +28,7 @@ import PlanSummaryCard from '@/components/checkout/PlanSummaryCard';
 import CoverHighlights from '@/components/checkout/CoverHighlights';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import HowToPaySection from '@/components/checkout/HowToPaySection';
+import Save50PromoPopup from '@/components/checkout/Save50PromoPopup';
 import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
 import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
@@ -1690,6 +1691,34 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      {/* SAVE50 popup — 20s inactivity, 15-min countdown, single-use */}
+      <Save50PromoPopup
+        orderTotal={selectedPayment === 'full' ? stripeTotalPrice : bumperTotalPrice}
+        customerEmail={customerData.email}
+        vehicleReg={vehicleData?.regNumber}
+        hasDiscountApplied={appliedDiscountCodes.length > 0}
+        onApplied={(d) => {
+          setAppliedDiscountCodes((prev) => {
+            if (prev.some((c) => c.code === d.code)) return prev;
+            return [
+              ...prev,
+              {
+                code: d.code,
+                type: d.type,
+                value: d.value,
+                discountAmount: 0,
+                stripe_coupon_id: d.stripe_coupon_id,
+                stripe_promo_code_id: d.stripe_promo_code_id,
+              },
+            ];
+          });
+          // If embedded checkout was already showing, force re-create PaymentIntent
+          if (showEmbeddedCheckout && stripeClientSecret) {
+            setShowEmbeddedCheckout(false);
+            setStripeClientSecret(null);
+          }
+        }}
+      />
       {/* Desktop: Two-column layout with sticky sidebar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Back Link - Full width */}

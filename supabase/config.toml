@@ -233,3 +233,6 @@ verify_jwt = false
 
 [functions.check-secret-placeholders]
 verify_jwt = false
+
+[functions.seed-save50-promo]
+verify_jwt = false
