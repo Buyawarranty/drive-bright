@@ -483,9 +483,9 @@ Additional Information: ${formData.additionalInfo}
                               placeholder="07123456789"
                               value={formData.phone}
                               onChange={handleInputChange}
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
-                            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                            {errors.phone && <p className="mt-1 text-sm text-[#FF385C]">{errors.phone}</p>}
                           </div>
 
                           <div>
