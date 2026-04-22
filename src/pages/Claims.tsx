@@ -652,7 +652,7 @@ Additional Information: ${formData.additionalInfo}
                   1
                 </div>
                 <p className="text-gray-700 text-lg leading-relaxed">
-                  Report the fault to us at <span className="font-semibold text-orange-500">0330 229 5045</span> (Mon-Fri 9am to 5:30pm) or complete the form on this page
+                  Report the fault to us at <span className="font-semibold text-orange-500">0330 229 5045</span> (Mon-Fri 9am to 6pm) or complete the form on this page
                 </p>
               </div>
               
