@@ -1036,39 +1036,19 @@ const SUVWarrantyLanding: React.FC = () => {
               >
                 All Models
               </button>
-              <button
-                onClick={() => { setActiveModelFilter('Series'); setModelSearchQuery(''); }}
-                className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  activeModelFilter === 'Series'
-                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/25 focus:ring-slate-900'
-                    : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 focus:ring-slate-400'
-                }`}
-              >
-                Series
-              </button>
-              <button
-                onClick={() => { setActiveModelFilter('X Series SUVs'); setModelSearchQuery(''); }}
-                className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  activeModelFilter === 'X Series SUVs'
-                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/25 focus:ring-slate-900'
-                    : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 focus:ring-slate-400'
-                }`}
-              >
-                X Series SUVs
-              </button>
-              <button
-                onClick={() => { setActiveModelFilter('Electric & Hybrid'); setModelSearchQuery(''); }}
-                className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  activeModelFilter === 'Electric & Hybrid'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25 focus:ring-blue-600'
-                    : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-blue-300 hover:bg-blue-50 focus:ring-blue-400'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5" />
-                  i Series / Electric
-                </span>
-              </button>
+              {(Object.keys(suvModelCategories) as ModelCategory[]).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => { setActiveModelFilter(cat); setModelSearchQuery(''); }}
+                  className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    activeModelFilter === cat
+                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/25 focus:ring-slate-900'
+                      : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 focus:ring-slate-400'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
 
             {/* Models Grid - Compact Cards */}
