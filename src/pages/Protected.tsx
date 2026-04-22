@@ -244,13 +244,6 @@ const Protected = () => {
 
       {/* ── HERO ── */}
       <section className="relative px-6 pt-20 pb-16 md:pt-24 md:pb-20 text-center overflow-hidden">
-        <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(240,90,40,0.10) 0%, transparent 70%)',
-          }}
-        />
         <div className="relative z-10 max-w-4xl mx-auto">
           <span className="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/25 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-brand-orange mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
