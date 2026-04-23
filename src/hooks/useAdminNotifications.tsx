@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -28,7 +28,24 @@ export const useAdminNotifications = (userRole?: string | null) => {
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
 
+  // Keep latest readIds in a ref so fetchNotifications stays stable
+  // and doesn't tear down realtime channels every time a notification is read.
+  const readIdsRef = useRef(readIds);
+  useEffect(() => { readIdsRef.current = readIds; }, [readIds]);
+
+  // Debounce / coalesce refetches triggered by bursty realtime events.
+  const refetchTimerRef = useRef<number | null>(null);
+  const scheduleRefetch = useCallback(() => {
+    if (refetchTimerRef.current) return;
+    refetchTimerRef.current = window.setTimeout(() => {
+      refetchTimerRef.current = null;
+      fetchNotificationsRef.current?.();
+    }, 1500);
+  }, []);
+  const fetchNotificationsRef = useRef<(() => void) | null>(null);
+
   const fetchNotifications = useCallback(async () => {
+    const currentReadIds = readIdsRef.current;
     try {
       // Fetch new contact submissions (last 24 hours, status = 'new')
       const { data: contacts } = await supabase
