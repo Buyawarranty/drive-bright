@@ -380,7 +380,7 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
         formData: customerData,
         timestamp: Date.now()
       }));
-      window.location.href = checkoutData.url;
+      redirectToStripeWithBackGuard(checkoutData.url);
     } else {
       toast.error('Payment setup failed. Please try again.');
       setIsLoadingPayment(false);

@@ -1512,7 +1512,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           pricingData: updatedPricingData
         }));
         
-        window.location.href = checkoutData.url;
+        redirectToStripeWithBackGuard(checkoutData.url);
       } else {
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
