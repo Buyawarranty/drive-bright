@@ -903,11 +903,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
       )}
 
-      {/* Lead Date (Created) */}
+      {/* Lead Date (latest submission for repeat leads) */}
       {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground">
-          {format(new Date(lead.created_at), 'MMM d, yyyy HH:mm')}
+          {format(new Date(lead.last_resubmitted_at || lead.created_at), 'MMM d, yyyy HH:mm')}
         </span>
       </TableCell>
       )}
