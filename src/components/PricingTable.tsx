@@ -1270,7 +1270,44 @@ const PricingTable: React.FC<PricingTableProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      {/* New desktop/tablet layout (md+) */}
+      <div className="hidden md:block">
+        <Step3Desktop
+          vehicleData={vehicleData}
+          onBack={onBack}
+          onChangeVehicle={onChangeVehicle}
+          selectedClaimLimit={selectedClaimLimit}
+          setSelectedClaimLimit={(v) => {
+            setSelectedClaimLimit(v);
+            setBoostAddon(false);
+            setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+          }}
+          selectedLabourRate={selectedLabourRate}
+          setSelectedLabourRate={setSelectedLabourRate}
+          paymentType={paymentType}
+          setPaymentType={(v) => {
+            isUserPaymentTypeChange.current = true;
+            setPaymentType(v);
+            setValidationErrors(prev => ({ ...prev, paymentType: false }));
+          }}
+          voluntaryExcess={voluntaryExcess}
+          setVoluntaryExcess={(v) => {
+            toggleVoluntaryExcess(v);
+            setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+          }}
+          getPricingData={getPricingData}
+          selectedProtectionAddOns={selectedProtectionAddOns}
+          monthlyPrice={monthlyPrice}
+          totalPrice={totalPrice}
+          availableDurations={availableDurations as ('12months' | '24months' | '36months')[]}
+          onSelectPlan={handleSelectPlan}
+          validationErrors={validationErrors}
+        />
+      </div>
+
+      {/* Existing mobile layout (<md) */}
+      <div className="md:hidden min-h-screen bg-white">
       
       {/* Header with Back button and Get Covered heading */}
       <div className="bg-white border-b">
