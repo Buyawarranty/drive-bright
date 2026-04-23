@@ -895,10 +895,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return getClaimLimitSurcharge(selectedClaimLimit, paymentType as string, voluntaryExcess || 100);
   }, [selectedClaimLimit, paymentType, voluntaryExcess]);
 
+  // Memoized boost adjustment (£5/mo × 12 = £60 when enabled, same for all durations)
+  // CRITICAL: Must be included so sticky/totals match the duration card prices
+  const boostTotalAdjustment = useMemo(() => {
+    return boostAddon ? 60 : 0;
+  }, [boostAddon]);
+
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
+  // Includes: base + labour rate + add-ons + premium claim surcharge + boost addon
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge;
-  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge]);
+    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment;
+  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment]);
 
   // Marketing savings (display only - NOT applied to actual price)
   const marketingSavings = useMemo(() => {
