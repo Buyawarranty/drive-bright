@@ -156,8 +156,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     return daily < 1 ? `${Math.round(daily * 100)}p/day` : `£${daily.toFixed(2)}/day`;
   }, [monthlyPrice, paymentType]);
 
-  const payInFull = monthlyPrice * 12;
-  const savings = paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0;
+  const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
+  const monthlyTotal = monthlyPrice * months;
+  const payInFull = Math.round(monthlyTotal * 0.9);
+  const savings = monthlyTotal - payInFull;
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
   const selectedLabour = LABOUR_OPTIONS.find(l => l.value === selectedLabourRate);
@@ -303,7 +305,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   const days = months === 12 ? 365 : months === 24 ? 730 : 1095;
                   const dailyVal = (m * 12 * (months / 12)) / days;
                   const dailyTxt = dailyVal < 1 ? `${Math.round(dailyVal * 100)}p/day` : `£${dailyVal.toFixed(2)}/day`;
-                  const save = d.id === '24months' ? 100 : d.id === '36months' ? 200 : 0;
+                  const save = Math.round(m * months * 0.1);
                   return (
                     <OptionCard
                       key={d.id}
