@@ -537,7 +537,7 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="name" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="name" className="text-gray-900 font-bold text-base block text-left">
                               Name *
                             </Label>
                             <Input
