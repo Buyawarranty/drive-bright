@@ -638,7 +638,7 @@ Additional Information: ${formData.additionalInfo}
                           <h3 className="text-xl font-bold text-gray-900">Current Mileage</h3>
                         </div>
                         <div>
-                          <Label htmlFor="currentMileage" className="text-gray-700 font-medium text-sm mb-2 block">
+                          <Label htmlFor="currentMileage" className="text-gray-900 font-bold text-base mb-2 block text-left">
                             Enter current approximate mileage
                           </Label>
                           <div className="flex gap-2 mt-1.5">
