@@ -2812,23 +2812,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </a>
                       </div>
 
-                      {/* Price + Pay in full row */}
+                      {/* Price row - matches duration card style: big £/mo, small p/day */}
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="text-2xl font-bold text-gray-900 leading-none whitespace-nowrap">£{displayMonthlyPrice}</span>
+                        <span className="text-sm text-gray-600 leading-none">/mo</span>
+                        <span className="text-gray-300">|</span>
+                        <span className="text-sm text-gray-600 leading-none">Equal to</span>
+                        <span className="text-base font-semibold text-gray-700 leading-none whitespace-nowrap">{dailyPriceLabel}</span>
+                      </div>
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xl font-bold text-orange-500 leading-none whitespace-nowrap">{dailyPriceLabel}</span>
-                          <span className="text-[11px] text-gray-700">£{displayMonthlyPrice}/month · 12 payments · Covers {months} months</span>
-                          {stripeSavings > 0 && (
-                            <span className="text-[11px] font-semibold text-green-600">Save £{stripeSavings} today</span>
-                          )}
-                        </div>
+                        <span className="text-[11px] text-gray-600">12 payments · Covers {months} months</span>
                         {stripeSavings > 0 && (
-                          <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-2 py-1.5 flex-shrink-0">
-                            <Wallet className="w-4 h-4 text-green-600 flex-shrink-0" />
-                            <div className="flex flex-col">
-                              <span className="text-[10px] text-gray-700 leading-tight whitespace-nowrap">Pay in full <span className="font-bold text-gray-900">£{payInFullDiscounted}</span></span>
-                              <span className="text-[10px] font-semibold text-green-600 leading-tight whitespace-nowrap">Save £{stripeSavings}</span>
-                            </div>
-                          </div>
+                          <span className="text-[11px] font-semibold text-green-600">Save £{stripeSavings} today</span>
                         )}
                       </div>
 
