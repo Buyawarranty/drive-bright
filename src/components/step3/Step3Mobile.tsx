@@ -425,18 +425,6 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           </div>
         )}
 
-        <ClaimLimitSelector
-          selectedClaimLimit={selectedClaimLimit}
-          onClaimLimitChange={setSelectedClaimLimit}
-          currentMonthlyPrice={currentMonthlyPrice}
-          boostAddon={boostAddon}
-          onBoostChange={setBoostAddon}
-          boostPrice={5}
-          paymentType={paymentType}
-          vehicleMake={vehicleData?.make}
-          voluntaryExcess={voluntaryExcess || 100}
-        />
-
         <TermSelector
           selectedTerm={paymentType}
           onTermChange={(term) => setPaymentType(term)}
@@ -452,6 +440,18 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         <div className="px-4 mb-4 mt-4">
           <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
         </div>
+
+        <ClaimLimitSelector
+          selectedClaimLimit={selectedClaimLimit}
+          onClaimLimitChange={setSelectedClaimLimit}
+          currentMonthlyPrice={currentMonthlyPrice}
+          boostAddon={boostAddon}
+          onBoostChange={setBoostAddon}
+          boostPrice={5}
+          paymentType={paymentType}
+          vehicleMake={vehicleData?.make}
+          voluntaryExcess={voluntaryExcess || 100}
+        />
 
         <LabourRateSelector
           selectedLabourRate={selectedLabourRate}
