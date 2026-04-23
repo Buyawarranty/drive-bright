@@ -474,9 +474,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const leadCounts = useMemo(() => {
     // "All Leads" = absolute total of every lead created on that date — never changes once the day ends.
-    const absoluteTotal = dateFilteredLeadsForCounts.length;
+    const absoluteTotal = dateFilteredVisibleLeadsForFilters.length;
     // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
-    const liveCount = dateFilteredLeadsForCounts.filter(
+    const liveCount = dateFilteredVisibleLeadsForFilters.filter(
       l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
     ).length;
 
@@ -485,39 +485,39 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       all: absoluteTotal,
       live: liveCount,
       total: absoluteTotal,
-      new: dateFilteredLeadsForCounts.filter(l => l.status === 'new').length,
-      contacted: dateFilteredLeadsForCounts.filter(l => l.status === 'contacted').length,
-      follow_up: dateFilteredLeadsForCounts.filter(l => l.status === 'follow_up').length,
-      quote_sent: dateFilteredLeadsForCounts.filter(l => l.status === 'quote_sent').length,
-      urgent_callback: dateFilteredLeadsForCounts.filter(l => l.status === 'urgent_callback').length,
-      callbacks: dateFilteredLeadsForCounts.filter(l => l.is_callback === true).length,
-      paid: dateFilteredLeadsForCounts.filter(l => l.is_paid === true).length,
-      lost: dateFilteredLeadsForCounts.filter(l => l.status === 'lost').length,
-      converted: dateFilteredLeadsForCounts.filter(l => l.status === 'converted').length,
-      high_priority: dateFilteredLeadsForCounts.filter(
+      new: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'new').length,
+      contacted: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'contacted').length,
+      follow_up: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'follow_up').length,
+      quote_sent: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'quote_sent').length,
+      urgent_callback: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'urgent_callback').length,
+      callbacks: dateFilteredVisibleLeadsForFilters.filter(l => l.is_callback === true).length,
+      paid: dateFilteredVisibleLeadsForFilters.filter(l => l.is_paid === true).length,
+      lost: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'lost').length,
+      converted: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'converted').length,
+      high_priority: dateFilteredVisibleLeadsForFilters.filter(
         l =>
           (l.priority === 'high' || l.priority === 'urgent') &&
           l.status !== 'lost' &&
           l.status !== 'fake_lead' &&
           (l.status as string) !== 'archived'
       ).length,
-      fake: dateFilteredLeadsForCounts.filter(l => l.status === 'fake_lead').length,
-      reminders: dateFilteredLeadsForCounts.filter(l => reminderLeadIds.has(l.id)).length,
-      due_today: dateFilteredLeadsForCounts.filter(l => {
+      fake: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'fake_lead').length,
+      reminders: dateFilteredVisibleLeadsForFilters.filter(l => reminderLeadIds.has(l.id)).length,
+      due_today: dateFilteredVisibleLeadsForFilters.filter(l => {
         const rt = reminderTimesMap[l.id];
         if (!rt) return false;
         const d = new Date(rt);
         return isToday(d) || isPast(d);
       }).length,
-      recovered: dateFilteredLeadsForCounts.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
-      source_google: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad').length,
-      source_facebook: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad').length,
-      source_organic: dateFilteredLeadsForCounts.filter(l => !l.lead_source || l.lead_source === 'website').length,
-      source_google_live: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
-      source_facebook_live: dateFilteredLeadsForCounts.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
-      source_organic_live: dateFilteredLeadsForCounts.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
+      source_google: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad').length,
+      source_facebook: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad').length,
+      source_organic: dateFilteredVisibleLeadsForFilters.filter(l => !l.lead_source || l.lead_source === 'website').length,
+      source_google_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      source_facebook_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      source_organic_live: dateFilteredVisibleLeadsForFilters.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
     };
-  }, [dateFilteredLeadsForCounts, reminderLeadIds]);
+  }, [dateFilteredVisibleLeadsForFilters, reminderLeadIds]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
