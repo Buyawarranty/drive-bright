@@ -788,13 +788,13 @@ Additional Information: ${formData.additionalInfo}
                               Click to upload or drag and drop
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              PDF, DOC, DOCX, JPG or PNG (max 20MB)
+                              PDF, DOC, DOCX, JPG, PNG or HEIC (max 20MB — large photos are auto-shrunk)
                             </p>
                             <input
                               id="file-upload"
                               type="file"
                               className="hidden"
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
+                              accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                               onChange={handleFileUpload}
                             />
                           </div>
