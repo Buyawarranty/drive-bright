@@ -4746,10 +4746,14 @@ Please log in and change your password after first login.`;
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
                     {customer.phone ? (
-                      <span className="text-foreground text-sm flex items-center gap-1">
+                      <a
+                        href={`tel:${normalisePhone(customer.phone)}`}
+                        className="text-foreground text-sm inline-flex items-center gap-1 hover:underline"
+                        aria-label={`Call ${customer.phone}`}
+                      >
                         <Phone className="h-3 w-3" />
                         {customer.phone}
-                      </span>
+                      </a>
                     ) : 'N/A'}
                   </TableCell>
                   <TableCell>
