@@ -554,7 +554,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="email" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="email" className="text-gray-900 font-bold text-base block text-left">
                               Email *
                             </Label>
                             <Input
