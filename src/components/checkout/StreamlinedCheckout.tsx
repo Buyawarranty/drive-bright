@@ -2412,7 +2412,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               ].map((r) => (
                 <div key={r.name} className="border border-[#f0f0ee] rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <img src={trustpilotStars} alt="5 stars" className="h-4" />
                     <span className="text-xs font-semibold text-[#1a1a1a]">{r.name}</span>
                     <span className="text-xs text-[#888] ml-auto">{r.time}</span>
                   </div>
