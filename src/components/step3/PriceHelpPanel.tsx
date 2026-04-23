@@ -57,11 +57,20 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setIsPhoneValid(false);
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
-    } else {
-      document.body.style.overflow = '';
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
-    return () => { document.body.style.overflow = ''; };
+    // Defensive: ensure body scroll is restored whenever panel is not open
+    document.body.style.overflow = '';
   }, [isOpen]);
+
+  // Final safety net: always restore body scroll on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const validatePhone = (phone: string): boolean => {
     const cleaned = phone.replace(/[\s\-]/g, '');
