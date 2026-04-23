@@ -312,6 +312,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const statusFilteredLeads = useMemo(() => applyStatusFilter(visibleLeads), [visibleLeads, applyStatusFilter]);
 
+  const getLeadSubmissionDate = useCallback(
+    (lead: Lead) => new Date(lead.last_resubmitted_at || lead.created_at),
+    []
+  );
+
   const filteredLeads = useMemo(() => {
     let result = statusFilteredLeads;
 
@@ -338,7 +343,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     // Apply date range filter — but skip it when actively searching so leads are always findable
     if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
+      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
     }
 
     // Apply search filter
@@ -367,32 +372,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           return bTime - aTime;
         }
         case 'newest':
-          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+          return new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime() - new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime();
         case 'latest_submitted':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return getLeadSubmissionDate(b).getTime() - getLeadSubmissionDate(a).getTime();
         case 'oldest':
-          return new Date(a.last_activity_date || a.created_at).getTime() - new Date(b.last_activity_date || b.created_at).getTime();
+          return new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime() - new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime();
         case 'contacted':
           if (a.status === 'contacted' && b.status !== 'contacted') return -1;
           if (a.status !== 'contacted' && b.status === 'contacted') return 1;
-          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+          return new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime() - new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime();
         case 'follow_up':
           if (a.status === 'follow_up' && b.status !== 'follow_up') return -1;
           if (a.status !== 'follow_up' && b.status === 'follow_up') return 1;
-          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+          return new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime() - new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime();
         case 'quote_sent':
           if (a.status === 'quote_sent' && b.status !== 'quote_sent') return -1;
           if (a.status !== 'quote_sent' && b.status === 'quote_sent') return 1;
-          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+          return new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime() - new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime();
         default:
-          return new Date(b.last_activity_date || b.created_at).getTime() - new Date(a.last_activity_date || a.created_at).getTime();
+          return new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime() - new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime();
       }
     });
 
     return result;
-  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap]);
-
-  // Separate fresh leads from recovered (unworked) leads
+  }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
@@ -406,50 +409,45 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (filter === 'recovered') return [];
     // Super admin sees separate unworked section — exclude recovered from main list
     if (canSeeUnworked) return filteredLeads.filter(lead => !isRecoveredLead(lead));
-    
+
     // All other roles: merge recovered leads into main list but deduplicate
     // Group by normalized email AND phone, keep the one with assignment/activity, discard duplicates
     const seenByEmail = new Map<string, number>();
     const seenByPhone = new Map<string, number>();
     const result: typeof filteredLeads = [];
-    
+
     const normalizePhone = (phone: string | null | undefined) => {
       if (!phone) return null;
       const digits = phone.replace(/[^0-9]/g, '');
       return digits.length >= 10 ? digits.slice(-10) : null;
     };
-    
-    const hasActivity = (lead: typeof filteredLeads[0]) => 
+
+    const hasActivity = (lead: typeof filteredLeads[0]) =>
       lead.assigned_to || lead.call_count > 0 || lead.notes;
-    
+
     for (const lead of filteredLeads) {
       const emailKey = lead.email?.toLowerCase()?.trim() || null;
       const phoneKey = normalizePhone(lead.phone);
-      
-      // Check if we've seen this lead by email or phone
+
       const existingByEmail = emailKey ? seenByEmail.get(emailKey) : undefined;
       const existingByPhone = phoneKey ? seenByPhone.get(phoneKey) : undefined;
       const existingIdx = existingByEmail ?? existingByPhone;
-      
+
       if (existingIdx === undefined) {
         const idx = result.length;
         if (emailKey) seenByEmail.set(emailKey, idx);
         if (phoneKey) seenByPhone.set(phoneKey, idx);
         result.push(lead);
       } else {
-        // Keep the one with assignment or more activity
         const existing = result[existingIdx];
         if (!hasActivity(existing) && hasActivity(lead)) {
-          // Replace with the one that has activity
           result[existingIdx] = lead;
-          // Update index references
           if (emailKey) seenByEmail.set(emailKey, existingIdx);
           if (phoneKey) seenByPhone.set(phoneKey, existingIdx);
         }
-        // Otherwise keep existing — discard the duplicate
       }
     }
-    
+
     return result;
   }, [filteredLeads, isRecoveredLead, filter, canSeeUnworked]);
 
@@ -466,14 +464,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
-    return visibleLeads.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
-  }, [visibleLeads, dateRange]);
-
-  // Date-filter the raw source-of-truth dataset for accurate counts.
-  const dateFilteredLeadsForCounts = useMemo(() => {
-    if (!dateRange.from && !dateRange.to) return leads;
-    return leads.filter(lead => isDateInLeadFeedRange(new Date(lead.created_at), dateRange));
-  }, [leads, dateRange]);
+    return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+  }, [visibleLeads, dateRange, getLeadSubmissionDate]);
 
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
