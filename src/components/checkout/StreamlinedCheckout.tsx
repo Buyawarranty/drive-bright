@@ -151,6 +151,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   // Payment toggle state
   const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
+  const [declarationChecked, setDeclarationChecked] = useState(false);
+  const [declarationError, setDeclarationError] = useState(false);
   const selectedPaymentRef = React.useRef<'monthly' | 'full' | null>('monthly');
   
   // Section states for collapsible accordion
@@ -1319,7 +1321,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     setShowValidation(true);
     setPaymentError('');
-    
+
+    if (!declarationChecked) {
+      setDeclarationError(true);
+      const declSection = document.getElementById('vehicle-declaration');
+      declSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast.error('Please confirm the vehicle declaration to continue.');
+      return;
+    }
+
     if (!effectivePayment) {
       setPaymentError('Please choose a payment option to continue.');
       const paymentSection = document.getElementById('payment-section');
@@ -1742,6 +1752,41 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         <div className="flex gap-8 items-start">
           {/* Main Content Column */}
           <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-4 lg:pb-4 lg:space-y-0 min-w-0">
+          {/* ==================== HERO TITLE + WHAT HAPPENS NEXT ==================== */}
+          <section className="space-y-4 mb-2">
+            <h1 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-[#1a1a1a]">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#E8F7F2]">
+                <Shield className="w-4 h-4 text-[#0F6E56]" />
+              </span>
+              {vehicleData.year ? `Your ${vehicleData.year} ` : 'Your '}
+              {vehicleData.make || 'vehicle'} is nearly protected
+            </h1>
+
+            <div className="bg-[#E8F7F2] border border-[#a8dfc9] rounded-xl px-5 py-4">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#0F6E56] mb-3">
+                <CheckCircle className="w-4 h-4" />
+                What happens after you activate
+              </h3>
+              <div className="space-y-2.5">
+                {[
+                  { n: 1, t: 'Policy documents arrive in seconds', s: 'Emailed instantly to your inbox' },
+                  { n: 2, t: 'Cover starts on your selected date', s: "You're protected for breakdowns" },
+                  { n: 3, t: 'Claim online or by phone anytime', s: '0330 229 5045 — answered by real people' },
+                ].map((row) => (
+                  <div key={row.n} className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center">
+                      {row.n}
+                    </div>
+                    <div className="leading-tight">
+                      <div className="text-sm font-medium text-[#0F6E56]">{row.t}</div>
+                      <div className="text-xs text-[#1D9E75]">{row.s}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
             <PlanSummaryCard
@@ -2304,6 +2349,73 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </div>
             )}
           </div>
+
+          {/* ==================== VEHICLE DECLARATION (fraud prevention) ==================== */}
+          <section
+            id="vehicle-declaration"
+            className={`mt-6 rounded-xl border px-4 sm:px-5 py-4 transition-colors ${
+              declarationError && !declarationChecked
+                ? 'bg-red-50 border-red-300'
+                : 'bg-[#fffbf0] border-[#f5e4b0]'
+            }`}
+          >
+            <label className="flex items-start gap-3 cursor-pointer">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={declarationChecked}
+                onClick={() => {
+                  setDeclarationChecked(!declarationChecked);
+                  if (!declarationChecked) setDeclarationError(false);
+                }}
+                className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-[5px] border-2 flex items-center justify-center transition-colors ${
+                  declarationChecked
+                    ? 'bg-[#1D9E75] border-[#1D9E75]'
+                    : 'bg-white border-[#cfcfcf] hover:border-[#888]'
+                }`}
+              >
+                {declarationChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+              </button>
+              <span className="text-sm text-[#555] leading-relaxed">
+                <strong className="text-[#1a1a1a]">I confirm</strong> that, to the best of my knowledge, the vehicle has{' '}
+                <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been serviced in line with the manufacturer's schedule. I understand that pre-existing faults are not covered.
+              </span>
+            </label>
+            {declarationError && !declarationChecked && (
+              <p className="text-xs text-red-600 mt-2 ml-8">Please tick the box to continue.</p>
+            )}
+          </section>
+
+          {/* ==================== CUSTOMER REVIEWS ==================== */}
+          <section className="mt-6 bg-white rounded-xl border border-border p-4 sm:p-5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1a1a1a] mb-3">
+              <span className="text-[#E8521A]">★★★★★</span>
+              What our customers say
+            </h3>
+            <div className="space-y-3">
+              {[
+                { name: 'Sarah M.', time: '2 days ago', text: 'Easy sign-up, great cover and the team answered every question. Glad I switched.', tag: 'Verified customer' },
+                { name: 'James P.', time: '1 week ago', text: 'Claimed within the first month — paid out fast, no hassle. Would recommend.', tag: 'Verified claim' },
+              ].map((r) => (
+                <div key={r.name} className="border border-[#f0f0ee] rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[#E8521A] text-xs leading-none">★★★★★</span>
+                    <span className="text-xs font-semibold text-[#1a1a1a]">{r.name}</span>
+                    <span className="text-xs text-[#888] ml-auto">{r.time}</span>
+                  </div>
+                  <p className="text-xs text-[#555] leading-relaxed">{r.text}</p>
+                  <span className="inline-block text-[10px] bg-[#E8F7F2] text-[#0F6E56] px-2 py-0.5 rounded-full mt-1.5 font-medium">
+                    {r.tag}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mt-3 text-xs text-[#888]">
+              <span className="text-base font-bold text-[#1a1a1a]">4.8</span>
+              <span className="text-[#E8521A]">★★★★★</span>
+              <span>· Trusted by thousands of UK drivers</span>
+            </div>
+          </section>
 
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
           <div ref={(el) => { (howToPayRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }} id="how-to-pay-section">
