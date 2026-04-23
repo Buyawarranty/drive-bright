@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Sparkles, Clock, Check, Copy } from 'lucide-react';
+import { X, Car, Clock, Check, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -246,9 +246,21 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
 
         {/* Top accent band */}
         <div className="bg-gradient-to-br from-[#FF8C00] via-[#FF6B00] to-[#E91E63] px-5 sm:px-6 pt-6 sm:pt-7 pb-5 sm:pb-6 text-center text-white">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur mb-2.5 sm:mb-3">
-            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
+          <div className="relative inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur mb-2.5 sm:mb-3 overflow-hidden">
+            <Car
+              className="w-6 h-6 sm:w-7 sm:h-7 text-white animate-[car-drive_2.2s_ease-in-out_infinite]"
+              strokeWidth={2.5}
+            />
           </div>
+          <style>{`
+            @keyframes car-drive {
+              0%   { transform: translateX(-140%); opacity: 0; }
+              15%  { opacity: 1; }
+              50%  { transform: translateX(0); opacity: 1; }
+              85%  { opacity: 1; }
+              100% { transform: translateX(140%); opacity: 0; }
+            }
+          `}</style>
           <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider opacity-90">
             One-time offer just for you
           </p>
