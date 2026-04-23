@@ -19,15 +19,7 @@ import PriceHelpTrigger from './PriceHelpTrigger';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import Step3Header from './Step3Header';
-import Step3Hero from './Step3Hero';
-import TermSelector from './TermSelector';
-import ExcessSelector from './ExcessSelector';
-import ClaimLimitSelector from './ClaimLimitSelector';
-import LabourRateSelector from './LabourRateSelector';
-import ExtrasSelector from './ExtrasSelector';
-import CoverageTransparency from './CoverageTransparency';
-import StickyFooter from './StickyFooter';
+import MobileSteppedFlow from './MobileSteppedFlow';
 
 interface Step3MobileProps {
   vehicleData: {
