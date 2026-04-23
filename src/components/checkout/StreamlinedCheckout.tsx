@@ -2376,7 +2376,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     : 'bg-white border-[#cfcfcf] hover:border-[#888]'
                 }`}
               >
-                {declarationChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
               </button>
               <span className="text-sm text-[#555] leading-relaxed">
                 <strong className="text-[#1a1a1a]">I confirm</strong> that, to the best of my knowledge, the vehicle has{' '}
