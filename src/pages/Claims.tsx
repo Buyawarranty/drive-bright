@@ -704,9 +704,9 @@ Additional Information: ${formData.additionalInfo}
                           </div>
                           <h3 className="text-xl font-bold text-gray-900">What Happened</h3>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           <div>
-                            <Label htmlFor="faultDescription" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-base">
                               Describe the fault / problem *
                             </Label>
                             <Textarea
@@ -716,44 +716,43 @@ Additional Information: ${formData.additionalInfo}
                               value={formData.faultDescription}
                               onChange={handleInputChange}
                               rows={4}
-                              className={`mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
+                              className={`mt-2 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
                             {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C]">{errors.faultDescription}</p>}
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="dateOccurred" className="text-gray-700 font-medium text-sm">
-                                When did the fault occur?
-                              </Label>
-                              <Input
-                                id="dateOccurred"
-                                name="dateOccurred"
-                                type="date"
-                                value={formData.dateOccurred}
-                                onChange={handleInputChange}
-                                max={new Date().toISOString().split('T')[0]}
-                                className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="issueTiming" className="text-gray-700 font-medium text-sm">
-                                When does the issue happen?
-                              </Label>
-                              <Input
-                                id="issueTiming"
-                                name="issueTiming"
-                                type="text"
-                                placeholder="e.g. on start-up, when braking, all the time"
-                                value={formData.issueTiming}
-                                onChange={handleInputChange}
-                                className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                              />
-                            </div>
+                          <div>
+                            <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-base">
+                              When did the fault occur?
+                            </Label>
+                            <Input
+                              id="dateOccurred"
+                              name="dateOccurred"
+                              type="date"
+                              value={formData.dateOccurred}
+                              onChange={handleInputChange}
+                              max={new Date().toISOString().split('T')[0]}
+                              className="mt-2 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                            />
                           </div>
 
                           <div>
-                            <Label htmlFor="faultDetails" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-base">
+                              When does the issue happen?
+                            </Label>
+                            <Input
+                              id="issueTiming"
+                              name="issueTiming"
+                              type="text"
+                              placeholder="e.g. on start-up, when braking, all the time"
+                              value={formData.issueTiming}
+                              onChange={handleInputChange}
+                              className="mt-2 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-base">
                               Any other relevant details
                             </Label>
                             <Textarea
@@ -763,7 +762,7 @@ Additional Information: ${formData.additionalInfo}
                               value={formData.faultDetails}
                               onChange={handleInputChange}
                               rows={3}
-                              className="mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                              className="mt-2 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
                             />
                           </div>
 
