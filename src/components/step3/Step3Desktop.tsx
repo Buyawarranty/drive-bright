@@ -235,7 +235,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             {/* CARD 1 - Cover Level */}
             <Card>
               <SectionHead
-                eyebrow="Cover level"
+                eyebrow="Claim limit"
                 title="How much cover do you need?"
                 subtitle="Choose the repair limit that feels right for your car and budget."
                 onDetails={() => setClaimLimitDetailsOpen(true)}
