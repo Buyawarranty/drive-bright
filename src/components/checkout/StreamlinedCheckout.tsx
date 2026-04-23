@@ -2150,7 +2150,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     Pre-filled from your last entry
                   </span>
                 )}
-                {mileagePreFilled && customerData.mileage && (
+                {customerData.mileage && (
                   <button
                     type="button"
                     onClick={handleClearMileage}
