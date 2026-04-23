@@ -12,6 +12,7 @@ import ClaimLimitDetails from './ClaimLimitDetails';
 import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
 
