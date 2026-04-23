@@ -2353,10 +2353,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* ==================== VEHICLE DECLARATION (fraud prevention) ==================== */}
           <section
             id="vehicle-declaration"
-            className={`mt-6 rounded-xl border px-4 sm:px-5 py-4 transition-colors ${
+            className={`mt-6 rounded-xl border-2 px-4 sm:px-5 py-4 transition-colors ${
               declarationError && !declarationChecked
                 ? 'bg-red-50 border-red-300'
-                : 'bg-[#fffbf0] border-[#f5e4b0]'
+                : 'bg-white border-[#d8dde3]'
             }`}
           >
             <label className="flex items-start gap-3 cursor-pointer">
