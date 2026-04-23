@@ -282,8 +282,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       badge={opt.badge}
                       onClick={() => setSelectedLabourRate(opt.value)}
                     >
-                      <div className="text-[24px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">{opt.label}</div>
-                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[34px] leading-tight">{opt.sub}</div>
+                      <div className="h-[28px] flex items-center mb-2">
+                        <div className="text-[24px] font-extrabold tracking-[-0.04em] leading-none text-[#161616]">{opt.label}</div>
+                      </div>
+                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[36px] leading-tight">{opt.sub}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">{opt.note}</div>
                     </OptionCard>
                   );
@@ -314,13 +316,17 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       badge={d.badge}
                       onClick={() => setPaymentType(d.id)}
                     >
-                      <div className="text-[18px] font-extrabold tracking-[-0.04em] leading-none mb-1 text-[#161616]">{d.label}</div>
-                      <div className="text-[13px] font-bold text-[#333] mb-1">Platinum Complete Plan</div>
-                      <div className="mt-2 text-[30px] font-extrabold tracking-[-0.04em] leading-none text-[#161616]">
+                      <div className="min-h-[52px]">
+                        <div className="text-[18px] font-extrabold tracking-[-0.04em] leading-tight mb-1 text-[#161616]">{d.label}</div>
+                        <div className="text-[13px] font-bold text-[#333] leading-tight">Platinum Complete Plan</div>
+                      </div>
+                      <div className="mt-3 text-[30px] font-extrabold tracking-[-0.04em] leading-none text-[#161616]">
                         £{m}<span className="text-[15px] text-[#6c6c6c] font-semibold">/mo</span>
                       </div>
-                      <div className="text-[12px] text-[#919191] mt-1">Equal to {dailyTxt}</div>
-                      {save > 0 && <div className="mt-2.5 text-[#1ca36f] text-[13px] font-extrabold">Save £{save} today</div>}
+                      <div className="text-[12px] text-[#919191] mt-1 min-h-[16px]">Equal to {dailyTxt}</div>
+                      <div className="mt-2.5 min-h-[18px] text-[#1ca36f] text-[13px] font-extrabold">
+                        {save > 0 ? `Save £${save} today` : ''}
+                      </div>
                       {d.perks.length > 0 && (
                         <div className="mt-2.5 grid gap-1.5">
                           {d.perks.map(p => (
