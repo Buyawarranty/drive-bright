@@ -2184,9 +2184,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             ))}
           </div>
         </div>
+      </div>
+      {/* Shared sections (visible on mobile + desktop) */}
+      <div className="max-w-6xl mx-auto px-4 md:px-7 md:max-w-[1180px] md:mt-6">
 
         {/* Price Help Trigger - Above Comprehensive Cover */}
-        <div>
+        <div className="md:hidden">
           <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
         </div>
 
