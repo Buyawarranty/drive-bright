@@ -491,9 +491,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
           {/* Pay in full pill */}
           <div className="px-6">
-            <div className="bg-[#eaf8f2] border border-[#cdebd9] rounded-2xl px-4 py-2.5 leading-tight">
-              <div className="text-[13px] text-[#3e3e3e] font-semibold">Pay in full <strong className="text-[#161616]">£{payInFull}</strong></div>
-              {savings > 0 && <div className="text-[12px] text-[#1ca36f] font-bold">Save £{savings} vs monthly</div>}
+            <div className="bg-[#eaf8f2] border border-[#cdebd9] rounded-2xl px-5 py-3 leading-tight">
+              <div className="text-[15px] text-[#3e3e3e] font-semibold">Pay in full <strong className="text-[#161616] text-[16px]">£{payInFull}</strong></div>
+              {savings > 0 && <div className="text-[14px] text-[#1ca36f] font-bold mt-0.5">Save £{savings} vs monthly</div>}
             </div>
           </div>
 
