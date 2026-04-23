@@ -242,7 +242,8 @@ export const DiscountsGivenTab: React.FC = () => {
 
   const enrichedCustomers = useMemo(() => {
     return customers
-      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount > 0 && c.assigned_to)
+      // Exclude test records and test purchases (< £20)
+      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20 && c.assigned_to)
       .map(c => {
         const retailPrice = calculateRetailPrice(c);
         const paid = c.final_amount || 0;

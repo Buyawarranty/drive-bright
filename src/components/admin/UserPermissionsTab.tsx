@@ -68,6 +68,7 @@ const ADMIN_TABS = [
   { id: 'sales-scoreboard', label: 'Sales Scoreboard', description: 'Leaderboard, awards and sales competition' },
   { id: 'discounts-given', label: 'Discounts Given', description: 'Track agent discounts vs retail pricing' },
   { id: 'cancellations', label: 'Cancellations', description: 'Cancelled & refunded warranties (commission reconciliation)' },
+  { id: 'refunds-paid', label: 'Refunds Paid', description: 'Refunds issued to customers (commission reconciliation)' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
