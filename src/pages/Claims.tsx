@@ -737,7 +737,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-base block text-left">
                               When does the issue happen?
                             </Label>
                             <Input
