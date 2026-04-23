@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import { CookieBanner } from "@/components/CookieBanner";
 import { PageViewTracker } from "@/components/PageViewTracker";
 import { PageViewLogger } from "@/components/PageViewLogger";
+import { StripeBackGuardDialog } from "@/components/StripeBackGuardDialog";
 import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
 
