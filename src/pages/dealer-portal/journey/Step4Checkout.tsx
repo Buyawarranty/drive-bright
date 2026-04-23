@@ -8,6 +8,7 @@ import { useDealerAuth } from '@/hooks/useDealerAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CreditCard, FileText } from 'lucide-react';
+import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
 
 const Step4Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const Step4Checkout: React.FC = () => {
 
       if (paymentMethod === 'pay_now') {
         if (data?.checkout_url) {
-          window.location.href = data.checkout_url;
+          redirectToStripeWithBackGuard(data.checkout_url);
           return;
         }
         throw new Error('No Stripe checkout URL returned');

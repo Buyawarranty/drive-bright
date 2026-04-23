@@ -17,6 +17,7 @@ import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/a
 import MobileNavigation from '@/components/MobileNavigation';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
+import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import trustpilotLogo from '@/assets/trustpilot-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
@@ -1512,7 +1513,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           pricingData: updatedPricingData
         }));
         
-        window.location.href = checkoutData.url;
+        redirectToStripeWithBackGuard(checkoutData.url);
       } else {
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
