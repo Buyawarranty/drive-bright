@@ -571,7 +571,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="phone" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="phone" className="text-gray-900 font-bold text-base block text-left">
                               Phone Number *
                             </Label>
                             <Input
