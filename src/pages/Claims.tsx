@@ -47,6 +47,7 @@ const Claims = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLookingUpVehicle, setIsLookingUpVehicle] = useState(false);
   const [vehicleDetails, setVehicleDetails] = useState<{make?: string; model?: string; year?: string} | null>(null);
+  const [isMileageOpen, setIsMileageOpen] = useState(false);
 
   // Validation functions
   const validateEmail = (email: string): boolean => {
@@ -655,7 +656,7 @@ Additional Information: ${formData.additionalInfo}
                               }}
                               className="h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 flex-1"
                             />
-                            <Popover>
+                            <Popover open={isMileageOpen} onOpenChange={setIsMileageOpen}>
                               <PopoverTrigger asChild>
                                 <Button
                                   type="button"
@@ -666,13 +667,20 @@ Additional Information: ${formData.additionalInfo}
                                   <ChevronDown className="h-4 w-4" />
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-48 p-0 max-h-72 overflow-y-auto" align="end">
-                                <div className="py-1">
+                              <PopoverContent
+                                className="w-48 p-0 bg-white z-50"
+                                align="end"
+                                sideOffset={4}
+                              >
+                                <div className="max-h-72 overflow-y-auto overscroll-contain py-1">
                                   {Array.from({ length: 200 }, (_, i) => (i + 1) * 1000).map((m) => (
                                     <button
                                       key={m}
                                       type="button"
-                                      onClick={() => setFormData({ ...formData, currentMileage: m })}
+                                      onClick={() => {
+                                        setFormData((prev) => ({ ...prev, currentMileage: m }));
+                                        setIsMileageOpen(false);
+                                      }}
                                       className="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 hover:text-orange-700 transition-colors"
                                     >
                                       {m.toLocaleString('en-GB')}
