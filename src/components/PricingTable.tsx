@@ -1305,6 +1305,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           onSelectPlan={handleSelectPlan}
           validationErrors={validationErrors}
           onOpenPriceMatch={() => setShowPriceHelpPanel(true)}
+          platinumDocUrl={platinumDocUrl}
+          termsDocUrl={termsDocUrl}
         />
       </div>
 
@@ -2185,112 +2187,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
       </div>
-      {/* Desktop-only sections matching exact HTML spec */}
-      <div className="hidden md:block max-w-[1180px] mx-auto px-7 mt-6 space-y-4">
-        {/* PRICE BEAT */}
-        <div className="flex items-center gap-3.5 rounded-xl px-5 py-3.5" style={{ background: '#fffbf0', border: '1px solid #f5e4b0' }}>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#FEF0EA' }}>🏷</div>
-          <div className="flex-1 leading-tight">
-            <strong className="block text-sm font-semibold mb-0.5 text-[#161616]">Price Beat Guarantee</strong>
-            <span className="text-[13px] text-[#666]">Got a cheaper quote? We'll beat it — guaranteed.</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowPriceHelpPanel(true)}
-            className="text-[13px] font-medium whitespace-nowrap"
-            style={{ color: '#E8521A' }}
-          >
-            Beat My Quote →
-          </button>
-          <span className="text-[13px] text-[#888]">or call 0330 229 5040</span>
-        </div>
-
-        {/* COMPREHENSIVE COVER */}
-        <div className="bg-white rounded-xl border border-[#e8e8e8] px-5 py-4">
-          <div className="flex items-center justify-between mb-3.5">
-            <button
-              type="button"
-              onClick={() => setWhatsCoveredOpen(o => !o)}
-              className="text-sm font-semibold text-[#161616] flex items-center gap-2"
-            >
-              🛡 Comprehensive Cover <ChevronDown className={`w-4 h-4 transition-transform ${whatsCoveredOpen ? 'rotate-180' : ''}`} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setWhatsCoveredOpen(o => !o)}
-              className="bg-[#1a1a1a] hover:bg-[#000] text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center gap-1.5"
-            >
-              <Wrench className="w-3.5 h-3.5" /> View parts list
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${whatsCoveredOpen ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {['Engine & gearbox','Fuel system','Cooling system','Electrical components','Air conditioning','Steering & suspension','Braking system','Turbocharger','Labour & call-out'].map(item => (
-              <div key={item} className="text-[13px] text-[#555] flex items-center gap-1.5">
-                <span className="font-bold" style={{ color: '#1D9E75' }}>✓</span>{item}
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setWhatsCoveredOpen(true)}
-            className="text-[13px] mt-3 block"
-            style={{ color: '#009B8F' }}
-          >
-            See full policy details
-          </button>
-        </div>
-
-        {/* CRYSTAL CLEAR */}
-        <div className="bg-white rounded-xl border border-[#e8e8e8] p-5">
-          <div className="flex items-center justify-between mb-3.5">
-            <h3 className="text-base font-semibold m-0 text-[#161616]">Your cover, made crystal clear 💎</h3>
-            <button
-              type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="text-[13px]"
-              style={{ color: '#009B8F' }}
-            >
-              ↑ Back to Plans
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            {['No hidden catches','Easy claims, fast payouts','14-day money-back guarantee'].map(item => (
-              <div key={item} className="text-[13px] text-[#555] flex gap-1.5">
-                <span className="font-bold" style={{ color: '#1D9E75' }}>✓</span>{item}
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-[#888] italic m-0 mb-2.5">Want the details? Expand below — no jargon, no surprises.</p>
-          <div className="flex gap-4">
-            {platinumDocUrl ? (
-              <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[13px] flex items-center gap-1" style={{ color: '#009B8F' }}>
-                ∨ Your Platinum Plan
-              </a>
-            ) : (
-              <span className="text-[13px] opacity-50" style={{ color: '#009B8F' }}>∨ Your Platinum Plan</span>
-            )}
-            {termsDocUrl ? (
-              <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[13px] flex items-center gap-1" style={{ color: '#009B8F' }}>
-                ∨ Terms &amp; Conditions
-              </a>
-            ) : (
-              <span className="text-[13px] opacity-50" style={{ color: '#009B8F' }}>∨ Terms &amp; Conditions</span>
-            )}
-          </div>
-        </div>
-
-        {/* WHAT'S INCLUDED */}
-        <div className="bg-white rounded-xl border border-[#e8e8e8] px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
-          <strong className="text-[13px] text-[#161616]">What's included in every plan?</strong>
-          {['Parts & labour','Nationwide garage network','14-day money-back guarantee'].map(item => (
-            <div key={item} className="flex items-center gap-1.5 text-[13px] text-[#555]">
-              <span className="w-[7px] h-[7px] rounded-full inline-block" style={{ background: '#1D9E75' }}></span>{item}
-            </div>
-          ))}
-        </div>
-      </div>
-
+      {/* (Desktop sections moved into Step3Desktop) */}
       {/* Mobile-only original sections wrapper */}
       <div className="md:hidden max-w-6xl mx-auto px-4">
 
