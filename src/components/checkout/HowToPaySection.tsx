@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Lock, Check, Tag, ChevronDown, ChevronUp, X, Shield } from 'lucide-react';
+import { Lock, Check, Tag, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
@@ -37,80 +36,9 @@ interface HowToPaySectionProps {
   hidePayButton?: boolean;
   // Hide the inline Trustpilot reviews slider (e.g. when shown elsewhere)
   hideTrustpilot?: boolean;
+  // Hide the inline promo-code section (e.g. when rendered elsewhere on the page)
+  hidePromoCode?: boolean;
 }
-
-const InlineGuarantee = ({ accepted, setAccepted }: { accepted: boolean; setAccepted: (v: boolean) => void }) => {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <div className="mt-5">
-      {/* Guarantee banner */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between bg-[#F0FDF4] border border-[#C8F3D2] rounded-xl px-4 py-3 text-left transition-all hover:bg-[#E8FAF0]"
-        type="button"
-      >
-        <div className="flex items-center gap-2.5">
-          <Shield className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-          <span className="text-sm font-bold text-[#1a1a1a]">14-day money-back guarantee</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-          {expanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <>
-              <span className="hidden sm:inline">Full refund if no claim is made.</span>
-              <span className="text-[#0BA360] font-medium">See details</span>
-              <ChevronDown className="w-4 h-4" />
-            </>
-          )}
-        </div>
-      </button>
-
-      {/* Expanded details */}
-      {expanded && (
-        <div className="mt-2 bg-white border border-[#E5E5E5] rounded-xl p-4 sm:p-5 animate-fade-in">
-          <div className="flex items-center gap-2.5 mb-3">
-            <Shield className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-            <h4 className="text-sm font-bold text-[#1a1a1a]">Your 14-day peace of mind guarantee</h4>
-          </div>
-          <p className="text-sm text-gray-600 mb-3">Enjoy full flexibility when you start your cover:</p>
-          <div className="space-y-2.5">
-            <div className="flex items-start gap-2.5">
-              <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#1a1a1a]">Cancel within 14 days for a <span className="font-semibold">full refund</span> if no claim has been made</p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#1a1a1a]">If a claim is made within 14 days, a small <span className="font-semibold">£40 handling fee</span> plus any assessment costs</p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#1a1a1a]">After 14 days, refunds are calculated <span className="font-semibold">pro-rata</span> based on time remaining, less any claims made</p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500 mt-3">Designed to keep things fair for everyone.</p>
-        </div>
-      )}
-
-      {/* Checkbox */}
-      <label className={`flex items-center gap-3 mt-3 cursor-pointer select-none rounded-lg p-2 -mx-2 transition-colors ${!accepted ? 'bg-red-50' : ''}`}>
-        <input
-          type="checkbox"
-          checked={accepted}
-          onChange={(e) => setAccepted(e.target.checked)}
-          className="w-5 h-5 rounded border-gray-300 text-[#0BA360] focus:ring-[#0BA360] accent-[#0BA360] cursor-pointer flex-shrink-0"
-        />
-        <span className={`text-sm leading-5 ${!accepted ? 'text-red-600 font-medium' : 'text-[#1a1a1a]'}`}>
-          I understand the 14 day money back guarantee
-        </span>
-      </label>
-      {!accepted && (
-        <p className="text-xs text-red-500 mt-1 ml-10 animate-fade-in">Please accept the cancellation terms to continue</p>
-      )}
-    </div>
-  );
-};
 
 const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   selectedPayment,
@@ -135,16 +63,29 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   totalDiscountAmount,
   hidePayButton = false,
   hideTrustpilot = false,
+  hidePromoCode = false,
 }) => {
-  const [termsAccepted, setTermsAccepted] = useState(true);
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
   // Per-day pricing - MUST derive from monthlyPrice * 12 (actual paid amount) divided by total cover days
-  // This keeps the daily price identical to Step 3 regardless of cover length
   const totalCoverDays = Math.round((planDurationMonths / 12) * 365);
   const monthlyPaidTotal = monthlyPrice * 12;
   const monthlyPencePerDay = monthlyPaidTotal > 0 && totalCoverDays > 0 ? Math.round((monthlyPaidTotal * 100) / totalCoverDays) : 0;
   const fullPencePerDay = fullPrice > 0 && totalCoverDays > 0 ? Math.round((fullPrice * 100) / totalCoverDays) : 0;
+
+  const handleCardSelect = (payment: 'monthly' | 'full') => {
+    onPaymentChange(payment);
+  };
+
+  const handlePayInside = (payment: 'monthly' | 'full', e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedPayment !== payment) {
+      onPaymentChange(payment);
+    }
+    // Slight delay to allow state update to propagate
+    setTimeout(() => onPayClick(), 50);
+  };
+
   return (
     <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
       {/* Header */}
@@ -164,15 +105,18 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             </span>
           </div>
 
-          <button
-            onClick={() => onPaymentChange('full')}
-            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => handleCardSelect('full')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
+            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer flex flex-col ${
               selectedPayment === 'full'
                 ? 'border-[#0BA360] bg-white shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
                 : 'border-[#0BA360]/40 bg-white hover:border-[#0BA360]'
             }`}
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3 flex-1">
               <div className="flex-1">
                 <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a] leading-7 min-h-[28px]">Pay in full · save 10%</h3>
                 <div className="flex items-center gap-2 mt-1 mb-2 min-h-[20px]">
@@ -218,18 +162,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     <span>No credit check required</span>
                   </div>
                 </div>
-
-                {/* Trust signal + Stripe logo */}
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
-                    <Lock className="w-3.5 h-3.5 text-gray-500" />
-                    <span>Secure card payment · Apple Pay & Google Pay</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
-                    <img src={stripeLogo} alt="Stripe" className="h-4 object-contain" />
-                  </div>
-                </div>
               </div>
 
               {/* Radio/Check indicator */}
@@ -245,7 +177,43 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 )}
               </div>
             </div>
-          </button>
+
+            {/* Per-card CTA + trust footer */}
+            {!hidePayButton && (
+              <div className="mt-4">
+                <Button
+                  type="button"
+                  onClick={(e) => handlePayInside('full', e)}
+                  disabled={isLoading}
+                  className="w-full py-5 text-base font-bold rounded-xl bg-[#0BA360] hover:bg-[#099355] text-white animate-breathing"
+                >
+                  {isLoading && selectedPayment === 'full' ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Processing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Check className="w-5 h-5" />
+                      Pay £{fullPrice} in full — Activate my cover
+                    </span>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {/* Trust signal + Stripe logo */}
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
+                <Lock className="w-3.5 h-3.5 text-gray-500" />
+                <span>Secure card payment · Apple Pay & Google Pay</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
+                <img src={stripeLogo} alt="Stripe" className="h-4 object-contain" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Monthly Card */}
@@ -257,15 +225,18 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             </span>
           </div>
 
-          <button
-            onClick={() => onPaymentChange('monthly')}
-            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => handleCardSelect('monthly')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
+            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer flex flex-col ${
               selectedPayment === 'monthly'
                 ? 'border-[#FF6B00] bg-white'
                 : 'border-[#E5E5E5] bg-white hover:border-gray-300'
             }`}
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3 flex-1">
               <div className="flex-1">
                 <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a] leading-7 min-h-[28px]">Spread the cost</h3>
                 <div className="flex items-center gap-2 mt-1 mb-2 min-h-[20px]">
@@ -275,7 +246,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   </span>
                 </div>
 
-                {/* Hero: monthly price (matches Step 3) */}
+                {/* Hero: monthly price */}
                 <div className="mt-3 bg-[#FFF5EB] border border-[#FFD7B5] rounded-lg p-4">
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <div className="flex items-baseline gap-1">
@@ -312,18 +283,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     <span>Cancel anytime within 14 days</span>
                   </div>
                 </div>
-
-                {/* Trust signal + Bumper logo */}
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
-                    <Lock className="w-3.5 h-3.5 text-gray-500" />
-                    <span>FCA-regulated finance partner</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
-                    <img src={bumperLogo} alt="Bumper" className="h-4 object-contain" />
-                  </div>
-                </div>
               </div>
 
               {/* Radio/Check indicator */}
@@ -339,106 +298,110 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 )}
               </div>
             </div>
-          </button>
-        </div>
-      </div>
 
-      {/* Promo Code Section — always visible */}
-      <div className="mt-6 bg-[#FFFBF0] border border-[#FFD980] rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Tag className="w-4 h-4 text-[#FF8C00]" />
-          <span className="text-sm font-bold text-[#1a1a1a]">Have a promo code?</span>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="Enter code"
-            value={promoCodeInput}
-            onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
-            className="flex-1 h-11 text-base uppercase bg-white"
-            disabled={isValidatingPromoCode}
-          />
-          <Button
-            type="button"
-            onClick={onApplyPromoCode}
-            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-            className="h-11 px-5 bg-[#FF8C00] hover:bg-[#e57e00] text-white font-semibold"
-          >
-            {isValidatingPromoCode ? 'Checking...' : 'Apply'}
-          </Button>
-        </div>
-        {promoCodeError && (
-          <p className="text-destructive text-sm mt-2">{promoCodeError}</p>
-        )}
-      </div>
-
-      {/* Discount Applied Row */}
-      {appliedDiscountCodes.length > 0 && totalDiscountAmount > 0 && (
-        <div className="mt-4 border border-[#0BA360] bg-green-50 rounded-lg px-4 py-3">
-          {appliedDiscountCodes.map((discount) => (
-            <div key={discount.code} className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Tag className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                <span className="font-semibold text-[#1a1a1a] truncate">{discount.code}</span>
-                <span className="text-sm text-gray-600 flex-shrink-0">applied</span>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {/* Display the total calculated discount amount */}
-                <span className="text-[#0BA360] font-bold text-base whitespace-nowrap">
-                  -£{totalDiscountAmount.toFixed(2)}
-                </span>
-                <button
+            {/* Per-card CTA + trust footer */}
+            {!hidePayButton && (
+              <div className="mt-4">
+                <Button
                   type="button"
-                  onClick={() => onRemoveDiscountCode(discount.code)}
-                  className="p-1 hover:bg-red-100 rounded-full transition-colors"
-                  title="Remove promo code"
+                  onClick={(e) => handlePayInside('monthly', e)}
+                  disabled={isLoading}
+                  className="w-full py-5 text-base font-bold rounded-xl bg-[#FF6B00] hover:bg-[#e56000] text-white animate-breathing"
                 >
-                  <X className="w-4 h-4 text-red-500" />
-                </button>
+                  {isLoading && selectedPayment === 'monthly' ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Processing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Check className="w-5 h-5" />
+                      Pay £{monthlyPrice}/month — Activate my cover
+                    </span>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {/* Trust signal + Bumper logo */}
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
+                <Lock className="w-3.5 h-3.5 text-gray-500" />
+                <span>FCA-regulated finance partner</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
+                <img src={bumperLogo} alt="Bumper" className="h-4 object-contain" />
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      )}
+      </div>
 
-      {/* 14-day money-back guarantee */}
-      {!hidePayButton && <InlineGuarantee accepted={termsAccepted} setAccepted={setTermsAccepted} />}
-
-      {/* Pay Button - Hidden when embedded checkout is showing */}
-      {!hidePayButton && (
-        <div className="mt-5">
-          <Button
-            onClick={onPayClick}
-            disabled={isLoading || !selectedPayment || !termsAccepted}
-            className={`w-full py-6 text-lg font-bold rounded-xl animate-breathing hover:opacity-90 ${
-              !selectedPayment 
-                ? 'bg-gray-400' 
-                : selectedPayment === 'full'
-                ? 'bg-[#0BA360] hover:bg-[#099355]'
-                : 'bg-[#FF6B00] hover:bg-[#e56000]'
-            }`}
-            style={{ color: '#FFFFFF' }}
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Processing...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Lock className="w-5 h-5" />
-                {selectedPayment 
-                  ? 'Activate my cover'
-                  : 'Select payment option'}
-              </span>
+      {/* Promo Code Section — hidden when promo is rendered elsewhere on the page */}
+      {!hidePromoCode && (
+        <>
+          <div className="mt-6 bg-[#FFFBF0] border border-[#FFD980] rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Tag className="w-4 h-4 text-[#FF8C00]" />
+              <span className="text-sm font-bold text-[#1a1a1a]">Have a promo code?</span>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter code"
+                value={promoCodeInput}
+                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                className="flex-1 h-11 text-base uppercase bg-white"
+                disabled={isValidatingPromoCode}
+              />
+              <Button
+                type="button"
+                onClick={onApplyPromoCode}
+                disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+                className="h-11 px-5 bg-[#FF8C00] hover:bg-[#e57e00] text-white font-semibold"
+              >
+                {isValidatingPromoCode ? 'Checking...' : 'Apply'}
+              </Button>
+            </div>
+            {promoCodeError && (
+              <p className="text-destructive text-sm mt-2">{promoCodeError}</p>
             )}
-          </Button>
-        </div>
+          </div>
+
+          {/* Discount Applied Row */}
+          {appliedDiscountCodes.length > 0 && totalDiscountAmount > 0 && (
+            <div className="mt-4 border border-[#0BA360] bg-green-50 rounded-lg px-4 py-3">
+              {appliedDiscountCodes.map((discount) => (
+                <div key={discount.code} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Tag className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                    <span className="font-semibold text-[#1a1a1a] truncate">{discount.code}</span>
+                    <span className="text-sm text-gray-600 flex-shrink-0">applied</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-[#0BA360] font-bold text-base whitespace-nowrap">
+                      -£{totalDiscountAmount.toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveDiscountCode(discount.code)}
+                      className="p-1 hover:bg-red-100 rounded-full transition-colors"
+                      title="Remove promo code"
+                    >
+                      <X className="w-4 h-4 text-red-500" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      {/* Secure Checkout Text - Only show when button is visible */}
+      {/* Secure Checkout Text */}
       {!hidePayButton && (
-        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
+        <div className="flex items-center justify-center gap-2 mt-5 text-sm text-gray-600">
           <Lock className="w-4 h-4 text-gray-400" />
           <span>Secure checkout processing</span>
         </div>
@@ -455,15 +418,15 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <Lock className="w-4 h-4" />
           <span>256-bit encryption</span>
         </div>
-        <a 
-          href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-          target="_blank" 
+        <a
+          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+          target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm text-gray-600 hover:text-foreground transition-colors"
         >
-          <img 
-            src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
-            alt="Trustpilot" 
+          <img
+            src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png"
+            alt="Trustpilot"
             className="h-5 object-contain"
           />
           <span className="text-[#1a1a1a] font-semibold">Rated Excellent</span>
