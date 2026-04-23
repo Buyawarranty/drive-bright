@@ -752,7 +752,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-base block text-left">
                               Any other relevant details
                             </Label>
                             <Textarea
