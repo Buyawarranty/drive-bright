@@ -396,16 +396,76 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     return result;
   }, [statusFilteredLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate]);
+  const isRecoveredLead = useCallback((lead: Lead) => {
+    // A lead is "recovered/unworked" only if it came from an abandoned cart,
+    // was never assigned to any agent, and never completed step 2
+    return !!lead.abandoned_cart_id && !lead.assigned_to && !lead.assigned_at && !lead.step_two_completed_at;
+  }, []);
+
+  const canSeeUnworked = userRole === 'super_admin';
+
+  const freshLeads = useMemo(() => {
+    // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
+    if (filter === 'recovered') return [];
+    // Super admin sees separate unworked section — exclude recovered from main list
+    if (canSeeUnworked) return filteredLeads.filter(lead => !isRecoveredLead(lead));
+
+    // All other roles: merge recovered leads into main list but deduplicate
+    // Group by normalized email AND phone, keep the one with assignment/activity, discard duplicates
+    const seenByEmail = new Map<string, number>();
+    const seenByPhone = new Map<string, number>();
+    const result: typeof filteredLeads = [];
+
+    const normalizePhone = (phone: string | null | undefined) => {
+      if (!phone) return null;
+      const digits = phone.replace(/[^0-9]/g, '');
+      return digits.length >= 10 ? digits.slice(-10) : null;
+    };
+
+    const hasActivity = (lead: typeof filteredLeads[0]) =>
+      lead.assigned_to || lead.call_count > 0 || lead.notes;
+
+    for (const lead of filteredLeads) {
+      const emailKey = lead.email?.toLowerCase()?.trim() || null;
+      const phoneKey = normalizePhone(lead.phone);
+
+      const existingByEmail = emailKey ? seenByEmail.get(emailKey) : undefined;
+      const existingByPhone = phoneKey ? seenByPhone.get(phoneKey) : undefined;
+      const existingIdx = existingByEmail ?? existingByPhone;
+
+      if (existingIdx === undefined) {
+        const idx = result.length;
+        if (emailKey) seenByEmail.set(emailKey, idx);
+        if (phoneKey) seenByPhone.set(phoneKey, idx);
+        result.push(lead);
+      } else {
+        const existing = result[existingIdx];
+        if (!hasActivity(existing) && hasActivity(lead)) {
+          result[existingIdx] = lead;
+          if (emailKey) seenByEmail.set(emailKey, existingIdx);
+          if (phoneKey) seenByPhone.set(phoneKey, existingIdx);
+        }
+      }
+    }
+
+    return result;
+  }, [filteredLeads, isRecoveredLead, filter, canSeeUnworked]);
+
+  const recoveredLeads = useMemo(() => {
+    if (filter === 'recovered') return filteredLeads.filter(lead => isRecoveredLead(lead));
+    return filteredLeads.filter(lead => isRecoveredLead(lead));
+  }, [filteredLeads, isRecoveredLead, filter]);
+
+  // Pagination for leads table (fresh only)
+  const pagination = usePagination(freshLeads, { initialPageSize: 50 });
+
+  // Separate pagination for unworked leads
+  const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
+
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
     return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
   }, [visibleLeads, dateRange, getLeadSubmissionDate]);
-
-  // Date-filter the raw source-of-truth dataset for accurate counts.
-  const dateFilteredLeadsForCounts = useMemo(() => {
-    if (!dateRange.from && !dateRange.to) return leads;
-    return leads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
-  }, [leads, dateRange, getLeadSubmissionDate]);
 
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
