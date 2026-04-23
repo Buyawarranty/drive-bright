@@ -51,6 +51,7 @@ serve(async (req) => {
           paymentType: item.paymentType,
           voluntaryExcess: item.voluntaryExcess,
           finalAmount: submittedPrice,
+          discountCode,
         },
         supabaseService,
       );

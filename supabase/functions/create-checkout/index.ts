@@ -130,6 +130,7 @@ serve(async (req) => {
         voluntaryExcess,
         claimLimit,
         finalAmount: Number(totalAmount),
+        discountCode,
       },
       supabaseService,
     );

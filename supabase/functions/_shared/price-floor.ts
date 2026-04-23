@@ -15,7 +15,25 @@ export interface PriceFloorInput {
   voluntaryExcess?: number;   // £
   claimLimit?: number;        // £750 | £1250 | £2000
   finalAmount: number;        // £ - what the client says the customer should pay
+  discountCode?: string;      // Optional - test codes (TEST*) bypass the price floor
 }
+
+// Test discount codes that bypass the £25 absolute floor and 50% plan floor.
+// Use these for QA / low-value test transactions only. Any code starting with
+// "TEST" is also treated as a test bypass.
+const TEST_BYPASS_CODES = new Set<string>([
+  "SAVE99GOLDEN",
+]);
+
+export function isTestBypassCode(code?: string | null): boolean {
+  if (!code) return false;
+  const c = code.trim().toUpperCase();
+  if (!c) return false;
+  return c.startsWith("TEST") || TEST_BYPASS_CODES.has(c);
+}
+
+// Floor used when a test bypass code is applied. Still above Stripe's £0.30 minimum.
+const TEST_MIN_GBP = 1;
 
 export interface PriceFloorResult {
   ok: boolean;
@@ -113,13 +131,15 @@ export async function validateCheckoutPrice(
   input: PriceFloorInput,
   supabaseAdmin?: SupabaseClient,
 ): Promise<PriceFloorResult> {
-  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount } = input;
+  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount, discountCode } = input;
+  const bypass = isTestBypassCode(discountCode);
+  const absoluteFloor = bypass ? TEST_MIN_GBP : ABSOLUTE_MIN_GBP;
 
   // 1. Absolute floor — fast reject
-  if (!finalAmount || finalAmount < ABSOLUTE_MIN_GBP) {
+  if (!finalAmount || finalAmount < absoluteFloor) {
     return {
       ok: false,
-      reason: `Submitted price £${finalAmount} is below the absolute minimum of £${ABSOLUTE_MIN_GBP}. ` +
+      reason: `Submitted price £${finalAmount} is below the absolute minimum of £${absoluteFloor}. ` +
               `This indicates a manipulated request.`,
     };
   }
@@ -128,7 +148,9 @@ export async function validateCheckoutPrice(
   // If a flow doesn't use that matrix, fall back to DB plan pricing below.
   const checkoutMatrixBasePrice = getCheckoutMatrixBasePrice(paymentType, voluntaryExcess, claimLimit);
   if (checkoutMatrixBasePrice && checkoutMatrixBasePrice > 0) {
-    const minimumAllowed = Math.max(ABSOLUTE_MIN_GBP, Math.floor(checkoutMatrixBasePrice * MIN_PERCENT_OF_BASE));
+    const minimumAllowed = bypass
+      ? TEST_MIN_GBP
+      : Math.max(ABSOLUTE_MIN_GBP, Math.floor(checkoutMatrixBasePrice * MIN_PERCENT_OF_BASE));
 
     if (finalAmount < minimumAllowed) {
       return {
@@ -157,16 +179,17 @@ export async function validateCheckoutPrice(
     : await query.ilike("name", planId).maybeSingle();
 
   if (!plan) {
-    // No plan match (admin quote, custom flow). Absolute floor is the only guard.
-    return { ok: true, serverBasePrice: 0, minimumAllowed: ABSOLUTE_MIN_GBP };
+    return { ok: true, serverBasePrice: 0, minimumAllowed: absoluteFloor };
   }
 
   const serverBasePrice = getBasePriceFromPlan(plan, paymentType);
   if (!serverBasePrice || serverBasePrice <= 0) {
-    return { ok: true, serverBasePrice: 0, minimumAllowed: ABSOLUTE_MIN_GBP };
+    return { ok: true, serverBasePrice: 0, minimumAllowed: absoluteFloor };
   }
 
-  const minimumAllowed = Math.max(ABSOLUTE_MIN_GBP, Math.floor(serverBasePrice * MIN_PERCENT_OF_BASE));
+  const minimumAllowed = bypass
+    ? TEST_MIN_GBP
+    : Math.max(ABSOLUTE_MIN_GBP, Math.floor(serverBasePrice * MIN_PERCENT_OF_BASE));
 
   if (finalAmount < minimumAllowed) {
     return {
