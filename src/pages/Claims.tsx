@@ -347,7 +347,7 @@ Additional Information: ${formData.additionalInfo}
             
             {/* Why You're in Safe Hands */}
             <div className="mt-16 mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">Why You're in Safe Hands</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">Why You're in Safe Hands</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div className="bg-orange-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Quick Response</h3>
@@ -366,7 +366,7 @@ Additional Information: ${formData.additionalInfo}
 
             {/* What You'll Need */}
             <div className="mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">What You'll Need</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">What You'll Need</h2>
               <div className="bg-white rounded-xl p-5 sm:p-8 shadow-lg border border-orange-100">
                 <ul className="space-y-4 text-left text-gray-700">
                   <li className="flex items-start gap-3">
@@ -391,7 +391,7 @@ Additional Information: ${formData.additionalInfo}
 
             {/* How to Start Your Claim */}
             <div className="mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">How to Start Your Claim</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">How to Start Your Claim</h2>
               <p className="text-lg text-gray-700 mb-8 font-medium">Choose your preferred way to contact us:</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <a 
@@ -432,8 +432,8 @@ Additional Information: ${formData.additionalInfo}
 
             {/* Make A Claim Form */}
             <div className="mb-12 mt-16" id="claim-form">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+              <div className="mb-8">
+                <h2 className="text-3xl lg:text-4xl font-bold text-black mb-3 text-left">
                   Make A Claim
                 </h2>
                 <p className="text-gray-600 text-lg max-w-2xl mx-auto">
