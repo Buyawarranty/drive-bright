@@ -679,20 +679,6 @@ Additional Information: ${formData.additionalInfo}
                             />
                           </div>
 
-                          <div>
-                            <Label htmlFor="additionalInfo" className="text-gray-700 font-medium text-sm">
-                              Additional information
-                            </Label>
-                            <Textarea
-                              id="additionalInfo"
-                              name="additionalInfo"
-                              placeholder="Anything else you'd like to add"
-                              value={formData.additionalInfo}
-                              onChange={handleInputChange}
-                              rows={2}
-                              className="mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
-                          </div>
                         </div>
                       </div>
 
