@@ -2391,18 +2391,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* ==================== CUSTOMER REVIEWS (Trustpilot) ==================== */}
           <section className="mt-6 bg-white rounded-xl border border-border p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1a1a1a]">
-                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4" />
+              <h3 className="text-sm font-semibold text-[#1a1a1a]">
                 What our customers say
               </h3>
               <a
-                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                href="https://www.trustpilot.com/review/buyawarranty.co.uk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-[#555] hover:opacity-80"
+                className="text-xs text-[#555] underline"
               >
-                <span>Reviews from</span>
-                <img src={trustpilotLogo} alt="Trustpilot" className="h-4" />
+                Reviews from Trustpilot
               </a>
             </div>
             <div className="space-y-3">
