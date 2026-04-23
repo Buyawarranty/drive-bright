@@ -1304,6 +1304,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           availableDurations={availableDurations as ('12months' | '24months' | '36months')[]}
           onSelectPlan={handleSelectPlan}
           validationErrors={validationErrors}
+          onOpenPriceMatch={() => setShowPriceHelpPanel(true)}
         />
       </div>
 
