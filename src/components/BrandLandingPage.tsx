@@ -486,7 +486,8 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
                     setShowSecondWarrantyDiscount(false);
                     toast({ 
                       title: "✓ Code Saved!", 
-                      description: "Your discount code has been applied and will be used at checkout" 
+                      description: "Your discount code has been applied and will be used at checkout",
+                      className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white"
                     });
                   }}
                   variant="ghost"
