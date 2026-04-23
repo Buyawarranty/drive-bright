@@ -131,13 +131,15 @@ export async function validateCheckoutPrice(
   input: PriceFloorInput,
   supabaseAdmin?: SupabaseClient,
 ): Promise<PriceFloorResult> {
-  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount } = input;
+  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount, discountCode } = input;
+  const bypass = isTestBypassCode(discountCode);
+  const absoluteFloor = bypass ? TEST_MIN_GBP : ABSOLUTE_MIN_GBP;
 
   // 1. Absolute floor — fast reject
-  if (!finalAmount || finalAmount < ABSOLUTE_MIN_GBP) {
+  if (!finalAmount || finalAmount < absoluteFloor) {
     return {
       ok: false,
-      reason: `Submitted price £${finalAmount} is below the absolute minimum of £${ABSOLUTE_MIN_GBP}. ` +
+      reason: `Submitted price £${finalAmount} is below the absolute minimum of £${absoluteFloor}. ` +
               `This indicates a manipulated request.`,
     };
   }
@@ -146,7 +148,9 @@ export async function validateCheckoutPrice(
   // If a flow doesn't use that matrix, fall back to DB plan pricing below.
   const checkoutMatrixBasePrice = getCheckoutMatrixBasePrice(paymentType, voluntaryExcess, claimLimit);
   if (checkoutMatrixBasePrice && checkoutMatrixBasePrice > 0) {
-    const minimumAllowed = Math.max(ABSOLUTE_MIN_GBP, Math.floor(checkoutMatrixBasePrice * MIN_PERCENT_OF_BASE));
+    const minimumAllowed = bypass
+      ? TEST_MIN_GBP
+      : Math.max(ABSOLUTE_MIN_GBP, Math.floor(checkoutMatrixBasePrice * MIN_PERCENT_OF_BASE));
 
     if (finalAmount < minimumAllowed) {
       return {
