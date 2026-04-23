@@ -2743,6 +2743,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
       </div>
+      {/* Resume mobile-only wrapper for original sticky bar etc. */}
+      <div className="md:hidden">
 
       {/* What's included reassurance banner */}
       {!vehicleAgeError && (
