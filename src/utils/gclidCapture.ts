@@ -1,6 +1,12 @@
 /**
  * Google Click ID (GCLID) Capture Utility
  * Captures and stores GCLID for offline/server-side conversion tracking
+ *
+ * Robustness:
+ *  - Reads gclid / gbraid / wbraid from URL (Google Ads auto-tagging variants)
+ *  - Reads the `_gcl_aw` cookie set by gtag.js (most reliable, persists 90d)
+ *  - Mirrors to BOTH localStorage and sessionStorage so private/Safari/ITP
+ *    sessions and cross-domain redirects (e.g. Bumper) don't lose the value
  */
 
 const GCLID_STORAGE_KEY = 'baw_gclid';
@@ -13,26 +19,81 @@ interface StoredGclid {
   landingPage: string;
 }
 
+const safeSet = (key: string, value: string) => {
+  try { localStorage.setItem(key, value); } catch {}
+  try { sessionStorage.setItem(key, value); } catch {}
+};
+
+const safeGet = (key: string): string | null => {
+  try {
+    const v = localStorage.getItem(key);
+    if (v) return v;
+  } catch {}
+  try {
+    return sessionStorage.getItem(key);
+  } catch {}
+  return null;
+};
+
 /**
- * Capture GCLID from URL parameters on page load
- * Should be called on every page to ensure GCLID is captured
+ * Read gclid from the _gcl_aw cookie set by gtag.js.
+ * Format: GCL.<timestamp>.<gclid>
+ */
+const readGclidFromCookie = (): string | null => {
+  if (typeof document === 'undefined') return null;
+  try {
+    const cookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('_gcl_aw='));
+    if (!cookie) return null;
+    const value = cookie.split('=')[1];
+    const parts = value.split('.');
+    // last segment is the gclid
+    if (parts.length >= 3) return parts.slice(2).join('.');
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Capture GCLID from URL parameters (and gbraid/wbraid fallbacks).
+ * Should be called on every page to ensure GCLID is captured.
  */
 export const captureGclid = (): void => {
   if (typeof window === 'undefined') return;
-  
+
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const gclid = urlParams.get('gclid');
-    
+    // Order of preference: gclid > gbraid > wbraid
+    const gclid =
+      urlParams.get('gclid') ||
+      urlParams.get('gbraid') ||
+      urlParams.get('wbraid');
+
     if (gclid) {
       const gclidData: StoredGclid = {
         gclid,
         capturedAt: Date.now(),
         landingPage: window.location.pathname,
       };
-      
-      localStorage.setItem(GCLID_STORAGE_KEY, JSON.stringify(gclidData));
-      console.log('🎯 GCLID captured and stored:', gclid);
+      safeSet(GCLID_STORAGE_KEY, JSON.stringify(gclidData));
+      console.log('🎯 GCLID/GBRAID captured and stored:', gclid);
+      return;
+    }
+
+    // No URL param — try the cookie set by gtag.js (only if we don't already have one stored)
+    if (!safeGet(GCLID_STORAGE_KEY)) {
+      const cookieGclid = readGclidFromCookie();
+      if (cookieGclid) {
+        const gclidData: StoredGclid = {
+          gclid: cookieGclid,
+          capturedAt: Date.now(),
+          landingPage: window.location.pathname,
+        };
+        safeSet(GCLID_STORAGE_KEY, JSON.stringify(gclidData));
+        console.log('🎯 GCLID recovered from _gcl_aw cookie:', cookieGclid);
+      }
     }
   } catch (error) {
     console.error('Failed to capture GCLID:', error);
@@ -40,26 +101,41 @@ export const captureGclid = (): void => {
 };
 
 /**
- * Get stored GCLID if still valid (within expiry period)
+ * Get stored GCLID if still valid (within expiry period).
+ * Falls back to the _gcl_aw cookie if storage was wiped.
  */
 export const getStoredGclid = (): string | null => {
   if (typeof window === 'undefined') return null;
-  
+
   try {
-    const stored = localStorage.getItem(GCLID_STORAGE_KEY);
-    if (!stored) return null;
-    
-    const gclidData: StoredGclid = JSON.parse(stored);
-    const expiryMs = GCLID_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
-    
-    if (Date.now() - gclidData.capturedAt > expiryMs) {
-      // GCLID expired, remove it
-      localStorage.removeItem(GCLID_STORAGE_KEY);
-      console.log('🎯 GCLID expired and removed');
-      return null;
+    const stored = safeGet(GCLID_STORAGE_KEY);
+    if (stored) {
+      const gclidData: StoredGclid = JSON.parse(stored);
+      const expiryMs = GCLID_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+
+      if (Date.now() - gclidData.capturedAt > expiryMs) {
+        try { localStorage.removeItem(GCLID_STORAGE_KEY); } catch {}
+        try { sessionStorage.removeItem(GCLID_STORAGE_KEY); } catch {}
+        console.log('🎯 GCLID expired and removed');
+      } else {
+        return gclidData.gclid;
+      }
     }
-    
-    return gclidData.gclid;
+
+    // Last-resort fallback: read directly from gtag's _gcl_aw cookie
+    const cookieGclid = readGclidFromCookie();
+    if (cookieGclid) {
+      // Persist for next time
+      const gclidData: StoredGclid = {
+        gclid: cookieGclid,
+        capturedAt: Date.now(),
+        landingPage: window.location.pathname,
+      };
+      safeSet(GCLID_STORAGE_KEY, JSON.stringify(gclidData));
+      return cookieGclid;
+    }
+
+    return null;
   } catch (error) {
     console.error('Failed to get stored GCLID:', error);
     return null;
@@ -72,31 +148,25 @@ export const getStoredGclid = (): string | null => {
  */
 export const getGaClientId = (): string | null => {
   if (typeof window === 'undefined') return null;
-  
+
   try {
-    // Try to get from _ga cookie
     const gaCookie = document.cookie
       .split('; ')
       .find(row => row.startsWith('_ga='));
-    
+
     if (gaCookie) {
       const gaValue = gaCookie.split('=')[1];
-      // Extract client ID (last two parts)
       const parts = gaValue.split('.');
       if (parts.length >= 4) {
-        const clientId = `${parts[2]}.${parts[3]}`;
-        return clientId;
+        return `${parts[2]}.${parts[3]}`;
       }
     }
-    
-    // Try stored client ID
-    const storedClientId = localStorage.getItem(CLIENT_ID_STORAGE_KEY);
+
+    const storedClientId = safeGet(CLIENT_ID_STORAGE_KEY);
     if (storedClientId) return storedClientId;
-    
-    // Generate a new client ID if none exists
+
     const newClientId = `${Math.floor(Math.random() * 2147483647)}.${Math.floor(Date.now() / 1000)}`;
-    localStorage.setItem(CLIENT_ID_STORAGE_KEY, newClientId);
-    
+    safeSet(CLIENT_ID_STORAGE_KEY, newClientId);
     return newClientId;
   } catch (error) {
     console.error('Failed to get GA Client ID:', error);
@@ -119,9 +189,9 @@ export const getTrackingData = (): { gclid: string | null; clientId: string | nu
  */
 export const clearStoredGclid = (): void => {
   if (typeof window === 'undefined') return;
-  
   try {
     localStorage.removeItem(GCLID_STORAGE_KEY);
+    sessionStorage.removeItem(GCLID_STORAGE_KEY);
     console.log('🎯 GCLID cleared after conversion');
   } catch (error) {
     console.error('Failed to clear GCLID:', error);
