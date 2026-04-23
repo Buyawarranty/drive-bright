@@ -23,7 +23,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton:
             "group-[.toast]:bg-white/20 group-[.toast]:text-white hover:bg-white/30",
           closeButton:
-            "group-[.toast]:!bg-white/20 group-[.toast]:!text-white group-[.toast]:!border-white/30 hover:group-[.toast]:!bg-white/30 group-[.toast]:!left-auto group-[.toast]:!right-2 group-[.toast]:!top-2",
+            "group-[.toast]:!bg-white/20 group-[.toast]:!text-white group-[.toast]:!border-white/30 hover:group-[.toast]:!bg-white/30 group-[.toast]:!left-auto group-[.toast]:!right-2 group-[.toast]:!top-2 group-[.toast]:!opacity-100 group-[.toast]:!transform-none",
         },
       }}
       {...props}
