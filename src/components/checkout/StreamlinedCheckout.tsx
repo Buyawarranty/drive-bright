@@ -2378,7 +2378,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </button>
               <span className="text-sm text-[#555] leading-relaxed">
                 <strong className="text-[#1a1a1a]">I confirm</strong> that, to the best of my knowledge, the vehicle has{' '}
-                <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been serviced in line with the manufacturer's schedule. I understand that pre-existing faults are not covered.
+                <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been serviced regularly. I understand that pre-existing faults are not covered.
               </span>
             </label>
             {declarationError && !declarationChecked && (
