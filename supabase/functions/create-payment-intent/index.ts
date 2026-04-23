@@ -110,6 +110,7 @@ serve(async (req) => {
           voluntaryExcess,
           claimLimit,
           finalAmount: Number(totalAmount),
+          discountCode,
         },
       );
       if (!priceCheck.ok) {
