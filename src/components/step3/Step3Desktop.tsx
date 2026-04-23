@@ -510,8 +510,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             {/* CTA card */}
             <div className="bg-white border border-[#e9e9e7] rounded-2xl shadow-[0_10px_30px_rgba(16,24,40,0.06)] p-[18px]">
               {savings > 0 && (
-                <div className="bg-[#fffaf5] border border-[#ffe8d7] rounded-2xl px-3.5 py-3.5 text-[13px] text-[#624a3c] mb-3.5 leading-snug">
-                  Pay in full for <strong>£{payInFull}</strong> and save <strong>£{savings}</strong> today versus the standard monthly plan.
+                <div className="bg-[#e8f7ef] border-2 border-[#1ca36f] rounded-2xl px-4 py-3.5 text-[14px] text-[#0e6b48] mb-3.5 leading-snug font-semibold">
+                  💰 Pay in full for <strong className="text-[#0a5938]">£{payInFull}</strong> and <strong className="text-[#0a5938]">save £{savings}</strong> today versus the standard monthly plan.
                 </div>
               )}
               <button
