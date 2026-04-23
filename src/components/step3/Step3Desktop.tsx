@@ -637,7 +637,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 /* ───────── helpers ───────── */
 
 const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="bg-white border border-[#e9e9e7] rounded-[18px] shadow-[0_10px_30px_rgba(16,24,40,0.06)] overflow-hidden">
+  <div className="bg-white border border-[#e9e9e7] rounded-[18px] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
     <div className="p-6">{children}</div>
   </div>
 );
