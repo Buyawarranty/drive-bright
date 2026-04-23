@@ -706,7 +706,7 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                         <div className="space-y-6">
                           <div>
-                            <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-base block text-left">
                               Describe the fault / problem *
                             </Label>
                             <Textarea
