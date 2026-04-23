@@ -242,18 +242,6 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               </div>
             )}
 
-            {/* Cover Start Date */}
-            {startDate && (
-              <div className="border border-[#FFD7A8] bg-[#FFF8F0] rounded-lg px-4 py-3 mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#C4841D]" />
-                  <div>
-                    <p className="text-xs text-[#C4841D] font-medium">Cover start date</p>
-                    <p className="text-sm font-bold text-[#1a1a1a]">{formatStartDate(startDate)}</p>
-                  </div>
-                </div>
-              </div>
-            )}
             
             {/* CTA Button */}
             <Button
