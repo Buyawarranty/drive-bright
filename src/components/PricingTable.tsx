@@ -2989,6 +2989,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           {/* Panda mascot moved to PriceHelpPanel callback section */}
         </div>
       )}
+      </div>
+      {/* End mobile-only sticky bar wrapper */}
 
       {/* Email Quote Dialog */}
       <Dialog open={emailQuoteDialogOpen} onOpenChange={setEmailQuoteDialogOpen}>
