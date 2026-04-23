@@ -608,11 +608,99 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                       </div>
 
-                      {/* Section 3: Supporting Documents */}
+                      {/* Section 3: What Happened */}
                       <div>
                         <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
                             3
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900">What Happened</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="faultDescription" className="text-gray-700 font-medium text-sm">
+                              Describe the fault / problem *
+                            </Label>
+                            <Textarea
+                              id="faultDescription"
+                              name="faultDescription"
+                              placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
+                              value={formData.faultDescription}
+                              onChange={handleInputChange}
+                              rows={4}
+                              className={`mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
+                            />
+                            {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C]">{errors.faultDescription}</p>}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="dateOccurred" className="text-gray-700 font-medium text-sm">
+                                When did the fault occur?
+                              </Label>
+                              <Input
+                                id="dateOccurred"
+                                name="dateOccurred"
+                                type="date"
+                                value={formData.dateOccurred}
+                                onChange={handleInputChange}
+                                max={new Date().toISOString().split('T')[0]}
+                                className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="issueTiming" className="text-gray-700 font-medium text-sm">
+                                When does the issue happen?
+                              </Label>
+                              <Input
+                                id="issueTiming"
+                                name="issueTiming"
+                                type="text"
+                                placeholder="e.g. on start-up, when braking, all the time"
+                                value={formData.issueTiming}
+                                onChange={handleInputChange}
+                                className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="faultDetails" className="text-gray-700 font-medium text-sm">
+                              Any other relevant details
+                            </Label>
+                            <Textarea
+                              id="faultDetails"
+                              name="faultDetails"
+                              placeholder="Garage diagnosis, recent repairs, anything else we should know..."
+                              value={formData.faultDetails}
+                              onChange={handleInputChange}
+                              rows={3}
+                              className="mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="additionalInfo" className="text-gray-700 font-medium text-sm">
+                              Additional information
+                            </Label>
+                            <Textarea
+                              id="additionalInfo"
+                              name="additionalInfo"
+                              placeholder="Anything else you'd like to add"
+                              value={formData.additionalInfo}
+                              onChange={handleInputChange}
+                              rows={2}
+                              className="mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section 4: Supporting Documents */}
+                      <div>
+                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
+                            4
                           </div>
                           <h3 className="text-xl font-bold text-gray-900">Supporting Documents (Optional)</h3>
                         </div>
