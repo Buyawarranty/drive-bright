@@ -282,8 +282,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       badge={opt.badge}
                       onClick={() => setSelectedLabourRate(opt.value)}
                     >
-                      <div className="text-[24px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">{opt.label}</div>
-                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[34px] leading-tight">{opt.sub}</div>
+                      <div className="h-[28px] flex items-center mb-2">
+                        <div className="text-[24px] font-extrabold tracking-[-0.04em] leading-none text-[#161616]">{opt.label}</div>
+                      </div>
+                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[36px] leading-tight">{opt.sub}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">{opt.note}</div>
                     </OptionCard>
                   );
