@@ -264,11 +264,14 @@ export const trackEmailClick = (emailId: string, campaignName: string, linkUrl: 
 };
 
 // Track Bumper checkout button click (Complete checkout bumper conversion)
-export const trackBumperCheckoutClick = () => {
+export const trackBumperCheckoutClick = (value?: number) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    console.log('🎯 Tracking Bumper checkout click conversion');
+    const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
+    console.log('🎯 Tracking Bumper checkout click conversion', { value: conversionValue });
     window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA'
+      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA',
+      'value': conversionValue,
+      'currency': 'GBP'
     });
   }
 };
