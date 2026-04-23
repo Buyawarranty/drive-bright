@@ -477,7 +477,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           {/* Your cover */}
           <div className="px-6 leading-tight">
             <div className="text-[#f36b21] text-[11px] font-extrabold tracking-[0.08em] uppercase mb-1">Your cover</div>
-            <div className="text-[15px] font-extrabold text-[#161616]">{selectedDuration?.label ? `${selectedDuration.label.replace(' cover','')} Platinum Cover` : '2-Year Platinum Cover'}</div>
+            <div className="text-[15px] font-extrabold text-[#161616]">{selectedDuration?.label ? `${selectedDuration.label.replace(' cover','').replace('1-year','1-Year').replace('2-year','2-Year').replace('3-year','3-Year')} Platinum Cover` : '2-Year Platinum Cover'}</div>
           </div>
 
           {/* Price */}
