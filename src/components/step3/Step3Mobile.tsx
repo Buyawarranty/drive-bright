@@ -19,15 +19,7 @@ import PriceHelpTrigger from './PriceHelpTrigger';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import Step3Header from './Step3Header';
-import Step3Hero from './Step3Hero';
-import TermSelector from './TermSelector';
-import ExcessSelector from './ExcessSelector';
-import ClaimLimitSelector from './ClaimLimitSelector';
-import LabourRateSelector from './LabourRateSelector';
-import ExtrasSelector from './ExtrasSelector';
-import CoverageTransparency from './CoverageTransparency';
-import StickyFooter from './StickyFooter';
+import MobileSteppedFlow from './MobileSteppedFlow';
 
 interface Step3MobileProps {
   vehicleData: {
@@ -404,99 +396,25 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const showRestrictionAlert = availableDurations.length < 3;
 
   return (
-    <div className="min-h-screen bg-background pb-32 px-2 sm:px-0">
-      <Step3Header currentStep={0} />
-      
-      <div className="max-w-2xl mx-auto">
-        <Step3Hero vehicleData={vehicleData} onBack={onBack} />
-
-        {/* Restriction Alert */}
-        {showRestrictionAlert && (
-          <div className="px-4 mb-4">
-            <Alert className="border-primary/30 bg-primary/5">
-              <AlertCircle className="h-4 w-4 text-primary" />
-              <AlertDescription className="text-sm">
-                {vehicleAge >= 14 
-                  ? `As your vehicle is ${vehicleAge} years old, you're eligible for up to ${availableDurations.length === 1 ? '1 year' : '2 years'} of warranty cover.`
-                  : `As your vehicle has ${vehicleMileage.toLocaleString()} miles, you're eligible for up to ${availableDurations.length === 1 ? '1 year' : '2 years'} of warranty cover.`
-                }
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        <TermSelector
-          selectedTerm={paymentType}
-          onTermChange={(term) => setPaymentType(term)}
-          availableDurations={availableDurations}
-          getPriceForTerm={calculateMonthlyPrice}
-          getTotalForTerm={calculateTotalPrice}
-          hasAddOnsSelected={hasAddOnsSelected}
-          vehicleModel={vehicleData?.model}
-          vehicleType={vehicleData?.vehicleType}
-        />
-
-        {/* Price Help Trigger */}
-        <div className="px-4 mb-4 mt-4">
-          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
-        </div>
-
-        <ClaimLimitSelector
-          selectedClaimLimit={selectedClaimLimit}
-          onClaimLimitChange={setSelectedClaimLimit}
-          currentMonthlyPrice={currentMonthlyPrice}
-          boostAddon={boostAddon}
-          onBoostChange={setBoostAddon}
-          boostPrice={5}
-          paymentType={paymentType}
-          vehicleMake={vehicleData?.make}
-          voluntaryExcess={voluntaryExcess || 100}
-        />
-
-        <LabourRateSelector
-          selectedLabourRate={selectedLabourRate}
-          onLabourRateChange={setSelectedLabourRate}
-          currentMonthlyPrice={currentMonthlyPrice}
-        />
-
-        <ExcessSelector
-          selectedExcess={voluntaryExcess}
-          onExcessChange={setVoluntaryExcess}
-          currentMonthlyPrice={currentMonthlyPrice}
-        />
-
-        {/* Add-ons section removed - auto-included add-ons for 24/36 month plans are handled by getAutoIncludedAddOns in addOnsUtils.ts */}
-
-        <CoverageTransparency
-          platinumDocUrl={platinumDocUrl}
-          termsDocUrl={termsDocUrl}
-        />
-      </div>
-
-      <StickyFooter
-        monthlyPrice={currentMonthlyPrice}
-        totalPrice={currentTotalPrice}
-        freeYearText={freeYearText}
-        onContinue={handleContinue}
-        isLoading={loading}
-        isValid={isFormValid}
-        paymentPeriod={paymentType}
-        hasAddOnsSelected={hasAddOnsSelected}
-      />
-
-      {/* Price Help Panel - Slide-in (Desktop) / Bottom Sheet (Mobile) */}
-      <PriceHelpPanel
-        isOpen={showPriceHelpPanel}
-        onClose={() => setShowPriceHelpPanel(false)}
-        currentExcess={voluntaryExcess}
-        currentClaimLimit={selectedClaimLimit}
-        currentLabourRate={selectedLabourRate}
-        onExcessChange={setVoluntaryExcess}
-        onClaimLimitChange={setSelectedClaimLimit}
-        onLabourRateChange={setSelectedLabourRate}
-        currentMonthlyPrice={currentMonthlyPrice}
-      />
-    </div>
+    <MobileSteppedFlow
+      vehicleData={vehicleData}
+      onBack={onBack}
+      selectedClaimLimit={selectedClaimLimit}
+      onClaimLimitChange={setSelectedClaimLimit}
+      selectedLabourRate={selectedLabourRate}
+      onLabourRateChange={setSelectedLabourRate}
+      paymentType={paymentType}
+      onPaymentTypeChange={setPaymentType}
+      voluntaryExcess={voluntaryExcess}
+      onVoluntaryExcessChange={setVoluntaryExcess}
+      availableDurations={availableDurations}
+      currentMonthlyPrice={currentMonthlyPrice}
+      currentTotalPrice={currentTotalPrice}
+      calculateMonthlyPrice={calculateMonthlyPrice}
+      onContinue={handleContinue}
+      isLoading={loading}
+      isFormValid={isFormValid}
+    />
   );
 };
 
