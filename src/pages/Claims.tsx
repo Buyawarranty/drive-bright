@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import pandaMechanicFix from '@/assets/panda-mechanic-fix.png';
@@ -558,28 +560,50 @@ Additional Information: ${formData.additionalInfo}
                           <Label htmlFor="currentMileage" className="text-gray-700 font-medium text-sm mb-2 block">
                             Enter current approximate mileage
                           </Label>
-                          <Input
-                            id="currentMileage"
-                            name="currentMileage"
-                            type="text"
-                            inputMode="numeric"
-                            list="mileage-options"
-                            placeholder="e.g. 45,000"
-                            value={formData.currentMileage ? formData.currentMileage.toLocaleString('en-GB') : ''}
-                            onChange={(e) => {
-                              const digits = e.target.value.replace(/[^0-9]/g, '');
-                              const value = digits ? parseInt(digits, 10) : 0;
-                              setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
-                            }}
-                            className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                          />
-                          <datalist id="mileage-options">
-                            {Array.from({ length: 200 }, (_, i) => (i + 1) * 1000).map((m) => (
-                              <option key={m} value={m.toLocaleString('en-GB')} />
-                            ))}
-                          </datalist>
+                          <div className="flex gap-2 mt-1.5">
+                            <Input
+                              id="currentMileage"
+                              name="currentMileage"
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="e.g. 45,000"
+                              value={formData.currentMileage ? formData.currentMileage.toLocaleString('en-GB') : ''}
+                              onChange={(e) => {
+                                const digits = e.target.value.replace(/[^0-9]/g, '');
+                                const value = digits ? parseInt(digits, 10) : 0;
+                                setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
+                              }}
+                              className="h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 flex-1"
+                            />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-11 px-3 border-gray-300"
+                                  aria-label="Pick mileage"
+                                >
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-48 p-0 max-h-72 overflow-y-auto" align="end">
+                                <div className="py-1">
+                                  {Array.from({ length: 200 }, (_, i) => (i + 1) * 1000).map((m) => (
+                                    <button
+                                      key={m}
+                                      type="button"
+                                      onClick={() => setFormData({ ...formData, currentMileage: m })}
+                                      className="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 hover:text-orange-700 transition-colors"
+                                    >
+                                      {m.toLocaleString('en-GB')}
+                                    </button>
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
                           <p className="mt-1.5 text-xs text-gray-500">
-                            Type your mileage or pick a value from the list (1,000-mile increments).
+                            Type your own mileage or pick a value from the list (1,000-mile increments).
                           </p>
                         </div>
                       </div>
