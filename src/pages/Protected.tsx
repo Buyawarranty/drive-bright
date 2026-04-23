@@ -487,7 +487,7 @@ const Protected = () => {
               href="/?step=1#quote-form"
               className="inline-flex items-center justify-center bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all w-full md:w-auto"
             >
-              Get cover today
+              Get cover today <ArrowRight className="w-6 h-6 ml-2 stroke-[3]" />
             </a>
           </div>
 
