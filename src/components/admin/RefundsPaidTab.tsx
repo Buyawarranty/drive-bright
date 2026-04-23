@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X } from 'lucide-react';
+import { Search, CalendarIcon, RefreshCw, Download, Banknote, Pencil, Check, X } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
@@ -23,6 +23,9 @@ import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
+
+// Test purchase threshold – anything below this is treated as a test/dev transaction
+const TEST_PURCHASE_THRESHOLD = 20;
 
 type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'all' | 'custom';
 
@@ -40,7 +43,7 @@ const computeQuickRange = (key: QuickRange): DateRange | undefined => {
   }
 };
 
-interface CancellationRecord {
+interface RefundRecord {
   id: string;
   name: string;
   email: string;
@@ -66,6 +69,7 @@ interface AdminUser {
   first_name?: string;
   last_name?: string;
   role: string;
+  user_id?: string;
 }
 
 const monthNames = [
@@ -73,7 +77,7 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export const CancellationsTab: React.FC<{
+export const RefundsPaidTab: React.FC<{
   adminUsers?: AdminUser[];
   currentAdminUser?: AdminUser | null;
 }> = ({ adminUsers: adminUsersProp, currentAdminUser: currentAdminUserProp }) => {
@@ -94,14 +98,14 @@ export const CancellationsTab: React.FC<{
     || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
-  const [records, setRecords] = useState<CancellationRecord[]>([]);
+  const [records, setRecords] = useState<RefundRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteText, setEditingNoteText] = useState('');
   const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
 
-  const startEditNote = (record: CancellationRecord) => {
+  const startEditNote = (record: RefundRecord) => {
     setEditingNoteId(record.id);
     setEditingNoteText(record.cancellation_note || '');
   };
@@ -148,10 +152,8 @@ export const CancellationsTab: React.FC<{
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
-  const [filterByStatus, setFilterByStatus] = useState('all');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
 
-  // Default to current month
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const now = new Date();
     return { from: startOfMonth(now), to: endOfMonth(now) };
@@ -160,7 +162,6 @@ export const CancellationsTab: React.FC<{
   const [selectedYear, setSelectedYear] = useState<string>(() => String(new Date().getFullYear()));
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Self-load admin users when not provided via props
   useEffect(() => {
     if (adminUsersProp) return;
     supabase.from('admin_users')
@@ -179,14 +180,15 @@ export const CancellationsTab: React.FC<{
     return Array.from({ length: 6 }, (_, i) => currentYear - i);
   }, []);
 
-  const fetchCancellations = useCallback(async () => {
+  const fetchRefunds = useCallback(async () => {
     try {
       if (!initialLoadDone) setLoading(true);
 
+      // Only fetch refunded customers (status = 'refunded' / 'Refunded')
       const { data, error } = await supabase
         .from('customers')
         .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at')
-        .or('status.ilike.cancelled,status.ilike.refunded')
+        .ilike('status', 'refunded')
         .order('updated_at', { ascending: false })
         .limit(3000);
 
@@ -194,14 +196,14 @@ export const CancellationsTab: React.FC<{
       setRecords(data || []);
       setInitialLoadDone(true);
     } catch (err) {
-      console.error('Error fetching cancellations:', err);
+      console.error('Error fetching refunds:', err);
     } finally {
       setLoading(false);
     }
   }, [initialLoadDone]);
 
   useEffect(() => {
-    fetchCancellations();
+    fetchRefunds();
   }, []);
 
   const handleMonthSelect = (monthIdx: string) => {
@@ -219,7 +221,6 @@ export const CancellationsTab: React.FC<{
     }
   };
 
-  // Sync month/year selectors from dateRange
   useEffect(() => {
     if (dateRange?.from && dateRange?.to) {
       const from = dateRange.from;
@@ -238,12 +239,11 @@ export const CancellationsTab: React.FC<{
     }
   }, [dateRange]);
 
-  // Filter records
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
 
-    // Exclude test purchases (< £20) – these are admin/dev test transactions, not real cancellations/refunds
-    filtered = filtered.filter(r => (r.final_amount || 0) >= 20);
+    // Exclude test purchases (< £20) – these are admin/dev test transactions, not real refunds
+    filtered = filtered.filter(r => (r.final_amount || 0) >= TEST_PURCHASE_THRESHOLD);
 
     // Role-based visibility: non-full-view users only see their own
     if (!canSeeAll) {
@@ -251,7 +251,6 @@ export const CancellationsTab: React.FC<{
       filtered = myId ? filtered.filter(r => r.assigned_to === myId) : [];
     }
 
-    // Date range filter (using updated_at — when the cancellation occurred)
     if (dateRange?.from) {
       const from = new Date(dateRange.from);
       from.setHours(0, 0, 0, 0);
@@ -261,10 +260,6 @@ export const CancellationsTab: React.FC<{
         const updatedAt = new Date(r.updated_at);
         return updatedAt >= from && updatedAt <= to;
       });
-    }
-
-    if (filterByStatus !== 'all') {
-      filtered = filtered.filter(r => r.status?.toLowerCase() === filterByStatus);
     }
 
     if (filterByAgent !== 'all') {
@@ -290,7 +285,7 @@ export const CancellationsTab: React.FC<{
     }
 
     return filtered;
-  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch, canSeeAll, currentAdminUser?.id]);
+  }, [records, dateRange, filterByAgent, debouncedSearch, canSeeAll, currentAdminUser?.id]);
 
   const pagination = usePagination(filteredRecords, { initialPageSize: 50 });
 
@@ -301,9 +296,12 @@ export const CancellationsTab: React.FC<{
     return [agent.first_name, agent.last_name].filter(Boolean).join(' ') || agent.email;
   };
 
-  const totalCancelled = filteredRecords.filter(r => r.status?.toLowerCase() === 'cancelled').length;
-  const totalRefunded = filteredRecords.filter(r => r.status?.toLowerCase() === 'refunded').length;
+  const totalRefunded = filteredRecords.length;
   const totalValue = isFinancialRole ? filteredRecords.reduce((sum, r) => sum + (r.final_amount || 0), 0) : 0;
+  const excludedTestCount = useMemo(
+    () => records.filter(r => (r.final_amount || 0) < TEST_PURCHASE_THRESHOLD).length,
+    [records]
+  );
 
   const displayDateLabel = useMemo(() => {
     if (!dateRange?.from) return 'All time';
@@ -324,12 +322,13 @@ export const CancellationsTab: React.FC<{
       Vehicle: [r.vehicle_make, r.vehicle_model].filter(Boolean).join(' '),
       Plan: r.plan_type,
       Status: r.status,
-      Amount: isFinancialRole ? (r.final_amount || 0) : 'N/A',
-      'Cancelled/Refunded Date': format(new Date(r.updated_at), 'dd/MM/yyyy'),
+      'Refund Amount': isFinancialRole ? (r.final_amount || 0) : 'N/A',
+      'Refund Date': format(new Date(r.updated_at), 'dd/MM/yyyy'),
+      'Purchase Date': format(new Date(r.created_at), 'dd/MM/yyyy'),
       Agent: getAgentName(r.assigned_to),
       Note: r.cancellation_note || '',
     }));
-    exportDataToCSV(exportData, { filename: `cancellations-${format(new Date(), 'yyyy-MM-dd')}`, format: 'csv' });
+    exportDataToCSV(exportData, { filename: `refunds-paid-${format(new Date(), 'yyyy-MM-dd')}`, format: 'csv' });
   };
 
   const agentOptions = useMemo(() => {
@@ -346,11 +345,16 @@ export const CancellationsTab: React.FC<{
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Cancellations & Refunds</h1>
+        <h1 className="text-2xl font-bold">Refunds Paid</h1>
         <p className="text-muted-foreground text-sm">
           {canSeeAll
-            ? 'All cancelled and refunded warranties for commission reconciliation'
-            : 'Your cancelled and refunded warranties'}
+            ? 'All refunds issued to customers — used for commission reconciliation'
+            : 'Your refunded customers'}
+          {' · '}
+          <span className="text-xs">Test purchases under £{TEST_PURCHASE_THRESHOLD} are excluded automatically</span>
+          {excludedTestCount > 0 && (
+            <span className="text-xs"> ({excludedTestCount} test record{excludedTestCount === 1 ? '' : 's'} hidden)</span>
+          )}
         </p>
       </div>
 
@@ -377,31 +381,26 @@ export const CancellationsTab: React.FC<{
       </div>
 
       {/* Summary Cards */}
-      <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3')}>
-
-        <Card className="p-3">
-          <p className="text-xs text-muted-foreground">Total</p>
-          <p className="text-2xl font-bold">{filteredRecords.length}</p>
-        </Card>
-        <Card className="p-3 border-orange-200">
-          <p className="text-xs text-muted-foreground">Cancelled</p>
-          <p className="text-2xl font-bold text-destructive">{totalCancelled}</p>
-        </Card>
+      <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2')}>
         <Card className="p-3 border-red-200">
-          <p className="text-xs text-muted-foreground">Refunded</p>
+          <p className="text-xs text-muted-foreground">Total Refunds</p>
           <p className="text-2xl font-bold text-destructive">{totalRefunded}</p>
         </Card>
         {isFinancialRole && (
           <Card className="p-3 border-red-200">
-            <p className="text-xs text-muted-foreground">Total Value</p>
+            <p className="text-xs text-muted-foreground">Total Refunded Value</p>
             <p className="text-2xl font-bold text-destructive">£{totalValue.toFixed(2)}</p>
           </Card>
         )}
+        <Card className="p-3">
+          <p className="text-xs text-muted-foreground">Period</p>
+          <p className="text-sm font-medium">{displayDateLabel}</p>
+        </Card>
       </div>
 
       {/* Filters */}
       <div className="bg-card p-4 rounded-lg border space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1 lg:col-span-2">
             <Label className="text-sm font-medium">Search</Label>
             <div className="relative">
@@ -413,18 +412,6 @@ export const CancellationsTab: React.FC<{
                 className="pl-10"
               />
             </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-sm font-medium">Status</Label>
-            <Select value={filterByStatus} onValueChange={setFilterByStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All (Cancelled & Refunded)</SelectItem>
-                <SelectItem value="cancelled">Cancelled Only</SelectItem>
-                <SelectItem value="refunded">Refunded Only</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {canSeeAll && (
@@ -447,7 +434,7 @@ export const CancellationsTab: React.FC<{
           <div className="space-y-1">
             <Label className="text-sm font-medium">&nbsp;</Label>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={fetchCancellations} className="h-10">
+              <Button variant="outline" size="sm" onClick={fetchRefunds} className="h-10">
                 <RefreshCw className="h-4 w-4" />
               </Button>
               {canExport && (
@@ -517,7 +504,6 @@ export const CancellationsTab: React.FC<{
               const now = new Date();
               setDateRange({ from: startOfMonth(now), to: endOfMonth(now) });
               setFilterByAgent('all');
-              setFilterByStatus('all');
               setSearchTerm('');
             }}
           >
@@ -535,7 +521,7 @@ export const CancellationsTab: React.FC<{
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm text-muted-foreground">
-              Showing {pagination.startIndex + 1}–{pagination.endIndex} of {filteredRecords.length} records · {displayDateLabel}
+              Showing {pagination.startIndex + 1}–{pagination.endIndex} of {filteredRecords.length} refunds · {displayDateLabel}
             </div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="font-medium">Colour key:</span>
@@ -557,9 +543,8 @@ export const CancellationsTab: React.FC<{
                   <TableHead>Reg Plate</TableHead>
                   <TableHead>Vehicle</TableHead>
                   <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  {isFinancialRole && <TableHead>Amount</TableHead>}
-                  <TableHead>Date</TableHead>
+                  {isFinancialRole && <TableHead>Refund Amount</TableHead>}
+                  <TableHead>Refund Date</TableHead>
                   <TableHead>Agent</TableHead>
                   <TableHead className="min-w-[260px]">Note</TableHead>
                 </TableRow>
@@ -567,9 +552,9 @@ export const CancellationsTab: React.FC<{
               <TableBody>
                 {pagination.paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isFinancialRole ? 9 : 8} className="text-center py-8 text-muted-foreground">
-                      <Ban className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                      No cancellations found for this period
+                    <TableCell colSpan={isFinancialRole ? 8 : 7} className="text-center py-8 text-muted-foreground">
+                      <Banknote className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                      No refunds found for this period
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -584,92 +569,87 @@ export const CancellationsTab: React.FC<{
                           ? 'bg-pink-50 hover:bg-pink-100'
                           : '';
                     return (
-                    <TableRow key={record.id} className={rowHighlight}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-sm">{record.name}</p>
-                          <p className="text-xs text-muted-foreground">{record.email}</p>
-                          {record.phone && <p className="text-xs text-muted-foreground">{record.phone}</p>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {record.registration_plate ? (
-                          <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
-                            {record.registration_plate.toUpperCase()}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {[record.vehicle_make, record.vehicle_model].filter(Boolean).join(' ') || 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">{record.plan_type}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="destructive" className="text-xs">
-                          {record.status}
-                        </Badge>
-                      </TableCell>
-                      {isFinancialRole && (
-                        <TableCell className="text-sm font-medium">
-                          £{(record.final_amount || 0).toFixed(2)}
-                        </TableCell>
-                      )}
-                      <TableCell className="text-sm text-muted-foreground">
-                        <div>{format(new Date(record.updated_at), 'dd MMM yyyy')}</div>
-                        <div className="text-xs">{daysHeld} day{daysHeld === 1 ? '' : 's'} after purchase</div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {getAgentName(record.assigned_to)}
-                      </TableCell>
-                      <TableCell className="text-sm align-top">
-                        {editingNoteId === record.id ? (
-                          <div className="space-y-1">
-                            <Textarea
-                              value={editingNoteText}
-                              onChange={(e) => setEditingNoteText(e.target.value)}
-                              rows={2}
-                              className="text-sm min-w-[240px]"
-                              placeholder="Add cancellation note…"
-                              autoFocus
-                            />
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="default"
-                                className="h-7 px-2"
-                                onClick={() => saveNote(record.id)}
-                                disabled={savingNoteId === record.id}
-                              >
-                                <Check className="h-3 w-3 mr-1" /> Save
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-2"
-                                onClick={cancelEditNote}
-                                disabled={savingNoteId === record.id}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
+                      <TableRow key={record.id} className={rowHighlight}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-sm">{record.name}</p>
+                            <p className="text-xs text-muted-foreground">{record.email}</p>
+                            {record.phone && <p className="text-xs text-muted-foreground">{record.phone}</p>}
                           </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => startEditNote(record)}
-                            className="group flex items-start gap-2 text-left w-full hover:bg-muted/50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
-                          >
-                            <span className={cn('flex-1 whitespace-pre-wrap', !record.cancellation_note && 'italic text-muted-foreground')}>
-                              {record.cancellation_note || 'Add note…'}
+                        </TableCell>
+                        <TableCell>
+                          {record.registration_plate ? (
+                            <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
+                              {record.registration_plate.toUpperCase()}
                             </span>
-                            <Pencil className="h-3 w-3 mt-1 opacity-0 group-hover:opacity-60 shrink-0" />
-                          </button>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">N/A</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {[record.vehicle_make, record.vehicle_model].filter(Boolean).join(' ') || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">{record.plan_type}</Badge>
+                        </TableCell>
+                        {isFinancialRole && (
+                          <TableCell className="text-sm font-medium text-destructive">
+                            £{(record.final_amount || 0).toFixed(2)}
+                          </TableCell>
                         )}
-                      </TableCell>
-                    </TableRow>
+                        <TableCell className="text-sm text-muted-foreground">
+                          <div>{format(new Date(record.updated_at), 'dd MMM yyyy')}</div>
+                          <div className="text-xs">{daysHeld} day{daysHeld === 1 ? '' : 's'} after purchase</div>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {getAgentName(record.assigned_to)}
+                        </TableCell>
+                        <TableCell className="text-sm align-top">
+                          {editingNoteId === record.id ? (
+                            <div className="space-y-1">
+                              <Textarea
+                                value={editingNoteText}
+                                onChange={(e) => setEditingNoteText(e.target.value)}
+                                rows={2}
+                                className="text-sm min-w-[240px]"
+                                placeholder="Add refund note…"
+                                autoFocus
+                              />
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-7 px-2"
+                                  onClick={() => saveNote(record.id)}
+                                  disabled={savingNoteId === record.id}
+                                >
+                                  <Check className="h-3 w-3 mr-1" /> Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2"
+                                  onClick={cancelEditNote}
+                                  disabled={savingNoteId === record.id}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => startEditNote(record)}
+                              className="group flex items-start gap-2 text-left w-full hover:bg-muted/50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                            >
+                              <span className={cn('flex-1 whitespace-pre-wrap', !record.cancellation_note && 'italic text-muted-foreground')}>
+                                {record.cancellation_note || 'Add note…'}
+                              </span>
+                              <Pencil className="h-3 w-3 mt-1 opacity-0 group-hover:opacity-60 shrink-0" />
+                            </button>
+                          )}
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
@@ -694,3 +674,5 @@ export const CancellationsTab: React.FC<{
     </div>
   );
 };
+
+export default RefundsPaidTab;

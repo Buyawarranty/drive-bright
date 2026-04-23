@@ -275,6 +275,12 @@ const defaultTabs: Tab[] = [
     description: 'Cancelled and refunded warranties for commission reconciliation'
   },
   {
+    id: 'refunds-paid',
+    label: 'Refunds Paid',
+    icon: Ban,
+    description: 'Refunds issued to customers for commission reconciliation'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
@@ -319,13 +325,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
       // Accounts Manager/Payroll: customers, timesheets (with approvals), analytics, user permissions, account
-      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
     if (userRole === 'accounts') {
       // Accounts role: new leads, quotes, customers, discount codes, claims, policy letters, timesheets
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'claims', 'policy-documents', 'timesheets', 'account'];
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'claims', 'policy-documents', 'timesheets', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
