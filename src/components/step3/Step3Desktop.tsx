@@ -54,6 +54,8 @@ interface Step3DesktopProps {
   onSelectPlan: () => void;
   validationErrors: { voluntaryExcess: boolean; claimLimit: boolean; paymentType: boolean };
   onOpenPriceMatch?: () => void;
+  platinumDocUrl?: string;
+  termsDocUrl?: string;
 }
 
 const LABOUR_OPTIONS = [
@@ -96,7 +98,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   onSelectPlan,
   validationErrors,
   onOpenPriceMatch,
+  platinumDocUrl,
+  termsDocUrl,
 }) => {
+  const [partsListOpen, setPartsListOpen] = React.useState(false);
   const [claimLimitDetailsOpen, setClaimLimitDetailsOpen] = React.useState(false);
   const [labourRateDetailsOpen, setLabourRateDetailsOpen] = React.useState(false);
   const [excessDetailsOpen, setExcessDetailsOpen] = React.useState(false);
