@@ -2353,10 +2353,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* ==================== VEHICLE DECLARATION (fraud prevention) ==================== */}
           <section
             id="vehicle-declaration"
-            className={`mt-6 rounded-xl border px-4 sm:px-5 py-4 transition-colors ${
+            className={`mt-6 rounded-xl border-2 px-4 sm:px-5 py-4 transition-colors ${
               declarationError && !declarationChecked
                 ? 'bg-red-50 border-red-300'
-                : 'bg-[#fffbf0] border-[#f5e4b0]'
+                : 'bg-white border-[#d8dde3]'
             }`}
           >
             <label className="flex items-start gap-3 cursor-pointer">
@@ -2378,7 +2378,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </button>
               <span className="text-sm text-[#555] leading-relaxed">
                 <strong className="text-[#1a1a1a]">I confirm</strong> that, to the best of my knowledge, the vehicle has{' '}
-                <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been serviced in line with the manufacturer's schedule. I understand that pre-existing faults are not covered.
+                <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been serviced regularly. I understand that pre-existing faults are not covered.
               </span>
             </label>
             {declarationError && !declarationChecked && (
