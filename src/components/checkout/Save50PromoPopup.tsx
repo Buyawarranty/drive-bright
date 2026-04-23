@@ -233,23 +233,23 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-xs sm:max-w-sm lg:w-1/3 lg:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-[22rem] sm:max-w-sm lg:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in max-h-[92vh] overflow-y-auto">
         {/* Close button */}
         <button
           type="button"
           onClick={handleClose}
           aria-label="Dismiss offer"
-          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-gray-100 flex items-center justify-center transition-colors shadow-sm"
+          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-gray-100 flex items-center justify-center transition-colors shadow-sm"
         >
           <X className="w-5 h-5 text-gray-600" />
         </button>
 
         {/* Top accent band */}
-        <div className="bg-gradient-to-br from-[#FF8C00] via-[#FF6B00] to-[#E91E63] px-6 pt-7 pb-6 text-center text-white">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/20 backdrop-blur mb-3">
-            <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
+        <div className="bg-gradient-to-br from-[#FF8C00] via-[#FF6B00] to-[#E91E63] px-5 sm:px-6 pt-6 sm:pt-7 pb-5 sm:pb-6 text-center text-white">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur mb-2.5 sm:mb-3">
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
           </div>
-          <p className="text-sm font-semibold uppercase tracking-wider opacity-90">
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider opacity-90">
             One-time offer just for you
           </p>
           <h2 id="save50-title" className="text-3xl sm:text-4xl font-extrabold mt-1">
@@ -259,50 +259,50 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 sm:py-6">
+        <div className="px-5 sm:px-6 py-5 sm:py-6">
           {/* Code chip */}
-          <div className="flex items-center justify-between gap-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 mb-4">
-            <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">
-                Your code
-              </p>
-              <p className="text-xl font-extrabold text-gray-900 tracking-wider select-all">{CODE}</p>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    if (navigator.clipboard?.writeText) {
-                      await navigator.clipboard.writeText(CODE);
-                    } else {
-                      const ta = document.createElement('textarea');
-                      ta.value = CODE;
-                      ta.style.position = 'fixed';
-                      ta.style.opacity = '0';
-                      document.body.appendChild(ta);
-                      ta.select();
-                      document.execCommand('copy');
-                      document.body.removeChild(ta);
-                    }
-                    toast.success('Code copied!');
-                  } catch {
-                    toast.error('Could not copy. Long-press the code to copy.');
-                  }
-                }}
-                aria-label="Copy code"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 active:scale-95 transition-all text-xs font-semibold text-gray-700 shadow-sm"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                Copy
-              </button>
-              <div className="flex items-center gap-1 text-xs text-gray-600">
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 mb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">
+                  Your code
+                </p>
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wider select-all break-all">{CODE}</p>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-gray-600 flex-shrink-0">
                 <Clock className="w-4 h-4 text-[#E91E63]" />
-                <span className="font-semibold">
+                <span className="font-semibold tabular-nums">
                   {isExpired ? 'Expired' : formatTime(secondsLeft)}
                 </span>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(CODE);
+                  } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = CODE;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  }
+                  toast.success('Code copied!');
+                } catch {
+                  toast.error('Could not copy. Long-press the code to copy.');
+                }
+              }}
+              aria-label="Copy code"
+              className="mt-2.5 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 active:scale-[0.99] transition-all text-xs font-semibold text-gray-700 shadow-sm"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              Copy code
+            </button>
           </div>
 
           {/* Bullets */}
@@ -335,7 +335,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               type="button"
               onClick={handleApply}
               disabled={isApplying}
-              className="w-full h-12 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#E91E63] text-white font-bold text-base shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-12 sm:h-13 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#E91E63] text-white font-bold text-base shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isApplying ? 'Applying…' : 'Apply £50 off now'}
             </button>
