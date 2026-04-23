@@ -237,7 +237,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <SectionHead
                 eyebrow="Claim limit"
                 title="How much cover do you need?"
-                subtitle="Choose the repair limit that feels right for your car and budget."
+                subtitle="Parts & labour covered — pick the limit that matches your car's value."
                 onDetails={() => setClaimLimitDetailsOpen(true)}
               />
               <div className={cn('grid gap-3', visibleClaimTiers.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
