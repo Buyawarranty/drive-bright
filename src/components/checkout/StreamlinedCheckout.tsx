@@ -1396,10 +1396,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackFormSubmission('customer_details', { payment_method: effectivePayment });
 
     if (effectivePayment === 'monthly') {
-      trackBumperCheckoutClick();
+      trackBumperCheckoutClick(discountedBumperPrice);
       await processBumperCheckout();
     } else {
-      trackStripeCheckoutClick();
+      trackStripeCheckoutClick(discountedStripePrice);
       await processStripeCheckout();
     }
   };

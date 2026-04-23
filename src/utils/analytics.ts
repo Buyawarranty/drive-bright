@@ -264,35 +264,38 @@ export const trackEmailClick = (emailId: string, campaignName: string, linkUrl: 
 };
 
 // Track Bumper checkout button click (Complete checkout bumper conversion)
-export const trackBumperCheckoutClick = () => {
+export const trackBumperCheckoutClick = (value?: number) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    console.log('🎯 Tracking Bumper checkout click conversion');
+    const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
+    console.log('🎯 Tracking Bumper checkout click conversion', { value: conversionValue });
     window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA'
+      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA',
+      'value': conversionValue,
+      'currency': 'GBP'
     });
   }
 };
 
 // Track Stripe checkout button click (Begin checkout conversion)
-export const trackStripeCheckoutClick = () => {
+export const trackStripeCheckoutClick = (value?: number) => {
   if (typeof window !== 'undefined') {
-    console.log('🎯 Tracking Stripe checkout click conversion');
-    
+    const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
+    console.log('🎯 Tracking Stripe checkout click conversion', { value: conversionValue });
+
     // Push to dataLayer for GTM triggers (Google Ads + GA4 begin_checkout)
-    // Fixed £1 value per business rule
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'stripe_checkout_click',
-      'conversion_value': 1,
+      'conversion_value': conversionValue,
       'currency': 'GBP',
       'payment_method': 'stripe'
     });
-    
-    // Also fire gtag directly as backup
+
+    // Fire the dedicated "Stripe Begin checkout" Google Ads conversion
     if (window.gtag) {
       window.gtag('event', 'conversion', {
-        'send_to': 'AW-17325228149',
-        'value': 1,
+        'send_to': 'AW-17325228149/MboSCIiEjNUbEPWAqMVA',
+        'value': conversionValue,
         'currency': 'GBP'
       });
     }
