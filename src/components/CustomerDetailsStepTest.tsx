@@ -18,6 +18,7 @@ import { EmailCapturePopup } from '@/components/EmailCapturePopup';
 import MobileNavigation from '@/components/MobileNavigation';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import stripeLogo from '@/assets/stripe-logo.png';
+import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 import { getTrackingData } from '@/utils/gclidCapture';
 
