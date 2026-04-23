@@ -1305,6 +1305,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           onSelectPlan={handleSelectPlan}
           validationErrors={validationErrors}
           onOpenPriceMatch={() => setShowPriceHelpPanel(true)}
+          platinumDocUrl={platinumDocUrl}
+          termsDocUrl={termsDocUrl}
         />
       </div>
 
