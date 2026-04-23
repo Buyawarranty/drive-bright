@@ -605,7 +605,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               Continue to checkout →
             </button>
             <div className="mt-1.5 text-center text-[#919191] text-[11px] font-semibold flex items-center justify-center gap-1">
-              <Lock className="w-3 h-3" /> Secure checkout – 14 days to cancel
+              <Lock className="w-3 h-3" /> Secure checkout
             </div>
           </div>
         </div>
