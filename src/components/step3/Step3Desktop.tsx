@@ -417,7 +417,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               )}
               <button
                 onClick={onSelectPlan}
-                className="w-full border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-base px-5 py-4 cursor-pointer shadow-[0_10px_22px_rgba(243,107,33,0.22)] transition"
+                className="animate-breathing w-full border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-base px-6 py-[18px] min-h-[56px] cursor-pointer shadow-[0_10px_22px_rgba(243,107,33,0.22)] leading-none"
               >
                 Continue to checkout →
               </button>
@@ -477,7 +477,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           {/* Your cover */}
           <div className="px-6 leading-tight">
             <div className="text-[#f36b21] text-[11px] font-extrabold tracking-[0.08em] uppercase mb-1">Your cover</div>
-            <div className="text-[15px] font-extrabold text-[#161616]">{selectedDuration?.label ? `${selectedDuration.label.replace('-cover','')} Platinum Cover` : '2-Year Platinum Cover'}</div>
+            <div className="text-[15px] font-extrabold text-[#161616]">{selectedDuration?.label ? `${selectedDuration.label.replace(' cover','')} Platinum Cover` : '2-Year Platinum Cover'}</div>
           </div>
 
           {/* Price */}
@@ -501,7 +501,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           <div className="pl-6 ml-auto">
             <button
               onClick={onSelectPlan}
-              className="border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-[15px] px-6 py-3.5 cursor-pointer whitespace-nowrap transition flex items-center gap-2"
+              className="animate-breathing border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-[15px] px-7 py-4 min-h-[52px] cursor-pointer whitespace-nowrap flex items-center justify-center gap-2 leading-none"
             >
               Continue to checkout →
             </button>
