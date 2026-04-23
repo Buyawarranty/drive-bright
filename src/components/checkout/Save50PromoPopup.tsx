@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Sparkles, Clock, Check } from 'lucide-react';
+import { X, Sparkles, Clock, Check, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -262,17 +262,46 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
         <div className="px-6 py-5 sm:py-6">
           {/* Code chip */}
           <div className="flex items-center justify-between gap-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 mb-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">
                 Your code
               </p>
-              <p className="text-xl font-extrabold text-gray-900 tracking-wider">{CODE}</p>
+              <p className="text-xl font-extrabold text-gray-900 tracking-wider select-all">{CODE}</p>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-              <Clock className="w-4 h-4 text-[#E91E63]" />
-              <span className="font-semibold">
-                {isExpired ? 'Expired' : formatTime(secondsLeft)}
-              </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    if (navigator.clipboard?.writeText) {
+                      await navigator.clipboard.writeText(CODE);
+                    } else {
+                      const ta = document.createElement('textarea');
+                      ta.value = CODE;
+                      ta.style.position = 'fixed';
+                      ta.style.opacity = '0';
+                      document.body.appendChild(ta);
+                      ta.select();
+                      document.execCommand('copy');
+                      document.body.removeChild(ta);
+                    }
+                    toast.success('Code copied!');
+                  } catch {
+                    toast.error('Could not copy. Long-press the code to copy.');
+                  }
+                }}
+                aria-label="Copy code"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 active:scale-95 transition-all text-xs font-semibold text-gray-700 shadow-sm"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy
+              </button>
+              <div className="flex items-center gap-1 text-xs text-gray-600">
+                <Clock className="w-4 h-4 text-[#E91E63]" />
+                <span className="font-semibold">
+                  {isExpired ? 'Expired' : formatTime(secondsLeft)}
+                </span>
+              </div>
             </div>
           </div>
 
