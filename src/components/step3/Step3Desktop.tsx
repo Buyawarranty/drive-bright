@@ -12,6 +12,7 @@ import ClaimLimitDetails from './ClaimLimitDetails';
 import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -462,33 +463,55 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
         </section>
       </main>
 
-      {/* Sticky bottom bar */}
-      <div className="fixed left-0 right-0 bottom-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#e9e9e7] shadow-[0_-12px_32px_rgba(16,24,40,0.06)]">
-        <div className="max-w-[1180px] mx-auto px-7 py-3.5 flex items-center justify-between gap-[18px]">
-          <div className="flex items-center gap-[18px] flex-wrap">
-            <div className="text-[12px] text-[#6c6c6c] font-bold leading-tight">
-              <div className="text-[#1ca36f] tracking-[1px] text-sm">★★★★★</div>
-              Excellent · 4.8 out of 5
-            </div>
-            <div>
-              <strong className="block text-sm text-[#161616]">{selectedDuration?.label ?? '2-year cover'} Platinum</strong>
-              <span className="text-[#6c6c6c] text-[12px] font-semibold">Your cover</span>
-            </div>
-            <div className="text-[30px] leading-none tracking-[-0.05em] font-extrabold text-[#161616]">
-              £{monthlyPrice}<span className="text-sm text-[#6c6c6c] font-bold ml-1">/month</span>
+      {/* Sticky bottom bar - original design */}
+      <div className="fixed left-0 right-0 bottom-0 z-30 bg-white border-t border-[#e9e9e7] shadow-[0_-12px_32px_rgba(16,24,40,0.06)]">
+        <div className="max-w-[1180px] mx-auto px-7 py-4 flex items-center gap-6 divide-x divide-[#e9e9e7]">
+          {/* Trustpilot */}
+          <div className="flex items-center gap-2.5 pr-6">
+            <span className="w-9 h-9 rounded-full bg-[#eaf8f2] flex items-center justify-center flex-shrink-0">
+              <Shield className="w-4 h-4 text-[#1ca36f]" />
+            </span>
+            <div className="leading-tight">
+              <div className="text-[13px] font-bold text-[#161616]">Excellent</div>
+              <div className="text-[#1ca36f] text-[13px] tracking-[1px] leading-none my-0.5">★★★★★</div>
+              <div className="text-[11px] text-[#6c6c6c] font-semibold">4.8 out of 5</div>
             </div>
           </div>
-          <div className="flex items-center gap-3.5">
-            <div className="text-right text-[13px] text-[#6c6c6c] font-bold">
-              <strong className="block text-[15px] text-[#161616]">Pay in full: £{payInFull}</strong>
-              {savings > 0 && <span>Save £{savings} today</span>}
+
+          {/* Your cover */}
+          <div className="px-6 leading-tight">
+            <div className="text-[#f36b21] text-[11px] font-extrabold tracking-[0.08em] uppercase mb-1">Your cover</div>
+            <div className="text-[15px] font-extrabold text-[#161616]">{selectedDuration?.label ? `${selectedDuration.label.replace('-cover','')} Platinum Cover` : '2-Year Platinum Cover'}</div>
+          </div>
+
+          {/* Price */}
+          <div className="px-6 leading-tight">
+            <div className="text-[26px] font-extrabold tracking-[-0.04em] text-[#161616] leading-none">
+              £{monthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
             </div>
+            <div className="text-[12px] text-[#6c6c6c] mt-1 font-semibold">Equal to {dailyLabel}</div>
+            <div className="text-[11px] text-[#919191] font-semibold">Paid over 12 months</div>
+          </div>
+
+          {/* Pay in full pill */}
+          <div className="px-6">
+            <div className="bg-[#eaf8f2] border border-[#cdebd9] rounded-2xl px-4 py-2.5 leading-tight">
+              <div className="text-[13px] text-[#3e3e3e] font-semibold">Pay in full <strong className="text-[#161616]">£{payInFull}</strong></div>
+              {savings > 0 && <div className="text-[12px] text-[#1ca36f] font-bold">Save £{savings} vs monthly</div>}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="pl-6 ml-auto">
             <button
               onClick={onSelectPlan}
-              className="border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-[15px] px-5 py-3.5 cursor-pointer whitespace-nowrap transition"
+              className="border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-[15px] px-6 py-3.5 cursor-pointer whitespace-nowrap transition flex items-center gap-2"
             >
               Continue to checkout →
             </button>
+            <div className="mt-1.5 text-center text-[#919191] text-[11px] font-semibold flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3" /> Secure checkout – 14 days to cancel
+            </div>
           </div>
         </div>
       </div>
