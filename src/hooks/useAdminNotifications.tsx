@@ -92,7 +92,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
           title: 'New Contact Submission',
           message: `${c.name} (${c.email})`,
           created_at: c.created_at,
-          is_read: readIds.has(`contact-${c.id}`),
+          is_read: currentReadIds.has(`contact-${c.id}`),
           reference_id: c.id,
         });
       });
@@ -104,7 +104,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
           title: 'New Claim Submitted',
           message: `${c.name} (${c.email})`,
           created_at: c.created_at,
-          is_read: readIds.has(`claim-${c.id}`),
+          is_read: currentReadIds.has(`claim-${c.id}`),
           reference_id: c.id,
         });
       });
@@ -116,7 +116,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
           title: 'New Customer',
           message: `${c.name} (${c.email})`,
           created_at: c.created_at,
-          is_read: readIds.has(`customer-${c.id}`),
+          is_read: currentReadIds.has(`customer-${c.id}`),
           reference_id: c.id,
         });
       });
@@ -130,7 +130,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
           title: '🔥 Lead Came Back!',
           message: `${name}${regInfo} resubmitted (×${r.resubmission_count})`,
           created_at: r.last_resubmitted_at!,
-          is_read: readIds.has(`resub-${r.id}-${r.resubmission_count}`),
+          is_read: currentReadIds.has(`resub-${r.id}-${r.resubmission_count}`),
           reference_id: r.id,
         });
       });
@@ -152,7 +152,10 @@ export const useAdminNotifications = (userRole?: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [readIds]);
+  }, []);
+
+  // Keep ref to latest fetchNotifications for use inside scheduleRefetch
+  useEffect(() => { fetchNotificationsRef.current = fetchNotifications; }, [fetchNotifications]);
 
   // Subscribe to real-time changes
   useEffect(() => {
@@ -174,7 +177,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
             duration: 5000,
           });
         }
-        fetchNotifications();
+        scheduleRefetch();
       })
       .subscribe();
 
@@ -193,7 +196,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
             duration: 5000,
           });
         }
-        fetchNotifications();
+        scheduleRefetch();
       })
       .subscribe();
 
@@ -209,7 +212,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
           description: `${data.name} (${data.email})`,
           duration: 5000,
         });
-        fetchNotifications();
+        scheduleRefetch();
       })
       .subscribe();
 
@@ -241,18 +244,23 @@ export const useAdminNotifications = (userRole?: string | null) => {
             closeButton: true,
             className: '!bg-purple-600 !text-white !border-purple-700 !p-2 !min-h-0 !w-[220px] !text-[11px] [&_*]:!text-white [&_[data-title]]:!text-[11px] [&_[data-title]]:!font-semibold [&_[data-description]]:!text-[10px] [&_[data-description]]:!leading-tight',
           });
-          fetchNotifications();
+          scheduleRefetch();
         }
       })
       .subscribe();
 
     return () => {
+      if (refetchTimerRef.current) {
+        clearTimeout(refetchTimerRef.current);
+        refetchTimerRef.current = null;
+      }
       supabase.removeChannel(contactChannel);
       supabase.removeChannel(claimsChannel);
       supabase.removeChannel(customersChannel);
       supabase.removeChannel(resubChannel);
     };
-  }, [fetchNotifications, userRole]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRole]);
 
   const markAsRead = useCallback((notificationId: string) => {
     setReadIds(prev => {
