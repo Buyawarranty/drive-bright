@@ -2386,12 +2386,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
           </section>
 
-          {/* ==================== CUSTOMER REVIEWS ==================== */}
+          {/* ==================== CUSTOMER REVIEWS (Trustpilot) ==================== */}
           <section className="mt-6 bg-white rounded-xl border border-border p-4 sm:p-5">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1a1a1a] mb-3">
-              <span className="text-[#E8521A]">★★★★★</span>
-              What our customers say
-            </h3>
+            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1a1a1a]">
+                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4" />
+                What our customers say
+              </h3>
+              <a
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-[#555] hover:opacity-80"
+              >
+                <span>Reviews from</span>
+                <img src={trustpilotLogo} alt="Trustpilot" className="h-4" />
+              </a>
+            </div>
             <div className="space-y-3">
               {[
                 { name: 'Sarah M.', time: '2 days ago', text: 'Easy sign-up, great cover and the team answered every question. Glad I switched.', tag: 'Verified customer' },
@@ -2399,7 +2410,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               ].map((r) => (
                 <div key={r.name} className="border border-[#f0f0ee] rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[#E8521A] text-xs leading-none">★★★★★</span>
+                    <img src={trustpilotStars} alt="5 stars" className="h-3" />
                     <span className="text-xs font-semibold text-[#1a1a1a]">{r.name}</span>
                     <span className="text-xs text-[#888] ml-auto">{r.time}</span>
                   </div>
@@ -2410,9 +2421,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-2 mt-3 text-xs text-[#888]">
+            <div className="flex items-center gap-2 mt-3 text-xs text-[#666] flex-wrap">
               <span className="text-base font-bold text-[#1a1a1a]">4.8</span>
-              <span className="text-[#E8521A]">★★★★★</span>
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3.5" />
+              <span>on</span>
+              <img src={trustpilotLogo} alt="Trustpilot" className="h-3.5" />
               <span>· Trusted by thousands of UK drivers</span>
             </div>
           </section>
