@@ -53,6 +53,7 @@ interface Step3DesktopProps {
   // CTA + validation
   onSelectPlan: () => void;
   validationErrors: { voluntaryExcess: boolean; claimLimit: boolean; paymentType: boolean };
+  onOpenPriceMatch?: () => void;
 }
 
 const LABOUR_OPTIONS = [
@@ -94,6 +95,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   availableDurations,
   onSelectPlan,
   validationErrors,
+  onOpenPriceMatch,
 }) => {
   const [claimLimitDetailsOpen, setClaimLimitDetailsOpen] = React.useState(false);
   const [labourRateDetailsOpen, setLabourRateDetailsOpen] = React.useState(false);
@@ -378,7 +380,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 <strong className="block mb-1 text-[16px] text-[#161616]">Price Beat Guarantee</strong>
                 <p className="m-0 text-[#6c6c6c] text-sm">Found a cheaper quote elsewhere? We'll beat it — guaranteed.</p>
               </div>
-              <a href="/price-match" className="text-[#f36b21] font-extrabold whitespace-nowrap text-sm hover:underline">Beat my quote →</a>
+              <button type="button" onClick={() => onOpenPriceMatch?.()} className="text-[#f36b21] font-extrabold whitespace-nowrap text-sm hover:underline bg-transparent border-0 cursor-pointer p-0">Beat my quote →</button>
             </div>
           </div>
 
