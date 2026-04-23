@@ -185,17 +185,17 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   type="button"
                   onClick={(e) => handlePayInside('full', e)}
                   disabled={isLoading}
-                  className="w-full py-5 text-base font-bold rounded-xl bg-[#0BA360] hover:bg-[#099355] text-white animate-breathing"
+                  className="w-full py-5 px-3 text-sm sm:text-base font-bold rounded-xl bg-[#0BA360] hover:bg-[#099355] text-white animate-breathing whitespace-normal text-center leading-tight"
                 >
                   {isLoading && selectedPayment === 'full' ? (
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Processing...
                     </span>
                   ) : (
-                    <span className="flex items-center gap-2">
-                      <Check className="w-5 h-5" />
-                      Pay £{fullPrice} in full — Activate my cover
+                    <span className="flex items-center justify-center gap-2">
+                      <Check className="w-5 h-5 flex-shrink-0" />
+                      <span>Pay in full £{fullPrice}</span>
                     </span>
                   )}
                 </Button>
@@ -306,17 +306,17 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   type="button"
                   onClick={(e) => handlePayInside('monthly', e)}
                   disabled={isLoading}
-                  className="w-full py-5 text-base font-bold rounded-xl bg-[#FF6B00] hover:bg-[#e56000] text-white animate-breathing"
+                  className="w-full py-5 px-3 text-sm sm:text-base font-bold rounded-xl bg-[#FF6B00] hover:bg-[#e56000] text-white animate-breathing whitespace-normal text-center leading-tight"
                 >
                   {isLoading && selectedPayment === 'monthly' ? (
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Processing...
                     </span>
                   ) : (
-                    <span className="flex items-center gap-2">
-                      <Check className="w-5 h-5" />
-                      Pay £{monthlyPrice}/month — Activate my cover
+                    <span className="flex items-center justify-center gap-2">
+                      <Check className="w-5 h-5 flex-shrink-0" />
+                      <span>Just £{monthlyPrice} today</span>
                     </span>
                   )}
                 </Button>
