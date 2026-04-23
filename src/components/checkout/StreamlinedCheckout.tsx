@@ -2422,10 +2422,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
             <div className="flex items-center gap-2 mt-3 text-xs text-[#666] flex-wrap">
               <span className="text-base font-bold text-[#1a1a1a]">4.8</span>
-              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3.5" />
-              <span>on</span>
-              <img src={trustpilotLogo} alt="Trustpilot" className="h-3.5" />
-              <span>· Trusted by thousands of UK drivers</span>
+              <span>on Trustpilot · Trusted by thousands of UK drivers</span>
             </div>
           </section>
 
