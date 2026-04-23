@@ -926,7 +926,7 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                                 setIsLoadingStripe(true);
                                 setIsLoadingPayment(true);
                                 trackFormSubmission('customer_details', { payment_method: 'stripe' });
-                                trackStripeCheckoutClick();
+                                trackStripeCheckoutClick(discountedStripePrice);
                                 
                                 processStripeCheckout()
                                   .catch((error) => {
