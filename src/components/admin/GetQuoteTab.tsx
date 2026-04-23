@@ -2749,11 +2749,22 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 {/* Sticky Price Summary Bar */}
+                {(() => {
+                  const durationMonths = DURATION_MONTHS[paymentType] || 12;
+                  const totalCoverDays = Math.round((durationMonths / 12) * 365);
+                  const monthlyTotal = currentPrice.monthlyPrice * 12;
+                  const monthlyPence = monthlyTotal > 0 && totalCoverDays > 0
+                    ? Math.round((monthlyTotal * 100) / totalCoverDays) : 0;
+                  const fullPence = currentPrice.payInFullPrice > 0 && totalCoverDays > 0
+                    ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
+                  const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
+                  return (
                 <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-50 rounded-b-lg shadow-lg border-t-4 border-green-400">
-                  <div className="flex items-center justify-center gap-6 text-center">
+                  <div className="flex items-center justify-center gap-6 text-center flex-wrap">
                     <div>
                       <div className="text-sm text-gray-700 font-medium">Monthly (12 payments via Bumper)</div>
                       <div className="text-2xl font-bold text-gray-900">£{currentPrice.monthlyPrice}/month</div>
+                      <div className="text-xs text-gray-600 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
                     </div>
                     <div className="text-gray-400 text-2xl">|</div>
                     <div>
@@ -2766,14 +2777,18 @@ Questions? Call 0330 229 5040`;
                           <span className="text-sm text-green-600 ml-2">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
                         )}
                       </div>
+                      <div className="text-xs text-gray-600 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
                     </div>
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
                       <div>Total: £{currentPrice.monthlyPrice * 12}</div>
                       <div>Claim: £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} | Labour: £{labourRate}/hr</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months ({totalCoverDays} days)</div>
                     </div>
                   </div>
                 </div>
+                  );
+                })()}
 
                 <div className="flex gap-3">
                   <Button 
