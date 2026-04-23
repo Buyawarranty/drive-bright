@@ -2250,6 +2250,61 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
           </section>
 
+          {/* Promo Code — placed below the Vehicle section, not part of it */}
+          <div className="mt-6 bg-[#FFFBF0] border border-[#FFD980] rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Tag className="w-4 h-4 text-[#FF8C00]" />
+              <span className="text-sm font-bold text-[#1a1a1a]">Have a promo code?</span>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter code"
+                value={promoCodeInput}
+                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                className="flex-1 h-11 text-base uppercase bg-white"
+                disabled={isValidatingPromoCode}
+              />
+              <Button
+                type="button"
+                onClick={applyPromoCode}
+                disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+                className="h-11 px-5 bg-[#FF8C00] hover:bg-[#e57e00] text-white font-semibold"
+              >
+                {isValidatingPromoCode ? 'Checking...' : 'Apply'}
+              </Button>
+            </div>
+            {promoCodeError && (
+              <p className="text-destructive text-sm mt-2">{promoCodeError}</p>
+            )}
+            {appliedDiscountCodes.length > 0 && totalDiscountAmount > 0 && (
+              <div className="mt-3 border border-[#0BA360] bg-green-50 rounded-lg px-3 py-2">
+                {appliedDiscountCodes.map((discount) => (
+                  <div key={discount.code} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Tag className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                      <span className="font-semibold text-[#1a1a1a] truncate">{discount.code}</span>
+                      <span className="text-sm text-gray-600 flex-shrink-0">applied</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-[#0BA360] font-bold text-base whitespace-nowrap">
+                        -£{totalDiscountAmount.toFixed(2)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removePromoCode(discount.code)}
+                        className="p-1 hover:bg-red-100 rounded-full transition-colors"
+                        title="Remove promo code"
+                      >
+                        <X className="w-4 h-4 text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
           <div ref={(el) => { (howToPayRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }} id="how-to-pay-section">
           {/* Separate ref for the payment cards area to track visibility for sticky bar hiding */}
