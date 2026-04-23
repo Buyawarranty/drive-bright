@@ -250,10 +250,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       badge={tier.popular ? { text: 'Most popular', tone: 'orange' } : null}
                       onClick={() => setSelectedClaimLimit(tier.value)}
                     >
-                      <div className="text-[28px] font-extrabold tracking-[-0.04em] leading-none mb-1 text-[#161616]">
+                      <div className="text-[28px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">
                         £{(tier.displayValue ?? tier.value).toLocaleString()}
                       </div>
-                      <div className="text-[13px] font-bold text-[#333] mb-1">{tier.name}</div>
+                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[34px] leading-tight">{tier.name}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">per claim</div>
                     </OptionCard>
                   );
@@ -282,8 +282,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       badge={opt.badge}
                       onClick={() => setSelectedLabourRate(opt.value)}
                     >
-                      <div className="text-[24px] font-extrabold tracking-[-0.04em] leading-none mb-1 text-[#161616]">{opt.label}</div>
-                      <div className="text-[13px] font-bold text-[#333] mb-1">{opt.sub}</div>
+                      <div className="text-[24px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">{opt.label}</div>
+                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[34px] leading-tight">{opt.sub}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">{opt.note}</div>
                     </OptionCard>
                   );
