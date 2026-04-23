@@ -587,7 +587,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="vehicleReg" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="vehicleReg" className="text-gray-900 font-bold text-base block text-left">
                               Vehicle Registration *
                             </Label>
                             <div className="relative">
