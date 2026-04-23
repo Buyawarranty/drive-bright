@@ -537,7 +537,7 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="name" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="name" className="text-gray-900 font-bold text-base block text-left">
                               Name *
                             </Label>
                             <Input
@@ -554,7 +554,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="email" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="email" className="text-gray-900 font-bold text-base block text-left">
                               Email *
                             </Label>
                             <Input
@@ -571,7 +571,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="phone" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="phone" className="text-gray-900 font-bold text-base block text-left">
                               Phone Number *
                             </Label>
                             <Input
@@ -587,7 +587,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="vehicleReg" className="text-gray-700 font-medium text-sm">
+                            <Label htmlFor="vehicleReg" className="text-gray-900 font-bold text-base block text-left">
                               Vehicle Registration *
                             </Label>
                             <div className="relative">
@@ -638,7 +638,7 @@ Additional Information: ${formData.additionalInfo}
                           <h3 className="text-xl font-bold text-gray-900">Current Mileage</h3>
                         </div>
                         <div>
-                          <Label htmlFor="currentMileage" className="text-gray-700 font-medium text-sm mb-2 block">
+                          <Label htmlFor="currentMileage" className="text-gray-900 font-bold text-base mb-2 block text-left">
                             Enter current approximate mileage
                           </Label>
                           <div className="flex gap-2 mt-1.5">
@@ -690,7 +690,7 @@ Additional Information: ${formData.additionalInfo}
                               </PopoverContent>
                             </Popover>
                           </div>
-                          <p className="mt-1.5 text-xs text-gray-500">
+                          <p className="mt-1.5 text-xs text-gray-500 text-left">
                             Type your own mileage or pick a value from the list (1,000-mile increments).
                           </p>
                         </div>
@@ -706,7 +706,7 @@ Additional Information: ${formData.additionalInfo}
                         </div>
                         <div className="space-y-6">
                           <div>
-                            <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-base block text-left">
                               Describe the fault / problem *
                             </Label>
                             <Textarea
@@ -722,7 +722,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-base block text-left">
                               When did the fault occur?
                             </Label>
                             <Input
@@ -737,7 +737,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-base block text-left">
                               When does the issue happen?
                             </Label>
                             <Input
@@ -752,7 +752,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-base block text-left">
                               Any other relevant details
                             </Label>
                             <Textarea
