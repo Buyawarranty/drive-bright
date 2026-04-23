@@ -139,12 +139,12 @@ serve(async (req) => {
 
     // Calculate discount amount with minimum price floor.
     // IMPORTANT: must match the server-side checkout price floor (ABSOLUTE_MIN_GBP = £25)
-    // in supabase/functions/_shared/price-floor.ts. If the discount drops the
-    // final price below £25, the create-payment-intent / create-stripe-checkout
-    // functions reject the request as "price manipulation" and the customer
-    // sees a generic "Unable to process" error.
-    const MINIMUM_FINAL_AMOUNT = 25; // £25 — aligned with checkout server floor
-    
+    // in supabase/functions/_shared/price-floor.ts. Test bypass codes (TEST*, SAVE99GOLDEN)
+    // are allowed to drop the final price down to £1 for QA / low-value testing.
+    const codeUpper = (discountCode.code || '').toUpperCase();
+    const isTestBypass = codeUpper.startsWith('TEST') || codeUpper === 'SAVE99GOLDEN';
+    const MINIMUM_FINAL_AMOUNT = isTestBypass ? 1 : 25;
+
     let discountAmount = 0;
     if (discountCode.type === 'percentage') {
       discountAmount = (orderAmount * discountCode.value) / 100;
@@ -152,7 +152,7 @@ serve(async (req) => {
       discountAmount = Math.min(discountCode.value, orderAmount);
     }
     
-    // Cap discount so final amount is at least £25 (Stripe-safe and floor-safe)
+    // Cap discount so final amount is at least MINIMUM_FINAL_AMOUNT (Stripe-safe and floor-safe)
     const maxAllowedDiscount = Math.max(0, orderAmount - MINIMUM_FINAL_AMOUNT);
     const effectiveDiscountAmount = Math.min(discountAmount, maxAllowedDiscount);
     const finalAmount = Math.max(MINIMUM_FINAL_AMOUNT, orderAmount - effectiveDiscountAmount);
