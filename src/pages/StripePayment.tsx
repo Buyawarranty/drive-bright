@@ -39,6 +39,16 @@ const StripePayment: React.FC = () => {
   // Check for redirect status from PayPal returns
   const redirectStatus = searchParams.get('redirect_status');
   const paymentIntentId = searchParams.get('payment_intent');
+
+  // Fire Google Ads "Stripe Begin checkout" conversion on Stripe checkout page load
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      console.log('🎯 Firing Google Ads Stripe checkout page conversion');
+      (window as any).gtag('event', 'conversion', {
+        'send_to': 'AW-17325228149/MboSCIiEjNUbEPWAqMVA'
+      });
+    }
+  }, []);
   
   // Handle redirect-based payment returns (PayPal, etc.)
   useEffect(() => {
