@@ -12,6 +12,7 @@ import ClaimLimitDetails from './ClaimLimitDetails';
 import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import PartsListContent from './PartsListContent';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -403,24 +404,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 >
                   🛡 Comprehensive Cover <span className={`inline-block transition-transform ${partsListOpen ? 'rotate-180' : ''}`}>∨</span>
                 </button>
-                {platinumDocUrl ? (
-                  <a
-                    href={platinumDocUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-[#1a1a1a] hover:bg-black text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center gap-1.5 no-underline"
-                  >
-                    🔧 View parts list ∨
-                  </a>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setPartsListOpen(o => !o)}
-                    className="bg-[#1a1a1a] hover:bg-black text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center gap-1.5 border-0 cursor-pointer"
-                  >
-                    🔧 View parts list ∨
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setPartsListOpen(o => !o)}
+                  className="bg-[#1a1a1a] hover:bg-black text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center gap-1.5 border-0 cursor-pointer"
+                >
+                  🔧 View parts list <span className={`inline-block transition-transform ${partsListOpen ? 'rotate-180' : ''}`}>∨</span>
+                </button>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {['Engine & gearbox','Fuel system','Cooling system','Electrical components','Air conditioning','Steering & suspension','Braking system','Turbocharger','Labour & call-out'].map(item => (
@@ -434,6 +424,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   See full policy details
                 </a>
               )}
+              {partsListOpen && <PartsListContent />}
             </div>
 
             {/* CRYSTAL CLEAR */}
