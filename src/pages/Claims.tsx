@@ -690,7 +690,7 @@ Additional Information: ${formData.additionalInfo}
                               </PopoverContent>
                             </Popover>
                           </div>
-                          <p className="mt-1.5 text-xs text-gray-500">
+                          <p className="mt-1.5 text-xs text-gray-500 text-left">
                             Type your own mileage or pick a value from the list (1,000-mile increments).
                           </p>
                         </div>
