@@ -2388,43 +2388,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
           </section>
 
-          {/* ==================== CUSTOMER REVIEWS (Trustpilot) ==================== */}
-          <section className="mt-6 bg-white rounded-xl border border-border p-4 sm:p-5">
-            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-              <h3 className="text-sm font-semibold text-[#1a1a1a]">
-                What our customers say
-              </h3>
-              <a
-                href="https://www.trustpilot.com/review/buyawarranty.co.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-[#555] underline"
-              >
-                Reviews from Trustpilot
-              </a>
-            </div>
-            <div className="space-y-3">
-              {[
-                { name: 'Sarah M.', time: '2 days ago', text: 'Easy sign-up, great cover and the team answered every question. Glad I switched.', tag: 'Verified customer' },
-                { name: 'James P.', time: '1 week ago', text: 'Claimed within the first month — paid out fast, no hassle. Would recommend.', tag: 'Verified claim' },
-              ].map((r) => (
-                <div key={r.name} className="border border-[#f0f0ee] rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs font-semibold text-[#1a1a1a]">{r.name}</span>
-                    <span className="text-xs text-[#888] ml-auto">{r.time}</span>
-                  </div>
-                  <p className="text-xs text-[#555] leading-relaxed">{r.text}</p>
-                  <span className="inline-block text-[10px] bg-[#E8F7F2] text-[#0F6E56] px-2 py-0.5 rounded-full mt-1.5 font-medium">
-                    {r.tag}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 mt-3 text-xs text-[#666] flex-wrap">
-              <span className="text-base font-bold text-[#1a1a1a]">4.8</span>
-              <span>on Trustpilot · Trusted by thousands of UK drivers</span>
-            </div>
-          </section>
+          {/* Customer reviews section removed — already shown below the CTA */}
 
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
           <div ref={(el) => { (howToPayRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }} id="how-to-pay-section">
