@@ -43,6 +43,7 @@ import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import PriceHelpPanel from '@/components/step3/PriceHelpPanel';
 import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
+import Step3Desktop from '@/components/step3/Step3Desktop';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -3137,6 +3138,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       />
 
     </div>
+    </>
   );
 };
 
