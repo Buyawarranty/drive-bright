@@ -87,57 +87,64 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
-      {/* Desktop Layout */}
-      <div className="hidden md:block max-w-6xl mx-auto px-6 py-4">
-        <div className="flex items-stretch justify-between gap-6 divide-x divide-gray-200">
+      {/* Desktop Layout - One row */}
+      <div className="hidden md:block max-w-7xl mx-auto px-6 py-3">
+        <div className="flex items-center justify-between gap-5">
 
           {/* 1. Trustpilot */}
           <a
             href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center justify-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0 px-2"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0"
           >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-gray-900">Excellent</span>
-              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4" />
+            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
             </div>
-            <span className="text-xs text-gray-600">Easy Claims</span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-sm font-bold text-gray-900">Excellent</span>
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3.5 my-0.5" />
+              <span className="text-[11px] text-gray-600">4.8 out of 5</span>
+            </div>
           </a>
 
-          {/* 2. Total / Pay in full */}
+          {/* 2. Your cover */}
+          <div className="flex flex-col leading-tight flex-shrink-0">
+            <span className="text-[11px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
+            <span className="text-base font-bold text-gray-900 mt-0.5">{planLabel}</span>
+          </div>
+
+          {/* 3. Monthly price */}
           <div className={cn(
-            "flex flex-col items-center justify-center text-center px-4 flex-1 transition-all duration-300",
+            "flex flex-col leading-tight flex-shrink-0 transition-all duration-300",
             isPulsing && "animate-pulse"
           )}>
-            <div className="flex items-baseline gap-1.5 flex-wrap justify-center">
-              <span className="text-xl font-bold text-gray-900">Total: £{monthlyPrice}/Month</span>
-              <span className="text-sm text-gray-600">– 0% APR</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
+              <span className="text-sm text-gray-600">/month</span>
             </div>
-            <span className="text-xs text-gray-600">Only 12 payments</span>
-            <div className="text-sm font-semibold text-green-600 mt-0.5">Pay in full £{payInFull - stripeSavings}</div>
-            {stripeSavings > 0 && (
-              <span className="text-xs text-gray-600">– You save £{stripeSavings} today</span>
-            )}
+            <span className="text-[11px] text-gray-600 mt-0.5">
+              Equal to {pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day
+            </span>
+            <span className="text-[11px] text-gray-500">Paid over 12 months</span>
           </div>
 
-          {/* 3. Cover summary */}
-          <div className="flex flex-col items-center justify-center text-center px-4 flex-shrink-0">
-            <span className="text-base font-bold text-gray-900">{coverText}</span>
-            {paymentPeriod === '24months' && (
-              <span className="text-xs text-gray-600">No payments in year 2</span>
-            )}
-            {paymentPeriod === '36months' && (
-              <span className="text-xs text-gray-600">No payments in years 2 & 3</span>
-            )}
-          </div>
+          {/* 4. Pay in full savings pill */}
+          {stripeSavings > 0 && (
+            <div className="flex flex-col leading-tight bg-[#E8F7EF] border border-[#0BA360]/20 rounded-xl px-4 py-2.5 flex-shrink-0">
+              <span className="text-sm font-bold text-gray-900">Pay in full £{payInFull - stripeSavings}</span>
+              <span className="text-[12px] font-semibold text-[#0BA360]">Save £{stripeSavings} vs monthly</span>
+            </div>
+          )}
 
-          {/* 4. CTA */}
-          <div className="flex flex-col items-center justify-center gap-1.5 flex-shrink-0 pl-6">
+          {/* 5. CTA */}
+          <div className="flex flex-col items-center justify-center gap-1 flex-1 min-w-[260px] max-w-[360px]">
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
+              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-6 px-6 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
             >
               {isLoading ? (
                 'Loading...'
@@ -148,9 +155,9 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 </>
               )}
             </Button>
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Secure checkout – 14 days to cancel</span>
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
+              <Lock className="w-3 h-3" />
+              <span>Secure checkout</span>
             </div>
           </div>
         </div>
