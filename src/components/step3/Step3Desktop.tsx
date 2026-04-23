@@ -281,12 +281,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   );
                 })}
               </div>
-              <div className="mt-3.5 bg-[#fbfffd] border border-[#dff2eb] text-[#206d4d] rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center gap-2.5">
-                <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0">
-                  <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
-                </span>
-                Most drivers with similar cars choose this setup.
-              </div>
             </Card>
 
             {/* CARD 3 - Term length */}
