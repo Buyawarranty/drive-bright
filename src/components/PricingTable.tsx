@@ -2184,9 +2184,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             ))}
           </div>
         </div>
+      </div>
+      {/* Shared sections (visible on mobile + desktop) */}
+      <div className="max-w-6xl mx-auto px-4 md:px-7 md:max-w-[1180px] md:mt-6">
 
         {/* Price Help Trigger - Above Comprehensive Cover */}
-        <div>
+        <div className="md:hidden">
           <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
         </div>
 
@@ -2740,6 +2743,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
       </div>
+      {/* Resume mobile-only wrapper for original sticky bar etc. */}
+      <div className="md:hidden">
 
       {/* What's included reassurance banner */}
       {!vehicleAgeError && (
@@ -2984,6 +2989,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           {/* Panda mascot moved to PriceHelpPanel callback section */}
         </div>
       )}
+      </div>
+      {/* End mobile-only sticky bar wrapper */}
 
       {/* Email Quote Dialog */}
       <Dialog open={emailQuoteDialogOpen} onOpenChange={setEmailQuoteDialogOpen}>
