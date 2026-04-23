@@ -179,16 +179,17 @@ export async function validateCheckoutPrice(
     : await query.ilike("name", planId).maybeSingle();
 
   if (!plan) {
-    // No plan match (admin quote, custom flow). Absolute floor is the only guard.
-    return { ok: true, serverBasePrice: 0, minimumAllowed: ABSOLUTE_MIN_GBP };
+    return { ok: true, serverBasePrice: 0, minimumAllowed: absoluteFloor };
   }
 
   const serverBasePrice = getBasePriceFromPlan(plan, paymentType);
   if (!serverBasePrice || serverBasePrice <= 0) {
-    return { ok: true, serverBasePrice: 0, minimumAllowed: ABSOLUTE_MIN_GBP };
+    return { ok: true, serverBasePrice: 0, minimumAllowed: absoluteFloor };
   }
 
-  const minimumAllowed = Math.max(ABSOLUTE_MIN_GBP, Math.floor(serverBasePrice * MIN_PERCENT_OF_BASE));
+  const minimumAllowed = bypass
+    ? TEST_MIN_GBP
+    : Math.max(ABSOLUTE_MIN_GBP, Math.floor(serverBasePrice * MIN_PERCENT_OF_BASE));
 
   if (finalAmount < minimumAllowed) {
     return {
