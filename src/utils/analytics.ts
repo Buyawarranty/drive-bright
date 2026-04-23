@@ -199,9 +199,10 @@ export const trackPurchaseComplete = (
     }
     
     // Push the primary purchase conversion event for GTM
+    // order_value now passes the ACTUAL sale value to Google Ads for ROAS reporting
     window.dataLayer.push({
       'event': 'purchase',
-      'order_value': 1, // Fixed £1 for Google Ads (as per business requirement)
+      'order_value': value, // Real sale amount in GBP
       'transaction_id': transactionId,
       'currency': 'GBP',
       'ecommerce': {
@@ -225,8 +226,8 @@ export const trackPurchaseComplete = (
   
   // Main purchase conversion with specific Google Ads conversion label (Purchase GTM Primary)
   // Label from Google Ads: AW-17325228149/U-BnCJKD2KUbEPWAqMVA
-  // Fixed value of £1 per conversion as configured in Google Ads (not actual purchase value)
-  trackGoogleAdsConversion('U-BnCJKD2KUbEPWAqMVA', 1, transactionId, enhancedData);
+  // Now passing ACTUAL sale value (GBP) for accurate revenue / ROAS reporting in Google Ads
+  trackGoogleAdsConversion('U-BnCJKD2KUbEPWAqMVA', value, transactionId, enhancedData);
   
   // Track as GA4 purchase event
   trackEvent('purchase', {
