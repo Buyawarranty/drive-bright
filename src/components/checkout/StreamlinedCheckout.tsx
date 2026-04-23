@@ -2353,6 +2353,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               totalDiscountAmount={totalDiscountAmount}
               hidePayButton={showEmbeddedCheckout && selectedPayment === 'full'}
               hideTrustpilot={showEmbeddedCheckout && selectedPayment === 'full' && !!stripeClientSecret}
+              hidePromoCode={true}
             />
           </div>
 
