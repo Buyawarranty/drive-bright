@@ -78,11 +78,114 @@ const Claims = () => {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFile(file);
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+  const ALLOWED_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/heic',
+    'image/heif',
+    'image/webp'
+  ];
+
+  // Compress an image File to keep it under maxSizeMB. Returns original if not an image or already small.
+  const compressImageIfNeeded = async (file: File, maxSizeMB = 5): Promise<File> => {
+    if (!file.type.startsWith('image/')) return file;
+    if (file.size <= maxSizeMB * 1024 * 1024) return file;
+
+    try {
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+
+      const img: HTMLImageElement = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = dataUrl;
+      });
+
+      const maxDim = 1920;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Try decreasing quality until we are under the cap
+      const qualities = [0.85, 0.7, 0.55, 0.4];
+      for (const q of qualities) {
+        const blob: Blob | null = await new Promise((resolve) =>
+          canvas.toBlob(resolve, 'image/jpeg', q)
+        );
+        if (blob && blob.size <= maxSizeMB * 1024 * 1024) {
+          const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+          return new File([blob], newName, { type: 'image/jpeg' });
+        }
+      }
+      // Fallback: return last attempt even if still > cap
+      const finalBlob: Blob | null = await new Promise((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', 0.4)
+      );
+      if (finalBlob) {
+        const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+        return new File([finalBlob], newName, { type: 'image/jpeg' });
+      }
+      return file;
+    } catch (err) {
+      console.error('Image compression failed:', err);
+      return file;
     }
+  };
+
+  const acceptFile = async (file: File) => {
+    // Loose type check (some mobile browsers send empty type for HEIC, etc.)
+    const lowerName = file.name.toLowerCase();
+    const extOk = /\.(pdf|doc|docx|jpe?g|png|heic|heif|webp)$/i.test(lowerName);
+    if (file.type && !ALLOWED_TYPES.includes(file.type) && !extOk) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF, DOC, DOCX, JPG, PNG or HEIC file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let finalFile = file;
+    if (file.type.startsWith('image/') && file.size > 5 * 1024 * 1024) {
+      toast({ title: "Optimising your photo…", description: "Shrinking the image so it uploads quickly." });
+      finalFile = await compressImageIfNeeded(file, 5);
+    }
+
+    if (finalFile.size > MAX_FILE_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Please upload a file smaller than 20MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadedFile(finalFile);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) await acceptFile(file);
   };
 
   const removeFile = () => {
@@ -105,37 +208,14 @@ const Claims = () => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      const file = files[0];
-      
-      // Validate file size (20MB max)
-      if (file.size > 20 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 20MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/jpg'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF, DOC, DOCX, JPG, or PNG file.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setUploadedFile(file);
+      await acceptFile(files[0]);
     }
   };
 
