@@ -436,7 +436,7 @@ Additional Information: ${formData.additionalInfo}
                 <h2 className="text-3xl lg:text-4xl font-bold text-black mb-3 text-left">
                   Make A Claim
                 </h2>
-                <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                <p className="text-black text-lg">
                   Fill out the form below quick, easy and hassle-free
                 </p>
               </div>
