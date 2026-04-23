@@ -722,7 +722,7 @@ Additional Information: ${formData.additionalInfo}
                           </div>
 
                           <div>
-                            <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-base">
+                            <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-base block text-left">
                               When did the fault occur?
                             </Label>
                             <Input
