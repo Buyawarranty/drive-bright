@@ -327,15 +327,18 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         ` : ''}
         
-        ${fileName ? `
+        ${uploadedAttachments.length > 0 ? `
         <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-          <h2 style="color: #333; margin-top: 0;">📎 Attachment</h2>
-          <p><strong>File:</strong> ${fileName}</p>
-          <p><strong>Size:</strong> ${fileSize ? Math.round(fileSize / 1024) + ' KB' : 'Unknown'}</p>
-          ${fileUrl ? `<p><a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/${fileUrl}" style="color: #eb4b00; text-decoration: underline;">Download Attachment</a></p>` : ''}
+          <h2 style="color: #333; margin-top: 0;">📎 Attachments (${uploadedAttachments.length})</h2>
+          ${uploadedAttachments.map((a, i) => `
+            <div style="padding: 8px 0; border-bottom: 1px solid #f0e0a0;">
+              <p style="margin: 0;"><strong>${i + 1}. ${a.name}</strong> &nbsp;<span style="color:#666;font-size:12px;">(${a.size ? Math.round(a.size / 1024) + ' KB' : 'Unknown size'})</span></p>
+              <p style="margin: 4px 0 0 0;"><a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/${a.url}" style="color: #eb4b00; text-decoration: underline;">Download</a></p>
+            </div>
+          `).join('')}
         </div>
         ` : ''}
-        
+
         <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; color: #1976d2;"><strong>Submission ID:</strong> ${submissionData.id}</p>
           <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Submitted at: ${new Date().toLocaleString()}</p>
