@@ -52,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { name, email, phone, vehicleReg, currentMileage, faultDescription, dateOccurred, faultDetails, issueTiming, additionalInfo, file }: ClaimSubmissionRequest = await req.json();
+    const { name, email, phone, vehicleReg, currentMileage, faultDescription, dateOccurred, faultDetails, issueTiming, additionalInfo, file, files }: ClaimSubmissionRequest = await req.json();
 
     console.log('Received claim submission:', { name, email, phone: phone || 'N/A', vehicleReg: vehicleReg || 'N/A' });
 
