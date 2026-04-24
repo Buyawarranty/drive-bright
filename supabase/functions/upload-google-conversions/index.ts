@@ -222,9 +222,10 @@ Deno.serve(async (req) => {
           logStep(`❌ Failed conversion for ${record.id}`, errorMsg);
         }
       } catch (err) {
+        const msg = (err as Error)?.message ?? String(err);
         failed++;
-        errors.push(`${record.id}: ${err.message}`);
-        logStep(`❌ Error uploading ${record.id}`, err.message);
+        errors.push(`${record.id}: ${msg}`);
+        logStep(`❌ Error uploading ${record.id}`, msg);
       }
     }
 
@@ -242,8 +243,9 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    logStep('Fatal error', error.message);
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
+    const errMsg = (error as Error)?.message ?? String(error);
+    logStep('Fatal error', errMsg);
+    return new Response(JSON.stringify({ success: false, error: errMsg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

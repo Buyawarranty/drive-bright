@@ -1114,6 +1114,17 @@ serve(async (req) => {
       // Check if this sale was driven by a sales agent (matched sales_lead with agent assigned)
       // If so, send an additional "New Sale S" (agent sale) notification
       try {
+        const Resend = (await import('https://esm.sh/resend@2.0.0')).Resend;
+        const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+        const paymentMethod = metadata?.bumper_order_id
+          ? 'Bumper (Pay Monthly)'
+          : stripeSessionId
+            ? 'Stripe (Paid in Full)'
+            : 'Other';
+        const saleValue = customerData?.final_amount || customerData?.original_amount || 'N/A';
+        const saleValueDisplay = typeof saleValue === 'number' ? `£${saleValue.toFixed(2)}` : saleValue;
+        const regPlate = vehicleData?.regNumber || 'Unknown';
+        const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         const defaultSupportId = 'e39499b8-f88c-4963-9f0d-63e1addb3025';
         const { data: matchedLead } = await supabaseClient
           .from('sales_leads')
@@ -1158,6 +1169,10 @@ serve(async (req) => {
           let sourcePrefix = 'S';
           if (leadSource === 'google_ad') sourcePrefix = 'S-G';
           else if (leadSource === 'social_ad') sourcePrefix = 'S-F';
+
+          const leadCreatedAt = (matchedLead as any).created_at
+            ? new Date((matchedLead as any).created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : '';
 
           // Build agent sale notification email
           const agentSaleHtml = `
