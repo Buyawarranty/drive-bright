@@ -5545,6 +5545,18 @@ Please log in and change your password after first login.`;
         />
       )}
 
+      {/* Add Claim Dialog (admin/super_admin) */}
+      {addClaimCustomer && (
+        <AddClaimDialog
+          open={!!addClaimCustomer}
+          onOpenChange={(open) => { if (!open) setAddClaimCustomer(null); }}
+          customerEmail={addClaimCustomer.email}
+          customerName={addClaimCustomer.name}
+          vehicleReg={addClaimCustomer.registration_plate}
+          onClaimAdded={() => { setAddClaimCustomer(null); fetchCustomers(); }}
+        />
+      )}
+
       {/* Print Warranty Letter Dialog */}
       {editingCustomer && (
         <PrintableWarrantyLetter
