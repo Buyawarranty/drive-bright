@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Edit, Send, Paperclip, FileSpreadsheet, StickyNote } from 'lucide-react';
+import { Eye, Edit, Send, Paperclip, FileSpreadsheet, StickyNote, ChevronDown, ChevronRight } from 'lucide-react';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
 import { ClaimNotesPanel } from './ClaimNotesPanel';
 import { cn } from '@/lib/utils';
@@ -74,6 +74,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
   loading,
 }) => {
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
 
   if (groupedClaims.length === 0) {
     return (
@@ -184,12 +185,22 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                     </span>
                   </TableCell>
 
-                  {/* Customer Message */}
+                  {/* Customer Submission (collapsible) */}
                   <TableCell className="py-2 align-top">
                     {claim.message ? (
-                      <div className="text-xs text-foreground whitespace-pre-line max-w-[280px] leading-relaxed" title={claim.message}>
-                        {claim.message}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSubmissionId(expandedSubmissionId === claim.id ? null : claim.id)}
+                        className="flex items-start gap-1 text-left text-xs text-foreground hover:text-blue-600 max-w-[260px] group"
+                        title="Click to expand"
+                      >
+                        {expandedSubmissionId === claim.id ? (
+                          <ChevronDown className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground group-hover:text-blue-600" />
+                        ) : (
+                          <ChevronRight className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground group-hover:text-blue-600" />
+                        )}
+                        <span className="truncate block">{claim.message.split('\n')[0]}</span>
+                      </button>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
@@ -257,6 +268,19 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                     </div>
                   </TableCell>
                 </TableRow>
+                {/* Expandable customer submission sub-row */}
+                {expandedSubmissionId === claim.id && claim.message && (
+                  <TableRow className="bg-blue-50/40">
+                    <TableCell colSpan={12} className="p-0">
+                      <div className="px-4 py-3 border-l-4 border-blue-400">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-blue-800 mb-1">Customer Submission</div>
+                        <div className="text-sm text-foreground whitespace-pre-line leading-relaxed">
+                          {claim.message}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
                 {/* Expandable notes sub-row */}
                 {expandedNoteId === claim.id && (
                   <TableRow className="bg-muted/20">

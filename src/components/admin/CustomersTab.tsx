@@ -65,6 +65,7 @@ import { CancellationsTab } from './CancellationsTab';
 import { RemindMePopover } from './leads/RemindMePopover';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
+import { AddClaimDialog } from './claims/AddClaimDialog';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -387,6 +388,7 @@ export const CustomersTab = ({
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
   const [trustpilotReviewCustomer, setTrustpilotReviewCustomer] = useState<Customer | null>(null);
+  const [addClaimCustomer, setAddClaimCustomer] = useState<Customer | null>(null);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [archiveSimpleConfirm, setArchiveSimpleConfirm] = useState(false);
   const [archiveCustomers, setArchiveCustomers] = useState<Array<{
@@ -4608,6 +4610,18 @@ Please log in and change your password after first login.`;
                             paymentDueDate={(customer as any).payment_due_date}
                             onUpdate={fetchCustomers}
                           />
+                          {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => { e.stopPropagation(); setAddClaimCustomer(customer); }}
+                              className="h-5 px-1.5 text-[10px] gap-1 text-amber-700 hover:text-amber-900 hover:bg-amber-50 border border-amber-300 rounded"
+                              title="Add claim for this customer"
+                            >
+                              <FileText className="h-3 w-3" />
+                              + Claim
+                            </Button>
+                          )}
                         </div>
                         <InlineFutureActivationEdit
                           customerId={customer.id}
@@ -5528,6 +5542,18 @@ Please log in and change your password after first login.`;
           customerFirstName={trustpilotReviewCustomer.first_name}
           alreadyRequested={trustpilotReviewCustomer.trustpilot_review_requested}
           requestedAt={trustpilotReviewCustomer.trustpilot_review_requested_at}
+        />
+      )}
+
+      {/* Add Claim Dialog (admin/super_admin) */}
+      {addClaimCustomer && (
+        <AddClaimDialog
+          open={!!addClaimCustomer}
+          onOpenChange={(open) => { if (!open) setAddClaimCustomer(null); }}
+          customerEmail={addClaimCustomer.email}
+          customerName={addClaimCustomer.name}
+          vehicleReg={addClaimCustomer.registration_plate}
+          onClaimAdded={() => { setAddClaimCustomer(null); fetchCustomers(); }}
         />
       )}
 
