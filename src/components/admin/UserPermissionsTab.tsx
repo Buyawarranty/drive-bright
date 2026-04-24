@@ -691,6 +691,30 @@ export const UserPermissionsTab = () => {
     </div>
   );
 
+  // Inline auto-save toggle for super admin: flip a single tab permission and persist
+  const toggleInlineTabPerm = async (targetUser: AdminUser, tabId: string, nextValue: boolean) => {
+    const permKey = `tab_${tabId}`;
+    const nextPerms = { ...(targetUser.permissions || {}), [permKey]: nextValue };
+
+    // Optimistic update
+    setUsers(prev => prev.map(u => u.id === targetUser.id ? { ...u, permissions: nextPerms } : u));
+    setSavingPermsUserId(targetUser.id);
+
+    try {
+      const { error } = await supabase
+        .from('admin_users')
+        .update({ permissions: nextPerms })
+        .eq('id', targetUser.id);
+      if (error) throw error;
+    } catch (err: any) {
+      // Rollback on failure
+      setUsers(prev => prev.map(u => u.id === targetUser.id ? { ...u, permissions: targetUser.permissions } : u));
+      toast.error('Failed to update permission: ' + (err.message || 'unknown error'));
+    } finally {
+      setSavingPermsUserId(null);
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center p-8">Loading...</div>;
   }
