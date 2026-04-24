@@ -248,17 +248,32 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                   {/* Actions */}
                   <TableCell className="py-2">
                     <div className="flex items-center gap-0.5">
-                      {claim.file_url && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDownloadFile(claim.file_url!, claim.file_name!)}
-                          className="h-7 w-7 p-0"
-                          title="Download file"
-                        >
-                          <Paperclip className="h-3.5 w-3.5 text-blue-600" />
-                        </Button>
-                      )}
+                      {(() => {
+                        const list: any[] = Array.isArray((claim as any).file_urls) ? (claim as any).file_urls : [];
+                        const attachments = list
+                          .map((f) => ({ url: f?.publicUrl || f?.url, name: f?.name || 'attachment' }))
+                          .filter((f) => !!f.url);
+                        if (attachments.length === 0 && claim.file_url) {
+                          attachments.push({ url: claim.file_url, name: claim.file_name || 'attachment' });
+                        }
+                        if (attachments.length === 0) return null;
+                        return (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => attachments.forEach((a) => onDownloadFile(a.url, a.name))}
+                            className="h-7 w-7 p-0 relative"
+                            title={`${attachments.length} attachment(s) – click to download all`}
+                          >
+                            <Paperclip className="h-3.5 w-3.5 text-blue-600" />
+                            {attachments.length > 1 && (
+                              <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-blue-600 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+                                {attachments.length}
+                              </span>
+                            )}
+                          </Button>
+                        );
+                      })()}
                       <Button variant="ghost" size="sm" onClick={() => onViewClaim(claim)} className="h-7 w-7 p-0" title="View claim">
                         <Eye className="h-4 w-4" />
                       </Button>
