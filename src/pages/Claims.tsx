@@ -40,7 +40,7 @@ const Claims = () => {
     currentMileage: 50000,
     additionalInfo: ''
   });
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
