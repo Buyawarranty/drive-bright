@@ -521,6 +521,30 @@ serve(async (req) => {
               });
             }
 
+            // Final fallback: previously-cached mot_history record for this reg
+            const cached = await fetchMotHistoryFallback(registrationNumber);
+            if (cached?.make) {
+              console.log('✅ Using mot_history cache as final fallback for', regUpper);
+              const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
+              return new Response(JSON.stringify({
+                found: true,
+                blocked: !validationCached.isValid,
+                blockReason: !validationCached.isValid ? validationCached.errorMessage : undefined,
+                registrationNumber: regUpper,
+                make: cached.make,
+                model: cached.model || null,
+                fuelType: cached.fuelType || null,
+                colour: cached.colour || null,
+                yearOfManufacture: cached.yearOfManufacture || null,
+                manufactureDate: cached.manufactureDate || null,
+                vehicleType: 'car',
+                source: 'mot_history_cache'
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+
             return new Response(JSON.stringify({
               found: false,
               error: "Vehicle not found in DVSA database",
@@ -604,6 +628,30 @@ serve(async (req) => {
         });
       }
       
+      // Final fallback: previously-cached mot_history record for this reg
+      const cachedFinal = await fetchMotHistoryFallback(registrationNumber);
+      if (cachedFinal?.make) {
+        console.log('✅ Using mot_history cache as final fallback (post-DVSA-failure) for', regUpper);
+        const validationCachedFinal = validateVehicleEligibility({ make: cachedFinal.make, model: cachedFinal.model || '', regNumber: registrationNumber });
+        return new Response(JSON.stringify({
+          found: true,
+          blocked: !validationCachedFinal.isValid,
+          blockReason: !validationCachedFinal.isValid ? validationCachedFinal.errorMessage : undefined,
+          registrationNumber: regUpper,
+          make: cachedFinal.make,
+          model: cachedFinal.model || null,
+          fuelType: cachedFinal.fuelType || null,
+          colour: cachedFinal.colour || null,
+          yearOfManufacture: cachedFinal.yearOfManufacture || null,
+          manufactureDate: cachedFinal.manufactureDate || null,
+          vehicleType: 'car',
+          source: 'mot_history_cache'
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
       const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
       throw new Error(`DVSA API failed after ${maxRetries} attempts: ${errorMessage}`);
     }
