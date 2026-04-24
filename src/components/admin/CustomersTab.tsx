@@ -4056,34 +4056,11 @@ Please log in and change your password after first login.`;
                                       </div>
                                       <div>
                                         <Label htmlFor="edit-signup-date">Signup Date</Label>
-                                        <Popover>
-                                          <PopoverTrigger asChild>
-                                            <Button
-                                              id="edit-signup-date"
-                                              variant="outline"
-                                              className={cn(
-                                                "w-full justify-start text-left font-normal",
-                                                !editingCustomer.signup_date && "text-muted-foreground"
-                                              )}
-                                            >
-                                              <CalendarIcon className="mr-2 h-4 w-4" />
-                                              {editingCustomer.signup_date ? (
-                                                format(new Date(editingCustomer.signup_date), 'dd/MM/yyyy')
-                                              ) : (
-                                                <span>Pick a date</span>
-                                              )}
-                                            </Button>
-                                          </PopoverTrigger>
-                                          <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                              mode="single"
-                                              selected={editingCustomer.signup_date ? new Date(editingCustomer.signup_date) : undefined}
-                                              onSelect={(date) => date && setEditingCustomer({ ...editingCustomer, signup_date: date.toISOString() })}
-                                              initialFocus
-                                            className="p-3 pointer-events-auto"
-                                           />
-                                          </PopoverContent>
-                                        </Popover>
+                                        <SmartDateInput
+                                          id="edit-signup-date"
+                                          value={editingCustomer.signup_date}
+                                          onChange={(date) => setEditingCustomer({ ...editingCustomer, signup_date: date ? date.toISOString() : null })}
+                                        />
                                       </div>
                                        <div>
                                         <Label>Purchase Date</Label>
