@@ -10,6 +10,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface ClaimFile {
+  name: string;
+  size: number;
+  type: string;
+  data: string; // base64 data URL
+}
+
 interface ClaimSubmissionRequest {
   name: string;
   email: string;
@@ -21,12 +28,10 @@ interface ClaimSubmissionRequest {
   faultDetails?: string;
   issueTiming?: string;
   additionalInfo?: string;
-  file?: {
-    name: string;
-    size: number;
-    type: string;
-    data: string;
-  };
+  /** Legacy single-file field (still accepted for backward compatibility) */
+  file?: ClaimFile;
+  /** Preferred: multiple attachments */
+  files?: ClaimFile[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -47,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { name, email, phone, vehicleReg, currentMileage, faultDescription, dateOccurred, faultDetails, issueTiming, additionalInfo, file }: ClaimSubmissionRequest = await req.json();
+    const { name, email, phone, vehicleReg, currentMileage, faultDescription, dateOccurred, faultDetails, issueTiming, additionalInfo, file, files }: ClaimSubmissionRequest = await req.json();
 
     console.log('Received claim submission:', { name, email, phone: phone || 'N/A', vehicleReg: vehicleReg || 'N/A' });
 
@@ -136,38 +141,62 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Risk data:', { purchaseMileage, warrantyStartDate, daysOnRisk, mileageDriven });
     }
 
-    let fileUrl = null;
-    let fileName = null;
-    let fileSize = null;
-    let fileBase64Content = null;
+    // Build a unified list of incoming files (legacy `file` + new `files[]`).
+    const incomingFiles: ClaimFile[] = [];
+    if (Array.isArray(files)) incomingFiles.push(...files.filter(Boolean));
+    if (file && file.data) incomingFiles.push(file);
 
-    // Handle file upload if present
-    if (file && file.data) {
+    // Each entry stored in DB
+    const uploadedAttachments: Array<{ url: string; name: string; size: number; type: string }> = [];
+    // Each entry kept in memory to attach to the staff email
+    const emailAttachments: Array<{ filename: string; content: string }> = [];
+
+    // Legacy single-file fields (kept for backward-compat with old admin UI)
+    let fileUrl: string | null = null;
+    let fileName: string | null = null;
+    let fileSize: number | null = null;
+
+    for (const f of incomingFiles) {
+      if (!f || !f.data) continue;
       try {
-        fileBase64Content = file.data.split(',')[1];
-        const binaryString = atob(fileBase64Content);
+        const base64Content = f.data.includes(',') ? f.data.split(',')[1] : f.data;
+        const binaryString = atob(base64Content);
         const fileData = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          fileData[i] = binaryString.charCodeAt(i);
-        }
+        for (let i = 0; i < binaryString.length; i++) fileData[i] = binaryString.charCodeAt(i);
+
         const timestamp = Date.now();
-        const uniqueFileName = `${timestamp}-${file.name}`;
+        const safeName = (f.name || 'attachment').replace(/[^A-Za-z0-9._-]/g, '_');
+        const uniqueFileName = `${timestamp}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('policy-documents')
           .upload(`claim-attachments/${uniqueFileName}`, fileData, {
-            contentType: file.type,
+            contentType: f.type || 'application/octet-stream',
           });
 
         if (uploadError) {
-          console.error('File upload error:', uploadError);
-        } else {
-          fileUrl = uploadData.path;
-          fileName = file.name;
-          fileSize = file.size;
-          console.log('File uploaded successfully:', fileUrl);
+          console.error('File upload error for', f.name, uploadError);
+          continue;
+        }
+
+        const storedPath = uploadData.path;
+        uploadedAttachments.push({
+          url: storedPath,
+          name: f.name,
+          size: f.size,
+          type: f.type || 'application/octet-stream',
+        });
+        emailAttachments.push({ filename: f.name, content: base64Content });
+        console.log('File uploaded successfully:', storedPath);
+
+        // Populate legacy single-file fields with the FIRST successful upload
+        if (!fileUrl) {
+          fileUrl = storedPath;
+          fileName = f.name;
+          fileSize = f.size;
         }
       } catch (fileError) {
-        console.error('Error processing file:', fileError);
+        console.error('Error processing file', f?.name, fileError);
       }
     }
 
@@ -194,6 +223,7 @@ const handler = async (req: Request): Promise<Response> => {
           file_url: fileUrl,
           file_name: fileName,
           file_size: fileSize,
+          file_urls: uploadedAttachments,
           status: 'new',
           vehicle_registration: vehicleReg || null,
           mileage_at_claim: currentMileage || null,
@@ -297,15 +327,18 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         ` : ''}
         
-        ${fileName ? `
+        ${uploadedAttachments.length > 0 ? `
         <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-          <h2 style="color: #333; margin-top: 0;">📎 Attachment</h2>
-          <p><strong>File:</strong> ${fileName}</p>
-          <p><strong>Size:</strong> ${fileSize ? Math.round(fileSize / 1024) + ' KB' : 'Unknown'}</p>
-          ${fileUrl ? `<p><a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/${fileUrl}" style="color: #eb4b00; text-decoration: underline;">Download Attachment</a></p>` : ''}
+          <h2 style="color: #333; margin-top: 0;">📎 Attachments (${uploadedAttachments.length})</h2>
+          ${uploadedAttachments.map((a, i) => `
+            <div style="padding: 8px 0; border-bottom: 1px solid #f0e0a0;">
+              <p style="margin: 0;"><strong>${i + 1}. ${a.name}</strong> &nbsp;<span style="color:#666;font-size:12px;">(${a.size ? Math.round(a.size / 1024) + ' KB' : 'Unknown size'})</span></p>
+              <p style="margin: 4px 0 0 0;"><a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/${a.url}" style="color: #eb4b00; text-decoration: underline;">Download</a></p>
+            </div>
+          `).join('')}
         </div>
         ` : ''}
-        
+
         <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; color: #1976d2;"><strong>Submission ID:</strong> ${submissionData.id}</p>
           <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Submitted at: ${new Date().toLocaleString()}</p>
@@ -327,14 +360,9 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     };
 
-    if (fileBase64Content && fileName) {
-      emailPayload.attachments = [
-        {
-          filename: fileName,
-          content: fileBase64Content,
-        }
-      ];
-      console.log('Adding attachment to email:', fileName);
+    if (emailAttachments.length > 0) {
+      emailPayload.attachments = emailAttachments;
+      console.log(`Adding ${emailAttachments.length} attachment(s) to email`);
     }
 
     const emailResponse = await resend.emails.send(emailPayload);

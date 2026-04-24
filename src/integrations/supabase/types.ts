@@ -1396,6 +1396,7 @@ export type Database = {
           file_name: string | null
           file_size: number | null
           file_url: string | null
+          file_urls: Json
           follow_up_date: string | null
           id: string
           internal_notes: string | null
@@ -1429,6 +1430,7 @@ export type Database = {
           file_name?: string | null
           file_size?: number | null
           file_url?: string | null
+          file_urls?: Json
           follow_up_date?: string | null
           id?: string
           internal_notes?: string | null
@@ -1462,6 +1464,7 @@ export type Database = {
           file_name?: string | null
           file_size?: number | null
           file_url?: string | null
+          file_urls?: Json
           follow_up_date?: string | null
           id?: string
           internal_notes?: string | null
