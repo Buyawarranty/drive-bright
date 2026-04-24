@@ -164,9 +164,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   }, [monthlyPrice, paymentType]);
 
   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
-  const monthlyTotal = monthlyPrice * months;
-  const payInFull = Math.round(monthlyTotal * 0.9);
-  const savings = monthlyTotal - payInFull;
+  // Pay in full = monthly × 12 (always 12 instalments) - matches Step 4 / StickyFooter
+  const monthlyTotal = monthlyPrice * 12;
+  // Match Step 4 formula exactly: total - Math.floor(total * 0.10)
+  const savings = Math.floor(monthlyTotal * 0.10);
+  const payInFull = monthlyTotal - savings;
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
   const selectedLabour = LABOUR_OPTIONS.find(l => l.value === selectedLabourRate);
