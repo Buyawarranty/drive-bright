@@ -3240,6 +3240,8 @@ export const CustomersTab = ({
                           onClick={() => {
                             const range = preset.getRange();
                             setRevenueDateRange(range ?? { from: new Date(2020, 0, 1), to: new Date() });
+                            // Also filter the table by the same range so it matches the Revenue stat
+                            setDateRange(range ?? undefined);
                           }}
                         >
                           {preset.label}
