@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Edit, Send, Paperclip, FileSpreadsheet, StickyNote } from 'lucide-react';
+import { Eye, Edit, Send, Paperclip, FileSpreadsheet, StickyNote, ChevronDown, ChevronRight } from 'lucide-react';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
 import { ClaimNotesPanel } from './ClaimNotesPanel';
 import { cn } from '@/lib/utils';
