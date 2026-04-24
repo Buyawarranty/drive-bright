@@ -139,40 +139,65 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Risk data:', { purchaseMileage, warrantyStartDate, daysOnRisk, mileageDriven });
     }
 
-    let fileUrl = null;
-    let fileName = null;
-    let fileSize = null;
-    let fileBase64Content = null;
+    // Build a unified list of files (support both legacy `file` and new `files[]`)
+    const incomingFiles: ClaimFile[] = [];
+    if (Array.isArray(files) && files.length > 0) {
+      for (const f of files) {
+        if (f && f.data) incomingFiles.push(f);
+      }
+    } else if (file && file.data) {
+      incomingFiles.push(file);
+    }
 
-    // Handle file upload if present
-    if (file && file.data) {
+    type UploadedAttachment = {
+      url: string; // storage path
+      publicUrl: string;
+      name: string;
+      size: number;
+      type: string;
+      base64: string;
+    };
+    const uploadedAttachments: UploadedAttachment[] = [];
+
+    for (const f of incomingFiles) {
       try {
-        fileBase64Content = file.data.split(',')[1];
-        const binaryString = atob(fileBase64Content);
-        const fileData = new Uint8Array(binaryString.length);
+        const base64 = f.data.includes(',') ? f.data.split(',')[1] : f.data;
+        const binaryString = atob(base64);
+        const fileBytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
-          fileData[i] = binaryString.charCodeAt(i);
+          fileBytes[i] = binaryString.charCodeAt(i);
         }
-        const timestamp = Date.now();
-        const uniqueFileName = `${timestamp}-${file.name}`;
+        const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const uniqueFileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+        const storagePath = `claim-attachments/${uniqueFileName}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('policy-documents')
-          .upload(`claim-attachments/${uniqueFileName}`, fileData, {
-            contentType: file.type,
-          });
+          .upload(storagePath, fileBytes, { contentType: f.type || 'application/octet-stream' });
 
         if (uploadError) {
-          console.error('File upload error:', uploadError);
-        } else {
-          fileUrl = uploadData.path;
-          fileName = file.name;
-          fileSize = file.size;
-          console.log('File uploaded successfully:', fileUrl);
+          console.error('File upload error for', f.name, uploadError);
+          continue;
         }
+
+        const publicUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/${uploadData.path}`;
+        uploadedAttachments.push({
+          url: uploadData.path,
+          publicUrl,
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          base64,
+        });
+        console.log('File uploaded:', uploadData.path);
       } catch (fileError) {
-        console.error('Error processing file:', fileError);
+        console.error('Error processing file', f?.name, fileError);
       }
     }
+
+    // Legacy single-file fields (first attachment)
+    const fileUrl = uploadedAttachments[0]?.url ?? null;
+    const fileName = uploadedAttachments[0]?.name ?? null;
+    const fileSize = uploadedAttachments[0]?.size ?? null;
 
     // Combine claim details into message for database storage
     const claimMessage = [
