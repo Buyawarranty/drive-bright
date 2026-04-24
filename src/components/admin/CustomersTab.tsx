@@ -3030,56 +3030,19 @@ export const CustomersTab = ({
               </div>
             </div>
 
-             {/* Row 2: Filter by Tag, Date Range, Warranty Period, Purchase Source - hidden for sales agents */}
+             {/* Row 2: Sort, Date Range, Warranty Period, Purchase Source - hidden for sales agents */}
             {!isSalesAgent && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-              {/* Filter by Tag */}
+              {/* Sort by */}
               <div className="space-y-1">
-                <Label htmlFor="tagFilter" className="text-sm font-medium">Filter by Tag</Label>
-                <Select value={filterByTag} onValueChange={setFilterByTag}>
-                  <SelectTrigger>
-                    <SelectValue>
-                      {filterByTag === 'all' ? (
-                        'All Tags'
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full flex-shrink-0" 
-                            style={{ backgroundColor: availableTags.find(t => t.id === filterByTag)?.color }}
-                          />
-                          <span>{availableTags.find(t => t.id === filterByTag)?.name || 'Select Tag'}</span>
-                        </div>
-                      )}
-                    </SelectValue>
+                <Label htmlFor="sortBy" className="text-sm font-medium">Sort by</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger id="sortBy">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Tags</SelectItem>
-                    {Object.entries(
-                      availableTags.reduce((acc: any, tag) => {
-                        if (!acc[tag.category]) {
-                          acc[tag.category] = [];
-                        }
-                        acc[tag.category].push(tag);
-                        return acc;
-                      }, {})
-                    ).map(([category, tags]: [string, any]) => (
-                      <React.Fragment key={category}>
-                        <SelectItem value={`category-${category}`} disabled className="font-semibold text-xs uppercase text-muted-foreground">
-                          {category}
-                        </SelectItem>
-                        {tags.map((tag: any) => (
-                          <SelectItem key={tag.id} value={tag.id} className="pl-6">
-                            <div className="flex items-center gap-2">
-                              <div 
-                                className="w-3 h-3 rounded-full flex-shrink-0" 
-                                style={{ backgroundColor: tag.color }}
-                              />
-                              <span>{tag.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </React.Fragment>
-                    ))}
+                    <SelectItem value="newest">Newest first</SelectItem>
+                    <SelectItem value="oldest">Oldest first</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
