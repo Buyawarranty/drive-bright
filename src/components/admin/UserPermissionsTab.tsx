@@ -1171,8 +1171,12 @@ export const UserPermissionsTab = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id} data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
+              {users.map((user) => {
+                const isExpanded = expandedPermsUserId === user.id;
+                const canExpand = currentAdminUser?.role === 'super_admin';
+                return (
+                <React.Fragment key={user.id}>
+                <TableRow data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
                   <TableCell>
                     <Checkbox
                       checked={selectedUsers.has(user.id)}
