@@ -1184,7 +1184,7 @@ export const UserPermissionsTab = () => {
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.role)} className={`flex items-center gap-1 w-fit ${getRoleBadgeClassName(user.role)}`}>
                       {getRoleIcon(user.role)}
-                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role}
+                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role === 'claims_agent' ? 'Claims Agent' : user.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
