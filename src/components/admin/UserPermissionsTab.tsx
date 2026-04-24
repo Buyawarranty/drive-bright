@@ -143,6 +143,8 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_timesheets': true,
     'tab_customers_view': true,
   },
+  // Claims Agent: same tab access as admin (filtered) + full Claims access
+  claims_agent: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: {},
   guest: {},
