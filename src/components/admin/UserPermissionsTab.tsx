@@ -1314,7 +1314,56 @@ export const UserPermissionsTab = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+                {isExpanded && canExpand && (
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableCell colSpan={8} className="p-0">
+                      <div className="px-6 py-4 border-l-4 border-primary">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-sm font-semibold">Tab Access for {user.first_name} {user.last_name}</p>
+                            <p className="text-xs text-muted-foreground">Tick to grant, untick to revoke. Changes save instantly.</p>
+                          </div>
+                          {savingPermsUserId === user.id && (
+                            <Badge variant="outline" className="text-xs">Saving…</Badge>
+                          )}
+                        </div>
+                        {(user.role === 'super_admin' || user.role === 'dev_tester') ? (
+                          <p className="text-xs text-muted-foreground italic">This role automatically has access to all tabs and cannot be restricted here.</p>
+                        ) : (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[360px] overflow-y-auto">
+                            {ADMIN_TABS.map((tab) => {
+                              const permKey = `tab_${tab.id}`;
+                              const perms = (user.permissions || {}) as Record<string, boolean>;
+                              // For 'admin' role: default ON unless explicitly false
+                              const isChecked = user.role === 'admin'
+                                ? !(permKey in perms && perms[permKey] === false)
+                                : perms[permKey] === true;
+                              const inputId = `inline-${user.id}-${permKey}`;
+                              return (
+                                <label
+                                  key={tab.id}
+                                  htmlFor={inputId}
+                                  className={`flex items-start gap-2 p-2 rounded border cursor-pointer transition-colors ${isChecked ? 'bg-primary/5 border-primary/30' : 'bg-background hover:bg-muted/50'}`}
+                                >
+                                  <Checkbox
+                                    id={inputId}
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => toggleInlineTabPerm(user, tab.id, checked === true)}
+                                    className="mt-0.5"
+                                  />
+                                  <span className="text-xs font-medium leading-tight">{tab.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                </React.Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
