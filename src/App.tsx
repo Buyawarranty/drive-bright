@@ -55,26 +55,10 @@ const ConditionalFooter = () => {
   const isQuotePage = location.pathname.startsWith('/quote/');
   
   // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3.", "3", "4" etc.)
+  // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
-
-  // Fallback: on the home/quote flow ("/"), also hide footer when stored step is 2-6.
-  // Guards against transient moments where the URL ?step= param is not yet synced.
-  let isCheckoutStepStored = false;
-  if (!isCheckoutStep && location.pathname === '/' && typeof window !== 'undefined') {
-    try {
-      const raw = window.localStorage.getItem('buyawarranty_currentStep');
-      if (raw) {
-        let storedStep = raw;
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object' && 'value' in parsed) storedStep = String(parsed.value);
-        } catch { /* not JSON, use raw */ }
-        if (/^[2-6]/.test(storedStep)) isCheckoutStepStored = true;
-      }
-    } catch { /* ignore */ }
-  }
   
-  if (isCheckoutStep || isCheckoutStepStored || isAdminRoute || isBrandLanding || isQuotePage || isDealerDashboard) return null;
+  if (isCheckoutStep || isAdminRoute || isBrandLanding || isQuotePage || isDealerDashboard) return null;
   return <WebsiteFooter />;
 };
 

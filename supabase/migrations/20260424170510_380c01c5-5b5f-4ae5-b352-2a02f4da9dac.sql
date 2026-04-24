@@ -1,2 +1,0 @@
-ALTER TABLE public.claims_submissions ADD COLUMN IF NOT EXISTS file_urls jsonb NOT NULL DEFAULT '[]'::jsonb;
-COMMENT ON COLUMN public.claims_submissions.file_urls IS 'Array of attachments uploaded with the claim. Each item: { url: string (storage path in policy-documents), name: string, size: number, type: string }.';

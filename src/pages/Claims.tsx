@@ -40,7 +40,7 @@ const Claims = () => {
     currentMileage: 50000,
     additionalInfo: ''
   });
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
@@ -153,48 +153,78 @@ const Claims = () => {
     }
   };
 
-  const acceptFile = async (file: File) => {
+  const MAX_FILES = 10;
+
+  const acceptFile = async (file: File): Promise<File | null> => {
     // Loose type check (some mobile browsers send empty type for HEIC, etc.)
     const lowerName = file.name.toLowerCase();
     const extOk = /\.(pdf|doc|docx|jpe?g|png|heic|heif|webp)$/i.test(lowerName);
     if (file.type && !ALLOWED_TYPES.includes(file.type) && !extOk) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF, DOC, DOCX, JPG, PNG or HEIC file.",
+        description: `${file.name}: Please upload a PDF, DOC, DOCX, JPG, PNG or HEIC file.`,
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     let finalFile = file;
     if (file.type.startsWith('image/') && file.size > 5 * 1024 * 1024) {
-      toast({ title: "Optimising your photo…", description: "Shrinking the image so it uploads quickly." });
       finalFile = await compressImageIfNeeded(file, 5);
     }
 
     if (finalFile.size > MAX_FILE_SIZE) {
       toast({
         title: "File too large",
-        description: "Please upload a file smaller than 20MB.",
+        description: `${file.name}: Please upload files smaller than 20MB.`,
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    return finalFile;
+  };
+
+  const acceptFiles = async (files: FileList | File[]) => {
+    const incoming = Array.from(files);
+    const remaining = MAX_FILES - uploadedFiles.length;
+    if (remaining <= 0) {
+      toast({
+        title: "Attachment limit reached",
+        description: `You can attach up to ${MAX_FILES} files per claim.`,
         variant: "destructive",
       });
       return;
     }
-
-    setUploadedFile(finalFile);
+    const toProcess = incoming.slice(0, remaining);
+    if (incoming.length > remaining) {
+      toast({
+        title: "Some files skipped",
+        description: `Only the first ${remaining} file(s) were added (max ${MAX_FILES} per claim).`,
+      });
+    }
+    if (toProcess.some(f => f.type.startsWith('image/') && f.size > 5 * 1024 * 1024)) {
+      toast({ title: "Optimising your photos…", description: "Shrinking large images so they upload quickly." });
+    }
+    const processed: File[] = [];
+    for (const f of toProcess) {
+      const ok = await acceptFile(f);
+      if (ok) processed.push(ok);
+    }
+    if (processed.length) {
+      setUploadedFiles(prev => [...prev, ...processed]);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) await acceptFile(file);
+    const files = e.target.files;
+    if (files && files.length > 0) await acceptFiles(files);
+    // reset input so the same file can be reselected later
+    e.target.value = '';
   };
 
-  const removeFile = () => {
-    setUploadedFile(null);
-    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -216,7 +246,7 @@ const Claims = () => {
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      await acceptFile(files[0]);
+      await acceptFiles(files);
     }
   };
 
@@ -316,21 +346,21 @@ const Claims = () => {
     setIsSubmitting(true);
     
     try {
-      let fileData = null;
-      
-      if (uploadedFile) {
-        const reader = new FileReader();
-        const fileBase64 = await new Promise<string>((resolve) => {
+      const filesPayload: Array<{ name: string; size: number; type: string; data: string }> = [];
+
+      for (const f of uploadedFiles) {
+        const fileBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(uploadedFile);
+          reader.onerror = reject;
+          reader.readAsDataURL(f);
         });
-        
-        fileData = {
-          name: uploadedFile.name,
-          size: uploadedFile.size,
-          type: uploadedFile.type,
-          data: fileBase64
-        };
+        filesPayload.push({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          data: fileBase64,
+        });
       }
 
       const claimMessage = `
@@ -356,7 +386,8 @@ Additional Information: ${formData.additionalInfo}
           faultDetails: formData.faultDetails,
           issueTiming: formData.issueTiming,
           additionalInfo: formData.additionalInfo,
-          file: fileData
+          file: filesPayload[0] || null, // backwards compat
+          files: filesPayload,
         }
       });
 
@@ -383,7 +414,7 @@ Additional Information: ${formData.additionalInfo}
         currentMileage: 50000,
         additionalInfo: ''
       });
-      setUploadedFile(null);
+      setUploadedFiles([]);
       setErrors({});
       
     } catch (error: any) {
@@ -778,54 +809,62 @@ Additional Information: ${formData.additionalInfo}
                           <h3 className="text-xl font-bold text-gray-900">Supporting Documents (Optional)</h3>
                         </div>
 
-                        {!uploadedFile ? (
-                          <div
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onClick={() => document.getElementById('file-upload')?.click()}
-                            className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
-                              isDragging
-                                ? 'border-orange-500 bg-orange-50'
-                                : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
-                            }`}
-                          >
-                            <Upload className="mx-auto h-10 w-10 text-orange-500 mb-2" />
-                            <p className="text-sm font-medium text-gray-700">
-                              Click to upload or drag and drop
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              PDF, DOC, DOCX, JPG, PNG or HEIC (max 20MB — large photos are auto-shrunk)
-                            </p>
-                            <input
-                              id="file-upload"
-                              type="file"
-                              className="hidden"
-                              accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                              onChange={handleFileUpload}
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                                <Upload className="h-5 w-5 text-green-600" />
+                        <div
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          onClick={() => document.getElementById('file-upload')?.click()}
+                          className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+                            isDragging
+                              ? 'border-orange-500 bg-orange-50'
+                              : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
+                          }`}
+                        >
+                          <Upload className="mx-auto h-10 w-10 text-orange-500 mb-2" />
+                          <p className="text-sm font-medium text-gray-700">
+                            {uploadedFiles.length > 0
+                              ? 'Add more files'
+                              : 'Click to upload or drag and drop'}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            PDF, DOC, DOCX, JPG, PNG or HEIC — up to {MAX_FILES} files (max 20MB each, large photos auto-shrunk)
+                          </p>
+                          <input
+                            id="file-upload"
+                            type="file"
+                            multiple
+                            className="hidden"
+                            accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleFileUpload}
+                          />
+                        </div>
+
+                        {uploadedFiles.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {uploadedFiles.map((f, idx) => (
+                              <div key={`${f.name}-${idx}`} className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="flex-shrink-0 h-9 w-9 rounded-full bg-green-100 flex items-center justify-center">
+                                    <Upload className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="min-w-0 text-left">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{f.name}</p>
+                                    <p className="text-xs text-gray-500">{(f.size / 1024 / 1024).toFixed(2)} MB</p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                                  className="ml-3 flex-shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+                                  aria-label={`Remove ${f.name}`}
+                                >
+                                  <X className="h-5 w-5" />
+                                </button>
                               </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{uploadedFile.name}</p>
-                                <p className="text-xs text-gray-500">
-                                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={removeFile}
-                              className="ml-3 flex-shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
-                              aria-label="Remove file"
-                            >
-                              <X className="h-5 w-5" />
-                            </button>
+                            ))}
+                            <p className="text-xs text-gray-500 text-left">
+                              {uploadedFiles.length} of {MAX_FILES} attached
+                            </p>
                           </div>
                         )}
                       </div>
