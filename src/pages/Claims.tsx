@@ -346,21 +346,21 @@ const Claims = () => {
     setIsSubmitting(true);
     
     try {
-      let fileData = null;
-      
-      if (uploadedFile) {
-        const reader = new FileReader();
-        const fileBase64 = await new Promise<string>((resolve) => {
+      const filesPayload: Array<{ name: string; size: number; type: string; data: string }> = [];
+
+      for (const f of uploadedFiles) {
+        const fileBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(uploadedFile);
+          reader.onerror = reject;
+          reader.readAsDataURL(f);
         });
-        
-        fileData = {
-          name: uploadedFile.name,
-          size: uploadedFile.size,
-          type: uploadedFile.type,
-          data: fileBase64
-        };
+        filesPayload.push({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          data: fileBase64,
+        });
       }
 
       const claimMessage = `
@@ -386,7 +386,8 @@ Additional Information: ${formData.additionalInfo}
           faultDetails: formData.faultDetails,
           issueTiming: formData.issueTiming,
           additionalInfo: formData.additionalInfo,
-          file: fileData
+          file: filesPayload[0] || null, // backwards compat
+          files: filesPayload,
         }
       });
 
