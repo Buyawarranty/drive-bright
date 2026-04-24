@@ -228,9 +228,25 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     try {
       console.log('Looking up vehicle:', regNumber);
       
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+      // Try the lookup, then retry once if it fails or returns no make/model.
+      // The edge function has its own retries plus DVLA + mot_history fallbacks,
+      // so a second attempt only triggers on truly transient infrastructure errors.
+      let { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: regNumber }
       });
+
+      const lookupYieldedNothing = !error && (!data || (!data.found || !data.make));
+      if (error || lookupYieldedNothing) {
+        console.warn('🔁 First DVSA lookup did not return make - retrying after 800ms', { error, data });
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        const retry = await supabase.functions.invoke('dvla-vehicle-lookup', {
+          body: { registrationNumber: regNumber }
+        });
+        if (!retry.error && retry.data?.make) {
+          data = retry.data;
+          error = null;
+        }
+      }
 
       if (error) {
         console.error('DVSA lookup error:', error);

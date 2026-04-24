@@ -348,6 +348,50 @@ async function fetchDVLAFallback(registration: string): Promise<{ make?: string;
   }
 }
 
+// Final fallback: pull from previously-stored mot_history row so we never lose
+// make/model when DVSA + DVLA both transiently fail for a reg we've seen before.
+async function fetchMotHistoryFallback(registration: string): Promise<
+  { make?: string; model?: string; fuelType?: string; colour?: string; yearOfManufacture?: number; manufactureDate?: string } | null
+> {
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    const regUpper = registration.toUpperCase();
+    const { data } = await supabase
+      .from('mot_history')
+      .select('make, model, fuel_type, primary_colour, manufacture_date, registration_date')
+      .or(`registration.eq.${regUpper},registration.eq.${regUpper.replace(/\s/g, '')}`)
+      .not('make', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!data?.make) return null;
+
+    let yearOfManufacture: number | undefined;
+    if (data.manufacture_date) {
+      yearOfManufacture = new Date(data.manufacture_date).getFullYear();
+    } else if (data.registration_date) {
+      yearOfManufacture = new Date(data.registration_date).getFullYear();
+    }
+
+    console.log('🗂️ mot_history fallback returned:', { make: data.make, model: data.model });
+    return {
+      make: data.make,
+      model: data.model || undefined,
+      fuelType: data.fuel_type || undefined,
+      colour: data.primary_colour || undefined,
+      yearOfManufacture,
+      manufactureDate: data.manufacture_date || undefined,
+    };
+  } catch (e) {
+    console.error('mot_history fallback error:', e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -477,6 +521,30 @@ serve(async (req) => {
               });
             }
 
+            // Final fallback: previously-cached mot_history record for this reg
+            const cached = await fetchMotHistoryFallback(registrationNumber);
+            if (cached?.make) {
+              console.log('✅ Using mot_history cache as final fallback for', regUpper);
+              const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
+              return new Response(JSON.stringify({
+                found: true,
+                blocked: !validationCached.isValid,
+                blockReason: !validationCached.isValid ? validationCached.errorMessage : undefined,
+                registrationNumber: regUpper,
+                make: cached.make,
+                model: cached.model || null,
+                fuelType: cached.fuelType || null,
+                colour: cached.colour || null,
+                yearOfManufacture: cached.yearOfManufacture || null,
+                manufactureDate: cached.manufactureDate || null,
+                vehicleType: 'car',
+                source: 'mot_history_cache'
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+
             return new Response(JSON.stringify({
               found: false,
               error: "Vehicle not found in DVSA database",
@@ -560,6 +628,30 @@ serve(async (req) => {
         });
       }
       
+      // Final fallback: previously-cached mot_history record for this reg
+      const cachedFinal = await fetchMotHistoryFallback(registrationNumber);
+      if (cachedFinal?.make) {
+        console.log('✅ Using mot_history cache as final fallback (post-DVSA-failure) for', regUpper);
+        const validationCachedFinal = validateVehicleEligibility({ make: cachedFinal.make, model: cachedFinal.model || '', regNumber: registrationNumber });
+        return new Response(JSON.stringify({
+          found: true,
+          blocked: !validationCachedFinal.isValid,
+          blockReason: !validationCachedFinal.isValid ? validationCachedFinal.errorMessage : undefined,
+          registrationNumber: regUpper,
+          make: cachedFinal.make,
+          model: cachedFinal.model || null,
+          fuelType: cachedFinal.fuelType || null,
+          colour: cachedFinal.colour || null,
+          yearOfManufacture: cachedFinal.yearOfManufacture || null,
+          manufactureDate: cachedFinal.manufactureDate || null,
+          vehicleType: 'car',
+          source: 'mot_history_cache'
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
       const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
       throw new Error(`DVSA API failed after ${maxRetries} attempts: ${errorMessage}`);
     }
