@@ -414,7 +414,7 @@ Additional Information: ${formData.additionalInfo}
         currentMileage: 50000,
         additionalInfo: ''
       });
-      setUploadedFile(null);
+      setUploadedFiles([]);
       setErrors({});
       
     } catch (error: any) {
