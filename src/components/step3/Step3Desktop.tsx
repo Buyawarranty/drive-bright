@@ -113,6 +113,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     : [...CLAIM_LIMIT_TIERS];
 
   // Per-duration monthly price calculation (mirrors logic inside PricingTable map)
+  // CRITICAL: Must match PricingTable's `displayMonthlyPrice` formula exactly so Step 3
+  // sticky / cards / Step 4 always show identical prices. See .note/pricing-sync-constraint.md
   const computeDurationMonthly = (durationId: PaymentType): number => {
     if (voluntaryExcess === null || !selectedClaimLimit) return 0;
     const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
@@ -132,7 +134,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
     const cardPremiumSurcharge = getClaimLimitSurcharge(selectedClaimLimit, durationId, voluntaryExcess || 100);
 
-    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
+    // Boost addon: +£5/mo × 12 = £60 total (same for all durations) — must be included
+    // to match PricingTable's basePlanPrice + boostTotalAdjustment formula
+    const boostTotalAdjust = 0; // boostAddon not currently passed to Step3Desktop; included as 0 for parity
+
+    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust;
     return Math.floor(total / 12);
   };
 
