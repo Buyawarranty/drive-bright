@@ -231,6 +231,16 @@ const Index = () => {
   console.log('Immediate quote check:', { quoteParam, emailParam });
   console.log('All URL params:', Object.fromEntries(searchParams.entries()));
   
+  const getNormalizedRestoreStep = (restoredData: Record<string, any>) => {
+    const rawStep = Number(restoredData.step);
+
+    if (rawStep === 4) {
+      return 4;
+    }
+
+    return 3;
+  };
+
   // CRITICAL: Check for restore parameter FIRST and initialize state with it
   const getInitialVehicleData = (): VehicleData | null => {
     // Priority 1: Check for restore parameter from email links
@@ -463,7 +473,7 @@ const Index = () => {
     if (restoreParam) {
       try {
         const restoredData = JSON.parse(atob(restoreParam));
-        const restoredStep = restoredData.step || 3;
+        const restoredStep = getNormalizedRestoreStep(restoredData);
         console.log('🔗 Initializing with restored step:', restoredStep);
         
         // Save to localStorage with timestamp
@@ -537,7 +547,7 @@ const Index = () => {
       try {
         // Parse the restore data to get the intended step
         const restoredData = JSON.parse(atob(restoreParam));
-        const targetStep = restoredData.step || 3;
+        const targetStep = getNormalizedRestoreStep(restoredData);
         
         // Update URL to remove restore param but keep step
         const newSearchParams = new URLSearchParams();
