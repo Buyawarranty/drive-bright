@@ -65,6 +65,7 @@ import { CancellationsTab } from './CancellationsTab';
 import { RemindMePopover } from './leads/RemindMePopover';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
+import { AddClaimDialog } from './claims/AddClaimDialog';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
