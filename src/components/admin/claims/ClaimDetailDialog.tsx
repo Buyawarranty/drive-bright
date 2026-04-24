@@ -380,37 +380,87 @@ export const ClaimDetailDialog: React.FC<ClaimDetailDialogProps> = ({ claim, ope
                 </>
               )}
 
-              {/* Attachment */}
-              {claim.file_url && claim.file_name && (
-                <>
-                  <Separator />
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                      <Paperclip className="h-5 w-5" />
-                      Attachment
-                    </h3>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Paperclip className="h-4 w-4 text-gray-400" />
-                        <span>{claim.file_name}</span>
-                        {claim.file_size && (
-                          <span className="text-sm text-gray-500">
-                            ({(claim.file_size / 1024).toFixed(2)} KB)
-                          </span>
-                        )}
+              {/* Attachments (multi-file aware) */}
+              {(() => {
+                const rawList: any[] = Array.isArray(claim.file_urls) ? claim.file_urls : [];
+                const normalized = rawList
+                  .map((f: any) => ({
+                    url: f?.publicUrl || f?.url,
+                    name: f?.name || 'attachment',
+                    size: f?.size,
+                    type: f?.type,
+                  }))
+                  .filter((f) => !!f.url);
+                // Fallback to legacy single-file fields if nothing in file_urls
+                const attachments = normalized.length > 0
+                  ? normalized
+                  : (claim.file_url && claim.file_name
+                      ? [{ url: claim.file_url, name: claim.file_name, size: claim.file_size, type: undefined }]
+                      : []);
+                if (attachments.length === 0) return null;
+                const isImage = (a: any) =>
+                  (a.type && a.type.startsWith('image/')) ||
+                  /\.(jpe?g|png|gif|webp|heic|bmp)$/i.test(a.name || '');
+                return (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <Paperclip className="h-5 w-5" />
+                        Attachments
+                        <Badge variant="secondary" className="ml-1">{attachments.length}</Badge>
+                      </h3>
+                      <div className="space-y-2">
+                        {attachments.map((a, idx) => (
+                          <div key={idx} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3 min-w-0">
+                              {isImage(a) ? (
+                                <a href={a.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                                  <img
+                                    src={a.url}
+                                    alt={a.name}
+                                    className="h-12 w-12 object-cover rounded border"
+                                    loading="lazy"
+                                  />
+                                </a>
+                              ) : (
+                                <div className="h-12 w-12 flex items-center justify-center bg-white border rounded shrink-0">
+                                  <Paperclip className="h-5 w-5 text-gray-400" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <a
+                                  href={a.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block truncate text-sm font-medium text-blue-600 hover:underline"
+                                  title={a.name}
+                                >
+                                  {a.name}
+                                </a>
+                                {a.size ? (
+                                  <span className="text-xs text-gray-500">
+                                    {(a.size / 1024).toFixed(1)} KB
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Button variant="ghost" size="sm" asChild>
+                                <a href={a.url} target="_blank" rel="noopener noreferrer">View</a>
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => downloadFile(a.url, a.name)}>
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => downloadFile(claim.file_url, claim.file_name)}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                );
+              })()}
 
               {/* Payment Information */}
               {(claim.status === 'approved' || claim.status === 'paid') && claim.payment_amount > 0 && (
