@@ -10,6 +10,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface ClaimFile {
+  name: string;
+  size: number;
+  type: string;
+  data: string; // base64 data URL
+}
+
 interface ClaimSubmissionRequest {
   name: string;
   email: string;
@@ -21,12 +28,10 @@ interface ClaimSubmissionRequest {
   faultDetails?: string;
   issueTiming?: string;
   additionalInfo?: string;
-  file?: {
-    name: string;
-    size: number;
-    type: string;
-    data: string;
-  };
+  /** Legacy single-file field (still accepted for backward compatibility) */
+  file?: ClaimFile;
+  /** Preferred: multiple attachments */
+  files?: ClaimFile[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
