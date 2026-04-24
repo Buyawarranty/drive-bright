@@ -1218,16 +1218,38 @@ export const UserPermissionsTab = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {(user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
-                      </Badge>
-                    ) : user.role === 'blog_writer' ? (
-                      <Badge variant="outline">2 tabs</Badge>
+                    {canExpand ? (
+                      <button
+                        type="button"
+                        onClick={() => setExpandedPermsUserId(isExpanded ? null : user.id)}
+                        className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                        title={isExpanded ? 'Hide permission tickboxes' : 'Show & edit permission tickboxes'}
+                      >
+                        {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                        {(user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 cursor-pointer">
+                            {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
+                          </Badge>
+                        ) : user.role === 'blog_writer' ? (
+                          <Badge variant="outline" className="cursor-pointer">2 tabs</Badge>
+                        ) : (
+                          <Badge variant="outline" className="cursor-pointer">
+                            {countActiveTabPermissions(user.permissions || {})} tabs
+                          </Badge>
+                        )}
+                      </button>
                     ) : (
-                      <Badge variant="outline">
-                        {countActiveTabPermissions(user.permissions || {})} tabs
-                      </Badge>
+                      (user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
+                        </Badge>
+                      ) : user.role === 'blog_writer' ? (
+                        <Badge variant="outline">2 tabs</Badge>
+                      ) : (
+                        <Badge variant="outline">
+                          {countActiveTabPermissions(user.permissions || {})} tabs
+                        </Badge>
+                      )
                     )}
                   </TableCell>
                   <TableCell>
