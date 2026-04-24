@@ -1970,7 +1970,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           )}
           
           <p className="text-lg font-medium text-gray-600 mb-4 flex items-center gap-2">
-            <Wrench className="w-5 h-5 flex-shrink-0" /> Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗
+            <Wrench className="w-5 h-5 flex-shrink-0" /> Set your claim limit and cover repairs up to your car's <span className="font-bold">full value</span>. 🚗
           </p>
 
           {/* Claim Limit Tier Cards */}
