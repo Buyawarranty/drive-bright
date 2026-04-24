@@ -369,14 +369,12 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     };
 
-    if (fileBase64Content && fileName) {
-      emailPayload.attachments = [
-        {
-          filename: fileName,
-          content: fileBase64Content,
-        }
-      ];
-      console.log('Adding attachment to email:', fileName);
+    if (uploadedAttachments.length > 0) {
+      emailPayload.attachments = uploadedAttachments.map(a => ({
+        filename: a.name,
+        content: a.base64,
+      }));
+      console.log(`Adding ${uploadedAttachments.length} attachment(s) to email`);
     }
 
     const emailResponse = await resend.emails.send(emailPayload);
