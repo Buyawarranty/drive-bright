@@ -36,6 +36,7 @@ import { EditOrderButton } from './EditOrderButton';
 import { MOTHistorySection } from './MOTHistorySection';
 import { W2000DataPreview } from './W2000DataPreview';
 import { SendNotificationDialog } from './SendNotificationDialog';
+import { RecentEmailsDialog } from './RecentEmailsDialog';
 import { ViewAsCustomerButton } from './ViewAsCustomerButton';
 import { AddIncompleteCustomerDialog } from './AddIncompleteCustomerDialog';
 import { CustomerTagsManager } from './CustomerTagsManager';
@@ -3579,6 +3580,10 @@ export const CustomersTab = ({
                                     <Printer className="h-4 w-4 mr-1" />
                                     Print Letter
                                   </Button>
+                                  <RecentEmailsDialog
+                                    customerEmail={selectedCustomer.email}
+                                    customerName={selectedCustomer.name}
+                                  />
                                   <SendNotificationDialog 
                                     customerId={selectedCustomer.id}
                                     customerName={selectedCustomer.name}
