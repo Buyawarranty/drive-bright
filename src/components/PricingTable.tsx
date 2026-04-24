@@ -1326,8 +1326,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           {/* Back button + Heading row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
             {/* Mobile: Centered heading */}
-            <div className="flex items-center justify-center gap-2 sm:hidden">
-              <h1 className="text-xl font-bold text-foreground">
+            <div className="flex items-center justify-center gap-2 sm:hidden w-full">
+              <h1 className="text-xl font-bold text-foreground text-center w-full">
                 One complete warranty. Tailored to you.
               </h1>
             </div>
