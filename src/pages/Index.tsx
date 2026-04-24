@@ -918,25 +918,30 @@ const Index = () => {
     }
   }, [vehicleData, selectedPlan, saveStateToLocalStorage]);
   
-  // Reset state when navigating to homepage without step param (e.g., from header logo)
+  // Reset state when navigating to homepage without any journey/restore params (e.g., from header logo)
   useEffect(() => {
     const stepParam = searchParams.get('step');
+    const restoreParam = searchParams.get('restore');
+    const quoteParam = searchParams.get('quote');
+    const emailParam = searchParams.get('email');
     const pathname = window.location.pathname;
-    
-    // If we're on "/" without a step param and localStorage was cleared, reset UI state
-    if (pathname === '/' && !stepParam) {
-      const savedVehicleData = localStorage.getItem('warrantyVehicleData');
-      const savedFormData = localStorage.getItem('warrantyFormData');
-      
-      // If localStorage was cleared (by logo click), reset all state
-      if (!savedVehicleData && !savedFormData && (vehicleData || currentStep > 1)) {
-        console.log('🏠 Resetting state after logo navigation');
-        setVehicleData(null);
-        setSelectedPlan(null);
-        setCurrentStep(1);
-      }
+
+    // Never reset while restoring/resuming a quote from URL params
+    if (pathname !== '/' || stepParam || restoreParam || (quoteParam && emailParam)) {
+      return;
     }
-  }, [searchParams]);
+
+    const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
+    const savedFormData = localStorage.getItem('buyawarranty_formData');
+
+    // If localStorage was cleared (by logo click), reset all state
+    if (!savedVehicleData && !savedFormData && (vehicleData || currentStep > 1)) {
+      console.log('🏠 Resetting state after logo navigation');
+      setVehicleData(null);
+      setSelectedPlan(null);
+      setCurrentStep(1);
+    }
+  }, [searchParams, vehicleData, currentStep]);
   
   
   useEffect(() => {
