@@ -74,6 +74,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
   loading,
 }) => {
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
 
   if (groupedClaims.length === 0) {
     return (
