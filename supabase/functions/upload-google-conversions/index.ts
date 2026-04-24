@@ -222,9 +222,10 @@ Deno.serve(async (req) => {
           logStep(`❌ Failed conversion for ${record.id}`, errorMsg);
         }
       } catch (err) {
+        const msg = (err as Error)?.message ?? String(err);
         failed++;
-        errors.push(`${record.id}: ${err.message}`);
-        logStep(`❌ Error uploading ${record.id}`, err.message);
+        errors.push(`${record.id}: ${msg}`);
+        logStep(`❌ Error uploading ${record.id}`, msg);
       }
     }
 
