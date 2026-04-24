@@ -174,6 +174,8 @@ export const UserPermissionsTab = () => {
   const [settingPassword, setSettingPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [expandedPermsUserId, setExpandedPermsUserId] = useState<string | null>(null);
+  const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
