@@ -271,11 +271,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (emailRequest.vehicleReg) {
       // Determine target step based on trigger type
-      // Step 2 emails go to step 2, Step 3 emails go to step 3, checkout abandoned goes to step 4
-      let targetStep = 2;
-      if (emailRequest.triggerType === 'plan_selected' || emailRequest.triggerType === 'pricing_page_view_24h' || emailRequest.triggerType === 'pricing_page_view_72h') {
-        targetStep = 3;
-      } else if (emailRequest.triggerType === 'checkout_abandoned') {
+      // All quote/pricing emails resume at Step 3 (plans) so users can view & complete their saved quote
+      // Checkout abandoned goes straight to Step 4 (checkout)
+      let targetStep = 3;
+      if (emailRequest.triggerType === 'checkout_abandoned') {
         targetStep = 4;
       }
       

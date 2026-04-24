@@ -526,11 +526,13 @@ const Index = () => {
   const [isRestoring, setIsRestoring] = useState(() => !!searchParams.get('restore'));
 
   // CRITICAL: Clean up restore parameter from URL after state initialization
+  // Only clean up AFTER vehicleData is confirmed in state — otherwise we'd lose the
+  // ability to recover if the page reloads before localStorage is written.
   useEffect(() => {
     const restoreParam = searchParams.get('restore');
     
-    if (restoreParam && !isRestoringFromUrl) {
-      console.log('🔗 Cleaning up restore parameter from URL after restoration');
+    if (restoreParam && !isRestoringFromUrl && vehicleData) {
+      console.log('🔗 Cleaning up restore parameter from URL after restoration (vehicleData confirmed)');
       
       try {
         // Parse the restore data to get the intended step
@@ -553,7 +555,7 @@ const Index = () => {
         setSearchParams(newSearchParams, { replace: true });
       }
     }
-  }, [isRestoringFromUrl]); // Run when restoration completes
+  }, [isRestoringFromUrl, vehicleData]); // Run when restoration completes AND vehicleData is set
   
   useEffect(() => {
     if (isRestoringFromUrl) {
