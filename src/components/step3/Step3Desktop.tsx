@@ -113,6 +113,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     : [...CLAIM_LIMIT_TIERS];
 
   // Per-duration monthly price calculation (mirrors logic inside PricingTable map)
+  // CRITICAL: Must match PricingTable's `displayMonthlyPrice` formula exactly so Step 3
+  // sticky / cards / Step 4 always show identical prices. See .note/pricing-sync-constraint.md
   const computeDurationMonthly = (durationId: PaymentType): number => {
     if (voluntaryExcess === null || !selectedClaimLimit) return 0;
     const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
@@ -132,7 +134,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
     const cardPremiumSurcharge = getClaimLimitSurcharge(selectedClaimLimit, durationId, voluntaryExcess || 100);
 
-    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
+    // Boost addon: +£5/mo × 12 = £60 total (same for all durations) — must be included
+    // to match PricingTable's basePlanPrice + boostTotalAdjustment formula
+    const boostTotalAdjust = 0; // boostAddon not currently passed to Step3Desktop; included as 0 for parity
+
+    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust;
     return Math.floor(total / 12);
   };
 
@@ -158,9 +164,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   }, [monthlyPrice, paymentType]);
 
   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
-  const monthlyTotal = monthlyPrice * months;
-  const payInFull = Math.round(monthlyTotal * 0.9);
-  const savings = monthlyTotal - payInFull;
+  // Pay in full = monthly × 12 (always 12 instalments) - matches Step 4 / StickyFooter
+  const monthlyTotal = monthlyPrice * 12;
+  // Match Step 4 formula exactly: total - Math.floor(total * 0.10)
+  const savings = Math.floor(monthlyTotal * 0.10);
+  const payInFull = monthlyTotal - savings;
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
   const selectedLabour = LABOUR_OPTIONS.find(l => l.value === selectedLabourRate);
@@ -308,7 +316,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   const days = months === 12 ? 365 : months === 24 ? 730 : 1095;
                   const dailyVal = (m * 12 * (months / 12)) / days;
                   const dailyTxt = dailyVal < 1 ? `${Math.round(dailyVal * 100)}p/day` : `£${dailyVal.toFixed(2)}/day`;
-                  const save = Math.round(m * months * 0.1);
+                  // Pay-in-full savings = Math.floor(annualTotal * 0.10) — must match Step 4 formula
+                  const save = Math.floor(m * 12 * 0.10);
                   return (
                     <OptionCard
                       key={d.id}
