@@ -141,38 +141,62 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Risk data:', { purchaseMileage, warrantyStartDate, daysOnRisk, mileageDriven });
     }
 
-    let fileUrl = null;
-    let fileName = null;
-    let fileSize = null;
-    let fileBase64Content = null;
+    // Build a unified list of incoming files (legacy `file` + new `files[]`).
+    const incomingFiles: ClaimFile[] = [];
+    if (Array.isArray(files)) incomingFiles.push(...files.filter(Boolean));
+    if (file && file.data) incomingFiles.push(file);
 
-    // Handle file upload if present
-    if (file && file.data) {
+    // Each entry stored in DB
+    const uploadedAttachments: Array<{ url: string; name: string; size: number; type: string }> = [];
+    // Each entry kept in memory to attach to the staff email
+    const emailAttachments: Array<{ filename: string; content: string }> = [];
+
+    // Legacy single-file fields (kept for backward-compat with old admin UI)
+    let fileUrl: string | null = null;
+    let fileName: string | null = null;
+    let fileSize: number | null = null;
+
+    for (const f of incomingFiles) {
+      if (!f || !f.data) continue;
       try {
-        fileBase64Content = file.data.split(',')[1];
-        const binaryString = atob(fileBase64Content);
+        const base64Content = f.data.includes(',') ? f.data.split(',')[1] : f.data;
+        const binaryString = atob(base64Content);
         const fileData = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          fileData[i] = binaryString.charCodeAt(i);
-        }
+        for (let i = 0; i < binaryString.length; i++) fileData[i] = binaryString.charCodeAt(i);
+
         const timestamp = Date.now();
-        const uniqueFileName = `${timestamp}-${file.name}`;
+        const safeName = (f.name || 'attachment').replace(/[^A-Za-z0-9._-]/g, '_');
+        const uniqueFileName = `${timestamp}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('policy-documents')
           .upload(`claim-attachments/${uniqueFileName}`, fileData, {
-            contentType: file.type,
+            contentType: f.type || 'application/octet-stream',
           });
 
         if (uploadError) {
-          console.error('File upload error:', uploadError);
-        } else {
-          fileUrl = uploadData.path;
-          fileName = file.name;
-          fileSize = file.size;
-          console.log('File uploaded successfully:', fileUrl);
+          console.error('File upload error for', f.name, uploadError);
+          continue;
+        }
+
+        const storedPath = uploadData.path;
+        uploadedAttachments.push({
+          url: storedPath,
+          name: f.name,
+          size: f.size,
+          type: f.type || 'application/octet-stream',
+        });
+        emailAttachments.push({ filename: f.name, content: base64Content });
+        console.log('File uploaded successfully:', storedPath);
+
+        // Populate legacy single-file fields with the FIRST successful upload
+        if (!fileUrl) {
+          fileUrl = storedPath;
+          fileName = f.name;
+          fileSize = f.size;
         }
       } catch (fileError) {
-        console.error('Error processing file:', fileError);
+        console.error('Error processing file', f?.name, fileError);
       }
     }
 
