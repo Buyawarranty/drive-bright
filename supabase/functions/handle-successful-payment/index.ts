@@ -1170,6 +1170,10 @@ serve(async (req) => {
           if (leadSource === 'google_ad') sourcePrefix = 'S-G';
           else if (leadSource === 'social_ad') sourcePrefix = 'S-F';
 
+          const leadCreatedAt = (matchedLead as any).created_at
+            ? new Date((matchedLead as any).created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : '';
+
           // Build agent sale notification email
           const agentSaleHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
