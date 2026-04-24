@@ -222,6 +222,13 @@ const handler = async (req: Request): Promise<Response> => {
           file_url: fileUrl,
           file_name: fileName,
           file_size: fileSize,
+          file_urls: uploadedAttachments.map(a => ({
+            url: a.url,
+            publicUrl: a.publicUrl,
+            name: a.name,
+            size: a.size,
+            type: a.type,
+          })),
           status: 'new',
           vehicle_registration: vehicleReg || null,
           mileage_at_claim: currentMileage || null,
