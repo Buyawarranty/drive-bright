@@ -153,48 +153,78 @@ const Claims = () => {
     }
   };
 
-  const acceptFile = async (file: File) => {
+  const MAX_FILES = 10;
+
+  const acceptFile = async (file: File): Promise<File | null> => {
     // Loose type check (some mobile browsers send empty type for HEIC, etc.)
     const lowerName = file.name.toLowerCase();
     const extOk = /\.(pdf|doc|docx|jpe?g|png|heic|heif|webp)$/i.test(lowerName);
     if (file.type && !ALLOWED_TYPES.includes(file.type) && !extOk) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF, DOC, DOCX, JPG, PNG or HEIC file.",
+        description: `${file.name}: Please upload a PDF, DOC, DOCX, JPG, PNG or HEIC file.`,
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     let finalFile = file;
     if (file.type.startsWith('image/') && file.size > 5 * 1024 * 1024) {
-      toast({ title: "Optimising your photo…", description: "Shrinking the image so it uploads quickly." });
       finalFile = await compressImageIfNeeded(file, 5);
     }
 
     if (finalFile.size > MAX_FILE_SIZE) {
       toast({
         title: "File too large",
-        description: "Please upload a file smaller than 20MB.",
+        description: `${file.name}: Please upload files smaller than 20MB.`,
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    return finalFile;
+  };
+
+  const acceptFiles = async (files: FileList | File[]) => {
+    const incoming = Array.from(files);
+    const remaining = MAX_FILES - uploadedFiles.length;
+    if (remaining <= 0) {
+      toast({
+        title: "Attachment limit reached",
+        description: `You can attach up to ${MAX_FILES} files per claim.`,
         variant: "destructive",
       });
       return;
     }
-
-    setUploadedFile(finalFile);
+    const toProcess = incoming.slice(0, remaining);
+    if (incoming.length > remaining) {
+      toast({
+        title: "Some files skipped",
+        description: `Only the first ${remaining} file(s) were added (max ${MAX_FILES} per claim).`,
+      });
+    }
+    if (toProcess.some(f => f.type.startsWith('image/') && f.size > 5 * 1024 * 1024)) {
+      toast({ title: "Optimising your photos…", description: "Shrinking large images so they upload quickly." });
+    }
+    const processed: File[] = [];
+    for (const f of toProcess) {
+      const ok = await acceptFile(f);
+      if (ok) processed.push(ok);
+    }
+    if (processed.length) {
+      setUploadedFiles(prev => [...prev, ...processed]);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) await acceptFile(file);
+    const files = e.target.files;
+    if (files && files.length > 0) await acceptFiles(files);
+    // reset input so the same file can be reselected later
+    e.target.value = '';
   };
 
-  const removeFile = () => {
-    setUploadedFile(null);
-    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -216,7 +246,7 @@ const Claims = () => {
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      await acceptFile(files[0]);
+      await acceptFiles(files);
     }
   };
 
