@@ -4610,6 +4610,18 @@ Please log in and change your password after first login.`;
                             paymentDueDate={(customer as any).payment_due_date}
                             onUpdate={fetchCustomers}
                           />
+                          {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => { e.stopPropagation(); setAddClaimCustomer(customer); }}
+                              className="h-5 px-1.5 text-[10px] gap-1 text-amber-700 hover:text-amber-900 hover:bg-amber-50 border border-amber-300 rounded"
+                              title="Add claim for this customer"
+                            >
+                              <FileText className="h-3 w-3" />
+                              + Claim
+                            </Button>
+                          )}
                         </div>
                         <InlineFutureActivationEdit
                           customerId={customer.id}
