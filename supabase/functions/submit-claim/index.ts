@@ -10,6 +10,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface ClaimFile {
+  name: string;
+  size: number;
+  type: string;
+  data: string;
+}
+
 interface ClaimSubmissionRequest {
   name: string;
   email: string;
@@ -21,12 +28,8 @@ interface ClaimSubmissionRequest {
   faultDetails?: string;
   issueTiming?: string;
   additionalInfo?: string;
-  file?: {
-    name: string;
-    size: number;
-    type: string;
-    data: string;
-  };
+  file?: ClaimFile;
+  files?: ClaimFile[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
