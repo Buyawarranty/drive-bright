@@ -113,10 +113,10 @@ function normalizePaymentType(pt: string): "monthly" | "yearly" | "two_yearly" |
 function getBasePriceFromPlan(plan: any, paymentType: string): number {
   switch (normalizePaymentType(paymentType)) {
     case "monthly": return Number(plan.monthly_price ?? 0) * 12; // monthly price × 12 = total contract value
-    case "two_yearly": return Number(plan.two_yearly_price ?? (Number(plan.yearly_price ?? 0) * 2) ?? 0);
-    case "three_yearly": return Number(plan.three_yearly_price ?? (Number(plan.yearly_price ?? 0) * 3) ?? 0);
+    case "two_yearly": return Number(plan.two_yearly_price ?? (Number(plan.yearly_price ?? 0) * 2));
+    case "three_yearly": return Number(plan.three_yearly_price ?? (Number(plan.yearly_price ?? 0) * 3));
     case "yearly":
-    default: return Number(plan.yearly_price ?? (Number(plan.monthly_price ?? 0) * 12) ?? 0);
+    default: return Number(plan.yearly_price ?? (Number(plan.monthly_price ?? 0) * 12));
   }
 }
 
