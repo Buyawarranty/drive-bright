@@ -268,6 +268,19 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                     </div>
                   </TableCell>
                 </TableRow>
+                {/* Expandable customer submission sub-row */}
+                {expandedSubmissionId === claim.id && claim.message && (
+                  <TableRow className="bg-blue-50/40">
+                    <TableCell colSpan={12} className="p-0">
+                      <div className="px-4 py-3 border-l-4 border-blue-400">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-blue-800 mb-1">Customer Submission</div>
+                        <div className="text-sm text-foreground whitespace-pre-line leading-relaxed">
+                          {claim.message}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
                 {/* Expandable notes sub-row */}
                 {expandedNoteId === claim.id && (
                   <TableRow className="bg-muted/20">
