@@ -554,6 +554,7 @@ export const UserPermissionsTab = () => {
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
     if (role === 'lead_gen') return 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
+    if (role === 'claims_agent') return 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600';
     return '';
   };
 
