@@ -87,8 +87,8 @@ export const SendNotificationDialog = ({
         body: {
           recipientEmail: customerEmail,
           customerId: customerId,
-          subject: emailSubject,
-          html: htmlContent,
+          customSubject: emailSubject,
+          customHtml: htmlContent,
         },
       });
 
