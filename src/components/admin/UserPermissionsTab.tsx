@@ -530,6 +530,7 @@ export const UserPermissionsTab = () => {
       case 'blog_writer': return <UserPlus className="h-4 w-4" />;
       case 'sales': return <Users className="h-4 w-4" />;
       case 'dev_tester': return <TestTube className="h-4 w-4" />;
+      case 'claims_agent': return <FileText className="h-4 w-4" />;
       default: return <UserPlus className="h-4 w-4" />;
     }
   };
