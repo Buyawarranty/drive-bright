@@ -223,6 +223,7 @@ const handler = async (req: Request): Promise<Response> => {
           file_url: fileUrl,
           file_name: fileName,
           file_size: fileSize,
+          file_urls: uploadedAttachments,
           status: 'new',
           vehicle_registration: vehicleReg || null,
           mileage_at_claim: currentMileage || null,
