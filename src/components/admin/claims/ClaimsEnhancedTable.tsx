@@ -185,12 +185,22 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                     </span>
                   </TableCell>
 
-                  {/* Customer Message */}
+                  {/* Customer Submission (collapsible) */}
                   <TableCell className="py-2 align-top">
                     {claim.message ? (
-                      <div className="text-xs text-foreground whitespace-pre-line max-w-[280px] leading-relaxed" title={claim.message}>
-                        {claim.message}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSubmissionId(expandedSubmissionId === claim.id ? null : claim.id)}
+                        className="flex items-start gap-1 text-left text-xs text-foreground hover:text-blue-600 max-w-[260px] group"
+                        title="Click to expand"
+                      >
+                        {expandedSubmissionId === claim.id ? (
+                          <ChevronDown className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground group-hover:text-blue-600" />
+                        ) : (
+                          <ChevronRight className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground group-hover:text-blue-600" />
+                        )}
+                        <span className="truncate block">{claim.message.split('\n')[0]}</span>
+                      </button>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
