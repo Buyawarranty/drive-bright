@@ -388,6 +388,7 @@ export const CustomersTab = ({
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
   const [trustpilotReviewCustomer, setTrustpilotReviewCustomer] = useState<Customer | null>(null);
+  const [addClaimCustomer, setAddClaimCustomer] = useState<Customer | null>(null);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [archiveSimpleConfirm, setArchiveSimpleConfirm] = useState(false);
   const [archiveCustomers, setArchiveCustomers] = useState<Array<{
