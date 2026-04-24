@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { useAuth } from '@/hooks/useAuth';
@@ -143,6 +143,8 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_timesheets': true,
     'tab_customers_view': true,
   },
+  // Claims Agent: same tab access as admin (filtered) + full Claims access
+  claims_agent: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: {},
   guest: {},
@@ -163,7 +165,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent',
     permissions: {} as Record<string, boolean>
   });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -172,6 +174,8 @@ export const UserPermissionsTab = () => {
   const [settingPassword, setSettingPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [expandedPermsUserId, setExpandedPermsUserId] = useState<string | null>(null);
+  const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -261,7 +265,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen'] as const;
+      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen', 'claims_agent'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -528,6 +532,7 @@ export const UserPermissionsTab = () => {
       case 'blog_writer': return <UserPlus className="h-4 w-4" />;
       case 'sales': return <Users className="h-4 w-4" />;
       case 'dev_tester': return <TestTube className="h-4 w-4" />;
+      case 'claims_agent': return <FileText className="h-4 w-4" />;
       default: return <UserPlus className="h-4 w-4" />;
     }
   };
@@ -552,6 +557,7 @@ export const UserPermissionsTab = () => {
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
     if (role === 'lead_gen') return 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
+    if (role === 'claims_agent') return 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600';
     return '';
   };
 
@@ -684,6 +690,30 @@ export const UserPermissionsTab = () => {
       </div>
     </div>
   );
+
+  // Inline auto-save toggle for super admin: flip a single tab permission and persist
+  const toggleInlineTabPerm = async (targetUser: AdminUser, tabId: string, nextValue: boolean) => {
+    const permKey = `tab_${tabId}`;
+    const nextPerms = { ...(targetUser.permissions || {}), [permKey]: nextValue };
+
+    // Optimistic update
+    setUsers(prev => prev.map(u => u.id === targetUser.id ? { ...u, permissions: nextPerms } : u));
+    setSavingPermsUserId(targetUser.id);
+
+    try {
+      const { error } = await supabase
+        .from('admin_users')
+        .update({ permissions: nextPerms })
+        .eq('id', targetUser.id);
+      if (error) throw error;
+    } catch (err: any) {
+      // Rollback on failure
+      setUsers(prev => prev.map(u => u.id === targetUser.id ? { ...u, permissions: targetUser.permissions } : u));
+      toast.error('Failed to update permission: ' + (err.message || 'unknown error'));
+    } finally {
+      setSavingPermsUserId(null);
+    }
+  };
 
   if (loading) {
     return <div className="flex items-center justify-center p-8">Loading...</div>;
@@ -896,6 +926,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
+                    <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -1086,6 +1117,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
+                    <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1139,8 +1171,12 @@ export const UserPermissionsTab = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id} data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
+              {users.map((user) => {
+                const isExpanded = expandedPermsUserId === user.id;
+                const canExpand = currentAdminUser?.role === 'super_admin';
+                return (
+                <React.Fragment key={user.id}>
+                <TableRow data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
                   <TableCell>
                     <Checkbox
                       checked={selectedUsers.has(user.id)}
@@ -1178,20 +1214,42 @@ export const UserPermissionsTab = () => {
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.role)} className={`flex items-center gap-1 w-fit ${getRoleBadgeClassName(user.role)}`}>
                       {getRoleIcon(user.role)}
-                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role}
+                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role === 'claims_agent' ? 'Claims Agent' : user.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {(user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
-                      </Badge>
-                    ) : user.role === 'blog_writer' ? (
-                      <Badge variant="outline">2 tabs</Badge>
+                    {canExpand ? (
+                      <button
+                        type="button"
+                        onClick={() => setExpandedPermsUserId(isExpanded ? null : user.id)}
+                        className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                        title={isExpanded ? 'Hide permission tickboxes' : 'Show & edit permission tickboxes'}
+                      >
+                        {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                        {(user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 cursor-pointer">
+                            {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
+                          </Badge>
+                        ) : user.role === 'blog_writer' ? (
+                          <Badge variant="outline" className="cursor-pointer">2 tabs</Badge>
+                        ) : (
+                          <Badge variant="outline" className="cursor-pointer">
+                            {countActiveTabPermissions(user.permissions || {})} tabs
+                          </Badge>
+                        )}
+                      </button>
                     ) : (
-                      <Badge variant="outline">
-                        {countActiveTabPermissions(user.permissions || {})} tabs
-                      </Badge>
+                      (user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
+                        </Badge>
+                      ) : user.role === 'blog_writer' ? (
+                        <Badge variant="outline">2 tabs</Badge>
+                      ) : (
+                        <Badge variant="outline">
+                          {countActiveTabPermissions(user.permissions || {})} tabs
+                        </Badge>
+                      )
                     )}
                   </TableCell>
                   <TableCell>
@@ -1256,7 +1314,56 @@ export const UserPermissionsTab = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+                {isExpanded && canExpand && (
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableCell colSpan={8} className="p-0">
+                      <div className="px-6 py-4 border-l-4 border-primary">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-sm font-semibold">Tab Access for {user.first_name} {user.last_name}</p>
+                            <p className="text-xs text-muted-foreground">Tick to grant, untick to revoke. Changes save instantly.</p>
+                          </div>
+                          {savingPermsUserId === user.id && (
+                            <Badge variant="outline" className="text-xs">Saving…</Badge>
+                          )}
+                        </div>
+                        {(user.role === 'super_admin' || user.role === 'dev_tester') ? (
+                          <p className="text-xs text-muted-foreground italic">This role automatically has access to all tabs and cannot be restricted here.</p>
+                        ) : (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[360px] overflow-y-auto">
+                            {ADMIN_TABS.map((tab) => {
+                              const permKey = `tab_${tab.id}`;
+                              const perms = (user.permissions || {}) as Record<string, boolean>;
+                              // For 'admin' role: default ON unless explicitly false
+                              const isChecked = user.role === 'admin'
+                                ? !(permKey in perms && perms[permKey] === false)
+                                : perms[permKey] === true;
+                              const inputId = `inline-${user.id}-${permKey}`;
+                              return (
+                                <label
+                                  key={tab.id}
+                                  htmlFor={inputId}
+                                  className={`flex items-start gap-2 p-2 rounded border cursor-pointer transition-colors ${isChecked ? 'bg-primary/5 border-primary/30' : 'bg-background hover:bg-muted/50'}`}
+                                >
+                                  <Checkbox
+                                    id={inputId}
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => toggleInlineTabPerm(user, tab.id, checked === true)}
+                                    className="mt-0.5"
+                                  />
+                                  <span className="text-xs font-medium leading-tight">{tab.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                </React.Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
