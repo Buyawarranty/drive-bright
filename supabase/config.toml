@@ -20,6 +20,9 @@ verify_jwt = false
 [functions.schedule-abandoned-cart-emails] 
 verify_jwt = false
 
+[functions.capture-facebook-lead]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
