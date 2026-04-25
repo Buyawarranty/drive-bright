@@ -37,7 +37,7 @@ const Claims = () => {
     dateOccurred: '',
     faultDetails: '',
     issueTiming: '',
-    currentMileage: 50000,
+    currentMileage: 0,
     additionalInfo: ''
   });
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
