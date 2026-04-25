@@ -37,7 +37,7 @@ const Claims = () => {
     dateOccurred: '',
     faultDetails: '',
     issueTiming: '',
-    currentMileage: 50000,
+    currentMileage: 0,
     additionalInfo: ''
   });
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -411,7 +411,7 @@ Additional Information: ${formData.additionalInfo}
         dateOccurred: '',
         faultDetails: '',
         issueTiming: '',
-        currentMileage: 50000,
+        currentMileage: 0,
         additionalInfo: ''
       });
       setUploadedFiles([]);
@@ -678,7 +678,7 @@ Additional Information: ${formData.additionalInfo}
                               name="currentMileage"
                               type="text"
                               inputMode="numeric"
-                              placeholder="e.g. 45,000"
+                              placeholder="Enter mileage"
                               value={formData.currentMileage ? formData.currentMileage.toLocaleString('en-GB') : ''}
                               onChange={(e) => {
                                 const digits = e.target.value.replace(/[^0-9]/g, '');
