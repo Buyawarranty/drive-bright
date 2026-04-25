@@ -411,7 +411,7 @@ Additional Information: ${formData.additionalInfo}
         dateOccurred: '',
         faultDetails: '',
         issueTiming: '',
-        currentMileage: 50000,
+        currentMileage: 0,
         additionalInfo: ''
       });
       setUploadedFiles([]);
