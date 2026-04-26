@@ -2534,7 +2534,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             fullPrice={discountedStripePrice}
             savings={savings}
             isLoading={isLoading}
-            onPayClick={() => processPayment(selectedPayment || undefined)}
+            onPayClick={() => processPayment(selectedPaymentRef.current || selectedPayment || undefined)}
             onChangePlan={onBack}
             startDate={startDate}
             onPaymentChange={async (payment) => {
