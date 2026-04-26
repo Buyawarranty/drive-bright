@@ -56,7 +56,8 @@ export function UnwindsSection({ currentMonth, viewingUserId }: UnwindsSectionPr
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setRecords((data || []) as UnwindRecord[]);
+      const filtered = (data || []).filter((r: any) => !r.is_test_cancellation);
+      setRecords(filtered as UnwindRecord[]);
     } catch (err) {
       console.error('Error fetching unwinds:', err);
     } finally {
