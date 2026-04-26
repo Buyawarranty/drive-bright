@@ -105,9 +105,44 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
 
       for (const customer of customers) {
         try {
-          if (action === 'archive' || action === 'test' || action === 'fake' || action === 'duplicate') {
+          if (action === 'test') {
+            // Test cancellation: mark as Cancelled and flag is_test_cancellation,
+            // but DO NOT soft-delete and DO NOT show in real cancellations list.
+            // CancellationsTab "Real" view filters out is_test_cancellation = true.
+            const trimmedNote = (additionalNotes || '').trim();
+            const { error: customerError } = await supabase
+              .from('customers')
+              .update({
+                status: 'Cancelled',
+                is_test_cancellation: true,
+                cancellation_note: trimmedNote
+                  ? `[TEST CANCELLATION] ${trimmedNote}`
+                  : '[TEST CANCELLATION]',
+                cancellation_note_updated_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', customer.id);
+
+            if (customerError) throw customerError;
+
+            if (customer.policy_id) {
+              await supabase
+                .from('customer_policies')
+                .update({
+                  status: 'cancelled',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', customer.policy_id);
+
+              // Revoke portal access for test cancellations too
+              await supabase
+                .from('customer_policies')
+                .update({ user_id: null })
+                .eq('id', customer.policy_id);
+            }
+          } else if (action === 'archive' || action === 'fake' || action === 'duplicate') {
             // Soft delete - hide from view but keep in database
-            const statusUpdate = action === 'test' ? 'Test Purchase' : action === 'fake' ? 'Fake Lead' : action === 'duplicate' ? 'Duplicate' : undefined;
+            const statusUpdate = action === 'fake' ? 'Fake Lead' : action === 'duplicate' ? 'Duplicate' : undefined;
             
             const { error } = await supabase.rpc('soft_delete_customer', {
               customer_uuid: customer.id,
@@ -128,7 +163,6 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
               
               if (directError) throw directError;
             } else if (statusUpdate) {
-              // Update status to Test Purchase or Fake Lead
               await supabase
                 .from('customers')
                 .update({ status: statusUpdate })
@@ -137,7 +171,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             
             // Also archive related policies
             if (customer.policy_id) {
-              const policyStatus = action === 'test' ? 'test' : action === 'fake' ? 'fake_lead' : action === 'duplicate' ? 'duplicate' : undefined;
+              const policyStatus = action === 'fake' ? 'fake_lead' : action === 'duplicate' ? 'duplicate' : undefined;
               await supabase
                 .from('customer_policies')
                 .update({
