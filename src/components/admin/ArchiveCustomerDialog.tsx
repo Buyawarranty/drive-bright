@@ -241,7 +241,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       }
 
       if (successCount > 0) {
-        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test and archived' : action === 'fake' ? 'marked as fake lead and archived' : action === 'duplicate' ? 'marked as duplicate and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
+        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test cancellation (hidden from real cancellations)' : action === 'fake' ? 'marked as fake lead and archived' : action === 'duplicate' ? 'marked as duplicate and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
         toast.success(
           isBulk 
             ? `${successCount} customer(s) ${actionText} successfully`
