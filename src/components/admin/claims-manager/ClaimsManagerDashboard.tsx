@@ -1,25 +1,24 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useClaims } from '@/hooks/useClaims';
 import type { Claim } from '@/types/claim';
 import { UrgencyBanner } from './UrgencyBanner';
+import { ClaimsTable } from './ClaimsTable';
+import { ClaimDetailPanel } from './ClaimDetailPanel';
+import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
 
 interface KpiCardProps {
   label: string;
   value: string | number;
-  accent: string; // tailwind bg-* for top bar
-  valueClass?: string; // tailwind text-* for the number
+  accent: string;
+  valueClass?: string;
 }
 
 const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, valueClass = 'text-foreground' }) => (
   <div className="relative bg-card border border-border rounded-lg overflow-hidden shadow-sm">
     <div className={`h-[3px] w-full ${accent}`} />
     <div className="p-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <div className={`mt-2 text-3xl font-bold leading-none ${valueClass}`}>
-        {value}
-      </div>
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`mt-2 text-3xl font-bold leading-none ${valueClass}`}>{value}</div>
     </div>
   </div>
 );
@@ -29,11 +28,11 @@ interface KpiStripProps {
 }
 
 export const KpiStrip: React.FC<KpiStripProps> = ({ claims }) => {
-  const totalOpen = claims.filter(c => c.status !== 'closed').length;
-  const overdue = claims.filter(c => c.status === 'overdue').length;
-  const needEvidence = claims.filter(c => c.status === 'evidence').length;
-  const inReview = claims.filter(c => c.status === 'review').length;
-  const highRisk = claims.filter(c => c.priority === 'critical').length;
+  const totalOpen = claims.filter((c) => c.status !== 'closed').length;
+  const overdue = claims.filter((c) => c.status === 'overdue').length;
+  const needEvidence = claims.filter((c) => c.status === 'evidence').length;
+  const inReview = claims.filter((c) => c.status === 'review').length;
+  const highRisk = claims.filter((c) => c.priority === 'critical').length;
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -48,12 +47,21 @@ export const KpiStrip: React.FC<KpiStripProps> = ({ claims }) => {
 };
 
 const ClaimsManagerDashboard: React.FC = () => {
-  const { claims, count } = useClaims();
+  const { claims } = useClaims();
+  const [filters, setFilters] = useState<ClaimsFilters>(DEFAULT_FILTERS);
+  const [selected, setSelected] = useState<Claim | null>(null);
+  const filtered = useMemo(() => applyFilters(claims, filters), [claims, filters]);
+
   return (
     <div className="p-6 space-y-4">
       <UrgencyBanner claims={claims} />
       <KpiStrip claims={claims} />
-      <p>Claims loaded: {count}</p>
+      <Toolbar filters={filters} onChange={setFilters} />
+      <div className="px-1 text-sm text-muted-foreground">
+        51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
+      </div>
+      <ClaimsTable claims={filtered} onRowClick={setSelected} selectedId={selected?.id ?? null} />
+      {selected && <ClaimDetailPanel claim={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 };
