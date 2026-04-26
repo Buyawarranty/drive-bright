@@ -245,8 +245,14 @@ export const CancellationsTab: React.FC<{
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
 
-    // Exclude test purchases (< £20) – these are admin/dev test transactions, not real cancellations/refunds
-    filtered = filtered.filter(r => (r.final_amount || 0) >= 20);
+    // Test cancellation filter — default hides explicit test cancellations.
+    // Also treat tiny historical "test" purchases (< £20, never flagged) as test
+    // when in 'real' mode, so existing dev rows stay hidden.
+    if (filterByTest === 'real') {
+      filtered = filtered.filter(r => !r.is_test_cancellation && (r.final_amount || 0) >= 20);
+    } else if (filterByTest === 'test') {
+      filtered = filtered.filter(r => r.is_test_cancellation || (r.final_amount || 0) < 20);
+    }
 
     // Role-based visibility: non-full-view users only see their own
     if (!canSeeAll) {
