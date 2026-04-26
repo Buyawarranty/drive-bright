@@ -1807,7 +1807,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               totalPrice={displayBumperTotal}
               isLoading={isLoading}
               onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
-              onPayClick={() => processPayment(selectedPayment || undefined)}
+              onPayClick={() => processPayment(selectedPaymentRef.current || selectedPayment || undefined)}
               onChangePlan={onBack}
               isMobile={true}
               startDate={startDate}
