@@ -335,7 +335,7 @@ export const ClaimsTab = ({
             variant="outline"
             size="sm"
             onClick={() => {
-              setActiveSubTab('claims');
+              setActiveSubTab('vehicle-intelligence');
               setTimeout(() => document.getElementById('claims-analytics-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
             }}
           >
