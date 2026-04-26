@@ -12,13 +12,19 @@ import { ClaimDetailDialog } from './claims/ClaimDetailDialog';
 import { ClaimAmountEditDialog } from './claims/ClaimAmountEditDialog';
 import { ClaimEmailDialog } from './claims/ClaimEmailDialog';
 import { AddClaimDialog } from './claims/AddClaimDialog';
-import { ClaimsTriageBlocks, getTriageFilterFn, TriageFilter } from './claims/ClaimsTriageBlocks';
-import { ClaimsFilterBar, getReadinessState } from './claims/ClaimsFilterBar';
-import { ClaimsEnhancedTable } from './claims/ClaimsEnhancedTable';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { RequestUpdateDialog } from './claims/RequestUpdateDialog';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
+// New Claims Manager UI
+import { useClaims } from '@/hooks/useClaims';
+import type { Claim } from '@/types/claim';
+import { UrgencyBanner } from './claims-manager/UrgencyBanner';
+import { KpiStrip } from './claims-manager/ClaimsManagerDashboard';
+import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './claims-manager/Toolbar';
+import { BulkActionsBar } from './claims-manager/BulkActionsBar';
+import { ClaimsTable } from './claims-manager/ClaimsTable';
+import { ClaimDetailPanel } from './claims-manager/ClaimDetailPanel';
 
 interface ClaimSubmission {
   id: string;
