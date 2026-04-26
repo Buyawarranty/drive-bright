@@ -62,16 +62,19 @@ export const useLeadReminders = (leadId?: string) => {
 
       const reminderData = data || [];
       
-      // Separate regular leads, abandoned cart leads, and customer leads
+      // Separate regular leads, abandoned cart leads, customer leads, and claims
       const regularLeadIds: string[] = [];
       const cartIds: string[] = [];
       const customerIds: string[] = [];
+      const claimIds: string[] = [];
       
       reminderData.forEach((reminder: any) => {
         if (reminder.lead_id.startsWith('cart_')) {
           cartIds.push(reminder.lead_id.replace('cart_', ''));
         } else if (reminder.lead_id.startsWith('customer_')) {
           customerIds.push(reminder.lead_id.replace('customer_', ''));
+        } else if (reminder.lead_id.startsWith('claim_')) {
+          claimIds.push(reminder.lead_id.replace('claim_', ''));
         } else {
           regularLeadIds.push(reminder.lead_id);
         }
@@ -81,6 +84,7 @@ export const useLeadReminders = (leadId?: string) => {
       let leadsMap: Record<string, any> = {};
       let cartsMap: Record<string, any> = {};
       let customersMap: Record<string, any> = {};
+      let claimsMap: Record<string, any> = {};
 
       if (regularLeadIds.length > 0) {
         const { data: leadsData } = await supabase
@@ -115,10 +119,22 @@ export const useLeadReminders = (leadId?: string) => {
         });
       }
 
+      if (claimIds.length > 0) {
+        const { data: claimsData } = await supabase
+          .from('claims_submissions')
+          .select('id, email, name, vehicle_registration')
+          .in('id', claimIds);
+
+        (claimsData || []).forEach((claim: any) => {
+          claimsMap[claim.id] = claim;
+        });
+      }
+
       // Map reminders with their lead data
       const remindersWithLeads = reminderData.map((reminder: any) => {
         const isAbandonedCart = reminder.lead_id.startsWith('cart_');
         const isCustomer = reminder.lead_id.startsWith('customer_');
+        const isClaim = reminder.lead_id.startsWith('claim_');
         
         if (isCustomer) {
           const custId = reminder.lead_id.replace('customer_', '');
@@ -144,6 +160,19 @@ export const useLeadReminders = (leadId?: string) => {
               first_name: cartData.full_name?.split(' ')[0] || null,
               last_name: cartData.full_name?.split(' ').slice(1).join(' ') || null,
               vehicle_reg: cartData.vehicle_reg
+            } : null
+          };
+        } else if (isClaim) {
+          const cId = reminder.lead_id.replace('claim_', '');
+          const cData = claimsMap[cId];
+          return {
+            ...reminder,
+            status: reminder.status as LeadReminder['status'],
+            lead: cData ? {
+              email: cData.email,
+              first_name: cData.name?.split(' ')[0] || null,
+              last_name: cData.name?.split(' ').slice(1).join(' ') || null,
+              vehicle_reg: cData.vehicle_registration
             } : null
           };
         } else {

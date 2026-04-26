@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { X, Phone, Mail, Car, Shield, History } from 'lucide-react';
+import { X, Phone, Mail, Car, Shield, History, Trash2, Loader2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import type { Claim } from '@/types/claim';
+import { useClaimNotes } from '@/hooks/useClaimNotes';
+import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 
 interface ClaimDetailPanelProps {
   claim: Claim | null;
@@ -32,12 +35,6 @@ const evidenceCls: Record<Claim['evidence'], string> = {
   Received: 'text-green-600',
 };
 
-const TIMELINE = [
-  { color: 'bg-blue-500', text: 'Claim submitted by customer via online portal', time: '12 days ago' },
-  { color: 'bg-amber-500', text: 'Evidence requested — photos and repair quote', time: '8 days ago' },
-  { color: 'bg-green-500', text: 'Internal note added by claims handler', time: '2 days ago' },
-];
-
 const FooterBtn: React.FC<{ label: string; onClick: () => void; variant?: 'default' | 'primary' | 'danger' }> = ({
   label,
   onClick,
@@ -63,11 +60,18 @@ const FooterBtn: React.FC<{ label: string; onClick: () => void; variant?: 'defau
 export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClose }) => {
   const [statusDraft, setStatusDraft] = useState<Claim['status'] | ''>('');
   const [note, setNote] = useState('');
+  const { notes, loading: notesLoading, saving: notesSaving, addNote, deleteNote } =
+    useClaimNotes(claim?.id);
 
   if (!claim) return null;
 
   const status = statusBadgeMap[claim.status];
   const fire = (label: string) => () => alert(`${label}: ${claim.id} (${claim.reg})`);
+
+  const handleSaveNote = async () => {
+    const ok = await addNote(note);
+    if (ok) setNote('');
+  };
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden max-w-full">
@@ -82,13 +86,15 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
             Claim #{claim.reg} · Opened {claim.date}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border ${status.cls}`}>
             {status.label}
           </span>
           <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border capitalize ${priorityCls[claim.priority]}`}>
             {claim.priority}
           </span>
+          {/* Reminder control — same UX as New Leads */}
+          <RemindMePopover leadId={`claim_${claim.id}`} compact />
           <button
             type="button"
             onClick={onClose}
@@ -167,25 +173,17 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
           </div>
         </div>
 
-        {/* Column 3: Activity timeline */}
+        {/* Column 3: Notes thread */}
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Activity timeline</h3>
-          <ul className="space-y-3">
-            {TIMELINE.map((t, i) => (
-              <li key={i} className="flex gap-2">
-                <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${t.color}`} />
-                <div className="text-sm">
-                  <div className="text-foreground">{t.text}</div>
-                  <div className="text-xs text-muted-foreground">{t.time}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Internal notes
+            </h3>
+            <span className="text-[11px] text-muted-foreground">{notes.length} note{notes.length === 1 ? '' : 's'}</span>
+          </div>
 
-          <div className="pt-2 space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Internal note
-            </label>
+          {/* Compose new note */}
+          <div className="space-y-2">
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -193,12 +191,62 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
               placeholder="Add a note for the team…"
               className="w-full p-2 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            <button
-              type="button"
-              className="h-9 px-3 rounded-md border border-blue-600 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
-            >
-              Save Note
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleSaveNote}
+                disabled={!note.trim() || notesSaving}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-blue-600 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {notesSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Save Note
+              </button>
+            </div>
+          </div>
+
+          {/* Timestamped notes thread */}
+          <div className="pt-1 space-y-2 max-h-72 overflow-y-auto">
+            {notesLoading ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading notes…
+              </div>
+            ) : notes.length === 0 ? (
+              <div className="text-xs text-muted-foreground italic py-2">
+                No notes yet. Add the first one above.
+              </div>
+            ) : (
+              notes.map((n) => {
+                const when = new Date(n.created_at);
+                const author = n.created_by_name || 'Staff';
+                return (
+                  <div
+                    key={n.id}
+                    className="group rounded-md border border-border bg-muted/30 p-2.5 text-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-semibold text-foreground truncate">{author}</div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className="text-[11px] text-muted-foreground"
+                          title={when.toLocaleString()}
+                        >
+                          {formatDistanceToNow(when, { addSuffix: true })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => deleteNote(n.id)}
+                          aria-label="Delete note"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-1 whitespace-pre-wrap text-foreground">{n.note}</div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

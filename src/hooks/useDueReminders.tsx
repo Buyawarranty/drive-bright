@@ -52,16 +52,19 @@ export const useDueReminders = () => {
       const regularIds: string[] = [];
       const cartIds: string[] = [];
       const customerIds: string[] = [];
+      const claimIds: string[] = [];
 
       reminderData.forEach((r: any) => {
         if (r.lead_id.startsWith('cart_')) cartIds.push(r.lead_id.replace('cart_', ''));
         else if (r.lead_id.startsWith('customer_')) customerIds.push(r.lead_id.replace('customer_', ''));
+        else if (r.lead_id.startsWith('claim_')) claimIds.push(r.lead_id.replace('claim_', ''));
         else regularIds.push(r.lead_id);
       });
 
       let leadsMap: Record<string, any> = {};
       let cartsMap: Record<string, any> = {};
       let customersMap: Record<string, any> = {};
+      let claimsMap: Record<string, any> = {};
 
       if (regularIds.length > 0) {
         const { data: ld } = await supabase.from('sales_leads').select('id, email, first_name, last_name, vehicle_reg').in('id', regularIds);
@@ -75,6 +78,10 @@ export const useDueReminders = () => {
         const { data: cd } = await supabase.from('customers').select('id, email, name, first_name, last_name, registration_plate').in('id', customerIds);
         (cd || []).forEach((c: any) => { customersMap[c.id] = c; });
       }
+      if (claimIds.length > 0) {
+        const { data: cd } = await supabase.from('claims_submissions').select('id, email, name, vehicle_registration').in('id', claimIds);
+        (cd || []).forEach((c: any) => { claimsMap[c.id] = c; });
+      }
 
       const mapped = reminderData.map((r: any) => {
         let lead = null;
@@ -84,6 +91,9 @@ export const useDueReminders = () => {
         } else if (r.lead_id.startsWith('cart_')) {
           const d = cartsMap[r.lead_id.replace('cart_', '')];
           if (d) lead = { email: d.email, first_name: d.full_name?.split(' ')[0] || null, last_name: d.full_name?.split(' ').slice(1).join(' ') || null, vehicle_reg: d.vehicle_reg };
+        } else if (r.lead_id.startsWith('claim_')) {
+          const d = claimsMap[r.lead_id.replace('claim_', '')];
+          if (d) lead = { email: d.email, first_name: d.name?.split(' ')[0] || null, last_name: d.name?.split(' ').slice(1).join(' ') || null, vehicle_reg: d.vehicle_registration };
         } else {
           lead = leadsMap[r.lead_id] || null;
         }
