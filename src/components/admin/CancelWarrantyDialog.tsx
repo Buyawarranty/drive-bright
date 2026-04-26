@@ -39,6 +39,7 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [note, setNote] = useState('');
+  const [isTest, setIsTest] = useState(false);
 
   const handleCancel = async () => {
     setIsProcessing(true);
