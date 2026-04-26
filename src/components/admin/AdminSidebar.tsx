@@ -281,6 +281,12 @@ const defaultTabs: Tab[] = [
     description: 'Refunds issued to customers for commission reconciliation'
   },
   {
+    id: 'attribution-settings',
+    label: 'Attribution Settings',
+    icon: Target,
+    description: 'Control how leads are tagged Organic / Google / Facebook'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
