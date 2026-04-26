@@ -6,6 +6,7 @@ import { ClaimsTable } from './ClaimsTable';
 import { ClaimDetailPanel } from './ClaimDetailPanel';
 import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
 import { BulkActionsBar } from './BulkActionsBar';
+import { Header } from './Header';
 
 interface KpiCardProps {
   label: string;
@@ -71,25 +72,28 @@ const ClaimsManagerDashboard: React.FC = () => {
     });
 
   return (
-    <div className="p-6 space-y-4">
-      <UrgencyBanner claims={claims} />
-      <KpiStrip claims={claims} />
-      <Toolbar filters={filters} onChange={setFilters} />
-      <div className="px-1 text-sm text-muted-foreground">
-        51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
+    <div>
+      <Header />
+      <div className="p-6 space-y-4">
+        <UrgencyBanner claims={claims} />
+        <KpiStrip claims={claims} />
+        <Toolbar filters={filters} onChange={setFilters} />
+        <div className="px-1 text-sm text-muted-foreground">
+          51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
+        </div>
+        {selectedIds.size > 0 && (
+          <BulkActionsBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+        )}
+        <ClaimsTable
+          claims={filtered}
+          onRowClick={setSelected}
+          selectedId={selected?.id ?? null}
+          selectedIds={selectedIds}
+          onToggleOne={toggleOne}
+          onToggleAll={toggleAll}
+        />
+        {selected && <ClaimDetailPanel claim={selected} onClose={() => setSelected(null)} />}
       </div>
-      {selectedIds.size > 0 && (
-        <BulkActionsBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
-      )}
-      <ClaimsTable
-        claims={filtered}
-        onRowClick={setSelected}
-        selectedId={selected?.id ?? null}
-        selectedIds={selectedIds}
-        onToggleOne={toggleOne}
-        onToggleAll={toggleAll}
-      />
-      {selected && <ClaimDetailPanel claim={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 };
