@@ -436,6 +436,18 @@ export const CancellationsTab: React.FC<{
             </Select>
           </div>
 
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Type</Label>
+            <Select value={filterByTest} onValueChange={(v) => setFilterByTest(v as 'real' | 'test' | 'all')}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="real">Real cancellations</SelectItem>
+                <SelectItem value="test">Test cancellations</SelectItem>
+                <SelectItem value="all">All (incl. tests)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {canSeeAll && (
             <div className="space-y-1">
               <Label className="text-sm font-medium">Sales Agent</Label>
