@@ -135,7 +135,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       events.forEach((e) => window.removeEventListener(e, reset));
       if (inactivityTimer.current) window.clearTimeout(inactivityTimer.current);
     };
-  }, [orderTotal, customerEmail, hasDiscountApplied]);
+  }, [orderTotal, customerEmail, hasDiscountApplied, suppress]);
 
   // Countdown
   useEffect(() => {
