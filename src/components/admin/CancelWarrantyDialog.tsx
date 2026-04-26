@@ -94,15 +94,17 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
         await supabase.from('admin_notes').insert({
           customer_id: policy.customer_id,
           note:
-            `WARRANTY CANCELLED & ARCHIVED\n` +
+            `${isTest ? '[TEST] ' : ''}WARRANTY CANCELLED & ARCHIVED\n` +
             `Policy: ${policy.policy_number || policy.id}\n` +
             `Cancelled at: ${new Date().toLocaleString()}` +
+            (isTest ? `\nMarked as: TEST CANCELLATION (excluded from commission/unwinds)` : '') +
             (trimmedNote ? `\nReason: ${trimmedNote}` : ''),
         });
       }
 
-      toast.success('Warranty cancelled and removed from list');
+      toast.success(isTest ? 'Test cancellation recorded' : 'Warranty cancelled and removed from list');
       setNote('');
+      setIsTest(false);
       onSuccess();
       onClose();
     } catch (error) {
