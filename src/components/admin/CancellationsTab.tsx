@@ -299,7 +299,7 @@ export const CancellationsTab: React.FC<{
     }
 
     return filtered;
-  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch, canSeeAll, currentAdminUser?.id]);
+  }, [records, dateRange, filterByStatus, filterByAgent, filterByTest, debouncedSearch, canSeeAll, currentAdminUser?.id]);
 
   const pagination = usePagination(filteredRecords, { initialPageSize: 50 });
 
