@@ -43,14 +43,13 @@ export function UnwindsSection({ currentMonth, viewingUserId }: UnwindsSectionPr
 
       if (!adminUser) { setRecords([]); return; }
 
-      // Fetch cancelled/refunded customers assigned to this agent in the period
-      // Exclude rows explicitly flagged as test cancellations (commission-neutral).
+      // Fetch cancelled/refunded customers assigned to this agent in the period.
+      // Test cancellations are filtered client-side (commission-neutral).
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, registration_plate, plan_type, status, final_amount, updated_at')
+        .select('id, name, email, registration_plate, plan_type, status, final_amount, updated_at, is_test_cancellation')
         .eq('is_deleted', false)
         .eq('assigned_to', adminUser.id)
-        .or('is_test_cancellation.is.null,is_test_cancellation.eq.false')
         .or('status.ilike.cancelled,status.ilike.refunded')
         .gte('updated_at', monthStart)
         .lte('updated_at', monthEnd)
