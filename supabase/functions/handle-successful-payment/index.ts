@@ -992,7 +992,6 @@ serve(async (req) => {
               transfer_cover: 'Transfer Cover',
               breakdown_recovery: 'Breakdown Recovery',
               vehicle_rental: 'Vehicle Rental',
-              mot_fee: 'MOT Test Fee',
               mot_repair: 'MOT Repair',
               lost_key: 'Lost Key Cover',
               consequential: 'Consequential Loss'
@@ -1014,14 +1013,14 @@ serve(async (req) => {
 
         const regPlate = vehicleData?.regNumber || 'Unknown';
 
-        // Look up when the lead first came in
+        // Look up the MOST RECENT lead submission tied to this purchase journey
         let leadCreatedAt = '';
         try {
           const { data: leadData } = await supabaseClient
             .from('sales_leads')
             .select('created_at')
             .ilike('email', userEmail)
-            .order('created_at', { ascending: true })
+            .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
           if (leadData?.created_at) {
@@ -1128,7 +1127,7 @@ serve(async (req) => {
         const defaultSupportId = 'e39499b8-f88c-4963-9f0d-63e1addb3025';
         const { data: matchedLead } = await supabaseClient
           .from('sales_leads')
-          .select('id, assigned_to, full_name, phone, vehicle_reg, lead_source')
+          .select('id, assigned_to, full_name, phone, vehicle_reg, lead_source, created_at')
           .ilike('email', userEmail)
           .not('assigned_to', 'is', null)
           .neq('assigned_to', defaultSupportId)

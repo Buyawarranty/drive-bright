@@ -57,18 +57,18 @@ serve(async (req: Request) => {
       .limit(1)
       .maybeSingle();
 
-    // Also get the earliest lead date
+    // Get the MOST RECENT lead submission for this email (the one tied to this purchase journey)
     let leadCreatedAt = '';
     try {
-      const { data: earliestLead } = await supabase
+      const { data: latestLead } = await supabase
         .from('sales_leads')
         .select('created_at')
         .ilike('email', customerEmail)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (earliestLead?.created_at) {
-        leadCreatedAt = new Date(earliestLead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      if (latestLead?.created_at) {
+        leadCreatedAt = new Date(latestLead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       }
     } catch (e) { /* ignore */ }
     const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
