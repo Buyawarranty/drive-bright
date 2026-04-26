@@ -70,9 +70,9 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
   const fire = (label: string) => () => alert(`${label}: ${claim.id} (${claim.reg})`);
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden max-w-full">
       {/* Header */}
-      <div className="flex items-start gap-3 p-4 border-b border-border bg-muted/30">
+      <div className="flex flex-wrap items-start gap-3 p-4 border-b border-border bg-muted/30">
         <div className="h-10 w-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-sm font-semibold shrink-0">
           {initials(claim.customerName)}
         </div>
