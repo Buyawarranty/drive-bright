@@ -464,8 +464,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <FlaskConical className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-purple-800">
-                <p className="font-medium">Test purchase - Hidden from active view</p>
-                <p className="text-xs mt-1">Record will be marked as "Test Purchase" and moved to archive. Ideal for test transactions.</p>
+                <p className="font-medium">Test cancellation – not counted as a real cancellation</p>
+                <p className="text-xs mt-1">Warranty status will be set to "Cancelled" and flagged as a test. It will NOT appear in the real Cancellations list and is excluded from agent commission unwinds.</p>
               </div>
             </div>
           )}
