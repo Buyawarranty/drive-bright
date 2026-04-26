@@ -76,6 +76,7 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
   const getReminderSource = (reminder: LeadReminder): string | null => {
     if (reminder.lead_id.startsWith('customer_')) return 'Customer';
     if (reminder.lead_id.startsWith('cart_')) return 'Cart';
+    if (reminder.lead_id.startsWith('claim_')) return 'Claim';
     return null;
   };
 
