@@ -332,10 +332,10 @@ export const ClaimsTab = ({
       <AddClaimDialog
         open={showAddClaimDialog}
         onOpenChange={setShowAddClaimDialog}
-        onClaimAdded={fetchClaims}
+        onClaimAdded={refetchAll}
       />
       <RequestUpdateDialog
-        claims={claims.filter(c => selectedClaimIds.has(c.id)).map(c => ({
+        claims={claims.filter(c => selectedIds.has(c.id)).map(c => ({
           id: c.id,
           name: c.name,
           vehicle_registration: c.vehicle_registration,
@@ -344,8 +344,8 @@ export const ClaimsTab = ({
         open={showRequestUpdate}
         onOpenChange={setShowRequestUpdate}
         onSent={() => {
-          fetchClaims();
-          setSelectedClaimIds(new Set());
+          refetchAll();
+          setSelectedIds(new Set());
         }}
       />
     </div>
