@@ -2182,6 +2182,7 @@ export type Database = {
           id: string
           is_deleted: boolean | null
           is_manual_entry: boolean | null
+          is_test_cancellation: boolean
           labour_rate: number | null
           last_login: string | null
           last_name: string | null
@@ -2269,6 +2270,7 @@ export type Database = {
           id?: string
           is_deleted?: boolean | null
           is_manual_entry?: boolean | null
+          is_test_cancellation?: boolean
           labour_rate?: number | null
           last_login?: string | null
           last_name?: string | null
@@ -2356,6 +2358,7 @@ export type Database = {
           id?: string
           is_deleted?: boolean | null
           is_manual_entry?: boolean | null
+          is_test_cancellation?: boolean
           labour_rate?: number | null
           last_login?: string | null
           last_name?: string | null
