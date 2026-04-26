@@ -2425,7 +2425,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               originalPrice={bumperTotalPrice}
               savings={savings}
               isLoading={isLoading}
-              onPayClick={() => processPayment(selectedPayment || undefined)}
+              onPayClick={(paymentOverride) => processPayment(paymentOverride || selectedPaymentRef.current || selectedPayment || undefined)}
               planDurationMonths={paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36}
               promoOpen={promoOpen}
               setPromoOpen={setPromoOpen}
