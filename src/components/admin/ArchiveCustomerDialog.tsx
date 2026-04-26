@@ -219,7 +219,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
           }
 
           // Log the action as a note
-          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST PURCHASE ARCHIVED' : action === 'fake' ? 'FAKE LEAD ARCHIVED' : action === 'duplicate' ? 'DUPLICATE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
+          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST CANCELLATION (excluded from real cancellations)' : action === 'fake' ? 'FAKE LEAD ARCHIVED' : action === 'duplicate' ? 'DUPLICATE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
           const noteText = `WARRANTY ${actionLabel}\n` +
             `Reason: ${effectiveReason}\n` +
             `${action === 'refund' && refundAmount ? `Refund Amount: £${refundAmount}\n` : ''}` +
