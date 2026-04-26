@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
