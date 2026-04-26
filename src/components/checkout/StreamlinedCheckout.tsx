@@ -2580,7 +2580,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         isFormValid={personalDetailsComplete && addressComplete}
         onPayClick={() => {
-          processPayment();
+          processPayment(selectedPaymentRef.current || selectedPayment || undefined);
         }}
         onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         minimised={isBottomCtaFullyVisible}
