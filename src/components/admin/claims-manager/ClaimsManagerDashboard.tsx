@@ -1,6 +1,7 @@
 import React from 'react';
 import { useClaims } from '@/hooks/useClaims';
 import type { Claim } from '@/types/claim';
+import { UrgencyBanner } from './UrgencyBanner';
 
 interface KpiCardProps {
   label: string;
@@ -50,6 +51,7 @@ const ClaimsManagerDashboard: React.FC = () => {
   const { claims, count } = useClaims();
   return (
     <div className="p-6 space-y-4">
+      <UrgencyBanner claims={claims} />
       <KpiStrip claims={claims} />
       <p>Claims loaded: {count}</p>
     </div>
