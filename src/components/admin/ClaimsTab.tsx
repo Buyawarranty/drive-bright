@@ -12,13 +12,19 @@ import { ClaimDetailDialog } from './claims/ClaimDetailDialog';
 import { ClaimAmountEditDialog } from './claims/ClaimAmountEditDialog';
 import { ClaimEmailDialog } from './claims/ClaimEmailDialog';
 import { AddClaimDialog } from './claims/AddClaimDialog';
-import { ClaimsTriageBlocks, getTriageFilterFn, TriageFilter } from './claims/ClaimsTriageBlocks';
-import { ClaimsFilterBar, getReadinessState } from './claims/ClaimsFilterBar';
-import { ClaimsEnhancedTable } from './claims/ClaimsEnhancedTable';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { RequestUpdateDialog } from './claims/RequestUpdateDialog';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
+// New Claims Manager UI
+import { useClaims } from '@/hooks/useClaims';
+import type { Claim } from '@/types/claim';
+import { UrgencyBanner } from './claims-manager/UrgencyBanner';
+import { KpiStrip } from './claims-manager/ClaimsManagerDashboard';
+import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './claims-manager/Toolbar';
+import { BulkActionsBar } from './claims-manager/BulkActionsBar';
+import { ClaimsTable } from './claims-manager/ClaimsTable';
+import { ClaimDetailPanel } from './claims-manager/ClaimDetailPanel';
 
 interface ClaimSubmission {
   id: string;
@@ -78,23 +84,17 @@ export const ClaimsTab = ({
   const [editingClaim, setEditingClaim] = useState<ClaimSubmission | null>(null);
   const [emailingClaim, setEmailingClaim] = useState<ClaimSubmission | null>(null);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
-  const [selectedClaimIds, setSelectedClaimIds] = useState<Set<string>>(new Set());
   const [showRequestUpdate, setShowRequestUpdate] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence'>('claims');
 
-  // Filters
-  const [triageFilter, setTriageFilter] = useState<TriageFilter>('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [readinessFilter, setReadinessFilter] = useState('all');
-  const [warrantyFilter, setWarrantyFilter] = useState('all');
-  const [costRange, setCostRange] = useState('all');
-  const [searchQuery, setSearchQuery] = useState(() => {
+  // New dashboard UI state
+  const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
+  const [filters, setFilters] = useState<ClaimsFilters>(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('search') || '';
+    return { ...DEFAULT_FILTERS, search: params.get('search') || '' };
   });
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [selectedPanelClaim, setSelectedPanelClaim] = useState<Claim | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => { fetchClaims(); }, []);
 
@@ -118,141 +118,52 @@ export const ClaimsTab = ({
     }
   };
 
-  const handlePriorityChange = async (claimId: string, priority: string) => {
-    try {
-      const { error } = await supabase
-        .from('claims_submissions')
-        .update({ priority })
-        .eq('id', claimId);
-      if (error) throw error;
-      toast({ title: "Priority Updated", description: `Set to ${priority}` });
-      fetchClaims();
-    } catch {
-      toast({ title: "Error", description: "Failed to update priority", variant: "destructive" });
-    }
+  const refetchAll = async () => {
+    await Promise.all([fetchClaims(), refetchManager()]);
   };
 
-  // Avg resolution time
+  // Avg resolution time (real, from raw rows)
   const avgResolutionDays = useMemo(() => {
-    const resolved = claims.filter(c => ['paid', 'resolved', 'rejected'].includes(c.status));
+    const resolved = claims.filter(c => ['paid', 'resolved', 'rejected', 'closed', 'approved'].includes(c.status));
     if (resolved.length === 0) return 0;
     const total = resolved.reduce((sum, c) => {
-      const end = c.paid_at || c.rejected_at || c.updated_at;
+      const end = c.paid_at || c.rejected_at || c.approved_at || c.updated_at;
       return sum + Math.floor((new Date(end).getTime() - new Date(c.created_at).getTime()) / (1000 * 60 * 60 * 24));
     }, 0);
-    return Math.round(total / resolved.length);
+    return Math.max(0, Math.round(total / resolved.length));
   }, [claims]);
 
-  const uniqueWarrantyTypes = useMemo(
-    () => Array.from(new Set(claims.map(c => c.warranty_type).filter(Boolean))) as string[],
-    [claims]
-  );
+  // Apply toolbar filters
+  const filtered = useMemo(() => applyFilters(managerClaims, filters), [managerClaims, filters]);
 
-  // Filtering pipeline
-  const filteredClaims = useMemo(() => {
-    const triageFn = getTriageFilterFn(triageFilter);
-    
-    return claims.filter(claim => {
-      // Hide fake/test claims unless explicitly filtering for them
-      if (claim.status === 'fake_test' && statusFilter !== 'fake_test') return false;
-      if (!triageFn(claim)) return false;
-      if (statusFilter !== 'all' && claim.status !== statusFilter) return false;
-      if (priorityFilter !== 'all' && claim.priority !== priorityFilter) return false;
-      if (warrantyFilter !== 'all' && claim.warranty_type !== warrantyFilter) return false;
+  const totalCount = managerClaims.length;
+  const shownCount = filtered.length;
 
-      if (readinessFilter !== 'all') {
-        const readiness = getReadinessState(claim);
-        if (readiness !== readinessFilter) return false;
-      }
-
-      if (costRange !== 'all') {
-        const amt = claim.payment_amount || 0;
-        if (costRange === '0-100' && (amt < 0 || amt > 100)) return false;
-        if (costRange === '100-500' && (amt < 100 || amt > 500)) return false;
-        if (costRange === '500-1000' && (amt < 500 || amt > 1000)) return false;
-        if (costRange === '1000+' && amt < 1000) return false;
-      }
-
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        if (
-          !claim.name?.toLowerCase().includes(q) &&
-          !claim.email?.toLowerCase().includes(q) &&
-          !claim.vehicle_registration?.toLowerCase().includes(q) &&
-          !claim.claim_reason?.toLowerCase().includes(q)
-        ) return false;
-      }
-
-      if (dateFrom && new Date(claim.created_at) < new Date(dateFrom)) return false;
-      if (dateTo) {
-        const to = new Date(dateTo);
-        to.setHours(23, 59, 59, 999);
-        if (new Date(claim.created_at) > to) return false;
-      }
-
-      return true;
+  const toggleOne = (id: string) =>
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
     });
-  }, [claims, triageFilter, statusFilter, priorityFilter, readinessFilter, warrantyFilter, costRange, searchQuery, dateFrom, dateTo]);
 
-  // Group claims
-  const groupedFilteredClaims = useMemo(() => {
-    // Sort by created_at descending first
-    const sorted = [...filteredClaims].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    
-    const groups: (ClaimSubmission & { relatedClaimsCount: number; relatedClaims: ClaimSubmission[] })[] = [];
-    const assigned = new Set<string>();
-
-    for (const claim of sorted) {
-      if (assigned.has(claim.id)) continue;
-
-      const reg = claim.vehicle_registration?.toLowerCase().trim();
-      
-      // Find related claims: same reg plate, within 30 days of each other
-      const related = reg
-        ? sorted.filter(c => {
-            if (c.id === claim.id || assigned.has(c.id)) return false;
-            if (c.vehicle_registration?.toLowerCase().trim() !== reg) return false;
-            const daysDiff = Math.abs(new Date(claim.created_at).getTime() - new Date(c.created_at).getTime()) / (1000 * 60 * 60 * 24);
-            return daysDiff <= 30;
-          })
-        : [];
-
-      assigned.add(claim.id);
-      related.forEach(c => assigned.add(c.id));
-
-      const allInGroup = [claim, ...related];
-      groups.push({ ...claim, relatedClaimsCount: allInGroup.length, relatedClaims: allInGroup });
-    }
-
-    return groups;
-  }, [filteredClaims]);
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const allIds = new Set<string>();
-      groupedFilteredClaims.forEach(g => g.relatedClaims.forEach(c => allIds.add(c.id)));
-      setSelectedClaimIds(allIds);
-    } else {
-      setSelectedClaimIds(new Set());
-    }
-  };
-
-  const handleSelectClaim = (claimGroup: { relatedClaims: ClaimSubmission[] }, checked: boolean) => {
-    const newSelected = new Set(selectedClaimIds);
-    claimGroup.relatedClaims.forEach(c => checked ? newSelected.add(c.id) : newSelected.delete(c.id));
-    setSelectedClaimIds(newSelected);
-  };
+  const toggleAll = (checked: boolean) =>
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) filtered.forEach(c => next.add(c.id));
+      else filtered.forEach(c => next.delete(c.id));
+      return next;
+    });
 
   const handleBulkDelete = async () => {
-    if (selectedClaimIds.size === 0) return;
-    if (!confirm(`Delete ${selectedClaimIds.size} claim(s)? This cannot be undone.`)) return;
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} claim(s)? This cannot be undone.`)) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from('claims_submissions').delete().in('id', Array.from(selectedClaimIds));
+      const { error } = await supabase.from('claims_submissions').delete().in('id', Array.from(selectedIds));
       if (error) throw error;
-      toast({ title: "Success", description: `Deleted ${selectedClaimIds.size} claim(s)` });
-      setSelectedClaimIds(new Set());
-      await fetchClaims();
+      toast({ title: "Success", description: `Deleted ${selectedIds.size} claim(s)` });
+      setSelectedIds(new Set());
+      await refetchAll();
     } catch {
       toast({ title: "Error", description: "Failed to delete claims", variant: "destructive" });
     } finally {
@@ -260,41 +171,16 @@ export const ClaimsTab = ({
     }
   };
 
-  const downloadFile = (fileUrl: string, fileName: string) => {
-    const { data } = supabase.storage.from('policy-documents').getPublicUrl(fileUrl);
-    const link = document.createElement('a');
-    link.href = data.publicUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleExportCSV = () => {
-    exportToCSV(filteredClaims.map(formatClaimForExport), 'claims_export');
+    exportToCSV(claims.map(formatClaimForExport), 'claims_export');
     toast({ title: "Success", description: "Exported to CSV" });
   };
 
   const handleExportPDF = () => {
-    exportToPDF(filteredClaims.map(formatClaimForExport), 'claims_report');
+    exportToPDF(claims.map(formatClaimForExport), 'claims_report');
   };
 
-  const hasActiveFilters = statusFilter !== 'all' || priorityFilter !== 'all' || readinessFilter !== 'all' ||
-    warrantyFilter !== 'all' || costRange !== 'all' || searchQuery !== '' || dateFrom !== '' || dateTo !== '';
-
-  const clearAllFilters = () => {
-    setTriageFilter('all');
-    setStatusFilter('all');
-    setPriorityFilter('all');
-    setReadinessFilter('all');
-    setWarrantyFilter('all');
-    setCostRange('all');
-    setSearchQuery('');
-    setDateFrom('');
-    setDateTo('');
-  };
-
-  if (loading) {
+  if (loading || managerLoading) {
     return (
       <div className="p-6 flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600" />
@@ -305,15 +191,14 @@ export const ClaimsTab = ({
   return (
     <div className="p-6 space-y-5">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Claims Management</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {claims.length} total claims · {filteredClaims.length} shown
+            {totalCount} total · <span className="font-semibold text-foreground">{shownCount}</span> shown
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Notification Bell for admin/super_admin */}
+        <div className="flex items-center gap-2 flex-wrap">
           {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
             <AdminNotificationBell
               notifications={notifications}
@@ -331,18 +216,8 @@ export const ClaimsTab = ({
           >
             <Car className="h-4 w-4" /> Vehicle Intelligence
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setActiveSubTab('vehicle-intelligence');
-              setTimeout(() => document.getElementById('claims-analytics-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
-            }}
-          >
-            📊 Analytics & Charts
-          </Button>
           <Button onClick={() => {
-            if (selectedClaimIds.size > 0) {
+            if (selectedIds.size > 0) {
               setShowRequestUpdate(true);
             } else {
               toast({ title: "Select Claims", description: "Select one or more claims to request an update", variant: "destructive" });
@@ -389,72 +264,43 @@ export const ClaimsTab = ({
         </div>
       )}
 
-      {/* Claims List Sub-tab */}
+      {/* Claims List Sub-tab — new dashboard UI */}
       {activeSubTab === 'claims' && (
         <>
-          {/* Claim Update Notifications */}
           <ClaimUpdateNotifications />
-          {/* Triage Command Centre */}
-          <ClaimsTriageBlocks
-            claims={claims}
-            activeFilter={triageFilter}
-            onFilterChange={setTriageFilter}
-            avgResolutionDays={avgResolutionDays}
-          />
 
-          {/* Filters */}
-          <ClaimsFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            priorityFilter={priorityFilter}
-            onPriorityChange={setPriorityFilter}
-            readinessFilter={readinessFilter}
-            onReadinessChange={setReadinessFilter}
-            warrantyFilter={warrantyFilter}
-            onWarrantyChange={setWarrantyFilter}
-            costRange={costRange}
-            onCostRangeChange={setCostRange}
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            onDateFromChange={setDateFrom}
-            onDateToChange={setDateTo}
-            onClearAll={clearAllFilters}
-            hasActiveFilters={hasActiveFilters}
-            uniqueWarrantyTypes={uniqueWarrantyTypes}
-          />
+          <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
 
-          {/* Bulk actions */}
-          {selectedClaimIds.size > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-              <span className="text-sm font-medium">{selectedClaimIds.size} selected</span>
+          <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+
+          <Toolbar filters={filters} onChange={setFilters} />
+
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <BulkActionsBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+              </div>
               <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
             </div>
           )}
 
-          {/* Enhanced Table */}
-          <Card>
-            <CardContent className="p-0">
-              <ClaimsEnhancedTable
-                groupedClaims={groupedFilteredClaims}
-                filteredClaimsCount={filteredClaims.length}
-                selectedClaimIds={selectedClaimIds}
-                onSelectAll={handleSelectAll}
-                onSelectClaim={handleSelectClaim}
-                onViewClaim={setSelectedClaim}
-                onEditAmount={setEditingClaim}
-                onEmailClaim={setEmailingClaim}
-                onPriorityChange={handlePriorityChange}
-                onStatusUpdate={fetchClaims}
-                onDownloadFile={downloadFile}
-                loading={loading}
-              />
-            </CardContent>
-          </Card>
+          <ClaimsTable
+            claims={filtered}
+            onRowClick={setSelectedPanelClaim}
+            selectedId={selectedPanelClaim?.id ?? null}
+            selectedIds={selectedIds}
+            onToggleOne={toggleOne}
+            onToggleAll={toggleAll}
+          />
 
+          {selectedPanelClaim && (
+            <ClaimDetailPanel
+              claim={selectedPanelClaim}
+              onClose={() => setSelectedPanelClaim(null)}
+            />
+          )}
         </>
       )}
 
@@ -486,10 +332,10 @@ export const ClaimsTab = ({
       <AddClaimDialog
         open={showAddClaimDialog}
         onOpenChange={setShowAddClaimDialog}
-        onClaimAdded={fetchClaims}
+        onClaimAdded={refetchAll}
       />
       <RequestUpdateDialog
-        claims={claims.filter(c => selectedClaimIds.has(c.id)).map(c => ({
+        claims={claims.filter(c => selectedIds.has(c.id)).map(c => ({
           id: c.id,
           name: c.name,
           vehicle_registration: c.vehicle_registration,
@@ -498,8 +344,8 @@ export const ClaimsTab = ({
         open={showRequestUpdate}
         onOpenChange={setShowRequestUpdate}
         onSent={() => {
-          fetchClaims();
-          setSelectedClaimIds(new Set());
+          refetchAll();
+          setSelectedIds(new Set());
         }}
       />
     </div>
