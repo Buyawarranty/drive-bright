@@ -58,6 +58,7 @@ interface CancellationRecord {
   warranty_number?: string;
   cancellation_note?: string | null;
   cancellation_note_updated_at?: string | null;
+  is_test_cancellation?: boolean | null;
 }
 
 interface AdminUser {
@@ -149,6 +150,8 @@ export const CancellationsTab: React.FC<{
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
+  // 'real' (default — exclude tests), 'test' (only tests), 'all'
+  const [filterByTest, setFilterByTest] = useState<'real' | 'test' | 'all'>('real');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
 
   // Default to current month
@@ -185,7 +188,7 @@ export const CancellationsTab: React.FC<{
 
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at')
+        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at, is_test_cancellation')
         .or('status.ilike.cancelled,status.ilike.refunded')
         .order('updated_at', { ascending: false })
         .limit(3000);
@@ -242,8 +245,14 @@ export const CancellationsTab: React.FC<{
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
 
-    // Exclude test purchases (< £20) – these are admin/dev test transactions, not real cancellations/refunds
-    filtered = filtered.filter(r => (r.final_amount || 0) >= 20);
+    // Test cancellation filter — default hides explicit test cancellations.
+    // Also treat tiny historical "test" purchases (< £20, never flagged) as test
+    // when in 'real' mode, so existing dev rows stay hidden.
+    if (filterByTest === 'real') {
+      filtered = filtered.filter(r => !r.is_test_cancellation && (r.final_amount || 0) >= 20);
+    } else if (filterByTest === 'test') {
+      filtered = filtered.filter(r => r.is_test_cancellation || (r.final_amount || 0) < 20);
+    }
 
     // Role-based visibility: non-full-view users only see their own
     if (!canSeeAll) {
@@ -290,7 +299,7 @@ export const CancellationsTab: React.FC<{
     }
 
     return filtered;
-  }, [records, dateRange, filterByStatus, filterByAgent, debouncedSearch, canSeeAll, currentAdminUser?.id]);
+  }, [records, dateRange, filterByStatus, filterByAgent, filterByTest, debouncedSearch, canSeeAll, currentAdminUser?.id]);
 
   const pagination = usePagination(filteredRecords, { initialPageSize: 50 });
 
@@ -423,6 +432,18 @@ export const CancellationsTab: React.FC<{
                 <SelectItem value="all">All (Cancelled & Refunded)</SelectItem>
                 <SelectItem value="cancelled">Cancelled Only</SelectItem>
                 <SelectItem value="refunded">Refunded Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Type</Label>
+            <Select value={filterByTest} onValueChange={(v) => setFilterByTest(v as 'real' | 'test' | 'all')}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="real">Real cancellations</SelectItem>
+                <SelectItem value="test">Test cancellations</SelectItem>
+                <SelectItem value="all">All (incl. tests)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -608,9 +629,16 @@ export const CancellationsTab: React.FC<{
                         <Badge variant="outline" className="text-xs">{record.plan_type}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="destructive" className="text-xs">
-                          {record.status}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge variant="destructive" className="text-xs">
+                            {record.status}
+                          </Badge>
+                          {record.is_test_cancellation && (
+                            <Badge variant="outline" className="text-[10px] border-amber-400 bg-amber-50 text-amber-700">
+                              TEST
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       {isFinancialRole && (
                         <TableCell className="text-sm font-medium">

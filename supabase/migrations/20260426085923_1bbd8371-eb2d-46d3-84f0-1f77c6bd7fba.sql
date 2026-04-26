@@ -1,0 +1,6 @@
+ALTER TABLE public.customers
+  ADD COLUMN IF NOT EXISTS is_test_cancellation boolean NOT NULL DEFAULT false;
+
+CREATE INDEX IF NOT EXISTS idx_customers_is_test_cancellation
+  ON public.customers (is_test_cancellation)
+  WHERE is_test_cancellation = true;
