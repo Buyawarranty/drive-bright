@@ -1197,6 +1197,41 @@ export type Database = {
           },
         ]
       }
+      claim_notes: {
+        Row: {
+          claim_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          id: string
+          note: string
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          note: string
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_notes_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_quick_notes: {
         Row: {
           claim_id: string
