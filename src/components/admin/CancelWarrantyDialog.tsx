@@ -70,9 +70,13 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
           is_deleted: true,
           deleted_at: nowIso,
           updated_at: nowIso,
+          is_test_cancellation: isTest,
         };
-        if (trimmedNote) {
-          customerUpdate.cancellation_note = trimmedNote;
+        if (trimmedNote || isTest) {
+          const noteWithPrefix = isTest
+            ? `[TEST CANCELLATION] ${trimmedNote}`.trim()
+            : trimmedNote;
+          customerUpdate.cancellation_note = noteWithPrefix;
           customerUpdate.cancellation_note_updated_at = nowIso;
           customerUpdate.cancellation_note_updated_by = updaterId;
         }
