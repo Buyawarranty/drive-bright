@@ -150,6 +150,8 @@ export const CancellationsTab: React.FC<{
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterByAgent, setFilterByAgent] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
+  // 'real' (default — exclude tests), 'test' (only tests), 'all'
+  const [filterByTest, setFilterByTest] = useState<'real' | 'test' | 'all'>('real');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
 
   // Default to current month
