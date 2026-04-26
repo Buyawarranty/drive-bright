@@ -21,6 +21,14 @@ interface Save50PromoPopupProps {
   customerEmail?: string;
   vehicleReg?: string;
   hasDiscountApplied: boolean;
+  /**
+   * When true (e.g. the embedded Stripe card form is open), the popup must
+   * stay suppressed. Card-detail typing happens inside Stripe's iframe and
+   * does NOT bubble window events, so the inactivity timer would otherwise
+   * fire while the user is mid-payment and make them think their previously
+   * applied promo was lost.
+   */
+  suppress?: boolean;
   onApplied: (discount: {
     code: string;
     type: 'percentage' | 'fixed';
@@ -58,6 +66,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   customerEmail,
   vehicleReg,
   hasDiscountApplied,
+  suppress = false,
   onApplied,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -67,8 +76,14 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   const inactivityTimer = useRef<number | null>(null);
   const hasShownThisSession = useRef(false);
 
+  // Auto-close if the parent suppresses (e.g. user opened Stripe payment form)
+  useEffect(() => {
+    if (suppress && isOpen) setIsOpen(false);
+  }, [suppress, isOpen]);
+
   // Check eligibility & decide whether to arm the inactivity timer
   useEffect(() => {
+    if (suppress) return;
     if (hasDiscountApplied) return;
     if (orderTotal < MIN_SPEND) return;
 
@@ -120,7 +135,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       events.forEach((e) => window.removeEventListener(e, reset));
       if (inactivityTimer.current) window.clearTimeout(inactivityTimer.current);
     };
-  }, [orderTotal, customerEmail, hasDiscountApplied]);
+  }, [orderTotal, customerEmail, hasDiscountApplied, suppress]);
 
   // Countdown
   useEffect(() => {

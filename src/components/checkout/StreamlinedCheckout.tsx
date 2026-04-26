@@ -1711,6 +1711,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         customerEmail={customerData.email}
         vehicleReg={vehicleData?.regNumber}
         hasDiscountApplied={appliedDiscountCodes.length > 0}
+        suppress={showEmbeddedCheckout}
         onApplied={(d) => {
           setAppliedDiscountCodes((prev) => {
             if (prev.some((c) => c.code === d.code)) return prev;
