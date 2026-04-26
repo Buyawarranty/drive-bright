@@ -15,7 +15,7 @@ interface HowToPaySectionProps {
   originalPrice: number;
   savings: number;
   isLoading: boolean;
-  onPayClick: () => void;
+  onPayClick: (paymentOverride?: 'monthly' | 'full') => void;
   // Plan duration for Platinum label
   planDurationMonths?: number;
   // Promo code props
