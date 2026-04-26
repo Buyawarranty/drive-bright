@@ -27,14 +27,16 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, valueClass = 't
 
 interface KpiStripProps {
   claims: Claim[];
+  avgResolutionDays?: number;
 }
 
-export const KpiStrip: React.FC<KpiStripProps> = ({ claims }) => {
+export const KpiStrip: React.FC<KpiStripProps> = ({ claims, avgResolutionDays }) => {
   const totalOpen = claims.filter((c) => c.status !== 'closed').length;
   const overdue = claims.filter((c) => c.status === 'overdue').length;
   const needEvidence = claims.filter((c) => c.status === 'evidence').length;
   const inReview = claims.filter((c) => c.status === 'review').length;
   const highRisk = claims.filter((c) => c.priority === 'critical').length;
+  const avgLabel = avgResolutionDays && avgResolutionDays > 0 ? `${avgResolutionDays}d` : '—';
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -43,7 +45,7 @@ export const KpiStrip: React.FC<KpiStripProps> = ({ claims }) => {
       <KpiCard label="Need Evidence" value={needEvidence} accent="bg-amber-500" valueClass="text-amber-600" />
       <KpiCard label="In Review" value={inReview} accent="bg-blue-500" valueClass="text-blue-600" />
       <KpiCard label="High Risk" value={highRisk} accent="bg-amber-500" valueClass="text-amber-600" />
-      <KpiCard label="Avg Resolution" value="11 days" accent="bg-gray-400" valueClass="text-gray-600" />
+      <KpiCard label="Avg Resolution" value={avgLabel} accent="bg-gray-400" valueClass="text-gray-600" />
     </div>
   );
 };
