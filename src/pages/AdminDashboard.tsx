@@ -371,7 +371,7 @@ const AdminDashboard = () => {
       case 'referrals':
         return <ReferralsTab />;
       case 'claims':
-        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin') {
+        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin' && effectiveUserRole !== 'claims_manager') {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
