@@ -147,6 +147,24 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
           <p className="text-xs text-muted-foreground">
             Saved against the customer and visible in the Cancellations tab. Editable later.
           </p>
+
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-dashed border-amber-300 bg-amber-50 p-3">
+            <Checkbox
+              id="is-test-cancellation"
+              checked={isTest}
+              onCheckedChange={(v) => setIsTest(!!v)}
+              disabled={isProcessing}
+              className="mt-0.5"
+            />
+            <div className="space-y-0.5">
+              <Label htmlFor="is-test-cancellation" className="text-sm font-medium cursor-pointer">
+                This is a test cancellation
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Excluded from commission, unwinds and the live cancellations report.
+              </p>
+            </div>
+          </div>
         </div>
 
         <AlertDialogFooter>
