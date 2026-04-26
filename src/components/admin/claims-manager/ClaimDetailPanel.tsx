@@ -70,9 +70,9 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
   const fire = (label: string) => () => alert(`${label}: ${claim.id} (${claim.reg})`);
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden max-w-full">
       {/* Header */}
-      <div className="flex items-start gap-3 p-4 border-b border-border bg-muted/30">
+      <div className="flex flex-wrap items-start gap-3 p-4 border-b border-border bg-muted/30">
         <div className="h-10 w-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-sm font-semibold shrink-0">
           {initials(claim.customerName)}
         </div>
@@ -105,12 +105,12 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
         {/* Column 1: Customer */}
         <div className="space-y-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {claim.email}</div>
-            <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {claim.phone}</div>
-            <div className="flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" /> {claim.reg}</div>
-            <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /> Plan tier: <span className="font-semibold">Platinum</span></div>
-            <div className="flex items-center gap-2"><History className="h-4 w-4 text-muted-foreground" /> Previous claims: <span className="font-semibold">2</span></div>
+          <div className="space-y-2 text-sm break-words">
+            <div className="flex items-start gap-2"><Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" /> <span className="break-all">{claim.email}</span></div>
+            <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground shrink-0" /> {claim.phone}</div>
+            <div className="flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground shrink-0" /> {claim.reg}</div>
+            <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground shrink-0" /> Plan tier: <span className="font-semibold">Platinum</span></div>
+            <div className="flex items-center gap-2"><History className="h-4 w-4 text-muted-foreground shrink-0" /> Previous claims: <span className="font-semibold">2</span></div>
           </div>
         </div>
 

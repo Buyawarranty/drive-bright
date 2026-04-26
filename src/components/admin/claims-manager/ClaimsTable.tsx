@@ -129,7 +129,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                     isCritical ? 'bg-red-50/60' : ''
                   } ${isSelected ? 'ring-2 ring-inset ring-blue-400' : ''}`}
                 >
-                  <td className="px-3 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 align-middle h-[52px]" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       className="h-4 w-4 rounded border-border"
@@ -138,10 +138,10 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                       aria-label={`Select claim ${c.id}`}
                     />
                   </td>
-                  <td className="px-3 py-3 align-middle"><PriorityBadge priority={c.priority} /></td>
-                  <td className="px-3 py-3 align-middle text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>
-                  <td className="px-3 py-3 align-middle whitespace-nowrap"><NumberPlate reg={c.reg} /></td>
-                  <td className="px-3 py-3 align-middle">
+                  <td className="px-3 align-middle h-[52px]"><PriorityBadge priority={c.priority} /></td>
+                  <td className="px-3 align-middle h-[52px] text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>
+                  <td className="px-3 align-middle h-[52px] whitespace-nowrap"><NumberPlate reg={c.reg} /></td>
+                  <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="shrink-0 h-8 w-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-semibold">
                         {initials(c.customerName)}
@@ -152,12 +152,12 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-3 align-middle">
+                  <td className="px-3 align-middle h-[52px]">
                     <div className="truncate max-w-[120px]" title={c.issue}>{c.issue}</div>
                   </td>
-                  <td className="px-3 py-3 align-middle"><AgePill days={c.ageInDays} /></td>
-                  <td className="px-3 py-3 align-middle"><StatusBadge status={c.status} /></td>
-                  <td className="px-3 py-3 align-middle whitespace-nowrap">
+                  <td className="px-3 align-middle h-[52px]"><AgePill days={c.ageInDays} /></td>
+                  <td className="px-3 align-middle h-[52px]"><StatusBadge status={c.status} /></td>
+                  <td className="px-3 align-middle h-[52px] whitespace-nowrap">
                     {isUnassigned ? (
                       <span className="inline-flex items-center gap-1 text-red-600 font-bold text-xs">
                         <AlertTriangle className="h-3.5 w-3.5" />
@@ -167,10 +167,10 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                       <span className="text-xs text-muted-foreground">{c.assignee}</span>
                     )}
                   </td>
-                  <td className={`px-3 py-3 align-middle text-right font-mono ${amountHigh ? 'text-red-600 font-semibold' : 'text-foreground'}`}>
+                  <td className={`px-3 align-middle h-[52px] text-right font-mono ${amountHigh ? 'text-red-600 font-semibold' : 'text-foreground'}`}>
                     £{c.amount.toLocaleString()}
                   </td>
-                  <td className="px-3 py-3 align-middle">
+                  <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center justify-end gap-1">
                       <IconBtn label="Approve" className="hover:text-green-600"><Check className="h-3.5 w-3.5" /></IconBtn>
                       <IconBtn label="Add note" className="hover:text-blue-600"><Pencil className="h-3.5 w-3.5" /></IconBtn>
