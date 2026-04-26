@@ -629,9 +629,16 @@ export const CancellationsTab: React.FC<{
                         <Badge variant="outline" className="text-xs">{record.plan_type}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="destructive" className="text-xs">
-                          {record.status}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge variant="destructive" className="text-xs">
+                            {record.status}
+                          </Badge>
+                          {record.is_test_cancellation && (
+                            <Badge variant="outline" className="text-[10px] border-amber-400 bg-amber-50 text-amber-700">
+                              TEST
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       {isFinancialRole && (
                         <TableCell className="text-sm font-medium">
