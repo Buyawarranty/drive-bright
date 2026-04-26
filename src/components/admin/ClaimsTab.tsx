@@ -455,11 +455,6 @@ export const ClaimsTab = ({
             </CardContent>
           </Card>
 
-          {/* Analytics */}
-          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
-            <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
-            <ClaimsAgeMileageAnalytics claims={claims.filter(c => c.status !== 'fake_test')} />
-          </div>
         </>
       )}
 
