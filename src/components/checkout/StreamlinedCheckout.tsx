@@ -1807,7 +1807,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               totalPrice={displayBumperTotal}
               isLoading={isLoading}
               onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
-              onPayClick={() => processPayment(selectedPayment || undefined)}
+              onPayClick={() => processPayment(selectedPaymentRef.current || selectedPayment || undefined)}
               onChangePlan={onBack}
               isMobile={true}
               startDate={startDate}
@@ -2425,7 +2425,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               originalPrice={bumperTotalPrice}
               savings={savings}
               isLoading={isLoading}
-              onPayClick={() => processPayment(selectedPayment || undefined)}
+              onPayClick={(paymentOverride) => processPayment(paymentOverride || selectedPaymentRef.current || selectedPayment || undefined)}
               planDurationMonths={paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36}
               promoOpen={promoOpen}
               setPromoOpen={setPromoOpen}
@@ -2534,7 +2534,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             fullPrice={discountedStripePrice}
             savings={savings}
             isLoading={isLoading}
-            onPayClick={() => processPayment(selectedPayment || undefined)}
+            onPayClick={() => processPayment(selectedPaymentRef.current || selectedPayment || undefined)}
             onChangePlan={onBack}
             startDate={startDate}
             onPaymentChange={async (payment) => {
@@ -2562,7 +2562,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         hasPromoDiscount={hasValidDiscountCodes}
         onPayClick={() => {
-          processPayment();
+          processPayment(selectedPaymentRef.current || selectedPayment || undefined);
         }}
         isVisible={showDesktopStickyBar}
         minimised={isBottomCtaFullyVisible}
@@ -2580,7 +2580,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         isFormValid={personalDetailsComplete && addressComplete}
         onPayClick={() => {
-          processPayment();
+          processPayment(selectedPaymentRef.current || selectedPayment || undefined);
         }}
         onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         minimised={isBottomCtaFullyVisible}

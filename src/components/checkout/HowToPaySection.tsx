@@ -15,7 +15,7 @@ interface HowToPaySectionProps {
   originalPrice: number;
   savings: number;
   isLoading: boolean;
-  onPayClick: () => void;
+  onPayClick: (paymentOverride?: 'monthly' | 'full') => void;
   // Plan duration for Platinum label
   planDurationMonths?: number;
   // Promo code props
@@ -82,8 +82,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
     if (selectedPayment !== payment) {
       onPaymentChange(payment);
     }
-    // Slight delay to allow state update to propagate
-    setTimeout(() => onPayClick(), 50);
+    // Pass explicit payment method to avoid stale-closure race conditions
+    // (otherwise Stripe button could route to Bumper before state updates)
+    onPayClick(payment);
   };
 
   return (
