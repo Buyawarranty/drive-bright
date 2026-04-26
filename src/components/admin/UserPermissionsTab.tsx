@@ -145,6 +145,8 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   },
   // Claims Agent: same tab access as admin (filtered) + full Claims access
   claims_agent: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  // Claims Manager: dedicated Claims access only (incl. Vehicle Intelligence sub-tab)
+  claims_manager: { tab_claims: true, tab_account: true },
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: {},
   guest: {},
@@ -165,7 +167,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager',
     permissions: {} as Record<string, boolean>
   });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -265,7 +267,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen', 'claims_agent'] as const;
+      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -533,6 +535,7 @@ export const UserPermissionsTab = () => {
       case 'sales': return <Users className="h-4 w-4" />;
       case 'dev_tester': return <TestTube className="h-4 w-4" />;
       case 'claims_agent': return <FileText className="h-4 w-4" />;
+      case 'claims_manager': return <FileText className="h-4 w-4" />;
       default: return <UserPlus className="h-4 w-4" />;
     }
   };
@@ -558,6 +561,7 @@ export const UserPermissionsTab = () => {
     if (role === 'lead_gen') return 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
     if (role === 'claims_agent') return 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600';
+    if (role === 'claims_manager') return 'bg-rose-700 hover:bg-rose-800 text-white border-rose-700';
     return '';
   };
 
@@ -927,6 +931,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
                     <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
+                    <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -1118,6 +1123,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
                     <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
+                    <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1214,7 +1220,7 @@ export const UserPermissionsTab = () => {
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.role)} className={`flex items-center gap-1 w-fit ${getRoleBadgeClassName(user.role)}`}>
                       {getRoleIcon(user.role)}
-                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role === 'claims_agent' ? 'Claims Agent' : user.role}
+                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role === 'claims_agent' ? 'Claims Agent' : user.role === 'claims_manager' ? 'Claims Manager' : user.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
