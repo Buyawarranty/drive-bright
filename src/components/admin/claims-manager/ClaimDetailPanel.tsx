@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { X, Phone, Mail, Car, Shield, History } from 'lucide-react';
+import { X, Phone, Mail, Car, Shield, History, Trash2, Loader2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import type { Claim } from '@/types/claim';
+import { useClaimNotes } from '@/hooks/useClaimNotes';
+import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 
 interface ClaimDetailPanelProps {
   claim: Claim | null;
@@ -31,12 +34,6 @@ const evidenceCls: Record<Claim['evidence'], string> = {
   Partial: 'text-amber-600',
   Received: 'text-green-600',
 };
-
-const TIMELINE = [
-  { color: 'bg-blue-500', text: 'Claim submitted by customer via online portal', time: '12 days ago' },
-  { color: 'bg-amber-500', text: 'Evidence requested — photos and repair quote', time: '8 days ago' },
-  { color: 'bg-green-500', text: 'Internal note added by claims handler', time: '2 days ago' },
-];
 
 const FooterBtn: React.FC<{ label: string; onClick: () => void; variant?: 'default' | 'primary' | 'danger' }> = ({
   label,
