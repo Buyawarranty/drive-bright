@@ -2562,7 +2562,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         hasPromoDiscount={hasValidDiscountCodes}
         onPayClick={() => {
-          processPayment();
+          processPayment(selectedPaymentRef.current || selectedPayment || undefined);
         }}
         isVisible={showDesktopStickyBar}
         minimised={isBottomCtaFullyVisible}
