@@ -44,6 +44,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
   }, []);
   const fetchNotificationsRef = useRef<(() => void) | null>(null);
   const lastLeadResubmissionToastRef = useRef<Record<string, number>>({});
+  const knownLeadResubmissionCountsRef = useRef<Record<string, number>>({});
 
   const fetchNotifications = useCallback(async () => {
     const currentReadIds = readIdsRef.current;
@@ -125,6 +126,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
       resubmissions?.forEach(r => {
         const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || r.email;
         const regInfo = r.vehicle_reg ? ` — ${r.vehicle_reg}` : '';
+        knownLeadResubmissionCountsRef.current[r.id] = r.resubmission_count || 0;
         allNotifications.push({
           id: `resub-${r.id}-${r.resubmission_count}`,
           type: 'lead_resubmission',
@@ -227,16 +229,27 @@ export const useAdminNotifications = (userRole?: string | null) => {
       }, (payload) => {
         const oldData = payload.old as { resubmission_count?: number };
         const newData = payload.new as { 
+          id?: string;
           resubmission_count?: number; 
           first_name?: string; 
           last_name?: string; 
           email?: string;
-          id?: string;
           vehicle_reg?: string;
         };
         
-        // Only fire when resubmission_count actually increased
-        if ((newData.resubmission_count || 0) > (oldData.resubmission_count || 0)) {
+        const newCount = newData.resubmission_count || 0;
+        const previousCount = typeof oldData.resubmission_count === 'number'
+          ? oldData.resubmission_count
+          : newData.id
+            ? knownLeadResubmissionCountsRef.current[newData.id]
+            : undefined;
+
+        if (newData.id) {
+          knownLeadResubmissionCountsRef.current[newData.id] = newCount;
+        }
+
+        // Only fire when resubmission_count actually increased; skip noisy updates when old count is unavailable.
+        if (previousCount !== undefined && newCount > previousCount) {
           const toastKey = `${newData.id || newData.email || 'lead'}-${newData.resubmission_count || 0}`;
           const now = Date.now();
           if (now - (lastLeadResubmissionToastRef.current[toastKey] || 0) < 30000) {
