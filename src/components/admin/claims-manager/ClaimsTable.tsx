@@ -6,6 +6,9 @@ interface ClaimsTableProps {
   claims: Claim[];
   onRowClick?: (claim: Claim) => void;
   selectedId?: string | null;
+  selectedIds?: Set<string>;
+  onToggleOne?: (id: string) => void;
+  onToggleAll?: (checked: boolean) => void;
 }
 
 const initials = (name: string) =>
@@ -70,14 +73,36 @@ const IconBtn: React.FC<{ label: string; children: React.ReactNode; className?: 
   </button>
 );
 
-export const ClaimsTable: React.FC<ClaimsTableProps> = ({ claims, onRowClick, selectedId }) => {
+export const ClaimsTable: React.FC<ClaimsTableProps> = ({
+  claims,
+  onRowClick,
+  selectedId,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
+}) => {
+  const allChecked = claims.length > 0 && claims.every((c) => selectedIds?.has(c.id));
+  const someChecked = !allChecked && claims.some((c) => selectedIds?.has(c.id));
+  const headerRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (headerRef.current) headerRef.current.indeterminate = someChecked;
+  }, [someChecked]);
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr className="text-left">
-              <th className="px-3 py-2 w-8"></th>
+              <th className="px-3 py-2 w-8" onClick={(e) => e.stopPropagation()}>
+                <input
+                  ref={headerRef}
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-border"
+                  checked={allChecked}
+                  onChange={(e) => onToggleAll?.(e.target.checked)}
+                  aria-label="Select all visible claims"
+                />
+              </th>
               <th className="px-3 py-2 font-semibold">Priority</th>
               <th className="px-3 py-2 font-semibold">Date</th>
               <th className="px-3 py-2 font-semibold">Reg</th>
@@ -105,7 +130,13 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({ claims, onRowClick, se
                   } ${isSelected ? 'ring-2 ring-inset ring-blue-400' : ''}`}
                 >
                   <td className="px-3 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
-                    <input type="checkbox" className="h-4 w-4 rounded border-border" />
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-border"
+                      checked={selectedIds?.has(c.id) ?? false}
+                      onChange={() => onToggleOne?.(c.id)}
+                      aria-label={`Select claim ${c.id}`}
+                    />
                   </td>
                   <td className="px-3 py-3 align-middle"><PriorityBadge priority={c.priority} /></td>
                   <td className="px-3 py-3 align-middle text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>

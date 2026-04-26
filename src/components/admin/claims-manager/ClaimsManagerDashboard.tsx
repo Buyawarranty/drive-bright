@@ -5,6 +5,7 @@ import { UrgencyBanner } from './UrgencyBanner';
 import { ClaimsTable } from './ClaimsTable';
 import { ClaimDetailPanel } from './ClaimDetailPanel';
 import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
+import { BulkActionsBar } from './BulkActionsBar';
 
 interface KpiCardProps {
   label: string;
@@ -50,7 +51,24 @@ const ClaimsManagerDashboard: React.FC = () => {
   const { claims } = useClaims();
   const [filters, setFilters] = useState<ClaimsFilters>(DEFAULT_FILTERS);
   const [selected, setSelected] = useState<Claim | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const filtered = useMemo(() => applyFilters(claims, filters), [claims, filters]);
+
+  const toggleOne = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleAll = (checked: boolean) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) filtered.forEach((c) => next.add(c.id));
+      else filtered.forEach((c) => next.delete(c.id));
+      return next;
+    });
 
   return (
     <div className="p-6 space-y-4">
@@ -60,7 +78,17 @@ const ClaimsManagerDashboard: React.FC = () => {
       <div className="px-1 text-sm text-muted-foreground">
         51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
       </div>
-      <ClaimsTable claims={filtered} onRowClick={setSelected} selectedId={selected?.id ?? null} />
+      {selectedIds.size > 0 && (
+        <BulkActionsBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+      )}
+      <ClaimsTable
+        claims={filtered}
+        onRowClick={setSelected}
+        selectedId={selected?.id ?? null}
+        selectedIds={selectedIds}
+        onToggleOne={toggleOne}
+        onToggleAll={toggleAll}
+      />
       {selected && <ClaimDetailPanel claim={selected} onClose={() => setSelected(null)} />}
     </div>
   );
