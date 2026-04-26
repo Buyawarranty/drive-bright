@@ -329,6 +329,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
+    if (userRole === 'claims_manager') {
+      // Claims Manager: dedicated Claims access (includes Vehicle Intelligence sub-tab) + account
+      const claimsManagerTabIds = ['claims', 'account'];
+      return defaultTabs.filter(tab => claimsManagerTabIds.includes(tab.id));
+    }
+
     if (userRole === 'accounts') {
       // Accounts role: new leads, quotes, customers, discount codes, policy letters, timesheets
       // (Claims is restricted to super_admin / admin only)
