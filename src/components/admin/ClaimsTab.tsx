@@ -335,7 +335,7 @@ export const ClaimsTab = ({
             variant="outline"
             size="sm"
             onClick={() => {
-              setActiveSubTab('claims');
+              setActiveSubTab('vehicle-intelligence');
               setTimeout(() => document.getElementById('claims-analytics-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
             }}
           >
@@ -380,7 +380,13 @@ export const ClaimsTab = ({
 
       {/* Vehicle Intelligence Sub-tab */}
       {activeSubTab === 'vehicle-intelligence' && (
-        <VehicleIntelligenceExplorer claims={claims.filter(c => c.status !== 'fake_test')} />
+        <div className="space-y-6">
+          <VehicleIntelligenceExplorer claims={claims.filter(c => c.status !== 'fake_test')} />
+          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
+            <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
+            <ClaimsAgeMileageAnalytics claims={claims.filter(c => c.status !== 'fake_test')} />
+          </div>
+        </div>
       )}
 
       {/* Claims List Sub-tab */}
@@ -449,11 +455,6 @@ export const ClaimsTab = ({
             </CardContent>
           </Card>
 
-          {/* Analytics */}
-          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
-            <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
-            <ClaimsAgeMileageAnalytics claims={claims.filter(c => c.status !== 'fake_test')} />
-          </div>
         </>
       )}
 

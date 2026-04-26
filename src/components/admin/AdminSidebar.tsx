@@ -330,8 +330,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts') {
-      // Accounts role: new leads, quotes, customers, discount codes, claims, policy letters, timesheets
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'claims', 'policy-documents', 'timesheets', 'account'];
+      // Accounts role: new leads, quotes, customers, discount codes, policy letters, timesheets
+      // (Claims is restricted to super_admin / admin only)
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
