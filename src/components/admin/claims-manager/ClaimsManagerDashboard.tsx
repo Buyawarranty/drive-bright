@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useClaims } from '@/hooks/useClaims';
 import type { Claim } from '@/types/claim';
 import { UrgencyBanner } from './UrgencyBanner';
 import { ClaimsTable } from './ClaimsTable';
+import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
 
 interface KpiCardProps {
   label: string;
@@ -49,13 +50,21 @@ export const KpiStrip: React.FC<KpiStripProps> = ({ claims }) => {
 };
 
 const ClaimsManagerDashboard: React.FC = () => {
-  const { claims, count } = useClaims();
+  const { claims } = useClaims();
+  const [filters, setFilters] = useState<ClaimsFilters>(DEFAULT_FILTERS);
+  const filtered = useMemo(() => applyFilters(claims, filters), [claims, filters]);
+
   return (
     <div className="p-6 space-y-4">
       <UrgencyBanner claims={claims} />
       <KpiStrip claims={claims} />
-      <ClaimsTable claims={claims} />
-      <p>Claims loaded: {count}</p>
+      <Toolbar filters={filters} onChange={setFilters} />
+      <div className="flex items-center justify-between px-1">
+        <div className="text-sm text-muted-foreground">
+          51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
+        </div>
+      </div>
+      <ClaimsTable claims={filtered} />
     </div>
   );
 };
