@@ -325,13 +325,54 @@ export const useMobileBackNavigation = ({
     window.addEventListener('pageshow', handlePageShow);
     window.addEventListener('pagehide', handlePageHide);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
+    // Allow intentional navigation via internal links (footer, logo, header nav)
+    // to escape the guard cleanly. Without this, clicking "Home" in the footer
+    // gets immediately bounced back to the current step by the popstate guard.
+    const handleIntentionalLinkClick = (event: MouseEvent) => {
+      // Ignore modified clicks (open in new tab etc.)
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest('a') as HTMLAnchorElement | null;
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (!href) return;
+      // Skip non-navigational anchors
+      if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+      if (anchor.target && anchor.target !== '_self') return;
+      if (anchor.hasAttribute('download')) return;
+
+      // Resolve to a same-origin URL
+      let url: URL;
+      try {
+        url = new URL(anchor.href, window.location.origin);
+      } catch {
+        return;
+      }
+      if (url.origin !== window.location.origin) return;
+
+      // Skip if it's a link back to the current funnel step (Back button etc.)
+      const sameStep = url.pathname === window.location.pathname &&
+        url.searchParams.get('step') === String(currentStepRef.current);
+      if (sameStep) return;
+
+      console.log('📱 Intentional internal link click — disarming guard for', url.pathname + url.search);
+      // Disarm the guard so the popstate handler treats this as an intentional exit.
+      isLeavingRef.current = true;
+      setHasShownConfirmOnThisStep(true);
+      guardEntriesCountRef.current = 0;
+    };
+    document.addEventListener('click', handleIntentionalLinkClick, true);
+
     return () => {
       console.log('📱 Cleaning up mobile navigation listeners');
       window.removeEventListener('popstate', handleBackNavigation);
       window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleIntentionalLinkClick, true);
     };
   }, [handleBackNavigation, currentStep, isGuarded, pushGuardEntries]);
 
