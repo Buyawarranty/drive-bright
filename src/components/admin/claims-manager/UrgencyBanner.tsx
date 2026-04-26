@@ -4,13 +4,15 @@ import type { Claim } from '@/types/claim';
 
 interface UrgencyBannerProps {
   claims: Claim[];
+  avgResolutionDays?: number;
 }
 
-export const UrgencyBanner: React.FC<UrgencyBannerProps> = ({ claims }) => {
+export const UrgencyBanner: React.FC<UrgencyBannerProps> = ({ claims, avgResolutionDays }) => {
   const overdueCount = claims.filter(c => c.status === 'overdue').length;
   const criticalCount = claims.filter(c => c.priority === 'critical').length;
   const evidenceCount = claims.filter(c => c.status === 'evidence').length;
   const inReviewCount = claims.filter(c => c.status === 'review').length;
+  const avgLabel = avgResolutionDays && avgResolutionDays > 0 ? `${avgResolutionDays} days` : '—';
 
   return (
     <div className="bg-slate-900 text-white rounded-lg p-5 flex flex-col lg:flex-row lg:items-center gap-4 shadow-md">
@@ -23,7 +25,7 @@ export const UrgencyBanner: React.FC<UrgencyBannerProps> = ({ claims }) => {
             Action required: {overdueCount} claims are overdue — {criticalCount} are high-risk
           </div>
           <div className="text-sm text-slate-300 mt-1">
-            Average resolution time is 11 days. {evidenceCount} claims waiting on customer evidence.
+            Average resolution time is {avgLabel}. {evidenceCount} claims waiting on customer evidence.
           </div>
         </div>
       </div>
