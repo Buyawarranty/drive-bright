@@ -105,9 +105,44 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
 
       for (const customer of customers) {
         try {
-          if (action === 'archive' || action === 'test' || action === 'fake' || action === 'duplicate') {
+          if (action === 'test') {
+            // Test cancellation: mark as Cancelled and flag is_test_cancellation,
+            // but DO NOT soft-delete and DO NOT show in real cancellations list.
+            // CancellationsTab "Real" view filters out is_test_cancellation = true.
+            const trimmedNote = (additionalNotes || '').trim();
+            const { error: customerError } = await supabase
+              .from('customers')
+              .update({
+                status: 'Cancelled',
+                is_test_cancellation: true,
+                cancellation_note: trimmedNote
+                  ? `[TEST CANCELLATION] ${trimmedNote}`
+                  : '[TEST CANCELLATION]',
+                cancellation_note_updated_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', customer.id);
+
+            if (customerError) throw customerError;
+
+            if (customer.policy_id) {
+              await supabase
+                .from('customer_policies')
+                .update({
+                  status: 'cancelled',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', customer.policy_id);
+
+              // Revoke portal access for test cancellations too
+              await supabase
+                .from('customer_policies')
+                .update({ user_id: null })
+                .eq('id', customer.policy_id);
+            }
+          } else if (action === 'archive' || action === 'fake' || action === 'duplicate') {
             // Soft delete - hide from view but keep in database
-            const statusUpdate = action === 'test' ? 'Test Purchase' : action === 'fake' ? 'Fake Lead' : action === 'duplicate' ? 'Duplicate' : undefined;
+            const statusUpdate = action === 'fake' ? 'Fake Lead' : action === 'duplicate' ? 'Duplicate' : undefined;
             
             const { error } = await supabase.rpc('soft_delete_customer', {
               customer_uuid: customer.id,
@@ -128,7 +163,6 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
               
               if (directError) throw directError;
             } else if (statusUpdate) {
-              // Update status to Test Purchase or Fake Lead
               await supabase
                 .from('customers')
                 .update({ status: statusUpdate })
@@ -137,7 +171,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             
             // Also archive related policies
             if (customer.policy_id) {
-              const policyStatus = action === 'test' ? 'test' : action === 'fake' ? 'fake_lead' : action === 'duplicate' ? 'duplicate' : undefined;
+              const policyStatus = action === 'fake' ? 'fake_lead' : action === 'duplicate' ? 'duplicate' : undefined;
               await supabase
                 .from('customer_policies')
                 .update({
@@ -185,7 +219,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
           }
 
           // Log the action as a note
-          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST PURCHASE ARCHIVED' : action === 'fake' ? 'FAKE LEAD ARCHIVED' : action === 'duplicate' ? 'DUPLICATE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
+          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST CANCELLATION (excluded from real cancellations)' : action === 'fake' ? 'FAKE LEAD ARCHIVED' : action === 'duplicate' ? 'DUPLICATE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
           const noteText = `WARRANTY ${actionLabel}\n` +
             `Reason: ${effectiveReason}\n` +
             `${action === 'refund' && refundAmount ? `Refund Amount: £${refundAmount}\n` : ''}` +
@@ -207,7 +241,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       }
 
       if (successCount > 0) {
-        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test and archived' : action === 'fake' ? 'marked as fake lead and archived' : action === 'duplicate' ? 'marked as duplicate and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
+        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test cancellation (hidden from real cancellations)' : action === 'fake' ? 'marked as fake lead and archived' : action === 'duplicate' ? 'marked as duplicate and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
         toast.success(
           isBulk 
             ? `${successCount} customer(s) ${actionText} successfully`
@@ -430,8 +464,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <FlaskConical className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-purple-800">
-                <p className="font-medium">Test purchase - Hidden from active view</p>
-                <p className="text-xs mt-1">Record will be marked as "Test Purchase" and moved to archive. Ideal for test transactions.</p>
+                <p className="font-medium">Test cancellation – not counted as a real cancellation</p>
+                <p className="text-xs mt-1">Warranty status will be set to "Cancelled" and flagged as a test. It will NOT appear in the real Cancellations list and is excluded from agent commission unwinds.</p>
               </div>
             </div>
           )}
