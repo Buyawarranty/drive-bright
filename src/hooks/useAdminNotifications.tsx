@@ -43,6 +43,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
     }, 1500);
   }, []);
   const fetchNotificationsRef = useRef<(() => void) | null>(null);
+  const lastLeadResubmissionToastRef = useRef<Record<string, number>>({});
 
   const fetchNotifications = useCallback(async () => {
     const currentReadIds = readIdsRef.current;
@@ -230,19 +231,28 @@ export const useAdminNotifications = (userRole?: string | null) => {
           first_name?: string; 
           last_name?: string; 
           email?: string;
+          id?: string;
           vehicle_reg?: string;
         };
         
         // Only fire when resubmission_count actually increased
         if ((newData.resubmission_count || 0) > (oldData.resubmission_count || 0)) {
+          const toastKey = `${newData.id || newData.email || 'lead'}-${newData.resubmission_count || 0}`;
+          const now = Date.now();
+          if (now - (lastLeadResubmissionToastRef.current[toastKey] || 0) < 30000) {
+            scheduleRefetch();
+            return;
+          }
+          lastLeadResubmissionToastRef.current[toastKey] = now;
+
           const name = [newData.first_name, newData.last_name].filter(Boolean).join(' ') || newData.email || 'Unknown';
           const regInfo = newData.vehicle_reg ? ` (${newData.vehicle_reg})` : '';
           
           toast('🔥 Lead Came Back!', {
             description: `${name}${regInfo} resubmitted — act fast!`,
-            duration: 10000,
+            duration: 4000,
             closeButton: true,
-            className: '!bg-purple-600 !text-white !border-purple-700 !p-2 !min-h-0 !w-[220px] !text-[11px] [&_*]:!text-white [&_[data-title]]:!text-[11px] [&_[data-title]]:!font-semibold [&_[data-description]]:!text-[10px] [&_[data-description]]:!leading-tight',
+            className: '!bg-primary !text-primary-foreground !border-primary !p-2 !min-h-0 !w-[220px] !text-[11px] [&_*]:!text-primary-foreground [&_[data-title]]:!text-[11px] [&_[data-title]]:!font-semibold [&_[data-description]]:!text-[10px] [&_[data-description]]:!leading-tight',
           });
           scheduleRefetch();
         }
