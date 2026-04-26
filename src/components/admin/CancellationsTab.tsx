@@ -188,7 +188,7 @@ export const CancellationsTab: React.FC<{
 
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at')
+        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at, is_test_cancellation')
         .or('status.ilike.cancelled,status.ilike.refunded')
         .order('updated_at', { ascending: false })
         .limit(3000);
