@@ -21,6 +21,14 @@ interface Save50PromoPopupProps {
   customerEmail?: string;
   vehicleReg?: string;
   hasDiscountApplied: boolean;
+  /**
+   * When true (e.g. the embedded Stripe card form is open), the popup must
+   * stay suppressed. Card-detail typing happens inside Stripe's iframe and
+   * does NOT bubble window events, so the inactivity timer would otherwise
+   * fire while the user is mid-payment and make them think their previously
+   * applied promo was lost.
+   */
+  suppress?: boolean;
   onApplied: (discount: {
     code: string;
     type: 'percentage' | 'fixed';
