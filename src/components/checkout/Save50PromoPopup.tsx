@@ -66,6 +66,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   customerEmail,
   vehicleReg,
   hasDiscountApplied,
+  suppress = false,
   onApplied,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,8 +76,14 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   const inactivityTimer = useRef<number | null>(null);
   const hasShownThisSession = useRef(false);
 
+  // Auto-close if the parent suppresses (e.g. user opened Stripe payment form)
+  useEffect(() => {
+    if (suppress && isOpen) setIsOpen(false);
+  }, [suppress, isOpen]);
+
   // Check eligibility & decide whether to arm the inactivity timer
   useEffect(() => {
+    if (suppress) return;
     if (hasDiscountApplied) return;
     if (orderTotal < MIN_SPEND) return;
 
