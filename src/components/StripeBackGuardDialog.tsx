@@ -68,29 +68,33 @@ export const StripeBackGuardDialog: React.FC = () => {
 
   return (
     <AlertDialog open={open}>
-      <AlertDialogContent className="max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl">
+      <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg rounded-2xl p-6 sm:p-8 shadow-2xl border-2">
+        <AlertDialogHeader className="text-left">
+          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <ShieldCheck className="h-6 w-6 text-primary" />
+          </div>
+          <AlertDialogTitle className="text-2xl font-bold">
             Cancel your payment?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-base text-muted-foreground">
+          <AlertDialogDescription className="text-base text-muted-foreground leading-relaxed">
             You were on the secure Stripe payment page. Do you want to cancel
             the payment and return to the checkout, or continue paying?
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogAction
-            onClick={handleResumePayment}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground order-1 sm:order-2"
-          >
-            No, continue payment
-          </AlertDialogAction>
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3 mt-2">
           <AlertDialogCancel
             onClick={handleCancelPayment}
-            className="mt-0 order-2 sm:order-1"
+            className="mt-0 order-2 sm:order-1 sm:flex-1"
           >
             Yes, cancel
           </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleResumePayment}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground order-1 sm:order-2 sm:flex-1 group font-semibold shadow-md hover:shadow-lg transition-all"
+          >
+            No, continue payment
+            <ArrowRight className="ml-2 h-5 w-5 stroke-[3] transition-transform group-hover:translate-x-1" />
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
