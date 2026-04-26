@@ -8,6 +8,8 @@ import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
 
 const LEAD_TAG_BATCH_SIZE = 300;
+const INITIAL_LEADS_LOAD_TIMEOUT_MS = 12000;
+const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 
 type PendingStatusUpdate = {
@@ -361,7 +363,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           initialLoadStartedRef.current = false;
           isFetchingRef.current = false;
           loadingTimeoutRef.current = null;
-        }, 12000);
+        }, INITIAL_LEADS_LOAD_TIMEOUT_MS);
       }
 
       // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
@@ -486,17 +488,21 @@ export const useLeads = (options?: UseLeadsOptions) => {
             leadIdBatches.push(salesLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
           }
 
-          const tagBatchResults = await Promise.all(
-            leadIdBatches.map(async (batch) =>
-              await supabase
-                .from('lead_tag_assignments')
-                .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-                .in('lead_id', batch)
-            )
-          );
+          for (const batch of leadIdBatches) {
+            const { data, error } = await withTimeout(
+              (async () =>
+                await supabase
+                  .from('lead_tag_assignments')
+                  .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+                  .in('lead_id', batch))(),
+              LEAD_TAG_BATCH_TIMEOUT_MS,
+              'Lead tag lookup timed out'
+            );
 
-          tagBatchResults.forEach(({ data, error }) => {
-            if (error) throw error;
+            if (error) {
+              console.warn('[Leads] Tag batch fetch failed, skipping batch:', error);
+              continue;
+            }
 
             (data || []).forEach((assignment: any) => {
               if (!tagsByLeadId[assignment.lead_id]) {
@@ -506,7 +512,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                 tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
               }
             });
-          });
+          }
         }
       } catch (tagError) {
         console.warn('[Leads] Tag fetch failed, continuing without tags:', tagError);

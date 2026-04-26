@@ -43,6 +43,8 @@ export const useAdminNotifications = (userRole?: string | null) => {
     }, 1500);
   }, []);
   const fetchNotificationsRef = useRef<(() => void) | null>(null);
+  const lastLeadResubmissionToastRef = useRef<Record<string, number>>({});
+  const knownLeadResubmissionCountsRef = useRef<Record<string, number>>({});
 
   const fetchNotifications = useCallback(async () => {
     const currentReadIds = readIdsRef.current;
@@ -124,6 +126,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
       resubmissions?.forEach(r => {
         const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || r.email;
         const regInfo = r.vehicle_reg ? ` — ${r.vehicle_reg}` : '';
+        knownLeadResubmissionCountsRef.current[r.id] = r.resubmission_count || 0;
         allNotifications.push({
           id: `resub-${r.id}-${r.resubmission_count}`,
           type: 'lead_resubmission',
@@ -226,6 +229,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
       }, (payload) => {
         const oldData = payload.old as { resubmission_count?: number };
         const newData = payload.new as { 
+          id?: string;
           resubmission_count?: number; 
           first_name?: string; 
           last_name?: string; 
@@ -233,16 +237,35 @@ export const useAdminNotifications = (userRole?: string | null) => {
           vehicle_reg?: string;
         };
         
-        // Only fire when resubmission_count actually increased
-        if ((newData.resubmission_count || 0) > (oldData.resubmission_count || 0)) {
+        const newCount = newData.resubmission_count || 0;
+        const previousCount = typeof oldData.resubmission_count === 'number'
+          ? oldData.resubmission_count
+          : newData.id
+            ? knownLeadResubmissionCountsRef.current[newData.id]
+            : undefined;
+
+        if (newData.id) {
+          knownLeadResubmissionCountsRef.current[newData.id] = newCount;
+        }
+
+        // Only fire when resubmission_count actually increased; skip noisy updates when old count is unavailable.
+        if (previousCount !== undefined && newCount > previousCount) {
+          const toastKey = `${newData.id || newData.email || 'lead'}-${newData.resubmission_count || 0}`;
+          const now = Date.now();
+          if (now - (lastLeadResubmissionToastRef.current[toastKey] || 0) < 30000) {
+            scheduleRefetch();
+            return;
+          }
+          lastLeadResubmissionToastRef.current[toastKey] = now;
+
           const name = [newData.first_name, newData.last_name].filter(Boolean).join(' ') || newData.email || 'Unknown';
           const regInfo = newData.vehicle_reg ? ` (${newData.vehicle_reg})` : '';
           
           toast('🔥 Lead Came Back!', {
             description: `${name}${regInfo} resubmitted — act fast!`,
-            duration: 10000,
+            duration: 4000,
             closeButton: true,
-            className: '!bg-purple-600 !text-white !border-purple-700 !p-2 !min-h-0 !w-[220px] !text-[11px] [&_*]:!text-white [&_[data-title]]:!text-[11px] [&_[data-title]]:!font-semibold [&_[data-description]]:!text-[10px] [&_[data-description]]:!leading-tight',
+            className: '!bg-primary !text-primary-foreground !border-primary !p-2 !min-h-0 !w-[220px] !text-[11px] [&_*]:!text-primary-foreground [&_[data-title]]:!text-[11px] [&_[data-title]]:!font-semibold [&_[data-description]]:!text-[10px] [&_[data-description]]:!leading-tight',
           });
           scheduleRefetch();
         }
