@@ -219,7 +219,6 @@ export const W2000DataPreview: React.FC<W2000DataPreviewProps> = ({ customer }) 
   };
 
   const addOns = [
-    { key: 'mot_fee', label: 'MOT Test Fee', value: w2000Data.mot_fee },
     { key: 'tyre_cover', label: 'Tyre Cover', value: w2000Data.tyre_cover },
     { key: 'wear_tear', label: 'Wear & Tear', value: w2000Data.wear_tear },
     { key: 'europe_cover', label: 'Europe Cover', value: w2000Data.europe_cover },
