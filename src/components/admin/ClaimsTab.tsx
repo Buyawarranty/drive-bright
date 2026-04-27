@@ -293,12 +293,29 @@ export const ClaimsTab = ({
             selectedIds={selectedIds}
             onToggleOne={toggleOne}
             onToggleAll={toggleAll}
+            onApprove={async (c) => {
+              try {
+                const { error } = await supabase
+                  .from('claims_submissions')
+                  .update({ status: 'approved', approved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+                  .eq('id', c.id);
+                if (error) throw error;
+                toast({ title: 'Approved', description: `Claim for ${c.customerName} approved.` });
+                await refetchAll();
+              } catch (e: any) {
+                toast({ title: 'Failed', description: e?.message || 'Could not approve claim', variant: 'destructive' });
+              }
+            }}
+            onCall={(c) => {
+              if (c.phone) window.location.href = `tel:${c.phone}`;
+            }}
           />
 
           {selectedPanelClaim && (
             <ClaimDetailPanel
               claim={selectedPanelClaim}
               onClose={() => setSelectedPanelClaim(null)}
+              onUpdated={refetchAll}
             />
           )}
         </>
