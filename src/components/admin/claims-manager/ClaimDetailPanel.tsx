@@ -185,7 +185,7 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
         <div className="min-w-0 flex-1">
           <div className="font-semibold text-foreground truncate">{claim.customerName}</div>
           <div className="text-xs text-muted-foreground">
-            Claim #{claim.reg} · Opened {claim.date}
+            Claim #BAW-{claim.reg} · Opened {claim.date}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
