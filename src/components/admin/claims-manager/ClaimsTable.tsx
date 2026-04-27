@@ -118,6 +118,44 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
   </span>
 );
 
+const DaysOnRiskCell: React.FC<{ days: number | null | undefined }> = ({ days }) => {
+  if (days == null) return <span className="text-xs text-muted-foreground">—</span>;
+  // ≤30 days: red, ≤60 days: yellow, otherwise neutral
+  const color =
+    days <= 30 ? 'text-red-600 fill-red-600' : days <= 60 ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground fill-transparent';
+  return (
+    <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
+      <Circle className={`h-2.5 w-2.5 ${color}`} strokeWidth={2} />
+      <span className="text-xs font-semibold text-foreground">{days}d</span>
+    </div>
+  );
+};
+
+const MileageSinceCoverCell: React.FC<{
+  purchase: number | null | undefined;
+  current: number | null | undefined;
+}> = ({ purchase, current }) => {
+  if (purchase == null && current == null) {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+  const diff = purchase != null && current != null ? current - purchase : null;
+  return (
+    <div className="inline-flex items-center gap-1.5 whitespace-nowrap" title={`Purchased: ${purchase?.toLocaleString() ?? '—'} mi · Now: ${current?.toLocaleString() ?? '—'} mi`}>
+      <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+      <div className="text-xs leading-tight">
+        {diff != null ? (
+          <div className="font-semibold text-foreground">+{diff.toLocaleString()} mi</div>
+        ) : (
+          <div className="font-semibold text-foreground">{(current ?? purchase)?.toLocaleString()} mi</div>
+        )}
+        <div className="text-[10px] text-muted-foreground">
+          {purchase != null ? `${purchase.toLocaleString()}` : '—'} → {current != null ? `${current.toLocaleString()}` : '—'}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const IconBtn: React.FC<{
   label: string;
   children: React.ReactNode;
