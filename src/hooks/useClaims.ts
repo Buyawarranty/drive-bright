@@ -223,12 +223,12 @@ export const useClaims = (): UseClaimsResult => {
         previousClaims: Math.max(0, totalForReg - 1),
         rawStatus: r.status ?? null,
         rawPriority: r.priority ?? null,
-        daysOnRisk:
-          r.days_on_risk != null
-            ? Number(r.days_on_risk)
-            : r.warranty_start_date
-            ? Math.max(0, Math.floor((Date.now() - new Date(r.warranty_start_date).getTime()) / (1000 * 60 * 60 * 24)))
-            : null,
+        daysOnRisk: (() => {
+          if (r.days_on_risk != null) return Number(r.days_on_risk);
+          const start = r.warranty_start_date || customerStartByReg[normReg(reg)];
+          if (!start) return null;
+          return Math.max(0, Math.floor((Date.now() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)));
+        })(),
         purchaseMileage:
           r.purchase_mileage != null
             ? Number(r.purchase_mileage)
