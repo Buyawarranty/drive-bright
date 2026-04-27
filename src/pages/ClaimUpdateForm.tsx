@@ -248,11 +248,11 @@ const ClaimUpdateForm = () => {
 
               {/* File Upload */}
               <div className="space-y-1.5">
-                <Label>Upload Invoice / Supporting Document</Label>
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-[#1e3a5f] transition-colors cursor-pointer"
-                  onClick={() => document.getElementById('file-upload')?.click()}>
-                  <input id="file-upload" type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <Label htmlFor="file-upload">Upload Invoice / Supporting Document</Label>
+                <label
+                  htmlFor="file-upload"
+                  className="block border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-[#1e3a5f] transition-colors cursor-pointer"
+                >
                   {file ? (
                     <div className="flex items-center justify-center gap-2 text-[#1e3a5f]">
                       <FileText className="h-5 w-5" />
@@ -266,7 +266,14 @@ const ClaimUpdateForm = () => {
                       <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG, DOC (max 20MB)</p>
                     </div>
                   )}
-                </div>
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  className="sr-only"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
               </div>
 
               <Button type="submit" className="w-full h-12 text-base font-semibold bg-[#1e3a5f] hover:bg-[#0f2744]" disabled={submitting || !statusUpdate || !respondentName || !respondentEmail}>
