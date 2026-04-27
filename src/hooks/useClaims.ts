@@ -149,6 +149,12 @@ export const useClaims = (): UseClaimsResult => {
       });
 
       const mileageByReg: Record<string, number> = {};
+      const startByCustomerId: Record<string, string> = {};
+      (policyRows || []).forEach((p: any) => {
+        if (p.customer_id && p.policy_start_date && !startByCustomerId[p.customer_id]) {
+          startByCustomerId[p.customer_id] = p.policy_start_date;
+        }
+      });
       const startByReg: Record<string, string> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
@@ -157,8 +163,9 @@ export const useClaims = (): UseClaimsResult => {
         if (Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
           mileageByReg[reg] = m;
         }
-        if (c.warranty_start_date && !startByReg[reg]) {
-          startByReg[reg] = c.warranty_start_date;
+        const start = c.id ? startByCustomerId[c.id] : null;
+        if (start && !startByReg[reg]) {
+          startByReg[reg] = start;
         }
       });
 
