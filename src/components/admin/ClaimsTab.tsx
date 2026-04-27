@@ -300,6 +300,7 @@ export const ClaimsTab = ({
             selectedIds={selectedIds}
             onToggleOne={toggleOne}
             onToggleAll={toggleAll}
+            onUpdated={refetchAll}
             onApprove={async (c) => {
               try {
                 const { error } = await supabase
