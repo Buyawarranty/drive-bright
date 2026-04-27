@@ -7,6 +7,7 @@ import { ClaimDetailPanel } from './ClaimDetailPanel';
 import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
 import { BulkActionsBar } from './BulkActionsBar';
 import { Header } from './Header';
+import { DateNavigator, getRange, type DateRangeValue } from './DateNavigator';
 
 interface KpiCardProps {
   label: string;
