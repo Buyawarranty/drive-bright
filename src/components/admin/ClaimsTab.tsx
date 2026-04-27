@@ -136,6 +136,13 @@ export const ClaimsTab = ({
   // Apply toolbar filters
   const filtered = useMemo(() => applyFilters(managerClaims, filters), [managerClaims, filters]);
 
+  // Keep the open detail panel in sync with the latest data after a refetch
+  useEffect(() => {
+    if (!selectedPanelClaim) return;
+    const fresh = managerClaims.find((c) => c.id === selectedPanelClaim.id);
+    if (fresh && fresh !== selectedPanelClaim) setSelectedPanelClaim(fresh);
+  }, [managerClaims, selectedPanelClaim]);
+
   const totalCount = managerClaims.length;
   const shownCount = filtered.length;
 
