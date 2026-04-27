@@ -98,6 +98,7 @@ const ClaimsManagerDashboard: React.FC = () => {
       <div className="p-6 space-y-4">
         <UrgencyBanner claims={claims} />
         <KpiStrip claims={claims} />
+        <DateNavigator value={dateRange} onChange={setDateRange} />
         <Toolbar filters={filters} onChange={setFilters} claims={claims} />
         <div className="px-1 text-sm text-muted-foreground">
           51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
