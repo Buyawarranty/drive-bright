@@ -220,6 +220,8 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
               <th className="px-3 py-2 font-semibold">Age</th>
               <th className="px-3 py-2 font-semibold">Status</th>
               <th className="px-3 py-2 font-semibold">Assignee</th>
+              <th className="px-3 py-2 font-semibold">Days on risk</th>
+              <th className="px-3 py-2 font-semibold">Mileage SC</th>
               <th className="px-3 py-2 font-semibold text-right">Amount</th>
               <th className="px-3 py-2 font-semibold text-right">Actions</th>
             </tr>
