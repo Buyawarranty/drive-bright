@@ -237,7 +237,7 @@ export const useClaims = (): UseClaimsResult => {
         attachments: buildAttachments(r),
       };
     });
-  }, [rows, staffById, customerMileageByReg]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
