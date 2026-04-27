@@ -668,6 +668,9 @@ export const CustomersTab = ({
     // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
+      // Normalized form (whitespace removed) for reg-plate / warranty-number style fields
+      const searchCompact = searchLower.replace(/\s+/g, '');
+      const compact = (v?: string | null) => (v ?? '').toLowerCase().replace(/\s+/g, '');
       const isSalesRole = isSalesScopedRole;
 
       filtered = filtered.filter(customer => {
@@ -678,7 +681,8 @@ export const CustomersTab = ({
           customer.first_name?.toLowerCase().includes(searchLower) ||
           customer.last_name?.toLowerCase().includes(searchLower) ||
           customer.phone?.toLowerCase().includes(searchLower) ||
-          customer.registration_plate?.toLowerCase().includes(searchLower);
+          customer.registration_plate?.toLowerCase().includes(searchLower) ||
+          compact(customer.registration_plate).includes(searchCompact);
 
         if (isSalesRole) return coreMatch;
 
@@ -697,9 +701,12 @@ export const CustomersTab = ({
           customer.town?.toLowerCase().includes(searchLower) ||
           customer.county?.toLowerCase().includes(searchLower) ||
           customer.postcode?.toLowerCase().includes(searchLower) ||
+          compact(customer.postcode).includes(searchCompact) ||
           customer.country?.toLowerCase().includes(searchLower) ||
           customer.warranty_reference_number?.toLowerCase().includes(searchLower) ||
+          compact(customer.warranty_reference_number).includes(searchCompact) ||
           customer.warranty_number?.toLowerCase().includes(searchLower) ||
+          compact(customer.warranty_number).includes(searchCompact) ||
           customer.plan_type?.toLowerCase().includes(searchLower) ||
           customer.payment_type?.toLowerCase().includes(searchLower) ||
           customer.discount_code?.toLowerCase().includes(searchLower) ||
@@ -707,9 +714,11 @@ export const CustomersTab = ({
           customer.bumper_order_id?.toLowerCase().includes(searchLower) ||
           customer.stripe_customer_id?.toLowerCase().includes(searchLower) ||
           customer.status?.toLowerCase().includes(searchLower) ||
-          customer.customer_policies?.some(policy => 
+          customer.customer_policies?.some(policy =>
             policy.policy_number?.toLowerCase().includes(searchLower) ||
-            policy.warranty_number?.toLowerCase().includes(searchLower)
+            policy.warranty_number?.toLowerCase().includes(searchLower) ||
+            compact(policy.policy_number).includes(searchCompact) ||
+            compact(policy.warranty_number).includes(searchCompact)
           );
       });
     }
