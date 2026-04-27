@@ -1,6 +1,8 @@
 import React from 'react';
-import { Check, Pencil, Phone, AlertTriangle } from 'lucide-react';
+import { Check, Pencil, Phone, AlertTriangle, ChevronDown } from 'lucide-react';
 import type { Claim } from '@/types/claim';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ClaimsTableProps {
   claims: Claim[];
@@ -11,6 +13,7 @@ interface ClaimsTableProps {
   onToggleAll?: (checked: boolean) => void;
   onApprove?: (claim: Claim) => void;
   onCall?: (claim: Claim) => void;
+  onUpdated?: () => void | Promise<void>;
 }
 
 const initials = (name: string) =>
@@ -30,17 +33,71 @@ const PriorityBadge: React.FC<{ priority: Claim['priority'] }> = ({ priority }) 
   );
 };
 
-const StatusBadge: React.FC<{ status: Claim['status'] }> = ({ status }) => {
-  const map: Record<Claim['status'], { label: string; cls: string }> = {
-    overdue: { label: 'Overdue', cls: 'bg-red-100 text-red-700 border-red-200' },
-    evidence: { label: 'Evidence Needed', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
-    review: { label: 'In Review', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
-    approved: { label: 'Approved', cls: 'bg-green-100 text-green-700 border-green-200' },
-    open: { label: 'Open', cls: 'bg-gray-100 text-gray-700 border-gray-200' },
-    closed: { label: 'Closed', cls: 'bg-gray-100 text-gray-600 border-gray-200' },
+const STATUS_OPTIONS: { value: Claim['status']; label: string; cls: string }[] = [
+  { value: 'open', label: 'Open', cls: 'bg-gray-100 text-gray-700 border-gray-300' },
+  { value: 'evidence', label: 'Evidence Needed', cls: 'bg-amber-100 text-amber-700 border-amber-300' },
+  { value: 'review', label: 'In Review', cls: 'bg-blue-100 text-blue-700 border-blue-300' },
+  { value: 'approved', label: 'Approved', cls: 'bg-green-100 text-green-700 border-green-300' },
+  { value: 'overdue', label: 'Overdue', cls: 'bg-red-100 text-red-700 border-red-300' },
+  { value: 'closed', label: 'Closed', cls: 'bg-gray-100 text-gray-600 border-gray-300' },
+];
+
+// Map our simplified UI status -> raw DB status the schema expects
+const UI_TO_DB_STATUS: Record<Claim['status'], string> = {
+  open: 'new',
+  evidence: 'awaiting_info',
+  review: 'in_review',
+  approved: 'approved',
+  overdue: 'in_review',
+  closed: 'closed',
+};
+
+const StatusSelect: React.FC<{
+  claim: Claim;
+  onUpdated?: () => void | Promise<void>;
+}> = ({ claim, onUpdated }) => {
+  const { toast } = useToast();
+  const [busy, setBusy] = React.useState(false);
+  const opt = STATUS_OPTIONS.find((o) => o.value === claim.status) ?? STATUS_OPTIONS[0];
+
+  const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value as Claim['status'];
+    if (next === claim.status) return;
+    setBusy(true);
+    try {
+      const dbStatus = UI_TO_DB_STATUS[next];
+      const patch: Record<string, any> = { status: dbStatus, updated_at: new Date().toISOString() };
+      if (next === 'approved') patch.approved_at = new Date().toISOString();
+      const { error } = await supabase.from('claims_submissions').update(patch).eq('id', claim.id);
+      if (error) throw error;
+      toast({ title: 'Status updated', description: `Set to ${STATUS_OPTIONS.find((o) => o.value === next)?.label}` });
+      await onUpdated?.();
+    } catch (err: any) {
+      console.error('Status update failed', err);
+      toast({ title: 'Update failed', description: err?.message || 'Could not update status', variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
   };
-  const { label, cls } = map[status];
-  return <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border ${cls}`}>{label}</span>;
+
+  return (
+    <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
+      <select
+        value={claim.status}
+        onChange={handleChange}
+        disabled={busy}
+        aria-label="Update claim status"
+        className={`appearance-none pl-2 pr-6 py-0.5 rounded text-[11px] font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 ${opt.cls}`}
+      >
+        {STATUS_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value} className="bg-card text-foreground">
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 opacity-70" />
+    </div>
+  );
 };
 
 const AgePill: React.FC<{ days: number }> = ({ days }) => {
@@ -90,6 +147,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
   onToggleAll,
   onApprove,
   onCall,
+  onUpdated,
 }) => {
   const allChecked = claims.length > 0 && claims.every((c) => selectedIds?.has(c.id));
   const someChecked = !allChecked && claims.some((c) => selectedIds?.has(c.id));
@@ -166,7 +224,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                     <div className="truncate max-w-[120px]" title={c.issue}>{c.issue}</div>
                   </td>
                   <td className="px-3 align-middle h-[52px]"><AgePill days={c.ageInDays} /></td>
-                  <td className="px-3 align-middle h-[52px]"><StatusBadge status={c.status} /></td>
+                  <td className="px-3 align-middle h-[52px]"><StatusSelect claim={c} onUpdated={onUpdated} /></td>
                   <td className="px-3 align-middle h-[52px] whitespace-nowrap">
                     {isUnassigned ? (
                       <span className="inline-flex items-center gap-1 text-red-600 font-bold text-xs">
