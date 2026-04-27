@@ -182,9 +182,29 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                   </td>
                   <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center justify-end gap-1">
-                      <IconBtn label="Approve" className="hover:text-green-600"><Check className="h-3.5 w-3.5" /></IconBtn>
-                      <IconBtn label="Add note" className="hover:text-blue-600"><Pencil className="h-3.5 w-3.5" /></IconBtn>
-                      <IconBtn label="Call customer" className="hover:text-blue-600"><Phone className="h-3.5 w-3.5" /></IconBtn>
+                      <IconBtn
+                        label={c.status === 'approved' || c.status === 'closed' ? 'Already approved/closed' : 'Approve claim'}
+                        className="hover:text-green-600 hover:border-green-300"
+                        disabled={c.status === 'approved' || c.status === 'closed'}
+                        onClick={() => onApprove?.(c)}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </IconBtn>
+                      <IconBtn
+                        label="Open details"
+                        className="hover:text-blue-600 hover:border-blue-300"
+                        onClick={() => onRowClick?.(c)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </IconBtn>
+                      <IconBtn
+                        label={c.phone ? `Call ${c.phone}` : 'No phone on file'}
+                        className="hover:text-blue-600 hover:border-blue-300"
+                        disabled={!c.phone}
+                        onClick={() => onCall?.(c)}
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </IconBtn>
                     </div>
                   </td>
                 </tr>
