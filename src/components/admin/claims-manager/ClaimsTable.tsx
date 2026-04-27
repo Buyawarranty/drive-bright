@@ -204,20 +204,35 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
   renderExpanded,
 }) => {
   const [risksSort, setRisksSort] = React.useState<'none' | 'desc' | 'asc'>('none');
+  // Date sort: 'desc' = newest first (default), 'asc' = oldest first
+  const [dateSort, setDateSort] = React.useState<'desc' | 'asc'>('desc');
   const sortedClaims = React.useMemo(() => {
-    if (risksSort === 'none') return claims;
     const arr = [...claims];
+    if (risksSort !== 'none') {
+      arr.sort((a, b) => {
+        const av = a.daysOnRisk ?? -Infinity;
+        const bv = b.daysOnRisk ?? -Infinity;
+        return risksSort === 'desc' ? bv - av : av - bv;
+      });
+      return arr;
+    }
+    // Default: sort by claim date. Smaller ageInDays = newer.
     arr.sort((a, b) => {
-      const av = a.daysOnRisk ?? -Infinity;
-      const bv = b.daysOnRisk ?? -Infinity;
-      return risksSort === 'desc' ? bv - av : av - bv;
+      const av = a.ageInDays ?? 0;
+      const bv = b.ageInDays ?? 0;
+      return dateSort === 'desc' ? av - bv : bv - av;
     });
     return arr;
-  }, [claims, risksSort]);
+  }, [claims, risksSort, dateSort]);
   const cycleRisksSort = () =>
     setRisksSort((s) => (s === 'none' ? 'desc' : s === 'desc' ? 'asc' : 'none'));
+  const toggleDateSort = () => {
+    setRisksSort('none');
+    setDateSort((s) => (s === 'desc' ? 'asc' : 'desc'));
+  };
   const RisksSortIcon =
     risksSort === 'desc' ? ArrowDown : risksSort === 'asc' ? ArrowUp : ArrowUpDown;
+  const DateSortIcon = dateSort === 'desc' ? ArrowDown : ArrowUp;
 
   const allChecked = claims.length > 0 && claims.every((c) => selectedIds?.has(c.id));
   const someChecked = !allChecked && claims.some((c) => selectedIds?.has(c.id));
