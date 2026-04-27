@@ -59,17 +59,23 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
   </span>
 );
 
-const IconBtn: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
-  label,
-  children,
-  className = '',
-}) => (
+const IconBtn: React.FC<{
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: (e: React.MouseEvent) => void;
+  disabled?: boolean;
+}> = ({ label, children, className = '', onClick, disabled }) => (
   <button
     type="button"
     title={label}
     aria-label={label}
-    onClick={(e) => e.stopPropagation()}
-    className={`inline-flex items-center justify-center h-7 w-7 rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors ${className}`}
+    disabled={disabled}
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick?.(e);
+    }}
+    className={`inline-flex items-center justify-center h-7 w-7 rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
   >
     {children}
   </button>
