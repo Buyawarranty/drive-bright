@@ -242,7 +242,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                 />
               </th>
               <th className="px-3 py-2 font-semibold">Priority</th>
-              <th className="px-3 py-2 font-semibold">Date</th>
+              <th className="px-3 py-2 font-semibold whitespace-nowrap">Claim date</th>
               <th className="px-3 py-2 font-semibold">Reg</th>
               <th className="px-3 py-2 font-semibold">Customer</th>
               <th className="px-3 py-2 font-semibold">Issue</th>
