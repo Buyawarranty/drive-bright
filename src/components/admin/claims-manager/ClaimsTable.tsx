@@ -150,12 +150,14 @@ const MileageSinceCoverCell: React.FC<{
     return <span className="text-xs text-muted-foreground">—</span>;
   }
   const diff = purchase != null && current != null ? current - purchase : null;
+  const sign = diff != null ? (diff > 0 ? '+' : diff < 0 ? '−' : '') : '';
+  const diffColor = diff == null ? 'text-foreground' : diff < 0 ? 'text-red-600' : 'text-foreground';
   return (
-    <div className="inline-flex items-center gap-1.5 whitespace-nowrap" title={`Purchased: ${purchase?.toLocaleString() ?? '—'} mi · Now: ${current?.toLocaleString() ?? '—'} mi`}>
+    <div className="inline-flex items-center gap-1.5 whitespace-nowrap" title={`Mileage at warranty purchase: ${purchase?.toLocaleString() ?? '—'} mi\nMileage on claim form: ${current?.toLocaleString() ?? '—'} mi`}>
       <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
       <div className="text-xs leading-tight">
         {diff != null ? (
-          <div className="font-semibold text-foreground">+{diff.toLocaleString()} mi</div>
+          <div className={`font-semibold ${diffColor}`}>{sign}{Math.abs(diff).toLocaleString()} mi</div>
         ) : (
           <div className="font-semibold text-foreground">{(current ?? purchase)?.toLocaleString()} mi</div>
         )}
