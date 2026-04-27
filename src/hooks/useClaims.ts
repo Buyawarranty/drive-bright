@@ -157,7 +157,21 @@ export const useClaims = (): UseClaimsResult => {
       regCounts.set(reg, (regCounts.get(reg) || 0) + 1);
     });
 
-    return rows.map((r): Claim => {
+    // Deduplicate: one row per customer (reg + normalized email/name).
+    // Rows are already ordered by created_at DESC, so the first occurrence wins.
+    const seen = new Set<string>();
+    const deduped = rows.filter((r) => {
+      const reg = (r.vehicle_registration || '').toString().toLowerCase().trim();
+      const email = (r.email || '').toString().toLowerCase().trim();
+      const name = (r.name || '').toString().toLowerCase().trim();
+      const key = `${reg}|${email || name}`;
+      if (!key || key === '|') return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return deduped.map((r): Claim => {
       const ageInDays = daysBetween(r.created_at);
       const amount = Number(r.payment_amount) || 0;
       const status = inferStatus(r.status, ageInDays);
