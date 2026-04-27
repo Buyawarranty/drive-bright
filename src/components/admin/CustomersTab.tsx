@@ -3033,33 +3033,24 @@ export const CustomersTab = ({
               </div>
             </div>
 
-             {/* Row 2: Sort, Date Range, Warranty Period, Purchase Source - hidden for sales agents */}
-            {!isSalesAgent && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-              {/* Sort by */}
-              <div className="space-y-1">
-                <Label htmlFor="sortBy" className="text-sm font-medium">Sort by</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger id="sortBy">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest first</SelectItem>
-                    <SelectItem value="oldest">Oldest first</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Row 2: Sort, Warranty Period, Purchase Source - hidden for sales agents */}
+             {!isSalesAgent && (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+               {/* Sort by */}
+               <div className="space-y-1">
+                 <Label htmlFor="sortBy" className="text-sm font-medium">Sort by</Label>
+                 <Select value={sortBy} onValueChange={setSortBy}>
+                   <SelectTrigger id="sortBy">
+                     <SelectValue />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="newest">Newest first</SelectItem>
+                     <SelectItem value="oldest">Oldest first</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
 
-              {/* Date Range Filter */}
-              <div className="space-y-1">
-                <Label className="text-sm font-medium invisible">Date Range</Label>
-                <DateRangeFilter
-                  dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
-                />
-              </div>
-
-              {/* Filter by Warranty Period */}
+               {/* Filter by Warranty Period */}
               <div className="space-y-1">
                 <Label htmlFor="warrantyPeriodFilter" className="text-sm font-medium">Warranty Period</Label>
                 <Select value={filterByWarrantyPeriod} onValueChange={setFilterByWarrantyPeriod}>
