@@ -182,6 +182,9 @@ export const useClaims = (): UseClaimsResult => {
         evidence: inferEvidence(r),
         tier: r.warranty_type || undefined,
         previousClaims: Math.max(0, totalForReg - 1),
+        rawStatus: r.status ?? null,
+        rawPriority: r.priority ?? null,
+        attachments: buildAttachments(r),
       };
     });
   }, [rows, staffById]);
