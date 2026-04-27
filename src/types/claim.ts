@@ -24,6 +24,12 @@ export interface Claim {
   // Raw values from DB so action handlers can update accurately
   rawStatus?: string | null;
   rawPriority?: string | null;
+  // Days since the warranty was purchased (warranty_start_date → today)
+  daysOnRisk?: number | null;
+  // Mileage when the warranty was purchased (Step 4 input)
+  purchaseMileage?: number | null;
+  // Mileage on the make-a-claim form
+  claimMileage?: number | null;
   // Attachments uploaded by the customer on /make-a-claim
   attachments?: ClaimAttachment[];
 }
