@@ -257,7 +257,18 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                 />
               </th>
               <th className="px-3 py-2 font-semibold">Priority</th>
-              <th className="px-3 py-2 font-semibold whitespace-nowrap">Claim date</th>
+              <th className="px-3 py-2 font-semibold whitespace-nowrap">
+                <button
+                  type="button"
+                  onClick={toggleDateSort}
+                  className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${risksSort === 'none' ? 'text-foreground' : ''}`}
+                  title={dateSort === 'desc' ? 'Newest first. Click for oldest first.' : 'Oldest first. Click for newest first.'}
+                  aria-label="Sort by claim date"
+                >
+                  Claim date
+                  <DateSortIcon className="h-3.5 w-3.5 text-orange-500" />
+                </button>
+              </th>
               <th className="px-3 py-2 font-semibold">Reg</th>
               <th className="px-3 py-2 font-semibold">Customer</th>
               <th className="px-3 py-2 font-semibold">Issue</th>
