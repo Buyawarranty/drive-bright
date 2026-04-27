@@ -494,7 +494,15 @@ const Index = () => {
       return step >= 1 && step <= 5 ? step : 1;
     }
     
-    // Priority 3: Check localStorage with 30-day expiry
+    // Fresh visits to the homepage should always show the homepage, not a
+    // previously saved checkout step. Saved state is only used when a URL
+    // explicitly asks for a step/restore/quote journey above.
+    if (window.location.pathname === '/') {
+      console.log('🏠 Fresh homepage visit detected — starting at step 1');
+      return 1;
+    }
+
+    // Priority 3: Check localStorage with 30-day expiry for non-home journey routes
     try {
       const saved = getWithTimestamp('buyawarranty_currentStep', 30);
       if (!saved) {
