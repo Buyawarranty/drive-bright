@@ -203,6 +203,22 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
   onUpdated,
   renderExpanded,
 }) => {
+  const [risksSort, setRisksSort] = React.useState<'none' | 'desc' | 'asc'>('none');
+  const sortedClaims = React.useMemo(() => {
+    if (risksSort === 'none') return claims;
+    const arr = [...claims];
+    arr.sort((a, b) => {
+      const av = a.daysOnRisk ?? -Infinity;
+      const bv = b.daysOnRisk ?? -Infinity;
+      return risksSort === 'desc' ? bv - av : av - bv;
+    });
+    return arr;
+  }, [claims, risksSort]);
+  const cycleRisksSort = () =>
+    setRisksSort((s) => (s === 'none' ? 'desc' : s === 'desc' ? 'asc' : 'none'));
+  const RisksSortIcon =
+    risksSort === 'desc' ? ArrowDown : risksSort === 'asc' ? ArrowUp : ArrowUpDown;
+
   const allChecked = claims.length > 0 && claims.every((c) => selectedIds?.has(c.id));
   const someChecked = !allChecked && claims.some((c) => selectedIds?.has(c.id));
   const headerRef = React.useRef<HTMLInputElement>(null);
@@ -233,14 +249,31 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
               <th className="px-3 py-2 font-semibold">Age</th>
               <th className="px-3 py-2 font-semibold">Status</th>
               <th className="px-3 py-2 font-semibold">Assignee</th>
-              <th className="px-3 py-2 font-semibold">Days on risk</th>
+              <th className="px-3 py-2 font-semibold">
+                <button
+                  type="button"
+                  onClick={cycleRisksSort}
+                  className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${risksSort !== 'none' ? 'text-foreground' : ''}`}
+                  title={
+                    risksSort === 'none'
+                      ? 'Sort: longest days on risk first'
+                      : risksSort === 'desc'
+                      ? 'Sorted longest → shortest. Click for shortest first.'
+                      : 'Sorted shortest → longest. Click to clear sort.'
+                  }
+                  aria-label="Sort by days on risk"
+                >
+                  Days on risk
+                  <RisksSortIcon className="h-3.5 w-3.5" />
+                </button>
+              </th>
               <th className="px-3 py-2 font-semibold">Mileage SC</th>
               <th className="px-3 py-2 font-semibold text-right">Amount</th>
               <th className="px-3 py-2 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {claims.map((c) => {
+            {sortedClaims.map((c) => {
               const isCritical = c.priority === 'critical';
               const isUnassigned = c.assignee === 'unassigned';
               const amountHigh = c.amount >= 1500;
