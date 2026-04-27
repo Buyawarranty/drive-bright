@@ -317,7 +317,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                 </tr>
                 {isSelected && renderExpanded && (
                   <tr className="bg-muted/20 border-t border-blue-200">
-                    <td colSpan={11} className="p-0">
+                    <td colSpan={13} className="p-0">
                       <div className="p-3">{renderExpanded(c)}</div>
                     </td>
                   </tr>
