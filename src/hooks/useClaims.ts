@@ -198,6 +198,14 @@ export const useClaims = (): UseClaimsResult => {
         previousClaims: Math.max(0, totalForReg - 1),
         rawStatus: r.status ?? null,
         rawPriority: r.priority ?? null,
+        daysOnRisk:
+          r.days_on_risk != null
+            ? Number(r.days_on_risk)
+            : r.warranty_start_date
+            ? Math.max(0, Math.floor((Date.now() - new Date(r.warranty_start_date).getTime()) / (1000 * 60 * 60 * 24)))
+            : null,
+        purchaseMileage: r.purchase_mileage != null ? Number(r.purchase_mileage) : null,
+        claimMileage: r.mileage_at_claim != null ? Number(r.mileage_at_claim) : null,
         attachments: buildAttachments(r),
       };
     });

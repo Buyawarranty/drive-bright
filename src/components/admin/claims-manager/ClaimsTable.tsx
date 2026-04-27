@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Pencil, Phone, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Check, Pencil, Phone, AlertTriangle, ChevronDown, Circle, Gauge } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -118,6 +118,44 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
   </span>
 );
 
+const DaysOnRiskCell: React.FC<{ days: number | null | undefined }> = ({ days }) => {
+  if (days == null) return <span className="text-xs text-muted-foreground">—</span>;
+  // ≤30 days: red, ≤60 days: yellow, otherwise neutral
+  const color =
+    days <= 30 ? 'text-red-600 fill-red-600' : days <= 60 ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground fill-transparent';
+  return (
+    <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
+      <Circle className={`h-2.5 w-2.5 ${color}`} strokeWidth={2} />
+      <span className="text-xs font-semibold text-foreground">{days}d</span>
+    </div>
+  );
+};
+
+const MileageSinceCoverCell: React.FC<{
+  purchase: number | null | undefined;
+  current: number | null | undefined;
+}> = ({ purchase, current }) => {
+  if (purchase == null && current == null) {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+  const diff = purchase != null && current != null ? current - purchase : null;
+  return (
+    <div className="inline-flex items-center gap-1.5 whitespace-nowrap" title={`Purchased: ${purchase?.toLocaleString() ?? '—'} mi · Now: ${current?.toLocaleString() ?? '—'} mi`}>
+      <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+      <div className="text-xs leading-tight">
+        {diff != null ? (
+          <div className="font-semibold text-foreground">+{diff.toLocaleString()} mi</div>
+        ) : (
+          <div className="font-semibold text-foreground">{(current ?? purchase)?.toLocaleString()} mi</div>
+        )}
+        <div className="text-[10px] text-muted-foreground">
+          {purchase != null ? `${purchase.toLocaleString()}` : '—'} → {current != null ? `${current.toLocaleString()}` : '—'}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const IconBtn: React.FC<{
   label: string;
   children: React.ReactNode;
@@ -182,6 +220,8 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
               <th className="px-3 py-2 font-semibold">Age</th>
               <th className="px-3 py-2 font-semibold">Status</th>
               <th className="px-3 py-2 font-semibold">Assignee</th>
+              <th className="px-3 py-2 font-semibold">Days on risk</th>
+              <th className="px-3 py-2 font-semibold">Mileage SC</th>
               <th className="px-3 py-2 font-semibold text-right">Amount</th>
               <th className="px-3 py-2 font-semibold text-right">Actions</th>
             </tr>
@@ -238,6 +278,12 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                       <span className="text-xs text-muted-foreground">{c.assignee}</span>
                     )}
                   </td>
+                  <td className="px-3 align-middle h-[52px]">
+                    <DaysOnRiskCell days={c.daysOnRisk} />
+                  </td>
+                  <td className="px-3 align-middle h-[52px]">
+                    <MileageSinceCoverCell purchase={c.purchaseMileage} current={c.claimMileage} />
+                  </td>
                   <td className={`px-3 align-middle h-[52px] text-right font-mono ${amountHigh ? 'text-red-600 font-semibold' : 'text-foreground'}`}>
                     £{c.amount.toLocaleString()}
                   </td>
@@ -271,7 +317,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                 </tr>
                 {isSelected && renderExpanded && (
                   <tr className="bg-muted/20 border-t border-blue-200">
-                    <td colSpan={11} className="p-0">
+                    <td colSpan={13} className="p-0">
                       <div className="p-3">{renderExpanded(c)}</div>
                     </td>
                   </tr>
