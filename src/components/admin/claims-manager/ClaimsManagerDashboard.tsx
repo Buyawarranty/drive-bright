@@ -7,6 +7,7 @@ import { ClaimDetailPanel } from './ClaimDetailPanel';
 import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
 import { BulkActionsBar } from './BulkActionsBar';
 import { Header } from './Header';
+import { DateNavigator, getRange, type DateRangeValue } from './DateNavigator';
 
 interface KpiCardProps {
   label: string;
@@ -53,9 +54,27 @@ export const KpiStrip: React.FC<KpiStripProps> = ({ claims, avgResolutionDays })
 const ClaimsManagerDashboard: React.FC = () => {
   const { claims } = useClaims();
   const [filters, setFilters] = useState<ClaimsFilters>(DEFAULT_FILTERS);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ period: null, anchor: new Date().toISOString().slice(0, 10) });
   const [selected, setSelected] = useState<Claim | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const filtered = useMemo(() => applyFilters(claims, filters), [claims, filters]);
+
+  const dateFiltered = useMemo(() => {
+    const range = getRange(dateRange);
+    if (!range) return claims;
+    const startMs = range.start.getTime();
+    const endMs = range.end.getTime();
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    return claims.filter((c) => {
+      // Reconstruct claim date: today - ageInDays
+      const d = new Date(todayStart);
+      d.setDate(d.getDate() - (c.ageInDays || 0));
+      const t = d.getTime();
+      return t >= startMs && t < endMs;
+    });
+  }, [claims, dateRange]);
+
+  const filtered = useMemo(() => applyFilters(dateFiltered, filters), [dateFiltered, filters]);
 
   const toggleOne = (id: string) =>
     setSelectedIds((prev) => {
@@ -79,6 +98,7 @@ const ClaimsManagerDashboard: React.FC = () => {
       <div className="p-6 space-y-4">
         <UrgencyBanner claims={claims} />
         <KpiStrip claims={claims} />
+        <DateNavigator value={dateRange} onChange={setDateRange} />
         <Toolbar filters={filters} onChange={setFilters} claims={claims} />
         <div className="px-1 text-sm text-muted-foreground">
           51 total · <span className="font-semibold text-foreground">{filtered.length}</span> shown
