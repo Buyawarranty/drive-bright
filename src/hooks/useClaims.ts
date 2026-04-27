@@ -108,6 +108,7 @@ export const useClaims = (): UseClaimsResult => {
   const [rows, setRows] = useState<any[]>([]);
   const [staffById, setStaffById] = useState<Record<string, string>>({});
   const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
+  const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -142,16 +143,22 @@ export const useClaims = (): UseClaimsResult => {
       });
 
       const mileageByReg: Record<string, number> = {};
+      const startByReg: Record<string, string> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
+        if (!reg) return;
         const m = Number(c.mileage);
-        if (reg && Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
+        if (Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
           mileageByReg[reg] = m;
+        }
+        if (c.warranty_start_date && !startByReg[reg]) {
+          startByReg[reg] = c.warranty_start_date;
         }
       });
 
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
+      setCustomerStartByReg(startByReg);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
@@ -216,12 +223,12 @@ export const useClaims = (): UseClaimsResult => {
         previousClaims: Math.max(0, totalForReg - 1),
         rawStatus: r.status ?? null,
         rawPriority: r.priority ?? null,
-        daysOnRisk:
-          r.days_on_risk != null
-            ? Number(r.days_on_risk)
-            : r.warranty_start_date
-            ? Math.max(0, Math.floor((Date.now() - new Date(r.warranty_start_date).getTime()) / (1000 * 60 * 60 * 24)))
-            : null,
+        daysOnRisk: (() => {
+          if (r.days_on_risk != null) return Number(r.days_on_risk);
+          const start = r.warranty_start_date || customerStartByReg[normReg(reg)];
+          if (!start) return null;
+          return Math.max(0, Math.floor((Date.now() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)));
+        })(),
         purchaseMileage:
           r.purchase_mileage != null
             ? Number(r.purchase_mileage)
@@ -230,7 +237,7 @@ export const useClaims = (): UseClaimsResult => {
         attachments: buildAttachments(r),
       };
     });
-  }, [rows, staffById, customerMileageByReg]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
