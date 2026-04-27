@@ -9,6 +9,8 @@ interface ClaimsTableProps {
   selectedIds?: Set<string>;
   onToggleOne?: (id: string) => void;
   onToggleAll?: (checked: boolean) => void;
+  onApprove?: (claim: Claim) => void;
+  onCall?: (claim: Claim) => void;
 }
 
 const initials = (name: string) =>
