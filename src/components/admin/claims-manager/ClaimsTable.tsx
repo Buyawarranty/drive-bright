@@ -1,6 +1,8 @@
 import React from 'react';
-import { Check, Pencil, Phone, AlertTriangle } from 'lucide-react';
+import { Check, Pencil, Phone, AlertTriangle, ChevronDown } from 'lucide-react';
 import type { Claim } from '@/types/claim';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ClaimsTableProps {
   claims: Claim[];
@@ -11,6 +13,7 @@ interface ClaimsTableProps {
   onToggleAll?: (checked: boolean) => void;
   onApprove?: (claim: Claim) => void;
   onCall?: (claim: Claim) => void;
+  onUpdated?: () => void | Promise<void>;
 }
 
 const initials = (name: string) =>
