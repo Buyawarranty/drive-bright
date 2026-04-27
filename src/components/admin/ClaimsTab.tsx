@@ -136,6 +136,13 @@ export const ClaimsTab = ({
   // Apply toolbar filters
   const filtered = useMemo(() => applyFilters(managerClaims, filters), [managerClaims, filters]);
 
+  // Keep the open detail panel in sync with the latest data after a refetch
+  useEffect(() => {
+    if (!selectedPanelClaim) return;
+    const fresh = managerClaims.find((c) => c.id === selectedPanelClaim.id);
+    if (fresh && fresh !== selectedPanelClaim) setSelectedPanelClaim(fresh);
+  }, [managerClaims, selectedPanelClaim]);
+
   const totalCount = managerClaims.length;
   const shownCount = filtered.length;
 
@@ -293,12 +300,29 @@ export const ClaimsTab = ({
             selectedIds={selectedIds}
             onToggleOne={toggleOne}
             onToggleAll={toggleAll}
+            onApprove={async (c) => {
+              try {
+                const { error } = await supabase
+                  .from('claims_submissions')
+                  .update({ status: 'approved', approved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+                  .eq('id', c.id);
+                if (error) throw error;
+                toast({ title: 'Approved', description: `Claim for ${c.customerName} approved.` });
+                await refetchAll();
+              } catch (e: any) {
+                toast({ title: 'Failed', description: e?.message || 'Could not approve claim', variant: 'destructive' });
+              }
+            }}
+            onCall={(c) => {
+              if (c.phone) window.location.href = `tel:${c.phone}`;
+            }}
           />
 
           {selectedPanelClaim && (
             <ClaimDetailPanel
               claim={selectedPanelClaim}
               onClose={() => setSelectedPanelClaim(null)}
+              onUpdated={refetchAll}
             />
           )}
         </>

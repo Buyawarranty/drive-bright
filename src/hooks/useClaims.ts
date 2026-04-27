@@ -1,6 +1,20 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Claim } from '@/types/claim';
+import type { Claim, ClaimAttachment } from '@/types/claim';
+
+const buildAttachments = (row: any): ClaimAttachment[] => {
+  const list: ClaimAttachment[] = [];
+  const rawList: any[] = Array.isArray(row.file_urls) ? row.file_urls : [];
+  rawList.forEach((f) => {
+    const url = f?.publicUrl || f?.url;
+    if (!url) return;
+    list.push({ url, name: f?.name || 'attachment', size: f?.size, type: f?.type });
+  });
+  if (list.length === 0 && row.file_url) {
+    list.push({ url: row.file_url, name: row.file_name || 'attachment', size: row.file_size });
+  }
+  return list;
+};
 
 /**
  * Maps a raw claims_submissions row + DB status string into the simplified
@@ -168,6 +182,9 @@ export const useClaims = (): UseClaimsResult => {
         evidence: inferEvidence(r),
         tier: r.warranty_type || undefined,
         previousClaims: Math.max(0, totalForReg - 1),
+        rawStatus: r.status ?? null,
+        rawPriority: r.priority ?? null,
+        attachments: buildAttachments(r),
       };
     });
   }, [rows, staffById]);

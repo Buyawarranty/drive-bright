@@ -9,6 +9,8 @@ interface ClaimsTableProps {
   selectedIds?: Set<string>;
   onToggleOne?: (id: string) => void;
   onToggleAll?: (checked: boolean) => void;
+  onApprove?: (claim: Claim) => void;
+  onCall?: (claim: Claim) => void;
 }
 
 const initials = (name: string) =>
@@ -57,17 +59,23 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
   </span>
 );
 
-const IconBtn: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
-  label,
-  children,
-  className = '',
-}) => (
+const IconBtn: React.FC<{
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: (e: React.MouseEvent) => void;
+  disabled?: boolean;
+}> = ({ label, children, className = '', onClick, disabled }) => (
   <button
     type="button"
     title={label}
     aria-label={label}
-    onClick={(e) => e.stopPropagation()}
-    className={`inline-flex items-center justify-center h-7 w-7 rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors ${className}`}
+    disabled={disabled}
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick?.(e);
+    }}
+    className={`inline-flex items-center justify-center h-7 w-7 rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
   >
     {children}
   </button>
@@ -80,6 +88,8 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
   selectedIds,
   onToggleOne,
   onToggleAll,
+  onApprove,
+  onCall,
 }) => {
   const allChecked = claims.length > 0 && claims.every((c) => selectedIds?.has(c.id));
   const someChecked = !allChecked && claims.some((c) => selectedIds?.has(c.id));
@@ -172,9 +182,29 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                   </td>
                   <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center justify-end gap-1">
-                      <IconBtn label="Approve" className="hover:text-green-600"><Check className="h-3.5 w-3.5" /></IconBtn>
-                      <IconBtn label="Add note" className="hover:text-blue-600"><Pencil className="h-3.5 w-3.5" /></IconBtn>
-                      <IconBtn label="Call customer" className="hover:text-blue-600"><Phone className="h-3.5 w-3.5" /></IconBtn>
+                      <IconBtn
+                        label={c.status === 'approved' || c.status === 'closed' ? 'Already approved/closed' : 'Approve claim'}
+                        className="hover:text-green-600 hover:border-green-300"
+                        disabled={c.status === 'approved' || c.status === 'closed'}
+                        onClick={() => onApprove?.(c)}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </IconBtn>
+                      <IconBtn
+                        label="Open details"
+                        className="hover:text-blue-600 hover:border-blue-300"
+                        onClick={() => onRowClick?.(c)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </IconBtn>
+                      <IconBtn
+                        label={c.phone ? `Call ${c.phone}` : 'No phone on file'}
+                        className="hover:text-blue-600 hover:border-blue-300"
+                        disabled={!c.phone}
+                        onClick={() => onCall?.(c)}
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </IconBtn>
                     </div>
                   </td>
                 </tr>
