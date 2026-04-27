@@ -14,6 +14,8 @@ interface ClaimsTableProps {
   onApprove?: (claim: Claim) => void;
   onCall?: (claim: Claim) => void;
   onUpdated?: () => void | Promise<void>;
+  renderExpanded?: (claim: Claim) => React.ReactNode;
+  columnCount?: number;
 }
 
 const initials = (name: string) =>
