@@ -302,6 +302,9 @@ export const ClaimsTab = ({
             onToggleAll={toggleAll}
             onUpdated={refetchAll}
             onApprove={async (c) => {
+              if (!window.confirm(
+                `Approve this claim for ${c.customerName} (${c.reg})?\n\nThe claim will be marked as approved. No email is sent automatically — use "Email Customer" if you want to notify them.`,
+              )) return;
               try {
                 const { error } = await supabase
                   .from('claims_submissions')

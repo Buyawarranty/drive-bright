@@ -65,6 +65,17 @@ const StatusSelect: React.FC<{
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const next = e.target.value as Claim['status'];
     if (next === claim.status) return;
+    const nextLabel = STATUS_OPTIONS.find((o) => o.value === next)?.label;
+    const ok = typeof window === 'undefined'
+      ? true
+      : window.confirm(
+          `Change status for ${claim.customerName} (${claim.reg}) to "${nextLabel}"?\n\nThis updates the claim immediately. No email is sent.`,
+        );
+    if (!ok) {
+      // Revert the visible <select> back to the previous value
+      e.target.value = claim.status;
+      return;
+    }
     setBusy(true);
     try {
       const dbStatus = UI_TO_DB_STATUS[next];
@@ -72,7 +83,7 @@ const StatusSelect: React.FC<{
       if (next === 'approved') patch.approved_at = new Date().toISOString();
       const { error } = await supabase.from('claims_submissions').update(patch).eq('id', claim.id);
       if (error) throw error;
-      toast({ title: 'Status updated', description: `Set to ${STATUS_OPTIONS.find((o) => o.value === next)?.label}` });
+      toast({ title: 'Status updated', description: `Set to ${nextLabel}` });
       await onUpdated?.();
     } catch (err: any) {
       console.error('Status update failed', err);
@@ -290,7 +301,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                   <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center justify-end gap-1">
                       <IconBtn
-                        label={c.status === 'approved' || c.status === 'closed' ? 'Already approved/closed' : 'Approve claim'}
+                        label={c.status === 'approved' || c.status === 'closed' ? 'Already approved or closed' : 'Approve claim — marks the claim as approved (asks for confirmation, no email sent)'}
                         className="hover:text-green-600 hover:border-green-300"
                         disabled={c.status === 'approved' || c.status === 'closed'}
                         onClick={() => onApprove?.(c)}
@@ -298,14 +309,14 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                         <Check className="h-3.5 w-3.5" />
                       </IconBtn>
                       <IconBtn
-                        label={isSelected ? 'Collapse details' : 'Open details'}
+                        label={isSelected ? 'Collapse claim details' : 'Open claim details — view customer info, attachments, notes, and full actions'}
                         className="hover:text-blue-600 hover:border-blue-300"
                         onClick={() => onRowClick?.(c)}
                       >
                         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isSelected ? 'rotate-180' : ''}`} />
                       </IconBtn>
                       <IconBtn
-                        label={c.phone ? `Call ${c.phone}` : 'No phone on file'}
+                        label={c.phone ? `Call customer on ${c.phone} — opens your phone/dialer app` : 'No phone number on file for this customer'}
                         className="hover:text-blue-600 hover:border-blue-300"
                         disabled={!c.phone}
                         onClick={() => onCall?.(c)}
