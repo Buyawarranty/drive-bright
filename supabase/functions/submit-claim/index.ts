@@ -219,6 +219,8 @@ const handler = async (req: Request): Promise<Response> => {
           email,
           phone: phone || null,
           message: claimMessage || null,
+          claim_reason: faultDescription || null,
+          date_of_incident: dateOccurred || null,
           file_url: fileUrl,
           file_name: fileName,
           file_size: fileSize,

@@ -227,19 +227,19 @@ const Claims = () => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -322,6 +322,10 @@ const Claims = () => {
       newErrors.vehicleReg = errors.vehicleReg;
     } else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
       newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
+    }
+
+    if (!formData.faultDescription.trim()) {
+      newErrors.faultDescription = 'Please describe the fault or problem.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -746,6 +750,7 @@ Additional Information: ${formData.additionalInfo}
                               placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
                               value={formData.faultDescription}
                               onChange={handleInputChange}
+                              required
                               rows={4}
                               className={`mt-2 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
                             />
@@ -809,12 +814,12 @@ Additional Information: ${formData.additionalInfo}
                           <h3 className="text-xl font-bold text-gray-900">Supporting Documents (Optional)</h3>
                         </div>
 
-                        <div
+                        <label
+                          htmlFor="file-upload"
                           onDragOver={handleDragOver}
                           onDragLeave={handleDragLeave}
                           onDrop={handleDrop}
-                          onClick={() => document.getElementById('file-upload')?.click()}
-                          className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+                          className={`relative block cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
                             isDragging
                               ? 'border-orange-500 bg-orange-50'
                               : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
@@ -829,15 +834,15 @@ Additional Information: ${formData.additionalInfo}
                           <p className="text-xs text-gray-500 mt-1">
                             PDF, DOC, DOCX, JPG, PNG or HEIC — up to {MAX_FILES} files (max 20MB each, large photos auto-shrunk)
                           </p>
-                          <input
-                            id="file-upload"
-                            type="file"
-                            multiple
-                            className="hidden"
-                            accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            onChange={handleFileUpload}
-                          />
-                        </div>
+                        </label>
+                        <input
+                          id="file-upload"
+                          type="file"
+                          multiple
+                          className="sr-only"
+                          accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleFileUpload}
+                        />
 
                         {uploadedFiles.length > 0 && (
                           <div className="mt-3 space-y-2">
