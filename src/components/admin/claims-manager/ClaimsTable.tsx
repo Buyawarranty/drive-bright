@@ -224,7 +224,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                     <div className="truncate max-w-[120px]" title={c.issue}>{c.issue}</div>
                   </td>
                   <td className="px-3 align-middle h-[52px]"><AgePill days={c.ageInDays} /></td>
-                  <td className="px-3 align-middle h-[52px]"><StatusBadge status={c.status} /></td>
+                  <td className="px-3 align-middle h-[52px]"><StatusSelect claim={c} onUpdated={onUpdated} /></td>
                   <td className="px-3 align-middle h-[52px] whitespace-nowrap">
                     {isUnassigned ? (
                       <span className="inline-flex items-center gap-1 text-red-600 font-bold text-xs">
