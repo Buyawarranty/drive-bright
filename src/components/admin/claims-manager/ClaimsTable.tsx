@@ -150,6 +150,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
   onApprove,
   onCall,
   onUpdated,
+  renderExpanded,
 }) => {
   const allChecked = claims.length > 0 && claims.every((c) => selectedIds?.has(c.id));
   const someChecked = !allChecked && claims.some((c) => selectedIds?.has(c.id));
