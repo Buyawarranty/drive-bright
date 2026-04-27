@@ -193,12 +193,12 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
               const amountHigh = c.amount >= 1500;
               const isSelected = selectedId === c.id;
               return (
+                <React.Fragment key={c.id}>
                 <tr
-                  key={c.id}
                   onClick={() => onRowClick?.(c)}
                   className={`border-t border-border cursor-pointer hover:bg-muted/40 ${
                     isCritical ? 'bg-red-50/60' : ''
-                  } ${isSelected ? 'ring-2 ring-inset ring-blue-400' : ''}`}
+                  } ${isSelected ? 'bg-blue-50/60' : ''}`}
                 >
                   <td className="px-3 align-middle h-[52px]" onClick={(e) => e.stopPropagation()}>
                     <input
@@ -252,11 +252,11 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                         <Check className="h-3.5 w-3.5" />
                       </IconBtn>
                       <IconBtn
-                        label="Open details"
+                        label={isSelected ? 'Collapse details' : 'Open details'}
                         className="hover:text-blue-600 hover:border-blue-300"
                         onClick={() => onRowClick?.(c)}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isSelected ? 'rotate-180' : ''}`} />
                       </IconBtn>
                       <IconBtn
                         label={c.phone ? `Call ${c.phone}` : 'No phone on file'}
@@ -269,6 +269,14 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                     </div>
                   </td>
                 </tr>
+                {isSelected && renderExpanded && (
+                  <tr className="bg-muted/20 border-t border-blue-200">
+                    <td colSpan={11} className="p-0">
+                      <div className="p-3">{renderExpanded(c)}</div>
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               );
             })}
           </tbody>
