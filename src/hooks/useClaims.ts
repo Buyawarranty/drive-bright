@@ -102,9 +102,12 @@ interface UseClaimsResult {
   refetch: () => Promise<void>;
 }
 
+const normReg = (s?: string | null) => (s || '').toString().toUpperCase().replace(/\s+/g, '').trim();
+
 export const useClaims = (): UseClaimsResult => {
   const [rows, setRows] = useState<any[]>([]);
   const [staffById, setStaffById] = useState<Record<string, string>>({});
+  const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,7 +115,7 @@ export const useClaims = (): UseClaimsResult => {
     setLoading(true);
     setError(null);
     try {
-      const [{ data: claimRows, error: claimErr }, { data: staffRows }] = await Promise.all([
+      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }] = await Promise.all([
         supabase
           .from('claims_submissions')
           .select('*')
@@ -123,6 +126,11 @@ export const useClaims = (): UseClaimsResult => {
           .from('admin_users')
           .select('user_id, first_name, last_name, email')
           .eq('is_active', true),
+        supabase
+          .from('customers')
+          .select('registration_plate, mileage, warranty_start_date')
+          .not('registration_plate', 'is', null)
+          .limit(5000),
       ]);
 
       if (claimErr) throw claimErr;
@@ -133,7 +141,17 @@ export const useClaims = (): UseClaimsResult => {
         if (s.user_id) lookup[s.user_id] = name;
       });
 
+      const mileageByReg: Record<string, number> = {};
+      (customerRows || []).forEach((c: any) => {
+        const reg = normReg(c.registration_plate);
+        const m = Number(c.mileage);
+        if (reg && Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
+          mileageByReg[reg] = m;
+        }
+      });
+
       setStaffById(lookup);
+      setCustomerMileageByReg(mileageByReg);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
