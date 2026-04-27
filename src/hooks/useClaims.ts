@@ -116,7 +116,7 @@ export const useClaims = (): UseClaimsResult => {
     setLoading(true);
     setError(null);
     try {
-      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }] = await Promise.all([
+      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }, { data: policyRows }] = await Promise.all([
         supabase
           .from('claims_submissions')
           .select('*')
@@ -129,9 +129,15 @@ export const useClaims = (): UseClaimsResult => {
           .eq('is_active', true),
         supabase
           .from('customers')
-          .select('registration_plate, mileage, warranty_start_date')
+          .select('id, registration_plate, mileage')
           .not('registration_plate', 'is', null)
           .limit(5000),
+        supabase
+          .from('customer_policies')
+          .select('customer_id, policy_start_date')
+          .not('policy_start_date', 'is', null)
+          .order('policy_start_date', { ascending: true })
+          .limit(10000),
       ]);
 
       if (claimErr) throw claimErr;
@@ -143,6 +149,12 @@ export const useClaims = (): UseClaimsResult => {
       });
 
       const mileageByReg: Record<string, number> = {};
+      const startByCustomerId: Record<string, string> = {};
+      (policyRows || []).forEach((p: any) => {
+        if (p.customer_id && p.policy_start_date && !startByCustomerId[p.customer_id]) {
+          startByCustomerId[p.customer_id] = p.policy_start_date;
+        }
+      });
       const startByReg: Record<string, string> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
@@ -151,8 +163,9 @@ export const useClaims = (): UseClaimsResult => {
         if (Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
           mileageByReg[reg] = m;
         }
-        if (c.warranty_start_date && !startByReg[reg]) {
-          startByReg[reg] = c.warranty_start_date;
+        const start = c.id ? startByCustomerId[c.id] : null;
+        if (start && !startByReg[reg]) {
+          startByReg[reg] = start;
         }
       });
 
