@@ -143,16 +143,22 @@ export const useClaims = (): UseClaimsResult => {
       });
 
       const mileageByReg: Record<string, number> = {};
+      const startByReg: Record<string, string> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
+        if (!reg) return;
         const m = Number(c.mileage);
-        if (reg && Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
+        if (Number.isFinite(m) && m > 0 && !mileageByReg[reg]) {
           mileageByReg[reg] = m;
+        }
+        if (c.warranty_start_date && !startByReg[reg]) {
+          startByReg[reg] = c.warranty_start_date;
         }
       });
 
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
+      setCustomerStartByReg(startByReg);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
