@@ -65,6 +65,17 @@ const StatusSelect: React.FC<{
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const next = e.target.value as Claim['status'];
     if (next === claim.status) return;
+    const nextLabel = STATUS_OPTIONS.find((o) => o.value === next)?.label;
+    const ok = typeof window === 'undefined'
+      ? true
+      : window.confirm(
+          `Change status for ${claim.customerName} (${claim.reg}) to "${nextLabel}"?\n\nThis updates the claim immediately. No email is sent.`,
+        );
+    if (!ok) {
+      // Revert the visible <select> back to the previous value
+      e.target.value = claim.status;
+      return;
+    }
     setBusy(true);
     try {
       const dbStatus = UI_TO_DB_STATUS[next];
@@ -72,7 +83,7 @@ const StatusSelect: React.FC<{
       if (next === 'approved') patch.approved_at = new Date().toISOString();
       const { error } = await supabase.from('claims_submissions').update(patch).eq('id', claim.id);
       if (error) throw error;
-      toast({ title: 'Status updated', description: `Set to ${STATUS_OPTIONS.find((o) => o.value === next)?.label}` });
+      toast({ title: 'Status updated', description: `Set to ${nextLabel}` });
       await onUpdated?.();
     } catch (err: any) {
       console.error('Status update failed', err);
