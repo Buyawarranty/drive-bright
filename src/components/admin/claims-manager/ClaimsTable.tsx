@@ -335,14 +335,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                   </td>
                   <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center justify-end gap-1">
-                      <IconBtn
-                        label={c.status === 'approved' || c.status === 'closed' ? 'Already approved or closed' : 'Approve claim — marks the claim as approved (asks for confirmation, no email sent)'}
-                        className="hover:text-green-600 hover:border-green-300"
-                        disabled={c.status === 'approved' || c.status === 'closed'}
-                        onClick={() => onApprove?.(c)}
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </IconBtn>
+                      {/* Approve button removed — use the Status dropdown to set "Approved" */}
                       <IconBtn
                         label={isSelected ? 'Collapse claim details' : 'Open claim details — view customer info, attachments, notes, and full actions'}
                         className="hover:text-blue-600 hover:border-blue-300"
