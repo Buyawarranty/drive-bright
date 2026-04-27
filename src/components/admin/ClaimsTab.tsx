@@ -295,7 +295,7 @@ export const ClaimsTab = ({
 
           <ClaimsTable
             claims={filtered}
-            onRowClick={setSelectedPanelClaim}
+            onRowClick={(c) => setSelectedPanelClaim((prev) => (prev?.id === c.id ? null : c))}
             selectedId={selectedPanelClaim?.id ?? null}
             selectedIds={selectedIds}
             onToggleOne={toggleOne}
@@ -317,17 +317,14 @@ export const ClaimsTab = ({
             onCall={(c) => {
               if (c.phone) window.location.href = `tel:${c.phone}`;
             }}
+            renderExpanded={(c) => (
+              <ClaimDetailPanel
+                claim={c}
+                onClose={() => setSelectedPanelClaim(null)}
+                onUpdated={refetchAll}
+              />
+            )}
           />
-
-          {selectedPanelClaim && (
-            <ClaimDetailPanel
-              claim={selectedPanelClaim}
-              onClose={() => setSelectedPanelClaim(null)}
-              onUpdated={refetchAll}
-            />
-          )}
-        </>
-      )}
 
       {/* Dialogs */}
       {selectedClaim && (
