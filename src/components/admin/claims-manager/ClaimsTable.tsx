@@ -309,7 +309,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                         <Check className="h-3.5 w-3.5" />
                       </IconBtn>
                       <IconBtn
-                        label={isSelected ? 'Collapse details' : 'Open details'}
+                        label={isSelected ? 'Collapse claim details' : 'Open claim details — view customer info, attachments, notes, and full actions'}
                         className="hover:text-blue-600 hover:border-blue-300"
                         onClick={() => onRowClick?.(c)}
                       >
