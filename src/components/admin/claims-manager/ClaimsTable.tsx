@@ -264,7 +264,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                   aria-label="Sort by days on risk"
                 >
                   Days on risk
-                  <RisksSortIcon className="h-3.5 w-3.5" />
+                  <RisksSortIcon className="h-3.5 w-3.5 text-orange-500" />
                 </button>
               </th>
               <th className="px-3 py-2 font-semibold">Mileage SC</th>
