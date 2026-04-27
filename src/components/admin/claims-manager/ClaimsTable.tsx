@@ -278,6 +278,12 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                       <span className="text-xs text-muted-foreground">{c.assignee}</span>
                     )}
                   </td>
+                  <td className="px-3 align-middle h-[52px]">
+                    <DaysOnRiskCell days={c.daysOnRisk} />
+                  </td>
+                  <td className="px-3 align-middle h-[52px]">
+                    <MileageSinceCoverCell purchase={c.purchaseMileage} current={c.claimMileage} />
+                  </td>
                   <td className={`px-3 align-middle h-[52px] text-right font-mono ${amountHigh ? 'text-red-600 font-semibold' : 'text-foreground'}`}>
                     £{c.amount.toLocaleString()}
                   </td>
