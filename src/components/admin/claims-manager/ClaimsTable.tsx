@@ -316,7 +316,7 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isSelected ? 'rotate-180' : ''}`} />
                       </IconBtn>
                       <IconBtn
-                        label={c.phone ? `Call ${c.phone}` : 'No phone on file'}
+                        label={c.phone ? `Call customer on ${c.phone} — opens your phone/dialer app` : 'No phone number on file for this customer'}
                         className="hover:text-blue-600 hover:border-blue-300"
                         disabled={!c.phone}
                         onClick={() => onCall?.(c)}
