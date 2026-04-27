@@ -135,32 +135,45 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
     updateClaim('save-status', patch, `Status set to ${statusDraft}`);
   };
 
-  const handleApprove = () =>
+  const confirmAction = (message: string) =>
+    typeof window === 'undefined' ? true : window.confirm(message);
+
+  const handleApprove = () => {
+    if (!confirmAction(`Approve this claim for ${claim.customerName} (${claim.reg})?\n\nThis will mark the claim as approved.`)) return;
     updateClaim(
       'approve',
       { status: 'approved', approved_at: new Date().toISOString() },
       'Claim approved',
     );
+  };
 
-  const handleClose = () =>
+  const handleClose = () => {
+    if (!confirmAction(`Close this claim for ${claim.customerName} (${claim.reg})?\n\nClosed claims are removed from the active queue.`)) return;
     updateClaim('close', { status: 'closed' }, 'Claim closed');
+  };
 
-  const handleEscalate = () =>
+  const handleEscalate = () => {
+    if (!confirmAction(`Escalate this claim to CRITICAL priority?\n\n${claim.customerName} (${claim.reg}) will be flagged as high risk.`)) return;
     updateClaim('escalate', { priority: 'critical' }, 'Claim escalated to critical');
+  };
 
-  const handleRequestEvidence = () =>
+  const handleRequestEvidence = () => {
+    if (!confirmAction(`Mark this claim as awaiting evidence?\n\nThe customer will need to provide additional information for ${claim.reg}.`)) return;
     updateClaim(
       'evidence',
       { status: 'awaiting_info' },
       'Marked as evidence needed',
     );
+  };
 
-  const handleLogCall = () =>
+  const handleLogCall = () => {
+    if (!confirmAction(`Log a call for ${claim.customerName} (${claim.reg})?\n\nThis will update the last contacted timestamp to now.`)) return;
     updateClaim(
       'log-call',
       { last_contacted_at: new Date().toISOString() },
       'Call logged',
     );
+  };
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden max-w-full">
