@@ -991,9 +991,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             plan_name: planName || '',
             payment_type: paymentType || '',
             step_abandoned: 4,
-            ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
-            ...(getStoredGclid() ? { gclid: getStoredGclid() } : {}),
-            ...(!getStoredFbclid() && getStoredFbReferrer() ? { fb_referrer: getStoredFbReferrer() } : {}),
+            ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
+            ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
+            ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
           }
         });
       } catch (error) {
