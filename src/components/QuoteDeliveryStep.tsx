@@ -192,8 +192,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // The trigger will propagate changes to the sales_lead automatically.
       const normalizedEmail = email.trim().toLowerCase();
       const regNumber = vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || '';
-      const storedFbclid = getStoredFbclid();
-      const storedGclid = getStoredGclid();
+      // Use SESSION-scoped attribution for cart_metadata so a stale 90-day-old
+      // gclid/fbclid in localStorage doesn't reclassify organic visitors as paid.
+      // Long-lived getStoredFbclid / getStoredGclid remain for conversion uploads only.
+      const storedFbclid = getSessionFbclid();
+      const storedGclid = getSessionGclid();
       const utmSource = new URLSearchParams(window.location.search).get('utm_source');
       
       let cartUpdated = false;
