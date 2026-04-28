@@ -143,6 +143,27 @@ export const getStoredGclid = (): string | null => {
 };
 
 /**
+ * Session-scoped GCLID: returns the gclid ONLY if it was captured during the
+ * CURRENT browser session (sessionStorage). Used for lead-source attribution
+ * so that long-lived localStorage values (up to 90 days old) don't reclassify
+ * organic visitors as Google Ads traffic.
+ *
+ * IMPORTANT: Use `getStoredGclid()` for Google Ads conversion uploads (which
+ * legitimately need the 90-day window). Use this function for lead source.
+ */
+export const getSessionGclid = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = sessionStorage.getItem(GCLID_STORAGE_KEY);
+    if (!stored) return null;
+    const gclidData: StoredGclid = JSON.parse(stored);
+    return gclidData.gclid || null;
+  } catch {
+    return null;
+  }
+};
+
+/**
  * Get GA4 Client ID from cookies
  * Format: GA1.1.XXXXXXXXXX.XXXXXXXXXX
  */

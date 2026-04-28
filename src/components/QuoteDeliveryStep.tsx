@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
-import { getStoredFbclid, getStoredFbReferrer } from '@/utils/fbclidCapture';
-import { getStoredGclid } from '@/utils/gclidCapture';
+import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
+import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
@@ -192,8 +192,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // The trigger will propagate changes to the sales_lead automatically.
       const normalizedEmail = email.trim().toLowerCase();
       const regNumber = vehicleData?.regNumber?.toUpperCase().replace(/\s/g, '') || '';
-      const storedFbclid = getStoredFbclid();
-      const storedGclid = getStoredGclid();
+      // Use SESSION-scoped attribution for cart_metadata so a stale 90-day-old
+      // gclid/fbclid in localStorage doesn't reclassify organic visitors as paid.
+      // Long-lived getStoredFbclid / getStoredGclid remain for conversion uploads only.
+      const storedFbclid = getSessionFbclid();
+      const storedGclid = getSessionGclid();
       const utmSource = new URLSearchParams(window.location.search).get('utm_source');
       
       let cartUpdated = false;
@@ -218,9 +221,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               step_abandoned: 2,
               updated_at: new Date().toISOString(),
               ...(() => {
-                const fb = storedFbclid || getStoredFbclid();
-                const gc = storedGclid || getStoredGclid();
-                const fbRef = !fb ? getStoredFbReferrer() : null;
+                const fb = storedFbclid || getSessionFbclid();
+                const gc = storedGclid || getSessionGclid();
+                const fbRef = !fb ? getSessionFbReferrer() : null;
                 if (fb || gc || utmSource || fbRef) {
                   return {
                     cart_metadata: {
@@ -260,7 +263,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
             ...((() => {
-                const fbRef = !storedFbclid ? getStoredFbReferrer() : null;
+                const fbRef = !storedFbclid ? getSessionFbReferrer() : null;
                 if (storedFbclid || storedGclid || utmSource || fbRef) {
                   return {
                     cart_metadata: {
@@ -278,8 +281,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         if (cartInsertError) {
           console.error('Error creating abandoned cart, retrying via track-abandoned-cart edge function:', cartInsertError);
 
-          const fallbackFbclid = getStoredFbclid();
-          const fallbackGclid = getStoredGclid();
+          const fallbackFbclid = getSessionFbclid();
+          const fallbackGclid = getSessionGclid();
           const { error: fallbackTrackError } = await supabase.functions.invoke('track-abandoned-cart', {
             body: {
               full_name: firstName.trim(),

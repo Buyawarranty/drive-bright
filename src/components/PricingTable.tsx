@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { getStoredFbclid } from '@/utils/fbclidCapture';
-import { getStoredGclid } from '@/utils/gclidCapture';
+import { getStoredFbclid, getSessionFbclid } from '@/utils/fbclidCapture';
+import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
@@ -511,8 +511,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             labour_rate: selectedLabourRate,
             boost_addon: boostAddon,
             protection_addons: selectedProtectionAddOns,
-            ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
-            ...(getStoredGclid() ? { gclid: getStoredGclid() } : {}),
+            ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
+            ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
           }
         });
         console.log('✅ Tracked abandoned cart at Step 3 (Pricing Page) with pricing selections for:', vehicleData.email);

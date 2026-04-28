@@ -10,8 +10,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
-import { getStoredFbclid, getStoredFbReferrer } from '@/utils/fbclidCapture';
-import { getTrackingData, getStoredGclid } from '@/utils/gclidCapture';
+import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
+import { getTrackingData, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -991,9 +991,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             plan_name: planName || '',
             payment_type: paymentType || '',
             step_abandoned: 4,
-            ...(getStoredFbclid() ? { fbclid: getStoredFbclid() } : {}),
-            ...(getStoredGclid() ? { gclid: getStoredGclid() } : {}),
-            ...(!getStoredFbclid() && getStoredFbReferrer() ? { fb_referrer: getStoredFbReferrer() } : {}),
+            ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
+            ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
+            ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
           }
         });
       } catch (error) {

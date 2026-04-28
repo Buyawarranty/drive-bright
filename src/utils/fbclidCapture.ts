@@ -48,7 +48,9 @@ export const captureFbclid = (): void => {
         landingPage: window.location.pathname,
       };
 
-      localStorage.setItem(FBCLID_STORAGE_KEY, JSON.stringify(fbclidData));
+      const serialized = JSON.stringify(fbclidData);
+      try { localStorage.setItem(FBCLID_STORAGE_KEY, serialized); } catch {}
+      try { sessionStorage.setItem(FBCLID_STORAGE_KEY, serialized); } catch {}
       console.log('📘 FBCLID captured and stored:', fbclid);
     }
 
@@ -65,7 +67,9 @@ export const captureFbclid = (): void => {
           capturedAt: Date.now(),
           landingPage: window.location.pathname,
         };
-        localStorage.setItem(FB_REFERRER_KEY, JSON.stringify(refData));
+        const serialized = JSON.stringify(refData);
+        try { localStorage.setItem(FB_REFERRER_KEY, serialized); } catch {}
+        try { sessionStorage.setItem(FB_REFERRER_KEY, serialized); } catch {}
         console.log('📘 Facebook referrer detected (no fbclid):', referrer);
       }
     }
@@ -142,5 +146,38 @@ export const clearStoredFbclid = (): void => {
     localStorage.removeItem(FB_REFERRER_KEY);
   } catch (error) {
     console.error('Failed to clear FBCLID:', error);
+  }
+};
+
+/**
+ * Session-scoped FBCLID: returns the fbclid ONLY if captured during the
+ * CURRENT browser session. Used for lead-source attribution so that
+ * long-lived localStorage values (up to 90 days old) don't reclassify
+ * organic visitors as Facebook Ads traffic.
+ */
+export const getSessionFbclid = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = sessionStorage.getItem(FBCLID_STORAGE_KEY);
+    if (!stored) return null;
+    const data: StoredFbclid = JSON.parse(stored);
+    return data.fbclid || null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Session-scoped Facebook referrer: only returns a value if detected this session.
+ */
+export const getSessionFbReferrer = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = sessionStorage.getItem(FB_REFERRER_KEY);
+    if (!stored) return null;
+    const data: StoredFbReferrer = JSON.parse(stored);
+    return data.referrer || null;
+  } catch {
+    return null;
   }
 };
