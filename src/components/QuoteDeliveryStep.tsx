@@ -221,9 +221,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               step_abandoned: 2,
               updated_at: new Date().toISOString(),
               ...(() => {
-                const fb = storedFbclid || getStoredFbclid();
-                const gc = storedGclid || getStoredGclid();
-                const fbRef = !fb ? getStoredFbReferrer() : null;
+                const fb = storedFbclid || getSessionFbclid();
+                const gc = storedGclid || getSessionGclid();
+                const fbRef = !fb ? getSessionFbReferrer() : null;
                 if (fb || gc || utmSource || fbRef) {
                   return {
                     cart_metadata: {
