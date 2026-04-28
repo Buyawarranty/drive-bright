@@ -48,7 +48,9 @@ export const captureFbclid = (): void => {
         landingPage: window.location.pathname,
       };
 
-      localStorage.setItem(FBCLID_STORAGE_KEY, JSON.stringify(fbclidData));
+      const serialized = JSON.stringify(fbclidData);
+      try { localStorage.setItem(FBCLID_STORAGE_KEY, serialized); } catch {}
+      try { sessionStorage.setItem(FBCLID_STORAGE_KEY, serialized); } catch {}
       console.log('📘 FBCLID captured and stored:', fbclid);
     }
 
@@ -65,7 +67,9 @@ export const captureFbclid = (): void => {
           capturedAt: Date.now(),
           landingPage: window.location.pathname,
         };
-        localStorage.setItem(FB_REFERRER_KEY, JSON.stringify(refData));
+        const serialized = JSON.stringify(refData);
+        try { localStorage.setItem(FB_REFERRER_KEY, serialized); } catch {}
+        try { sessionStorage.setItem(FB_REFERRER_KEY, serialized); } catch {}
         console.log('📘 Facebook referrer detected (no fbclid):', referrer);
       }
     }
