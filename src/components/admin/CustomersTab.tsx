@@ -48,6 +48,7 @@ import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
 import { ArchiveCustomerDialog } from './ArchiveCustomerDialog';
 import { MergeDuplicateDialog } from './MergeDuplicateDialog';
+import { DateRangeFilter } from './DateRangeFilter';
 import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
