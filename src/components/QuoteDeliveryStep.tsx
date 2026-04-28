@@ -281,8 +281,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         if (cartInsertError) {
           console.error('Error creating abandoned cart, retrying via track-abandoned-cart edge function:', cartInsertError);
 
-          const fallbackFbclid = getStoredFbclid();
-          const fallbackGclid = getStoredGclid();
+          const fallbackFbclid = getSessionFbclid();
+          const fallbackGclid = getSessionGclid();
           const { error: fallbackTrackError } = await supabase.functions.invoke('track-abandoned-cart', {
             body: {
               full_name: firstName.trim(),
