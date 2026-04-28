@@ -420,11 +420,15 @@ export const CustomersTab = ({
     ? viewAsAgent.id
     : currentAdminUser?.id;
   const isSuperAdmin = normalizedRole === 'super_admin';
+  const isAdmin = normalizedRole === 'admin';
   const isLeadGen = normalizedRole === 'lead_gen';
+  const isClaimsManager = normalizedRole === 'claims_manager';
   const canSeeSourceColumn = isSuperAdmin || isLeadGen;
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
+  // Google Ads-style date filter visible only for these roles
+  const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager;
   
   // Track whether role has been determined to prevent flash of unrestricted UI
   const isRoleLoaded = !!currentAdminUser;
