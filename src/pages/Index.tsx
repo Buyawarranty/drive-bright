@@ -1273,9 +1273,12 @@ const Index = () => {
         return;
       }
       
-      const fbclid = getStoredFbclid();
-      const gclid = getStoredGclid();
-      const fbReferrer = getStoredFbReferrer();
+      // Use SESSION-scoped attribution for lead source so a 90-day-old gclid/fbclid
+      // in localStorage doesn't reclassify a returning organic visitor as paid traffic.
+      // (Long-lived getStoredGclid / getStoredFbclid are still used for conversion uploads.)
+      const fbclid = getSessionFbclid();
+      const gclid = getSessionGclid();
+      const fbReferrer = getSessionFbReferrer();
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
