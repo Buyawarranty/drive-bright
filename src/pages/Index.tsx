@@ -20,8 +20,8 @@ import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspe
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
-import { captureGclid, getStoredGclid } from '@/utils/gclidCapture';
-import { captureFbclid, getStoredFbclid, getStoredFbReferrer } from '@/utils/fbclidCapture';
+import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
