@@ -420,11 +420,15 @@ export const CustomersTab = ({
     ? viewAsAgent.id
     : currentAdminUser?.id;
   const isSuperAdmin = normalizedRole === 'super_admin';
+  const isAdmin = normalizedRole === 'admin';
   const isLeadGen = normalizedRole === 'lead_gen';
+  const isClaimsManager = normalizedRole === 'claims_manager';
   const canSeeSourceColumn = isSuperAdmin || isLeadGen;
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
+  // Google Ads-style date filter visible only for these roles
+  const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager;
   
   // Track whether role has been determined to prevent flash of unrestricted UI
   const isRoleLoaded = !!currentAdminUser;
@@ -3003,10 +3007,10 @@ export const CustomersTab = ({
           )}
           {/* Enhanced Search and Filter Controls */}
           <div className="bg-white p-4 rounded-lg border space-y-4">
-            {/* Row 1: Search, Status */}
+            {/* Row 1: Search, Date Filter (privileged roles), Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
-              <div className="space-y-1 lg:col-span-3">
+              <div className={cn("space-y-1", canUseDateFilter ? "lg:col-span-2" : "lg:col-span-3") }>
                 <Label htmlFor="search" className="text-sm font-medium">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -3019,6 +3023,18 @@ export const CustomersTab = ({
                   />
                 </div>
               </div>
+
+              {/* Date filter - only for super_admin, admin, lead_gen, claims_manager */}
+              {canUseDateFilter && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Date</Label>
+                  <DateRangeFilter
+                    dateRange={dateRange}
+                    onDateRangeChange={(r) => setDateRange(r)}
+                    className="w-full"
+                  />
+                </div>
+              )}
 
               {/* Filter by Status */}
               <div className="space-y-1">
