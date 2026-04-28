@@ -263,7 +263,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             mileage: vehicleData?.mileage || null,
             step_abandoned: 2,
             ...((() => {
-                const fbRef = !storedFbclid ? getStoredFbReferrer() : null;
+                const fbRef = !storedFbclid ? getSessionFbReferrer() : null;
                 if (storedFbclid || storedGclid || utmSource || fbRef) {
                   return {
                     cart_metadata: {
