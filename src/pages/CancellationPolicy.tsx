@@ -132,13 +132,15 @@ const CancellationPolicy: React.FC = () => {
 
             {/* Claim made */}
             <TimelineItem period="Any time" sub="Claim submitted" last>
-              <h3 className="text-base font-semibold text-foreground mb-3">
+              <h3 className="text-base font-semibold text-foreground mb-2">
                 A claim has been made, is in progress or has been completed
               </h3>
 
-              <div className="rounded-xl p-5 sm:p-6 text-white" style={{ backgroundColor: '#FF5A5F' }}>
-                <div className="text-lg font-bold mb-2">No refund is payable</div>
-                <p className="text-base font-semibold leading-relaxed text-white">
+              <div className="rounded-xl p-5 sm:p-6 bg-foreground text-white border-l-4 border-brand-orange">
+                <div className="text-sm font-semibold leading-relaxed mb-2 text-brand-orange uppercase tracking-wide">
+                  No refund is payable
+                </div>
+                <p className="text-sm font-normal leading-relaxed text-white/90">
                   Once a claim has been submitted, no refund is payable — whether that claim is approved or not. Your policy remains active for the full remaining term, so you are still covered for any future repairs right up to your end date.
                 </p>
                 <ul className="mt-4 space-y-2.5">
@@ -147,8 +149,8 @@ const CancellationPolicy: React.FC = () => {
                     'The costs involved are real and immediate, whether or not the repair has been fully completed.',
                     'This applies whether your claim is being looked at, partially settled or fully resolved at the time you request cancellation.',
                   ].map((line) => (
-                    <li key={line} className="flex gap-2.5 text-sm font-semibold leading-relaxed text-white">
-                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-white flex-shrink-0" />
+                    <li key={line} className="flex gap-2.5 text-sm font-normal leading-relaxed text-white/90">
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-orange flex-shrink-0" />
                       <span>{line}</span>
                     </li>
                   ))}
