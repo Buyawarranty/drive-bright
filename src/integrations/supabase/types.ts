@@ -2544,6 +2544,1224 @@ export type Database = {
           },
         ]
       }
+      dealer_admin_blog_posts: {
+        Row: {
+          author: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          keywords: string[] | null
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_bulk_pricing_uploads: {
+        Row: {
+          created_at: string
+          error_count: number
+          errors: Json | null
+          filename: string
+          id: string
+          status: string
+          success_count: number
+          total_rows: number
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_count?: number
+          errors?: Json | null
+          filename: string
+          id?: string
+          status?: string
+          success_count?: number
+          total_rows?: number
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_count?: number
+          errors?: Json | null
+          filename?: string
+          id?: string
+          status?: string
+          success_count?: number
+          total_rows?: number
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      dealer_admin_claims: {
+        Row: {
+          approved_amount: number | null
+          assigned_to: string | null
+          attachments: Json | null
+          claim_reference: string
+          created_at: string
+          customer_email: string | null
+          customer_email_normalized: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          dealer_id: string | null
+          fault_description: string | null
+          id: string
+          internal_notes: string | null
+          paid_amount: number | null
+          registration_plate: string | null
+          registration_plate_normalized: string | null
+          repair_estimate: number | null
+          repair_garage: string | null
+          risk_level: string | null
+          status: string
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+        }
+        Insert: {
+          approved_amount?: number | null
+          assigned_to?: string | null
+          attachments?: Json | null
+          claim_reference?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_email_normalized?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dealer_id?: string | null
+          fault_description?: string | null
+          id?: string
+          internal_notes?: string | null
+          paid_amount?: number | null
+          registration_plate?: string | null
+          registration_plate_normalized?: string | null
+          repair_estimate?: number | null
+          repair_garage?: string | null
+          risk_level?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+        }
+        Update: {
+          approved_amount?: number | null
+          assigned_to?: string | null
+          attachments?: Json | null
+          claim_reference?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_email_normalized?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dealer_id?: string | null
+          fault_description?: string | null
+          id?: string
+          internal_notes?: string | null
+          paid_amount?: number | null
+          registration_plate?: string | null
+          registration_plate_normalized?: string | null
+          repair_estimate?: number | null
+          repair_garage?: string | null
+          risk_level?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_admin_claims_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "dealer_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_admin_claims_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealer_admin_contact_submissions: {
+        Row: {
+          admin_notes: string | null
+          assigned_to: string | null
+          company_name: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          message: string
+          status: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          company_name?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          company_name?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_discount_codes: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          times_used: number
+          updated_at: string
+          usage_limit: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          times_used?: number
+          updated_at?: string
+          usage_limit?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          times_used?: number
+          updated_at?: string
+          usage_limit?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      dealer_admin_document_mappings: {
+        Row: {
+          created_at: string
+          document_path: string
+          id: string
+          notes: string | null
+          plan_name: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string
+          document_path: string
+          id?: string
+          notes?: string | null
+          plan_name: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          created_at?: string
+          document_path?: string
+          id?: string
+          notes?: string | null
+          plan_name?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_email_campaigns: {
+        Row: {
+          audience: string
+          body: string | null
+          created_at: string
+          id: string
+          name: string
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_count: number
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_landing_pages: {
+        Row: {
+          body_content: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          hero_heading: string | null
+          hero_subheading: string | null
+          id: string
+          keywords: string[] | null
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          slug: string
+          status: string
+          target_location: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body_content?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          hero_heading?: string | null
+          hero_subheading?: string | null
+          id?: string
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug: string
+          status?: string
+          target_location?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body_content?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          hero_heading?: string | null
+          hero_subheading?: string | null
+          id?: string
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: string
+          target_location?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_lead_backups: {
+        Row: {
+          backup_name: string
+          backup_type: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          record_count: number
+          snapshot: Json
+          updated_at: string
+        }
+        Insert: {
+          backup_name: string
+          backup_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          record_count?: number
+          snapshot?: Json
+          updated_at?: string
+        }
+        Update: {
+          backup_name?: string
+          backup_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          record_count?: number
+          snapshot?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_marketing_contacts: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          source: string | null
+          status: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_orders: {
+        Row: {
+          amount_paid: number | null
+          created_at: string
+          created_by: string | null
+          customer_email: string | null
+          customer_email_normalized: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          dealer_id: string | null
+          dealer_name: string | null
+          duration_months: number | null
+          id: string
+          notes: string | null
+          payment_method: string | null
+          payment_status: string
+          plan_type: string | null
+          quote_id: string | null
+          status: string
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_reg: string | null
+          vehicle_reg_normalized: string | null
+        }
+        Insert: {
+          amount_paid?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_email_normalized?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dealer_id?: string | null
+          dealer_name?: string | null
+          duration_months?: number | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          plan_type?: string | null
+          quote_id?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_reg_normalized?: string | null
+        }
+        Update: {
+          amount_paid?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_email_normalized?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dealer_id?: string | null
+          dealer_name?: string | null
+          duration_months?: number | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          plan_type?: string | null
+          quote_id?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_reg_normalized?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_admin_orders_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_admin_orders_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "dealer_admin_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealer_admin_page_views: {
+        Row: {
+          id: string
+          path: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          path: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          path?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_pending_registrations: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          registration_type: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          registration_type?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          registration_type?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_plans: {
+        Row: {
+          coverage_details: Json | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean
+          monthly_price: number | null
+          name: string
+          plan_type: string
+          pricing_matrix: Json | null
+          three_yearly_price: number | null
+          updated_at: string
+          vehicle_type: string | null
+          yearly_price: number | null
+        }
+        Insert: {
+          coverage_details?: Json | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          monthly_price?: number | null
+          name: string
+          plan_type?: string
+          pricing_matrix?: Json | null
+          three_yearly_price?: number | null
+          updated_at?: string
+          vehicle_type?: string | null
+          yearly_price?: number | null
+        }
+        Update: {
+          coverage_details?: Json | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          monthly_price?: number | null
+          name?: string
+          plan_type?: string
+          pricing_matrix?: Json | null
+          three_yearly_price?: number | null
+          updated_at?: string
+          vehicle_type?: string | null
+          yearly_price?: number | null
+        }
+        Relationships: []
+      }
+      dealer_admin_policy_letters: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_active: boolean
+          letter_name: string
+          letter_type: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          letter_name: string
+          letter_type?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          letter_name?: string
+          letter_type?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_posted_letters_log: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          id: string
+          letter_id: string | null
+          letter_type: string
+          notes: string | null
+          posted_at: string
+          posted_by: string | null
+          status: string
+          tracking_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          id?: string
+          letter_id?: string | null
+          letter_type?: string
+          notes?: string | null
+          posted_at?: string
+          posted_by?: string | null
+          status?: string
+          tracking_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          id?: string
+          letter_id?: string | null
+          letter_type?: string
+          notes?: string | null
+          posted_at?: string
+          posted_by?: string | null
+          status?: string
+          tracking_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_quotes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_email: string | null
+          customer_email_normalized: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          dealer_id: string | null
+          dealer_name: string | null
+          dealer_price: number | null
+          discount_pct: number | null
+          duration_months: number | null
+          expires_at: string | null
+          id: string
+          notes: string | null
+          plan_type: string | null
+          retail_price: number | null
+          status: string
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_mileage: number | null
+          vehicle_model: string | null
+          vehicle_reg: string | null
+          vehicle_reg_normalized: string | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_email_normalized?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dealer_id?: string | null
+          dealer_name?: string | null
+          dealer_price?: number | null
+          discount_pct?: number | null
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_type?: string | null
+          retail_price?: number | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_mileage?: number | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_reg_normalized?: string | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_email_normalized?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dealer_id?: string | null
+          dealer_name?: string | null
+          dealer_price?: number | null
+          discount_pct?: number | null
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_type?: string | null
+          retail_price?: number | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_mileage?: number | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_reg_normalized?: string | null
+          vehicle_year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_admin_quotes_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealer_admin_reviews: {
+        Row: {
+          admin_response: string | null
+          body: string | null
+          created_at: string
+          dealer_id: string | null
+          id: string
+          rating: number
+          reviewer_email: string | null
+          reviewer_name: string
+          source: string | null
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          body?: string | null
+          created_at?: string
+          dealer_id?: string | null
+          id?: string
+          rating: number
+          reviewer_email?: string | null
+          reviewer_name: string
+          source?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          body?: string | null
+          created_at?: string
+          dealer_id?: string | null
+          id?: string
+          rating?: number
+          reviewer_email?: string | null
+          reviewer_name?: string
+          source?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_test_runs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          id: string
+          payload: Json | null
+          result: Json | null
+          run_by: string | null
+          status: string
+          test_name: string
+          test_type: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          payload?: Json | null
+          result?: Json | null
+          run_by?: string | null
+          status?: string
+          test_name: string
+          test_type?: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          payload?: Json | null
+          result?: Json | null
+          run_by?: string | null
+          status?: string
+          test_name?: string
+          test_type?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_timesheet_entries: {
+        Row: {
+          commission_amount: number
+          created_at: string
+          deals_closed: number
+          hours_worked: number
+          id: string
+          notes: string | null
+          updated_at: string
+          user_email: string | null
+          user_id: string
+          work_date: string
+        }
+        Insert: {
+          commission_amount?: number
+          created_at?: string
+          deals_closed?: number
+          hours_worked?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_email?: string | null
+          user_id: string
+          work_date: string
+        }
+        Update: {
+          commission_amount?: number
+          created_at?: string
+          deals_closed?: number
+          hours_worked?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string
+          work_date?: string
+        }
+        Relationships: []
+      }
+      dealer_admin_user_permissions: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          invited_by: string | null
+          last_login_at: string | null
+          permissions: Json
+          role: string
+          status: string
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          last_login_at?: string | null
+          permissions?: Json
+          role?: string
+          status?: string
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          last_login_at?: string | null
+          permissions?: Json
+          role?: string
+          status?: string
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
+      dealer_customers: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          archived_at: string | null
+          assigned_to: string | null
+          city: string | null
+          country: string | null
+          county: string | null
+          created_at: string
+          dealer_id: string | null
+          email: string | null
+          email_normalized: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          mobile: string | null
+          notes: string | null
+          phone: string | null
+          plan_type: string | null
+          postcode: string | null
+          registration_plate: string | null
+          registration_plate_normalized: string | null
+          signup_date: string | null
+          status: string
+          updated_at: string
+          vehicle_fuel_type: string | null
+          vehicle_make: string | null
+          vehicle_mileage: number | null
+          vehicle_model: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          archived_at?: string | null
+          assigned_to?: string | null
+          city?: string | null
+          country?: string | null
+          county?: string | null
+          created_at?: string
+          dealer_id?: string | null
+          email?: string | null
+          email_normalized?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          mobile?: string | null
+          notes?: string | null
+          phone?: string | null
+          plan_type?: string | null
+          postcode?: string | null
+          registration_plate?: string | null
+          registration_plate_normalized?: string | null
+          signup_date?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_fuel_type?: string | null
+          vehicle_make?: string | null
+          vehicle_mileage?: number | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          archived_at?: string | null
+          assigned_to?: string | null
+          city?: string | null
+          country?: string | null
+          county?: string | null
+          created_at?: string
+          dealer_id?: string | null
+          email?: string | null
+          email_normalized?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          mobile?: string | null
+          notes?: string | null
+          phone?: string | null
+          plan_type?: string | null
+          postcode?: string | null
+          registration_plate?: string | null
+          registration_plate_normalized?: string | null
+          signup_date?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_fuel_type?: string | null
+          vehicle_make?: string | null
+          vehicle_mileage?: number | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_customers_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealer_leads: {
+        Row: {
+          archived_at: string | null
+          assigned_to: string | null
+          callback_at: string | null
+          created_at: string
+          dealer_id: string | null
+          email: string | null
+          email_normalized: string | null
+          first_name: string | null
+          id: string
+          last_contacted_at: string | null
+          last_name: string | null
+          mobile: string | null
+          notes: string | null
+          phone: string | null
+          plan_interest: string | null
+          registration_plate: string | null
+          registration_plate_normalized: string | null
+          source: string | null
+          status: string
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_mileage: number | null
+          vehicle_model: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          archived_at?: string | null
+          assigned_to?: string | null
+          callback_at?: string | null
+          created_at?: string
+          dealer_id?: string | null
+          email?: string | null
+          email_normalized?: string | null
+          first_name?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          last_name?: string | null
+          mobile?: string | null
+          notes?: string | null
+          phone?: string | null
+          plan_interest?: string | null
+          registration_plate?: string | null
+          registration_plate_normalized?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_mileage?: number | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          archived_at?: string | null
+          assigned_to?: string | null
+          callback_at?: string | null
+          created_at?: string
+          dealer_id?: string | null
+          email?: string | null
+          email_normalized?: string | null
+          first_name?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          last_name?: string | null
+          mobile?: string | null
+          notes?: string | null
+          phone?: string | null
+          plan_interest?: string | null
+          registration_plate?: string | null
+          registration_plate_normalized?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_mileage?: number | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_leads_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealer_quotes: {
         Row: {
           created_at: string
