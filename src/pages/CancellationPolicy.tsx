@@ -137,18 +137,18 @@ const CancellationPolicy: React.FC = () => {
               </h3>
 
               <div className="rounded-xl p-5 sm:p-6 text-white" style={{ backgroundColor: '#FF5A5F' }}>
-                <div className="text-base font-bold mb-2">No refund is payable</div>
-                <p className="text-sm leading-relaxed text-white/70">
+                <div className="text-lg font-bold mb-2">No refund is payable</div>
+                <p className="text-base font-semibold leading-relaxed text-white">
                   Once a claim has been submitted, no refund is payable — whether that claim is approved or not. Your policy remains active for the full remaining term, so you are still covered for any future repairs right up to your end date.
                 </p>
-                <ul className="mt-4 space-y-2">
+                <ul className="mt-4 space-y-2.5">
                   {[
                     'From the moment a claim is submitted, our team gets to work — claims handlers, engineers and approved repairers.',
                     'The costs involved are real and immediate, whether or not the repair has been fully completed.',
                     'This applies whether your claim is being looked at, partially settled or fully resolved at the time you request cancellation.',
                   ].map((line) => (
-                    <li key={line} className="flex gap-2.5 text-xs leading-relaxed text-white/70">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-orange flex-shrink-0" />
+                    <li key={line} className="flex gap-2.5 text-sm font-semibold leading-relaxed text-white">
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-white flex-shrink-0" />
                       <span>{line}</span>
                     </li>
                   ))}
