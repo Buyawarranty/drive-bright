@@ -27,7 +27,7 @@ const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/Warrant
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
-import pandaMascot from '@/assets/warranty-panda-mascot.png';
+import pandaMascot from '@/assets/warranty-panda-mascot.webp';
 import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
 import hybridHeroImage from '@/assets/hybrid-warranty-hero-vehicle.png';
 import hybridKiaNiro from '@/assets/hybrid-warranty-kia-niro.png';

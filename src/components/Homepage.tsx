@@ -574,7 +574,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
  {/* Right Content - Hero Image */}
             <div className="relative flex flex-col">
               <OptimizedImage 
-                src="/extended_warranty_uk-car-trustworthy-reviews.png" 
+                src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
                 alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
                 className="w-full h-auto"
                 priority={true}

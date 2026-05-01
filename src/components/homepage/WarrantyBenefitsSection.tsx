@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, ArrowRight, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-react';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
-import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
+import warrantyPandaMascot from '@/assets/warranty-panda-mascot.webp';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 

@@ -575,7 +575,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
               {/* Right Content - Hero Image */}
               <div className="relative flex flex-col">
                 <OptimizedImage 
-                  src={heroImageUrl || "/extended_warranty_uk-car-trustworthy-reviews.png"} 
+                  src={heroImageUrl || "/extended_warranty_uk-car-trustworthy-reviews.webp"} 
                   alt={`${brandName} extended warranty UK - Car trustworthy reviews`} 
                   className="w-full h-auto"
                   priority={true}
