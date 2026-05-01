@@ -2354,40 +2354,88 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
           </div>
 
-          {/* ==================== VEHICLE DECLARATION (fraud prevention) ==================== */}
+          {/* ==================== PLEASE CONFIRM BEFORE ACTIVATING ==================== */}
           <section
-            id="vehicle-declaration"
-            className={`mt-6 rounded-xl border-2 px-4 sm:px-5 py-4 transition-colors ${
-              declarationError && !declarationChecked
-                ? 'bg-red-50 border-red-300'
-                : 'bg-white border-[#d8dde3]'
-            }`}
+            id="please-confirm"
+            className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
           >
-            <label className="flex items-start gap-3 cursor-pointer">
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={declarationChecked}
-                onClick={() => {
-                  setDeclarationChecked(!declarationChecked);
-                  if (!declarationChecked) setDeclarationError(false);
-                }}
-                className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-[5px] border-2 flex items-center justify-center transition-colors ${
-                  declarationChecked
-                    ? 'bg-[#1D9E75] border-[#1D9E75]'
-                    : 'bg-white border-[#cfcfcf] hover:border-[#888]'
-                }`}
-              >
-                {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
-              </button>
-              <span className="text-sm text-[#555] leading-relaxed">
-                <strong className="text-[#1a1a1a]">I confirm</strong> that, to the best of my knowledge, the vehicle has{' '}
-                <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been serviced regularly. I understand that pre-existing faults are not covered.
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#FFF1E6] text-[#C4841D] text-sm font-bold flex items-center justify-center">
+                2
               </span>
-            </label>
-            {declarationError && !declarationChecked && (
-              <p className="text-xs text-red-600 mt-2 ml-8">Please tick the box to continue.</p>
-            )}
+              <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
+                Please confirm before activating
+              </h3>
+            </div>
+
+            <div className="space-y-2.5">
+              {/* Cover starts today */}
+              <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+                <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+                <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                  <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
+                </p>
+              </div>
+
+              {/* No refund once a claim is submitted */}
+              <div className="flex items-start gap-3 rounded-lg bg-[#FDECEC] border border-[#F5C2C2] px-4 py-3">
+                <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#D9342B]" />
+                <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                  <strong>No refund once a claim is submitted,</strong> approved or not. Your policy stays active for the full term.{' '}
+                  <a
+                    href="/cancel-warranty"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#1E5BB8] underline font-medium hover:text-[#174890]"
+                  >
+                    Cancellation policy ›
+                  </a>
+                </p>
+              </div>
+
+              {/* 14-day cancellation right */}
+              <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+                <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+                <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                  <strong>14-day cancellation right.</strong> Full refund minus £40 if no claim has been made.
+                </p>
+              </div>
+            </div>
+
+            {/* Vehicle declaration checkbox */}
+            <div
+              className={`mt-3 rounded-lg border px-4 py-3 transition-colors ${
+                declarationError && !declarationChecked
+                  ? 'bg-red-50 border-red-300'
+                  : 'bg-[#F4F4F5] border-[#E5E5E5]'
+              }`}
+            >
+              <label className="flex items-start gap-3 cursor-pointer">
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={declarationChecked}
+                  onClick={() => {
+                    setDeclarationChecked(!declarationChecked);
+                    if (!declarationChecked) setDeclarationError(false);
+                  }}
+                  className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-[5px] border-2 flex items-center justify-center transition-colors ${
+                    declarationChecked
+                      ? 'bg-[#1D9E75] border-[#1D9E75]'
+                      : 'bg-white border-[#cfcfcf] hover:border-[#888]'
+                  }`}
+                >
+                  {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
+                </button>
+                <span className="text-sm text-[#555] leading-relaxed">
+                  I confirm my vehicle has{' '}
+                  <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been regularly serviced.
+                </span>
+              </label>
+              {declarationError && !declarationChecked && (
+                <p className="text-xs text-red-600 mt-2 ml-8">Please tick the box to continue.</p>
+              )}
+            </div>
           </section>
 
           {/* Customer reviews section removed — already shown below the CTA */}
