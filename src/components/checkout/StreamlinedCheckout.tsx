@@ -2403,7 +2403,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 <p className="text-sm text-[#1a1a1a] leading-relaxed">
                   <strong>No refund once a claim is submitted,</strong> approved or not. Your policy stays active for the full term.{' '}
                   <a
-                    href="/cancel-warranty"
+                    href="/cancellation-policy"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#1E5BB8] underline font-medium hover:text-[#174890]"
@@ -2413,11 +2413,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </p>
               </div>
 
-              {/* 14-day cancellation right */}
+              {/* 14-day cooling-off period */}
               <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
                 <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
                 <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                  <strong>14-day cancellation right.</strong> Full refund minus £40 if no claim has been made.
+                  <strong>14-day cooling-off period.</strong> Full refund minus a £40 admin fee if no claim has been made.
                 </p>
               </div>
             </div>
