@@ -12,7 +12,7 @@ export const OrganizationSchema = ({ type = 'LocalBusiness' }: OrganizationSchem
       "name": "Buyawarranty",
       "alternateName": "Car Warranty Uk",
       "url": "https://buyawarranty.co.uk/",
-      "logo": "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.webp",
+      "logo": "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png",
       "contactPoint": [
         {
           "@type": "ContactPoint",

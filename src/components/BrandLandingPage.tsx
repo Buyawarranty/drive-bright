@@ -435,7 +435,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         <meta property="og:description" content={metaDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content={heroImageUrl || "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.webp"} />
+        <meta property="og:image" content={heroImageUrl || "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
