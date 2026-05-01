@@ -41,7 +41,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       height={height}
       loading={priority ? 'eager' : 'lazy'}
       decoding={priority ? 'sync' : 'async'}
-      fetchpriority={priority ? 'high' : 'auto'}
+      {...({ fetchpriority: priority ? 'high' : 'auto' } as any)}
       className={className}
       style={imageStyle}
       sizes={sizes}
