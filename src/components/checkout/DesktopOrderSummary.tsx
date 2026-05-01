@@ -39,11 +39,11 @@ const DesktopGuarantee = () => {
       >
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-          <span className="text-xs font-bold text-[#1a1a1a]">14-day money-back guarantee</span>
+          <span className="text-xs font-bold text-[#1a1a1a]">14-day cancellation right.</span>
         </div>
         <div className="flex items-center gap-2">
           {!isExpanded && (
-            <span className="text-xs text-gray-500">Full refund if no claim is made.</span>
+            <span className="text-xs text-gray-500">Full refund minus £40 if no claim has been made.</span>
           )}
           <span className="text-xs font-semibold text-[#0BA360]">
             {isExpanded ? '' : 'See details'}
