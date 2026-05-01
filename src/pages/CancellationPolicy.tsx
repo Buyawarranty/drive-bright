@@ -136,7 +136,7 @@ const CancellationPolicy: React.FC = () => {
                 A claim has been made, is in progress or has been completed
               </h3>
 
-              <div className="bg-foreground rounded-xl p-5 sm:p-6 text-white">
+              <div className="rounded-xl p-5 sm:p-6 text-white" style={{ backgroundColor: '#FF5A5F' }}>
                 <div className="text-base font-bold mb-2">No refund is payable</div>
                 <p className="text-sm leading-relaxed text-white/70">
                   Once a claim has been submitted, no refund is payable — whether that claim is approved or not. Your policy remains active for the full remaining term, so you are still covered for any future repairs right up to your end date.
