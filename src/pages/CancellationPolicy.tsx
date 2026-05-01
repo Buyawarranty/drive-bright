@@ -264,10 +264,10 @@ const CancellationPolicy: React.FC = () => {
           <p className="text-sm text-muted-foreground mt-4 flex items-center justify-center gap-2">
             <Phone className="w-4 h-4" />
             Or call us on{' '}
-            <a href="tel:03302295045" className="font-mono font-semibold text-foreground hover:underline">
-              0330 229 5045
+            <a href="tel:03302295040" className="font-mono font-semibold text-foreground hover:underline">
+              0330 229 5040
             </a>{' '}
-            — Mon to Fri 8am to 8pm
+            — Mon to Fri 9am to 5pm
           </p>
         </div>
 
