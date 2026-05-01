@@ -1383,33 +1383,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
               </div>
             )}
 
+            {/* Per-agent visibility — single source of truth.
+                The global `agents_own_leads_only` config is intentionally not exposed
+                in the UI to avoid contradictory controls. Tick agents individually. */}
             {(isFullAdmin || isSalesLead) && (
-              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
-                <Eye className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Let all agents see all leads</span>
-                <Switch
-                  checked={agentsOwnLeadsOnly === true}
-                  onCheckedChange={async (checked) => {
-                    const success = await updateAgentsOwnLeadsOnly(checked);
-                    if (success) {
-                      toast({
-                        title: checked ? 'All leads visible to agents' : 'Agents see own leads only',
-                        description: checked
-                          ? 'All sales agents can now see all leads.'
-                          : 'Agents can only see their own assigned leads (unless individually allowed below).',
-                      });
-                    }
-                  }}
-                />
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {agentsOwnLeadsOnly === true ? 'All agents can see all leads' : 'Agents see only their own leads'}
-                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
-                </span>
-              </div>
-            )}
-
-            {/* Per-agent visibility checkboxes - show when global toggle is OFF */}
-            {(isFullAdmin || isSalesLead) && agentsOwnLeadsOnly !== true && (
               <div className="p-3 bg-muted/20 border rounded-lg space-y-2">
                 <div className="flex items-center gap-2 mb-2">
                   <UserCheck className="h-4 w-4 text-muted-foreground" />
@@ -1453,7 +1430,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                     })}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tick agents who should be able to see all leads, not just their own.
+                  Tick agents who should be able to see all leads. Unticked agents see only their own assigned leads.
                 </p>
               </div>
             )}
