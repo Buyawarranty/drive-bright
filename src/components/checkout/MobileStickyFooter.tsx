@@ -151,7 +151,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         {/* Security reassurance */}
         <div className="flex items-center justify-center gap-1.5 mt-1.5 text-[11px] text-gray-500">
           <Lock className="w-3 h-3" />
-          <span>Secure checkout – 14 days to cancel</span>
+          <span>Secure checkout</span>
         </div>
       </div>
     </div>

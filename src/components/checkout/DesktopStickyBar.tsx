@@ -155,7 +155,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             </Button>
             <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
               <Lock className="w-3 h-3" />
-              <span>Secure checkout – 14 days to cancel</span>
+              <span>Secure checkout</span>
             </div>
           </div>
         </div>
