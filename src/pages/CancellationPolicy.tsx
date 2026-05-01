@@ -8,7 +8,6 @@ import {
   Phone,
   CheckCircle,
   XCircle,
-  AlertCircle,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
