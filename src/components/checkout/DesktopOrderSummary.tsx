@@ -211,16 +211,12 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
             {/* Pricing Section */}
             {selectedPayment === 'monthly' ? (
               <div className="mb-4">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm font-bold text-[#1a1a1a]">First payment today</span>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-[#1a1a1a] leading-none">
-                      £{monthlyPrice}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Equal to {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over term
-                    </div>
-                  </div>
+                <span className="block text-sm font-bold text-[#1a1a1a]">First payment today</span>
+                <div className="text-2xl font-bold text-[#1a1a1a] leading-none mt-1">
+                  £{monthlyPrice}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Equal to {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over term
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
                   £{monthlyPrice}/month × 12 payments · Paid over 12 months · Covers {months} months · 0% APR
