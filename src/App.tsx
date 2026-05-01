@@ -82,6 +82,7 @@ const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const AdminConversionFire = lazy(() => import("./pages/AdminConversionFire"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
 const WarrantyPlan = lazy(() => import("./pages/WarrantyPlan"));
 const BuyCarWarranty = lazy(() => import("./pages/BuyCarWarranty"));
 const VanWarrantyNew = lazy(() => import("./pages/VanWarrantyNew"));
@@ -249,6 +250,8 @@ const App = () => {
                     <Route path="/terms/" element={<Terms />} />
                     <Route path="/cookies/" element={<CookiePolicy />} />
                     <Route path="/privacy/" element={<PrivacyPolicy />} />
+                    <Route path="/cancellation-policy/" element={<CancellationPolicy />} />
+                    <Route path="/cancellation-policy" element={<CancellationPolicy />} />
                     <Route path="/what-is-covered/" element={<Protected />} />
                     <Route path="/claims/" element={<Claims />} />
                     <Route path="/make-a-claim/" element={<Claims />} />
