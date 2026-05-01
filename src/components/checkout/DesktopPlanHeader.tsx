@@ -163,6 +163,17 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
         )}
       </div>
 
+      {/* Questions before you buy */}
+      <div className="mt-5 bg-[#F4F4F5] rounded-xl p-5 text-center">
+        <p className="text-sm text-gray-700 mb-1">Questions before you buy?</p>
+        <a
+          href="tel:03302295040"
+          className="block text-2xl font-extrabold text-[#1a1a1a] tracking-wide hover:underline"
+        >
+          0330 229 5040
+        </a>
+        <p className="text-sm text-gray-600 mt-1">Mon–Fri 9am to 6pm · Sat 10am to 5pm</p>
+      </div>
     </div>
   );
 };
