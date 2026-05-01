@@ -1325,18 +1325,38 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setShowValidation(true);
     setPaymentError('');
 
+    // Helper: scroll to an element accounting for sticky top nav and bottom bar
+    const scrollToSection = (el: HTMLElement | null) => {
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // Offset ~120px from top so the section sits clearly in view above the sticky bottom bar
+      const top = window.scrollY + rect.top - 120;
+      window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+      el.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
+      setTimeout(() => {
+        el.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+      }, 2500);
+    };
+
     if (!declarationChecked) {
       setDeclarationError(true);
       const declSection = document.getElementById('vehicle-declaration');
-      declSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      toast.error('Please confirm the vehicle declaration to continue.');
+      scrollToSection(declSection);
+      toast.error('Please confirm the vehicle declaration to continue.', {
+        duration: 5000,
+        className: 'border-2 border-red-500 shadow-2xl',
+      });
       return;
     }
 
     if (!effectivePayment) {
       setPaymentError('Please choose a payment option to continue.');
       const paymentSection = document.getElementById('payment-section');
-      paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      scrollToSection(paymentSection);
+      toast.error('Please choose a payment option to continue.', {
+        duration: 5000,
+        className: 'border-2 border-red-500 shadow-2xl',
+      });
       return;
     }
     
