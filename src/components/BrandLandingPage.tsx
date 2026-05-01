@@ -435,7 +435,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         <meta property="og:description" content={metaDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content={heroImageUrl || "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"} />
+        <meta property="og:image" content={heroImageUrl || "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.webp"} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
@@ -575,7 +575,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
               {/* Right Content - Hero Image */}
               <div className="relative flex flex-col">
                 <OptimizedImage 
-                  src={heroImageUrl || "/extended_warranty_uk-car-trustworthy-reviews.png"} 
+                  src={heroImageUrl || "/extended_warranty_uk-car-trustworthy-reviews.webp"} 
                   alt={`${brandName} extended warranty UK - Car trustworthy reviews`} 
                   className="w-full h-auto"
                   priority={true}

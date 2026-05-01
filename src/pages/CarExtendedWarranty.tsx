@@ -445,7 +445,7 @@ const CarExtendedWarranty: React.FC = () => {
                   {/* Right Content - Hero Image */}
                   <div className="relative hidden lg:block">
                     <OptimizedImage 
-                      src="/extended_warranty_uk-car-trustworthy-reviews.png" 
+                      src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
                       alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
                       className="w-full h-auto"
                       priority={true}
