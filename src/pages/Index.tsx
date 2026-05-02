@@ -81,6 +81,56 @@ const parseStoredDataSync = (key: string): any => {
   }
 };
 
+const shouldForceFreshStep4Data = (params: URLSearchParams) => {
+  if (params.get('step') !== '4') return false;
+  return ['forceStep4Data', 'freshStep4Data'].some((key) => params.has(key));
+};
+
+const canUseFreshStep4Data = () => {
+  const host = window.location.hostname;
+  return host === 'localhost' || host.includes('lovableproject.com') || host.includes('lovable.app');
+};
+
+const createFreshStep4PreviewState = () => {
+  const vehicleData: VehicleData = {
+    regNumber: 'S17 DRW',
+    mileage: '45000',
+    email: '',
+    phone: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    make: 'BMW',
+    model: '3 Series',
+    fuelType: 'Petrol',
+    transmission: 'Automatic',
+    year: '2019',
+    vehicleType: 'Car'
+  };
+
+  const selectedPlan = {
+    id: 'platinum-preview',
+    paymentType: '24months',
+    name: 'Platinum 2-Year Cover',
+    pricingData: {
+      totalPrice: 540,
+      monthlyPrice: 45,
+      voluntaryExcess: 0,
+      selectedAddOns: {},
+      protectionAddOns: {},
+      claimLimit: 2000,
+      labourRate: 50,
+      boostAddon: false
+    }
+  };
+
+  return {
+    vehicleData,
+    selectedPlan,
+    formData: vehicleData
+  };
+};
+
 // Recovery fallback component - optimized for bfcache restoration
 const RecoveryFallback: React.FC<{
   onRecovered: (vehicleData: VehicleData, selectedPlan: any) => void;
@@ -243,6 +293,16 @@ const Index = () => {
 
   // CRITICAL: Check for restore parameter FIRST and initialize state with it
   const getInitialVehicleData = (): VehicleData | null => {
+    if (shouldForceFreshStep4Data(searchParams) && canUseFreshStep4Data()) {
+      const freshState = createFreshStep4PreviewState();
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(freshState.vehicleData));
+      saveWithTimestamp('buyawarranty_selectedPlan', JSON.stringify(freshState.selectedPlan));
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(freshState.formData));
+      saveWithTimestamp('buyawarranty_currentStep', '4');
+      saveWithTimestamp('warrantyJourneyState', JSON.stringify({ step: 4, ...freshState }));
+      return freshState.vehicleData;
+    }
+
     // Priority 1: Check for restore parameter from email links
     const restoreParam = searchParams.get('restore');
     if (restoreParam) {
@@ -338,6 +398,10 @@ const Index = () => {
   // Initialize state variables first - check restore param and localStorage with timestamp check
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(getInitialVehicleData);
   const getInitialSelectedPlan = () => {
+    if (shouldForceFreshStep4Data(searchParams) && canUseFreshStep4Data()) {
+      return createFreshStep4PreviewState().selectedPlan;
+    }
+
     // Priority 1: Check for restore parameter from email links
     const restoreParam = searchParams.get('restore');
     if (restoreParam) {
@@ -410,6 +474,10 @@ const Index = () => {
     }
   } | null>(getInitialSelectedPlan);
   const getInitialFormData = () => {
+    if (shouldForceFreshStep4Data(searchParams) && canUseFreshStep4Data()) {
+      return createFreshStep4PreviewState().formData;
+    }
+
     // Priority 1: Check for restore parameter from email links
     const restoreParam = searchParams.get('restore');
     if (restoreParam) {
@@ -542,6 +610,23 @@ const Index = () => {
   
   // Loading state for showing restoration UI
   const [isRestoring, setIsRestoring] = useState(() => !!searchParams.get('restore'));
+
+  useEffect(() => {
+    if (!shouldForceFreshStep4Data(searchParams) || !canUseFreshStep4Data()) return;
+
+    const freshState = createFreshStep4PreviewState();
+    setVehicleData(freshState.vehicleData);
+    setSelectedPlan(freshState.selectedPlan);
+    setFormData((prev) => ({ ...prev, ...freshState.formData }));
+    setCurrentStep(4);
+    setIsRestoring(false);
+
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(freshState.vehicleData));
+    saveWithTimestamp('buyawarranty_selectedPlan', JSON.stringify(freshState.selectedPlan));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(freshState.formData));
+    saveWithTimestamp('buyawarranty_currentStep', '4');
+    saveWithTimestamp('warrantyJourneyState', JSON.stringify({ step: 4, ...freshState }));
+  }, [searchParams]);
 
   // CRITICAL: Clean up restore parameter from URL after state initialization
   // Only clean up AFTER vehicleData is confirmed in state — otherwise we'd lose the
