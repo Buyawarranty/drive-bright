@@ -93,14 +93,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       </div>
 
       {/* Payment Cards - Vertical on mobile, horizontal (side-by-side) on desktop */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:items-stretch">
+      <div className="flex flex-col md:flex-row gap-4 md:items-stretch">
         {/* Pay in Full Card — RECOMMENDED */}
         <div
           role="button"
           tabIndex={0}
           onClick={() => handleCardSelect('full')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
-          className={`w-full lg:flex-1 lg:flex lg:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-[#F4FBF6] ${
+          className={`w-full md:flex-1 md:flex md:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-[#F4FBF6] ${
             selectedPayment === 'full'
               ? 'border-[#0BA360] shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
               : 'border-[#0BA360]/40 hover:border-[#0BA360]'
@@ -155,7 +155,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
           {/* Per-card CTA */}
           {!hidePayButton && (
-            <div className="mt-4 lg:mt-auto lg:pt-4">
+            <div className="mt-4 md:mt-auto md:pt-4">
               <Button
                 type="button"
                 onClick={(e) => handlePayInside('full', e)}
@@ -181,7 +181,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           tabIndex={0}
           onClick={() => handleCardSelect('monthly')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
-          className={`w-full lg:flex-1 lg:flex lg:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-white ${
+          className={`w-full md:flex-1 md:flex md:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-white ${
             selectedPayment === 'monthly'
               ? 'border-[#FF6B00]'
               : 'border-[#E5E5E5] hover:border-gray-300'
@@ -235,7 +235,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
           {/* Per-card CTA */}
           {!hidePayButton && (
-            <div className="mt-4 lg:mt-auto lg:pt-4">
+            <div className="mt-4 md:mt-auto md:pt-4">
               <Button
                 type="button"
                 onClick={(e) => handlePayInside('monthly', e)}
