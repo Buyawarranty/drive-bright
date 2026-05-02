@@ -252,20 +252,14 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 <Lock className="w-3 h-3" />
                 256-bit SSL secure checkout
               </p>
-              <a 
-                href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                target="_blank" 
+              <a
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors"
               >
                 <span>Rated</span>
                 <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
-                <span>on</span>
-                <img 
-                  src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
-                  alt="Trustpilot" 
-                  className="h-4"
-                />
               </a>
             </div>
           </CardContent>
