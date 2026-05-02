@@ -10,23 +10,30 @@ const Terms = () => {
   const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
+  const [platinumDocUrl, setPlatinumDocUrl] = useState<string>('');
   const navigate = useNavigate();
   useEffect(() => {
-    const fetchTermsDoc = async () => {
-      const { data, error } = await supabase
+    const fetchDocs = async () => {
+      const { data: termsData } = await supabase
         .from('customer_documents')
         .select('file_url')
         .eq('plan_type', 'terms-and-conditions')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
-      
-      if (data && !error) {
-        setTermsDocUrl(data.file_url);
-      }
+      if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+
+      const { data: platinumData } = await supabase
+        .from('customer_documents')
+        .select('file_url')
+        .eq('plan_type', 'platinum')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (platinumData?.file_url) setPlatinumDocUrl(platinumData.file_url);
     };
-    
-    fetchTermsDoc();
+
+    fetchDocs();
   }, []);
 
   const toggleItem = (id: string) => {
