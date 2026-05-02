@@ -29,50 +29,31 @@ interface DesktopOrderSummaryProps {
 }
 
 const DesktopGuarantee = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   return (
-    <div className="mt-4 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-3">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full text-left"
-      >
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-          <span className="text-xs font-bold text-[#1a1a1a]">14-day cancellation right.</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {!isExpanded && (
-            <span className="text-xs text-gray-500">Full refund minus £40 if no claim has been made.</span>
-          )}
-          <span className="text-xs font-semibold text-[#0BA360]">
-            {isExpanded ? '' : 'See details'}
-          </span>
-          {isExpanded ? (
-            <ChevronUp className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0" />
-          ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0" />
-          )}
-        </div>
-      </button>
+    <div className="mt-4 space-y-2.5">
+      {/* Cover starts today */}
+      <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+        <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+        <p className="text-sm text-[#1a1a1a] leading-relaxed">
+          <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
+        </p>
+      </div>
 
-      {isExpanded && (
-        <div className="mt-3">
-          <div className="space-y-3 mb-3">
-            <div className="flex items-start gap-2">
-              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-[#1a1a1a]">Not happy? <span className="font-semibold">Full refund within 14 days</span> — no questions asked, as long as no claim has been made</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <Check className="w-3.5 h-3.5 text-[#0BA360] flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-[#1a1a1a]">If a claim has been submitted within 14 days, a <span className="font-semibold">£40 assessment fee</span> applies on cancellation — to cover the cost of processing your claim</p>
-            </div>
-          </div>
-          <div className="border-t border-[#C8F3D2] pt-2">
-            <p className="text-xs text-gray-500">After 14 days, unused cover is refundable pro-rata.</p>
-          </div>
-        </div>
-      )}
+      {/* 14-day cooling-off period */}
+      <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+        <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+        <p className="text-sm text-[#1a1a1a] leading-relaxed">
+          <strong>14-day cooling-off period.</strong> Full refund minus a £40 admin fee if no claim has been made.
+        </p>
+      </div>
+
+      {/* Using your cover */}
+      <div className="flex items-start gap-3 rounded-lg bg-[#FDECEC] border border-[#F5C2C2] px-4 py-3">
+        <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#D9342B]" />
+        <p className="text-sm text-[#1a1a1a] leading-relaxed">
+          <strong>Using your cover.</strong> If you make a claim, your policy stays active for the full term and is designed for ongoing protection rather than cancellation or refund.
+        </p>
+      </div>
     </div>
   );
 };
