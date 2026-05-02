@@ -331,20 +331,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       for (const item of pending) {
         try {
-          const { data: result, error } = await withTimeout(
-            (async () =>
-              await supabase.rpc('update_lead_status', {
-                p_lead_id: item.isAbandonedCart ? item.leadId.replace('cart_', '') : item.leadId,
-                p_status: item.status,
-                p_is_abandoned_cart: item.isAbandonedCart,
-              }))(),
+          const statusResult = await withTimeout(
+            callUpdateLeadStatusRpc(item.leadId, item.status, item.isAbandonedCart, false),
             8000,
             'Pending status sync timed out'
           );
-
-          if (error) throw error;
-
-          const statusResult = result as { success: boolean; error?: string };
           if (!statusResult?.success) {
             throw new Error(statusResult?.error || 'Pending status sync failed');
           }
@@ -820,20 +811,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     try {
       // Use SECURITY DEFINER RPC to bypass RLS — ensures all agents can update status
-      const { data: result, error: rpcError } = await withTimeout(
-        (async () =>
-          await supabase.rpc('update_lead_status', {
-            p_lead_id: actualId,
-            p_status: status,
-            p_is_abandoned_cart: isAbandonedCart
-          }))(),
+      const statusResult = await withTimeout(
+        callUpdateLeadStatusRpc(actualId, status, isAbandonedCart, false),
         8000,
         'Status update timeout'
       );
-
-      if (rpcError) throw rpcError;
-
-      const statusResult = result as { success: boolean; error?: string };
       if (!statusResult.success) {
         throw new Error(statusResult.error || 'Status update failed');
       }
