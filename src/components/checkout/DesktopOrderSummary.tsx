@@ -30,54 +30,34 @@ interface DesktopOrderSummaryProps {
 }
 
 const DesktopGuarantee = () => {
-  const [open, setOpen] = useState(false);
-
   return (
     <div className="mt-4 rounded-xl border border-[#E5E5E5] bg-white p-4">
-      <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="flex w-full items-center justify-between text-left"
-            aria-expanded={open}
-          >
-            <h3 className="text-sm font-bold text-[#1a1a1a]">Good to know</h3>
-            {open ? (
-              <ChevronUp className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            )}
-          </button>
-        </CollapsibleTrigger>
+      <h3 className="text-sm font-bold text-[#1a1a1a]">Good to know</h3>
+      <div className="space-y-2.5 mt-3">
+        {/* Cover starts today */}
+        <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+          <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+          <p className="text-sm text-[#1a1a1a] leading-relaxed">
+            <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
+          </p>
+        </div>
 
-        <CollapsibleContent>
-          <div className="space-y-2.5 mt-3">
-            {/* Cover starts today */}
-            <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
-              <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
-              <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
-              </p>
-            </div>
+        {/* 14-day cooling-off period */}
+        <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+          <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+          <p className="text-sm text-[#1a1a1a] leading-relaxed">
+            <strong>14-day cooling-off period.</strong> Refund minus days covered and a £40 processing fee if no claim made.
+          </p>
+        </div>
 
-            {/* 14-day cooling-off period */}
-            <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
-              <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
-              <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                <strong>14-day cooling-off period.</strong> Refund minus days covered and a £40 processing fee if no claim made.
-              </p>
-            </div>
-
-            {/* Using your cover */}
-            <div className="flex items-start gap-3 rounded-lg bg-[#FFF5EB] border border-[#FFD9A8] px-4 py-3">
-              <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#FF6B00]" />
-              <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                <strong>Using your cover.</strong> Your warranty runs for its full term, giving you continuous protection throughout. Please note that once a claim has been made, your policy is no longer eligible for a refund.
-              </p>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+        {/* Using your cover */}
+        <div className="flex items-start gap-3 rounded-lg bg-[#FFF5EB] border border-[#FFD9A8] px-4 py-3">
+          <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#FF6B00]" />
+          <p className="text-sm text-[#1a1a1a] leading-relaxed">
+            <strong>Using your cover.</strong> Your warranty runs for its full term, giving you continuous protection throughout. Please note that once a claim has been made, your policy is no longer eligible for a refund.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
