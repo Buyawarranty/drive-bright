@@ -76,8 +76,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 hover:opacity-80"
           >
-            <span className="text-[11px] font-bold text-gray-900">Excellent</span>
-            <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3" />
+            <span className="text-sm font-bold text-gray-900 leading-none">Excellent</span>
+            <img src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot" className="h-4 w-auto" />
           </a>
           <div className="flex flex-col items-end leading-tight">
             <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
