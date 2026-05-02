@@ -389,7 +389,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         <div className="mt-2 space-y-2">
           <Input
             value={quickNoteValue}
-            onChange={(e) => setQuickNoteValue(e.target.value)}
+            onChange={(e) => handleQuickNoteChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
