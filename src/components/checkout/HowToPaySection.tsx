@@ -93,7 +93,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       </div>
 
       {/* Payment Cards - Vertical on mobile, horizontal (side-by-side) on desktop */}
-      <div className="flex flex-col md:flex-row gap-4 md:items-stretch">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-stretch">
         {/* Pay in Full Card — RECOMMENDED */}
         <div
           role="button"
