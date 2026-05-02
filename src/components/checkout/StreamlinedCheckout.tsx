@@ -2374,22 +2374,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
           </div>
 
-          <Collapsible defaultOpen={false}>
-            <section
-              id="please-confirm"
-              className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
-            >
-              <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 text-left group">
-                <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
-                  Good to know
-                </h3>
-                <span className="flex items-center gap-1 text-sm font-semibold text-[#C4841D] flex-shrink-0">
-                  See details
-                  <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
-                </span>
-              </CollapsibleTrigger>
+          <section
+            id="please-confirm"
+            className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
+          >
+            <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
+              Good to know
+            </h3>
 
-              <CollapsibleContent>
+            <div>
                 <div className="space-y-2.5 mt-4">
                   {/* Cover starts today */}
                   <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
