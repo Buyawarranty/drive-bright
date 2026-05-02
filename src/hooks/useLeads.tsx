@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const LEAD_TAG_BATCH_SIZE = 300;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 12000;
+const LEADS_FETCH_TIMEOUT_MS = 12000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 
@@ -64,6 +65,42 @@ const isRetryableMutationError = (error: unknown) => {
     message.includes('aborterror') ||
     message.includes('load failed')
   );
+};
+
+const callUpdateLeadStatusRpc = async (
+  leadId: string,
+  status: LeadStatus,
+  isAbandonedCart: boolean,
+  keepalive = false
+) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const supabaseUrl = (supabase as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = (supabase as any).supabaseKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration missing');
+  }
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/update_lead_status`, {
+    method: 'POST',
+    keepalive,
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${sessionData.session?.access_token || supabaseKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      p_lead_id: isAbandonedCart ? leadId.replace('cart_', '') : leadId,
+      p_status: status,
+      p_is_abandoned_cart: isAbandonedCart,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error((await response.text()) || `Status update failed (${response.status})`);
+  }
+
+  return await response.json() as { success: boolean; error?: string };
 };
 
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
