@@ -2381,7 +2381,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             >
               <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 text-left group">
                 <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
-                  Please confirm before activating
+                  Good to know
                 </h3>
                 <span className="flex items-center gap-1 text-sm font-semibold text-[#C4841D] flex-shrink-0">
                   See details
@@ -2399,27 +2399,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </p>
                   </div>
 
-                  {/* No refund once a claim is submitted */}
-                  <div className="flex items-start gap-3 rounded-lg bg-[#FDECEC] border border-[#F5C2C2] px-4 py-3">
-                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#D9342B]" />
-                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <strong>No refund once a claim is submitted,</strong> approved or not. Your policy stays active for the full term.{' '}
-                      <a
-                        href="/cancellation-policy"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#1E5BB8] underline font-medium hover:text-[#174890]"
-                      >
-                        Cancellation policy ›
-                      </a>
-                    </p>
-                  </div>
-
                   {/* 14-day cooling-off period */}
                   <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
                     <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
                     <p className="text-sm text-[#1a1a1a] leading-relaxed">
                       <strong>14-day cooling-off period.</strong> Full refund minus a £40 admin fee if no claim has been made.
+                    </p>
+                  </div>
+
+                  {/* Using your cover */}
+                  <div className="flex items-start gap-3 rounded-lg bg-[#FFF5EB] border border-[#FFD9A8] px-4 py-3">
+                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#FF6B00]" />
+                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <strong>Using your cover.</strong> Your warranty runs for its full term, giving you continuous protection throughout. Please note that once a claim has been made, your policy is no longer eligible for a refund.
                     </p>
                   </div>
                 </div>
