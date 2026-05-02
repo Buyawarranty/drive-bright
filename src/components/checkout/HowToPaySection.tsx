@@ -100,7 +100,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           tabIndex={0}
           onClick={() => handleCardSelect('full')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
-          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-[#F4FBF6] ${
+          className={`w-full lg:flex-1 lg:flex lg:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-[#F4FBF6] ${
             selectedPayment === 'full'
               ? 'border-[#0BA360] shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
               : 'border-[#0BA360]/40 hover:border-[#0BA360]'
