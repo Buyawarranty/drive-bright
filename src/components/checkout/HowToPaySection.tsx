@@ -100,10 +100,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           tabIndex={0}
           onClick={() => handleCardSelect('full')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
-          className={`w-full md:flex-1 md:flex md:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-[#F4FBF6] ${
+          className={`w-full md:flex-1 md:flex md:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer ${
             selectedPayment === 'full'
-              ? 'border-[#0BA360] shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
-              : 'border-[#0BA360]/40 hover:border-[#0BA360]'
+              ? 'bg-[#F4FBF6] border-[#0BA360] shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
+              : 'bg-white border-[#0BA360]/40 hover:border-[#0BA360] hover:bg-[#F4FBF6]/50'
           }`}
         >
           {/* Title row with radio */}
@@ -181,10 +181,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           tabIndex={0}
           onClick={() => handleCardSelect('monthly')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
-          className={`w-full md:flex-1 md:flex md:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-white ${
+          className={`w-full md:flex-1 md:flex md:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer ${
             selectedPayment === 'monthly'
-              ? 'border-[#FF6B00]'
-              : 'border-[#E5E5E5] hover:border-gray-300'
+              ? 'bg-[#FFF4EC] border-[#FF6B00] shadow-[0_4px_20px_-8px_rgba(255,107,0,0.4)]'
+              : 'bg-white border-[#E5E5E5] hover:border-gray-300 hover:bg-[#FFF4EC]/50'
           }`}
         >
           {/* Title row with radio */}
