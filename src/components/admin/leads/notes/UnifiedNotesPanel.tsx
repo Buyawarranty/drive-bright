@@ -78,6 +78,17 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     }
   }, []);
 
+  const handleQuickNoteChange = useCallback((value: string) => {
+    setQuickNoteValue(value);
+    quickNoteRef.current = value;
+
+    if (value.trim()) {
+      queuePendingNote(value);
+    } else {
+      clearQueuedPendingNote(pendingDraftIdRef.current);
+    }
+  }, [queuePendingNote, clearQueuedPendingNote]);
+
   const persistDraft = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
 
@@ -99,7 +110,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     try {
       await addNoteRef.current(pending);
       quickNoteRef.current = '';
-      setQuickNoteValue('');
+      handleQuickNoteChange('');
       persistDraft('');
       clearQueuedPendingNote(queueId);
       if (!options?.silent) {
@@ -114,7 +125,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     } finally {
       setIsSaving(false);
     }
-  }, [hookIsSaving, queuePendingNote, persistDraft, clearQueuedPendingNote]);
+  }, [hookIsSaving, queuePendingNote, persistDraft, clearQueuedPendingNote, handleQuickNoteChange]);
 
   const flushPendingNote = useCallback(async () => {
     await commitNote(quickNoteRef.current, { silent: true });
@@ -153,11 +164,11 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       ? window.sessionStorage.getItem(draftStorageKey) || ''
       : '';
 
-    setQuickNoteValue(savedDraft);
+    handleQuickNoteChange(savedDraft);
     setIsSaving(false);
     setEditingNoteId(null);
     if (savingTimerRef.current) clearTimeout(savingTimerRef.current);
-  }, [draftStorageKey, leadId]);
+  }, [draftStorageKey, leadId, handleQuickNoteChange]);
 
   useEffect(() => {
     persistDraft(quickNoteValue);
