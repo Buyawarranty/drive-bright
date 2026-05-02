@@ -52,7 +52,7 @@ const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 const NOTE_SAVE_TIMEOUT_MS = 8000;
 
-const withTimeout = async <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+const withTimeout = async <T,>(promise: PromiseLike<T>, ms: number, message: string): Promise<T> => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   try {
@@ -336,7 +336,7 @@ export const useLeadQuickNotes = (leadId: string) => {
               ? `${cartData.contact_notes}\n\n${newNoteEntry}`
               : newNoteEntry;
 
-            const { error: updateError } = await withTimeout(
+            const { error: updateError } = await withTimeout<any>(
               supabase
                 .from('abandoned_carts')
                 .update({ contact_notes: updatedNotes, updated_at: nowIso })
@@ -347,7 +347,7 @@ export const useLeadQuickNotes = (leadId: string) => {
 
             if (updateError) throw updateError;
           } else {
-            const { error: insertError } = await withTimeout(
+            const { error: insertError } = await withTimeout<any>(
               supabase
                 .from('lead_quick_notes')
                 .insert({
