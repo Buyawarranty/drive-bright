@@ -133,7 +133,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     : null;
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-[calc(10rem+env(safe-area-inset-bottom))]">
       <Step3Header currentStep={0} />
 
       {/* Progress bar */}
