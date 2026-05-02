@@ -3142,20 +3142,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Price Help Panel - Desktop Slide-in */}
-      <PriceHelpPanel
-        isOpen={showPriceHelpPanel}
-        onClose={() => setShowPriceHelpPanel(false)}
-        currentExcess={voluntaryExcess}
-        currentClaimLimit={selectedClaimLimit}
-        currentLabourRate={selectedLabourRate}
-        onExcessChange={setVoluntaryExcess}
-        onClaimLimitChange={setSelectedClaimLimit}
-        onLabourRateChange={setSelectedLabourRate}
-        currentMonthlyPrice={monthlyPrice}
-      />
-
     </div>
+
+    {/* Price Help Panel - shared by mobile + desktop. MUST be outside the
+        `md:hidden` wrapper above, otherwise the slide-in is hidden on desktop. */}
+    <PriceHelpPanel
+      isOpen={showPriceHelpPanel}
+      onClose={() => setShowPriceHelpPanel(false)}
+      currentExcess={voluntaryExcess}
+      currentClaimLimit={selectedClaimLimit}
+      currentLabourRate={selectedLabourRate}
+      onExcessChange={setVoluntaryExcess}
+      onClaimLimitChange={setSelectedClaimLimit}
+      onLabourRateChange={setSelectedLabourRate}
+      currentMonthlyPrice={monthlyPrice}
+    />
     </>
   );
 };
