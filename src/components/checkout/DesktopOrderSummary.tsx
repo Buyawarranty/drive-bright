@@ -30,10 +30,14 @@ interface DesktopOrderSummaryProps {
 }
 
 const DesktopGuarantee = () => {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="mt-4 rounded-xl border border-[#E5E5E5] bg-white p-4">
-      <h3 className="text-sm font-bold text-[#1a1a1a]">Good to know</h3>
-      <div className="space-y-2.5 mt-3">
+    <Collapsible open={open} onOpenChange={setOpen} className="mt-4 rounded-xl border border-[#E5E5E5] bg-white p-4">
+      <CollapsibleTrigger className="flex w-full items-center justify-between text-left">
+        <h3 className="text-sm font-bold text-[#1a1a1a]">Good to know</h3>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-2.5 mt-3">
         {/* Cover starts today */}
         <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
           <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
