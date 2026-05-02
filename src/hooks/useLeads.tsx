@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const LEAD_TAG_BATCH_SIZE = 300;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 12000;
+const LEADS_FETCH_TIMEOUT_MS = 12000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 
@@ -64,6 +65,42 @@ const isRetryableMutationError = (error: unknown) => {
     message.includes('aborterror') ||
     message.includes('load failed')
   );
+};
+
+const callUpdateLeadStatusRpc = async (
+  leadId: string,
+  status: LeadStatus,
+  isAbandonedCart: boolean,
+  keepalive = false
+) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const supabaseUrl = (supabase as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = (supabase as any).supabaseKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration missing');
+  }
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/update_lead_status`, {
+    method: 'POST',
+    keepalive,
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${sessionData.session?.access_token || supabaseKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      p_lead_id: isAbandonedCart ? leadId.replace('cart_', '') : leadId,
+      p_status: status,
+      p_is_abandoned_cart: isAbandonedCart,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error((await response.text()) || `Status update failed (${response.status})`);
+  }
+
+  return await response.json() as { success: boolean; error?: string };
 };
 
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
@@ -294,20 +331,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       for (const item of pending) {
         try {
-          const { data: result, error } = await withTimeout(
-            (async () =>
-              await supabase.rpc('update_lead_status', {
-                p_lead_id: item.isAbandonedCart ? item.leadId.replace('cart_', '') : item.leadId,
-                p_status: item.status,
-                p_is_abandoned_cart: item.isAbandonedCart,
-              }))(),
+          const statusResult = await withTimeout(
+            callUpdateLeadStatusRpc(item.leadId, item.status, item.isAbandonedCart, false),
             8000,
             'Pending status sync timed out'
           );
-
-          if (error) throw error;
-
-          const statusResult = result as { success: boolean; error?: string };
           if (!statusResult?.success) {
             throw new Error(statusResult?.error || 'Pending status sync failed');
           }
@@ -368,33 +396,37 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
       // by LostLeadsSection / recover_orphaned_leads RPC.
-      const allSalesLeadsResult = await fetchAllRows(() => {
-        let query = supabase
-          .from('sales_leads')
-          .select(`
-            id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
-            plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-            vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
-            last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
-            created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-            call_count, is_callback,
-            assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
-            abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
-          `)
-          .order('created_at', { ascending: false })
-          .order('id', { ascending: false });
+      const allSalesLeadsResult = await withTimeout(
+        fetchAllRows(() => {
+          let query = supabase
+            .from('sales_leads')
+            .select(`
+              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+              call_count, is_callback,
+              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
+              abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
+            `)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false });
 
-        // Apply server-side date filter to reduce dataset size
-        const dateFilter = serverDateFilterRef.current;
-        if (dateFilter?.from) {
-          query = query.gte('created_at', dateFilter.from.toISOString());
-        }
-        if (dateFilter?.to) {
-          query = query.lte('created_at', dateFilter.to.toISOString());
-        }
+          // Apply server-side date filter to reduce dataset size
+          const dateFilter = serverDateFilterRef.current;
+          if (dateFilter?.from) {
+            query = query.gte('created_at', dateFilter.from.toISOString());
+          }
+          if (dateFilter?.to) {
+            query = query.lte('created_at', dateFilter.to.toISOString());
+          }
 
-        return query;
-      });
+          return query;
+        }),
+        LEADS_FETCH_TIMEOUT_MS,
+        'Leads fetch timed out'
+      );
 
       const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;
@@ -696,6 +728,23 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }, 60000);
 
     const flushPendingStatusQueue = () => {
+      const pending = Object.values(readPendingStatusUpdates()).sort(
+        (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+      );
+
+      if (pending.length === 0) return;
+
+      if (document.visibilityState === 'hidden') {
+        pending.forEach(item => {
+          void callUpdateLeadStatusRpc(item.leadId, item.status, item.isAbandonedCart, true)
+            .then((result) => {
+              if (result?.success) clearPendingStatusUpdate(item.leadId);
+            })
+            .catch((error) => console.warn('[Leads] keepalive status sync will retry later:', error));
+        });
+        return;
+      }
+
       void flushPendingStatusUpdates();
     };
 
@@ -779,20 +828,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     try {
       // Use SECURITY DEFINER RPC to bypass RLS — ensures all agents can update status
-      const { data: result, error: rpcError } = await withTimeout(
-        (async () =>
-          await supabase.rpc('update_lead_status', {
-            p_lead_id: actualId,
-            p_status: status,
-            p_is_abandoned_cart: isAbandonedCart
-          }))(),
+      const statusResult = await withTimeout(
+        callUpdateLeadStatusRpc(actualId, status, isAbandonedCart, false),
         8000,
         'Status update timeout'
       );
-
-      if (rpcError) throw rpcError;
-
-      const statusResult = result as { success: boolean; error?: string };
       if (!statusResult.success) {
         throw new Error(statusResult.error || 'Status update failed');
       }
