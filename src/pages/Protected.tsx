@@ -548,6 +548,9 @@ const Protected = () => {
             </a>
           </div>
 
+          {/* PDF documents — decision-point reassurance near pricing */}
+          <DocLinksRow variant="plan" />
+
           {/* ── 6. REPAIR COSTS — directly below limits to confirm the choice ── */}
           <div className="mt-16">
             <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
