@@ -345,29 +345,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
       {/* Trustpilot Slider Widget */}
       {!hideTrustpilot && <TrustpilotSliderWidget className="mt-4" />}
-      {/* Divider */}
-      <div className="h-px bg-border mt-6 mb-5" />
-
-      {/* Trust Footer */}
-      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Lock className="w-4 h-4" />
-          <span>256-bit encryption</span>
-        </div>
-        <a
-          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-foreground transition-colors"
-        >
-          <img
-            src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png"
-            alt="Trustpilot"
-            className="h-5 object-contain"
-          />
-          <span className="text-[#1a1a1a] font-semibold">Rated Excellent</span>
-        </a>
-      </div>
     </section>
   );
 };
