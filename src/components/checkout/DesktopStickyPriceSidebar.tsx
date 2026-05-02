@@ -184,9 +184,9 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
               <Lock className="w-3 h-3 text-[#0BA360]" />
               256-bit SSL encryption
             </p>
-            <a 
-              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-              target="_blank" 
+            <a
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+              target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 text-xs text-gray-600 hover:text-[#1a1a1a]"
             >
@@ -195,11 +195,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                   <Star key={i} className="w-3 h-3 fill-[#00B67A] text-[#00B67A]" />
                 ))}
               </div>
-              <img 
-                src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
-                alt="Trustpilot" 
-                className="h-4"
-              />
+              <span className="font-semibold text-[#1a1a1a]">Rated Excellent</span>
             </a>
           </div>
         </div>
