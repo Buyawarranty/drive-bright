@@ -70,75 +70,72 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 
   return (
     <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-3">
-        <div className="flex items-center justify-between gap-5">
+      <div className="max-w-6xl mx-auto px-5 py-2.5">
+        <div className="flex items-stretch gap-4">
 
-          {/* 1. Trustpilot */}
-          <a
-            href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
-          >
-            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-green-600" strokeWidth={2} />
+          {/* LEFT: Trust + plan stacked tightly */}
+          <div className="flex flex-col justify-center gap-1 flex-shrink-0 pr-4 border-r border-gray-200">
+            <a
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity leading-none"
+            >
+              <span className="text-sm font-bold text-gray-900">Excellent</span>
+              <img src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot" className="h-4 w-auto" />
+            </a>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Cover</span>
+              <span className="text-[13px] font-bold text-gray-900">{planLabel}</span>
             </div>
-            <div className="flex items-center gap-2 leading-none">
-              <span className="text-base font-bold text-gray-900">Excellent</span>
-              <img src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot" className="h-5 w-auto" />
-            </div>
-          </a>
-
-          {/* 2. Your cover */}
-          <div className="flex flex-col leading-tight flex-shrink-0">
-            <span className="text-[11px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
-            <span className="text-base font-bold text-gray-900 mt-0.5">{planLabel}</span>
           </div>
 
-          {/* 3. Price */}
-          <div className="flex flex-col leading-tight flex-shrink-0">
+          {/* MIDDLE: Price block */}
+          <div className="flex flex-col justify-center leading-none flex-shrink-0">
             {isMonthly ? (
               <>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
-                  <span className="text-sm text-gray-600">/month</span>
+                  <span className="text-sm text-gray-600">/mo</span>
+                  <span className="text-xs text-gray-500 ml-1">· {pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day</span>
                 </div>
-                <span className="text-[11px] text-gray-600 mt-0.5">
-                  Equal to <span className="font-semibold text-gray-700">{pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day</span>
-                </span>
-                <span className="text-[11px] text-gray-500">Paid over 12 months</span>
+                <span className="text-[11px] text-gray-500 mt-1">Paid over 12 months · 0% APR</span>
               </>
             ) : (
               <>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-extrabold text-[#0BA360]">£{fullPrice}</span>
+                  <span className="text-xs text-gray-500">one-off</span>
                 </div>
-                <span className="text-[11px] text-gray-600 mt-0.5">One simple payment</span>
                 {savings > 0 && (
-                  <span className="text-[11px] font-semibold text-[#0BA360]">You save £{savings} vs monthly</span>
+                  <span className="text-[11px] font-semibold text-[#0BA360] mt-1">You save £{savings} vs monthly</span>
                 )}
               </>
             )}
           </div>
 
-          {/* 4. Pay in full savings pill (when on monthly) */}
+          {/* OPTIONAL: Switch-to-full pill (only when on monthly with savings) */}
           {isMonthly && savings > 0 && (
-            <div className="flex items-center gap-2 bg-[#E8F7EF] border border-[#0BA360]/20 rounded-xl px-4 py-2.5 flex-shrink-0">
-              <Wallet className="w-4 h-4 text-[#0BA360]" />
+            <div className="hidden xl:flex items-center gap-2 bg-[#E8F7EF] border border-[#0BA360]/30 rounded-lg px-3 py-1.5 flex-shrink-0 self-center">
+              <Wallet className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
               <div className="flex flex-col leading-tight">
-                <span className="text-sm font-bold text-gray-900">Pay in full £{fullPrice}</span>
-                <span className="text-[12px] font-semibold text-[#0BA360]">Save £{savings} vs monthly</span>
+                <span className="text-[12px] font-bold text-gray-900">Pay £{fullPrice} upfront</span>
+                <span className="text-[11px] font-semibold text-[#0BA360]">Save £{savings}</span>
               </div>
             </div>
           )}
 
-          {/* 5. CTA */}
-          <div className="flex flex-col items-center justify-center gap-1 flex-1 min-w-[260px] max-w-[360px]">
+          {/* RIGHT: CTA fills remaining space */}
+          <div className="flex-1 flex items-center justify-end gap-3 min-w-0">
+            <span className="hidden md:flex items-center gap-1.5 text-[11px] text-gray-500 flex-shrink-0">
+              <Lock className="w-3 h-3" />
+              Secure checkout
+            </span>
             <Button
               onClick={onPayClick}
               disabled={isLoading}
-              aria-label="Activate my cover"
-              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-6 px-6 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
+              aria-label="Continue to checkout"
+              className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-5 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all min-w-[260px]"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -152,10 +149,6 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                 </>
               )}
             </Button>
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
-              <Lock className="w-3 h-3" />
-              <span>Secure checkout</span>
-            </div>
           </div>
         </div>
       </div>
