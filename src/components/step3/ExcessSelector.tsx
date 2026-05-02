@@ -24,7 +24,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   return (
-    <div className="px-4 sm:px-6 py-5 sm:py-6 border-t border-border">
+    <div className="px-4 sm:px-6 py-4 sm:py-6 border-t border-border">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <div className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold flex-shrink-0">
