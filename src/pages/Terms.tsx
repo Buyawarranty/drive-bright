@@ -10,23 +10,30 @@ const Terms = () => {
   const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
+  const [platinumDocUrl, setPlatinumDocUrl] = useState<string>('');
   const navigate = useNavigate();
   useEffect(() => {
-    const fetchTermsDoc = async () => {
-      const { data, error } = await supabase
+    const fetchDocs = async () => {
+      const { data: termsData } = await supabase
         .from('customer_documents')
         .select('file_url')
         .eq('plan_type', 'terms-and-conditions')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
-      
-      if (data && !error) {
-        setTermsDocUrl(data.file_url);
-      }
+      if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+
+      const { data: platinumData } = await supabase
+        .from('customer_documents')
+        .select('file_url')
+        .eq('plan_type', 'platinum')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (platinumData?.file_url) setPlatinumDocUrl(platinumData.file_url);
     };
-    
-    fetchTermsDoc();
+
+    fetchDocs();
   }, []);
 
   const toggleItem = (id: string) => {
@@ -150,7 +157,7 @@ const Terms = () => {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="mb-8 text-center">
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
           {termsDocUrl ? (
             <a 
               href={termsDocUrl} 
@@ -171,6 +178,32 @@ const Terms = () => {
                 <div>Loading document...</div>
               </div>
             </div>
+          )}
+
+          {platinumDocUrl ? (
+            <a 
+              href={platinumDocUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition-colors"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              <div className="text-center">
+                <div>Platinum Warranty Plan</div>
+                <div className="text-sm opacity-90">See what's covered (PDF)</div>
+              </div>
+            </a>
+          ) : (
+            <Link
+              to="/what-is-covered"
+              className="inline-flex items-center bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition-colors"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              <div className="text-center">
+                <div>Platinum Warranty Plan</div>
+                <div className="text-sm opacity-90">See what's covered</div>
+              </div>
+            </Link>
           )}
         </div>
 
