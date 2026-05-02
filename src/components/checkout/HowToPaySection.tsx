@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Lock, Check, Tag, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import bumperLogo from '@/assets/bumper-logo-transparent.png';
-import stripeLogo from '@/assets/stripe-logo.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 
 interface HowToPaySectionProps {
