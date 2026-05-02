@@ -728,6 +728,23 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }, 60000);
 
     const flushPendingStatusQueue = () => {
+      const pending = Object.values(readPendingStatusUpdates()).sort(
+        (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+      );
+
+      if (pending.length === 0) return;
+
+      if (document.visibilityState === 'hidden') {
+        pending.forEach(item => {
+          void callUpdateLeadStatusRpc(item.leadId, item.status, item.isAbandonedCart, true)
+            .then((result) => {
+              if (result?.success) clearPendingStatusUpdate(item.leadId);
+            })
+            .catch((error) => console.warn('[Leads] keepalive status sync will retry later:', error));
+        });
+        return;
+      }
+
       void flushPendingStatusUpdates();
     };
 
