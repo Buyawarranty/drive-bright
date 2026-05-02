@@ -1318,7 +1318,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       </div>
 
       {/* Existing mobile layout (<md) */}
-      <div className="md:hidden min-h-screen bg-white">
+      <div className="md:hidden min-h-screen bg-white pb-[calc(14rem+env(safe-area-inset-bottom))]">
       
       {/* Header with Back button and Get Covered heading */}
       <div className="bg-white border-b">
@@ -2785,7 +2785,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       )}
 
       {/* Bottom spacer so the last mobile sections can scroll above the fixed checkout bar */}
-      <div className="h-[230px] md:h-32 -mt-4" aria-hidden="true"></div>
+      <div className="h-[320px] md:h-32 -mt-4" aria-hidden="true"></div>
 
       {/* Sticky Total Bar - Always visible */}
       {!vehicleAgeError && (
