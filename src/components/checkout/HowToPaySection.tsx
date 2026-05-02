@@ -125,7 +125,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="mt-3 flex flex-col gap-3">
             <div className="pl-7">
               <div className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
                 £{fullPrice}
@@ -141,7 +141,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             </div>
 
             {/* Benefits */}
-            <div className="space-y-1.5 sm:pt-1 pl-7 sm:pl-0">
+            <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
                 <span>Instant 10% saving</span>
@@ -206,7 +206,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="mt-3 flex flex-col gap-3">
             <div className="pl-7">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
@@ -221,7 +221,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             </div>
 
             {/* Benefits */}
-            <div className="space-y-1.5 sm:pt-1 pl-7 sm:pl-0">
+            <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
                 <span>0% interest</span>
