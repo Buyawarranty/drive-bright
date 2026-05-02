@@ -90,251 +90,195 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   return (
     <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-5">
-        <Lock className="w-5 h-5 text-[#1a1a1a]" />
-        <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">How To Pay</h2>
+      <div className="mb-4">
+        <h2 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Choose how you want to pay</h2>
       </div>
 
-      {/* Payment Cards - Side by Side. Pay-in-full leads (recommended). */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Payment Cards - Stacked vertically like the mockup */}
+      <div className="flex flex-col gap-4">
         {/* Pay in Full Card — RECOMMENDED */}
-        <div className="relative">
-          {/* Recommended Badge */}
-          <div className="absolute -top-3 left-4 z-10">
-            <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap shadow-sm">
-              ★ RECOMMENDED · SAVE £{savings}
-            </span>
-          </div>
-
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => handleCardSelect('full')}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
-            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer flex flex-col ${
-              selectedPayment === 'full'
-                ? 'border-[#0BA360] bg-white shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
-                : 'border-[#0BA360]/40 bg-white hover:border-[#0BA360]'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3 flex-1">
-              <div className="flex-1">
-                <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a] leading-7 min-h-[28px]">Pay in full · save 10%</h3>
-                <div className="flex items-center gap-2 mt-1 mb-2 min-h-[20px]">
-                  <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                  <span className="text-sm font-semibold text-gray-600">
-                    Platinum {planYears}-Year Cover
-                  </span>
-                </div>
-
-                {/* Hero: total price */}
-                <div className="mt-3 bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg p-4">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#1a1a1a] leading-none tracking-tight">
-                      £{fullPrice}
-                    </span>
-                    {savings > 0 && (
-                      <span className="text-base text-gray-400 line-through">£{originalPrice}</span>
-                    )}
-                  </div>
-                  <p className="text-sm text-[#0BA360] font-semibold mt-2">
-                    Equal to just {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over term
-                  </p>
-                  {savings > 0 && (
-                    <p className="text-sm text-[#0BA360] font-bold mt-1">
-                      Save £{savings} instantly · 10% off
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">One payment today · covers {planDurationMonths} months</p>
-                </div>
-
-                {/* Benefits */}
-                <div className="mt-3 space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>Instant 10% saving</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>No ongoing payments to manage</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>No credit check required</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Radio/Check indicator */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => handleCardSelect('full')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
+          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-[#F4FBF6] ${
+            selectedPayment === 'full'
+              ? 'border-[#0BA360] shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
+              : 'border-[#0BA360]/40 hover:border-[#0BA360]'
+          }`}
+        >
+          {/* Title row with radio */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Radio indicator */}
               <div
-                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'full'
-                    ? 'bg-[#0BA360] border-[#0BA360]'
-                    : 'border-gray-300 bg-white'
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'full' ? 'border-[#0BA360]' : 'border-gray-400'
                 }`}
               >
-                {selectedPayment === 'full' && (
-                  <Check className="w-4 h-4 text-white" />
-                )}
+                {selectedPayment === 'full' && <span className="w-2.5 h-2.5 rounded-full bg-[#0BA360]" />}
               </div>
+              <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Pay in full</h3>
+              <span className="bg-[#0BA360] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
+                Recommended
+              </span>
+            </div>
+          </div>
+
+          {/* Price + benefits row */}
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="pl-7">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
+                £{fullPrice}
+              </div>
+              <p className="text-sm text-[#0BA360] font-medium mt-1">
+                {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`} per day
+              </p>
+              {savings > 0 && (
+                <p className="text-sm text-[#0BA360] font-semibold mt-1">
+                  Save £{savings} (10%)
+                </p>
+              )}
             </div>
 
-            {/* Per-card CTA + trust footer */}
-            {!hidePayButton && (
-              <div className="mt-4">
-                <Button
-                  type="button"
-                  onClick={(e) => handlePayInside('full', e)}
-                  disabled={isLoading}
-                  className="w-full py-5 px-3 text-sm sm:text-base font-bold rounded-xl bg-[#0BA360] hover:bg-[#099355] text-white animate-breathing whitespace-normal text-center leading-tight"
-                >
-                  {isLoading && selectedPayment === 'full' ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Check className="w-5 h-5 flex-shrink-0" />
-                      <span>Pay in full £{fullPrice}</span>
-                    </span>
-                  )}
-                </Button>
+            {/* Benefits */}
+            <div className="space-y-1.5 sm:pt-1 pl-7 sm:pl-0">
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
+                <span>Instant 10% saving</span>
               </div>
-            )}
-
-            {/* Trust signal + Stripe logo */}
-            <div className="mt-4 pt-3 border-t border-gray-100">
-              <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
-                <Lock className="w-3.5 h-3.5 text-gray-500" />
-                <span>Secure card payment · Apple Pay & Google Pay</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
-                <img src={stripeLogo} alt="Stripe" className="h-4 object-contain" />
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
+                <span>No ongoing payments</span>
               </div>
             </div>
           </div>
+
+          {/* Per-card CTA */}
+          {!hidePayButton && (
+            <div className="mt-4">
+              <Button
+                type="button"
+                onClick={(e) => handlePayInside('full', e)}
+                disabled={isLoading}
+                className="w-full py-5 text-sm sm:text-base font-bold rounded-xl bg-[#0BA360] hover:bg-[#099355] text-white animate-breathing"
+              >
+                {isLoading && selectedPayment === 'full' ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span>Pay £{fullPrice}</span>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Monthly Card */}
-        <div className="relative">
-          {/* 0% APR Badge */}
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-            <span className="bg-[#FF6B00] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
-              0% APR
-            </span>
-          </div>
-
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => handleCardSelect('monthly')}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
-            className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer flex flex-col ${
-              selectedPayment === 'monthly'
-                ? 'border-[#FF6B00] bg-white'
-                : 'border-[#E5E5E5] bg-white hover:border-gray-300'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3 flex-1">
-              <div className="flex-1">
-                <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a] leading-7 min-h-[28px]">Spread the cost</h3>
-                <div className="flex items-center gap-2 mt-1 mb-2 min-h-[20px]">
-                  <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                  <span className="text-sm font-semibold text-gray-600">
-                    Platinum {planYears}-Year Cover
-                  </span>
-                </div>
-
-                {/* Hero: monthly price */}
-                <div className="mt-3 bg-[#FFF5EB] border border-[#FFD7B5] rounded-lg p-4">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl sm:text-5xl font-extrabold text-[#1a1a1a] leading-none tracking-tight">
-                        £{monthlyPrice}
-                      </span>
-                      <span className="text-lg sm:text-xl font-medium text-[#1a1a1a] leading-none">/mo</span>
-                    </div>
-                    <span className="text-sm text-gray-600 font-medium">
-                      · £{monthlyPrice * 12} total
-                    </span>
-                  </div>
-                  <p className="text-sm text-[#FF6B00] font-semibold mt-2">
-                    Equal to just {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over term
-                  </p>
-                  <p className="text-sm text-[#1a1a1a] font-semibold mt-1">
-                    £{monthlyPrice} today, then 11 monthly payments
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">12 payments total · covers {planDurationMonths} months</p>
-                </div>
-
-                {/* Benefits */}
-                <div className="mt-3 space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>0% interest, ever</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>Soft credit check only — no impact on score</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                    <span>Cancel anytime within 14 days</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Radio/Check indicator */}
+        {/* Monthly / Spread the cost Card */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => handleCardSelect('monthly')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
+          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-white ${
+            selectedPayment === 'monthly'
+              ? 'border-[#FF6B00]'
+              : 'border-[#E5E5E5] hover:border-gray-300'
+          }`}
+        >
+          {/* Title row with radio */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Radio indicator */}
               <div
-                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'monthly'
-                    ? 'bg-[#FF6B00] border-[#FF6B00]'
-                    : 'border-gray-300 bg-white'
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'monthly' ? 'border-[#FF6B00]' : 'border-gray-400'
                 }`}
               >
-                {selectedPayment === 'monthly' && (
-                  <Check className="w-4 h-4 text-white" />
+                {selectedPayment === 'monthly' && <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />}
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Spread the cost</h3>
+              <span className="bg-[#FF6B00] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">
+                0% APR
+              </span>
+            </div>
+          </div>
+
+          {/* Price + benefits row */}
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="pl-7">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
+                  £{monthlyPrice}
+                </span>
+                <span className="text-sm text-[#1a1a1a] font-medium">today</span>
+              </div>
+              <p className="text-sm text-[#1a1a1a] mt-1">then 11 monthly payments</p>
+              <p className="text-sm text-[#FF6B00] font-medium mt-1">
+                {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`} per day
+              </p>
+            </div>
+
+            {/* Benefits */}
+            <div className="space-y-1.5 sm:pt-1 pl-7 sm:pl-0">
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
+                <span>0% interest</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
+                <span>Soft credit check only</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Per-card CTA */}
+          {!hidePayButton && (
+            <div className="mt-4">
+              <Button
+                type="button"
+                onClick={(e) => handlePayInside('monthly', e)}
+                disabled={isLoading}
+                className="w-full py-5 text-sm sm:text-base font-bold rounded-xl bg-[#FF6B00] hover:bg-[#e56000] text-white animate-breathing"
+              >
+                {isLoading && selectedPayment === 'monthly' ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span>Just £{monthlyPrice} today</span>
                 )}
-              </div>
+              </Button>
             </div>
+          )}
+        </div>
+      </div>
 
-            {/* Per-card CTA + trust footer */}
-            {!hidePayButton && (
-              <div className="mt-4">
-                <Button
-                  type="button"
-                  onClick={(e) => handlePayInside('monthly', e)}
-                  disabled={isLoading}
-                  className="w-full py-5 px-3 text-sm sm:text-base font-bold rounded-xl bg-[#FF6B00] hover:bg-[#e56000] text-white animate-breathing whitespace-normal text-center leading-tight"
-                >
-                  {isLoading && selectedPayment === 'monthly' ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Check className="w-5 h-5 flex-shrink-0" />
-                      <span>Just £{monthlyPrice} today</span>
-                    </span>
-                  )}
-                </Button>
-              </div>
-            )}
-
-            {/* Trust signal + Bumper logo */}
-            <div className="mt-4 pt-3 border-t border-gray-100">
-              <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
-                <Lock className="w-3.5 h-3.5 text-gray-500" />
-                <span>FCA-regulated finance partner</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-wide text-gray-400">Powered by</span>
-                <img src={bumperLogo} alt="Bumper" className="h-4 object-contain" />
-              </div>
-            </div>
+      {/* Trust strip footer (Secure · UK support · Trustpilot) */}
+      <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+        <div className="flex items-center gap-2 text-[#1a1a1a]">
+          <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <div>
+            <div className="font-semibold">Secure checkout</div>
+            <div className="text-gray-500 text-xs">256-bit SSL encrypted</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-[#1a1a1a]">
+          <svg className="w-4 h-4 text-[#FF6B00] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.2a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg>
+          <div>
+            <div className="font-semibold">UK support</div>
+            <div className="text-[#FF6B00] text-xs font-semibold">0330 229 5040</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-[#1a1a1a]">
+          <span className="text-gray-400 flex-shrink-0">★</span>
+          <div>
+            <div className="font-semibold">Rated Excellent</div>
+            <div className="text-gray-500 text-xs">on Trustpilot</div>
           </div>
         </div>
       </div>
