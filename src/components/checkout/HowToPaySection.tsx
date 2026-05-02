@@ -235,7 +235,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
           {/* Per-card CTA */}
           {!hidePayButton && (
-            <div className="mt-4">
+            <div className="mt-4 lg:mt-auto lg:pt-4">
               <Button
                 type="button"
                 onClick={(e) => handlePayInside('monthly', e)}
