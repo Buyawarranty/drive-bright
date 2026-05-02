@@ -474,6 +474,10 @@ const Index = () => {
     }
   } | null>(getInitialSelectedPlan);
   const getInitialFormData = () => {
+    if (shouldForceFreshStep4Data(searchParams) && canUseFreshStep4Data()) {
+      return createFreshStep4PreviewState().formData;
+    }
+
     // Priority 1: Check for restore parameter from email links
     const restoreParam = searchParams.get('restore');
     if (restoreParam) {
@@ -606,6 +610,23 @@ const Index = () => {
   
   // Loading state for showing restoration UI
   const [isRestoring, setIsRestoring] = useState(() => !!searchParams.get('restore'));
+
+  useEffect(() => {
+    if (!shouldForceFreshStep4Data(searchParams) || !canUseFreshStep4Data()) return;
+
+    const freshState = createFreshStep4PreviewState();
+    setVehicleData(freshState.vehicleData);
+    setSelectedPlan(freshState.selectedPlan);
+    setFormData((prev) => ({ ...prev, ...freshState.formData }));
+    setCurrentStep(4);
+    setIsRestoring(false);
+
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(freshState.vehicleData));
+    saveWithTimestamp('buyawarranty_selectedPlan', JSON.stringify(freshState.selectedPlan));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(freshState.formData));
+    saveWithTimestamp('buyawarranty_currentStep', '4');
+    saveWithTimestamp('warrantyJourneyState', JSON.stringify({ step: 4, ...freshState }));
+  }, [searchParams]);
 
   // CRITICAL: Clean up restore parameter from URL after state initialization
   // Only clean up AFTER vehicleData is confirmed in state — otherwise we'd lose the
