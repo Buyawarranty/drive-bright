@@ -50,6 +50,22 @@ export const writePendingQueuedNotes = (notes: PendingQueuedNote[]) => {
 
 const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
+const NOTE_SAVE_TIMEOUT_MS = 8000;
+
+const withTimeout = async <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(message)), ms);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
 
 // Cache admin user to avoid repeated lookups
 let cachedAdminUser: { id: string; first_name: string | null; last_name: string | null; email: string } | null = null;
@@ -320,20 +336,28 @@ export const useLeadQuickNotes = (leadId: string) => {
               ? `${cartData.contact_notes}\n\n${newNoteEntry}`
               : newNoteEntry;
 
-            const { error: updateError } = await supabase
-              .from('abandoned_carts')
-              .update({ contact_notes: updatedNotes, updated_at: nowIso })
-              .eq('id', queuedActualId);
+            const { error: updateError } = await withTimeout(
+              supabase
+                .from('abandoned_carts')
+                .update({ contact_notes: updatedNotes, updated_at: nowIso })
+                .eq('id', queuedActualId),
+              NOTE_SAVE_TIMEOUT_MS,
+              'Queued note save timed out'
+            );
 
             if (updateError) throw updateError;
           } else {
-            const { error: insertError } = await supabase
-              .from('lead_quick_notes')
-              .insert({
-                lead_id: queuedLeadId,
-                note_text: queuedNote.noteText.trim(),
-                created_by: adminUser.id
-              });
+            const { error: insertError } = await withTimeout(
+              supabase
+                .from('lead_quick_notes')
+                .insert({
+                  lead_id: queuedLeadId,
+                  note_text: queuedNote.noteText.trim(),
+                  created_by: adminUser.id
+                }),
+              NOTE_SAVE_TIMEOUT_MS,
+              'Queued note save timed out'
+            );
 
             if (insertError) throw insertError;
           }
