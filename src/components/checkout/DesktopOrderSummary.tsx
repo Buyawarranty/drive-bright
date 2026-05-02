@@ -35,7 +35,7 @@ const DesktopGuarantee = () => {
     <Collapsible open={open} onOpenChange={setOpen} className="mt-4 rounded-xl border border-[#E5E5E5] bg-white p-4">
       <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 text-left group">
         <h3 className="text-sm font-bold text-[#1a1a1a]">
-          Please confirm before activating
+          Good to know
         </h3>
         <span className="flex items-center gap-1 text-xs font-semibold text-[#C4841D] flex-shrink-0">
           See details
@@ -65,7 +65,7 @@ const DesktopGuarantee = () => {
           <div className="flex items-start gap-3 rounded-lg bg-[#FFF5EB] border border-[#FFD9A8] px-4 py-3">
             <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#FF6B00]" />
             <p className="text-sm text-[#1a1a1a] leading-relaxed">
-              <strong>Using your cover.</strong> If you make a claim, your policy stays active for the full term and is designed for ongoing protection rather than cancellation or refund.
+              <strong>Using your cover.</strong> Your warranty runs for its full term, giving you continuous protection throughout. Please note that once a claim has been made, your policy is no longer eligible for a refund.
             </p>
           </div>
         </div>
