@@ -2382,7 +2382,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               Good to know
             </h3>
 
-            <div>
                 <div className="space-y-2.5 mt-4">
                   {/* Cover starts today */}
                   <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
@@ -2408,7 +2407,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </p>
                   </div>
                 </div>
-              </CollapsibleContent>
 
 
             {/* Vehicle declaration checkbox */}
@@ -2446,7 +2444,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
           </section>
-          </Collapsible>
 
           {/* Customer reviews section removed — already shown below the CTA */}
 
