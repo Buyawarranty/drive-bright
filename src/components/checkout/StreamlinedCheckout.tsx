@@ -1338,16 +1338,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }, 2500);
     };
 
-    if (!declarationChecked) {
-      setDeclarationError(true);
-      const declSection = document.getElementById('vehicle-declaration');
-      scrollToSection(declSection);
-      toast.error('Please confirm the vehicle declaration to continue.', {
-        duration: 5000,
-        className: 'border-2 border-red-500 shadow-2xl',
-      });
-      return;
-    }
+    // Note: declaration check is performed AFTER all other field validation below,
+    // so users are prompted to complete name/address/etc. before the declaration popup.
 
     if (!effectivePayment) {
       setPaymentError('Please choose a payment option to continue.');
