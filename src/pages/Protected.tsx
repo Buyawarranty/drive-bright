@@ -418,6 +418,9 @@ const Protected = () => {
               <ChevronDown className={`w-4 h-4 transition-transform ${showAllParts ? 'rotate-180' : ''}`} />
             </button>
           </div>
+
+          {/* PDF documents — placed right after the coverage grid */}
+          <DocLinksRow variant="coverage" />
         </section>
 
         {/* ── 4. COVERED / NOT COVERED COLUMNS ── */}
