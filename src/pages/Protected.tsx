@@ -648,6 +648,29 @@ const Protected = () => {
                 );
               })}
 
+              {/* What's not covered */}
+              <AccordionItem value="not-covered" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-red-100 hover:bg-red-200 transition-all duration-300 hover:no-underline text-red-800">
+                  <div className="flex items-center gap-3">
+                    <X className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-bold text-base sm:text-lg">What's not covered</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-5 py-5 bg-white">
+                  <ul className="space-y-3">
+                    {notCoveredItems.map((it, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm sm:text-base text-foreground">{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-xs text-muted-foreground">
+                    For the complete list of exclusions, please see the full Terms & Conditions PDF.
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+
               {/* Modifications and Your Cover */}
               <AccordionItem value="modifications" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
                 <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-amber-50 hover:bg-amber-100 transition-all duration-300 hover:no-underline text-amber-800">
