@@ -238,6 +238,58 @@ const Protected = () => {
 
   const CORE_PARTS_COUNT = 6;
 
+  // Inline reusable row for inserting Platinum + T&Cs PDF links throughout the page.
+  // `variant` slightly changes the wording so each placement reads naturally.
+  const DocLinksRow = ({
+    variant = 'default',
+    align = 'left',
+  }: {
+    variant?: 'coverage' | 'exclusions' | 'plan' | 'default';
+    align?: 'left' | 'center';
+  }) => {
+    if (!platinumDocUrl && !termsDocUrl) return null;
+    const platinumLabel =
+      variant === 'plan'
+        ? 'Full details available in our Platinum Plan document (PDF)'
+        : variant === 'coverage'
+          ? 'Download full Platinum coverage (PDF)'
+          : 'Platinum Cover Summary (PDF)';
+    const termsLabel =
+      variant === 'exclusions'
+        ? 'See full exclusions in our Terms & Conditions (PDF)'
+        : variant === 'coverage'
+          ? 'View full Terms & Conditions (PDF)'
+          : 'Terms & Conditions (PDF)';
+    return (
+      <div
+        className={`mt-8 flex flex-col sm:flex-row gap-3 ${align === 'center' ? 'justify-center' : ''}`}
+      >
+        {platinumDocUrl && (
+          <a
+            href={platinumDocUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white border border-brand-orange/40 text-brand-orange hover:bg-brand-orange/5 font-semibold text-sm px-5 py-3 rounded-xl transition-colors"
+          >
+            <FileText className="w-4 h-4 flex-shrink-0" />
+            {platinumLabel}
+          </a>
+        )}
+        {termsDocUrl && (
+          <a
+            href={termsDocUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white border border-green-600/40 text-green-700 hover:bg-green-50 font-semibold text-sm px-5 py-3 rounded-xl transition-colors"
+          >
+            <FileText className="w-4 h-4 flex-shrink-0" />
+            {termsLabel}
+          </a>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <SEOHead
@@ -366,6 +418,9 @@ const Protected = () => {
               <ChevronDown className={`w-4 h-4 transition-transform ${showAllParts ? 'rotate-180' : ''}`} />
             </button>
           </div>
+
+          {/* PDF documents — placed right after the coverage grid */}
+          <DocLinksRow variant="coverage" />
         </section>
 
         {/* ── 4. COVERED / NOT COVERED COLUMNS ── */}
@@ -422,6 +477,8 @@ const Protected = () => {
             </div>
           </div>
 
+          {/* PDF documents — high-intent placement after exclusions table */}
+          <DocLinksRow variant="exclusions" />
         </section>
 
         {/* ── 5. CLAIM LIMITS — conversion decision point ── */}
@@ -490,6 +547,9 @@ const Protected = () => {
               Get cover today <ArrowRight className="w-6 h-6 ml-2 stroke-[3]" />
             </a>
           </div>
+
+          {/* PDF documents — decision-point reassurance near pricing */}
+          <DocLinksRow variant="plan" />
 
           {/* ── 6. REPAIR COSTS — directly below limits to confirm the choice ── */}
           <div className="mt-16">
