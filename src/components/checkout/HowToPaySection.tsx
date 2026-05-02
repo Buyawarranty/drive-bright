@@ -181,7 +181,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           tabIndex={0}
           onClick={() => handleCardSelect('monthly')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
-          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-white ${
+          className={`w-full lg:flex-1 lg:flex lg:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer bg-white ${
             selectedPayment === 'monthly'
               ? 'border-[#FF6B00]'
               : 'border-[#E5E5E5] hover:border-gray-300'
