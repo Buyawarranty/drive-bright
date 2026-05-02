@@ -2080,13 +2080,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
                 
-                {/* Success message when address found but address line not yet entered */}
-                {showAddressFields && !addressLookupFailed && addressData.town && !addressData.address_line_1?.trim() && (
-                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" />
-                    Please enter address line
-                  </p>
-                )}
+                
                 
                 {/* Postcode validation error */}
                 {showValidation && addressErrors.postcode && (
