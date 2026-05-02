@@ -256,8 +256,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         </div>
       </div>
 
-      {/* Trust strip footer (Secure · UK support · Trustpilot) */}
-      <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+      {/* Trust strip footer (Secure · UK support) — two side-by-side on mobile and desktop */}
+      <div className="mt-5 grid grid-cols-2 gap-3 text-xs sm:text-sm">
         <div className="flex items-center gap-2 text-[#1a1a1a]">
           <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div>
@@ -270,13 +270,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <div>
             <div className="font-semibold">UK support</div>
             <div className="text-[#FF6B00] text-xs font-semibold">0330 229 5040</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-[#1a1a1a]">
-          <span className="text-gray-400 flex-shrink-0">★</span>
-          <div>
-            <div className="font-semibold">Rated Excellent</div>
-            <div className="text-gray-500 text-xs">on Trustpilot</div>
           </div>
         </div>
       </div>
@@ -352,29 +345,6 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
       {/* Trustpilot Slider Widget */}
       {!hideTrustpilot && <TrustpilotSliderWidget className="mt-4" />}
-      {/* Divider */}
-      <div className="h-px bg-border mt-6 mb-5" />
-
-      {/* Trust Footer */}
-      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Lock className="w-4 h-4" />
-          <span>256-bit encryption</span>
-        </div>
-        <a
-          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-foreground transition-colors"
-        >
-          <img
-            src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png"
-            alt="Trustpilot"
-            className="h-5 object-contain"
-          />
-          <span className="text-[#1a1a1a] font-semibold">Rated Excellent</span>
-        </a>
-      </div>
     </section>
   );
 };
