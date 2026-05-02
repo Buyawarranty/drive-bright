@@ -293,6 +293,16 @@ const Index = () => {
 
   // CRITICAL: Check for restore parameter FIRST and initialize state with it
   const getInitialVehicleData = (): VehicleData | null => {
+    if (shouldForceFreshStep4Data(searchParams) && canUseFreshStep4Data()) {
+      const freshState = createFreshStep4PreviewState();
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(freshState.vehicleData));
+      saveWithTimestamp('buyawarranty_selectedPlan', JSON.stringify(freshState.selectedPlan));
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(freshState.formData));
+      saveWithTimestamp('buyawarranty_currentStep', '4');
+      saveWithTimestamp('warrantyJourneyState', JSON.stringify({ step: 4, ...freshState }));
+      return freshState.vehicleData;
+    }
+
     // Priority 1: Check for restore parameter from email links
     const restoreParam = searchParams.get('restore');
     if (restoreParam) {
@@ -388,6 +398,10 @@ const Index = () => {
   // Initialize state variables first - check restore param and localStorage with timestamp check
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(getInitialVehicleData);
   const getInitialSelectedPlan = () => {
+    if (shouldForceFreshStep4Data(searchParams) && canUseFreshStep4Data()) {
+      return createFreshStep4PreviewState().selectedPlan;
+    }
+
     // Priority 1: Check for restore parameter from email links
     const restoreParam = searchParams.get('restore');
     if (restoreParam) {
