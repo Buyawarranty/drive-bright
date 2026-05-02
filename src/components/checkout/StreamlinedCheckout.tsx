@@ -2424,7 +2424,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </div>
                 </div>
               </CollapsibleContent>
-            </Collapsible>
+
 
             {/* Vehicle declaration checkbox */}
             <div
