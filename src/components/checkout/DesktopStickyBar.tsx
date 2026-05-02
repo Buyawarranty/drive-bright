@@ -69,12 +69,12 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   const planLabel = duration || `${yearWord} Platinum Cover`;
 
   return (
-    <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
-      <div className="max-w-6xl mx-auto px-5 py-2.5">
-        <div className="flex items-stretch gap-4">
+    <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white shadow-[0_-6px_22px_rgba(0,0,0,0.12)] border-t border-gray-200 z-50">
+      <div className="max-w-7xl mx-auto px-5 py-2">
+        <div className="flex items-center gap-3 min-h-[58px]">
 
           {/* LEFT: Trust + plan stacked tightly */}
-          <div className="flex flex-col justify-center gap-1 flex-shrink-0 pr-4 border-r border-gray-200">
+          <div className="flex flex-col justify-center gap-1 flex-shrink-0 pr-3 border-r border-gray-200">
             <a
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
               target="_blank"
@@ -91,24 +91,24 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
           </div>
 
           {/* MIDDLE: Price block */}
-          <div className="flex flex-col justify-center leading-none flex-shrink-0">
+          <div className="flex flex-col justify-center leading-none flex-shrink-0 min-w-[180px]">
             {isMonthly ? (
               <>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
+                  <span className="text-[22px] font-extrabold text-gray-900">£{monthlyPrice}</span>
                   <span className="text-sm text-gray-600">/mo</span>
                   <span className="text-xs text-gray-500 ml-1">· {pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day</span>
                 </div>
-                <span className="text-[11px] text-gray-500 mt-1">Paid over 12 months · 0% APR</span>
+                <span className="text-[11px] text-gray-500 mt-0.5">Paid over 12 months · 0% APR</span>
               </>
             ) : (
               <>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-[#0BA360]">£{fullPrice}</span>
+                  <span className="text-[22px] font-extrabold text-[#0BA360]">£{fullPrice}</span>
                   <span className="text-xs text-gray-500">one-off</span>
                 </div>
                 {savings > 0 && (
-                  <span className="text-[11px] font-semibold text-[#0BA360] mt-1">You save £{savings} vs monthly</span>
+                  <span className="text-[11px] font-semibold text-[#0BA360] mt-0.5">You save £{savings} vs monthly</span>
                 )}
               </>
             )}
@@ -116,7 +116,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 
           {/* OPTIONAL: Switch-to-full pill (only when on monthly with savings) */}
           {isMonthly && savings > 0 && (
-            <div className="hidden xl:flex items-center gap-2 bg-[#E8F7EF] border border-[#0BA360]/30 rounded-lg px-3 py-1.5 flex-shrink-0 self-center">
+            <div className="hidden xl:flex items-center gap-2 bg-[#E8F7EF] border border-[#0BA360]/30 rounded-lg px-3 py-1.5 flex-shrink-0">
               <Wallet className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
               <div className="flex flex-col leading-tight">
                 <span className="text-[12px] font-bold text-gray-900">Pay £{fullPrice} upfront</span>
@@ -135,7 +135,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               onClick={onPayClick}
               disabled={isLoading}
               aria-label="Continue to checkout"
-              className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-5 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all min-w-[260px]"
+              className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold h-12 px-7 rounded-lg text-base gap-2 shadow-md hover:shadow-lg transition-all min-w-[248px]"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
