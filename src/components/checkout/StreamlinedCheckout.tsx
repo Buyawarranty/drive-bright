@@ -2374,50 +2374,57 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
           </div>
 
-          {/* ==================== PLEASE CONFIRM BEFORE ACTIVATING ==================== */}
-          <section
-            id="please-confirm"
-            className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
-          >
-            <div className="mb-4">
-              <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
-                Please confirm before activating
-              </h3>
-            </div>
+          <Collapsible defaultOpen={false}>
+            <section
+              id="please-confirm"
+              className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
+            >
+              <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 text-left group">
+                <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
+                  Please confirm before activating
+                </h3>
+                <span className="flex items-center gap-1 text-sm font-semibold text-[#C4841D] flex-shrink-0">
+                  See details
+                  <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
+                </span>
+              </CollapsibleTrigger>
 
-            <div className="space-y-2.5">
-              {/* Cover starts today */}
-              <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
-                <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
-                <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                  <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
-                </p>
-              </div>
+              <CollapsibleContent>
+                <div className="space-y-2.5 mt-4">
+                  {/* Cover starts today */}
+                  <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
+                    </p>
+                  </div>
 
-              {/* No refund once a claim is submitted */}
-              <div className="flex items-start gap-3 rounded-lg bg-[#FDECEC] border border-[#F5C2C2] px-4 py-3">
-                <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#D9342B]" />
-                <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                  <strong>No refund once a claim is submitted,</strong> approved or not. Your policy stays active for the full term.{' '}
-                  <a
-                    href="/cancellation-policy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#1E5BB8] underline font-medium hover:text-[#174890]"
-                  >
-                    Cancellation policy ›
-                  </a>
-                </p>
-              </div>
+                  {/* No refund once a claim is submitted */}
+                  <div className="flex items-start gap-3 rounded-lg bg-[#FDECEC] border border-[#F5C2C2] px-4 py-3">
+                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#D9342B]" />
+                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <strong>No refund once a claim is submitted,</strong> approved or not. Your policy stays active for the full term.{' '}
+                      <a
+                        href="/cancellation-policy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1E5BB8] underline font-medium hover:text-[#174890]"
+                      >
+                        Cancellation policy ›
+                      </a>
+                    </p>
+                  </div>
 
-              {/* 14-day cooling-off period */}
-              <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
-                <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
-                <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                  <strong>14-day cooling-off period.</strong> Full refund minus a £40 admin fee if no claim has been made.
-                </p>
-              </div>
-            </div>
+                  {/* 14-day cooling-off period */}
+                  <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
+                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
+                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <strong>14-day cooling-off period.</strong> Full refund minus a £40 admin fee if no claim has been made.
+                    </p>
+                  </div>
+                </div>
+              </CollapsibleContent>
+
 
             {/* Vehicle declaration checkbox */}
             <div
@@ -2454,6 +2461,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
           </section>
+          </Collapsible>
 
           {/* Customer reviews section removed — already shown below the CTA */}
 
