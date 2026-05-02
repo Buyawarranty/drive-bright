@@ -105,6 +105,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     if (!pending || isSavingRef.current || hookIsSaving) return false;
 
     const queueId = queuePendingNote(pending);
+    isSavingRef.current = true;
     setIsSaving(true);
 
     try {
@@ -123,6 +124,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       }
       return false;
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   }, [hookIsSaving, queuePendingNote, persistDraft, clearQueuedPendingNote, handleQuickNoteChange]);
