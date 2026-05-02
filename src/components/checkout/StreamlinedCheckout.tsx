@@ -2379,10 +2379,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             id="please-confirm"
             className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#FFF1E6] text-[#C4841D] text-sm font-bold flex items-center justify-center">
-                2
-              </span>
+            <div className="mb-4">
               <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
                 Please confirm before activating
               </h3>
