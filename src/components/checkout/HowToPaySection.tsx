@@ -92,8 +92,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         <h2 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Choose how you want to pay</h2>
       </div>
 
-      {/* Payment Cards - Stacked vertically like the mockup */}
-      <div className="flex flex-col gap-4">
+      {/* Payment Cards - Vertical on mobile, horizontal (side-by-side) on desktop */}
+      <div className="flex flex-col lg:flex-row gap-4 lg:items-stretch">
         {/* Pay in Full Card — RECOMMENDED */}
         <div
           role="button"
