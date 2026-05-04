@@ -872,7 +872,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         }).catch(err => console.error('Failed to send agent sale notification:', err));
       }
       
-      toast.success(`Status: ${status.replace('_', ' ')}`);
+      return;
     } catch (error) {
       console.error('Error updating lead status:', error);
       if (isRetryableMutationError(error)) {
