@@ -140,9 +140,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
+    const today = getTodayLeadFeedSelectionDate();
+    return { from: today, to: today };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
@@ -221,14 +221,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount
   } = useLeads({
     serverDateFilter: useMemo(() => {
-      // When no explicit date range is selected, default to the last 90 days
-      // so the initial fetch stays bounded and avoids 12s timeouts on large
-      // datasets (10k+ rows). Users can still widen the range via the picker.
+      // Keep sales-agent loads bounded. An unbounded/90-day fetch currently pulls
+      // thousands of rows plus joins and times out before the table can render.
       if (!dateRange.from && !dateRange.to) {
-        const from = new Date();
-        from.setDate(from.getDate() - 90);
-        from.setHours(0, 0, 0, 0);
-        return { from, to: undefined };
+        const today = getTodayLeadFeedSelectionDate();
+        const boundaries = getLeadFeedRangeBoundaries({ from: today, to: today });
+        return { from: boundaries.from, to: boundaries.to };
       }
       const boundaries = getLeadFeedRangeBoundaries(dateRange);
       return { from: boundaries.from, to: boundaries.to };
@@ -264,20 +262,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSortOption('latest_submitted');
     }
   }, [setFilter, sortOption]);
-
-  const hasMountedDateRangeRef = React.useRef(false);
-
-  // Refetch when date range changes after the initial mount.
-  // The initial mount already loads with the current server-side date filter.
-  useEffect(() => {
-    if (!hasMountedDateRangeRef.current) {
-      hasMountedDateRangeRef.current = true;
-      return;
-    }
-
-    // Always refetch when date range changes — including "All Time" (both undefined)
-    fetchLeads();
-  }, [dateRange, fetchLeads]);
 
   // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
