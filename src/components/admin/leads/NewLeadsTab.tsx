@@ -221,7 +221,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount
   } = useLeads({
     serverDateFilter: useMemo(() => {
-      if (!dateRange.from && !dateRange.to) return undefined;
+      // When no explicit date range is selected, default to the last 90 days
+      // so the initial fetch stays bounded and avoids 12s timeouts on large
+      // datasets (10k+ rows). Users can still widen the range via the picker.
+      if (!dateRange.from && !dateRange.to) {
+        const from = new Date();
+        from.setDate(from.getDate() - 90);
+        from.setHours(0, 0, 0, 0);
+        return { from, to: undefined };
+      }
       const boundaries = getLeadFeedRangeBoundaries(dateRange);
       return { from: boundaries.from, to: boundaries.to };
     }, [dateRange]),
