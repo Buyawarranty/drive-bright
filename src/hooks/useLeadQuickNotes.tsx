@@ -12,6 +12,17 @@ export interface PendingQueuedNote {
   createdAt: string;
 }
 
+const makeTempNote = (leadId: string, noteText: string): QuickNote => ({
+  id: `temp_${leadId}_${Date.now()}`,
+  lead_id: leadId,
+  note_text: noteText.trim(),
+  is_pinned: false,
+  created_by: '',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  author: { first_name: 'Saving', last_name: null, email: 'saving@local' },
+});
+
 export interface QuickNote {
   id: string;
   lead_id: string;
@@ -73,7 +84,7 @@ let cacheExpiry = 0;
 
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const hasFetchedRef = useRef(false);
   const notesRef = useRef<QuickNote[]>([]);
   const isSavingRef = useRef(false);
@@ -110,7 +121,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     const hasCachedNotes = quickNotesCache.has(leadId);
 
     hasFetchedRef.current = hasCachedNotes;
-    setLoading(!hasCachedNotes);
+    setLoading(false);
     updateNotes(cachedNotes || []);
   }, [leadId, updateNotes]);
 
@@ -124,10 +135,8 @@ export const useLeadQuickNotes = (leadId: string) => {
       return;
     }
     
-    // Only show loading spinner when nothing is cached yet for this lead
-    if (!isRefetch && !quickNotesCache.has(leadId)) {
-      setLoading(true);
-    }
+    // Never block opening the note panel; fetches update silently in the background.
+    setLoading(false);
     
     const timeoutId = setTimeout(() => {
       setLoading(false);
