@@ -7,11 +7,18 @@ import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
 
-const LEAD_TAG_BATCH_SIZE = 300;
+const LEAD_TAG_BATCH_SIZE = 75;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 12000;
 const LEADS_FETCH_TIMEOUT_MS = 12000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
+let latestAccessToken: string | null = null;
+
+const cacheLatestAccessToken = async () => {
+  const { data } = await supabase.auth.getSession();
+  latestAccessToken = data.session?.access_token || null;
+  return latestAccessToken;
+};
 
 type PendingStatusUpdate = {
   leadId: string;
@@ -73,7 +80,7 @@ const callUpdateLeadStatusRpc = async (
   isAbandonedCart: boolean,
   keepalive = false
 ) => {
-  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = keepalive ? latestAccessToken : await cacheLatestAccessToken();
   const supabaseUrl = (supabase as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = (supabase as any).supabaseKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -86,7 +93,7 @@ const callUpdateLeadStatusRpc = async (
     keepalive,
     headers: {
       apikey: supabaseKey,
-      Authorization: `Bearer ${sessionData.session?.access_token || supabaseKey}`,
+      Authorization: `Bearer ${accessToken || supabaseKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -508,16 +515,16 @@ export const useLeads = (options?: UseLeadsOptions) => {
         application_count: Math.min(emailCounts[lead.email?.toLowerCase()] || 1, 10),
       }));
 
-      const salesLeadIds = leadsWithCounts.map((lead: any) => lead.id);
+      const visibleLeadIds = leadsWithCounts.slice(0, 250).map((lead: any) => lead.id);
 
       let tagsByLeadId: Record<string, any[]> = {};
 
       try {
-        if (salesLeadIds.length > 0) {
+        if (visibleLeadIds.length > 0) {
           const leadIdBatches: string[][] = [];
 
-          for (let i = 0; i < salesLeadIds.length; i += LEAD_TAG_BATCH_SIZE) {
-            leadIdBatches.push(salesLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
+          for (let i = 0; i < visibleLeadIds.length; i += LEAD_TAG_BATCH_SIZE) {
+            leadIdBatches.push(visibleLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
           }
 
           for (const batch of leadIdBatches) {
@@ -681,6 +688,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     let cancelled = false;
 
+    void cacheLatestAccessToken();
+
     // Fire fetch immediately — don't block on flushing pending status updates
     fetchLeadsRef.current();
 
@@ -733,6 +742,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
       );
 
       if (pending.length === 0) return;
+
+      void cacheLatestAccessToken();
 
       if (document.visibilityState === 'hidden') {
         pending.forEach(item => {
@@ -861,7 +872,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         }).catch(err => console.error('Failed to send agent sale notification:', err));
       }
       
-      toast.success(`Status: ${status.replace('_', ' ')}`);
+      return;
     } catch (error) {
       console.error('Error updating lead status:', error);
       if (isRetryableMutationError(error)) {

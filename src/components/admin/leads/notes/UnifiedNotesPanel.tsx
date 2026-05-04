@@ -89,6 +89,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     }
   }, [queuePendingNote, clearQueuedPendingNote]);
 
+  const flushPendingNoteRef = useRef<() => Promise<void>>(async () => {});
+
   const persistDraft = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
 
@@ -133,12 +135,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     await commitNote(quickNoteRef.current, { silent: true });
   }, [commitNote]);
 
+  flushPendingNoteRef.current = flushPendingNote;
+
   // Auto-save unsaved note on unmount (e.g. collapsing the panel)
   useEffect(() => {
     return () => {
-      void flushPendingNote();
+      void flushPendingNoteRef.current();
     };
-  }, [leadId, flushPendingNote]);
+  }, [leadId]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
