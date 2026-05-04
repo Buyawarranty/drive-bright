@@ -609,20 +609,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </div>
                   </div>
                   
-                  {/* Instant Activation Badge */}
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3.5 py-2 cursor-pointer">
-                          <span className="text-sm font-semibold text-green-700">⚡ Instant cover</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>⚡ Cover starts immediately after purchase</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                   
+
                 </div>
               </div>
             </div>
@@ -653,20 +641,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </div>
                 </div>
                 
-                {/* Instant Activation Badge */}
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
-                        <span className="text-xs sm:text-sm font-semibold text-green-700">⚡ Instant cover</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>⚡ Cover starts immediately after purchase</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
                 
+
               </div>
             </div>
           </div>
