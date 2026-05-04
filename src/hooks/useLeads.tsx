@@ -515,16 +515,16 @@ export const useLeads = (options?: UseLeadsOptions) => {
         application_count: Math.min(emailCounts[lead.email?.toLowerCase()] || 1, 10),
       }));
 
-      const salesLeadIds = leadsWithCounts.map((lead: any) => lead.id);
+      const visibleLeadIds = leadsWithCounts.slice(0, 250).map((lead: any) => lead.id);
 
       let tagsByLeadId: Record<string, any[]> = {};
 
       try {
-        if (salesLeadIds.length > 0) {
+        if (visibleLeadIds.length > 0) {
           const leadIdBatches: string[][] = [];
 
-          for (let i = 0; i < salesLeadIds.length; i += LEAD_TAG_BATCH_SIZE) {
-            leadIdBatches.push(salesLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
+          for (let i = 0; i < visibleLeadIds.length; i += LEAD_TAG_BATCH_SIZE) {
+            leadIdBatches.push(visibleLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
           }
 
           for (const batch of leadIdBatches) {
