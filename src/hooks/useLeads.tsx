@@ -688,6 +688,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     let cancelled = false;
 
+    void cacheLatestAccessToken();
+
     // Fire fetch immediately — don't block on flushing pending status updates
     fetchLeadsRef.current();
 
@@ -740,6 +742,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
       );
 
       if (pending.length === 0) return;
+
+      void cacheLatestAccessToken();
 
       if (document.visibilityState === 'hidden') {
         pending.forEach(item => {
