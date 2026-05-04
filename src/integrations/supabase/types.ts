@@ -6984,6 +6984,39 @@ export type Database = {
           },
         ]
       }
+      trader_pricing_config: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          multiplier: number
+          option_key: string
+          option_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          id?: string
+          multiplier: number
+          option_key: string
+          option_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          multiplier?: number
+          option_key?: string
+          option_label?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       triggered_emails_log: {
         Row: {
           cart_id: string | null
