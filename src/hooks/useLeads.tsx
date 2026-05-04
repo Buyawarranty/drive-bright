@@ -404,7 +404,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
       // by LostLeadsSection / recover_orphaned_leads RPC.
       const allSalesLeadsResult = await withTimeout(
-        fetchAllRows(() => {
+        (async () => {
           let query = supabase
             .from('sales_leads')
             .select(`
@@ -413,24 +413,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
               vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
               last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
               created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-              call_count, is_callback,
-              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email),
-              abandoned_cart:abandoned_carts!sales_leads_abandoned_cart_id_fkey(cart_metadata)
+              call_count, is_callback, resubmission_count, last_resubmitted_at
             `)
             .order('created_at', { ascending: false })
-            .order('id', { ascending: false });
+            .order('id', { ascending: false })
+            .limit(LEADS_LIST_LIMIT);
 
-          // Apply server-side date filter to reduce dataset size
           const dateFilter = serverDateFilterRef.current;
-          if (dateFilter?.from) {
-            query = query.gte('created_at', dateFilter.from.toISOString());
-          }
-          if (dateFilter?.to) {
-            query = query.lte('created_at', dateFilter.to.toISOString());
-          }
+          if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
+          if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
 
-          return query;
-        }),
+          return await query;
+        })(),
         LEADS_FETCH_TIMEOUT_MS,
         'Leads fetch timed out'
       );
