@@ -8,8 +8,8 @@ import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
 
 const LEAD_TAG_BATCH_SIZE = 75;
-const INITIAL_LEADS_LOAD_TIMEOUT_MS = 12000;
-const LEADS_FETCH_TIMEOUT_MS = 12000;
+const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
+const LEADS_FETCH_TIMEOUT_MS = 25000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
