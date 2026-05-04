@@ -150,6 +150,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
+  const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
   
   // Source filter visibility: admin, super_admin, and lead_gen only
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
@@ -225,6 +226,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return { from: boundaries.from, to: boundaries.to };
     }, [dateRange]),
   });
+
+  useEffect(() => {
+    if (!loading || leads.length > 0) {
+      setInitialLoaderExpired(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setInitialLoaderExpired(true), 12000);
+    return () => window.clearTimeout(timeoutId);
+  }, [loading, leads.length]);
 
   // Set default filter on mount + silently import any orphaned carts into sales_leads
   useEffect(() => {
