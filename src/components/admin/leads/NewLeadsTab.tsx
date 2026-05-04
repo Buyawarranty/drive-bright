@@ -241,7 +241,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return;
     }
 
-    const timeoutId = window.setTimeout(() => setInitialLoaderExpired(true), 12000);
+    const timeoutId = window.setTimeout(() => setInitialLoaderExpired(true), 25000);
     return () => window.clearTimeout(timeoutId);
   }, [loading, leads.length]);
 
