@@ -387,8 +387,11 @@ export const useLeadQuickNotes = (leadId: string) => {
   };
 
   const addNote = async (noteText: string) => {
+    const optimisticNote = makeTempNote(leadId, noteText);
+
     try {
       isSavingRef.current = true;
+      updateNotes(prev => [optimisticNote, ...prev]);
       const adminUser = await getAuthenticatedAdmin();
       
       if (isAbandonedCart) {
@@ -450,8 +453,9 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         };
         updateNotes(prev => {
-          const pinned = prev.filter(n => n.is_pinned);
-          const unpinned = prev.filter(n => !n.is_pinned);
+          const withoutOptimistic = prev.filter(n => n.id !== optimisticNote.id);
+          const pinned = withoutOptimistic.filter(n => n.is_pinned);
+          const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
         
@@ -461,6 +465,7 @@ export const useLeadQuickNotes = (leadId: string) => {
       }
     } catch (error: any) {
       console.error('[addNote] Error:', error?.message || error);
+      updateNotes(prev => prev.filter(n => n.id !== optimisticNote.id));
       throw error;
     } finally {
       isSavingRef.current = false;
