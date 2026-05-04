@@ -403,18 +403,59 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       // PERFORMANCE: Fetch sales_leads only — abandoned_carts are handled separately
       // by LostLeadsSection / recover_orphaned_leads RPC.
+      // For 'sales' role agents: fetch ALL leads assigned to them (no 750 cap),
+      // plus the most recent unassigned leads so they can still claim new ones.
+      // For admin / sales_lead / super_admin: keep the global recent-750 window.
+      const currentAdmin = await getCachedAdminUser();
+      const isSalesAgent = currentAdmin?.role === 'sales';
+
+      const SELECT_COLUMNS = `
+        id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+        plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+        vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+        last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+        created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+        call_count, is_callback, resubmission_count, last_resubmitted_at
+      `;
+
       const allSalesLeadsResult = await withTimeout(
         (async () => {
+          if (isSalesAgent && currentAdmin?.id) {
+            // 1) All leads assigned to this agent (full history, no 750 cap)
+            const assignedQ = supabase
+              .from('sales_leads')
+              .select(SELECT_COLUMNS)
+              .eq('assigned_to', currentAdmin.id)
+              .order('created_at', { ascending: false })
+              .order('id', { ascending: false });
+
+            // 2) Recent unassigned leads so the agent can still claim
+            const unassignedQ = supabase
+              .from('sales_leads')
+              .select(SELECT_COLUMNS)
+              .is('assigned_to', null)
+              .order('created_at', { ascending: false })
+              .order('id', { ascending: false })
+              .limit(500);
+
+            const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
+            if (assignedRes.error) return assignedRes;
+            if (unassignedRes.error) return unassignedRes;
+
+            const merged = [...(assignedRes.data || []), ...(unassignedRes.data || [])];
+            // Dedupe by id
+            const seen = new Set<string>();
+            const data = merged.filter((r: any) => {
+              if (seen.has(r.id)) return false;
+              seen.add(r.id);
+              return true;
+            });
+            return { data, error: null } as any;
+          }
+
           let query = supabase
             .from('sales_leads')
-            .select(`
-              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
-              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
-              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
-              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-              call_count, is_callback, resubmission_count, last_resubmitted_at
-            `)
+            .select(SELECT_COLUMNS)
             .order('created_at', { ascending: false })
             .order('id', { ascending: false })
             .limit(LEADS_LIST_LIMIT);
@@ -432,7 +473,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
       const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;
 
-      console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads`);
+      console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads (sales agent: ${isSalesAgent})`);
 
       const salesLeadsWithFlags = (allSalesLeadsData || []).map((lead: any) => {
         const fullName = lead.first_name || lead.last_name
