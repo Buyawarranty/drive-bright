@@ -44,16 +44,29 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  // Default: include overnight leads — yesterday through today
+  const [dateFrom, setDateFrom] = useState<string>(daysAgoStr(1));
+  const [dateTo, setDateTo] = useState<string>(todayStr());
 
   useEffect(() => {
     const fetchLeads = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('sales_leads')
         .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at')
         .eq('assigned_to', fromAgentId)
         .order('created_at', { ascending: false })
         .limit(500);
+
+      if (dateFrom) {
+        query = query.gte('created_at', new Date(dateFrom + 'T00:00:00').toISOString());
+      }
+      if (dateTo) {
+        const end = new Date(dateTo + 'T23:59:59.999');
+        query = query.lte('created_at', end.toISOString());
+      }
+
+      const { data, error } = await query;
 
       if (!error && data) {
         setLeads(data);
@@ -61,7 +74,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       setLoading(false);
     };
     fetchLeads();
-  }, [fromAgentId]);
+  }, [fromAgentId, dateFrom, dateTo]);
 
   const filtered = search.trim()
     ? leads.filter(l => {
