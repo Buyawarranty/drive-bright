@@ -156,6 +156,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
   const [declarationChecked, setDeclarationChecked] = useState(false);
   const [declarationError, setDeclarationError] = useState(false);
+  const [termsDocUrl, setTermsDocUrl] = useState('');
+  const [platinumDocUrl, setPlatinumDocUrl] = useState('');
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      const { data: termsData } = await supabase
+        .from('customer_documents')
+        .select('file_url')
+        .eq('plan_type', 'terms-and-conditions')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+
+      const { data: platinumData } = await supabase
+        .from('customer_documents')
+        .select('file_url')
+        .eq('plan_type', 'platinum')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (platinumData?.file_url) setPlatinumDocUrl(platinumData.file_url);
+    };
+    fetchDocs();
+  }, []);
   const selectedPaymentRef = React.useRef<'monthly' | 'full' | null>('monthly');
   
   // Section states for collapsible accordion
