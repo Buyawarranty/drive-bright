@@ -901,8 +901,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
-          {/* Bulk Reassign - Admin/Super Admin/Sales Lead only */}
-          {isAdmin && (
+          {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
+          {isAdminOrSuperAdmin && (
             <BulkReassignDialog salesUsers={salesUsers} onComplete={fetchLeads} />
           )}
 
