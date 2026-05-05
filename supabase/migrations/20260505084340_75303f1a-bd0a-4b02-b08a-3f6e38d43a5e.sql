@@ -1,0 +1,1 @@
+UPDATE sales_leads SET assigned_to='7083d831-4634-47a4-b3e2-61ac9908bf85', updated_at = now() WHERE assigned_to='98dc0e81-9f83-45b9-8c98-e7875b314dec' AND updated_at >= '2026-05-05 08:38:30+00' AND updated_at < '2026-05-05 08:39:30+00';
