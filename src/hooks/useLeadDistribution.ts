@@ -275,11 +275,12 @@ export const useLeadDistribution = () => {
     }
   }, [agentCaps, fetchAgentCaps]);
 
-  // Toggle agent pause status
+  // Toggle agent pause status — always read latest paused value from ref to avoid stale closures
   const toggleAgentPause = useCallback(async (adminUserId: string) => {
-    const currentCap = agentCaps.find(cap => cap.admin_user_id === adminUserId);
-    return updateAgentCap(adminUserId, { paused: !currentCap?.paused });
-  }, [agentCaps, updateAgentCap]);
+    const currentCap = agentCapsRef.current.find(cap => cap.admin_user_id === adminUserId);
+    const nextPaused = !(currentCap?.paused ?? false);
+    return updateAgentCap(adminUserId, { paused: nextPaused });
+  }, [updateAgentCap]);
 
   // Delete agent from distribution
   const deleteAgentFromDistribution = useCallback(async (adminUserId: string) => {
