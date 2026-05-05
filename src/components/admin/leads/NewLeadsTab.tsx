@@ -36,7 +36,7 @@ import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { supabase } from '@/integrations/supabase/client';
 
-import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange } from '@/lib/leadFeedDate';
+import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
 interface LeadForQuote {
