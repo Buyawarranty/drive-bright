@@ -11,6 +11,8 @@ const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
 const LEADS_FETCH_TIMEOUT_MS = 25000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const LEADS_LIST_LIMIT = 750;
+const LEADS_PAGE_SIZE = 1000;
+const MAX_PAGED_LEADS = 100000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
@@ -231,6 +233,8 @@ export interface AdminUser {
 interface UseLeadsOptions {
   /** Server-side date filter applied to the Supabase query. Reduces row count dramatically. */
   serverDateFilter?: { from?: Date; to?: Date };
+  /** Server-side agent scope used for historical agent views so counts are not based on the recent global window. */
+  serverAgentFilter?: string;
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
@@ -250,13 +254,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
   // Store server date filter as a ref so fetchLeads doesn't re-create on every date change
   const serverDateFilterRef = useRef(options?.serverDateFilter);
   serverDateFilterRef.current = options?.serverDateFilter;
+  const serverAgentFilterRef = useRef(options?.serverAgentFilter);
+  serverAgentFilterRef.current = options?.serverAgentFilter;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
-    if (!f?.from && !f?.to) return 'all';
-    return `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
-  }, [options?.serverDateFilter]);
+    const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
