@@ -2459,7 +2459,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
                 </button>
                 <span className="text-sm text-[#444] leading-relaxed">
-                  I confirm my vehicle is in good condition with no known faults or warning lights, is roadworthy, not used for hire or commercial purposes and has been regularly serviced. I understand that pre-existing faults are not covered and I agree to the{' '}
+                  I confirm my vehicle is in good condition with no known faults or warning lights, is roadworthy and has been regularly serviced. I understand that pre-existing faults are not covered and I agree to the{' '}
                   {termsDocUrl ? (
                     <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Terms &amp; Conditions</a>
                   ) : (
