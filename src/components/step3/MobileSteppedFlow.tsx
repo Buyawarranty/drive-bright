@@ -59,7 +59,6 @@ const STEP_TITLES = [
   "What's your car worth?",
   'Where do you get it fixed?',
   'How long do you want cover?',
-  'Choose your excess',
   'Review your cover',
 ];
 
@@ -67,11 +66,10 @@ const STEP_SUBTITLES = [
   'Set your claim limit to match your car value.',
   'Pick the labour rate that suits your usual garage.',
   'Longer terms unlock free years.',
-  'Higher excess = lower monthly price.',
   "You're all set — review and continue.",
 ];
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
@@ -105,7 +103,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     if (step === 0) return selectedClaimLimit !== null;
     if (step === 1) return selectedLabourRate !== null;
     if (step === 2) return paymentType !== null;
-    if (step === 3) return voluntaryExcess !== null;
     return true;
   })();
 
@@ -243,24 +240,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         )}
 
         {step === 3 && (
-          <div className="space-y-2.5">
-            {EXCESSES.map(ex => {
-              const selected = voluntaryExcess === ex.value;
-              return (
-                <OptionRow
-                  key={ex.value}
-                  selected={selected}
-                  popular={ex.popular}
-                  onClick={() => onVoluntaryExcessChange(ex.value)}
-                  primary={ex.label}
-                  secondary={ex.sub}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {step === 4 && (
           <div className="space-y-3">
             <SummaryRow label="Cover term" value={termLabel(paymentType)} />
             <SummaryRow
@@ -268,10 +247,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               value={`£${getDisplay(selectedClaimLimit).toLocaleString()} per claim`}
             />
             <SummaryRow label="Labour rate" value={`£${selectedLabourRate}/hr`} />
-            <SummaryRow
-              label="Voluntary excess"
-              value={voluntaryExcess === 0 ? 'No excess' : `£${voluntaryExcess}`}
-            />
             <div className="border-t border-border pt-3 mt-3">
               <div className="flex items-baseline justify-between">
                 <span className="text-sm text-muted-foreground">Monthly price</span>
@@ -288,7 +263,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         )}
 
         {/* Whisper */}
-        {step < 4 && canAdvance && whisper && (
+        {step < 3 && canAdvance && whisper && (
           <p className="mt-4 text-center text-sm font-semibold text-success animate-fade-in">
             {whisper}
           </p>
