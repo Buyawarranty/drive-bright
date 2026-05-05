@@ -10,8 +10,9 @@ const LEAD_TAG_BATCH_SIZE = 75;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
 const LEADS_FETCH_TIMEOUT_MS = 25000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
+const LEADS_LIST_LIMIT = 750;
 const LEADS_PAGE_SIZE = 1000;
-const MAX_PAGED_LEADS = 100000;
+const MAX_PAGED_LEADS = 20000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
