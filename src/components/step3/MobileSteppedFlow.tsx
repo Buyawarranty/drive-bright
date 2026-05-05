@@ -240,24 +240,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         )}
 
         {step === 3 && (
-          <div className="space-y-2.5">
-            {EXCESSES.map(ex => {
-              const selected = voluntaryExcess === ex.value;
-              return (
-                <OptionRow
-                  key={ex.value}
-                  selected={selected}
-                  popular={ex.popular}
-                  onClick={() => onVoluntaryExcessChange(ex.value)}
-                  primary={ex.label}
-                  secondary={ex.sub}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {step === 4 && (
           <div className="space-y-3">
             <SummaryRow label="Cover term" value={termLabel(paymentType)} />
             <SummaryRow
@@ -265,10 +247,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               value={`£${getDisplay(selectedClaimLimit).toLocaleString()} per claim`}
             />
             <SummaryRow label="Labour rate" value={`£${selectedLabourRate}/hr`} />
-            <SummaryRow
-              label="Voluntary excess"
-              value={voluntaryExcess === 0 ? 'No excess' : `£${voluntaryExcess}`}
-            />
             <div className="border-t border-border pt-3 mt-3">
               <div className="flex items-baseline justify-between">
                 <span className="text-sm text-muted-foreground">Monthly price</span>
@@ -285,7 +263,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         )}
 
         {/* Whisper */}
-        {step < 4 && canAdvance && whisper && (
+        {step < 3 && canAdvance && whisper && (
           <p className="mt-4 text-center text-sm font-semibold text-success animate-fade-in">
             {whisper}
           </p>
