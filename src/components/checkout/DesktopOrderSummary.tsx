@@ -253,6 +253,9 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 : 'Select payment option'}
             </Button>
             
+            {/* Declaration - expandable */}
+            <DesktopDeclaration />
+
             {/* Good to know panels (always visible inside summary) */}
             <div className="space-y-2 mt-4">
               <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-3 py-2.5">
