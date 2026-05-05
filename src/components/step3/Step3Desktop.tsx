@@ -355,42 +355,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               )}
             </Card>
 
-            {/* CARD 4 - Excess */}
-            <Card>
-              <SectionHead
-                eyebrow="Excess"
-                title="Want to lower your monthly price?"
-                subtitle="Choose how much you'd pay first if you ever make a claim."
-                onDetails={() => setExcessDetailsOpen(true)}
-              />
-              <div className="grid grid-cols-4 gap-3 mb-4">
-                {EXCESS_OPTIONS.map((opt) => {
-                  const selected = voluntaryExcess === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => setVoluntaryExcess(opt.value)}
-                      className={cn(
-                        'rounded-2xl border-[1.5px] py-4 px-3 text-center transition',
-                        selected
-                          ? 'border-[#f36b21] bg-gradient-to-b from-[#fffaf7] to-[#fff3ec] shadow-[0_0_0_3px_rgba(243,107,33,0.08)]'
-                          : 'border-[#e4e4e2] bg-white hover:border-[#f3b58a]'
-                      )}
-                    >
-                      <strong className="block text-[22px] tracking-[-0.04em] mb-1 text-[#161616]">£{opt.value}</strong>
-                      <span className="text-[12px] text-[#6c6c6c] font-bold">{excessPillSubText(opt.value)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="border-l-4 border-[#f36b21] bg-[#faf9f7] rounded-2xl px-4 py-4 text-[#505050] text-sm leading-relaxed">
-                Pay the first <strong>£{voluntaryExcess ?? 100}</strong> if you claim and we'll cover the rest up to your plan limit. This is the most common choice.
-              </div>
-              {validationErrors.voluntaryExcess && (
-                <p className="mt-3 text-sm text-red-600 font-medium">Please select your excess amount before continuing.</p>
-              )}
-            </Card>
-
             {/* PRICE BEAT */}
             <div className="flex items-center gap-3.5 rounded-xl px-5 py-3.5" style={{ background: '#fffbf0', border: '1px solid #f5e4b0' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#FEF0EA' }}>🏷</div>
