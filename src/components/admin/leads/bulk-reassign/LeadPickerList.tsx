@@ -91,21 +91,46 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
 
   const allFilteredSelected = filtered.length > 0 && filtered.every(l => selectedIds.has(l.id));
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-sm text-muted-foreground">Loading leads…</span>
+  const dateFilterUI = (
+    <div className="space-y-1.5 p-2.5 rounded-lg border bg-muted/30">
+      <div className="flex items-center justify-between">
+        <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+          <Calendar className="h-3 w-3" />
+          Lead created date
+        </Label>
+        <div className="flex gap-1">
+          <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px]"
+            onClick={() => { setDateFrom(todayStr()); setDateTo(todayStr()); }}>Today</Button>
+          <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px]"
+            onClick={() => { setDateFrom(daysAgoStr(1)); setDateTo(daysAgoStr(1)); }}>Yesterday</Button>
+          <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px]"
+            onClick={() => { setDateFrom(daysAgoStr(1)); setDateTo(todayStr()); }}>Overnight</Button>
+          <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px]"
+            onClick={() => { setDateFrom(daysAgoStr(7)); setDateTo(todayStr()); }}>7 days</Button>
+          <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px]"
+            onClick={() => { setDateFrom(''); setDateTo(''); }}>All</Button>
+        </div>
       </div>
-    );
-  }
-
-  if (leads.length === 0) {
-    return <p className="text-sm text-muted-foreground text-center py-4">No leads found for this agent.</p>;
-  }
+      <div className="flex gap-2">
+        <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-7 text-xs" />
+        <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-7 text-xs" />
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-2">
+      {dateFilterUI}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">Loading leads…</span>
+        </div>
+      ) : leads.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">No leads found for this agent in the selected date range.</p>
+      ) : (
+        <>
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
