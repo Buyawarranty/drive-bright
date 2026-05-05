@@ -196,6 +196,8 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
           <p className="text-xs text-muted-foreground text-center py-4">No leads match your search.</p>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 };
