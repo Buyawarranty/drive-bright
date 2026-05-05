@@ -36,7 +36,7 @@ import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { supabase } from '@/integrations/supabase/client';
 
-import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange } from '@/lib/leadFeedDate';
+import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
 interface LeadForQuote {
@@ -141,8 +141,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
+    // Default window includes overnight leads (yesterday → today) so agents
+    // returning after time off still see leads received while they were away.
     const today = getTodayLeadFeedSelectionDate();
-    return { from: today, to: today };
+    const yesterday = shiftLeadFeedSelectionDate(today, -1);
+    return { from: yesterday, to: today };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
