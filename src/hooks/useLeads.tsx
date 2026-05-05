@@ -424,25 +424,79 @@ export const useLeads = (options?: UseLeadsOptions) => {
         call_count, is_callback, resubmission_count, last_resubmitted_at
       `;
 
+      const applyServerDateFilter = (query: any) => {
+        const dateFilter = serverDateFilterRef.current;
+        if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
+        if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
+        return query;
+      };
+
+      const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any) => {
+        const rows: any[] = [];
+        for (let offset = 0; offset < MAX_PAGED_LEADS; offset += LEADS_PAGE_SIZE) {
+          const { data, error } = await buildQuery(offset, offset + LEADS_PAGE_SIZE - 1);
+          if (error) return { data: rows, error } as any;
+          const page = data || [];
+          rows.push(...page);
+          if (page.length < LEADS_PAGE_SIZE) break;
+        }
+        return { data: rows, error: null } as any;
+      };
+
       const allSalesLeadsResult = await withTimeout(
         (async () => {
+          const serverAgentFilter = serverAgentFilterRef.current;
+          if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
+            return await fetchPagedLeads((from, to) =>
+              applyServerDateFilter(
+                supabase
+                  .from('sales_leads')
+                  .select(SELECT_COLUMNS)
+                  .eq('assigned_to', serverAgentFilter)
+                  .order('created_at', { ascending: false })
+                  .order('id', { ascending: false })
+                  .range(from, to)
+              )
+            );
+          }
+
+          if (serverAgentFilter === 'unassigned') {
+            return await fetchPagedLeads((from, to) =>
+              applyServerDateFilter(
+                supabase
+                  .from('sales_leads')
+                  .select(SELECT_COLUMNS)
+                  .is('assigned_to', null)
+                  .order('created_at', { ascending: false })
+                  .order('id', { ascending: false })
+                  .range(from, to)
+              )
+            );
+          }
+
           if (isSalesAgent && currentAdmin?.id) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
-            const assignedQ = supabase
-              .from('sales_leads')
-              .select(SELECT_COLUMNS)
-              .eq('assigned_to', currentAdmin.id)
-              .order('created_at', { ascending: false })
-              .order('id', { ascending: false });
+            const assignedQ = fetchPagedLeads((from, to) =>
+              applyServerDateFilter(
+                supabase
+                  .from('sales_leads')
+                  .select(SELECT_COLUMNS)
+                  .eq('assigned_to', currentAdmin.id)
+                  .order('created_at', { ascending: false })
+                  .order('id', { ascending: false })
+                  .range(from, to)
+              )
+            );
 
             // 2) Recent unassigned leads so the agent can still claim
-            const unassignedQ = supabase
+            let unassignedQ = supabase
               .from('sales_leads')
               .select(SELECT_COLUMNS)
               .is('assigned_to', null)
               .order('created_at', { ascending: false })
               .order('id', { ascending: false })
               .limit(500);
+            unassignedQ = applyServerDateFilter(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
@@ -466,9 +520,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
             .order('id', { ascending: false })
             .limit(LEADS_LIST_LIMIT);
 
-          const dateFilter = serverDateFilterRef.current;
-          if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
-          if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
+          query = applyServerDateFilter(query);
 
           return await query;
         })(),
