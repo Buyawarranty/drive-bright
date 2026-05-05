@@ -400,13 +400,14 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Bulk reassign leads from one agent to another
   const bulkSourceLeadCount = useMemo(() => {
     if (!bulkSourceAgent) return 0;
+    // If a partial range is selected (only 'from'), don't preview a count —
+    // the user must pick both ends so we never accidentally over-select.
+    if (bulkDateRange?.from && !bulkDateRange?.to) return 0;
     let sourceLeads = leads.filter(l => l.assigned_to === bulkSourceAgent);
-    if (bulkDateRange?.from) {
+    if (bulkDateRange?.from && bulkDateRange?.to) {
       sourceLeads = sourceLeads.filter(lead => {
         const leadDate = new Date(lead.created_at);
-        const from = bulkDateRange.from!;
-        const to = bulkDateRange.to || endOfDay(new Date());
-        return isWithinInterval(leadDate, { start: from, end: to });
+        return isWithinInterval(leadDate, { start: bulkDateRange.from!, end: endOfDay(bulkDateRange.to!) });
       });
     }
     return sourceLeads.length;
