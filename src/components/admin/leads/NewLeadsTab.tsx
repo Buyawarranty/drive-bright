@@ -224,12 +224,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount
   } = useLeads({
     serverDateFilter: useMemo(() => {
-      // Keep sales-agent loads bounded. An unbounded/90-day fetch currently pulls
-      // thousands of rows plus joins and times out before the table can render.
+      // When user explicitly clears the date filter (All Time), pass through
+      // undefined so the server returns the most recent leads up to LEADS_LIST_LIMIT.
       if (!dateRange.from && !dateRange.to) {
-        const today = getTodayLeadFeedSelectionDate();
-        const boundaries = getLeadFeedRangeBoundaries({ from: today, to: today });
-        return { from: boundaries.from, to: boundaries.to };
+        return { from: undefined, to: undefined };
       }
       const boundaries = getLeadFeedRangeBoundaries(dateRange);
       return { from: boundaries.from, to: boundaries.to };
