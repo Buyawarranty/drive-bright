@@ -73,7 +73,7 @@ const DesktopDeclaration = () => {
       <CollapsibleTrigger className="flex w-full items-center justify-between text-left px-4 py-3">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-[#0BA360]" />
-          <h3 className="text-sm font-bold text-[#1a1a1a]">Your cover starts today</h3>
+          <h3 className="text-sm font-bold text-[#1a1a1a]">Good to know</h3>
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
       </CollapsibleTrigger>
