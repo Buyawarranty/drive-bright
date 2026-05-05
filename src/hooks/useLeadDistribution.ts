@@ -273,7 +273,7 @@ export const useLeadDistribution = () => {
       toast({ title: 'Error', description: error?.message || 'Failed to update agent cap.', variant: 'destructive' });
       return false;
     }
-  }, [agentCaps, fetchAgentCaps]);
+  }, [fetchAgentCaps]);
 
   // Toggle agent pause status — always read latest paused value from ref to avoid stale closures
   const toggleAgentPause = useCallback(async (adminUserId: string) => {
