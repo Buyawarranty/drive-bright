@@ -237,8 +237,8 @@ export const useLeadDistribution = () => {
   // Update agent cap
   const updateAgentCap = useCallback(async (adminUserId: string, updates: Partial<AgentCap>) => {
     try {
-      // Check if cap record exists
-      const existing = agentCaps.find(cap => cap.admin_user_id === adminUserId);
+      // Check if cap record exists (use ref to avoid stale closure)
+      const existing = agentCapsRef.current.find(cap => cap.admin_user_id === adminUserId);
 
       if (existing) {
         const { data: updatedRows, error } = await supabase
