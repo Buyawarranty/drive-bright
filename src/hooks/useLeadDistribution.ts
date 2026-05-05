@@ -51,6 +51,9 @@ export const useLeadDistribution = () => {
   const [currentAgentCap, setCurrentAgentCap] = useState<AgentCap | null>(null);
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const adminUserIdRef = useRef<string | null>(null);
+  const agentCapsRef = useRef<AgentCap[]>([]);
+  // Keep ref in sync with state so toggle actions always see the latest paused values
+  useEffect(() => { agentCapsRef.current = agentCaps; }, [agentCaps]);
 
   // Fetch distribution settings
   const fetchSettings = useCallback(async () => {
@@ -234,8 +237,8 @@ export const useLeadDistribution = () => {
   // Update agent cap
   const updateAgentCap = useCallback(async (adminUserId: string, updates: Partial<AgentCap>) => {
     try {
-      // Check if cap record exists
-      const existing = agentCaps.find(cap => cap.admin_user_id === adminUserId);
+      // Check if cap record exists (use ref to avoid stale closure)
+      const existing = agentCapsRef.current.find(cap => cap.admin_user_id === adminUserId);
 
       if (existing) {
         const { data: updatedRows, error } = await supabase
@@ -270,13 +273,14 @@ export const useLeadDistribution = () => {
       toast({ title: 'Error', description: error?.message || 'Failed to update agent cap.', variant: 'destructive' });
       return false;
     }
-  }, [agentCaps, fetchAgentCaps]);
+  }, [fetchAgentCaps]);
 
-  // Toggle agent pause status
+  // Toggle agent pause status — always read latest paused value from ref to avoid stale closures
   const toggleAgentPause = useCallback(async (adminUserId: string) => {
-    const currentCap = agentCaps.find(cap => cap.admin_user_id === adminUserId);
-    return updateAgentCap(adminUserId, { paused: !currentCap?.paused });
-  }, [agentCaps, updateAgentCap]);
+    const currentCap = agentCapsRef.current.find(cap => cap.admin_user_id === adminUserId);
+    const nextPaused = !(currentCap?.paused ?? false);
+    return updateAgentCap(adminUserId, { paused: nextPaused });
+  }, [updateAgentCap]);
 
   // Delete agent from distribution
   const deleteAgentFromDistribution = useCallback(async (adminUserId: string) => {
