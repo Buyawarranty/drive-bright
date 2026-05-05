@@ -59,7 +59,6 @@ const STEP_TITLES = [
   "What's your car worth?",
   'Where do you get it fixed?',
   'How long do you want cover?',
-  'Choose your excess',
   'Review your cover',
 ];
 
@@ -67,11 +66,10 @@ const STEP_SUBTITLES = [
   'Set your claim limit to match your car value.',
   'Pick the labour rate that suits your usual garage.',
   'Longer terms unlock free years.',
-  'Higher excess = lower monthly price.',
   "You're all set — review and continue.",
 ];
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
