@@ -232,6 +232,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       const boundaries = getLeadFeedRangeBoundaries(dateRange);
       return { from: boundaries.from, to: boundaries.to };
     }, [dateRange]),
+    serverAgentFilter: agentFilter,
   });
 
   useEffect(() => {
