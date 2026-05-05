@@ -51,6 +51,9 @@ export const useLeadDistribution = () => {
   const [currentAgentCap, setCurrentAgentCap] = useState<AgentCap | null>(null);
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const adminUserIdRef = useRef<string | null>(null);
+  const agentCapsRef = useRef<AgentCap[]>([]);
+  // Keep ref in sync with state so toggle actions always see the latest paused values
+  useEffect(() => { agentCapsRef.current = agentCaps; }, [agentCaps]);
 
   // Fetch distribution settings
   const fetchSettings = useCallback(async () => {
