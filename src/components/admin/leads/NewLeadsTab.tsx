@@ -322,6 +322,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     []
   );
 
+  // For sorting: worked leads should not bubble to the top on resubmission.
+  // Use original created_at instead of last_resubmitted_at for these statuses.
+  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up'];
+  const getLeadSortDate = useCallback(
+    (lead: Lead) => {
+      if (WORKED_STATUSES_NO_BUBBLE.includes(lead.status as string)) {
+        return new Date(lead.created_at);
+      }
+      return new Date(lead.last_resubmitted_at || lead.created_at);
+    },
+    []
+  );
+
   const filteredLeads = useMemo(() => {
     let result = statusFilteredLeads;
 
