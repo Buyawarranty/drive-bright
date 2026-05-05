@@ -281,7 +281,6 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
             
             {/* Declaration - expandable */}
             <DesktopDeclaration />
-            </div>
 
             {/* SSL + Trustpilot Footer */}
             <div className="mt-4 text-center">
