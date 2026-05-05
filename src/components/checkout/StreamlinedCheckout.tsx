@@ -2402,7 +2402,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             className="mt-6"
           >
             <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-3">
-              Declaration
+              One quick confirmation
             </h3>
 
             {/* Combined declaration card */}
