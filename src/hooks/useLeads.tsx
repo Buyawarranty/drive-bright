@@ -425,14 +425,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       const applyServerDateFilter = (query: any) => {
         const dateFilter = serverDateFilterRef.current;
-        if (dateFilter?.from) {
-          const fromIso = dateFilter.from.toISOString();
-          query = query.or(`created_at.gte.${fromIso},last_resubmitted_at.gte.${fromIso}`);
-        }
-        if (dateFilter?.to) {
-          const toIso = dateFilter.to.toISOString();
-          query = query.or(`created_at.lte.${toIso},last_resubmitted_at.lte.${toIso}`);
-        }
+        if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
+        if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
         return query;
       };
 
