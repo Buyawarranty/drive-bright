@@ -414,24 +414,62 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
   const handleBulkReassign = async () => {
     if (!bulkSourceAgent || bulkTargetAgents.length === 0) return;
-    
+
+    // SAFETY: if a partial date range is selected (only 'from' picked), force the
+    // user to also pick a 'to' date — otherwise the query unbounds the upper end
+    // and sweeps every lead from that date forward (this caused the previous
+    // accidental mass reassignment).
+    if (bulkDateRange?.from && !bulkDateRange?.to) {
+      toast({
+        title: 'Pick an end date',
+        description: 'Please select both a start and end date, or clear the date filter.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setBulkReassigning(true);
     try {
-      // First, get the actual lead IDs to reassign (so we can distribute equally)
-      let leadsQuery = supabase
-        .from('sales_leads')
-        .select('id')
-        .eq('assigned_to', bulkSourceAgent);
-      
-      // Apply date filter if set
-      if (bulkDateRange?.from) {
-        leadsQuery = leadsQuery.gte('created_at', bulkDateRange.from.toISOString());
-        if (bulkDateRange.to) {
-          leadsQuery = leadsQuery.lte('created_at', endOfDay(bulkDateRange.to).toISOString());
-        }
-      }
+      // Normalize date boundaries to local-day start/end so timezone shifts can't
+      // expand the window (avoid raw new Date(dateStr).toISOString() drift).
+      const fromIso = bulkDateRange?.from
+        ? new Date(
+            bulkDateRange.from.getFullYear(),
+            bulkDateRange.from.getMonth(),
+            bulkDateRange.from.getDate(),
+            0, 0, 0, 0,
+          ).toISOString()
+        : null;
+      const toIso = bulkDateRange?.to
+        ? endOfDay(bulkDateRange.to).toISOString()
+        : null;
 
-      const { data: leadsToReassign, error: fetchError } = await leadsQuery;
+      // First, get the actual lead IDs to reassign (so we can distribute equally).
+      // Page through results to bypass Supabase's default 1000-row select cap —
+      // otherwise the count preview and the actual update can disagree.
+      const PAGE = 1000;
+      const collected: { id: string }[] = [];
+      let offset = 0;
+      // Hard ceiling to prevent runaway loops if something is misconfigured
+      const HARD_LIMIT = 50000;
+      while (offset < HARD_LIMIT) {
+        let pageQuery = supabase
+          .from('sales_leads')
+          .select('id')
+          .eq('assigned_to', bulkSourceAgent)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE - 1);
+        if (fromIso) pageQuery = pageQuery.gte('created_at', fromIso);
+        if (toIso) pageQuery = pageQuery.lte('created_at', toIso);
+        const { data: pageData, error: pageError } = await pageQuery;
+        if (pageError) throw pageError;
+        const rows = pageData || [];
+        collected.push(...rows);
+        if (rows.length < PAGE) break;
+        offset += PAGE;
+      }
+      const leadsToReassign = collected;
+      const fetchError = null as any;
       if (fetchError) throw fetchError;
       if (!leadsToReassign || leadsToReassign.length === 0) {
         toast({ title: 'No leads', description: 'No leads found matching the criteria.', variant: 'destructive' });
