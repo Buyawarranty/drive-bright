@@ -445,7 +445,7 @@ Additional Information: ${formData.additionalInfo}
         {/* Hero Section - UX Optimized with Orange Branding */}
         <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 text-left">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
               Making a Claim
             </h1>
             <p className="text-xl lg:text-2xl font-semibold text-orange-600 mb-8">
