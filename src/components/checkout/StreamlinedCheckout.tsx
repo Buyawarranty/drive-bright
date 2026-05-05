@@ -156,6 +156,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
   const [declarationChecked, setDeclarationChecked] = useState(false);
   const [declarationError, setDeclarationError] = useState(false);
+  const [termsDocUrl, setTermsDocUrl] = useState('');
+  const [platinumDocUrl, setPlatinumDocUrl] = useState('');
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      const { data: termsData } = await supabase
+        .from('customer_documents')
+        .select('file_url')
+        .eq('plan_type', 'terms-and-conditions')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+
+      const { data: platinumData } = await supabase
+        .from('customer_documents')
+        .select('file_url')
+        .eq('plan_type', 'platinum')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (platinumData?.file_url) setPlatinumDocUrl(platinumData.file_url);
+    };
+    fetchDocs();
+  }, []);
   const selectedPaymentRef = React.useRef<'monthly' | 'full' | null>('monthly');
   
   // Section states for collapsible accordion
@@ -2374,45 +2399,46 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
           <section
             id="please-confirm"
-            className="mt-6 rounded-xl border border-[#E5E5E5] bg-white p-4 sm:p-5"
+            className="mt-6"
           >
-            <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a]">
-              Good to know
+            <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-3">
+              Declaration
             </h3>
 
-                <div className="space-y-2.5 mt-4">
-                  {/* Cover starts today */}
-                  <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
-                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
-                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
-                    </p>
+            {/* Two-up info panel */}
+            <div className="rounded-xl border border-[#FFD9A8] bg-[#FFF7EE] p-4 sm:p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 sm:divide-x sm:divide-[#FFD9A8]">
+                <div className="flex items-start gap-3 sm:pr-6">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
                   </div>
-
-                  {/* 14-day cooling-off period */}
-                  <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-4 py-3">
-                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#0BA360]" />
-                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <strong>14-day cooling-off period.</strong> Refund minus days covered and a £40 processing fee if no claim made.
-                    </p>
-                  </div>
-
-                  {/* Using your cover */}
-                  <div className="flex items-start gap-3 rounded-lg bg-[#FFF5EB] border border-[#FFD9A8] px-4 py-3">
-                    <span className="flex-shrink-0 mt-2 w-2 h-2 rounded-full bg-[#FF6B00]" />
-                    <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <strong>Using your cover.</strong> Your warranty runs for its full term, giving you continuous protection throughout. Please note that once a claim has been made, your policy is no longer eligible for a refund.
+                  <div>
+                    <p className="text-sm font-bold text-[#1a1a1a] leading-tight">Your cover starts today</p>
+                    <p className="text-sm text-[#555] mt-1 leading-relaxed">
+                      You're protected as soon as your payment is confirmed.
                     </p>
                   </div>
                 </div>
-
+                <div className="flex items-start gap-3 sm:pl-6">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-white" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#1a1a1a] leading-tight">How claims work</p>
+                    <p className="text-sm text-[#555] mt-1 leading-relaxed">
+                      Claims for mechanical and electrical breakdown can be made after your first 14 days.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Vehicle declaration checkbox */}
             <div
-              className={`mt-3 rounded-lg border px-4 py-3 transition-colors ${
+              className={`mt-3 rounded-xl border px-4 py-4 transition-colors ${
                 declarationError && !declarationChecked
                   ? 'bg-red-50 border-red-300'
-                  : 'bg-[#F4F4F5] border-[#E5E5E5]'
+                  : 'bg-white border-[#E5E5E5]'
               }`}
             >
               <label className="flex items-start gap-3 cursor-pointer">
@@ -2424,21 +2450,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     setDeclarationChecked(!declarationChecked);
                     if (!declarationChecked) setDeclarationError(false);
                   }}
-                  className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-[5px] border-2 flex items-center justify-center transition-colors ${
+                  className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
                     declarationChecked
-                      ? 'bg-[#1D9E75] border-[#1D9E75]'
+                      ? 'bg-[#FF6B00] border-[#FF6B00]'
                       : 'bg-white border-[#cfcfcf] hover:border-[#888]'
                   }`}
                 >
                   {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
                 </button>
-                <span className="text-sm text-[#555] leading-relaxed">
-                  I confirm my vehicle has{' '}
-                  <strong className="text-[#1a1a1a]">no existing faults or warning lights</strong>, is roadworthy and has been regularly serviced.
+                <span className="text-sm text-[#444] leading-relaxed">
+                  I confirm my vehicle is in good condition with no known faults or warning lights, is roadworthy, not used for hire or commercial purposes and has been regularly serviced. I understand that pre-existing faults are not covered and I agree to the{' '}
+                  {termsDocUrl ? (
+                    <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Terms &amp; Conditions</a>
+                  ) : (
+                    <span className="text-[#FF6B00] font-semibold">Terms &amp; Conditions</span>
+                  )}{' '}
+                  and{' '}
+                  {platinumDocUrl ? (
+                    <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Policy Documents</a>
+                  ) : (
+                    <span className="text-[#FF6B00] font-semibold">Policy Documents</span>
+                  )}.
                 </span>
               </label>
               {declarationError && !declarationChecked && (
-                <p className="text-xs text-red-600 mt-2 ml-8">Please tick the box to continue.</p>
+                <p className="text-xs text-red-600 mt-2 ml-9">Please tick the box to continue.</p>
               )}
             </div>
           </section>
