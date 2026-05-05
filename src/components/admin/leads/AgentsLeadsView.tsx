@@ -469,8 +469,6 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         offset += PAGE;
       }
       const leadsToReassign = collected;
-      const fetchError = null as any;
-      if (fetchError) throw fetchError;
       if (!leadsToReassign || leadsToReassign.length === 0) {
         toast({ title: 'No leads', description: 'No leads found matching the criteria.', variant: 'destructive' });
         return;
