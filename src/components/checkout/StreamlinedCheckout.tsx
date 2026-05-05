@@ -2405,77 +2405,83 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               Declaration
             </h3>
 
-            {/* Two-up info panel */}
-            <div className="rounded-xl border border-[#FFD9A8] bg-[#FFF7EE] p-4 sm:p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 sm:divide-x sm:divide-[#FFD9A8]">
-                <div className="flex items-start gap-3 sm:pr-6">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#1a1a1a] leading-tight">Your cover starts today</p>
-                    <p className="text-sm text-[#555] mt-1 leading-relaxed">
-                      You're protected as soon as your payment is confirmed.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 sm:pl-6">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-white" strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#1a1a1a] leading-tight">How claims work</p>
-                    <p className="text-sm text-[#555] mt-1 leading-relaxed">
-                      Claims for mechanical and electrical breakdown can be made after your first 14 days.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Vehicle declaration checkbox */}
+            {/* Combined declaration card */}
             <div
-              className={`mt-3 rounded-xl border px-4 py-4 transition-colors ${
+              className={`rounded-xl border transition-colors ${
                 declarationError && !declarationChecked
                   ? 'bg-red-50 border-red-300'
                   : 'bg-white border-[#E5E5E5]'
               }`}
             >
-              <label className="flex items-start gap-3 cursor-pointer">
-                <button
-                  type="button"
-                  role="checkbox"
-                  aria-checked={declarationChecked}
-                  onClick={() => {
-                    setDeclarationChecked(!declarationChecked);
-                    if (!declarationChecked) setDeclarationError(false);
-                  }}
-                  className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
-                    declarationChecked
-                      ? 'bg-[#FF6B00] border-[#FF6B00]'
-                      : 'bg-white border-[#cfcfcf] hover:border-[#888]'
-                  }`}
-                >
-                  {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
-                </button>
-                <span className="text-sm text-[#444] leading-relaxed">
-                  I confirm my vehicle is in good condition with no known faults or warning lights, is roadworthy and has been regularly serviced. I understand that pre-existing faults are not covered and I agree to the{' '}
-                  {termsDocUrl ? (
-                    <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Terms &amp; Conditions</a>
-                  ) : (
-                    <span className="text-[#FF6B00] font-semibold">Terms &amp; Conditions</span>
-                  )}{' '}
-                  and{' '}
-                  {platinumDocUrl ? (
-                    <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Policy Documents</a>
-                  ) : (
-                    <span className="text-[#FF6B00] font-semibold">Policy Documents</span>
-                  )}.
-                </span>
-              </label>
-              {declarationError && !declarationChecked && (
-                <p className="text-xs text-red-600 mt-2 ml-9">Please tick the box to continue.</p>
-              )}
+              {/* Two-up info panel */}
+              <div className="p-4 sm:p-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 sm:divide-x sm:divide-[#E5E5E5]">
+                  <div className="flex items-start gap-3 sm:pr-6">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                      <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[#1a1a1a] leading-tight">Your cover starts today</p>
+                      <p className="text-sm text-[#555] mt-1 leading-relaxed">
+                        You're protected as soon as your payment is confirmed.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 sm:pl-6">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-white" strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[#1a1a1a] leading-tight">How claims work</p>
+                      <p className="text-sm text-[#555] mt-1 leading-relaxed">
+                        Claims for mechanical and electrical breakdown can be made after your first 14 days.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px bg-[#E5E5E5] mx-4 sm:mx-5" />
+
+              {/* Vehicle declaration checkbox */}
+              <div className="px-4 py-4 sm:px-5">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={declarationChecked}
+                    onClick={() => {
+                      setDeclarationChecked(!declarationChecked);
+                      if (!declarationChecked) setDeclarationError(false);
+                    }}
+                    className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
+                      declarationChecked
+                        ? 'bg-[#FF6B00] border-[#FF6B00]'
+                        : 'bg-white border-[#cfcfcf] hover:border-[#888]'
+                    }`}
+                  >
+                    {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
+                  </button>
+                  <span className="text-sm text-[#444] leading-relaxed">
+                    I confirm my vehicle is in good condition with no known faults or warning lights, is roadworthy and has been regularly serviced. I understand that pre-existing faults are not covered and I agree to the{' '}
+                    {termsDocUrl ? (
+                      <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Terms &amp; Conditions</a>
+                    ) : (
+                      <span className="text-[#FF6B00] font-semibold">Terms &amp; Conditions</span>
+                    )}{' '}
+                    and{' '}
+                    {platinumDocUrl ? (
+                      <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Policy Documents</a>
+                    ) : (
+                      <span className="text-[#FF6B00] font-semibold">Policy Documents</span>
+                    )}.
+                  </span>
+                </label>
+                {declarationError && !declarationChecked && (
+                  <p className="text-xs text-red-600 mt-2 ml-9">Please tick the box to continue.</p>
+                )}
+              </div>
             </div>
           </section>
 
