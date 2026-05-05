@@ -513,16 +513,16 @@ export const useLeads = (options?: UseLeadsOptions) => {
             return { data, error: null } as any;
           }
 
-          return await fetchPagedLeads((from, to) =>
-            applyServerDateFilter(
-              supabase
-                .from('sales_leads')
-                .select(SELECT_COLUMNS)
-                .order('created_at', { ascending: false })
-                .order('id', { ascending: false })
-                .range(from, to)
-            )
-          );
+          let query = supabase
+            .from('sales_leads')
+            .select(SELECT_COLUMNS)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .limit(LEADS_LIST_LIMIT);
+
+          query = applyServerDateFilter(query);
+
+          return await query;
         })(),
         LEADS_FETCH_TIMEOUT_MS,
         'Leads fetch timed out'
