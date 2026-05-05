@@ -392,7 +392,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         case 'newest':
           return new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime() - new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime();
         case 'latest_submitted':
-          return getLeadSubmissionDate(b).getTime() - getLeadSubmissionDate(a).getTime();
+          return getLeadSortDate(b).getTime() - getLeadSortDate(a).getTime();
         case 'oldest':
           return new Date(a.last_activity_date || getLeadSubmissionDate(a)).getTime() - new Date(b.last_activity_date || getLeadSubmissionDate(b)).getTime();
         case 'contacted':
