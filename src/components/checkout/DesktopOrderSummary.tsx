@@ -66,6 +66,32 @@ const DesktopGuarantee = () => {
   );
 };
 
+const DesktopDeclaration = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="mt-4 rounded-xl border border-[#E5E5E5] bg-white">
+      <CollapsibleTrigger className="flex w-full items-center justify-between text-left px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-[#0BA360]" />
+          <h3 className="text-sm font-bold text-[#1a1a1a]">Your cover starts today</h3>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-4 pb-4 space-y-3">
+        <p className="text-xs text-[#1a1a1a] leading-relaxed">
+          You're protected as soon as your payment is confirmed.
+        </p>
+        <div>
+          <h4 className="text-xs font-bold text-[#1a1a1a] mb-1">How claims work</h4>
+          <p className="text-xs text-[#1a1a1a] leading-relaxed">
+            Claims for mechanical and electrical breakdown can be made after your first 14 days.
+          </p>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
 const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
   planName,
   vehicleReg,
@@ -253,6 +279,9 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 : 'Select payment option'}
             </Button>
             
+            {/* Declaration - expandable */}
+            <DesktopDeclaration />
+
             {/* Good to know panels (always visible inside summary) */}
             <div className="space-y-2 mt-4">
               <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-3 py-2.5">
