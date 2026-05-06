@@ -2,6 +2,7 @@ import React from 'react';
 import { Car, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
+import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
 interface PlanSummaryCardProps {
   planName: string;
