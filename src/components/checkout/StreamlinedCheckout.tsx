@@ -1597,6 +1597,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
 
       if (checkoutData?.url) {
+        // Save pending Bumper conversion data so /thank-you can fire purchase event
+        // even if Bumper's return URL is missing params
+        const pendingBumperConversion = {
+          amount: discountedBumperPrice,
+          transactionId: `bumper_${Date.now()}`,
+          email: customerData.email || '',
+          plan: planName,
+          payment: paymentType,
+          vehicle: `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim(),
+          vehicleReg: vehicleData.regNumber || '',
+          source: 'bumper',
+          createdAt: Date.now()
+        };
+        sessionStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingBumperConversion));
+        localStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingBumperConversion));
+
         // Save journey state for recovery when returning from Bumper
         localStorage.setItem('warranty_journey_state', JSON.stringify({
           formData: pricingData,
