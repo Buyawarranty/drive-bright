@@ -559,9 +559,45 @@ Additional Information: ${formData.additionalInfo}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Form Section - Takes 2 columns */}
-                <div className="lg:col-span-2">
-                  <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
-                    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+                 <div className="lg:col-span-2">
+                   {/* Important Notice — must read before submitting */}
+                   <div
+                     role="note"
+                     aria-label="Important notice before submitting your claim"
+                     className="mb-6 rounded-xl border-l-4 border-orange-500 bg-orange-50 p-5 sm:p-6 shadow-sm"
+                   >
+                     <div className="flex items-start gap-3">
+                       <div className="flex-shrink-0 mt-0.5 flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold">
+                         !
+                       </div>
+                       <div className="flex-1">
+                         <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                           Important notice — please read before submitting
+                         </h3>
+                         <ul className="list-disc pl-5 space-y-2 text-gray-800 text-sm sm:text-base leading-relaxed">
+                           <li>
+                             Once a claim has been submitted, your warranty will no longer be eligible for a refund or cancellation refund.
+                           </li>
+                           <li>
+                             Your warranty cover will continue to remain active for the rest of your policy period after your claim has been processed.
+                           </li>
+                         </ul>
+                         <p className="mt-3 text-gray-800 text-sm sm:text-base leading-relaxed">
+                           We kindly ask that you review your policy details carefully before proceeding with your claim. If you have any questions or would like further guidance before submitting, our friendly Claims Team will be happy to help on{' '}
+                           <a href="tel:03302295045" className="font-semibold text-orange-600 hover:text-orange-700 underline underline-offset-2">
+                             0330 229 5045
+                           </a>{' '}
+                           or via{' '}
+                           <a href="mailto:claims@buyawarranty.co.uk" className="font-semibold text-orange-600 hover:text-orange-700 underline underline-offset-2">
+                             claims@buyawarranty.co.uk
+                           </a>.
+                         </p>
+                       </div>
+                     </div>
+                   </div>
+
+                   <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
+                     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
                       {/* Section 1: Contact Information */}
                       <div>
                         <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
