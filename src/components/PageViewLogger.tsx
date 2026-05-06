@@ -58,9 +58,19 @@ export const PageViewLogger = () => {
       is_facebook_ads: !!(params.get('fbclid') || params.get('utm_source')?.toLowerCase() === 'facebook' || params.get('utm_source')?.toLowerCase() === 'fb' || params.get('utm_source')?.toLowerCase() === 'ig'),
     };
 
-    supabase.from('page_views').insert(pageView).then(({ error }) => {
-      if (error) console.error('Page view tracking error:', error);
-    });
+    // Defer until browser is idle so tracking never blocks render/interaction
+    const send = () => {
+      supabase.from('page_views').insert(pageView).then(({ error }) => {
+        if (error) console.error('Page view tracking error:', error);
+      });
+    };
+
+    const w = window as any;
+    if (typeof w.requestIdleCallback === 'function') {
+      w.requestIdleCallback(send, { timeout: 3000 });
+    } else {
+      setTimeout(send, 0);
+    }
   }, [location.pathname, location.search]);
 
   return null;
