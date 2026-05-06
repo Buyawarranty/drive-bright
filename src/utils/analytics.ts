@@ -247,9 +247,19 @@ export const trackEmailClick = (emailId: string, campaignName: string, linkUrl: 
 
 // Track Bumper checkout button click (Complete checkout bumper conversion)
 export const trackBumperCheckoutClick = (value?: number) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
-    console.log('🎯 Tracking Bumper checkout click conversion', { value: conversionValue });
+  if (typeof window === 'undefined') return;
+  const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
+  console.log('🎯 Tracking Bumper checkout click conversion', { value: conversionValue });
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'bumper_checkout_click',
+    conversion_value: conversionValue,
+    currency: 'GBP',
+    payment_method: 'bumper',
+  });
+
+  if (window.gtag) {
     window.gtag('event', 'conversion', {
       'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA',
       'value': conversionValue,
@@ -264,7 +274,6 @@ export const trackStripeCheckoutClick = (value?: number) => {
     const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
     console.log('🎯 Tracking Stripe checkout click conversion', { value: conversionValue });
 
-    // Push to dataLayer for GTM triggers (Google Ads + GA4 begin_checkout)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'stripe_checkout_click',
@@ -273,7 +282,6 @@ export const trackStripeCheckoutClick = (value?: number) => {
       'payment_method': 'stripe'
     });
 
-    // Fire the dedicated "Stripe Begin checkout" Google Ads conversion
     if (window.gtag) {
       window.gtag('event', 'conversion', {
         'send_to': 'AW-17325228149/MboSCIiEjNUbEPWAqMVA',
@@ -286,29 +294,43 @@ export const trackStripeCheckoutClick = (value?: number) => {
 
 // Track Stripe checkout page load (Step 4 page view conversion)
 export const trackStripeCheckoutPageLoad = () => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    console.log('🎯 Tracking Stripe checkout page load conversion');
-    window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149'
-    });
+  if (typeof window === 'undefined') return;
+  console.log('🎯 Tracking Stripe checkout page load conversion');
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'stripe_checkout_page_load',
+    page: 'step_4_checkout',
+  });
+
+  if (window.gtag) {
+    window.gtag('event', 'conversion', { 'send_to': 'AW-17325228149' });
   }
 };
 
 // Track Step 4 email entry conversion (user enters email on checkout page)
 export const trackStep4EmailEntry = (email?: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    console.log('🎯 Tracking Step 4 email entry conversion');
+  if (typeof window === 'undefined') return;
+  console.log('🎯 Tracking Step 4 email entry conversion');
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'step4_email_entry',
+    event_category: 'Checkout',
+    event_label: 'Email Entered',
+    user_email: email ? email.substring(0, 3) + '***' : undefined,
+  });
+
+  if (window.gtag) {
     window.gtag('event', 'conversion', {
       'send_to': 'AW-17325228149',
       'event_category': 'Checkout',
       'event_label': 'Step 4 Email Entry'
     });
-    
-    // Also track as a custom event for analytics
     window.gtag('event', 'step4_email_entry', {
       'event_category': 'Checkout',
       'event_label': 'Email Entered',
-      'user_email': email ? email.substring(0, 3) + '***' : undefined // Partial email for analytics
+      'user_email': email ? email.substring(0, 3) + '***' : undefined
     });
   }
 };
