@@ -2685,7 +2685,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       )}
 
       {/* Bottom spacer so the last mobile sections can scroll above the fixed checkout bar */}
-      <div className="h-32 md:h-24 -mt-4" aria-hidden="true"></div>
+      <div className="h-8 -mt-4" aria-hidden="true"></div>
 
       {/* Sticky Total Bar - Always visible */}
       {!vehicleAgeError && (
