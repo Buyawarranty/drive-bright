@@ -105,6 +105,23 @@ const StripePayment: React.FC = () => {
 
   const handlePaymentSuccess = () => {
     setPaymentStatus('success');
+    if (paymentData) {
+      const pendingStripeConversion = {
+        amount: paymentData.isMonthly && paymentData.monthlyPrice ? paymentData.monthlyPrice : paymentData.amount,
+        transactionId: `stripe_${Date.now()}`,
+        email: paymentData.customerEmail || '',
+        firstName: paymentData.customerName?.split(' ')[0] || '',
+        lastName: paymentData.customerName?.split(' ').slice(1).join(' ') || '',
+        plan: paymentData.planName,
+        payment: paymentData.duration,
+        vehicle: `${paymentData.vehicleMake || ''} ${paymentData.vehicleModel || ''}`.trim(),
+        vehicleReg: paymentData.vehicleReg || '',
+        source: 'stripe',
+        createdAt: Date.now()
+      };
+      sessionStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingStripeConversion));
+      localStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingStripeConversion));
+    }
     // Clear cached payment data
     localStorage.removeItem('stripe_payment_data');
     // Redirect to thank you page after animation

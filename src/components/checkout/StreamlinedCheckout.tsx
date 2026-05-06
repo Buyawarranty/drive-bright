@@ -327,6 +327,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Embedded Stripe checkout modal state
   const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState(false);
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
+  const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
   
   // Promo code states (collapsed by default)
   const [promoOpen, setPromoOpen] = useState(false);
@@ -1722,6 +1723,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       if (paymentIntentData?.clientSecret) {
         console.log('💳 processStripeCheckout: Got clientSecret, saving state and showing payment form...');
+        const pendingStripeConversion = {
+          amount: Number(paymentIntentData.amount || finalPrice),
+          transactionId: paymentIntentData.paymentIntentId || `stripe_${Date.now()}`,
+          email: customerData.email || '',
+          phone: customerData.phone || customerData.mobile || '',
+          firstName,
+          lastName,
+          address: addressData.address_line_1 || customerData.street || '',
+          postcode: addressData.postcode || customerData.postcode || '',
+          plan: planId,
+          payment: paymentType,
+          vehicle: `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim(),
+          vehicleReg: vehicleData.regNumber || '',
+          mileage: customerData.mileage || vehicleData.mileage || '',
+          claimLimit: updatedPricingData.claimLimit || 2000,
+          labourRate: pricingData.labourRate || 50,
+          excess: updatedPricingData.voluntaryExcess || 0,
+          source: 'stripe',
+          createdAt: Date.now()
+        };
+        sessionStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingStripeConversion));
+        localStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingStripeConversion));
+        setStripePaymentIntentId(pendingStripeConversion.transactionId);
         
         // Save journey state for recovery
         localStorage.setItem('warranty_journey_state', JSON.stringify({
@@ -2654,7 +2678,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   onSuccess={() => {
                     // Clear cached payment data and navigate to thank-you
                     localStorage.removeItem('stripe_payment_data');
-                    navigate('/thank-you?source=stripe');
+                    const thankYouParams = new URLSearchParams({ source: 'stripe' });
+                    if (stripePaymentIntentId) thankYouParams.set('payment_intent', stripePaymentIntentId);
+                    navigate(`/thank-you?${thankYouParams.toString()}`);
                   }}
                   onError={(error) => {
                     console.error('Payment error:', error);
