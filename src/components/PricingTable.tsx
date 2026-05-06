@@ -2211,33 +2211,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Resume mobile-only wrapper for original sticky bar etc. */}
       <div className="md:hidden">
 
-      {/* What's included reassurance banner */}
-      {!vehicleAgeError && (
-        <div className="max-w-6xl mx-auto px-4 mt-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 md:px-6 py-3 md:py-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-gray-700 flex-shrink-0" />
-                <span className="text-sm md:text-base font-bold text-gray-900">What's included in every plan?</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <span className="flex items-center gap-1.5 text-xs md:text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" strokeWidth={3} />
-                  Parts &amp; labour
-                </span>
-                <span className="flex items-center gap-1.5 text-xs md:text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" strokeWidth={3} />
-                  Nationwide garage network
-                </span>
-                <span className="flex items-center gap-1.5 text-xs md:text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" strokeWidth={3} />
-                  14-day money-back guarantee
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* What's included reassurance banner removed */}
 
       {/* Bottom spacer so the last mobile sections can scroll above the fixed checkout bar */}
       <div className="h-8 -mt-4" aria-hidden="true"></div>
