@@ -173,7 +173,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                 <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:opacity-80">
                   <span>Rated</span>
                   <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
-                  <img src="/lovable-uploads/trustpilot-logo.webp" alt="Trustpilot" className="h-3.5 w-auto" loading="lazy" />
+                  <img src={trustpilotLogo} alt="Trustpilot" className="h-3.5 w-auto" loading="lazy" />
                 </a>
               </div>
             </div>
