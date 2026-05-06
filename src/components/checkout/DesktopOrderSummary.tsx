@@ -5,6 +5,7 @@ import { CheckCircle, Check, Lock, Car, Calendar, ChevronDown, ChevronUp, Shield
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
+import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
 interface DesktopOrderSummaryProps {
   planName: string;
@@ -296,6 +297,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               >
                 <span>Rated</span>
                 <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
+                <img src={trustpilotLogo} alt="Trustpilot" className="h-4 w-auto" loading="lazy" />
               </a>
             </div>
               </CollapsibleContent>

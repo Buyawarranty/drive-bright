@@ -2,6 +2,7 @@ import React from 'react';
 import { Car, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
+import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
 interface PlanSummaryCardProps {
   planName: string;
@@ -169,9 +170,10 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                   <svg className="w-3.5 h-3.5 text-[#0BA360]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                   256-bit SSL secure checkout
                 </span>
-                <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:opacity-80">
+                <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:opacity-80">
                   <span>Rated</span>
                   <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
+                  <img src={trustpilotLogo} alt="Trustpilot" className="h-3.5 w-auto" loading="lazy" />
                 </a>
               </div>
             </div>
