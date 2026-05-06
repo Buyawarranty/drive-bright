@@ -511,7 +511,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       all: absoluteTotal,
       live: liveCount,
       total: absoluteTotal,
-      new: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'new').length,
+      new: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'new' && !((l.resubmission_count || 0) > 0)).length,
       contacted: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'contacted').length,
       follow_up: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'follow_up').length,
       quote_sent: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'quote_sent').length,
