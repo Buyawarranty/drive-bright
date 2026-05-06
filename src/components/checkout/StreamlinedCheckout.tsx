@@ -1346,6 +1346,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const removePromoCode = (code: string) => {
     setAppliedDiscountCodes(prev => prev.filter(d => d.code !== code));
+    setPromoCodeInput('');
+    setPromoCodeError('');
     
     // CRITICAL: If payment form is already showing, we need to re-create the PaymentIntent
     // with the updated amount (without discount) - close the form so user re-triggers payment
@@ -2405,21 +2407,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             <div className="flex gap-2">
               <Input
                 type="text"
-                placeholder="Enter code"
+                placeholder={appliedDiscountCodes.length > 0 ? 'Promo code applied' : 'Enter code'}
                 value={promoCodeInput}
                 onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
-                className="flex-1 h-11 text-base uppercase bg-white"
-                disabled={isValidatingPromoCode}
+                className="flex-1 h-11 text-base uppercase bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                disabled={isValidatingPromoCode || appliedDiscountCodes.length > 0}
               />
               <Button
                 type="button"
                 onClick={applyPromoCode}
-                disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+                disabled={!promoCodeInput.trim() || isValidatingPromoCode || appliedDiscountCodes.length > 0}
                 className="h-11 px-5 bg-[#FF8C00] hover:bg-[#e57e00] text-white font-semibold"
               >
                 {isValidatingPromoCode ? 'Checking...' : 'Apply'}
               </Button>
             </div>
+            {appliedDiscountCodes.length > 0 && (
+              <p className="text-xs text-gray-600 mt-2">
+                Only one promo code can be used. Remove the current code to try another.
+              </p>
+            )}
             {promoCodeError && (
               <p className="text-destructive text-sm mt-2">{promoCodeError}</p>
             )}
