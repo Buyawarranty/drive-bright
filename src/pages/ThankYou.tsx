@@ -115,8 +115,9 @@ const ThankYou = () => {
     }
 
     // Check if script already exists
-    if (document.querySelector('script[src*="googletagmanager.com/gtag"]')) {
-      console.log('✅ Google Ads gtag script already loaded, waiting for initialization');
+    if (document.querySelector('script[src*="googletagmanager.com/gtag"]') ||
+        document.querySelector('script[src*="googletagmanager.com/gtm"]')) {
+      console.log('✅ Google tag script already loaded, waiting for initialization');
       // Poll for gtag to be ready
       const checkInterval = setInterval(() => {
         if (window.gtag) {
@@ -125,8 +126,13 @@ const ThankYou = () => {
           clearInterval(checkInterval);
         }
       }, 100);
-      // Clear after 5 seconds max
-      setTimeout(() => clearInterval(checkInterval), 5000);
+      // CRITICAL: After 3s, mark ready anyway so dataLayer.push('purchase') still fires for GTM
+      // Even without window.gtag, dataLayer is sufficient for GTM-based conversion tags
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        console.log('⏱️ gtag poll timed out — proceeding so dataLayer purchase event still fires');
+        setIsGtagReady(true);
+      }, 3000);
       return;
     }
 
