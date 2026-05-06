@@ -264,7 +264,7 @@ serve(async (req) => {
         const gclid = transaction.gclid || null;
         const cartMeta = transaction.customer_data?.cart_metadata || {};
         const fbclid = cartMeta?.fbclid || null;
-        let saleType = 'Web';
+        let saleType = 'WEB';
         if (gclid) saleType = 'G';
         else if (fbclid) saleType = 'F';
         // Get timing info
@@ -326,7 +326,7 @@ serve(async (req) => {
         await resend.emails.send({
           from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale ${saleType}: ${regPlate} - ${planName} - ${saleValue} via ${paymentMethod}`,
+          subject: `New Sale ${saleType}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
           html: salesEmailHtml,
         });
         logStep("Sale notification email sent successfully");
@@ -400,7 +400,7 @@ serve(async (req) => {
           await resend.emails.send({
             from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
             to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${planName} - ${saleValue} - Converted by ${agentName}`,
+            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
             html: agentSaleHtml,
           });
           logStep("Agent sale notification (New Sale S) sent", { agent: agentName });

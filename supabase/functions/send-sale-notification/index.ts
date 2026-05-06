@@ -93,7 +93,13 @@ serve(async (req: Request) => {
     if (!saleSource) {
       if (leadSource === 'google_ad') saleType = 'G';
       else if (leadSource === 'social_ad') saleType = 'F';
-      else saleType = 'Web';
+      else saleType = 'WEB';
+    } else {
+      // Normalize provided saleSource (Web -> WEB, quote -> QUOTE)
+      const s = String(saleSource).toLowerCase();
+      if (s === 'web') saleType = 'WEB';
+      else if (s === 'quote') saleType = 'QUOTE';
+      else saleType = saleSource;
     }
 
     // Build standard sale email
@@ -144,19 +150,23 @@ serve(async (req: Request) => {
 
     const resend = new Resend(resendApiKey);
 
-    // Send main sale notification
-    const subjectPrefix = isAgentSale 
-      ? `New Sale S${leadSource === 'google_ad' ? '-G' : leadSource === 'social_ad' ? '-F' : ''}`
-      : `New Sale ${saleType}`;
+    // Send main sale notification — unified subject format:
+    // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
+    let subjectSource: string;
+    if (isAgentSale) {
+      subjectSource = leadSource === 'google_ad' ? 'S-G' : leadSource === 'social_ad' ? 'S-F' : 'S';
+    } else {
+      subjectSource = saleType;
+    }
 
     await resend.emails.send({
       from: "BuyaWarranty Team <notifications@buyawarranty.co.uk>",
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
-      subject: `${subjectPrefix}: ${reg} - ${plan} - ${saleValueDisplay} via ${payment}${isAgentSale ? ` - Converted by ${resolvedAgentName}` : ''}`,
+      subject: `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}`,
       html: salesEmailHtml,
     });
 
-    console.log("Sale notification sent:", { customerEmail, saleType: subjectPrefix, isAgentSale });
+    console.log("Sale notification sent:", { customerEmail, saleType: subjectSource, isAgentSale });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
