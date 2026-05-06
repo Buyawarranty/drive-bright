@@ -322,12 +322,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     []
   );
 
-  // For sorting: worked leads should not bubble to the top on resubmission.
-  // Use original created_at instead of last_resubmitted_at for these statuses.
-  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up'];
+  // For sorting: repeat customers should NOT bubble to the top of the list.
+  // If the lead has ever been assigned or already has a worked status, the sales
+  // team has already contacted them — keep them in their original position so the
+  // resubmission doesn't confuse anyone. Any lead with a resubmission also stays put.
+  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted'];
   const getLeadSortDate = useCallback(
     (lead: Lead) => {
-      if (WORKED_STATUSES_NO_BUBBLE.includes(lead.status as string)) {
+      const alreadyTouched =
+        !!lead.assigned_to ||
+        WORKED_STATUSES_NO_BUBBLE.includes(lead.status as string) ||
+        (lead.resubmission_count || 0) > 0; // repeat customer = keep original position
+      if (alreadyTouched) {
         return new Date(lead.created_at);
       }
       return new Date(lead.last_resubmitted_at || lead.created_at);
