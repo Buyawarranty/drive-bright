@@ -297,6 +297,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               >
                 <span>Rated</span>
                 <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
+                <img src={trustpilotLogo} alt="Trustpilot" className="h-4 w-auto" loading="lazy" />
               </a>
             </div>
               </CollapsibleContent>
