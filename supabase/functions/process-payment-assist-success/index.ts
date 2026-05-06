@@ -400,7 +400,7 @@ serve(async (req) => {
           await resend.emails.send({
             from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
             to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${planName} - ${saleValue} - Converted by ${agentName}`,
+            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
             html: agentSaleHtml,
           });
           logStep("Agent sale notification (New Sale S) sent", { agent: agentName });
