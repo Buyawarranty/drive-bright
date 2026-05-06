@@ -1346,6 +1346,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const removePromoCode = (code: string) => {
     setAppliedDiscountCodes(prev => prev.filter(d => d.code !== code));
+    setPromoCodeInput('');
+    setPromoCodeError('');
     
     // CRITICAL: If payment form is already showing, we need to re-create the PaymentIntent
     // with the updated amount (without discount) - close the form so user re-triggers payment
