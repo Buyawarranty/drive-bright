@@ -264,7 +264,7 @@ serve(async (req) => {
         const gclid = transaction.gclid || null;
         const cartMeta = transaction.customer_data?.cart_metadata || {};
         const fbclid = cartMeta?.fbclid || null;
-        let saleType = 'Web';
+        let saleType = 'WEB';
         if (gclid) saleType = 'G';
         else if (fbclid) saleType = 'F';
         // Get timing info
