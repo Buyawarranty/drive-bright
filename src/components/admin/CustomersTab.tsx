@@ -882,12 +882,21 @@ export const CustomersTab = ({
           return dateB - dateA;
         case 'oldest':
           return dateA - dateB;
+        case 'highest_amount':
+          return (b.final_amount || 0) - (a.final_amount || 0);
+        case 'lowest_amount':
+          return (a.final_amount || 0) - (b.final_amount || 0);
+        case 'name_az':
         case 'name':
-          return a.name.localeCompare(b.name);
+          return (a.name || '').localeCompare(b.name || '');
+        case 'name_za':
+          return (b.name || '').localeCompare(a.name || '');
         case 'email':
-          return a.email.localeCompare(b.email);
+          return (a.email || '').localeCompare(b.email || '');
         case 'plan':
           return (a.plan_type || '').localeCompare(b.plan_type || '');
+        case 'reg':
+          return (a.registration_plate || '').localeCompare(b.registration_plate || '');
         default:
           return dateB - dateA;
       }
