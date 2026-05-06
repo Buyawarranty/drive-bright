@@ -298,11 +298,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return inputLeads.filter(lead => lead.is_callback === true);
       case 'recovered':
         return inputLeads.filter(lead => !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at);
+      case 'new':
+        // Repeat customers (resubmissions) are not "new" — they've been seen before.
+        return inputLeads.filter(lead => lead.status === 'new' && !((lead.resubmission_count || 0) > 0));
       case 'urgent_callback':
       case 'quote_sent':
       case 'contacted':
       case 'follow_up':
-      case 'new':
       case 'converted':
         return inputLeads.filter(lead => lead.status === filter);
       default:
