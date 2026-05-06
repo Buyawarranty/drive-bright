@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Upload, X, Mail, Phone, Search, Loader2 } from 'lucide-react';
+import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -564,36 +564,57 @@ Additional Information: ${formData.additionalInfo}
                    <div
                      role="note"
                      aria-label="Important notice before submitting your claim"
-                     className="mb-6 rounded-xl border-l-4 border-orange-500 bg-orange-50 p-5 sm:p-6 shadow-sm"
+                     className="mb-6 rounded-2xl border border-orange-200 bg-orange-50/60 p-4 sm:p-5 shadow-sm"
                    >
-                     <div className="flex items-start gap-3">
-                       <div className="flex-shrink-0 mt-0.5 flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold">
-                         !
+                     {/* Header */}
+                     <div className="flex items-center gap-3 mb-4">
+                       <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-orange-500 text-white shadow-sm">
+                         <Info className="w-5 h-5" strokeWidth={2.5} />
                        </div>
-                       <div className="flex-1">
-                         <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
-                           Important notice — please read before submitting
-                         </h3>
-                         <ul className="list-disc pl-5 space-y-2 text-gray-800 text-sm sm:text-base leading-relaxed">
-                           <li>
-                             Once a claim has been submitted, your warranty will no longer be eligible for a refund or cancellation refund.
-                           </li>
-                           <li>
-                             Your warranty cover will continue to remain active for the rest of your policy period after your claim has been processed.
-                           </li>
-                         </ul>
-                         <p className="mt-3 text-gray-800 text-sm sm:text-base leading-relaxed">
-                           We kindly ask that you review your policy details carefully before proceeding with your claim. If you have any questions or would like further guidance before submitting, our friendly Claims Team will be happy to help on{' '}
-                           <a href="tel:03302295045" className="font-semibold text-orange-600 hover:text-orange-700 underline underline-offset-2">
-                             0330 229 5045
-                           </a>{' '}
-                           or via{' '}
-                           <a href="mailto:claims@buyawarranty.co.uk" className="font-semibold text-orange-600 hover:text-orange-700 underline underline-offset-2">
-                             claims@buyawarranty.co.uk
-                           </a>.
-                         </p>
-                       </div>
+                       <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                         Before you submit your claim
+                       </h3>
                      </div>
+
+                     {/* Items */}
+                     <ul className="space-y-3 divide-y divide-orange-100/80">
+                       <li className="flex items-start gap-3 pt-0">
+                         <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-orange-200 text-orange-500">
+                           <ShieldCheck className="w-4.5 h-4.5" strokeWidth={2} />
+                         </div>
+                         <p className="flex-1 text-sm sm:text-[15px] text-gray-800 leading-relaxed pt-1.5">
+                           Once a claim has been submitted, your warranty will{' '}
+                           <strong className="font-semibold text-gray-900">no longer be eligible</strong> for a refund or cancellation refund.
+                         </p>
+                       </li>
+                       <li className="flex items-start gap-3 pt-3">
+                         <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-orange-200 text-orange-500">
+                           <CalendarDays className="w-4.5 h-4.5" strokeWidth={2} />
+                         </div>
+                         <p className="flex-1 text-sm sm:text-[15px] text-gray-800 leading-relaxed pt-1.5">
+                           Your warranty cover will <strong className="font-semibold text-gray-900">remain active</strong> for the rest of your policy period after your claim has been processed.
+                         </p>
+                       </li>
+                       <li className="flex items-start gap-3 pt-3">
+                         <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-orange-200 text-orange-500">
+                           <Headphones className="w-4.5 h-4.5" strokeWidth={2} />
+                         </div>
+                         <div className="flex-1 pt-0.5">
+                           <p className="text-sm sm:text-[15px] text-gray-800 leading-relaxed mb-1.5">
+                             Questions before submitting? Our friendly Claims Team is happy to help.
+                           </p>
+                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                             <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                               <Phone className="w-3.5 h-3.5" /> 0330 229 5045
+                             </a>
+                             <span className="text-orange-300" aria-hidden>|</span>
+                             <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                               <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
+                             </a>
+                           </div>
+                         </div>
+                       </li>
+                     </ul>
                    </div>
 
                    <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
