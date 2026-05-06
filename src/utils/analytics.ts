@@ -64,76 +64,48 @@ export const trackGoogleAdsConversion = (
     address?: string;
   }
 ) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    const conversionData: any = {
-      'send_to': `AW-17325228149/${conversionLabel}`,
-    };
+  if (typeof window === 'undefined') return;
 
-    if (value !== undefined) {
-      conversionData.value = value;
-      conversionData.currency = 'GBP';
-    }
+  const conversionData: any = {
+    'send_to': `AW-17325228149/${conversionLabel}`,
+  };
 
-    if (transactionId) {
-      conversionData.transaction_id = transactionId;
-    }
+  if (value !== undefined) {
+    conversionData.value = value;
+    conversionData.currency = 'GBP';
+  }
 
-    // Enhanced Conversions - add user data if available
-    if (enhancedData) {
-      const userData: any = {};
-      
-      if (enhancedData.email) {
-        userData.email = enhancedData.email;
-      }
-      if (enhancedData.phone) {
-        userData.phone_number = enhancedData.phone;
-      }
-      if (enhancedData.firstName) {
-        userData.first_name = enhancedData.firstName;
-      }
-      if (enhancedData.lastName) {
-        userData.last_name = enhancedData.lastName;
-      }
-      if (enhancedData.address) {
-        userData.address = {
-          street: enhancedData.address
-        };
-      }
+  if (transactionId) {
+    conversionData.transaction_id = transactionId;
+  }
 
-      if (Object.keys(userData).length > 0) {
-        conversionData.user_data = userData;
-      }
-    }
+  if (enhancedData) {
+    const userData: any = {};
+    if (enhancedData.email) userData.email = enhancedData.email;
+    if (enhancedData.phone) userData.phone_number = enhancedData.phone;
+    if (enhancedData.firstName) userData.first_name = enhancedData.firstName;
+    if (enhancedData.lastName) userData.last_name = enhancedData.lastName;
+    if (enhancedData.address) userData.address = { street: enhancedData.address };
+    if (Object.keys(userData).length > 0) conversionData.user_data = userData;
+  }
 
-    // ✅ VALIDATION: Check if we have required data for Enhanced Conversions
-    const hasEmail = enhancedData?.email;
-    const hasPhone = enhancedData?.phone;
-    
-    if (!hasEmail && !hasPhone) {
-      console.warn('⚠️ Google Ads Enhanced Conversion: Missing required data! Need at least email OR phone number.');
-      console.warn('Current data:', { enhancedData });
-    } else {
-      console.log('✅ Google Ads Enhanced Conversion data is valid:', {
-        hasEmail,
-        hasPhone,
-        hasName: !!(enhancedData?.firstName && enhancedData?.lastName),
-        hasAddress: !!enhancedData?.address
-      });
-    }
+  // ALWAYS push a GTM-friendly dataLayer event mirror so GTM triggers even without gtag
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: `gads_${conversionLabel}`,
+    conversion_label: conversionLabel,
+    conversion_value: value,
+    currency: 'GBP',
+    transaction_id: transactionId,
+    user_data: conversionData.user_data,
+  });
 
-    // 📊 DETAILED LOGGING for debugging
-    console.log('🎯 Google Ads Conversion Event:', {
-      label: conversionLabel,
-      value: value,
-      currency: 'GBP',
-      transactionId: transactionId,
-      userData: conversionData.user_data || 'No user data',
-      fullPayload: conversionData
-    });
+  console.log('🎯 Google Ads Conversion Event:', { label: conversionLabel, value, transactionId });
 
+  if (window.gtag) {
     window.gtag('event', 'conversion', conversionData);
   } else {
-    console.error('❌ Google Ads tracking failed: gtag not available');
+    console.warn('⚠️ gtag not available — relied on dataLayer push only for', conversionLabel);
   }
 };
 
