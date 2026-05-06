@@ -77,7 +77,7 @@ export const StripeBackGuardDialog: React.FC = () => {
             Cancel your payment?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-base text-muted-foreground leading-relaxed">
-            You were on the secure Stripe payment page. Do you want to cancel
+            You were on the secure payment page. Do you want to cancel
             the payment and return to the checkout, or continue paying?
           </AlertDialogDescription>
         </AlertDialogHeader>
