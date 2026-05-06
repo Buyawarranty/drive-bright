@@ -71,6 +71,18 @@ export const EmbeddedCheckoutModal: React.FC<EmbeddedCheckoutModalProps> = ({
   const handlePaymentSuccess = () => {
     setPaymentStatus('success');
     setIsProcessing(false);
+    const pendingStripeConversion = {
+      amount: orderSummary.amount,
+      transactionId: `stripe_${Date.now()}`,
+      plan: orderSummary.planName,
+      payment: orderSummary.duration,
+      vehicle: `${orderSummary.vehicleMake || ''} ${orderSummary.vehicleModel || ''}`.trim(),
+      vehicleReg: orderSummary.vehicleReg || '',
+      source: 'stripe',
+      createdAt: Date.now()
+    };
+    sessionStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingStripeConversion));
+    localStorage.setItem('pending_stripe_conversion', JSON.stringify(pendingStripeConversion));
     
     // Optional callback
     if (onPaymentSuccess) {
@@ -79,7 +91,7 @@ export const EmbeddedCheckoutModal: React.FC<EmbeddedCheckoutModalProps> = ({
     
     // Redirect to thank you page after animation
     setTimeout(() => {
-      navigate('/thank-you?source=embedded');
+      navigate('/thank-you?source=stripe');
     }, 2000);
   };
 
