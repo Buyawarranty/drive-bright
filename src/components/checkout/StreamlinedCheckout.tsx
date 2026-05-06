@@ -338,7 +338,36 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     type: 'percentage' | 'fixed';
     value: number;
     discountAmount: number;
-  }>>([]);
+    stripe_coupon_id?: string;
+    stripe_promo_code_id?: string;
+  }>>(() => {
+    try {
+      const saved = localStorage.getItem('buyawarranty_appliedDiscountCodes');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          console.log('✅ Restored applied discount codes from localStorage:', parsed);
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error restoring discount codes:', error);
+    }
+    return [];
+  });
+
+  // Persist applied discount codes so they survive back-nav between steps
+  useEffect(() => {
+    try {
+      if (appliedDiscountCodes.length > 0) {
+        localStorage.setItem('buyawarranty_appliedDiscountCodes', JSON.stringify(appliedDiscountCodes));
+      } else {
+        localStorage.removeItem('buyawarranty_appliedDiscountCodes');
+      }
+    } catch (error) {
+      console.error('❌ Error saving discount codes:', error);
+    }
+  }, [appliedDiscountCodes]);
 
   // Auto-apply promo code from email link (?promo=SAVE10TODAY)
   // Only applies when order total is £350+
