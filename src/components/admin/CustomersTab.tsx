@@ -882,12 +882,21 @@ export const CustomersTab = ({
           return dateB - dateA;
         case 'oldest':
           return dateA - dateB;
+        case 'highest_amount':
+          return (b.final_amount || 0) - (a.final_amount || 0);
+        case 'lowest_amount':
+          return (a.final_amount || 0) - (b.final_amount || 0);
+        case 'name_az':
         case 'name':
-          return a.name.localeCompare(b.name);
+          return (a.name || '').localeCompare(b.name || '');
+        case 'name_za':
+          return (b.name || '').localeCompare(a.name || '');
         case 'email':
-          return a.email.localeCompare(b.email);
+          return (a.email || '').localeCompare(b.email || '');
         case 'plan':
           return (a.plan_type || '').localeCompare(b.plan_type || '');
+        case 'reg':
+          return (a.registration_plate || '').localeCompare(b.registration_plate || '');
         default:
           return dateB - dateA;
       }
@@ -3068,10 +3077,17 @@ export const CustomersTab = ({
                    <SelectTrigger id="sortBy">
                      <SelectValue />
                    </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="newest">Newest first</SelectItem>
-                     <SelectItem value="oldest">Oldest first</SelectItem>
-                   </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest first</SelectItem>
+                      <SelectItem value="oldest">Oldest first</SelectItem>
+                      <SelectItem value="highest_amount">Highest amount first</SelectItem>
+                      <SelectItem value="lowest_amount">Lowest amount first</SelectItem>
+                      <SelectItem value="name_az">Name (A–Z)</SelectItem>
+                      <SelectItem value="name_za">Name (Z–A)</SelectItem>
+                      <SelectItem value="email">Email (A–Z)</SelectItem>
+                      <SelectItem value="plan">Plan</SelectItem>
+                      <SelectItem value="reg">Registration plate</SelectItem>
+                    </SelectContent>
                  </Select>
                </div>
 
