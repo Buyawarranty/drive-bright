@@ -373,48 +373,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <span className="text-[13px] text-[#888]">or call 0330 229 5040</span>
             </div>
 
-            {/* COMPREHENSIVE COVER */}
-            <div className="bg-white rounded-xl border border-[#e8e8e8] px-5 py-4">
-              <div className="flex items-center justify-between mb-3.5">
-                <button
-                  type="button"
-                  onClick={() => setPartsListOpen(o => !o)}
-                  className="text-sm font-semibold text-[#161616] flex items-center gap-2 bg-transparent border-0 cursor-pointer p-0"
-                >
-                  🛡 Comprehensive Cover <span className={`inline-block transition-transform ${partsListOpen ? 'rotate-180' : ''}`}>∨</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPartsListOpen(o => !o)}
-                  className="bg-[#1a1a1a] hover:bg-black text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center gap-1.5 border-0 cursor-pointer"
-                >
-                  🔧 View parts list <span className={`inline-block transition-transform ${partsListOpen ? 'rotate-180' : ''}`}>∨</span>
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {['Engine & gearbox','Fuel system','Cooling system','Electrical components','Air conditioning','Steering & suspension','Braking system','Turbocharger','Labour & call-out'].map(item => (
-                  <div key={item} className="text-[13px] text-[#555] flex items-center gap-1.5">
-                    <span className="font-bold" style={{ color: '#1D9E75' }}>✓</span>{item}
-                  </div>
-                ))}
-              </div>
-              {platinumDocUrl && (
-                <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[13px] mt-3 block no-underline" style={{ color: '#009B8F' }}>
-                  See full policy details
-                </a>
-              )}
-              {partsListOpen && <PartsListContent />}
-            </div>
-
-            {/* WHAT'S INCLUDED */}
-            <div className="bg-white rounded-xl border border-[#e8e8e8] px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
-              <strong className="text-[13px] text-[#161616]">What's included in every plan?</strong>
-              {['Parts & labour','Nationwide garage network','14-day money-back guarantee'].map(item => (
-                <div key={item} className="flex items-center gap-1.5 text-[13px] text-[#555]">
-                  <span className="w-[7px] h-[7px] rounded-full inline-block" style={{ background: '#1D9E75' }}></span>{item}
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* RIGHT - Sticky summary */}
