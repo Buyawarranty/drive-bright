@@ -1456,6 +1456,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
 
     setIsLoading(true);
+
+    // Duplicate warranty guard: same email + same registration plate already has an active/pending paid warranty
+    try {
+      const dupCheck = await checkDuplicateWarranty(
+        vehicleData?.regNumber || '',
+        customerData.email || ''
+      );
+      if (dupCheck.isDuplicate) {
+        setIsLoading(false);
+        toast.error(
+          'A warranty already exists for this email and registration. Please use a different email address or a different vehicle registration.',
+          {
+            duration: 10000,
+            closeButton: true,
+            dismissible: true,
+            className: 'border-2 border-red-500 shadow-2xl',
+          }
+        );
+        return;
+      }
+    } catch (err) {
+      console.warn('Duplicate warranty check failed (continuing):', err);
+    }
+
     trackFormSubmission('customer_details', { payment_method: effectivePayment });
 
     if (effectivePayment === 'monthly') {
