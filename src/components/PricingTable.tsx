@@ -1568,15 +1568,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
-                  'Up to 10 claims per year',
+                  'Unlimited claims',
                   'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
-                  'Consequential damage cover',
-                  'Fast claims process',
                   'Choose your own garage',
-                  '14-day money-back guarantee',
-                  'Optional extras available',
+                  '14 day cooling off period',
                   'Pre-existing faults are not covered'
                 ]
               },
@@ -1587,16 +1584,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
-                  'Unlimited Claims',
+                  'Unlimited claims',
                   'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
                   { text: 'Vehicle recovery', isExtra: true },
-                  'Consequential damage cover',
-                  'Fast claims process',
                   'Choose your own garage',
-                  '14-day money-back guarantee',
-                  'Optional extras available',
+                  '14 day cooling off period',
                   'Pre-existing faults are not covered'
                 ]
               },
@@ -1607,18 +1601,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
-                  'Unlimited Claims',
+                  'Unlimited claims',
                   'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
                   { text: 'Vehicle recovery', isExtra: true },
                   { text: 'Europe repair cover', isExtra: true },
                   { text: 'Vehicle rental cover', isExtra: true },
-                  'Consequential damage cover',
-                  'Fast claims process',
                   'Choose your own garage',
-                  '14-day money-back guarantee',
-                  'Optional extras available',
+                  '14 day cooling off period',
                   'Pre-existing faults are not covered'
                 ]
               }
