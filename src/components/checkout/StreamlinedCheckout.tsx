@@ -2452,8 +2452,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </div>
 
           <section
-            id="please-confirm"
-            className="mt-6"
+            id="vehicle-declaration"
+            className="mt-10 sm:mt-12 pt-2 scroll-mt-32"
           >
             <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-3">
               One quick confirmation
