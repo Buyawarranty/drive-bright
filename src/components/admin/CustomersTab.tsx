@@ -3077,10 +3077,17 @@ export const CustomersTab = ({
                    <SelectTrigger id="sortBy">
                      <SelectValue />
                    </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="newest">Newest first</SelectItem>
-                     <SelectItem value="oldest">Oldest first</SelectItem>
-                   </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest first</SelectItem>
+                      <SelectItem value="oldest">Oldest first</SelectItem>
+                      <SelectItem value="highest_amount">Highest amount first</SelectItem>
+                      <SelectItem value="lowest_amount">Lowest amount first</SelectItem>
+                      <SelectItem value="name_az">Name (A–Z)</SelectItem>
+                      <SelectItem value="name_za">Name (Z–A)</SelectItem>
+                      <SelectItem value="email">Email (A–Z)</SelectItem>
+                      <SelectItem value="plan">Plan</SelectItem>
+                      <SelectItem value="reg">Registration plate</SelectItem>
+                    </SelectContent>
                  </Select>
                </div>
 
