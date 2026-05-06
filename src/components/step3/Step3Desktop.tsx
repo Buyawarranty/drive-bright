@@ -406,45 +406,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {partsListOpen && <PartsListContent />}
             </div>
 
-            {/* CRYSTAL CLEAR */}
-            <div className="bg-white rounded-xl border border-[#e8e8e8] p-5">
-              <div className="flex items-center justify-between mb-3.5">
-                <h3 className="text-base font-semibold m-0 text-[#161616]">Your cover, made crystal clear 💎</h3>
-                <button
-                  type="button"
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="text-[13px] bg-transparent border-0 cursor-pointer p-0"
-                  style={{ color: '#009B8F' }}
-                >
-                  ↑ Back to Plans
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                {['No hidden catches','Easy claims, fast payouts','14-day money-back guarantee'].map(item => (
-                  <div key={item} className="text-[13px] text-[#555] flex gap-1.5">
-                    <span className="font-bold" style={{ color: '#1D9E75' }}>✓</span>{item}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-[#888] italic m-0 mb-2.5">Want the details? Expand below — no jargon, no surprises.</p>
-              <div className="flex gap-4">
-                {platinumDocUrl ? (
-                  <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[13px] no-underline" style={{ color: '#009B8F' }}>
-                    ∨ Your Platinum Plan
-                  </a>
-                ) : (
-                  <span className="text-[13px] opacity-50" style={{ color: '#009B8F' }}>∨ Your Platinum Plan</span>
-                )}
-                {termsDocUrl ? (
-                  <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[13px] no-underline" style={{ color: '#009B8F' }}>
-                    ∨ Terms &amp; Conditions
-                  </a>
-                ) : (
-                  <span className="text-[13px] opacity-50" style={{ color: '#009B8F' }}>∨ Terms &amp; Conditions</span>
-                )}
-              </div>
-            </div>
-
             {/* WHAT'S INCLUDED */}
             <div className="bg-white rounded-xl border border-[#e8e8e8] px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
               <strong className="text-[13px] text-[#161616]">What's included in every plan?</strong>
