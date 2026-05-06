@@ -9,7 +9,17 @@ declare global {
 }
 
 export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window === 'undefined') return;
+
+  // ALWAYS push to dataLayer so GTM sees the event, even if gtag.js hasn't loaded
+  // (consent denied, ad blocker on gtag, GTM-only setup, etc.)
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    ...(parameters || {}),
+  });
+
+  if (window.gtag) {
     window.gtag('event', eventName, parameters);
   }
 };
@@ -54,76 +64,48 @@ export const trackGoogleAdsConversion = (
     address?: string;
   }
 ) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    const conversionData: any = {
-      'send_to': `AW-17325228149/${conversionLabel}`,
-    };
+  if (typeof window === 'undefined') return;
 
-    if (value !== undefined) {
-      conversionData.value = value;
-      conversionData.currency = 'GBP';
-    }
+  const conversionData: any = {
+    'send_to': `AW-17325228149/${conversionLabel}`,
+  };
 
-    if (transactionId) {
-      conversionData.transaction_id = transactionId;
-    }
+  if (value !== undefined) {
+    conversionData.value = value;
+    conversionData.currency = 'GBP';
+  }
 
-    // Enhanced Conversions - add user data if available
-    if (enhancedData) {
-      const userData: any = {};
-      
-      if (enhancedData.email) {
-        userData.email = enhancedData.email;
-      }
-      if (enhancedData.phone) {
-        userData.phone_number = enhancedData.phone;
-      }
-      if (enhancedData.firstName) {
-        userData.first_name = enhancedData.firstName;
-      }
-      if (enhancedData.lastName) {
-        userData.last_name = enhancedData.lastName;
-      }
-      if (enhancedData.address) {
-        userData.address = {
-          street: enhancedData.address
-        };
-      }
+  if (transactionId) {
+    conversionData.transaction_id = transactionId;
+  }
 
-      if (Object.keys(userData).length > 0) {
-        conversionData.user_data = userData;
-      }
-    }
+  if (enhancedData) {
+    const userData: any = {};
+    if (enhancedData.email) userData.email = enhancedData.email;
+    if (enhancedData.phone) userData.phone_number = enhancedData.phone;
+    if (enhancedData.firstName) userData.first_name = enhancedData.firstName;
+    if (enhancedData.lastName) userData.last_name = enhancedData.lastName;
+    if (enhancedData.address) userData.address = { street: enhancedData.address };
+    if (Object.keys(userData).length > 0) conversionData.user_data = userData;
+  }
 
-    // ✅ VALIDATION: Check if we have required data for Enhanced Conversions
-    const hasEmail = enhancedData?.email;
-    const hasPhone = enhancedData?.phone;
-    
-    if (!hasEmail && !hasPhone) {
-      console.warn('⚠️ Google Ads Enhanced Conversion: Missing required data! Need at least email OR phone number.');
-      console.warn('Current data:', { enhancedData });
-    } else {
-      console.log('✅ Google Ads Enhanced Conversion data is valid:', {
-        hasEmail,
-        hasPhone,
-        hasName: !!(enhancedData?.firstName && enhancedData?.lastName),
-        hasAddress: !!enhancedData?.address
-      });
-    }
+  // ALWAYS push a GTM-friendly dataLayer event mirror so GTM triggers even without gtag
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: `gads_${conversionLabel}`,
+    conversion_label: conversionLabel,
+    conversion_value: value,
+    currency: 'GBP',
+    transaction_id: transactionId,
+    user_data: conversionData.user_data,
+  });
 
-    // 📊 DETAILED LOGGING for debugging
-    console.log('🎯 Google Ads Conversion Event:', {
-      label: conversionLabel,
-      value: value,
-      currency: 'GBP',
-      transactionId: transactionId,
-      userData: conversionData.user_data || 'No user data',
-      fullPayload: conversionData
-    });
+  console.log('🎯 Google Ads Conversion Event:', { label: conversionLabel, value, transactionId });
 
+  if (window.gtag) {
     window.gtag('event', 'conversion', conversionData);
   } else {
-    console.error('❌ Google Ads tracking failed: gtag not available');
+    console.warn('⚠️ gtag not available — relied on dataLayer push only for', conversionLabel);
   }
 };
 
@@ -265,9 +247,19 @@ export const trackEmailClick = (emailId: string, campaignName: string, linkUrl: 
 
 // Track Bumper checkout button click (Complete checkout bumper conversion)
 export const trackBumperCheckoutClick = (value?: number) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
-    console.log('🎯 Tracking Bumper checkout click conversion', { value: conversionValue });
+  if (typeof window === 'undefined') return;
+  const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
+  console.log('🎯 Tracking Bumper checkout click conversion', { value: conversionValue });
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'bumper_checkout_click',
+    conversion_value: conversionValue,
+    currency: 'GBP',
+    payment_method: 'bumper',
+  });
+
+  if (window.gtag) {
     window.gtag('event', 'conversion', {
       'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA',
       'value': conversionValue,
@@ -282,7 +274,6 @@ export const trackStripeCheckoutClick = (value?: number) => {
     const conversionValue = typeof value === 'number' && value > 0 ? value : 1;
     console.log('🎯 Tracking Stripe checkout click conversion', { value: conversionValue });
 
-    // Push to dataLayer for GTM triggers (Google Ads + GA4 begin_checkout)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'stripe_checkout_click',
@@ -291,7 +282,6 @@ export const trackStripeCheckoutClick = (value?: number) => {
       'payment_method': 'stripe'
     });
 
-    // Fire the dedicated "Stripe Begin checkout" Google Ads conversion
     if (window.gtag) {
       window.gtag('event', 'conversion', {
         'send_to': 'AW-17325228149/MboSCIiEjNUbEPWAqMVA',
@@ -304,29 +294,43 @@ export const trackStripeCheckoutClick = (value?: number) => {
 
 // Track Stripe checkout page load (Step 4 page view conversion)
 export const trackStripeCheckoutPageLoad = () => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    console.log('🎯 Tracking Stripe checkout page load conversion');
-    window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149'
-    });
+  if (typeof window === 'undefined') return;
+  console.log('🎯 Tracking Stripe checkout page load conversion');
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'stripe_checkout_page_load',
+    page: 'step_4_checkout',
+  });
+
+  if (window.gtag) {
+    window.gtag('event', 'conversion', { 'send_to': 'AW-17325228149' });
   }
 };
 
 // Track Step 4 email entry conversion (user enters email on checkout page)
 export const trackStep4EmailEntry = (email?: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    console.log('🎯 Tracking Step 4 email entry conversion');
+  if (typeof window === 'undefined') return;
+  console.log('🎯 Tracking Step 4 email entry conversion');
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'step4_email_entry',
+    event_category: 'Checkout',
+    event_label: 'Email Entered',
+    user_email: email ? email.substring(0, 3) + '***' : undefined,
+  });
+
+  if (window.gtag) {
     window.gtag('event', 'conversion', {
       'send_to': 'AW-17325228149',
       'event_category': 'Checkout',
       'event_label': 'Step 4 Email Entry'
     });
-    
-    // Also track as a custom event for analytics
     window.gtag('event', 'step4_email_entry', {
       'event_category': 'Checkout',
       'event_label': 'Email Entered',
-      'user_email': email ? email.substring(0, 3) + '***' : undefined // Partial email for analytics
+      'user_email': email ? email.substring(0, 3) + '***' : undefined
     });
   }
 };
