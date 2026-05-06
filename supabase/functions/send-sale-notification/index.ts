@@ -93,7 +93,13 @@ serve(async (req: Request) => {
     if (!saleSource) {
       if (leadSource === 'google_ad') saleType = 'G';
       else if (leadSource === 'social_ad') saleType = 'F';
-      else saleType = 'Web';
+      else saleType = 'WEB';
+    } else {
+      // Normalize provided saleSource (Web -> WEB, quote -> QUOTE)
+      const s = String(saleSource).toLowerCase();
+      if (s === 'web') saleType = 'WEB';
+      else if (s === 'quote') saleType = 'QUOTE';
+      else saleType = saleSource;
     }
 
     // Build standard sale email
