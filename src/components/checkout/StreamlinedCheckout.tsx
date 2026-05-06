@@ -18,6 +18,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
+import { checkDuplicateWarranty } from '@/lib/duplicateWarrantyCheck';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import trustpilotLogo from '@/assets/trustpilot-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
