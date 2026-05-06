@@ -9,7 +9,17 @@ declare global {
 }
 
 export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window === 'undefined') return;
+
+  // ALWAYS push to dataLayer so GTM sees the event, even if gtag.js hasn't loaded
+  // (consent denied, ad blocker on gtag, GTM-only setup, etc.)
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    ...(parameters || {}),
+  });
+
+  if (window.gtag) {
     window.gtag('event', eventName, parameters);
   }
 };
