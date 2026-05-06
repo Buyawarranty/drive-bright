@@ -306,6 +306,18 @@ const ThankYou = () => {
     
     const processPayment = async () => {
       // Get common data from URL params
+      const pendingStripeConversionRaw = (() => {
+        if (typeof window === 'undefined') return null;
+        return sessionStorage.getItem('pending_stripe_conversion') || localStorage.getItem('pending_stripe_conversion');
+      })();
+      const pendingStripeConversion = pendingStripeConversionRaw ? (() => {
+        try {
+          return JSON.parse(pendingStripeConversionRaw);
+        } catch (error) {
+          console.warn('[THANK-YOU] Failed to parse pending Stripe conversion data', error);
+          return null;
+        }
+      })() : null;
       const urlEmail = searchParams.get('email');
       const urlMobile = searchParams.get('mobile');
       const urlFirstName = searchParams.get('first_name');
@@ -316,11 +328,11 @@ const ThankYou = () => {
       const urlPolicyNumber = searchParams.get('policy_number') || searchParams.get('warranty_number');
       
       // Parse final amount
-      const parsedAmount = urlFinalAmount ? parseFloat(urlFinalAmount) : 0;
+      const parsedAmount = urlFinalAmount ? parseFloat(urlFinalAmount) : Number(pendingStripeConversion?.amount || 0);
       
       // Generate transaction ID from available data
       const generateTransactionId = () => {
-        return urlPolicyNumber || sessionId || `ORDER_${Date.now()}`;
+        return urlPolicyNumber || sessionId || pendingStripeConversion?.transactionId || paymentIntentId || `ORDER_${Date.now()}`;
       };
       
       // ========================
@@ -369,7 +381,7 @@ const ThankYou = () => {
       // ========================
       
       // Check if we have enough data to show the page
-      const hasSufficientData = urlFinalAmount || urlEmail || searchParams.get('plan') || source;
+      const hasSufficientData = urlFinalAmount || urlEmail || searchParams.get('plan') || source || pendingStripeConversion;
       
       // Only show error if we truly have no data at all
       if (!sessionId && !urlPolicyNumber && !hasSufficientData) {
@@ -386,19 +398,21 @@ const ThankYou = () => {
         if (urlPolicyNumber) setPolicyNumber(urlPolicyNumber);
         
         // CRITICAL: Still fire conversion for already-processed payments
-        if (parsedAmount > 0 || urlEmail) {
+        if (parsedAmount > 0 || urlEmail || pendingStripeConversion) {
           console.log('[THANK-YOU] Firing conversion for pre-processed payment');
           fireGoogleAdsConversion({
             amount: parsedAmount,
             transactionId: generateTransactionId(),
-            email: urlEmail || undefined,
-            phone: urlMobile || undefined,
-            firstName: urlFirstName || undefined,
-            lastName: urlLastName || undefined,
-            address: urlStreet || undefined,
-            postcode: urlPostcode || undefined,
+            email: urlEmail || pendingStripeConversion?.email || undefined,
+            phone: urlMobile || pendingStripeConversion?.phone || undefined,
+            firstName: urlFirstName || pendingStripeConversion?.firstName || undefined,
+            lastName: urlLastName || pendingStripeConversion?.lastName || undefined,
+            address: urlStreet || pendingStripeConversion?.address || undefined,
+            postcode: urlPostcode || pendingStripeConversion?.postcode || undefined,
             source: source || 'direct'
           });
+          sessionStorage.removeItem('pending_stripe_conversion');
+          localStorage.removeItem('pending_stripe_conversion');
         }
         
         setIsProcessing(false);
