@@ -487,10 +487,6 @@ Additional Information: ${formData.additionalInfo}
                 <ul className="space-y-4 text-left text-gray-700">
                   <li className="flex items-start gap-3">
                     <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">Your warranty registration number</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
                     <span className="font-medium">Vehicle details including make, model and registration</span>
                   </li>
                   <li className="flex items-start gap-3">
