@@ -1145,7 +1145,7 @@ Additional Information: ${formData.additionalInfo}
                                    {isSubmitting ? (
                                      <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
                                    ) : (
-                                     <><Check className="w-4 h-4" /> Submit claim</>
+                                     <>Submit claim <ArrowRight className="w-4 h-4" /></>
                                    )}
                                  </Button>
                                </div>
