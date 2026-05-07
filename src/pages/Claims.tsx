@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones } from 'lucide-react';
+import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
