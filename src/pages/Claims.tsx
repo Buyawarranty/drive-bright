@@ -592,11 +592,11 @@ Additional Information: ${formData.additionalInfo}
               <CalendarDays className="w-4 h-4" />
               Claims department open Monday–Friday, 9am–5pm
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
-              Making a Claim
+            <h1 className="pro-serif text-4xl sm:text-5xl lg:text-6xl text-[#1A2B4A] mb-4 sm:mb-5 text-center">
+              Making a claim
             </h1>
-            <p className="text-xl lg:text-2xl font-semibold text-orange-600 mb-8">
-              Simple, Supportive and Stress Free
+            <p className="text-lg lg:text-xl text-[#5A6B82] mb-8 max-w-2xl mx-auto">
+              Simple, supportive and stress free.
             </p>
             <div className="max-w-3xl mx-auto">
               <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
