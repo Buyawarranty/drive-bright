@@ -73,7 +73,7 @@ const AddClaimEvidence = () => {
       }
 
       const res = await supabase.functions.invoke('submit-claim-evidence', {
-        body: { reference, notes, files: filesPayload },
+        body: { reference, evidenceType, notes, files: filesPayload },
       });
 
       if (res.error) {
