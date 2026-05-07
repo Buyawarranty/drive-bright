@@ -886,22 +886,20 @@ Additional Information: ${formData.additionalInfo}
                                  {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.faultDescription}</p>}
                                </div>
 
-                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                 <div>
-                                   <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-sm block text-left">When did the fault occur?</Label>
-                                   <Input id="dateOccurred" name="dateOccurred" type="date"
-                                     value={formData.dateOccurred} onChange={handleInputChange}
-                                     max={new Date().toISOString().split('T')[0]}
-                                     className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500" />
-                                 </div>
-                                 <div>
-                                   <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-sm block text-left">When does the issue happen?</Label>
-                                   <Input id="issueTiming" name="issueTiming" type="text"
-                                     placeholder="e.g. on start-up, when braking"
-                                     value={formData.issueTiming} onChange={handleInputChange}
-                                     className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500" />
-                                 </div>
-                               </div>
+                                <div>
+                                  <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-sm block text-left">When did the fault occur?</Label>
+                                  <Input id="dateOccurred" name="dateOccurred" type="date"
+                                    value={formData.dateOccurred} onChange={handleInputChange}
+                                    max={new Date().toISOString().split('T')[0]}
+                                    className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 md:max-w-xs" />
+                                </div>
+                                <div>
+                                  <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-sm block text-left">When does the issue happen?</Label>
+                                  <Textarea id="issueTiming" name="issueTiming"
+                                    placeholder="e.g. on start-up, when braking, after driving for 10 minutes, only when cold..."
+                                    value={formData.issueTiming} onChange={handleInputChange} rows={3}
+                                    className="mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500" />
+                                </div>
 
                                <div>
                                  <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-sm block text-left">Any other relevant details</Label>
