@@ -158,8 +158,33 @@ const AddClaimEvidence = () => {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold text-gray-900">Upload files</Label>
-                  <p className="text-xs text-gray-500 mb-2">Photos, PDFs or garage reports — up to {MAX_FILES} files, max 10MB each.</p>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white text-sm font-bold">2</div>
+                    <h2 className="text-lg font-semibold text-gray-900">What are you uploading?</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {EVIDENCE_TYPES.map(({ id, label, icon: Icon }) => {
+                      const active = evidenceType === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => setEvidenceType(id)}
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                            active
+                              ? 'bg-gray-900 text-white border-gray-900'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
                   <div
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}
@@ -168,25 +193,25 @@ const AddClaimEvidence = () => {
                       setIsDragging(false);
                       if (e.dataTransfer.files) addFiles(e.dataTransfer.files);
                     }}
-                    className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
                       isDragging ? 'border-orange-500 bg-orange-50' : 'border-gray-300 bg-gray-50 hover:border-orange-400'
                     }`}
                   >
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-2">Drag and drop files here, or</p>
-                    <label htmlFor="evidence-files">
-                      <span className="inline-block px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium cursor-pointer">
-                        Choose files
-                      </span>
+                    <Upload className="w-9 h-9 text-gray-400 mx-auto mb-3" />
+                    <p className="text-base font-semibold text-gray-900 mb-1">Drop files here</p>
+                    <label htmlFor="evidence-files" className="cursor-pointer">
+                      <span className="text-sm text-gray-600">or </span>
+                      <span className="text-sm text-orange-600 font-semibold hover:underline">browse to upload</span>
                       <input
                         id="evidence-files"
                         type="file"
                         multiple
                         className="hidden"
-                        accept="image/*,.pdf,.doc,.docx"
+                        accept="image/*,video/*,.pdf,.doc,.docx"
                         onChange={(e) => e.target.files && addFiles(e.target.files)}
                       />
                     </label>
+                    <p className="text-xs text-gray-500 mt-3">JPG, PNG, MP4, PDF, DOC · max 20 MB per file · up to {MAX_FILES} files</p>
                   </div>
                   {files.length > 0 && (
                     <ul className="mt-3 space-y-2">
@@ -208,12 +233,12 @@ const AddClaimEvidence = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="notes" className="text-sm font-semibold text-gray-900">Note (optional)</Label>
+                  <Label htmlFor="notes" className="text-sm font-semibold text-gray-900">Additional note (optional)</Label>
                   <Textarea
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Anything you'd like the claims team to know about this evidence."
+                    placeholder="Add any context to help our team review this evidence — e.g. 'invoice from approved garage' or 'video shows fault occurring at startup'…"
                     rows={4}
                     className="mt-1.5"
                     maxLength={1500}
