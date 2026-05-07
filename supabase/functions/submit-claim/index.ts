@@ -408,9 +408,15 @@ const handler = async (req: Request): Promise<Response> => {
           <li style="margin-bottom: 8px;"><strong>Call us:</strong> 0330 229 5045</li>
           <li><strong>Email us:</strong> <a href="mailto:claims@buyawarranty.co.uk" style="color: #eb4b00;">claims@buyawarranty.co.uk</a></li>
         </ul>
-        
+
+        <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px 20px; border-radius: 8px; margin: 24px 0;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; color: #0c4a6e;">Need to send more evidence?</p>
+          <p style="margin: 0 0 12px 0; color: #334155; font-size: 14px;">No need to fill in the form again — just upload extra files (photos, garage reports, invoices) using the link below.</p>
+          <a href="https://buyawarranty.co.uk/add-evidence/" style="display: inline-block; background-color: #0ea5e9; color: #ffffff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600;">Upload additional evidence</a>
+        </div>
+
         <p>Thank you for your patience – we're here to help!</p>
-        
+
         <p style="margin-top: 30px;">Best regards,</p>
         <p style="margin: 5px 0;"><strong>Buy a Warranty Claims Team</strong></p>
       </div>
