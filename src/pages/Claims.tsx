@@ -528,7 +528,62 @@ Additional Information: ${formData.additionalInfo}
         keywords="warranty claim, car warranty claim, vehicle warranty support, customer service"
       />
 
-      <div className="min-h-screen bg-white">
+      <style>{`
+        .claims-pro {
+          --c-orange: #E8541A;
+          --c-orange-light: #FEF0E8;
+          --c-navy: #1A2B4A;
+          --c-navy-light: #EEF1F6;
+          --c-navy-mid: #2E4470;
+          --c-cream: #F4F6F8;
+          --c-ink: #1A2B4A;
+          --c-ink-60: #5A6B82;
+          --c-ink-30: #B0BAC6;
+          --c-border: #E2E8F0;
+          --c-shadow: 0 2px 20px rgba(26,43,74,0.08);
+          font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+          color: var(--c-ink);
+        }
+        .claims-pro .pro-serif { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; }
+        .claims-pro .pro-card {
+          background: #fff;
+          border: 1px solid var(--c-border);
+          border-radius: 16px;
+          box-shadow: var(--c-shadow);
+        }
+        .claims-pro .pro-card-pad { padding: 1.75rem; }
+        @media(min-width: 640px) { .claims-pro .pro-card-pad { padding: 2rem; } }
+        .claims-pro h2, .claims-pro h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; color: var(--c-ink); }
+        .claims-pro label { font-family: 'DM Sans', sans-serif; font-size: 13px !important; font-weight: 500 !important; color: var(--c-ink-60) !important; }
+        .claims-pro input, .claims-pro textarea, .claims-pro select {
+          background: var(--c-cream) !important;
+          border: 1.5px solid var(--c-border) !important;
+          border-radius: 10px !important;
+          font-family: 'DM Sans', sans-serif;
+          color: var(--c-ink);
+          transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .claims-pro input:focus, .claims-pro textarea:focus, .claims-pro select:focus {
+          border-color: var(--c-orange) !important;
+          background: #fff !important;
+          box-shadow: 0 0 0 3px rgba(232,84,26,0.1) !important;
+        }
+        .claims-pro .pro-step-num {
+          width: 28px; height: 28px; background: var(--c-navy-light); color: var(--c-navy);
+          border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+          font-size: 13px; font-weight: 500; flex-shrink: 0; font-family: 'DM Sans', sans-serif;
+        }
+        .claims-pro .pro-btn-primary {
+          background: var(--c-navy) !important; color: #fff !important;
+          border-radius: 10px !important; font-weight: 500 !important;
+          box-shadow: 0 4px 14px rgba(26,43,74,0.25);
+          transition: all .2s;
+        }
+        .claims-pro .pro-btn-primary:hover { background: var(--c-navy-mid) !important; transform: translateY(-1px); }
+        .claims-pro .pro-divider-soft { border-top: 1px solid var(--c-border); }
+      `}</style>
+
+      <div className="min-h-screen bg-white claims-pro">
         {/* Hero Section - UX Optimized with Orange Branding */}
         <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
@@ -537,11 +592,11 @@ Additional Information: ${formData.additionalInfo}
               <CalendarDays className="w-4 h-4" />
               Claims department open Monday–Friday, 9am–5pm
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
-              Making a Claim
+            <h1 className="pro-serif text-4xl sm:text-5xl lg:text-6xl text-[#1A2B4A] mb-4 sm:mb-5 text-center">
+              Making a claim
             </h1>
-            <p className="text-xl lg:text-2xl font-semibold text-orange-600 mb-8">
-              Simple, Supportive and Stress Free
+            <p className="text-lg lg:text-xl text-[#5A6B82] mb-8 max-w-2xl mx-auto">
+              Simple, supportive and stress free.
             </p>
             <div className="max-w-3xl mx-auto">
               <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
@@ -615,12 +670,12 @@ Additional Information: ${formData.additionalInfo}
 
             {/* Make A Claim Form */}
             <div className="mb-12 mt-16" id="claim-form">
-              <div className="mb-8">
-                <h2 className="text-3xl lg:text-4xl font-bold text-black mb-3 text-left">
-                  Make A Claim
+              <div className="mb-8 text-left">
+                <h2 className="pro-serif text-3xl lg:text-4xl text-[#1A2B4A] mb-2">
+                  Start your claim
                 </h2>
-                <p className="text-black text-lg">
-                  Fill out the form below quick, easy and hassle-free
+                <p className="text-[#5A6B82] text-base">
+                  Quick, easy and hassle free — takes about 3 minutes.
                 </p>
               </div>
 
@@ -740,41 +795,41 @@ Additional Information: ${formData.additionalInfo}
                                    onClick={() => stepNum < currentStep && goToStep(stepNum, true)}
                                    className={`flex items-center gap-2 ${stepNum < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
                                  >
-                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0 ${
-                                     isDone ? 'bg-orange-500 text-white' :
-                                     isActive ? 'bg-orange-500 text-white ring-4 ring-orange-100' :
-                                     'bg-gray-200 text-gray-500'
-                                   }`}>
-                                     {isDone ? <Check className="w-4 h-4" /> : stepNum}
-                                   </div>
-                                   <span className={`hidden sm:inline text-xs font-medium ${
-                                     isActive ? 'text-gray-900' : 'text-gray-500'
-                                   }`}>
-                                     {label}
-                                   </span>
-                                 </button>
-                                 {i < STEP_LABELS.length - 1 && (
-                                   <div className={`flex-1 h-0.5 ${stepNum < currentStep ? 'bg-orange-500' : 'bg-gray-200'}`} />
-                                 )}
-                               </React.Fragment>
-                             );
-                           })}
-                         </div>
-                         <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                           <div
-                             className="h-full bg-orange-500 rounded-full transition-all duration-500"
-                             style={{ width: `${progressPercent}%` }}
-                           />
-                         </div>
-                       </div>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all flex-shrink-0 ${
+                                      isDone ? 'bg-[#E8541A] text-white' :
+                                      isActive ? 'bg-[#1A2B4A] text-white ring-4 ring-[#1A2B4A]/12' :
+                                      'bg-[#E2E8F0] text-[#5A6B82]'
+                                    }`}>
+                                      {isDone ? <Check className="w-4 h-4" /> : stepNum}
+                                    </div>
+                                    <span className={`hidden sm:inline text-xs ${
+                                      isActive ? 'text-[#1A2B4A] font-medium' : 'text-[#5A6B82]'
+                                    }`}>
+                                      {label}
+                                    </span>
+                                  </button>
+                                  {i < STEP_LABELS.length - 1 && (
+                                    <div className={`flex-1 h-px ${stepNum < currentStep ? 'bg-[#E8541A]' : 'bg-[#E2E8F0]'}`} />
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-3 h-[3px] bg-[#E2E8F0] rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${progressPercent}%`, background: 'linear-gradient(90deg,#1A2B4A,#E8541A)' }}
+                            />
+                          </div>
+                        </div>
 
-                       <div className="bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-lg">
+                       <div className="pro-card pro-card-pad">
                          <form onSubmit={handleSubmit} className="space-y-6">
                            {/* STEP 1: Contact */}
                            {currentStep === 1 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Let's start with you</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">1</span> Let's start with you</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Just a few quick details so we know who to get back to.</p>
                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -813,7 +868,7 @@ Additional Information: ${formData.additionalInfo}
                                   </div>
                                 </div>
                                <div className="flex justify-end pt-3 border-t border-gray-100">
-                                 <Button type="button" onClick={() => goToStep(2)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                 <Button type="button" onClick={() => goToStep(2)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
                                    Continue <ArrowRight className="w-4 h-4" />
                                  </Button>
                                </div>
@@ -824,7 +879,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 2 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Vehicle details</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">2</span> Vehicle details</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">We'll look up your vehicle automatically using the registration.</p>
                                </div>
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -891,7 +946,7 @@ Additional Information: ${formData.additionalInfo}
                                  <Button type="button" variant="outline" onClick={() => goToStep(1, true)} className="h-11 inline-flex items-center gap-2">
                                    <ArrowLeft className="w-4 h-4" /> Back
                                  </Button>
-                                 <Button type="button" onClick={() => goToStep(3)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                 <Button type="button" onClick={() => goToStep(3)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
                                    Continue <ArrowRight className="w-4 h-4" />
                                  </Button>
                                </div>
@@ -902,7 +957,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 3 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Describe the fault</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">3</span> Describe the fault</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Help our team understand what's happening with your vehicle.</p>
                                </div>
 
@@ -986,7 +1041,7 @@ Additional Information: ${formData.additionalInfo}
                                  <Button type="button" variant="outline" onClick={() => goToStep(2, true)} className="h-11 inline-flex items-center gap-2">
                                    <ArrowLeft className="w-4 h-4" /> Back
                                  </Button>
-                                 <Button type="button" onClick={() => goToStep(4)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                 <Button type="button" onClick={() => goToStep(4)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
                                    Review claim <ArrowRight className="w-4 h-4" />
                                  </Button>
                                </div>
@@ -997,7 +1052,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 4 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Review &amp; submit</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">4</span> Review &amp; submit</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Please double-check your details before submitting.</p>
                                </div>
 
