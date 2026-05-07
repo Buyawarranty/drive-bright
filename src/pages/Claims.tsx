@@ -257,6 +257,57 @@ const Claims = () => {
     }
   };
 
+  // ── Wizard helpers ──
+  const startForm = () => {
+    if (!ackChecked) return;
+    setFormStarted(true);
+    setCurrentStep(1);
+    setTimeout(() => {
+      document.getElementById('claim-form')?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: {[key: string]: string} = {};
+    if (step === 1) {
+      if (!formData.name.trim()) newErrors.name = 'Could you let us know your name?';
+      if (!formData.email.trim()) newErrors.email = 'We just need an email so we can get back to you.';
+      else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right — mind double-checking it?";
+      if (!formData.phone.trim()) newErrors.phone = 'A contact number helps us reach you faster.';
+      else if (!validatePhone(formData.phone)) newErrors.phone = "Hmm, that number doesn't look like a UK number. Try 07123 456789.";
+    }
+    if (step === 2) {
+      if (!formData.vehicleReg.trim()) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
+      else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
+        newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
+      }
+    }
+    if (step === 3) {
+      if (!formData.faultDescription.trim()) newErrors.faultDescription = 'Please describe the fault or problem.';
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast({ title: 'Just a few details missing', description: 'Please complete the highlighted fields.', variant: 'destructive' });
+      setTimeout(() => {
+        const el = document.getElementById(Object.keys(newErrors)[0]);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return false;
+    }
+    return true;
+  };
+
+  const goToStep = (step: 1 | 2 | 3 | 4, skipValidation = false) => {
+    if (!skipValidation && step > currentStep) {
+      for (let s = currentStep; s < step; s++) {
+        if (!validateStep(s)) return;
+      }
+    }
+    setCurrentStep(step);
+    setTimeout(() => {
+      document.getElementById('claim-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
 
   // DVLA vehicle lookup function
   const lookupVehicle = async (regPlate: string) => {
