@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones } from 'lucide-react';
+import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,13 @@ const Claims = () => {
   const [isLookingUpVehicle, setIsLookingUpVehicle] = useState(false);
   const [vehicleDetails, setVehicleDetails] = useState<{make?: string; model?: string; year?: string} | null>(null);
   const [isMileageOpen, setIsMileageOpen] = useState(false);
+
+  // Wizard state
+  const [ackChecked, setAckChecked] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  const STEP_LABELS = ['Contact', 'Vehicle', 'Fault', 'Review'] as const;
+  const progressPercent = (currentStep / 4) * 100;
 
   // Validation functions
   const validateEmail = (email: string): boolean => {
@@ -250,6 +257,57 @@ const Claims = () => {
     }
   };
 
+  // ── Wizard helpers ──
+  const startForm = () => {
+    if (!ackChecked) return;
+    setFormStarted(true);
+    setCurrentStep(1);
+    setTimeout(() => {
+      document.getElementById('claim-form')?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: {[key: string]: string} = {};
+    if (step === 1) {
+      if (!formData.name.trim()) newErrors.name = 'Could you let us know your name?';
+      if (!formData.email.trim()) newErrors.email = 'We just need an email so we can get back to you.';
+      else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right — mind double-checking it?";
+      if (!formData.phone.trim()) newErrors.phone = 'A contact number helps us reach you faster.';
+      else if (!validatePhone(formData.phone)) newErrors.phone = "Hmm, that number doesn't look like a UK number. Try 07123 456789.";
+    }
+    if (step === 2) {
+      if (!formData.vehicleReg.trim()) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
+      else if (!vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
+        newErrors.vehicleReg = 'Please enter a valid UK registration we can verify.';
+      }
+    }
+    if (step === 3) {
+      if (!formData.faultDescription.trim()) newErrors.faultDescription = 'Please describe the fault or problem.';
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast({ title: 'Just a few details missing', description: 'Please complete the highlighted fields.', variant: 'destructive' });
+      setTimeout(() => {
+        const el = document.getElementById(Object.keys(newErrors)[0]);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return false;
+    }
+    return true;
+  };
+
+  const goToStep = (step: 1 | 2 | 3 | 4, skipValidation = false) => {
+    if (!skipValidation && step > currentStep) {
+      for (let s = currentStep; s < step; s++) {
+        if (!validateStep(s)) return;
+      }
+    }
+    setCurrentStep(step);
+    setTimeout(() => {
+      document.getElementById('claim-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
 
   // DVLA vehicle lookup function
   const lookupVehicle = async (regPlate: string) => {
@@ -556,388 +614,419 @@ Additional Information: ${formData.additionalInfo}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Form Section - Takes 2 columns */}
                  <div className="lg:col-span-2">
-                   {/* Important Notice — must read before submitting */}
-                   <div
-                     role="note"
-                     aria-label="Important notice before submitting your claim"
-                     className="mb-6 rounded-2xl border border-orange-200 bg-orange-50/60 p-4 sm:p-5 shadow-sm"
-                   >
-                     {/* Header */}
-                     <div className="flex items-center gap-3 mb-4">
-                       <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-orange-500 text-white shadow-sm">
-                         <Info className="w-5 h-5" strokeWidth={2.5} />
-                       </div>
-                       <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                         Before you submit your claim
-                       </h3>
-                     </div>
+                   {!formStarted ? (
+                     <>
+                       {/* ── Acknowledgement gate ── */}
+                       <div
+                         role="note"
+                         aria-label="Important notice before submitting your claim"
+                         className="mb-6 rounded-2xl border-2 border-orange-300 bg-white p-5 sm:p-6 shadow-sm"
+                       >
+                         <div className="flex items-center gap-3 mb-4">
+                           <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-white shadow-sm">
+                             <Info className="w-5 h-5" strokeWidth={2.5} />
+                           </div>
+                           <h3 className="text-lg sm:text-xl font-bold text-gray-900 text-left">
+                             Before you submit your claim
+                           </h3>
+                         </div>
+                         <p className="text-sm text-gray-600 mb-4 text-left">
+                           Please take a moment to read this important information.
+                         </p>
 
-                     {/* Items */}
-                     <ul className="space-y-3 divide-y divide-orange-100/80">
-                       <li className="flex items-start gap-3 pt-0">
-                         <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-orange-200 text-orange-500">
-                           <ShieldCheck className="w-4.5 h-4.5" strokeWidth={2} />
-                         </div>
-                         <p className="flex-1 text-sm sm:text-[15px] text-gray-800 leading-relaxed pt-1.5">
-                           Once a claim has been submitted, your warranty will{' '}
-                           <strong className="font-semibold text-gray-900">no longer be eligible</strong> for a refund or cancellation refund.
-                         </p>
-                       </li>
-                       <li className="flex items-start gap-3 pt-3">
-                         <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-orange-200 text-orange-500">
-                           <CalendarDays className="w-4.5 h-4.5" strokeWidth={2} />
-                         </div>
-                         <p className="flex-1 text-sm sm:text-[15px] text-gray-800 leading-relaxed pt-1.5">
-                           Your warranty cover will <strong className="font-semibold text-gray-900">remain active</strong> for the rest of your policy period after your claim has been processed.
-                         </p>
-                       </li>
-                       <li className="flex items-start gap-3 pt-3">
-                         <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-orange-200 text-orange-500">
-                           <Headphones className="w-4.5 h-4.5" strokeWidth={2} />
-                         </div>
-                         <div className="flex-1 pt-0.5">
-                           <p className="text-sm sm:text-[15px] text-gray-800 leading-relaxed mb-1.5">
-                             Questions before submitting? Our friendly Claims Team is happy to help.
+                         <div className="space-y-3 mb-5 text-left">
+                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
+                             Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. This is because our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
                            </p>
-                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                             <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
-                               <Phone className="w-3.5 h-3.5" /> 0330 229 5045
-                             </a>
-                             <span className="text-orange-300" aria-hidden>|</span>
-                             <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
-                               <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
-                             </a>
+                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
+                             This is standard practice across the warranty industry and is outlined in your policy terms.
+                           </p>
+                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
+                             Your warranty cover will continue as normal for the remainder of your policy period — submitting a claim will not reduce or affect your ongoing protection.
+                           </p>
+
+                           <div className="rounded-lg bg-orange-50 border border-orange-100 p-4">
+                             <p className="text-sm text-gray-700 leading-relaxed mb-2">
+                               If you're unsure whether you'd like to proceed, our friendly Claims Team is here to help before you submit:
+                             </p>
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                               <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                                 <Phone className="w-3.5 h-3.5" /> 0330 229 5045
+                               </a>
+                               <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                                 <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
+                               </a>
+                             </div>
                            </div>
                          </div>
-                       </li>
-                     </ul>
-                   </div>
 
-                   <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
-                     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-                      {/* Section 1: Contact Information */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
-                            1
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">Your Contact Details</h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="name" className="text-gray-900 font-bold text-base block text-left">
-                              Name *
-                            </Label>
-                            <Input
-                              id="name"
-                              name="name"
-                              type="text"
-                              placeholder="Your Name"
-                              value={formData.name}
-                              onChange={handleInputChange}
-                              required
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
-                            />
-                            {errors.name && <p className="mt-1 text-sm text-[#FF385C]">{errors.name}</p>}
-                          </div>
+                         {/* Gate checkbox */}
+                         <label
+                           htmlFor="ackCheck"
+                           className={`flex gap-3 items-start rounded-lg p-4 cursor-pointer transition-colors border-2 ${
+                             ackChecked ? 'border-orange-500 bg-orange-50' : 'border-orange-200 bg-orange-50/60 hover:border-orange-300'
+                           }`}
+                         >
+                           <input
+                             type="checkbox"
+                             id="ackCheck"
+                             checked={ackChecked}
+                             onChange={(e) => setAckChecked(e.target.checked)}
+                             className="w-5 h-5 mt-0.5 flex-shrink-0 accent-orange-500 cursor-pointer"
+                           />
+                           <span className="text-sm text-gray-800 leading-relaxed text-left">
+                             I have read and understood the above information. I understand that once I submit my claim, my warranty will no longer be eligible for a refund or cancellation, and I wish to proceed.
+                           </span>
+                         </label>
+                       </div>
 
-                          <div>
-                            <Label htmlFor="email" className="text-gray-900 font-bold text-base block text-left">
-                              Email *
-                            </Label>
-                            <Input
-                              id="email"
-                              name="email"
-                              type="email"
-                              placeholder="Your Email Address"
-                              value={formData.email}
-                              onChange={handleInputChange}
-                              required
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
-                            />
-                            {errors.email && <p className="mt-1 text-sm text-[#FF385C]">{errors.email}</p>}
-                          </div>
+                       {/* Start button */}
+                       <div className="text-center mb-6">
+                         <Button
+                           type="button"
+                           onClick={startForm}
+                           disabled={!ackChecked}
+                           className={`px-8 py-6 text-base font-semibold rounded-lg inline-flex items-center gap-2 transition-all ${
+                             ackChecked
+                               ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl'
+                               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                           }`}
+                         >
+                           {!ackChecked && <Lock className="w-4 h-4" />}
+                           Start my claim — takes about 3 minutes
+                           {ackChecked && <ArrowRight className="w-4 h-4" />}
+                         </Button>
+                         {!ackChecked && (
+                           <p className="text-xs text-gray-500 mt-2">Please tick the box above to continue</p>
+                         )}
+                       </div>
+                     </>
+                   ) : (
+                     <>
+                       {/* Compact reminder strip */}
+                       <div className="mb-5 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 flex items-center gap-3 flex-wrap">
+                         <Info className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                         <span className="text-xs sm:text-sm text-gray-700 flex-1 text-left">
+                           Reminder: once submitted, your warranty <strong className="text-gray-900">cannot be refunded or cancelled</strong>. Your cover stays active throughout your policy period.
+                         </span>
+                         <span className="text-xs text-gray-500 whitespace-nowrap">⏱ ~3 minutes</span>
+                       </div>
 
-                          <div>
-                            <Label htmlFor="phone" className="text-gray-900 font-bold text-base block text-left">
-                              Phone Number *
-                            </Label>
-                            <Input
-                              id="phone"
-                              name="phone"
-                              type="tel"
-                              placeholder="07123456789"
-                              value={formData.phone}
-                              onChange={handleInputChange}
-                              className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
-                            />
-                            {errors.phone && <p className="mt-1 text-sm text-[#FF385C]">{errors.phone}</p>}
-                          </div>
+                       {/* Step tracker */}
+                       <div className="mb-4">
+                         <div className="flex items-center gap-1 sm:gap-2">
+                           {STEP_LABELS.map((label, i) => {
+                             const stepNum = (i + 1) as 1 | 2 | 3 | 4;
+                             const isDone = stepNum < currentStep;
+                             const isActive = stepNum === currentStep;
+                             return (
+                               <React.Fragment key={label}>
+                                 <button
+                                   type="button"
+                                   onClick={() => stepNum < currentStep && goToStep(stepNum, true)}
+                                   className={`flex items-center gap-2 ${stepNum < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
+                                 >
+                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0 ${
+                                     isDone ? 'bg-orange-500 text-white' :
+                                     isActive ? 'bg-orange-500 text-white ring-4 ring-orange-100' :
+                                     'bg-gray-200 text-gray-500'
+                                   }`}>
+                                     {isDone ? <Check className="w-4 h-4" /> : stepNum}
+                                   </div>
+                                   <span className={`hidden sm:inline text-xs font-medium ${
+                                     isActive ? 'text-gray-900' : 'text-gray-500'
+                                   }`}>
+                                     {label}
+                                   </span>
+                                 </button>
+                                 {i < STEP_LABELS.length - 1 && (
+                                   <div className={`flex-1 h-0.5 ${stepNum < currentStep ? 'bg-orange-500' : 'bg-gray-200'}`} />
+                                 )}
+                               </React.Fragment>
+                             );
+                           })}
+                         </div>
+                         <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+                           <div
+                             className="h-full bg-orange-500 rounded-full transition-all duration-500"
+                             style={{ width: `${progressPercent}%` }}
+                           />
+                         </div>
+                       </div>
 
-                          <div>
-                            <Label htmlFor="vehicleReg" className="text-gray-900 font-bold text-base block text-left">
-                              Vehicle Registration *
-                            </Label>
-                            <div className="relative">
-                              <Input
-                                id="vehicleReg"
-                                name="vehicleReg"
-                                type="text"
-                                placeholder="AB12 CDE"
-                                value={formData.vehicleReg}
-                                onChange={(e) => {
-                                  handleInputChange(e);
-                                  // Clear vehicle details when reg changes
-                                  setVehicleDetails(null);
-                                }}
-                                onBlur={(e) => {
-                                  const value = e.target.value.trim();
-                                  if (value.length >= 2) {
-                                    lookupVehicle(value);
-                                  }
-                                }}
-                                required
-                                className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
-                              />
-                              {isLookingUpVehicle && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
-                                  <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
-                                </div>
-                              )}
-                            </div>
-                            {errors.vehicleReg && <p className="mt-1 text-sm text-[#FF385C]">{errors.vehicleReg}</p>}
-                            {vehicleDetails && (vehicleDetails.make || vehicleDetails.model) && (
-                              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
-                                <p className="text-sm text-green-700 font-medium">
-                                  ✓ {vehicleDetails.make} {vehicleDetails.model} {vehicleDetails.year ? `(${vehicleDetails.year})` : ''}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                       <div className="bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-lg">
+                         <form onSubmit={handleSubmit} className="space-y-6">
+                           {/* STEP 1: Contact */}
+                           {currentStep === 1 && (
+                             <div className="space-y-5 animate-fade-in">
+                               <div>
+                                 <h3 className="text-xl font-bold text-gray-900 text-left">Let's start with you</h3>
+                                 <p className="text-sm text-gray-600 mt-1 text-left">Just a few quick details so we know who to get back to.</p>
+                               </div>
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                 <div>
+                                   <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name *</Label>
+                                   <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange} required
+                                     className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-[#FF385C]' : ''}`} />
+                                   {errors.name && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.name}</p>}
+                                 </div>
+                                 <div>
+                                   <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address *</Label>
+                                   <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange} required
+                                     className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-[#FF385C]' : ''}`} />
+                                   {errors.email && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.email}</p>}
+                                 </div>
+                                 <div className="md:col-span-2">
+                                   <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number *</Label>
+                                   <Input id="phone" name="phone" type="tel" placeholder="07123 456 789" value={formData.phone} onChange={handleInputChange}
+                                     className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-[#FF385C]' : ''}`} />
+                                   {errors.phone && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.phone}</p>}
+                                 </div>
+                               </div>
+                               <div className="flex justify-end pt-3 border-t border-gray-100">
+                                 <Button type="button" onClick={() => goToStep(2)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                   Continue <ArrowRight className="w-4 h-4" />
+                                 </Button>
+                               </div>
+                             </div>
+                           )}
 
-                      {/* Section 2: Mileage */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
-                            2
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">Current Mileage</h3>
-                        </div>
-                        <div>
-                          <Label htmlFor="currentMileage" className="text-gray-900 font-bold text-base mb-2 block text-left">
-                            Enter current approximate mileage
-                          </Label>
-                          <div className="flex gap-2 mt-1.5">
-                            <Input
-                              id="currentMileage"
-                              name="currentMileage"
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="Enter mileage"
-                              value={formData.currentMileage ? formData.currentMileage.toLocaleString('en-GB') : ''}
-                              onChange={(e) => {
-                                const digits = e.target.value.replace(/[^0-9]/g, '');
-                                const value = digits ? parseInt(digits, 10) : 0;
-                                setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
-                              }}
-                              className="h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 flex-1"
-                            />
-                            <Popover open={isMileageOpen} onOpenChange={setIsMileageOpen}>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="h-11 px-3 border-gray-300"
-                                  aria-label="Pick mileage"
-                                >
-                                  <ChevronDown className="h-4 w-4" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-48 p-0 bg-white z-50"
-                                align="end"
-                                sideOffset={4}
-                              >
-                                <div className="max-h-72 overflow-y-auto overscroll-contain py-1">
-                                  {Array.from({ length: 200 }, (_, i) => (i + 1) * 1000).map((m) => (
-                                    <button
-                                      key={m}
-                                      type="button"
-                                      onClick={() => {
-                                        setFormData((prev) => ({ ...prev, currentMileage: m }));
-                                        setIsMileageOpen(false);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 hover:text-orange-700 transition-colors"
-                                    >
-                                      {m.toLocaleString('en-GB')}
-                                    </button>
-                                  ))}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                          <p className="mt-1.5 text-xs text-gray-500 text-left">
-                            Type your own mileage or pick a value from the list (1,000-mile increments).
-                          </p>
-                        </div>
-                      </div>
+                           {/* STEP 2: Vehicle */}
+                           {currentStep === 2 && (
+                             <div className="space-y-5 animate-fade-in">
+                               <div>
+                                 <h3 className="text-xl font-bold text-gray-900 text-left">Vehicle details</h3>
+                                 <p className="text-sm text-gray-600 mt-1 text-left">We'll look up your vehicle automatically using the registration.</p>
+                               </div>
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                 <div className="md:col-span-2">
+                                   <Label htmlFor="vehicleReg" className="text-gray-900 font-bold text-sm block text-left">Vehicle registration *</Label>
+                                   <div className="relative">
+                                     <Input id="vehicleReg" name="vehicleReg" type="text" placeholder="AB12 CDE"
+                                       value={formData.vehicleReg}
+                                       onChange={(e) => { handleInputChange(e); setVehicleDetails(null); }}
+                                       onBlur={(e) => { const v = e.target.value.trim(); if (v.length >= 2) lookupVehicle(v); }}
+                                       required
+                                       style={{ textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}
+                                       className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-[#FF385C]' : ''}`} />
+                                     {isLookingUpVehicle && (
+                                       <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
+                                         <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                                       </div>
+                                     )}
+                                   </div>
+                                   {errors.vehicleReg && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.vehicleReg}</p>}
+                                   {vehicleDetails && (vehicleDetails.make || vehicleDetails.model) && (
+                                     <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2">
+                                       <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                                       <p className="text-sm text-green-700 font-medium">
+                                         {vehicleDetails.make} {vehicleDetails.model} {vehicleDetails.year ? `(${vehicleDetails.year})` : ''} · ready to claim
+                                       </p>
+                                     </div>
+                                   )}
+                                 </div>
 
-                      {/* Section 3: What Happened */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
-                            3
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">What Happened</h3>
-                        </div>
-                        <div className="space-y-6">
-                          <div>
-                            <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-base block text-left">
-                              Describe the fault / problem *
-                            </Label>
-                            <Textarea
-                              id="faultDescription"
-                              name="faultDescription"
-                              placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
-                              value={formData.faultDescription}
-                              onChange={handleInputChange}
-                              required
-                              rows={4}
-                              className={`mt-2 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C] focus:border-[#FF385C] focus:ring-[#FF385C]' : ''}`}
-                            />
-                            {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C]">{errors.faultDescription}</p>}
-                          </div>
+                                 <div className="md:col-span-2">
+                                   <Label htmlFor="currentMileage" className="text-gray-900 font-bold text-sm block text-left">Current mileage</Label>
+                                   <div className="flex gap-2 mt-1.5">
+                                     <Input id="currentMileage" name="currentMileage" type="text" inputMode="numeric" placeholder="e.g. 45,000"
+                                       value={formData.currentMileage ? formData.currentMileage.toLocaleString('en-GB') : ''}
+                                       onChange={(e) => {
+                                         const digits = e.target.value.replace(/[^0-9]/g, '');
+                                         const value = digits ? parseInt(digits, 10) : 0;
+                                         setFormData({ ...formData, currentMileage: Math.min(Math.max(value, 0), 200000) });
+                                       }}
+                                       className="h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 flex-1" />
+                                     <Popover open={isMileageOpen} onOpenChange={setIsMileageOpen}>
+                                       <PopoverTrigger asChild>
+                                         <Button type="button" variant="outline" className="h-11 px-3 border-gray-300" aria-label="Pick mileage">
+                                           <ChevronDown className="h-4 w-4" />
+                                         </Button>
+                                       </PopoverTrigger>
+                                       <PopoverContent className="w-48 p-0 bg-white z-50" align="end" sideOffset={4}>
+                                         <div className="max-h-72 overflow-y-auto overscroll-contain py-1">
+                                           {Array.from({ length: 200 }, (_, i) => (i + 1) * 1000).map((m) => (
+                                             <button key={m} type="button"
+                                               onClick={() => { setFormData((p) => ({ ...p, currentMileage: m })); setIsMileageOpen(false); }}
+                                               className="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 hover:text-orange-700">
+                                               {m.toLocaleString('en-GB')}
+                                             </button>
+                                           ))}
+                                         </div>
+                                       </PopoverContent>
+                                     </Popover>
+                                   </div>
+                                 </div>
+                               </div>
+                               <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                 <Button type="button" variant="outline" onClick={() => goToStep(1, true)} className="h-11 inline-flex items-center gap-2">
+                                   <ArrowLeft className="w-4 h-4" /> Back
+                                 </Button>
+                                 <Button type="button" onClick={() => goToStep(3)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                   Continue <ArrowRight className="w-4 h-4" />
+                                 </Button>
+                               </div>
+                             </div>
+                           )}
 
-                          <div>
-                            <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-base block text-left">
-                              When did the fault occur?
-                            </Label>
-                            <Input
-                              id="dateOccurred"
-                              name="dateOccurred"
-                              type="date"
-                              value={formData.dateOccurred}
-                              onChange={handleInputChange}
-                              max={new Date().toISOString().split('T')[0]}
-                              className="mt-2 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
-                          </div>
+                           {/* STEP 3: Fault */}
+                           {currentStep === 3 && (
+                             <div className="space-y-5 animate-fade-in">
+                               <div>
+                                 <h3 className="text-xl font-bold text-gray-900 text-left">Describe the fault</h3>
+                                 <p className="text-sm text-gray-600 mt-1 text-left">Help our team understand what's happening with your vehicle.</p>
+                               </div>
 
-                          <div>
-                            <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-base block text-left">
-                              When does the issue happen?
-                            </Label>
-                            <Input
-                              id="issueTiming"
-                              name="issueTiming"
-                              type="text"
-                              placeholder="e.g. on start-up, when braking, all the time"
-                              value={formData.issueTiming}
-                              onChange={handleInputChange}
-                              className="mt-2 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
-                          </div>
+                               <div>
+                                 <Label htmlFor="faultDescription" className="text-gray-900 font-bold text-sm block text-left">Describe the fault / problem *</Label>
+                                 <Textarea id="faultDescription" name="faultDescription"
+                                   placeholder="Please explain what's wrong with the vehicle (e.g. strange noise from engine, gearbox slipping, warning lights on dashboard...)"
+                                   value={formData.faultDescription} onChange={handleInputChange} required rows={4}
+                                   className={`mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.faultDescription ? 'border-[#FF385C]' : ''}`} />
+                                 {errors.faultDescription && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.faultDescription}</p>}
+                               </div>
 
-                          <div>
-                            <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-base block text-left">
-                              Any other relevant details
-                            </Label>
-                            <Textarea
-                              id="faultDetails"
-                              name="faultDetails"
-                              placeholder="Garage diagnosis, recent repairs, anything else we should know..."
-                              value={formData.faultDetails}
-                              onChange={handleInputChange}
-                              rows={3}
-                              className="mt-2 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
-                          </div>
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                 <div>
+                                   <Label htmlFor="dateOccurred" className="text-gray-900 font-bold text-sm block text-left">When did the fault occur?</Label>
+                                   <Input id="dateOccurred" name="dateOccurred" type="date"
+                                     value={formData.dateOccurred} onChange={handleInputChange}
+                                     max={new Date().toISOString().split('T')[0]}
+                                     className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500" />
+                                 </div>
+                                 <div>
+                                   <Label htmlFor="issueTiming" className="text-gray-900 font-bold text-sm block text-left">When does the issue happen?</Label>
+                                   <Input id="issueTiming" name="issueTiming" type="text"
+                                     placeholder="e.g. on start-up, when braking"
+                                     value={formData.issueTiming} onChange={handleInputChange}
+                                     className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500" />
+                                 </div>
+                               </div>
 
-                        </div>
-                      </div>
+                               <div>
+                                 <Label htmlFor="faultDetails" className="text-gray-900 font-bold text-sm block text-left">Any other relevant details</Label>
+                                 <Textarea id="faultDetails" name="faultDetails"
+                                   placeholder="Garage diagnosis, recent repairs, anything else we should know..."
+                                   value={formData.faultDetails} onChange={handleInputChange} rows={3}
+                                   className="mt-1.5 border-gray-300 focus:border-orange-500 focus:ring-orange-500" />
+                               </div>
 
-                      {/* Section 4: Supporting Documents */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-orange-100">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm">
-                            4
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">Supporting Documents (Optional)</h3>
-                        </div>
+                               {/* Supporting documents */}
+                               <div>
+                                 <Label className="text-gray-900 font-bold text-sm block text-left mb-1.5">Supporting documents (optional)</Label>
+                                 <label htmlFor="file-upload"
+                                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                                   className={`relative block cursor-pointer rounded-lg border-2 border-dashed p-5 text-center transition-colors ${
+                                     isDragging ? 'border-orange-500 bg-orange-50' : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
+                                   }`}>
+                                   <Upload className="mx-auto h-8 w-8 text-orange-500 mb-2" />
+                                   <p className="text-sm font-medium text-gray-700">
+                                     {uploadedFiles.length > 0 ? 'Add more files' : 'Click to upload or drag and drop'}
+                                   </p>
+                                   <p className="text-xs text-gray-500 mt-1">
+                                     PDF, DOC, DOCX, JPG, PNG or HEIC — up to {MAX_FILES} files (max 20MB each)
+                                   </p>
+                                 </label>
+                                 <input id="file-upload" type="file" multiple className="sr-only"
+                                   accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                   onChange={handleFileUpload} />
+                                 {uploadedFiles.length > 0 && (
+                                   <div className="mt-3 space-y-2">
+                                     {uploadedFiles.map((f, idx) => (
+                                       <div key={`${f.name}-${idx}`} className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-2.5">
+                                         <div className="flex items-center gap-3 min-w-0">
+                                           <div className="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                                             <Upload className="h-3.5 w-3.5 text-green-600" />
+                                           </div>
+                                           <div className="min-w-0 text-left">
+                                             <p className="text-sm font-medium text-gray-900 truncate">{f.name}</p>
+                                             <p className="text-xs text-gray-500">{(f.size / 1024 / 1024).toFixed(2)} MB</p>
+                                           </div>
+                                         </div>
+                                         <button type="button" onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                                           className="ml-3 flex-shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                                           aria-label={`Remove ${f.name}`}>
+                                           <X className="h-4 w-4" />
+                                         </button>
+                                       </div>
+                                     ))}
+                                     <p className="text-xs text-gray-500 text-left">{uploadedFiles.length} of {MAX_FILES} attached</p>
+                                   </div>
+                                 )}
+                               </div>
 
-                        <label
-                          htmlFor="file-upload"
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDrop}
-                          className={`relative block cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
-                            isDragging
-                              ? 'border-orange-500 bg-orange-50'
-                              : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
-                          }`}
-                        >
-                          <Upload className="mx-auto h-10 w-10 text-orange-500 mb-2" />
-                          <p className="text-sm font-medium text-gray-700">
-                            {uploadedFiles.length > 0
-                              ? 'Add more files'
-                              : 'Click to upload or drag and drop'}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            PDF, DOC, DOCX, JPG, PNG or HEIC — up to {MAX_FILES} files (max 20MB each, large photos auto-shrunk)
-                          </p>
-                        </label>
-                        <input
-                          id="file-upload"
-                          type="file"
-                          multiple
-                          className="sr-only"
-                          accept="image/*,.pdf,.doc,.docx,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                          onChange={handleFileUpload}
-                        />
+                               <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                 <Button type="button" variant="outline" onClick={() => goToStep(2, true)} className="h-11 inline-flex items-center gap-2">
+                                   <ArrowLeft className="w-4 h-4" /> Back
+                                 </Button>
+                                 <Button type="button" onClick={() => goToStep(4)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                   Review claim <ArrowRight className="w-4 h-4" />
+                                 </Button>
+                               </div>
+                             </div>
+                           )}
 
-                        {uploadedFiles.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            {uploadedFiles.map((f, idx) => (
-                              <div key={`${f.name}-${idx}`} className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="flex-shrink-0 h-9 w-9 rounded-full bg-green-100 flex items-center justify-center">
-                                    <Upload className="h-4 w-4 text-green-600" />
-                                  </div>
-                                  <div className="min-w-0 text-left">
-                                    <p className="text-sm font-medium text-gray-900 truncate">{f.name}</p>
-                                    <p className="text-xs text-gray-500">{(f.size / 1024 / 1024).toFixed(2)} MB</p>
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
-                                  className="ml-3 flex-shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
-                                  aria-label={`Remove ${f.name}`}
-                                >
-                                  <X className="h-5 w-5" />
-                                </button>
-                              </div>
-                            ))}
-                            <p className="text-xs text-gray-500 text-left">
-                              {uploadedFiles.length} of {MAX_FILES} attached
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                           {/* STEP 4: Review & submit */}
+                           {currentStep === 4 && (
+                             <div className="space-y-5 animate-fade-in">
+                               <div>
+                                 <h3 className="text-xl font-bold text-gray-900 text-left">Review &amp; submit</h3>
+                                 <p className="text-sm text-gray-600 mt-1 text-left">Please double-check your details before submitting.</p>
+                               </div>
 
-                      <Button 
-                        type="submit" 
-                        disabled={isSubmitting}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 w-full text-base font-semibold rounded-lg disabled:opacity-50 transition-colors"
-                      >
-                        {isSubmitting ? 'Submitting...' : 'Submit Claim'}
-                      </Button>
-                    </form>
-                  </div>
-                </div>
-                
+                               <div className="rounded-xl border border-gray-200 divide-y divide-gray-100">
+                                 {[
+                                   { key: 'Name', value: formData.name || '—', step: 1 as const },
+                                   { key: 'Email', value: formData.email || '—', step: 1 as const },
+                                   { key: 'Phone', value: formData.phone || '—', step: 1 as const },
+                                   { key: 'Vehicle', value: `${formData.vehicleReg.toUpperCase()}${vehicleDetails?.make ? ` · ${vehicleDetails.make} ${vehicleDetails.model || ''}` : ''}`.trim() || '—', step: 2 as const },
+                                   { key: 'Mileage', value: formData.currentMileage ? `${formData.currentMileage.toLocaleString('en-GB')} miles` : '—', step: 2 as const },
+                                   { key: 'Fault description', value: formData.faultDescription || '—', step: 3 as const },
+                                   { key: 'When it occurred', value: formData.dateOccurred || '—', step: 3 as const },
+                                   { key: 'When it happens', value: formData.issueTiming || '—', step: 3 as const },
+                                   { key: 'Other details', value: formData.faultDetails || '—', step: 3 as const },
+                                   { key: 'Attachments', value: uploadedFiles.length ? `${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''} attached` : 'None', step: 3 as const },
+                                 ].map((row) => (
+                                   <div key={row.key} className="flex items-start justify-between gap-3 px-4 py-3">
+                                     <span className="text-sm text-gray-500 flex-shrink-0">{row.key}</span>
+                                     <div className="flex items-start gap-2 text-right max-w-[60%]">
+                                       <span className="text-sm font-medium text-gray-900 break-words">{row.value}</span>
+                                       <button type="button" onClick={() => goToStep(row.step, true)} className="text-xs text-orange-600 hover:text-orange-700 underline inline-flex items-center gap-0.5 flex-shrink-0">
+                                         <Pencil className="w-3 h-3" /> Edit
+                                       </button>
+                                     </div>
+                                   </div>
+                                 ))}
+                               </div>
+
+                               <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 flex items-start gap-3">
+                                 <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                                 <p className="text-sm text-gray-700 text-left">
+                                   By submitting, you confirm the details above are correct and that you understand your warranty cannot be refunded or cancelled once a claim has started.
+                                 </p>
+                               </div>
+
+                               <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                 <Button type="button" variant="outline" onClick={() => goToStep(3, true)} className="h-11 inline-flex items-center gap-2">
+                                   <ArrowLeft className="w-4 h-4" /> Back
+                                 </Button>
+                                 <Button type="submit" disabled={isSubmitting}
+                                   className="bg-green-600 hover:bg-green-700 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold shadow-md">
+                                   {isSubmitting ? (
+                                     <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
+                                   ) : (
+                                     <><Check className="w-4 h-4" /> Submit claim</>
+                                   )}
+                                 </Button>
+                               </div>
+                             </div>
+                           )}
+                         </form>
+                       </div>
+                     </>
+                   )}
+                 </div>
+
                 {/* Right Side - Illustration and Info - Takes 1 column */}
                 <div className="space-y-6">
                   <div className="flex justify-center lg:justify-start">
