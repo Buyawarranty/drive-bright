@@ -42,6 +42,7 @@ const Claims = () => {
   });
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -486,11 +487,7 @@ Additional Information: ${formData.additionalInfo}
         throw new Error(response.error.message || 'Failed to submit claim');
       }
 
-      toast({
-        title: "✓ Claim submitted",
-        description: "Thank you. Our claims team will process your claim during working hours: Monday to Friday, 9am–5pm. You'll hear from us on the next working day.",
-        className: "bg-green-600 text-white border-green-700 [&>div]:text-white",
-      });
+      setShowSuccessModal(true);
 
       // Reset form
       setFormData({
@@ -1237,6 +1234,36 @@ Additional Information: ${formData.additionalInfo}
         </section>
 
       </div>
+
+      {/* Success modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 text-center animate-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              aria-label="Close"
+              className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+              <Check className="w-9 h-9 text-green-600" strokeWidth={3} />
+            </div>
+            <h3 className="text-[20px] font-semibold text-[#1A2B4A] mb-2">Claim submitted</h3>
+            <p className="text-[14px] text-[#5A6B82] leading-relaxed mb-6">
+              Thank you. Our claims team will process your claim during working hours: Monday to Friday, 9am–5pm. You'll hear from us on the next working day.
+            </p>
+            <Button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full h-11 bg-[#1A2B4A] hover:bg-[#15233D] text-white rounded-lg font-semibold"
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
