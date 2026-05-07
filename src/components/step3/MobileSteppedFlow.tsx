@@ -105,6 +105,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     if (step === 0) return selectedClaimLimit !== null;
     if (step === 1) return selectedLabourRate !== null;
     if (step === 2) return paymentType !== null;
+    if (step === 3) return voluntaryExcess !== null;
     return true;
   })();
 
