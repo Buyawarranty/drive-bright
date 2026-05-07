@@ -44,6 +44,7 @@ const AddClaimEvidence = () => {
       valid.push(f);
     }
     setFiles((prev) => [...prev, ...valid].slice(0, MAX_FILES));
+    if (valid.length > 0) setErrors((p) => ({ ...p, files: '' }));
   };
 
   const removeFile = (i: number) => setFiles((prev) => prev.filter((_, idx) => idx !== i));
