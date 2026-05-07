@@ -254,8 +254,10 @@ const App = () => {
                     <Route path="/cancellation-policy/" element={<CancellationPolicy />} />
                     <Route path="/cancellation-policy" element={<CancellationPolicy />} />
                     <Route path="/what-is-covered/" element={<Protected />} />
-                    <Route path="/claims/" element={<Claims />} />
-                    <Route path="/make-a-claim/" element={<Claims />} />
+                   <Route path="/claims/" element={<Claims />} />
+                   <Route path="/make-a-claim/" element={<Claims />} />
+                   <Route path="/add-evidence/" element={<AddClaimEvidence />} />
+                   <Route path="/claim-evidence/" element={<AddClaimEvidence />} />
                     <Route path="/cancel-warranty" element={<CancelWarranty />} />
                     <Route path="/warranty-transfer/" element={<WarrantyTransfer />} />
                     <Route path="/contact-us/" element={<ContactUs />} />
