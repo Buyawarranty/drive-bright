@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil } from 'lucide-react';
+import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil, FileText, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -713,6 +713,40 @@ Additional Information: ${formData.additionalInfo}
                                  <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
                                </a>
                              </div>
+                           </div>
+                         </div>
+
+                         {/* Important documents */}
+                         <div className="mb-4 text-left">
+                           <p className="text-[14px] font-semibold text-[#1A2B4A] mb-1">Important documents</p>
+                           <p className="text-[13px] text-[#5A6B82] mb-3">Please review the relevant documents before submitting your claim.</p>
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                             <a
+                               href={platinumDocUrl || '#'}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               onClick={(e) => { if (!platinumDocUrl) { e.preventDefault(); toast({ title: 'Document loading', description: 'Please try again in a moment.' }); } }}
+                               className="flex items-center justify-between gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-3.5 py-3 hover:border-[#E8541A] hover:bg-[#FEF0E8]/40 transition-colors group"
+                             >
+                               <span className="flex items-center gap-2.5 min-w-0">
+                                 <FileText className="w-4 h-4 text-[#1A2B4A] flex-shrink-0" />
+                                 <span className="text-[13px] font-medium text-[#1A2B4A] truncate">Platinum Plan Terms & Conditions</span>
+                               </span>
+                               <ExternalLink className="w-3.5 h-3.5 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
+                             </a>
+                             <a
+                               href={termsDocUrl || '#'}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               onClick={(e) => { if (!termsDocUrl) { e.preventDefault(); toast({ title: 'Document loading', description: 'Please try again in a moment.' }); } }}
+                               className="flex items-center justify-between gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-3.5 py-3 hover:border-[#E8541A] hover:bg-[#FEF0E8]/40 transition-colors group"
+                             >
+                               <span className="flex items-center gap-2.5 min-w-0">
+                                 <FileText className="w-4 h-4 text-[#1A2B4A] flex-shrink-0" />
+                                 <span className="text-[13px] font-medium text-[#1A2B4A] truncate">Claims Process & Refund Information</span>
+                               </span>
+                               <ExternalLink className="w-3.5 h-3.5 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
+                             </a>
                            </div>
                          </div>
 
