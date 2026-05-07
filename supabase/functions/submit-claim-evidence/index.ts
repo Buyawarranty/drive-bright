@@ -18,9 +18,18 @@ interface EvidenceFile {
 
 interface EvidenceRequest {
   reference: string;
+  evidenceType?: string;
   notes?: string;
   files: EvidenceFile[];
 }
+
+const EVIDENCE_TYPE_LABELS: Record<string, string> = {
+  photos: "Photos",
+  video: "Video",
+  invoice: "Invoice / quote",
+  diagnostic: "Diagnostic report",
+  other: "Other",
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -37,7 +46,8 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { reference, notes, files }: EvidenceRequest = await req.json();
+    const { reference, evidenceType, notes, files }: EvidenceRequest = await req.json();
+    const evidenceLabel = EVIDENCE_TYPE_LABELS[evidenceType || ""] || "Other";
 
     if (!reference || !reference.trim()) {
       return new Response(JSON.stringify({ error: "Claim reference, policy number or registration is required" }), {
@@ -140,12 +150,12 @@ const handler = async (req: Request): Promise<Response> => {
       ...existing,
       ...uploadedAttachments.map((a) => ({
         url: a.url, publicUrl: a.publicUrl, name: a.name, size: a.size, type: a.type,
-        addedAs: "evidence", addedAt: new Date().toISOString(),
+        addedAs: "evidence", evidenceType: evidenceType || "other", evidenceLabel, addedAt: new Date().toISOString(),
       })),
     ];
 
     const timestamp = new Date().toLocaleString("en-GB");
-    const evidenceNote = `\n\n[NEW EVIDENCE — ${timestamp}]\n${notes?.trim() ? notes.trim() + "\n" : ""}${uploadedAttachments.length > 0 ? `Attached: ${uploadedAttachments.map(a => a.name).join(", ")}` : ""}`;
+    const evidenceNote = `\n\n[NEW EVIDENCE — ${timestamp}]\nType: ${evidenceLabel}\n${notes?.trim() ? "Note: " + notes.trim() + "\n" : ""}${uploadedAttachments.length > 0 ? `Attached: ${uploadedAttachments.map(a => a.name).join(", ")}` : ""}`;
     const newInternalNotes = (claim.internal_notes || "") + evidenceNote;
 
     const { error: updateError } = await supabase
@@ -176,7 +186,8 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background-color: #f0f9ff; padding: 16px 20px; border-radius: 8px; border-left: 4px solid #0ea5e9; margin: 16px 0;">
           <p style="margin: 0 0 6px 0;"><strong>Customer:</strong> ${claim.name || "Unknown"} (${claim.email})</p>
           <p style="margin: 0 0 6px 0;"><strong>Phone:</strong> ${claim.phone || "Not provided"}</p>
-          <p style="margin: 0;"><strong>Original claim ID:</strong> ${claim.id}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Original claim ID:</strong> ${claim.id}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Evidence type:</strong> ${evidenceLabel}</p>
           <p style="margin: 6px 0 0 0;"><strong>Submitted:</strong> ${timestamp}</p>
         </div>
         ${notes?.trim() ? `
@@ -201,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload: any = {
       from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
       to: ["claims@buyawarranty.co.uk", "support@buyawarranty.co.uk"],
-      subject: `New evidence: ${regDisplay}`,
+      subject: `New evidence (${evidenceLabel}): ${regDisplay}`,
       html: emailHtml,
     };
     if (uploadedAttachments.length > 0) {
