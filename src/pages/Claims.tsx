@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
@@ -48,6 +48,35 @@ const Claims = () => {
   const [isLookingUpVehicle, setIsLookingUpVehicle] = useState(false);
   const [vehicleDetails, setVehicleDetails] = useState<{make?: string; model?: string; year?: string} | null>(null);
   const [isMileageOpen, setIsMileageOpen] = useState(false);
+  const [platinumDocUrl, setPlatinumDocUrl] = useState<string | null>(null);
+  const [termsDocUrl, setTermsDocUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      try {
+        const { data: platinumData } = await supabase
+          .from('customer_documents')
+          .select('file_url')
+          .eq('plan_type', 'platinum')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (platinumData?.file_url) setPlatinumDocUrl(platinumData.file_url);
+
+        const { data: termsData } = await supabase
+          .from('customer_documents')
+          .select('file_url')
+          .eq('plan_type', 'terms-and-conditions')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+      } catch (err) {
+        console.error('Error fetching claim docs:', err);
+      }
+    };
+    fetchDocs();
+  }, []);
 
   // Wizard state
   const [ackChecked, setAckChecked] = useState(false);
@@ -997,12 +1026,37 @@ Additional Information: ${formData.additionalInfo}
                                  ))}
                                </div>
 
-                               <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 flex items-start gap-3">
-                                 <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                                 <p className="text-sm text-gray-700 text-left">
-                                   By submitting, you confirm the details above are correct and that you understand your warranty cannot be refunded or cancelled once a claim has started.
-                                 </p>
-                               </div>
+                                <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 flex items-start gap-3">
+                                  <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                                  <div className="text-sm text-gray-700 text-left space-y-3">
+                                    <p>
+                                      By submitting your claim, you confirm the details provided are accurate to the best of your knowledge and that you have read and understood the relevant policy and claims information.
+                                    </p>
+                                    <div>
+                                      <p className="font-semibold text-gray-900 mb-1">Useful documents</p>
+                                      <ul className="space-y-1">
+                                        <li>
+                                          {platinumDocUrl ? (
+                                            <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline font-medium">
+                                              View Platinum Plan Terms &amp; Conditions
+                                            </a>
+                                          ) : (
+                                            <span className="text-gray-400">Loading Platinum Plan…</span>
+                                          )}
+                                        </li>
+                                        <li>
+                                          {termsDocUrl ? (
+                                            <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline font-medium">
+                                              View Claims Process &amp; Refund Information
+                                            </a>
+                                          ) : (
+                                            <span className="text-gray-400">Loading Claims Process…</span>
+                                          )}
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
 
                                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                                  <Button type="button" variant="outline" onClick={() => goToStep(3, true)} className="h-11 inline-flex items-center gap-2">
