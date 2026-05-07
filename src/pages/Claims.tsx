@@ -678,43 +678,38 @@ Additional Information: ${formData.additionalInfo}
                    {!formStarted ? (
                      <>
                        {/* ── Acknowledgement gate ── */}
-                       <div
-                         role="note"
-                         aria-label="Important notice before submitting your claim"
-                         className="mb-6 rounded-2xl border-2 border-orange-300 bg-white p-5 sm:p-6 shadow-sm"
-                       >
-                         <div className="flex items-center gap-3 mb-4">
-                           <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-white shadow-sm">
-                             <Info className="w-5 h-5" strokeWidth={2.5} />
+                       <div className="mb-5 pro-card p-5 sm:p-6">
+                         <div className="flex items-start gap-3 mb-3">
+                           <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-[#E8541A] text-white">
+                             <Info className="w-3.5 h-3.5" strokeWidth={2.5} />
                            </div>
-                           <h3 className="text-lg sm:text-xl font-bold text-gray-900 text-left">
-                             Before you submit your claim
-                           </h3>
-                         </div>
-                         <p className="text-sm text-gray-600 mb-4 text-left">
-                           Please take a moment to read this important information.
-                         </p>
-
-                         <div className="space-y-3 mb-5 text-left">
-                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                             Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. This is because our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
-                           </p>
-                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                             This is standard practice across the warranty industry and is outlined in your policy terms.
-                           </p>
-                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                             Your warranty cover will continue as normal for the remainder of your policy period — submitting a claim will not reduce or affect your ongoing protection.
-                           </p>
-
-                           <div className="rounded-lg bg-orange-50 border border-orange-100 p-4">
-                             <p className="text-sm text-gray-700 leading-relaxed mb-2">
-                               If you're unsure whether you'd like to proceed, our friendly Claims Team is here to help before you submit:
+                           <div>
+                             <h3 className="pro-serif text-[1.15rem] text-[#1A2B4A] text-left mb-0.5">
+                               Before you submit your claim
+                             </h3>
+                             <p className="text-[13px] text-[#5A6B82] text-left">
+                               Please take a moment to read this important information.
                              </p>
-                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                               <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                           </div>
+                         </div>
+
+                         <div className="space-y-3 mb-4 text-left">
+                           <p className="text-[14px] text-[#1A2B4A] leading-relaxed">
+                             Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. Our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
+                           </p>
+                           <p className="text-[14px] text-[#5A6B82] leading-relaxed">
+                             This is standard practice across the warranty industry and is outlined in your policy terms. Your warranty cover will continue as normal for the remainder of your policy period — submitting a claim will not reduce or affect your ongoing protection.
+                           </p>
+
+                           <div className="rounded-[10px] bg-[#F4F6F8] border border-[#E2E8F0] p-3.5">
+                             <p className="text-[13px] text-[#5A6B82] leading-relaxed mb-2">
+                               Unsure whether to proceed? Our claims team is happy to help first:
+                             </p>
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+                               <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-medium text-[#1A2B4A] hover:text-[#E8541A]">
                                  <Phone className="w-3.5 h-3.5" /> 0330 229 5045
                                </a>
-                               <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                               <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-medium text-[#1A2B4A] hover:text-[#E8541A]">
                                  <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
                                </a>
                              </div>
@@ -724,8 +719,8 @@ Additional Information: ${formData.additionalInfo}
                          {/* Gate checkbox */}
                          <label
                            htmlFor="ackCheck"
-                           className={`flex gap-3 items-start rounded-lg p-4 cursor-pointer transition-colors border-2 ${
-                             ackChecked ? 'border-orange-500 bg-orange-50' : 'border-orange-200 bg-orange-50/60 hover:border-orange-300'
+                           className={`flex gap-3 items-start rounded-[10px] p-3.5 cursor-pointer transition-colors ${
+                             ackChecked ? 'bg-[#FEF0E8] border border-[#E8541A]/40' : 'bg-[#FEF0E8]/60 border border-[#E8541A]/20 hover:border-[#E8541A]/40'
                            }`}
                          >
                            <input
@@ -733,9 +728,9 @@ Additional Information: ${formData.additionalInfo}
                              id="ackCheck"
                              checked={ackChecked}
                              onChange={(e) => setAckChecked(e.target.checked)}
-                             className="w-5 h-5 mt-0.5 flex-shrink-0 accent-orange-500 cursor-pointer"
+                             className="w-[18px] h-[18px] mt-0.5 flex-shrink-0 accent-[#E8541A] cursor-pointer"
                            />
-                           <span className="text-sm text-gray-800 leading-relaxed text-left">
+                           <span className="text-[13px] text-[#1A2B4A] leading-relaxed text-left">
                              I have read and understood the above information. I understand that once I submit my claim, my warranty will no longer be eligible for a refund or cancellation, and I wish to proceed.
                            </span>
                          </label>
@@ -747,10 +742,10 @@ Additional Information: ${formData.additionalInfo}
                            type="button"
                            onClick={startForm}
                            disabled={!ackChecked}
-                           className={`px-8 py-6 text-base font-semibold rounded-lg inline-flex items-center gap-2 transition-all ${
+                           className={`px-7 py-3 h-12 text-[14px] rounded-[10px] inline-flex items-center gap-2 transition-all ${
                              ackChecked
-                               ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl'
-                               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                               ? 'pro-btn-primary'
+                               : 'bg-[#E2E8F0] text-[#B0BAC6] cursor-not-allowed'
                            }`}
                          >
                            {!ackChecked && <Lock className="w-4 h-4" />}
@@ -758,14 +753,10 @@ Additional Information: ${formData.additionalInfo}
                            {ackChecked && <ArrowRight className="w-4 h-4" />}
                          </Button>
                          {!ackChecked && (
-                           <p className="text-xs text-gray-500 mt-2">Please tick the box above to continue</p>
+                           <p className="text-[12px] text-[#B0BAC6] mt-2">Please tick the box above to continue</p>
                          )}
-                          <p className="text-xs text-gray-600 mt-3 inline-flex items-center gap-1.5 justify-center">
-                            <CalendarDays className="w-3.5 h-3.5 text-orange-600" />
-                            Claims team responds Monday–Friday, 9am–5pm.
-                          </p>
-                        </div>
-                      </>
+                       </div>
+                       </>
                    ) : (
                      <>
                        
