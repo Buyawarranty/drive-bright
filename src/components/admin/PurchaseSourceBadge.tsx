@@ -41,12 +41,14 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           tooltip: 'Direct website purchase'
         };
       case 'quote_link':
+      case 'quotes_and_orders':
+      case 'qo':
         return {
-          label: 'Quote Link',
+          label: 'Q&O',
           icon: Mail,
           variant: 'secondary' as const,
           className: 'bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200',
-          tooltip: 'Purchased via admin-sent quote'
+          tooltip: 'Sale completed via Quotes & Orders page link'
         };
       case 'external':
         return {
