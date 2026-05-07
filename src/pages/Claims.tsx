@@ -43,6 +43,7 @@ const Claims = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isDragging, setIsDragging] = useState(false);
