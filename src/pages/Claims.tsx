@@ -829,7 +829,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 1 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Let's start with you</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">1</span> Let's start with you</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Just a few quick details so we know who to get back to.</p>
                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -879,7 +879,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 2 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Vehicle details</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">2</span> Vehicle details</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">We'll look up your vehicle automatically using the registration.</p>
                                </div>
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -957,7 +957,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 3 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Describe the fault</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">3</span> Describe the fault</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Help our team understand what's happening with your vehicle.</p>
                                </div>
 
@@ -1052,7 +1052,7 @@ Additional Information: ${formData.additionalInfo}
                            {currentStep === 4 && (
                              <div className="space-y-5 animate-fade-in">
                                <div>
-                                 <h3 className="text-xl font-bold text-gray-900 text-left">Review &amp; submit</h3>
+                                 <h3 className="text-xl text-[#1A2B4A] text-left flex items-center gap-2.5"><span className="pro-step-num">4</span> Review &amp; submit</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Please double-check your details before submitting.</p>
                                </div>
 
