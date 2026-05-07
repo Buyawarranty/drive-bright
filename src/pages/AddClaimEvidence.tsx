@@ -16,7 +16,6 @@ type EvidenceType = 'photos' | 'video' | 'invoice' | 'diagnostic' | 'other';
 
 const EVIDENCE_TYPES: { id: EvidenceType; label: string; icon: any }[] = [
   { id: 'photos', label: 'Photos', icon: Camera },
-  { id: 'video', label: 'Video', icon: Video },
   { id: 'invoice', label: 'Invoice / quote', icon: Receipt },
   { id: 'diagnostic', label: 'Diagnostic report', icon: FileSearch },
   { id: 'other', label: 'Other', icon: Info },
