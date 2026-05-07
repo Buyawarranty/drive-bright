@@ -748,26 +748,41 @@ Additional Information: ${formData.additionalInfo}
                                  <h3 className="text-xl font-bold text-gray-900 text-left">Let's start with you</h3>
                                  <p className="text-sm text-gray-600 mt-1 text-left">Just a few quick details so we know who to get back to.</p>
                                </div>
-                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                 <div>
-                                   <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name *</Label>
-                                   <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange} required
-                                     className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-[#FF385C]' : ''}`} />
-                                   {errors.name && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.name}</p>}
-                                 </div>
-                                 <div>
-                                   <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address *</Label>
-                                   <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange} required
-                                     className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.email ? 'border-[#FF385C]' : ''}`} />
-                                   {errors.email && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.email}</p>}
-                                 </div>
-                                 <div className="md:col-span-2">
-                                   <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number *</Label>
-                                   <Input id="phone" name="phone" type="tel" placeholder="07123 456 789" value={formData.phone} onChange={handleInputChange}
-                                     className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.phone ? 'border-[#FF385C]' : ''}`} />
-                                   {errors.phone && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.phone}</p>}
-                                 </div>
-                               </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="name" className="text-gray-900 font-bold text-sm block text-left">Full name *</Label>
+                                    <div className="relative">
+                                      <Input id="name" name="name" type="text" placeholder="Jane Smith" value={formData.name} onChange={handleInputChange} required
+                                        className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.name ? 'border-[#FF385C]' : ''}`} />
+                                      {!errors.name && formData.name.trim().length >= 2 && (
+                                        <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
+                                      )}
+                                    </div>
+                                    {errors.name && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.name}</p>}
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="email" className="text-gray-900 font-bold text-sm block text-left">Email address *</Label>
+                                    <div className="relative">
+                                      <Input id="email" name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange} required
+                                        className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.email ? 'border-[#FF385C]' : ''}`} />
+                                      {!errors.email && validateEmail(formData.email) && (
+                                        <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
+                                      )}
+                                    </div>
+                                    {errors.email && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.email}</p>}
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <Label htmlFor="phone" className="text-gray-900 font-bold text-sm block text-left">Phone number *</Label>
+                                    <div className="relative">
+                                      <Input id="phone" name="phone" type="tel" placeholder="07123 456 789" value={formData.phone} onChange={handleInputChange}
+                                        className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.phone ? 'border-[#FF385C]' : ''}`} />
+                                      {!errors.phone && validatePhone(formData.phone) && (
+                                        <Check className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 mt-[3px]" />
+                                      )}
+                                    </div>
+                                    {errors.phone && <p className="mt-1 text-sm text-[#FF385C] text-left">{errors.phone}</p>}
+                                  </div>
+                                </div>
                                <div className="flex justify-end pt-3 border-t border-gray-100">
                                  <Button type="button" onClick={() => goToStep(2)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
                                    Continue <ArrowRight className="w-4 h-4" />
