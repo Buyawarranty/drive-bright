@@ -18,9 +18,18 @@ interface EvidenceFile {
 
 interface EvidenceRequest {
   reference: string;
+  evidenceType?: string;
   notes?: string;
   files: EvidenceFile[];
 }
+
+const EVIDENCE_TYPE_LABELS: Record<string, string> = {
+  photos: "Photos",
+  video: "Video",
+  invoice: "Invoice / quote",
+  diagnostic: "Diagnostic report",
+  other: "Other",
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
