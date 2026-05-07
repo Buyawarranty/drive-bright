@@ -355,6 +355,38 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               )}
             </Card>
 
+            {/* CARD 4 - Voluntary Excess */}
+            <Card>
+              <SectionHead
+                eyebrow="Voluntary excess"
+                title="Choose your excess"
+                subtitle="Excess is what you pay towards a claim. Lower excess = higher monthly cost."
+                onDetails={() => setExcessDetailsOpen(true)}
+              />
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {EXCESS_OPTIONS.map((opt) => {
+                  const selected = voluntaryExcess === opt.value;
+                  return (
+                    <OptionCard
+                      key={opt.value}
+                      selected={selected}
+                      badge={opt.value === 100 ? { text: 'Recommended', tone: 'orange' } : null}
+                      onClick={() => setVoluntaryExcess(opt.value)}
+                    >
+                      <div className="text-[28px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">
+                        £{opt.value}
+                      </div>
+                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[18px] leading-tight">{opt.sub}</div>
+                      <div className="text-[12px] text-[#6c6c6c] leading-snug">{excessPillSubText(opt.value)}</div>
+                    </OptionCard>
+                  );
+                })}
+              </div>
+              {validationErrors.voluntaryExcess && (
+                <p className="mt-3 text-sm text-red-600 font-medium">Please choose a voluntary excess to continue.</p>
+              )}
+            </Card>
+
             {/* PRICE BEAT */}
             <div className="flex items-center gap-3.5 rounded-xl px-5 py-3.5" style={{ background: '#fffbf0', border: '1px solid #f5e4b0' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#FEF0EA' }}>🏷</div>
