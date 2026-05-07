@@ -14,8 +14,7 @@ const MAX_FILES = 8;
 
 const AddClaimEvidence = () => {
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [vehicleReg, setVehicleReg] = useState('');
+  const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
