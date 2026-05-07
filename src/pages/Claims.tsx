@@ -1030,24 +1030,8 @@ Additional Information: ${formData.additionalInfo}
                     />
                   </div>
                   
-                  {/* Quick Info Cards */}
-                  <div className="space-y-3">
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Fast Response</h4>
-                      <p className="text-xs text-gray-600">We typically respond within 2 hours</p>
-                    </div>
-                    
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">UK-Based Team</h4>
-                      <p className="text-xs text-gray-600">Our experts are here to help you</p>
-                    </div>
-                    
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Simple Process</h4>
-                      <p className="text-xs text-gray-600">We keep things clear and straightforward</p>
-                    </div>
-                  </div>
                 </div>
+
               </div>
             </div>
           </div>
