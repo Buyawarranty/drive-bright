@@ -186,7 +186,8 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background-color: #f0f9ff; padding: 16px 20px; border-radius: 8px; border-left: 4px solid #0ea5e9; margin: 16px 0;">
           <p style="margin: 0 0 6px 0;"><strong>Customer:</strong> ${claim.name || "Unknown"} (${claim.email})</p>
           <p style="margin: 0 0 6px 0;"><strong>Phone:</strong> ${claim.phone || "Not provided"}</p>
-          <p style="margin: 0;"><strong>Original claim ID:</strong> ${claim.id}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Original claim ID:</strong> ${claim.id}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Evidence type:</strong> ${evidenceLabel}</p>
           <p style="margin: 6px 0 0 0;"><strong>Submitted:</strong> ${timestamp}</p>
         </div>
         ${notes?.trim() ? `
