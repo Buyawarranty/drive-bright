@@ -301,7 +301,7 @@ const Claims = () => {
     if (step === 1) {
       if (!formData.name.trim()) newErrors.name = 'Could you let us know your name?';
       if (!formData.email.trim()) newErrors.email = 'We just need an email so we can get back to you.';
-      else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right — mind double-checking it?";
+      else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right - mind double-checking it?";
       if (!formData.phone.trim()) newErrors.phone = 'A contact number helps us reach you faster.';
       else if (!validatePhone(formData.phone)) newErrors.phone = "Please update to a UK number e.g 07123 456789.";
     }
@@ -394,7 +394,7 @@ const Claims = () => {
     if (!formData.email.trim()) {
       newErrors.email = 'We just need an email so we can get back to you.';
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'That email doesn\'t look quite right — mind double-checking it?';
+      newErrors.email = 'That email doesn\'t look quite right - mind double-checking it?';
     }
 
     if (!formData.phone.trim()) {
@@ -419,7 +419,7 @@ const Claims = () => {
       setErrors(newErrors);
       toast({
         title: "Just a few details missing",
-        description: "We've highlighted the fields below — please take a quick look.",
+        description: "We've highlighted the fields below - please take a quick look.",
         variant: "destructive",
       });
       // Scroll to the first error so it's visible on mobile
@@ -602,7 +602,7 @@ Additional Information: ${formData.additionalInfo}
             </p>
 
             <p className="text-[15px] text-[#5A6B82] leading-[1.7] mb-8">
-              We know that vehicle issues can be stressful, but making a claim shouldn't be. At Buy-A-Warranty, we've made the process clear, quick and customer focused — so you get the help you need without the hassle.
+              We know that vehicle issues can be stressful, but making a claim shouldn't be. At Buy-A-Warranty, we've made the process clear, quick and customer focused - so you get the help you need without the hassle.
             </p>
 
             {/* Why you're in safe hands */}
@@ -613,7 +613,7 @@ Additional Information: ${formData.additionalInfo}
               {[
                 { title: 'Quick response', body: 'We respond to claims quickly and fairly, with no unnecessary delays.' },
                 { title: 'UK-based team', body: 'Our UK-based claims team is here to guide you every step of the way.' },
-                { title: 'Simple process', body: 'We keep things simple — no confusing jargon or hidden terms.' },
+                { title: 'Simple process', body: 'We keep things simple - no confusing jargon or hidden terms.' },
               ].map((c) => (
                 <div key={c.title} className="bg-white border border-[#E2E8F0] rounded-2xl p-4">
                   <div className="w-9 h-9 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center mb-3">
@@ -668,7 +668,7 @@ Additional Information: ${formData.additionalInfo}
                   Start your claim
                 </h2>
                 <p className="text-[14px] text-[#5A6B82]">
-                  Quick, easy and hassle free — takes about 3 minutes.
+                  Quick, easy and hassle free - takes about 3 minutes.
                 </p>
               </div>
 
@@ -698,7 +698,7 @@ Additional Information: ${formData.additionalInfo}
                              Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. Our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
                            </p>
                            <p className="text-[14px] text-[#5A6B82] leading-relaxed">
-                             This is standard practice across the warranty industry and is outlined in your policy terms. Your warranty cover will continue as normal for the remainder of your policy period — submitting a claim will not reduce or affect your ongoing protection.
+                             This is standard practice across the warranty industry and is outlined in your policy terms. Your warranty cover will continue as normal for the remainder of your policy period - submitting a claim will not reduce or affect your ongoing protection.
                            </p>
 
                            <div className="rounded-[10px] bg-[#F4F6F8] border border-[#E2E8F0] p-3.5">
@@ -749,7 +749,7 @@ Additional Information: ${formData.additionalInfo}
                            }`}
                          >
                            {!ackChecked && <Lock className="w-4 h-4" />}
-                           Start my claim — takes about 3 minutes
+                           Start my claim - takes about 3 minutes
                            {ackChecked && <ArrowRight className="w-4 h-4" />}
                          </Button>
                          {!ackChecked && (
@@ -990,7 +990,7 @@ Additional Information: ${formData.additionalInfo}
                                      {uploadedFiles.length > 0 ? 'Add more files' : 'Click to upload or drag and drop'}
                                    </p>
                                    <p className="text-xs text-gray-500 mt-1">
-                                     PDF, DOC, DOCX, JPG, PNG or HEIC — up to {MAX_FILES} files (max 20MB each)
+                                     PDF, DOC, DOCX, JPG, PNG or HEIC - up to {MAX_FILES} files (max 20MB each)
                                    </p>
                                  </label>
                                  <input id="file-upload" type="file" multiple className="sr-only"
@@ -1042,15 +1042,15 @@ Additional Information: ${formData.additionalInfo}
 
                                <div className="rounded-xl border border-gray-200 divide-y divide-gray-100">
                                  {[
-                                   { key: 'Name', value: formData.name || '—', step: 1 as const },
-                                   { key: 'Email', value: formData.email || '—', step: 1 as const },
-                                   { key: 'Phone', value: formData.phone || '—', step: 1 as const },
-                                   { key: 'Vehicle', value: `${formData.vehicleReg.toUpperCase()}${vehicleDetails?.make ? ` · ${vehicleDetails.make} ${vehicleDetails.model || ''}` : ''}`.trim() || '—', step: 2 as const },
-                                   { key: 'Mileage', value: formData.currentMileage ? `${formData.currentMileage.toLocaleString('en-GB')} miles` : '—', step: 2 as const },
-                                   { key: 'Fault description', value: formData.faultDescription || '—', step: 3 as const },
-                                   { key: 'When it occurred', value: formData.dateOccurred || '—', step: 3 as const },
-                                   { key: 'When it happens', value: formData.issueTiming || '—', step: 3 as const },
-                                   { key: 'Other details', value: formData.faultDetails || '—', step: 3 as const },
+                                   { key: 'Name', value: formData.name || '-', step: 1 as const },
+                                   { key: 'Email', value: formData.email || '-', step: 1 as const },
+                                   { key: 'Phone', value: formData.phone || '-', step: 1 as const },
+                                   { key: 'Vehicle', value: `${formData.vehicleReg.toUpperCase()}${vehicleDetails?.make ? ` · ${vehicleDetails.make} ${vehicleDetails.model || ''}` : ''}`.trim() || '-', step: 2 as const },
+                                   { key: 'Mileage', value: formData.currentMileage ? `${formData.currentMileage.toLocaleString('en-GB')} miles` : '-', step: 2 as const },
+                                   { key: 'Fault description', value: formData.faultDescription || '-', step: 3 as const },
+                                   { key: 'When it occurred', value: formData.dateOccurred || '-', step: 3 as const },
+                                   { key: 'When it happens', value: formData.issueTiming || '-', step: 3 as const },
+                                   { key: 'Other details', value: formData.faultDetails || '-', step: 3 as const },
                                    { key: 'Attachments', value: uploadedFiles.length ? `${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''} attached` : 'None', step: 3 as const },
                                  ].map((row) => (
                                    <div key={row.key} className="flex items-start justify-between gap-3 px-4 py-3">
@@ -1140,12 +1140,12 @@ Additional Information: ${formData.additionalInfo}
                 Your maximum repair limit is clearly outlined in your warranty email and visible in your online account. If a repair exceeds your limit, you can simply top it up.
               </p>
               <p>
-                In our experience, this situation is very rare — especially if you've selected a claim limit that suits your vehicle and driving habits.
+                In our experience, this situation is very rare - especially if you've selected a claim limit that suits your vehicle and driving habits.
               </p>
               <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mt-4 flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#16A34A] flex-shrink-0" />
                 <p className="text-[14px] text-[#1A2B4A] font-medium">
-                  We cover what we promise — no hidden surprises.
+                  We cover what we promise - no hidden surprises.
                 </p>
               </div>
             </div>
