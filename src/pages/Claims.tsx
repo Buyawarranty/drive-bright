@@ -598,7 +598,7 @@ Additional Information: ${formData.additionalInfo}
               Making a claim
             </h1>
             <p className="text-[15px] text-[#5A6B82] mb-6">
-              Simple, supportive and stress free.
+              Simple and supportive.
             </p>
 
             <p className="text-[15px] text-[#5A6B82] leading-[1.7] mb-8">
