@@ -49,6 +49,13 @@ const Claims = () => {
   const [vehicleDetails, setVehicleDetails] = useState<{make?: string; model?: string; year?: string} | null>(null);
   const [isMileageOpen, setIsMileageOpen] = useState(false);
 
+  // Wizard state
+  const [ackChecked, setAckChecked] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  const STEP_LABELS = ['Contact', 'Vehicle', 'Fault', 'Review'] as const;
+  const progressPercent = (currentStep / 4) * 100;
+
   // Validation functions
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
