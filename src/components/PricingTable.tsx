@@ -1028,8 +1028,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
       return;
     }
     
-    const selectedPlan = getSelectedPlan();
-    if (!selectedPlan) return;
+    const selectedPlan = getSelectedPlan() || ({ id: 'platinum', name: 'Platinum Complete Plan' } as Plan);
+    if (!selectedPlan) {
+      toast.error('Plan not loaded yet — please wait a moment and try again.');
+      return;
+    }
     
     // Set loading state for this plan
     setLoading(prev => ({ ...prev, [selectedPlan.id]: true }));
