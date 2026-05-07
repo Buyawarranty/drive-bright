@@ -155,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
     ];
 
     const timestamp = new Date().toLocaleString("en-GB");
-    const evidenceNote = `\n\n[NEW EVIDENCE — ${timestamp}]\n${notes?.trim() ? notes.trim() + "\n" : ""}${uploadedAttachments.length > 0 ? `Attached: ${uploadedAttachments.map(a => a.name).join(", ")}` : ""}`;
+    const evidenceNote = `\n\n[NEW EVIDENCE — ${timestamp}]\nType: ${evidenceLabel}\n${notes?.trim() ? "Note: " + notes.trim() + "\n" : ""}${uploadedAttachments.length > 0 ? `Attached: ${uploadedAttachments.map(a => a.name).join(", ")}` : ""}`;
     const newInternalNotes = (claim.internal_notes || "") + evidenceNote;
 
     const { error: updateError } = await supabase
