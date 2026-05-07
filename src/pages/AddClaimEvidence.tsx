@@ -9,12 +9,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const MAX_FILES = 8;
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+const MAX_FILES = 10;
+
+type EvidenceType = 'photos' | 'video' | 'invoice' | 'diagnostic' | 'other';
+
+const EVIDENCE_TYPES: { id: EvidenceType; label: string; icon: any }[] = [
+  { id: 'photos', label: 'Photos', icon: Camera },
+  { id: 'video', label: 'Video', icon: Video },
+  { id: 'invoice', label: 'Invoice / quote', icon: Receipt },
+  { id: 'diagnostic', label: 'Diagnostic report', icon: FileSearch },
+  { id: 'other', label: 'Other', icon: Info },
+];
 
 const AddClaimEvidence = () => {
   const { toast } = useToast();
   const [reference, setReference] = useState('');
+  const [evidenceType, setEvidenceType] = useState<EvidenceType>('photos');
   const [notes, setNotes] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
