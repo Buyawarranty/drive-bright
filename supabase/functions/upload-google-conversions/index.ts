@@ -49,7 +49,7 @@ async function uploadConversion(
   conversionValue: number,
   currencyCode: string = 'GBP'
 ) {
-  const url = `https://googleads.googleapis.com/v18/customers/${customerId}:uploadClickConversions`;
+  const url = `https://googleads.googleapis.com/v21/customers/${customerId}:uploadClickConversions`;
 
   const body = {
     conversions: [
