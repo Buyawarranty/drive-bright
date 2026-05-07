@@ -44,6 +44,7 @@ const AddClaimEvidence = () => {
       valid.push(f);
     }
     setFiles((prev) => [...prev, ...valid].slice(0, MAX_FILES));
+    if (valid.length > 0) setErrors((p) => ({ ...p, files: '' }));
   };
 
   const removeFile = (i: number) => setFiles((prev) => prev.filter((_, idx) => idx !== i));
@@ -146,15 +147,24 @@ const AddClaimEvidence = () => {
                     <h2 className="text-lg font-semibold text-gray-900">Find your claim</h2>
                   </div>
                   <Label htmlFor="reference" className="text-sm font-semibold text-gray-900">Claim reference, policy number or vehicle registration <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="reference"
-                    value={reference}
-                    onChange={(e) => setReference(e.target.value)}
-                    placeholder="e.g. CLM-12345, BAW-00123 or AB12 CDE"
-                    className={`mt-1.5 ${errors.reference ? 'border-red-500' : ''}`}
-                    autoComplete="off"
-                  />
-                  {errors.reference && <p className="text-xs text-red-600 mt-1">{errors.reference}</p>}
+                  <div className="relative mt-1.5">
+                    <Input
+                      id="reference"
+                      value={reference}
+                      onChange={(e) => {
+                        setReference(e.target.value);
+                        if (errors.reference) setErrors((p) => ({ ...p, reference: '' }));
+                      }}
+                      placeholder="e.g. CLM-12345, BAW-00123 or AB12 CDE"
+                      className={`pr-10 ${errors.reference ? 'border-red-500 focus-visible:ring-red-500' : reference.trim().length >= 3 ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
+                      autoComplete="off"
+                      aria-invalid={!!errors.reference}
+                    />
+                    {reference.trim().length >= 3 && !errors.reference && (
+                      <CheckCircle2 className="w-5 h-5 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    )}
+                  </div>
+                  {errors.reference && <p className="text-xs text-red-600 mt-1 flex items-center gap-1"><Info className="w-3.5 h-3.5" />{errors.reference}</p>}
                 </div>
 
                 <div>
