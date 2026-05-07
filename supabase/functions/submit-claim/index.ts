@@ -394,14 +394,17 @@ const handler = async (req: Request): Promise<Response> => {
         
         <p>Dear ${name},</p>
         
-        <p>Thank you for submitting your claim for vehicle registration: <strong>${regPlateDisplay}</strong>. We've received your request and our team will review it during our working hours.</p>
+        <p>Thank you for submitting your claim for vehicle registration: <strong>${regPlateDisplay}</strong>. We've received your request and our team will process your claim during our working hours.</p>
         
+        <div style="background-color: #fff7ed; border: 2px solid #fdba74; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; font-size: 16px; color: #9a3412;"><strong>📅 Claims department hours: Monday to Friday, 9:00 AM – 5:00 PM</strong></p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; color: #7c2d12;">Submissions sent outside these hours will be reviewed on the next working day. Thank you for your patience.</p>
+        </div>
+
         <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0;"><strong>Submission ID:</strong> ${submissionData.id}</p>
           <p style="margin: 10px 0 0 0;"><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
         </div>
-        
-        <p><strong>We'll respond Monday–Friday, 9:00 AM–5:00 PM.</strong></p>
         
         <p>If you need urgent assistance during these hours, you can:</p>
         <ul style="margin: 10px 0; padding-left: 20px;">
