@@ -183,6 +183,10 @@ serve(async (req) => {
           assigned_to: assigneeId,
           payment_confirmed_by: assigneeId,
           warranty_reference_number: warrantyReference,
+          // Auto-restore soft-deleted customers when a new active policy is created
+          is_deleted: false,
+          deleted_at: null,
+          deleted_by: null,
           ...(address && !skipAddressDetails && {
             building_number: address.buildingNumber,
             street: address.street,
