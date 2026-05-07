@@ -598,6 +598,19 @@ Additional Information: ${formData.additionalInfo}
                   <p className="text-sm text-green-600 font-medium mt-3">Monday to Friday, 9am to 5pm</p>
                 </a>
               </div>
+
+              {/* Already submitted? Add evidence */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Already submitted a claim?</h3>
+                  <p className="text-sm text-gray-700">No need to fill in the form again. Just upload extra evidence (photos, garage reports, invoices) to your existing claim.</p>
+                </div>
+                <Link to="/add-evidence/" className="flex-shrink-0">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2">
+                    <Upload className="w-4 h-4" /> Upload evidence
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             {/* Make A Claim Form */}
