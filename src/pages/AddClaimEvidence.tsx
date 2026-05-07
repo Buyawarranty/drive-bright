@@ -216,11 +216,11 @@ const AddClaimEvidence = () => {
                         type="file"
                         multiple
                         className="hidden"
-                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        accept="image/*,.pdf,.doc,.docx"
                         onChange={(e) => e.target.files && addFiles(e.target.files)}
                       />
                     </label>
-                    <p className="text-xs text-gray-500 mt-3">JPG, PNG, MP4, PDF, DOC · max 20 MB per file · up to {MAX_FILES} files</p>
+                    <p className="text-xs text-gray-500 mt-3">JPG, PNG, PDF, DOC · max 20 MB per file · up to {MAX_FILES} files</p>
                   </div>
                   {files.length > 0 && (
                     <ul className="mt-3 space-y-2">
