@@ -528,7 +528,62 @@ Additional Information: ${formData.additionalInfo}
         keywords="warranty claim, car warranty claim, vehicle warranty support, customer service"
       />
 
-      <div className="min-h-screen bg-white">
+      <style>{`
+        .claims-pro {
+          --c-orange: #E8541A;
+          --c-orange-light: #FEF0E8;
+          --c-navy: #1A2B4A;
+          --c-navy-light: #EEF1F6;
+          --c-navy-mid: #2E4470;
+          --c-cream: #F4F6F8;
+          --c-ink: #1A2B4A;
+          --c-ink-60: #5A6B82;
+          --c-ink-30: #B0BAC6;
+          --c-border: #E2E8F0;
+          --c-shadow: 0 2px 20px rgba(26,43,74,0.08);
+          font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+          color: var(--c-ink);
+        }
+        .claims-pro .pro-serif { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; }
+        .claims-pro .pro-card {
+          background: #fff;
+          border: 1px solid var(--c-border);
+          border-radius: 16px;
+          box-shadow: var(--c-shadow);
+        }
+        .claims-pro .pro-card-pad { padding: 1.75rem; }
+        @media(min-width: 640px) { .claims-pro .pro-card-pad { padding: 2rem; } }
+        .claims-pro h2, .claims-pro h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; color: var(--c-ink); }
+        .claims-pro label { font-family: 'DM Sans', sans-serif; font-size: 13px !important; font-weight: 500 !important; color: var(--c-ink-60) !important; }
+        .claims-pro input, .claims-pro textarea, .claims-pro select {
+          background: var(--c-cream) !important;
+          border: 1.5px solid var(--c-border) !important;
+          border-radius: 10px !important;
+          font-family: 'DM Sans', sans-serif;
+          color: var(--c-ink);
+          transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .claims-pro input:focus, .claims-pro textarea:focus, .claims-pro select:focus {
+          border-color: var(--c-orange) !important;
+          background: #fff !important;
+          box-shadow: 0 0 0 3px rgba(232,84,26,0.1) !important;
+        }
+        .claims-pro .pro-step-num {
+          width: 28px; height: 28px; background: var(--c-navy-light); color: var(--c-navy);
+          border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+          font-size: 13px; font-weight: 500; flex-shrink: 0; font-family: 'DM Sans', sans-serif;
+        }
+        .claims-pro .pro-btn-primary {
+          background: var(--c-navy) !important; color: #fff !important;
+          border-radius: 10px !important; font-weight: 500 !important;
+          box-shadow: 0 4px 14px rgba(26,43,74,0.25);
+          transition: all .2s;
+        }
+        .claims-pro .pro-btn-primary:hover { background: var(--c-navy-mid) !important; transform: translateY(-1px); }
+        .claims-pro .pro-divider-soft { border-top: 1px solid var(--c-border); }
+      `}</style>
+
+      <div className="min-h-screen bg-white claims-pro">
         {/* Hero Section - UX Optimized with Orange Branding */}
         <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
