@@ -458,8 +458,8 @@ Additional Information: ${formData.additionalInfo}
       }
 
       toast({
-        title: "✓ Claim Submitted!",
-        description: "We'll review and respond Monday–Friday, 9 AM–5 PM. You can also call our claims line during these hours on 0330 229 5045. Thank you!",
+        title: "✓ Claim submitted",
+        description: "Thank you. Our claims team will process your claim during working hours: Monday to Friday, 9am–5pm. You'll hear from us on the next working day.",
         className: "bg-green-600 text-white border-green-700 [&>div]:text-white",
       });
 
