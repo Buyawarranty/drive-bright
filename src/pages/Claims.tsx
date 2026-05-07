@@ -1100,9 +1100,9 @@ Additional Information: ${formData.additionalInfo}
                                  <Button type="button" variant="outline" onClick={() => goToStep(2, true)} className="h-11 inline-flex items-center gap-2">
                                    <ArrowLeft className="w-4 h-4" /> Back
                                  </Button>
-                                 <Button type="button" onClick={() => goToStep(4)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
-                                   Review claim <ArrowRight className="w-4 h-4" />
-                                 </Button>
+                                  <Button type="button" onClick={() => goToStep(4)} className="bg-[#EB6A2C] hover:bg-[#D55A1F] text-white px-6 h-11 inline-flex items-center gap-2 font-semibold rounded-lg">
+                                    Review claim <ArrowRight className="w-4 h-4" />
+                                  </Button>
                                </div>
                              </div>
                            )}
