@@ -823,7 +823,7 @@ Additional Information: ${formData.additionalInfo}
                          </div>
                        </div>
 
-                       <div className="bg-white p-5 sm:p-6 lg:p-8 rounded-xl shadow-lg">
+                       <div className="pro-card pro-card-pad">
                          <form onSubmit={handleSubmit} className="space-y-6">
                            {/* STEP 1: Contact */}
                            {currentStep === 1 && (
