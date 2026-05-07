@@ -49,7 +49,7 @@ async function uploadConversion(
   conversionValue: number,
   currencyCode: string = 'GBP'
 ) {
-  const url = `https://googleads.googleapis.com/v18/customers/${customerId}:uploadClickConversions`;
+  const url = `https://googleads.googleapis.com/v21/customers/${customerId}:uploadClickConversions`;
 
   const body = {
     conversions: [
@@ -69,12 +69,19 @@ async function uploadConversion(
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'developer-token': developerToken,
+      'login-customer-id': customerId,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
   });
 
-  const result = await response.json();
+  const text = await response.text();
+  let result: any;
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = { rawHtml: text.substring(0, 500), parseError: true };
+  }
   return { status: response.status, result };
 }
 
