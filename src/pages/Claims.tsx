@@ -795,33 +795,33 @@ Additional Information: ${formData.additionalInfo}
                                    onClick={() => stepNum < currentStep && goToStep(stepNum, true)}
                                    className={`flex items-center gap-2 ${stepNum < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
                                  >
-                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0 ${
-                                     isDone ? 'bg-orange-500 text-white' :
-                                     isActive ? 'bg-orange-500 text-white ring-4 ring-orange-100' :
-                                     'bg-gray-200 text-gray-500'
-                                   }`}>
-                                     {isDone ? <Check className="w-4 h-4" /> : stepNum}
-                                   </div>
-                                   <span className={`hidden sm:inline text-xs font-medium ${
-                                     isActive ? 'text-gray-900' : 'text-gray-500'
-                                   }`}>
-                                     {label}
-                                   </span>
-                                 </button>
-                                 {i < STEP_LABELS.length - 1 && (
-                                   <div className={`flex-1 h-0.5 ${stepNum < currentStep ? 'bg-orange-500' : 'bg-gray-200'}`} />
-                                 )}
-                               </React.Fragment>
-                             );
-                           })}
-                         </div>
-                         <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                           <div
-                             className="h-full bg-orange-500 rounded-full transition-all duration-500"
-                             style={{ width: `${progressPercent}%` }}
-                           />
-                         </div>
-                       </div>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all flex-shrink-0 ${
+                                      isDone ? 'bg-[#E8541A] text-white' :
+                                      isActive ? 'bg-[#1A2B4A] text-white ring-4 ring-[#1A2B4A]/12' :
+                                      'bg-[#E2E8F0] text-[#5A6B82]'
+                                    }`}>
+                                      {isDone ? <Check className="w-4 h-4" /> : stepNum}
+                                    </div>
+                                    <span className={`hidden sm:inline text-xs ${
+                                      isActive ? 'text-[#1A2B4A] font-medium' : 'text-[#5A6B82]'
+                                    }`}>
+                                      {label}
+                                    </span>
+                                  </button>
+                                  {i < STEP_LABELS.length - 1 && (
+                                    <div className={`flex-1 h-px ${stepNum < currentStep ? 'bg-[#E8541A]' : 'bg-[#E2E8F0]'}`} />
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-3 h-[3px] bg-[#E2E8F0] rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${progressPercent}%`, background: 'linear-gradient(90deg,#1A2B4A,#E8541A)' }}
+                            />
+                          </div>
+                        </div>
 
                        <div className="pro-card pro-card-pad">
                          <form onSubmit={handleSubmit} className="space-y-6">
