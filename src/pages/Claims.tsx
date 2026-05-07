@@ -729,13 +729,18 @@ Additional Information: ${formData.additionalInfo}
                    ) : (
                      <>
                        {/* Compact reminder strip */}
-                       <div className="mb-5 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 flex items-center gap-3 flex-wrap">
-                         <Info className="w-4 h-4 text-orange-600 flex-shrink-0" />
-                         <span className="text-xs sm:text-sm text-gray-700 flex-1 text-left">
-                           Reminder: once submitted, your warranty <strong className="text-gray-900">cannot be refunded or cancelled</strong>. Your cover stays active throughout your policy period.
-                         </span>
-                         <span className="text-xs text-gray-500 whitespace-nowrap">⏱ ~3 minutes</span>
-                       </div>
+                        <div className="mb-5 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 flex items-center gap-3 flex-wrap">
+                          <Info className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm text-gray-700 flex-1 text-left">
+                            Reminder: once submitted, your warranty <strong className="text-gray-900">cannot be refunded or cancelled</strong>. Your cover stays active throughout your policy period.
+                          </span>
+                          <span className="text-xs text-gray-500 whitespace-nowrap">⏱ ~3 minutes</span>
+                        </div>
+
+                        <div className="mb-5 rounded-lg border-2 border-orange-300 bg-white px-4 py-3 flex items-center gap-2 text-sm text-gray-800">
+                          <CalendarDays className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                          <span><strong>Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours will be reviewed on the next working day.</span>
+                        </div>
 
                        {/* Step tracker */}
                        <div className="mb-4">
