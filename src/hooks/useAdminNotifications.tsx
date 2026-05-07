@@ -203,6 +203,30 @@ export const useAdminNotifications = (userRole?: string | null) => {
       })
       .subscribe();
 
+    // Listen for new evidence on existing claims (UPDATE on claims_submissions)
+    const claimsEvidenceChannel = supabase
+      .channel('admin-claims-evidence')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'claims_submissions',
+      }, (payload) => {
+        const oldData = payload.old as { internal_notes?: string };
+        const newData = payload.new as { name?: string; vehicle_registration?: string; internal_notes?: string };
+        const oldNotes = oldData.internal_notes || '';
+        const newNotes = newData.internal_notes || '';
+        if (newNotes.includes('[NEW EVIDENCE') && newNotes.length > oldNotes.length) {
+          if (isAdminRole) {
+            toast.warning('📎 New Evidence Submitted', {
+              description: `${newData.name || 'Customer'} — ${newData.vehicle_registration || 'no reg'}`,
+              duration: 6000,
+            });
+          }
+          scheduleRefetch();
+        }
+      })
+      .subscribe();
+
     const customersChannel = supabase
       .channel('admin-customers')
       .on('postgres_changes', {
