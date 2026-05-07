@@ -404,6 +404,51 @@ const Claims = () => {
       return;
     }
 
+        {/* Contact Us */}
+        <section className="py-16 lg:py-20 px-4 bg-gray-50">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Get in touch with our claims team</h2>
+              <p className="text-lg text-gray-700 font-medium">Choose your preferred way to contact us:</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <a
+                href="mailto:claims@buyawarranty.co.uk"
+                className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
+                    <Mail className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors duration-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors duration-300">Email Us</h3>
+                    <p className="text-sm text-gray-500">Send us your claim details</p>
+                  </div>
+                </div>
+                <p className="text-lg font-semibold text-orange-500 group-hover:text-orange-600 transition-colors duration-300">claims@buyawarranty.co.uk</p>
+                <p className="text-sm text-green-600 font-medium mt-3">We respond as quickly as possible during working hours.</p>
+              </a>
+
+              <a
+                href="tel:03302295045"
+                className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
+                    <Phone className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors duration-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors duration-300">Call Us</h3>
+                    <p className="text-sm text-gray-500">Speak to our claims team</p>
+                  </div>
+                </div>
+                <p className="text-lg font-semibold text-orange-500 group-hover:text-orange-600 transition-colors duration-300">0330 229 5045</p>
+                <p className="text-sm text-green-600 font-medium mt-3">Monday to Friday, 9am to 5pm</p>
+              </a>
+            </div>
+          </div>
+        </section>
+
 
     setIsSubmitting(true);
     
