@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import pandaMechanicFix from '@/assets/panda-mechanic-fix.png';
+
 
 
 const Claims = () => {
@@ -583,145 +583,133 @@ Additional Information: ${formData.additionalInfo}
         .claims-pro .pro-divider-soft { border-top: 1px solid var(--c-border); }
       `}</style>
 
-      <div className="min-h-screen bg-white claims-pro">
+      <div className="min-h-screen bg-[#F4F6F8] claims-pro">
         {/* Hero Section - UX Optimized with Orange Branding */}
-        <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Working hours banner — must be unmissable */}
-            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full bg-orange-100 border-2 border-orange-300 px-4 py-2 text-sm sm:text-base font-semibold text-orange-800">
-              <CalendarDays className="w-4 h-4" />
-              Claims department open Monday–Friday, 9am–5pm
+        {/* Hero + intro */}
+        <section className="bg-[#F4F6F8] pt-10 sm:pt-14 pb-6 px-4 sm:px-6">
+          <div className="max-w-2xl mx-auto">
+            {/* Slim working hours pill */}
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A]">
+              <CalendarDays className="w-3.5 h-3.5" />
+              Claims team open Monday–Friday, 9am–5pm
             </div>
-            <h1 className="pro-serif text-4xl sm:text-5xl lg:text-6xl text-[#1A2B4A] mb-4 sm:mb-5 text-center">
+
+            <h1 className="pro-serif text-[clamp(2rem,5vw,2.8rem)] leading-[1.15] text-[#1A2B4A] mb-2">
               Making a claim
             </h1>
-            <p className="text-lg lg:text-xl text-[#5A6B82] mb-8 max-w-2xl mx-auto">
+            <p className="text-[15px] text-[#5A6B82] mb-6">
               Simple, supportive and stress free.
             </p>
-            <div className="max-w-3xl mx-auto">
-              <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
-                We know that vehicle issues can be stressful, but making a claim shouldn't be. At 
-                <span className="font-semibold text-orange-600"> Buy-A-Warranty</span>, we've made the process clear, quick and customer focused.
-              </p>
-              <p className="text-green-600 font-medium">
-                Get the help you need without the hassle
-              </p>
-              <p className="mt-3 text-sm text-gray-600">
-                Our claims team responds <strong>Monday to Friday, 9am to 5pm</strong>. Submissions sent outside these hours will be reviewed on the next working day.
-              </p>
-            </div>
-            
-            {/* Why You're in Safe Hands */}
-            <div className="mt-16 mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">Why You're in Safe Hands</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="bg-orange-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Quick Response</h3>
-                  <p className="text-sm text-gray-700">We respond to claims quickly and fairly, with no unnecessary delays</p>
+
+            <p className="text-[15px] text-[#5A6B82] leading-[1.7] mb-8">
+              We know that vehicle issues can be stressful, but making a claim shouldn't be. At Buy-A-Warranty, we've made the process clear, quick and customer focused — so you get the help you need without the hassle.
+            </p>
+
+            {/* Why you're in safe hands */}
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3">
+              Why you're in safe hands
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-8">
+              {[
+                { title: 'Quick response', body: 'We respond to claims quickly and fairly, with no unnecessary delays.' },
+                { title: 'UK-based team', body: 'Our UK-based claims team is here to guide you every step of the way.' },
+                { title: 'Simple process', body: 'We keep things simple — no confusing jargon or hidden terms.' },
+              ].map((c) => (
+                <div key={c.title} className="bg-white border border-[#E2E8F0] rounded-2xl p-4">
+                  <div className="w-9 h-9 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center mb-3">
+                    <ShieldCheck className="w-[18px] h-[18px] text-[#E8541A]" strokeWidth={1.8} />
+                  </div>
+                  <div className="text-[13px] font-medium text-[#1A2B4A] mb-1">{c.title}</div>
+                  <div className="text-[12px] text-[#5A6B82] leading-[1.5]">{c.body}</div>
                 </div>
-                <div className="bg-green-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-green-100 hover:border-green-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">UK-Based Team</h3>
-                  <p className="text-sm text-gray-700">Our UK-based claims team is here to guide you every step of the way</p>
-                </div>
-                <div className="bg-blue-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100 hover:border-blue-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Simple Process</h3>
-                  <p className="text-sm text-gray-700">We keep things simple, with no confusing jargon or hidden terms</p>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* What You'll Need */}
-            <div className="mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">What You'll Need</h2>
-              <div className="bg-white rounded-xl p-5 sm:p-8 shadow-lg border border-orange-100">
-                <ul className="space-y-4 text-left text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">Vehicle details including make, model and registration</span>
+            {/* What you'll need */}
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3">
+              What you'll need
+            </p>
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mb-8">
+              <ul className="space-y-2.5 text-[14px] text-[#1A2B4A]">
+                {[
+                  'Your vehicle registration',
+                  'A brief description of the issue',
+                  'Any supporting documents, garage report or invoice',
+                ].map((t) => (
+                  <li key={t} className="flex items-start gap-2.5">
+                    <Check className="w-4 h-4 text-[#16A34A] mt-0.5 flex-shrink-0" />
+                    <span>{t}</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">A brief description of the issue</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">Any supporting documents or garage reports</span>
-                  </li>
-                </ul>
-              </div>
+                ))}
+              </ul>
             </div>
 
-            {/* How to Start Your Claim */}
-            <div className="mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">How to Start Your Claim</h2>
-              {/* Already submitted? Add evidence */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Already submitted a claim?</h3>
-                  <p className="text-sm text-gray-700">No need to fill in the form again. Just upload extra evidence (photos, garage reports, invoices) to your existing claim.</p>
-                </div>
-                <Link to="/add-evidence/" className="flex-shrink-0">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2">
-                    <Upload className="w-4 h-4" /> Upload evidence
-                  </Button>
-                </Link>
+            {/* Already submitted? */}
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between mb-2">
+              <div className="text-left">
+                <div className="text-[14px] font-medium text-[#1A2B4A] mb-0.5">Already submitted a claim?</div>
+                <p className="text-[13px] text-[#5A6B82]">Just upload extra evidence (photos, reports, invoices) to your existing claim.</p>
               </div>
+              <Link to="/add-evidence/" className="flex-shrink-0">
+                <Button className="pro-btn-primary h-10 px-4 text-[13px] inline-flex items-center gap-2">
+                  <Upload className="w-3.5 h-3.5" /> Upload evidence
+                </Button>
+              </Link>
             </div>
+          </div>
+        </section>
 
-            {/* Make A Claim Form */}
-            <div className="mb-12 mt-16" id="claim-form">
-              <div className="mb-8 text-left">
-                <h2 className="pro-serif text-3xl lg:text-4xl text-[#1A2B4A] mb-2">
+        {/* Form section */}
+        <section className="bg-[#F4F6F8] pt-4 pb-16 px-4 sm:px-6">
+          <div className="max-w-2xl mx-auto">
+            <div id="claim-form">
+              <div className="mb-6 text-left">
+                <h2 className="pro-serif text-[clamp(1.5rem,3.5vw,2rem)] text-[#1A2B4A] mb-1">
                   Start your claim
                 </h2>
-                <p className="text-[#5A6B82] text-base">
+                <p className="text-[14px] text-[#5A6B82]">
                   Quick, easy and hassle free — takes about 3 minutes.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Form Section - Takes 2 columns */}
-                 <div className="lg:col-span-2">
+              <div>
+                <div>
+                  {/* form column */}
                    {!formStarted ? (
                      <>
                        {/* ── Acknowledgement gate ── */}
-                       <div
-                         role="note"
-                         aria-label="Important notice before submitting your claim"
-                         className="mb-6 rounded-2xl border-2 border-orange-300 bg-white p-5 sm:p-6 shadow-sm"
-                       >
-                         <div className="flex items-center gap-3 mb-4">
-                           <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-white shadow-sm">
-                             <Info className="w-5 h-5" strokeWidth={2.5} />
+                       <div className="mb-5 pro-card p-5 sm:p-6">
+                         <div className="flex items-start gap-3 mb-3">
+                           <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-[#E8541A] text-white">
+                             <Info className="w-3.5 h-3.5" strokeWidth={2.5} />
                            </div>
-                           <h3 className="text-lg sm:text-xl font-bold text-gray-900 text-left">
-                             Before you submit your claim
-                           </h3>
-                         </div>
-                         <p className="text-sm text-gray-600 mb-4 text-left">
-                           Please take a moment to read this important information.
-                         </p>
-
-                         <div className="space-y-3 mb-5 text-left">
-                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                             Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. This is because our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
-                           </p>
-                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                             This is standard practice across the warranty industry and is outlined in your policy terms.
-                           </p>
-                           <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                             Your warranty cover will continue as normal for the remainder of your policy period — submitting a claim will not reduce or affect your ongoing protection.
-                           </p>
-
-                           <div className="rounded-lg bg-orange-50 border border-orange-100 p-4">
-                             <p className="text-sm text-gray-700 leading-relaxed mb-2">
-                               If you're unsure whether you'd like to proceed, our friendly Claims Team is here to help before you submit:
+                           <div>
+                             <h3 className="pro-serif text-[1.15rem] text-[#1A2B4A] text-left mb-0.5">
+                               Before you submit your claim
+                             </h3>
+                             <p className="text-[13px] text-[#5A6B82] text-left">
+                               Please take a moment to read this important information.
                              </p>
-                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                               <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                           </div>
+                         </div>
+
+                         <div className="space-y-3 mb-4 text-left">
+                           <p className="text-[14px] text-[#1A2B4A] leading-relaxed">
+                             Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. Our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
+                           </p>
+                           <p className="text-[14px] text-[#5A6B82] leading-relaxed">
+                             This is standard practice across the warranty industry and is outlined in your policy terms. Your warranty cover will continue as normal for the remainder of your policy period — submitting a claim will not reduce or affect your ongoing protection.
+                           </p>
+
+                           <div className="rounded-[10px] bg-[#F4F6F8] border border-[#E2E8F0] p-3.5">
+                             <p className="text-[13px] text-[#5A6B82] leading-relaxed mb-2">
+                               Unsure whether to proceed? Our claims team is happy to help first:
+                             </p>
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+                               <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-medium text-[#1A2B4A] hover:text-[#E8541A]">
                                  <Phone className="w-3.5 h-3.5" /> 0330 229 5045
                                </a>
-                               <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-semibold text-orange-600 hover:text-orange-700">
+                               <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-medium text-[#1A2B4A] hover:text-[#E8541A]">
                                  <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
                                </a>
                              </div>
@@ -731,8 +719,8 @@ Additional Information: ${formData.additionalInfo}
                          {/* Gate checkbox */}
                          <label
                            htmlFor="ackCheck"
-                           className={`flex gap-3 items-start rounded-lg p-4 cursor-pointer transition-colors border-2 ${
-                             ackChecked ? 'border-orange-500 bg-orange-50' : 'border-orange-200 bg-orange-50/60 hover:border-orange-300'
+                           className={`flex gap-3 items-start rounded-[10px] p-3.5 cursor-pointer transition-colors ${
+                             ackChecked ? 'bg-[#FEF0E8] border border-[#E8541A]/40' : 'bg-[#FEF0E8]/60 border border-[#E8541A]/20 hover:border-[#E8541A]/40'
                            }`}
                          >
                            <input
@@ -740,9 +728,9 @@ Additional Information: ${formData.additionalInfo}
                              id="ackCheck"
                              checked={ackChecked}
                              onChange={(e) => setAckChecked(e.target.checked)}
-                             className="w-5 h-5 mt-0.5 flex-shrink-0 accent-orange-500 cursor-pointer"
+                             className="w-[18px] h-[18px] mt-0.5 flex-shrink-0 accent-[#E8541A] cursor-pointer"
                            />
-                           <span className="text-sm text-gray-800 leading-relaxed text-left">
+                           <span className="text-[13px] text-[#1A2B4A] leading-relaxed text-left">
                              I have read and understood the above information. I understand that once I submit my claim, my warranty will no longer be eligible for a refund or cancellation, and I wish to proceed.
                            </span>
                          </label>
@@ -754,10 +742,10 @@ Additional Information: ${formData.additionalInfo}
                            type="button"
                            onClick={startForm}
                            disabled={!ackChecked}
-                           className={`px-8 py-6 text-base font-semibold rounded-lg inline-flex items-center gap-2 transition-all ${
+                           className={`px-7 py-3 h-12 text-[14px] rounded-[10px] inline-flex items-center gap-2 transition-all ${
                              ackChecked
-                               ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl'
-                               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                               ? 'pro-btn-primary'
+                               : 'bg-[#E2E8F0] text-[#B0BAC6] cursor-not-allowed'
                            }`}
                          >
                            {!ackChecked && <Lock className="w-4 h-4" />}
@@ -765,20 +753,16 @@ Additional Information: ${formData.additionalInfo}
                            {ackChecked && <ArrowRight className="w-4 h-4" />}
                          </Button>
                          {!ackChecked && (
-                           <p className="text-xs text-gray-500 mt-2">Please tick the box above to continue</p>
+                           <p className="text-[12px] text-[#B0BAC6] mt-2">Please tick the box above to continue</p>
                          )}
-                          <p className="text-xs text-gray-600 mt-3 inline-flex items-center gap-1.5 justify-center">
-                            <CalendarDays className="w-3.5 h-3.5 text-orange-600" />
-                            Claims team responds Monday–Friday, 9am–5pm.
-                          </p>
-                        </div>
-                      </>
+                       </div>
+                       </>
                    ) : (
                      <>
                        
-                        <div className="mb-5 rounded-lg border-2 border-orange-300 bg-white px-4 py-3 flex items-center gap-2 text-sm text-gray-800">
-                          <CalendarDays className="w-4 h-4 text-orange-600 flex-shrink-0" />
-                          <span><strong>Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours will be reviewed on the next working day.</span>
+                        <div className="mb-5 rounded-[10px] bg-[#FEF0E8] border border-[#E8541A]/20 px-3.5 py-2.5 flex items-start gap-2 text-[13px] text-[#5A6B82]">
+                          <CalendarDays className="w-4 h-4 text-[#E8541A] flex-shrink-0 mt-0.5" />
+                          <span><strong className="text-[#1A2B4A] font-medium">Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours are reviewed the next working day.</span>
                         </div>
 
                        {/* Step tracker */}
@@ -1134,17 +1118,7 @@ Additional Information: ${formData.additionalInfo}
                    )}
                  </div>
 
-                {/* Right Side - Illustration and Info - Takes 1 column */}
-                <div className="space-y-6">
-                  <div className="flex justify-center lg:justify-start">
-                    <img 
-                      src={pandaMechanicFix} 
-                      alt="Panda mechanic with tools fixing a car" 
-                      className="w-full max-w-48 h-auto"
-                    />
-                  </div>
-                  
-                </div>
+                {/* (illustration column removed for cleaner single-column layout) */}
 
               </div>
             </div>
@@ -1152,68 +1126,72 @@ Additional Information: ${formData.additionalInfo}
         </section>
 
 
-        {/* Your Repair Limit Explained */}
-        <section className="py-16 lg:py-24 px-4 bg-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-8">
-              Your Repair Limit Explained
+        {/* Your repair limit explained */}
+        <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
+          <div className="max-w-2xl mx-auto">
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3 text-left">
+              Your repair limit
+            </p>
+            <h2 className="pro-serif text-2xl lg:text-3xl text-[#1A2B4A] mb-4 text-left">
+              Clear limits, no surprises
             </h2>
-            <div className="space-y-6 text-lg text-gray-600 max-w-3xl mx-auto">
-              <p className="leading-relaxed">
-                At Buyawarranty.co.uk, your maximum repair limit is clearly outlined in your warranty email and visible in your online account. If a repair exceeds your limit, you can simply top it up.
+            <div className="space-y-3 text-[15px] text-[#5A6B82] leading-relaxed text-left">
+              <p>
+                Your maximum repair limit is clearly outlined in your warranty email and visible in your online account. If a repair exceeds your limit, you can simply top it up.
               </p>
-              <p className="leading-relaxed">
-                In our experience at Buy-A-Warranty, this situation is very rare - especially if you've selected a claim limit that suits your vehicle and driving habits.
+              <p>
+                In our experience, this situation is very rare — especially if you've selected a claim limit that suits your vehicle and driving habits.
               </p>
-              <div className="bg-white p-8 rounded-xl shadow-lg border border-orange-100 mt-8 hover:shadow-xl transition-all duration-300">
-                <p className="font-semibold text-xl text-gray-900">
-                  ✓ We cover what we promise - no hidden surprises.
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mt-4 flex items-center gap-3">
+                <Check className="w-5 h-5 text-[#16A34A] flex-shrink-0" />
+                <p className="text-[14px] text-[#1A2B4A] font-medium">
+                  We cover what we promise — no hidden surprises.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Contact Us */}
-        <section className="py-16 lg:py-20 px-4 bg-gray-50">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Get in touch with our claims team</h2>
-              <p className="text-lg text-gray-700 font-medium">Choose your preferred way to contact us:</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Contact us */}
+        <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
+          <div className="max-w-2xl mx-auto">
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3 text-left">
+              Get in touch
+            </p>
+            <h2 className="pro-serif text-2xl lg:text-3xl text-[#1A2B4A] mb-5 text-left">
+              Talk to our claims team
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
                 href="mailto:claims@buyawarranty.co.uk"
-                className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                className="group block p-4 bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#E8541A]/40 transition-colors"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
-                    <Mail className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors duration-300" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center">
+                    <Mail className="w-[18px] h-[18px] text-[#E8541A]" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors duration-300">Email Us</h3>
-                    <p className="text-sm text-gray-500">Send us your claim details</p>
+                    <div className="text-[14px] font-medium text-[#1A2B4A]">Email us</div>
+                    <div className="text-[12px] text-[#5A6B82]">Send your claim details</div>
                   </div>
                 </div>
-                <p className="text-lg font-semibold text-orange-500 group-hover:text-orange-600 transition-colors duration-300">claims@buyawarranty.co.uk</p>
-                <p className="text-sm text-green-600 font-medium mt-3">We respond as quickly as possible during working hours.</p>
+                <p className="text-[14px] font-medium text-[#1A2B4A] break-all">claims@buyawarranty.co.uk</p>
               </a>
 
               <a
                 href="tel:03302295045"
-                className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                className="group block p-4 bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#E8541A]/40 transition-colors"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
-                    <Phone className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors duration-300" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center">
+                    <Phone className="w-[18px] h-[18px] text-[#E8541A]" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors duration-300">Call Us</h3>
-                    <p className="text-sm text-gray-500">Speak to our claims team</p>
+                    <div className="text-[14px] font-medium text-[#1A2B4A]">Call us</div>
+                    <div className="text-[12px] text-[#5A6B82]">Mon–Fri, 9am–5pm</div>
                   </div>
                 </div>
-                <p className="text-lg font-semibold text-orange-500 group-hover:text-orange-600 transition-colors duration-300">0330 229 5045</p>
-                <p className="text-sm text-green-600 font-medium mt-3">Monday to Friday, 9am to 5pm</p>
+                <p className="text-[14px] font-medium text-[#1A2B4A]">0330 229 5045</p>
               </a>
             </div>
           </div>
