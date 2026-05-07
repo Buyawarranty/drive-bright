@@ -672,9 +672,9 @@ Additional Information: ${formData.additionalInfo}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Form Section - Takes 2 columns */}
-                 <div className="lg:col-span-2">
+              <div>
+                <div>
+                  {/* form column */}
                    {!formStarted ? (
                      <>
                        {/* ── Acknowledgement gate ── */}
