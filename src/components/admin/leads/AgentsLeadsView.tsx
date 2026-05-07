@@ -296,7 +296,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Handle save cap
   const handleSaveCap = async (adminUserId: string) => {
     const newCap = editedCaps[adminUserId];
-    if (newCap === undefined) return;
+    if (newCap === undefined) {
+      toast({ title: 'No changes', description: 'Edit the cap value first.' });
+      return;
+    }
 
     setSaving(adminUserId);
     const success = await updateAgentCap(adminUserId, { daily_cap: newCap });
@@ -304,6 +307,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       setEditedCaps(prev => {
         const { [adminUserId]: _, ...rest } = prev;
         return rest;
+      });
+      toast({
+        title: 'Daily cap updated',
+        description: `New limit: ${newCap === null ? 'Unlimited' : newCap} leads/day.`,
       });
     }
     setSaving(null);
