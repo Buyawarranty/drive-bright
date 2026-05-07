@@ -1186,7 +1186,7 @@ Additional Information: ${formData.additionalInfo}
         {/* Your repair limit explained */}
         <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
           <div className="max-w-2xl mx-auto">
-            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3 text-left">
+            <p className="text-[11px] font-medium text-[#E8541A] uppercase tracking-[0.07em] mb-3 text-left">
               Your repair limit
             </p>
             <h2 className="pro-serif text-2xl lg:text-3xl text-[#1A2B4A] mb-4 text-left">
