@@ -760,9 +760,9 @@ Additional Information: ${formData.additionalInfo}
                    ) : (
                      <>
                        
-                        <div className="mb-5 rounded-lg border-2 border-orange-300 bg-white px-4 py-3 flex items-center gap-2 text-sm text-gray-800">
-                          <CalendarDays className="w-4 h-4 text-orange-600 flex-shrink-0" />
-                          <span><strong>Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours will be reviewed on the next working day.</span>
+                        <div className="mb-5 rounded-[10px] bg-[#FEF0E8] border border-[#E8541A]/20 px-3.5 py-2.5 flex items-start gap-2 text-[13px] text-[#5A6B82]">
+                          <CalendarDays className="w-4 h-4 text-[#E8541A] flex-shrink-0 mt-0.5" />
+                          <span><strong className="text-[#1A2B4A] font-medium">Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours are reviewed the next working day.</span>
                         </div>
 
                        {/* Step tracker */}
