@@ -118,40 +118,32 @@ const AddClaimEvidence = () => {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold mb-3">
                   <ShieldCheck className="w-3.5 h-3.5" /> Existing claim — additional evidence
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Add evidence to your claim</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Upload evidence</h1>
                 <p className="text-gray-600">
-                  Already submitted a claim? No need to fill in the whole form again. Just confirm your registration and email,
-                  then upload your supporting files (photos, garage reports, invoices). We'll attach them to your existing claim straight away.
+                  Add photos, documents or videos to an open claim.
                 </p>
+                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-gray-600">
+                  <span className="inline-flex items-center gap-1.5"><Lock className="w-4 h-4 text-green-600" /> End-to-end encrypted</span>
+                  <span className="inline-flex items-center gap-1.5"><Clock className="w-4 h-4 text-orange-600" /> Reviewed within 2 hrs</span>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 sm:p-8 shadow-lg border border-gray-200 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="vehicleReg" className="text-sm font-semibold text-gray-900">Vehicle registration <span className="text-red-500">*</span></Label>
-                    <Input
-                      id="vehicleReg"
-                      value={vehicleReg}
-                      onChange={(e) => setVehicleReg(e.target.value.toUpperCase())}
-                      placeholder="e.g. AB12 CDE"
-                      className={`mt-1.5 uppercase tracking-wider font-semibold ${errors.vehicleReg ? 'border-red-500' : ''}`}
-                      autoComplete="off"
-                    />
-                    {errors.vehicleReg && <p className="text-xs text-red-600 mt-1">{errors.vehicleReg}</p>}
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white text-sm font-bold">1</div>
+                    <h2 className="text-lg font-semibold text-gray-900">Find your claim</h2>
                   </div>
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-semibold text-gray-900">Email address <span className="text-red-500">*</span></Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="The email used on your claim"
-                      className={`mt-1.5 ${errors.email ? 'border-red-500' : ''}`}
-                      autoComplete="email"
-                    />
-                    {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
-                  </div>
+                  <Label htmlFor="reference" className="text-sm font-semibold text-gray-900">Claim reference, policy number or vehicle registration <span className="text-red-500">*</span></Label>
+                  <Input
+                    id="reference"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                    placeholder="e.g. CLM-12345, BAW-00123 or AB12 CDE"
+                    className={`mt-1.5 ${errors.reference ? 'border-red-500' : ''}`}
+                    autoComplete="off"
+                  />
+                  {errors.reference && <p className="text-xs text-red-600 mt-1">{errors.reference}</p>}
                 </div>
 
                 <div>
