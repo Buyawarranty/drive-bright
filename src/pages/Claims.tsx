@@ -759,7 +759,7 @@ Additional Information: ${formData.additionalInfo}
                              >
                                <span className="flex items-center gap-2.5 min-w-0">
                                  <FileText className="w-4 h-4 text-[#1A2B4A] flex-shrink-0" />
-                                 <span className="text-[13.5px] font-semibold text-[#1A2B4A] truncate">Platinum Plan Terms &amp; Conditions</span>
+                                 <span className="text-[13.5px] font-semibold text-[#1A2B4A] truncate">Platinum Plan</span>
                                </span>
                                <ExternalLink className="w-4 h-4 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
                              </a>
