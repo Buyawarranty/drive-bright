@@ -303,6 +303,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
       }
       supabase.removeChannel(contactChannel);
       supabase.removeChannel(claimsChannel);
+      supabase.removeChannel(claimsEvidenceChannel);
       supabase.removeChannel(customersChannel);
       supabase.removeChannel(resubChannel);
     };
