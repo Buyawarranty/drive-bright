@@ -212,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload: any = {
       from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
       to: ["claims@buyawarranty.co.uk", "support@buyawarranty.co.uk"],
-      subject: `New evidence: ${regDisplay}`,
+      subject: `New evidence (${evidenceLabel}): ${regDisplay}`,
       html: emailHtml,
     };
     if (uploadedAttachments.length > 0) {
