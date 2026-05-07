@@ -678,74 +678,103 @@ Additional Information: ${formData.additionalInfo}
                    {!formStarted ? (
                      <>
                        {/* ── Acknowledgement gate ── */}
-                       <div className="mb-5 pro-card p-5 sm:p-6">
-                         <div className="flex items-start gap-3 mb-3">
-                           <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-[#E8541A] text-white">
-                             <Info className="w-3.5 h-3.5" strokeWidth={2.5} />
+                       <div className="mb-5 pro-card p-5 sm:p-7">
+                         {/* Header */}
+                         <div className="flex items-start gap-3.5 mb-5">
+                           <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-[#1A2B4A] text-white">
+                             <Info className="w-5 h-5" strokeWidth={2.25} />
                            </div>
                            <div>
-                             <h3 className="pro-serif text-[1.15rem] text-[#1A2B4A] text-left mb-0.5">
-                               Before you submit your claim
+                             <h3 className="pro-serif text-[1.35rem] text-[#1A2B4A] text-left leading-tight mb-1">
+                               Before you begin
                              </h3>
-                             <p className="text-[13px] text-[#5A6B82] text-left">
-                               Please take a moment to read this important information.
+                             <p className="text-[14px] text-[#5A6B82] text-left">
+                               Please take a moment to review this important information.
                              </p>
                            </div>
                          </div>
 
-                         <div className="space-y-3 mb-4 text-left">
-                           <p className="text-[14px] text-[#1A2B4A] leading-relaxed">
-                             Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. Our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
-                           </p>
-                           <p className="text-[14px] text-[#5A6B82] leading-relaxed">
-                             This is standard practice across the warranty industry and is outlined in your policy terms. Your warranty cover will continue as normal for the remainder of your policy period - submitting a claim will not reduce or affect your ongoing protection.
-                           </p>
-
-                           <div className="rounded-[10px] bg-[#F4F6F8] border border-[#E2E8F0] p-3.5">
-                             <p className="text-[13px] text-[#5A6B82] leading-relaxed mb-2">
-                               Unsure whether to proceed? Our claims team is happy to help first:
+                         {/* Callout: No refund */}
+                         <div className="mb-3 rounded-[12px] bg-[#FFF1EA] border border-[#FBD9C6] p-4 sm:p-5 flex items-start gap-4 text-left">
+                           <div className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full bg-[#FCE0D0] text-[#E8541A]">
+                             <Ban className="w-5 h-5" strokeWidth={2.25} />
+                           </div>
+                           <div className="min-w-0">
+                             <p className="text-[15px] font-semibold text-[#1A2B4A] mb-1">No refund after submitting</p>
+                             <p className="text-[13.5px] text-[#5A6B82] leading-relaxed">
+                               Once you submit a claim, your warranty will no longer be eligible for cancellation or refund. Our claims team begins reviewing your case straight away, including assessing your claim and working with approved garages on your behalf. These costs are incurred as soon as the process starts and cannot be recovered.
                              </p>
-                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+                           </div>
+                         </div>
+
+                         {/* Callout: Cover stays active */}
+                         <div className="mb-3 rounded-[12px] bg-[#EDF8F2] border border-[#CDEBD9] p-4 sm:p-5 flex items-start gap-4 text-left">
+                           <div className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full bg-[#D5EFDF] text-[#1F8A52]">
+                             <ShieldCheck className="w-5 h-5" strokeWidth={2.25} />
+                           </div>
+                           <div className="min-w-0">
+                             <p className="text-[15px] font-semibold text-[#1A2B4A] mb-1">Your cover stays active</p>
+                             <p className="text-[13.5px] text-[#5A6B82] leading-relaxed">
+                               This is standard practice across the warranty industry and is outlined in your policy terms. Your warranty cover will continue as normal for the remainder of your policy period - submitting a claim will not reduce or affect your ongoing protection.
+                             </p>
+                           </div>
+                         </div>
+
+                         {/* Callout: Need help */}
+                         <div className="mb-5 rounded-[12px] bg-[#EEF3FB] border border-[#D4E0F2] p-4 sm:p-5 flex items-start gap-4 text-left">
+                           <div className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full bg-[#DCE6F6] text-[#1A2B4A]">
+                             <Headphones className="w-5 h-5" strokeWidth={2.25} />
+                           </div>
+                           <div className="min-w-0 flex-1">
+                             <p className="text-[15px] font-semibold text-[#1A2B4A] mb-1">Not sure? We're here to help</p>
+                             <p className="text-[13.5px] text-[#5A6B82] leading-relaxed mb-2.5">
+                               Our friendly team can answer any questions before you proceed.
+                             </p>
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13.5px]">
                                <a href="tel:03302295045" className="inline-flex items-center gap-1.5 font-medium text-[#1A2B4A] hover:text-[#E8541A]">
-                                 <Phone className="w-3.5 h-3.5" /> 0330 229 5045
+                                 <Phone className="w-4 h-4 text-[#1A2B4A]" /> 0330 229 5045
                                </a>
+                               <span className="text-[#C7D0DD]">|</span>
                                <a href="mailto:claims@buyawarranty.co.uk" className="inline-flex items-center gap-1.5 font-medium text-[#1A2B4A] hover:text-[#E8541A]">
-                                 <Mail className="w-3.5 h-3.5" /> claims@buyawarranty.co.uk
+                                 <Mail className="w-4 h-4 text-[#1A2B4A]" /> claims@buyawarranty.co.uk
                                </a>
                              </div>
                            </div>
                          </div>
 
+                         {/* Divider */}
+                         <div className="border-t border-[#E2E8F0] my-5" />
+
                          {/* Important documents */}
-                         <div className="mb-4 text-left">
-                           <p className="text-[14px] font-semibold text-[#1A2B4A] mb-1">Important documents</p>
-                           <p className="text-[13px] text-[#5A6B82] mb-3">Please review the relevant documents before submitting your claim.</p>
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                         <div className="mb-5 text-left">
+                           <p className="text-[15px] font-semibold text-[#1A2B4A] mb-1">Important documents</p>
+                           <p className="text-[13.5px] text-[#5A6B82] mb-3">Please review the relevant documents before submitting your claim.</p>
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                              <a
                                href={platinumDocUrl || '#'}
                                target="_blank"
                                rel="noopener noreferrer"
                                onClick={(e) => { if (!platinumDocUrl) { e.preventDefault(); toast({ title: 'Document loading', description: 'Please try again in a moment.' }); } }}
-                               className="flex items-center justify-between gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-3.5 py-3 hover:border-[#E8541A] hover:bg-[#FEF0E8]/40 transition-colors group"
+                               className="flex items-center justify-between gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-3.5 hover:border-[#E8541A] hover:bg-[#FEF0E8]/40 transition-colors group"
                              >
                                <span className="flex items-center gap-2.5 min-w-0">
                                  <FileText className="w-4 h-4 text-[#1A2B4A] flex-shrink-0" />
-                                 <span className="text-[13px] font-medium text-[#1A2B4A] truncate">Platinum Plan Terms & Conditions</span>
+                                 <span className="text-[13.5px] font-semibold text-[#1A2B4A] truncate">Platinum Plan Terms &amp; Conditions</span>
                                </span>
-                               <ExternalLink className="w-3.5 h-3.5 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
+                               <ExternalLink className="w-4 h-4 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
                              </a>
                              <a
                                href={termsDocUrl || '#'}
                                target="_blank"
                                rel="noopener noreferrer"
                                onClick={(e) => { if (!termsDocUrl) { e.preventDefault(); toast({ title: 'Document loading', description: 'Please try again in a moment.' }); } }}
-                               className="flex items-center justify-between gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-3.5 py-3 hover:border-[#E8541A] hover:bg-[#FEF0E8]/40 transition-colors group"
+                               className="flex items-center justify-between gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-3.5 hover:border-[#E8541A] hover:bg-[#FEF0E8]/40 transition-colors group"
                              >
                                <span className="flex items-center gap-2.5 min-w-0">
                                  <FileText className="w-4 h-4 text-[#1A2B4A] flex-shrink-0" />
-                                 <span className="text-[13px] font-medium text-[#1A2B4A] truncate">Claims Process & Refund Information</span>
+                                 <span className="text-[13.5px] font-semibold text-[#1A2B4A] truncate">Claims Process &amp; Refund Information</span>
                                </span>
-                               <ExternalLink className="w-3.5 h-3.5 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
+                               <ExternalLink className="w-4 h-4 text-[#5A6B82] group-hover:text-[#E8541A] flex-shrink-0" />
                              </a>
                            </div>
                          </div>
@@ -753,8 +782,8 @@ Additional Information: ${formData.additionalInfo}
                          {/* Gate checkbox */}
                          <label
                            htmlFor="ackCheck"
-                           className={`flex gap-3 items-start rounded-[10px] p-3.5 cursor-pointer transition-colors ${
-                             ackChecked ? 'bg-[#FEF0E8] border border-[#E8541A]/40' : 'bg-[#FEF0E8]/60 border border-[#E8541A]/20 hover:border-[#E8541A]/40'
+                           className={`flex gap-3 items-start rounded-[10px] p-4 cursor-pointer transition-colors ${
+                             ackChecked ? 'bg-[#FEF0E8] border border-[#E8541A]/40' : 'bg-white border border-[#E2E8F0] hover:border-[#1A2B4A]/30'
                            }`}
                          >
                            <input
@@ -764,31 +793,32 @@ Additional Information: ${formData.additionalInfo}
                              onChange={(e) => setAckChecked(e.target.checked)}
                              className="w-[18px] h-[18px] mt-0.5 flex-shrink-0 accent-[#E8541A] cursor-pointer"
                            />
-                           <span className="text-[13px] text-[#1A2B4A] leading-relaxed text-left">
-                             I have read and understood the above information. I understand that once I submit my claim, my warranty will no longer be eligible for a refund or cancellation, and I wish to proceed.
+                           <span className="text-[13.5px] text-[#1A2B4A] leading-relaxed text-left">
+                             I confirm the information provided is accurate and that I have read and understood the information above.
                            </span>
                          </label>
                        </div>
 
-                       {/* Start button */}
-                       <div className="text-center mb-6">
+                       {/* Continue button */}
+                       <div className="mb-3">
                          <Button
                            type="button"
                            onClick={startForm}
                            disabled={!ackChecked}
-                           className={`px-7 py-3 h-12 text-[14px] rounded-[10px] inline-flex items-center gap-2 transition-all ${
+                           className={`w-full h-14 text-[15px] font-semibold rounded-[12px] inline-flex items-center justify-center gap-3 transition-all ${
                              ackChecked
-                               ? 'pro-btn-primary'
-                               : 'bg-[#E2E8F0] text-[#B0BAC6] cursor-not-allowed'
+                               ? 'bg-[#1A2B4A] hover:bg-[#15233D] text-white'
+                               : 'bg-[#1A2B4A]/40 text-white cursor-not-allowed'
                            }`}
                          >
-                           {!ackChecked && <Lock className="w-4 h-4" />}
-                           Start my claim - takes about 3 minutes
-                           {ackChecked && <ArrowRight className="w-4 h-4" />}
+                           <ShieldCheck className="w-5 h-5" />
+                           Continue to claim form
+                           <ArrowRight className="w-5 h-5 ml-auto" />
                          </Button>
-                         {!ackChecked && (
-                           <p className="text-[12px] text-[#B0BAC6] mt-2">Please tick the box above to continue</p>
-                         )}
+                         <p className="flex items-center justify-center gap-1.5 text-[12.5px] text-[#5A6B82] mt-3">
+                           <Lock className="w-3.5 h-3.5" />
+                           {ackChecked ? 'Your information is secure and will only be used to process your claim.' : 'Please tick the box above to continue.'}
+                         </p>
                        </div>
                        </>
                    ) : (
