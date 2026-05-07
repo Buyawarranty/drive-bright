@@ -40,8 +40,7 @@ const AddClaimEvidence = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: {[k: string]: string} = {};
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Please enter the email address used for your claim.';
-    if (!vehicleReg.trim()) newErrors.vehicleReg = 'Please enter your vehicle registration.';
+    if (!reference.trim()) newErrors.reference = 'Please enter your claim reference, policy number or vehicle registration.';
     if (files.length === 0 && !notes.trim()) newErrors.files = 'Please attach at least one file or add a note.';
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -63,7 +62,7 @@ const AddClaimEvidence = () => {
       }
 
       const res = await supabase.functions.invoke('submit-claim-evidence', {
-        body: { email, vehicleReg, notes, files: filesPayload },
+        body: { reference, notes, files: filesPayload },
       });
 
       if (res.error) {
