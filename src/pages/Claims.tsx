@@ -868,7 +868,7 @@ Additional Information: ${formData.additionalInfo}
                                   </div>
                                 </div>
                                <div className="flex justify-end pt-3 border-t border-gray-100">
-                                 <Button type="button" onClick={() => goToStep(2)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                 <Button type="button" onClick={() => goToStep(2)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
                                    Continue <ArrowRight className="w-4 h-4" />
                                  </Button>
                                </div>
@@ -946,7 +946,7 @@ Additional Information: ${formData.additionalInfo}
                                  <Button type="button" variant="outline" onClick={() => goToStep(1, true)} className="h-11 inline-flex items-center gap-2">
                                    <ArrowLeft className="w-4 h-4" /> Back
                                  </Button>
-                                 <Button type="button" onClick={() => goToStep(3)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                 <Button type="button" onClick={() => goToStep(3)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
                                    Continue <ArrowRight className="w-4 h-4" />
                                  </Button>
                                </div>
@@ -1041,7 +1041,7 @@ Additional Information: ${formData.additionalInfo}
                                  <Button type="button" variant="outline" onClick={() => goToStep(2, true)} className="h-11 inline-flex items-center gap-2">
                                    <ArrowLeft className="w-4 h-4" /> Back
                                  </Button>
-                                 <Button type="button" onClick={() => goToStep(4)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-11 rounded-lg inline-flex items-center gap-2 font-semibold">
+                                 <Button type="button" onClick={() => goToStep(4)} className="pro-btn-primary px-6 h-11 inline-flex items-center gap-2 font-semibold">
                                    Review claim <ArrowRight className="w-4 h-4" />
                                  </Button>
                                </div>
