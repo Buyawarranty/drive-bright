@@ -1126,68 +1126,72 @@ Additional Information: ${formData.additionalInfo}
         </section>
 
 
-        {/* Your Repair Limit Explained */}
-        <section className="py-16 lg:py-24 px-4 bg-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-8">
-              Your Repair Limit Explained
+        {/* Your repair limit explained */}
+        <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
+          <div className="max-w-2xl mx-auto">
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3 text-left">
+              Your repair limit
+            </p>
+            <h2 className="pro-serif text-2xl lg:text-3xl text-[#1A2B4A] mb-4 text-left">
+              Clear limits, no surprises
             </h2>
-            <div className="space-y-6 text-lg text-gray-600 max-w-3xl mx-auto">
-              <p className="leading-relaxed">
-                At Buyawarranty.co.uk, your maximum repair limit is clearly outlined in your warranty email and visible in your online account. If a repair exceeds your limit, you can simply top it up.
+            <div className="space-y-3 text-[15px] text-[#5A6B82] leading-relaxed text-left">
+              <p>
+                Your maximum repair limit is clearly outlined in your warranty email and visible in your online account. If a repair exceeds your limit, you can simply top it up.
               </p>
-              <p className="leading-relaxed">
-                In our experience at Buy-A-Warranty, this situation is very rare - especially if you've selected a claim limit that suits your vehicle and driving habits.
+              <p>
+                In our experience, this situation is very rare — especially if you've selected a claim limit that suits your vehicle and driving habits.
               </p>
-              <div className="bg-white p-8 rounded-xl shadow-lg border border-orange-100 mt-8 hover:shadow-xl transition-all duration-300">
-                <p className="font-semibold text-xl text-gray-900">
-                  ✓ We cover what we promise - no hidden surprises.
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mt-4 flex items-center gap-3">
+                <Check className="w-5 h-5 text-[#16A34A] flex-shrink-0" />
+                <p className="text-[14px] text-[#1A2B4A] font-medium">
+                  We cover what we promise — no hidden surprises.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Contact Us */}
-        <section className="py-16 lg:py-20 px-4 bg-gray-50">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Get in touch with our claims team</h2>
-              <p className="text-lg text-gray-700 font-medium">Choose your preferred way to contact us:</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Contact us */}
+        <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
+          <div className="max-w-2xl mx-auto">
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3 text-left">
+              Get in touch
+            </p>
+            <h2 className="pro-serif text-2xl lg:text-3xl text-[#1A2B4A] mb-5 text-left">
+              Talk to our claims team
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
                 href="mailto:claims@buyawarranty.co.uk"
-                className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                className="group block p-4 bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#E8541A]/40 transition-colors"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
-                    <Mail className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors duration-300" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center">
+                    <Mail className="w-[18px] h-[18px] text-[#E8541A]" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors duration-300">Email Us</h3>
-                    <p className="text-sm text-gray-500">Send us your claim details</p>
+                    <div className="text-[14px] font-medium text-[#1A2B4A]">Email us</div>
+                    <div className="text-[12px] text-[#5A6B82]">Send your claim details</div>
                   </div>
                 </div>
-                <p className="text-lg font-semibold text-orange-500 group-hover:text-orange-600 transition-colors duration-300">claims@buyawarranty.co.uk</p>
-                <p className="text-sm text-green-600 font-medium mt-3">We respond as quickly as possible during working hours.</p>
+                <p className="text-[14px] font-medium text-[#1A2B4A] break-all">claims@buyawarranty.co.uk</p>
               </a>
 
               <a
                 href="tel:03302295045"
-                className="group block p-5 sm:p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-orange-100 hover:border-orange-300 hover:-translate-y-1"
+                className="group block p-4 bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#E8541A]/40 transition-colors"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex-shrink-0 w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors duration-300">
-                    <Phone className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors duration-300" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center">
+                    <Phone className="w-[18px] h-[18px] text-[#E8541A]" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors duration-300">Call Us</h3>
-                    <p className="text-sm text-gray-500">Speak to our claims team</p>
+                    <div className="text-[14px] font-medium text-[#1A2B4A]">Call us</div>
+                    <div className="text-[12px] text-[#5A6B82]">Mon–Fri, 9am–5pm</div>
                   </div>
                 </div>
-                <p className="text-lg font-semibold text-orange-500 group-hover:text-orange-600 transition-colors duration-300">0330 229 5045</p>
-                <p className="text-sm text-green-600 font-medium mt-3">Monday to Friday, 9am to 5pm</p>
+                <p className="text-[14px] font-medium text-[#1A2B4A]">0330 229 5045</p>
               </a>
             </div>
           </div>
