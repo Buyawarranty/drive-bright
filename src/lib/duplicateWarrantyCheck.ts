@@ -38,7 +38,8 @@ export async function checkDuplicateWarranty(
   const normalizedReg = registrationPlate.toUpperCase().replace(/\s/g, '');
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Check for active, non-deleted customers with matching reg AND email
+  // Check for active, non-deleted customers with matching reg AND email.
+  // Cancelled / refunded / expired customers must NOT block a repurchase.
   const { data: existing } = await supabase
     .from('customers')
     .select('id, name, email, registration_plate, warranty_reference_number, warranty_number, plan_type, status, signup_date, final_amount, purchase_source')
@@ -51,17 +52,33 @@ export async function checkDuplicateWarranty(
     return { isDuplicate: false };
   }
 
-  // Check if any of the existing records match the same reg plate
-  const matchingRecord = existing.find(record => {
+  // Filter to records matching the same reg plate
+  const candidates = existing.filter(record => {
     const existingReg = (record.registration_plate || '').toUpperCase().replace(/\s/g, '');
     return existingReg === normalizedReg;
   });
 
-  if (matchingRecord) {
-    return {
-      isDuplicate: true,
-      existingRecord: matchingRecord,
-    };
+  if (candidates.length === 0) {
+    return { isDuplicate: false };
+  }
+
+  // For each candidate, verify they have a currently-active policy.
+  // If their latest policy is cancelled/refunded/expired, allow repurchase.
+  for (const candidate of candidates) {
+    const { data: policies } = await supabase
+      .from('customer_policies')
+      .select('status, policy_end_date')
+      .eq('customer_id', candidate.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const latest = policies?.[0];
+    const latestStatus = (latest?.status || '').toLowerCase();
+    const isTerminated = ['cancelled', 'canceled', 'refunded', 'expired', 'void'].includes(latestStatus);
+
+    if (latest && !isTerminated) {
+      return { isDuplicate: true, existingRecord: candidate };
+    }
   }
 
   return { isDuplicate: false };
