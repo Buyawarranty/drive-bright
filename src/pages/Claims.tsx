@@ -487,11 +487,7 @@ Additional Information: ${formData.additionalInfo}
         throw new Error(response.error.message || 'Failed to submit claim');
       }
 
-      toast({
-        title: "✓ Claim submitted",
-        description: "Thank you. Our claims team will process your claim during working hours: Monday to Friday, 9am–5pm. You'll hear from us on the next working day.",
-        className: "bg-green-600 text-white border-green-700 [&>div]:text-white",
-      });
+      setShowSuccessModal(true);
 
       // Reset form
       setFormData({
