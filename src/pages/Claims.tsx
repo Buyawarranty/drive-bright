@@ -624,7 +624,7 @@ Additional Information: ${formData.additionalInfo}
             </p>
 
             {/* Why you're in safe hands */}
-            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3">
+            <p className="text-[11px] font-medium text-[#E8541A] uppercase tracking-[0.07em] mb-3">
               Why you're in safe hands
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-8">
