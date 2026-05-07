@@ -503,6 +503,11 @@ Additional Information: ${formData.additionalInfo}
         {/* Hero Section - UX Optimized with Orange Branding */}
         <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Working hours banner — must be unmissable */}
+            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full bg-orange-100 border-2 border-orange-300 px-4 py-2 text-sm sm:text-base font-semibold text-orange-800">
+              <CalendarDays className="w-4 h-4" />
+              Claims department open Monday–Friday, 9am–5pm
+            </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
               Making a Claim
             </h1>
@@ -516,6 +521,9 @@ Additional Information: ${formData.additionalInfo}
               </p>
               <p className="text-green-600 font-medium">
                 Get the help you need without the hassle
+              </p>
+              <p className="mt-3 text-sm text-gray-600">
+                Our claims team responds <strong>Monday to Friday, 9am to 5pm</strong>. Submissions sent outside these hours will be reviewed on the next working day.
               </p>
             </div>
             
