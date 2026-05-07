@@ -38,7 +38,7 @@ const AddClaimEvidence = () => {
     const valid: File[] = [];
     for (const f of arr) {
       if (f.size > MAX_FILE_SIZE) {
-        toast({ title: 'File too large', description: `${f.name} is over 10MB.`, variant: 'destructive' });
+        toast({ title: 'File too large', description: `${f.name} is over 20MB.`, variant: 'destructive' });
         continue;
       }
       valid.push(f);
