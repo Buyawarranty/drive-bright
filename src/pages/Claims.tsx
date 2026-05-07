@@ -1129,37 +1129,12 @@ Additional Information: ${formData.additionalInfo}
                                  ))}
                                </div>
 
-                                <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 flex items-start gap-3">
-                                  <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                                  <div className="text-sm text-gray-700 text-left space-y-3">
-                                    <p>
-                                      By submitting your claim, you confirm the details provided are accurate to the best of your knowledge and that you have read and understood the relevant policy and claims information.
-                                    </p>
-                                    <div>
-                                      <p className="font-semibold text-gray-900 mb-1">Useful documents</p>
-                                      <ul className="space-y-1">
-                                        <li>
-                                          {platinumDocUrl ? (
-                                            <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline font-medium">
-                                              View Platinum Plan Terms &amp; Conditions
-                                            </a>
-                                          ) : (
-                                            <span className="text-gray-400">Loading Platinum Plan…</span>
-                                          )}
-                                        </li>
-                                        <li>
-                                          {termsDocUrl ? (
-                                            <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline font-medium">
-                                              View Claims Process &amp; Refund Information
-                                            </a>
-                                          ) : (
-                                            <span className="text-gray-400">Loading Claims Process…</span>
-                                          )}
-                                        </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
+                                 <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 flex items-start gap-3">
+                                   <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                                   <p className="text-sm text-gray-700 text-left">
+                                     By submitting your claim, you confirm the details provided are accurate to the best of your knowledge and that you have read and understood the relevant policy and claims information.
+                                   </p>
+                                 </div>
 
                                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                                  <Button type="button" variant="outline" onClick={() => goToStep(3, true)} className="h-11 inline-flex items-center gap-2">
