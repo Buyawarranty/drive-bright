@@ -1185,20 +1185,6 @@ Additional Information: ${formData.additionalInfo}
           </div>
         </section>
 
-        {/* Ready to Start CTA */}
-        <section className="py-16 lg:py-24 px-4 bg-gradient-to-r from-orange-500 to-orange-600">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-8">
-              Ready To <span className="text-yellow-300">Start</span> Your Claim?
-            </h2>
-            <Button 
-              className="bg-white text-orange-500 hover:bg-gray-100 px-10 py-5 text-xl font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
-              onClick={() => document.getElementById('claim-form')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Start Your Claim Now
-            </Button>
-          </div>
-        </section>
       </div>
     </>
   );
