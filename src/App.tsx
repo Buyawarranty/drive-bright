@@ -53,12 +53,15 @@ const ConditionalFooter = () => {
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
-  
+
+  // Hide footer on claims pages
+  const isClaimsPage = location.pathname.startsWith('/make-a-claim') || location.pathname.startsWith('/add-evidence') || location.pathname.startsWith('/claim-evidence');
+
   // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3.", "3", "4" etc.)
   // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
   
-  if (isCheckoutStep || isAdminRoute || isBrandLanding || isQuotePage || isDealerDashboard) return null;
+  if (isCheckoutStep || isAdminRoute || isBrandLanding || isQuotePage || isClaimsPage || isDealerDashboard) return null;
   return <WebsiteFooter />;
 };
 
