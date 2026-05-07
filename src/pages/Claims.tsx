@@ -489,6 +489,7 @@ Additional Information: ${formData.additionalInfo}
       }
 
       setShowSuccessModal(true);
+      setHasSubmittedClaim(true);
 
       // Reset form
       setFormData({
