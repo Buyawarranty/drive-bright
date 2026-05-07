@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
       ...existing,
       ...uploadedAttachments.map((a) => ({
         url: a.url, publicUrl: a.publicUrl, name: a.name, size: a.size, type: a.type,
-        addedAs: "evidence", addedAt: new Date().toISOString(),
+        addedAs: "evidence", evidenceType: evidenceType || "other", evidenceLabel, addedAt: new Date().toISOString(),
       })),
     ];
 
