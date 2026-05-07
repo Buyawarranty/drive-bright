@@ -43,6 +43,7 @@ const Claims = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -384,7 +385,19 @@ const Claims = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (hasSubmittedClaim) {
+      toast({
+        title: "You've already submitted a claim",
+        description: "To add more details, please use the 'Already submitted a claim?' section above to upload extra evidence.",
+        variant: "destructive",
+      });
+      // Scroll to upload-evidence section at top of page
+      const el = document.querySelector('a[href="/add-evidence/"]');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     // Validate all required fields together so every issue is shown at once
     const newErrors: {[key: string]: string} = {};
 
@@ -488,6 +501,7 @@ Additional Information: ${formData.additionalInfo}
       }
 
       setShowSuccessModal(true);
+      setHasSubmittedClaim(true);
 
       // Reset form
       setFormData({
