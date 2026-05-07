@@ -17,8 +17,7 @@ interface EvidenceFile {
 }
 
 interface EvidenceRequest {
-  email: string;
-  vehicleReg: string;
+  reference: string;
   notes?: string;
   files: EvidenceFile[];
 }
@@ -38,10 +37,10 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { email, vehicleReg, notes, files }: EvidenceRequest = await req.json();
+    const { reference, notes, files }: EvidenceRequest = await req.json();
 
-    if (!email || !vehicleReg) {
-      return new Response(JSON.stringify({ error: "Email and registration are required" }), {
+    if (!reference || !reference.trim()) {
+      return new Response(JSON.stringify({ error: "Claim reference, policy number or registration is required" }), {
         status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -51,24 +50,51 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const normalizedReg = vehicleReg.replace(/\s+/g, "").toUpperCase();
-    const normalizedEmail = email.trim().toLowerCase();
+    const ref = reference.trim();
+    const refUpper = ref.toUpperCase();
+    const refNoSpace = refUpper.replace(/\s+/g, "");
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref);
 
-    // Find most recent matching claim
-    const { data: claim, error: lookupError } = await supabase
-      .from("claims_submissions")
-      .select("*")
-      .ilike("email", normalizedEmail)
-      .ilike("vehicle_registration", `%${normalizedReg}%`)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (lookupError) console.error("Lookup error:", lookupError);
+    // Try lookup by claim id (uuid) first, then vehicle registration
+    let claim: any = null;
+    if (isUuid) {
+      const { data } = await supabase.from("claims_submissions").select("*").eq("id", ref).maybeSingle();
+      claim = data;
+    }
+    if (!claim) {
+      const { data } = await supabase
+        .from("claims_submissions")
+        .select("*")
+        .ilike("vehicle_registration", `%${refNoSpace}%`)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      claim = data;
+    }
+    // Try policy/warranty number lookup via customer_policies
+    if (!claim) {
+      const { data: policy } = await supabase
+        .from("customer_policies")
+        .select("email, registration_plate, policy_number, warranty_number")
+        .or(`policy_number.eq.${refUpper},warranty_number.eq.${refUpper}`)
+        .limit(1)
+        .maybeSingle();
+      if (policy?.registration_plate) {
+        const regNorm = policy.registration_plate.replace(/\s+/g, "").toUpperCase();
+        const { data } = await supabase
+          .from("claims_submissions")
+          .select("*")
+          .ilike("vehicle_registration", `%${regNorm}%`)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        claim = data;
+      }
+    }
 
     if (!claim) {
       return new Response(JSON.stringify({
-        error: "We couldn't find a claim matching that registration and email. Please double-check the details, or call us on 0330 229 5045.",
+        error: "We couldn't find a claim matching that reference. Please double-check, or call us on 0330 229 5045.",
       }), { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
