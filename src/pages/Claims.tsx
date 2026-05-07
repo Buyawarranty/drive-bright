@@ -274,7 +274,7 @@ const Claims = () => {
       if (!formData.email.trim()) newErrors.email = 'We just need an email so we can get back to you.';
       else if (!validateEmail(formData.email)) newErrors.email = "That email doesn't look quite right — mind double-checking it?";
       if (!formData.phone.trim()) newErrors.phone = 'A contact number helps us reach you faster.';
-      else if (!validatePhone(formData.phone)) newErrors.phone = "Hmm, that number doesn't look like a UK number. Try 07123 456789.";
+      else if (!validatePhone(formData.phone)) newErrors.phone = "Please update to a UK number e.g 07123 456789.";
     }
     if (step === 2) {
       if (!formData.vehicleReg.trim()) newErrors.vehicleReg = 'Please pop in your vehicle registration.';
