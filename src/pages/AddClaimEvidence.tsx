@@ -127,9 +127,9 @@ const AddClaimEvidence = () => {
             <>
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold mb-3">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Existing claim - additional evidence
+                  <ShieldCheck className="w-3.5 h-3.5" /> Existing claim - additional information
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Upload evidence</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Additional information (optional)</h1>
                 <p className="text-gray-600">
                   Add photos or documents to an open claim.
                 </p>
