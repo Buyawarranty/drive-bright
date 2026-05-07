@@ -365,10 +365,18 @@ serve(async (req) => {
     });
 
     // Get claim limit from policy or customer data
-    // Valid claim limits are 750, 1250, 2000
+    // Internal values: 1000 (Basic), 2000 (Essential), 3000 (Elite), 5000 (Premium)
+    // W2000 API only accepts: 750, 1250, 2000 — must map internal -> W2000 value
     const policyClaimLimit = policy?.claim_limit;
     const customerClaimLimit = customer?.claim_limit;
-    const finalClaimLimit = policyClaimLimit ?? customerClaimLimit ?? 1250;
+    const internalClaimLimit = Number(policyClaimLimit ?? customerClaimLimit ?? 2000);
+    const mapClaimLimitForW2000 = (val: number): number => {
+      if (val <= 1000) return 750;
+      if (val <= 2000) return 1250;
+      return 2000; // 3000 (Elite) and 5000 (Premium) both map to 2000
+    };
+    const finalClaimLimit = mapClaimLimitForW2000(internalClaimLimit);
+    console.log(`[WARRANTIES-2000] Claim limit mapping: internal=${internalClaimLimit} -> W2000=${finalClaimLimit}`);
     
     // Get voluntary excess from policy or customer data - EXACT same pattern as claim limit
     const policyVoluntaryExcess = policy?.voluntary_excess;
