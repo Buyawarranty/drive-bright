@@ -670,12 +670,12 @@ Additional Information: ${formData.additionalInfo}
 
             {/* Make A Claim Form */}
             <div className="mb-12 mt-16" id="claim-form">
-              <div className="mb-8">
-                <h2 className="text-3xl lg:text-4xl font-bold text-black mb-3 text-left">
-                  Make A Claim
+              <div className="mb-8 text-left">
+                <h2 className="pro-serif text-3xl lg:text-4xl text-[#1A2B4A] mb-2">
+                  Start your claim
                 </h2>
-                <p className="text-black text-lg">
-                  Fill out the form below quick, easy and hassle-free
+                <p className="text-[#5A6B82] text-base">
+                  Quick, easy and hassle free — takes about 3 minutes.
                 </p>
               </div>
 
