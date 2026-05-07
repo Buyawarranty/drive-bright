@@ -1032,7 +1032,6 @@ Additional Information: ${formData.additionalInfo}
                   
                 </div>
 
-                </div>
               </div>
             </div>
           </div>
