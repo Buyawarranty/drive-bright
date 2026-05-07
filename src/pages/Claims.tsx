@@ -583,7 +583,7 @@ Additional Information: ${formData.additionalInfo}
         .claims-pro .pro-divider-soft { border-top: 1px solid var(--c-border); }
       `}</style>
 
-      <div className="min-h-screen bg-white claims-pro">
+      <div className="min-h-screen bg-[#F4F6F8] claims-pro">
         {/* Hero Section - UX Optimized with Orange Branding */}
         {/* Hero + intro */}
         <section className="bg-[#F4F6F8] pt-10 sm:pt-14 pb-6 px-4 sm:px-6">
