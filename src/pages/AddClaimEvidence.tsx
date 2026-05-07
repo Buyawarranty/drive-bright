@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Upload, X, Loader2, CheckCircle2, ShieldCheck, ArrowLeft, FileText, Phone, Mail, Lock, Clock } from 'lucide-react';
+import { Upload, X, Loader2, CheckCircle2, ShieldCheck, ArrowLeft, FileText, Phone, Mail, Lock, Clock, Camera, Video, Receipt, FileSearch, Info } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
