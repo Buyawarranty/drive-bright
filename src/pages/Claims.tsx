@@ -585,96 +585,89 @@ Additional Information: ${formData.additionalInfo}
 
       <div className="min-h-screen bg-white claims-pro">
         {/* Hero Section - UX Optimized with Orange Branding */}
-        <section className="bg-white py-10 sm:py-14 lg:py-24 px-4 sm:px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Working hours banner — must be unmissable */}
-            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full bg-orange-100 border-2 border-orange-300 px-4 py-2 text-sm sm:text-base font-semibold text-orange-800">
-              <CalendarDays className="w-4 h-4" />
-              Claims department open Monday–Friday, 9am–5pm
+        {/* Hero + intro */}
+        <section className="bg-[#F4F6F8] pt-10 sm:pt-14 pb-6 px-4 sm:px-6">
+          <div className="max-w-2xl mx-auto">
+            {/* Slim working hours pill */}
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A]">
+              <CalendarDays className="w-3.5 h-3.5" />
+              Claims team open Monday–Friday, 9am–5pm
             </div>
-            <h1 className="pro-serif text-4xl sm:text-5xl lg:text-6xl text-[#1A2B4A] mb-4 sm:mb-5 text-center">
+
+            <h1 className="pro-serif text-[clamp(2rem,5vw,2.8rem)] leading-[1.15] text-[#1A2B4A] mb-2">
               Making a claim
             </h1>
-            <p className="text-lg lg:text-xl text-[#5A6B82] mb-8 max-w-2xl mx-auto">
+            <p className="text-[15px] text-[#5A6B82] mb-6">
               Simple, supportive and stress free.
             </p>
-            <div className="max-w-3xl mx-auto">
-              <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
-                We know that vehicle issues can be stressful, but making a claim shouldn't be. At 
-                <span className="font-semibold text-orange-600"> Buy-A-Warranty</span>, we've made the process clear, quick and customer focused.
-              </p>
-              <p className="text-green-600 font-medium">
-                Get the help you need without the hassle
-              </p>
-              <p className="mt-3 text-sm text-gray-600">
-                Our claims team responds <strong>Monday to Friday, 9am to 5pm</strong>. Submissions sent outside these hours will be reviewed on the next working day.
-              </p>
-            </div>
-            
-            {/* Why You're in Safe Hands */}
-            <div className="mt-16 mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">Why You're in Safe Hands</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="bg-orange-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Quick Response</h3>
-                  <p className="text-sm text-gray-700">We respond to claims quickly and fairly, with no unnecessary delays</p>
+
+            <p className="text-[15px] text-[#5A6B82] leading-[1.7] mb-8">
+              We know that vehicle issues can be stressful, but making a claim shouldn't be. At Buy-A-Warranty, we've made the process clear, quick and customer focused — so you get the help you need without the hassle.
+            </p>
+
+            {/* Why you're in safe hands */}
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3">
+              Why you're in safe hands
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-8">
+              {[
+                { title: 'Quick response', body: 'We respond to claims quickly and fairly, with no unnecessary delays.' },
+                { title: 'UK-based team', body: 'Our UK-based claims team is here to guide you every step of the way.' },
+                { title: 'Simple process', body: 'We keep things simple — no confusing jargon or hidden terms.' },
+              ].map((c) => (
+                <div key={c.title} className="bg-white border border-[#E2E8F0] rounded-2xl p-4">
+                  <div className="w-9 h-9 bg-[#FEF0E8] rounded-[10px] flex items-center justify-center mb-3">
+                    <ShieldCheck className="w-[18px] h-[18px] text-[#E8541A]" strokeWidth={1.8} />
+                  </div>
+                  <div className="text-[13px] font-medium text-[#1A2B4A] mb-1">{c.title}</div>
+                  <div className="text-[12px] text-[#5A6B82] leading-[1.5]">{c.body}</div>
                 </div>
-                <div className="bg-green-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-green-100 hover:border-green-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">UK-Based Team</h3>
-                  <p className="text-sm text-gray-700">Our UK-based claims team is here to guide you every step of the way</p>
-                </div>
-                <div className="bg-blue-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100 hover:border-blue-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Simple Process</h3>
-                  <p className="text-sm text-gray-700">We keep things simple, with no confusing jargon or hidden terms</p>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* What You'll Need */}
-            <div className="mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">What You'll Need</h2>
-              <div className="bg-white rounded-xl p-5 sm:p-8 shadow-lg border border-orange-100">
-                <ul className="space-y-4 text-left text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">Vehicle details including make, model and registration</span>
+            {/* What you'll need */}
+            <p className="text-[11px] font-medium text-[#B0BAC6] uppercase tracking-[0.07em] mb-3">
+              What you'll need
+            </p>
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mb-8">
+              <ul className="space-y-2.5 text-[14px] text-[#1A2B4A]">
+                {[
+                  'Your vehicle registration',
+                  'A brief description of the issue',
+                  'Any supporting documents, garage report or invoice',
+                ].map((t) => (
+                  <li key={t} className="flex items-start gap-2.5">
+                    <Check className="w-4 h-4 text-[#16A34A] mt-0.5 flex-shrink-0" />
+                    <span>{t}</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">A brief description of the issue</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="font-medium">Any supporting documents or garage reports</span>
-                  </li>
-                </ul>
-              </div>
+                ))}
+              </ul>
             </div>
 
-            {/* How to Start Your Claim */}
-            <div className="mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-black mb-8 text-left">How to Start Your Claim</h2>
-              {/* Already submitted? Add evidence */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Already submitted a claim?</h3>
-                  <p className="text-sm text-gray-700">No need to fill in the form again. Just upload extra evidence (photos, garage reports, invoices) to your existing claim.</p>
-                </div>
-                <Link to="/add-evidence/" className="flex-shrink-0">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2">
-                    <Upload className="w-4 h-4" /> Upload evidence
-                  </Button>
-                </Link>
+            {/* Already submitted? */}
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between mb-2">
+              <div className="text-left">
+                <div className="text-[14px] font-medium text-[#1A2B4A] mb-0.5">Already submitted a claim?</div>
+                <p className="text-[13px] text-[#5A6B82]">Just upload extra evidence (photos, reports, invoices) to your existing claim.</p>
               </div>
+              <Link to="/add-evidence/" className="flex-shrink-0">
+                <Button className="pro-btn-primary h-10 px-4 text-[13px] inline-flex items-center gap-2">
+                  <Upload className="w-3.5 h-3.5" /> Upload evidence
+                </Button>
+              </Link>
             </div>
+          </div>
+        </section>
 
-            {/* Make A Claim Form */}
-            <div className="mb-12 mt-16" id="claim-form">
-              <div className="mb-8 text-left">
-                <h2 className="pro-serif text-3xl lg:text-4xl text-[#1A2B4A] mb-2">
+        {/* Form section */}
+        <section className="bg-[#F4F6F8] pt-4 pb-16 px-4 sm:px-6">
+          <div className="max-w-2xl mx-auto">
+            <div id="claim-form">
+              <div className="mb-6 text-left">
+                <h2 className="pro-serif text-[clamp(1.5rem,3.5vw,2rem)] text-[#1A2B4A] mb-1">
                   Start your claim
                 </h2>
-                <p className="text-[#5A6B82] text-base">
+                <p className="text-[14px] text-[#5A6B82]">
                   Quick, easy and hassle free — takes about 3 minutes.
                 </p>
               </div>
