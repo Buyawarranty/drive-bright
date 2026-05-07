@@ -216,9 +216,11 @@ export const useAdminNotifications = (userRole?: string | null) => {
         const oldNotes = oldData.internal_notes || '';
         const newNotes = newData.internal_notes || '';
         if (newNotes.includes('[NEW EVIDENCE') && newNotes.length > oldNotes.length) {
+          const typeMatch = newNotes.slice(oldNotes.length).match(/Type:\s*([^\n]+)/);
+          const evidenceType = typeMatch ? typeMatch[1].trim() : 'Evidence';
           if (isAdminRole) {
             toast.warning('📎 New Evidence Submitted', {
-              description: `${newData.name || 'Customer'} — ${newData.vehicle_registration || 'no reg'}`,
+              description: `${evidenceType} — ${newData.name || 'Customer'} (${newData.vehicle_registration || 'no reg'})`,
               duration: 6000,
             });
           }
