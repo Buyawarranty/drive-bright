@@ -1127,17 +1127,7 @@ Additional Information: ${formData.additionalInfo}
                    )}
                  </div>
 
-                {/* Right Side - Illustration and Info - Takes 1 column */}
-                <div className="space-y-6">
-                  <div className="flex justify-center lg:justify-start">
-                    <img 
-                      src={pandaMechanicFix} 
-                      alt="Panda mechanic with tools fixing a car" 
-                      className="w-full max-w-48 h-auto"
-                    />
-                  </div>
-                  
-                </div>
+                {/* (illustration column removed for cleaner single-column layout) */}
 
               </div>
             </div>
