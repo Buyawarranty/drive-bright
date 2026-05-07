@@ -46,7 +46,8 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { reference, notes, files }: EvidenceRequest = await req.json();
+    const { reference, evidenceType, notes, files }: EvidenceRequest = await req.json();
+    const evidenceLabel = EVIDENCE_TYPE_LABELS[evidenceType || ""] || "Other";
 
     if (!reference || !reference.trim()) {
       return new Response(JSON.stringify({ error: "Claim reference, policy number or registration is required" }), {
