@@ -668,7 +668,7 @@ Additional Information: ${formData.additionalInfo}
                   Start your claim
                 </h2>
                 <p className="text-[14px] text-[#5A6B82]">
-                  Quick, easy and hassle free - takes about 3 minutes.
+                  Takes about 3 minutes.
                 </p>
               </div>
 
