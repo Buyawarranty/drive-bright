@@ -117,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Same vehicle or no reg data - update existing
       const { data: updated, error: updateErr } = await supabase
         .from('customers')
-        .update({ ...customerRecord, updated_at: new Date().toISOString() })
+        .update({ ...customerRecord, is_deleted: false, deleted_at: null, deleted_by: null, updated_at: new Date().toISOString() })
         .eq('id', existingCustomer.id)
         .select()
         .single();
