@@ -720,8 +720,12 @@ Additional Information: ${formData.additionalInfo}
                          {!ackChecked && (
                            <p className="text-xs text-gray-500 mt-2">Please tick the box above to continue</p>
                          )}
-                       </div>
-                     </>
+                          <p className="text-xs text-gray-600 mt-3 inline-flex items-center gap-1.5 justify-center">
+                            <CalendarDays className="w-3.5 h-3.5 text-orange-600" />
+                            Claims team responds Monday–Friday, 9am–5pm.
+                          </p>
+                        </div>
+                      </>
                    ) : (
                      <>
                        {/* Compact reminder strip */}
