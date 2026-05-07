@@ -816,11 +816,11 @@ Additional Information: ${formData.additionalInfo}
                            type="button"
                            onClick={startForm}
                            disabled={!ackChecked}
-                           className={`w-full h-14 text-[15px] font-semibold rounded-[12px] inline-flex items-center justify-center gap-3 transition-all ${
-                             ackChecked
-                               ? 'bg-[#1A2B4A] hover:bg-[#15233D] text-white'
-                               : 'bg-[#1A2B4A]/40 text-white cursor-not-allowed'
-                           }`}
+                            className={`w-full h-14 text-[15px] font-semibold rounded-[12px] inline-flex items-center justify-center gap-3 transition-all ${
+                              ackChecked
+                                ? 'bg-[#EB6A2C] hover:bg-[#D55A1F] text-white'
+                                : 'bg-[#EB6A2C]/40 text-white cursor-not-allowed'
+                            }`}
                          >
                            <ShieldCheck className="w-5 h-5" />
                            Continue to claim form
