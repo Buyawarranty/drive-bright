@@ -71,24 +71,31 @@ const handler = async (req: Request): Promise<Response> => {
         .maybeSingle();
       claim = data;
     }
-    // Try policy/warranty number lookup via customer_policies
+    // Try policy/warranty number lookup -> customer registration -> claim
     if (!claim) {
       const { data: policy } = await supabase
         .from("customer_policies")
-        .select("email, registration_plate, policy_number, warranty_number")
+        .select("customer_id, policy_number, warranty_number")
         .or(`policy_number.eq.${refUpper},warranty_number.eq.${refUpper}`)
         .limit(1)
         .maybeSingle();
-      if (policy?.registration_plate) {
-        const regNorm = policy.registration_plate.replace(/\s+/g, "").toUpperCase();
-        const { data } = await supabase
-          .from("claims_submissions")
-          .select("*")
-          .ilike("vehicle_registration", `%${regNorm}%`)
-          .order("created_at", { ascending: false })
-          .limit(1)
+      if (policy?.customer_id) {
+        const { data: customer } = await supabase
+          .from("customers")
+          .select("registration_plate")
+          .eq("id", policy.customer_id)
           .maybeSingle();
-        claim = data;
+        if (customer?.registration_plate) {
+          const regNorm = customer.registration_plate.replace(/\s+/g, "").toUpperCase();
+          const { data } = await supabase
+            .from("claims_submissions")
+            .select("*")
+            .ilike("vehicle_registration", `%${regNorm}%`)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          claim = data;
+        }
       }
     }
 
