@@ -176,7 +176,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Email claims team
-    const regDisplay = (claim.vehicle_registration || normalizedReg).toUpperCase();
+    const regDisplay = (claim.vehicle_registration || refNoSpace).toUpperCase();
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #FFD700; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 3px solid #000;">
