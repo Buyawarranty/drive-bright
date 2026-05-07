@@ -599,6 +599,13 @@ Additional Information: ${formData.additionalInfo}
         {/* Hero + intro */}
         <section className="bg-[#F4F6F8] pt-10 sm:pt-14 pb-6 px-4 sm:px-6">
           <div className="max-w-2xl mx-auto">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#5A6B82] hover:text-[#1A2B4A] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
             {/* Slim working hours pill */}
             <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A]">
               <CalendarDays className="w-3.5 h-3.5" />
