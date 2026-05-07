@@ -239,3 +239,6 @@ verify_jwt = false
 
 [functions.seed-save50-promo]
 verify_jwt = false
+
+[functions.submit-claim-evidence]
+verify_jwt = false
