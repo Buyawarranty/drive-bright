@@ -16,7 +16,6 @@ type EvidenceType = 'photos' | 'video' | 'invoice' | 'diagnostic' | 'other';
 
 const EVIDENCE_TYPES: { id: EvidenceType; label: string; icon: any }[] = [
   { id: 'photos', label: 'Photos', icon: Camera },
-  { id: 'video', label: 'Video', icon: Video },
   { id: 'invoice', label: 'Invoice / quote', icon: Receipt },
   { id: 'diagnostic', label: 'Diagnostic report', icon: FileSearch },
   { id: 'other', label: 'Other', icon: Info },
@@ -128,15 +127,15 @@ const AddClaimEvidence = () => {
             <>
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold mb-3">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Existing claim — additional evidence
+                  <ShieldCheck className="w-3.5 h-3.5" /> Existing claim - additional evidence
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Upload evidence</h1>
                 <p className="text-gray-600">
-                  Add photos, documents or videos to an open claim.
+                  Add photos or documents to an open claim.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-gray-600">
                   <span className="inline-flex items-center gap-1.5"><Lock className="w-4 h-4 text-green-600" /> End-to-end encrypted</span>
-                  <span className="inline-flex items-center gap-1.5"><Clock className="w-4 h-4 text-orange-600" /> Reviewed within 2 hrs</span>
+                  <span className="inline-flex items-center gap-1.5"><Clock className="w-4 h-4 text-orange-600" /> Reviewed Mon to Fri: 9am to 5pm</span>
                 </div>
               </div>
 
@@ -217,11 +216,11 @@ const AddClaimEvidence = () => {
                         type="file"
                         multiple
                         className="hidden"
-                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        accept="image/*,.pdf,.doc,.docx"
                         onChange={(e) => e.target.files && addFiles(e.target.files)}
                       />
                     </label>
-                    <p className="text-xs text-gray-500 mt-3">JPG, PNG, MP4, PDF, DOC · max 20 MB per file · up to {MAX_FILES} files</p>
+                    <p className="text-xs text-gray-500 mt-3">JPG, PNG, PDF, DOC · max 20 MB per file · up to {MAX_FILES} files</p>
                   </div>
                   {files.length > 0 && (
                     <ul className="mt-3 space-y-2">
