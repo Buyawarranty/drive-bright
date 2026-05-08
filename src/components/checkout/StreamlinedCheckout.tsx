@@ -1970,7 +1970,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               duration={getDurationText()}
               claimLimit={updatedPricingData.claimLimit || 2000}
               labourRate={pricingData.labourRate || 50}
-              excess={updatedPricingData.voluntaryExcess || 100}
+              excess={updatedPricingData.voluntaryExcess ?? 100}
               startDate={startDate}
               onStartDateChange={(date) => {
                 setStartDate(date);
