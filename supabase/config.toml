@@ -242,3 +242,6 @@ verify_jwt = false
 
 [functions.submit-claim-evidence]
 verify_jwt = false
+
+[functions.list-google-conversion-actions]
+verify_jwt = false
