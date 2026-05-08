@@ -25,20 +25,11 @@ interface GuardPayload {
  * Pushes a sentinel history entry so back from Stripe lands on our site.
  */
 export const redirectToStripeWithBackGuard = (stripeUrl: string) => {
+  // Back-guard popup removed — users can simply use the browser/page back
+  // button to return to checkout. We just redirect to Stripe directly.
   try {
-    const payload: GuardPayload = {
-      url: stripeUrl,
-      returnPath: window.location.pathname + window.location.search,
-      ts: Date.now(),
-    };
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    // Push a sentinel entry so back from Stripe returns here instead of
-    // jumping past our site to the previous external referrer.
-    window.history.pushState({ __stripeBackGuard: true }, '', window.location.href);
-  } catch (e) {
-    // Non-fatal — proceed with redirect even if guard setup fails.
-    console.warn('[stripeBackGuard] failed to set guard', e);
-  }
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch { /* noop */ }
   window.location.href = stripeUrl;
 };
 
