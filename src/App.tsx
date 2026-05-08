@@ -220,7 +220,7 @@ const App = () => {
             <PageViewTracker />
             <PageViewLogger />
             <CookieBanner />
-            <StripeBackGuardDialog />
+            
             <div className="min-h-screen flex flex-col w-full">
               <ConditionalStickyNavigation />
               <ConditionalSeasonalBanner />
