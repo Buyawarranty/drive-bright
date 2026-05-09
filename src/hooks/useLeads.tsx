@@ -519,6 +519,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
               .order('id', { ascending: false })
               .limit(500);
             unassignedQ = applyServerDateFilter(unassignedQ);
+            unassignedQ = applyServerSearchFilter(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
@@ -543,6 +544,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
             .limit(LEADS_LIST_LIMIT);
 
           query = applyServerDateFilter(query);
+          query = applyServerSearchFilter(query);
 
           return await query;
         })(),
