@@ -374,12 +374,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Apply search filter
     if (debouncedSearchTerm) {
       const term = debouncedSearchTerm.toLowerCase();
+      const compactTerm = term.replace(/\s+/g, '');
+      const digitsTerm = term.replace(/\D/g, '');
       result = result.filter(lead =>
         lead.email.toLowerCase().includes(term) ||
         (lead.first_name?.toLowerCase().includes(term)) ||
         (lead.last_name?.toLowerCase().includes(term)) ||
+        (`${lead.first_name || ''} ${lead.last_name || ''}`.toLowerCase().includes(term)) ||
         (lead.phone?.toLowerCase().includes(term)) ||
+        (!!digitsTerm && (lead.phone?.replace(/\D/g, '').includes(digitsTerm))) ||
         (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+        (!!compactTerm && (lead.vehicle_reg?.toLowerCase().replace(/\s+/g, '').includes(compactTerm))) ||
         (lead.plan_interest?.toLowerCase().includes(term))
       );
     }
