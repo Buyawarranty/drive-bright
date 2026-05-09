@@ -235,6 +235,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }, [dateRange]),
     serverAgentFilter: agentFilter,
     serverSearchTerm: debouncedSearchTerm,
+    serverCallbacksOnly: activeFilter === 'callbacks' && !debouncedSearchTerm.trim(),
   });
 
   useEffect(() => {
