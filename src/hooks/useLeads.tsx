@@ -237,6 +237,8 @@ interface UseLeadsOptions {
   serverAgentFilter?: string;
   /** Server-side database-wide search used when the user searches leads by core fields. */
   serverSearchTerm?: string;
+  /** When true, server fetches ALL callback leads (is_callback=true) regardless of date window. */
+  serverCallbacksOnly?: boolean;
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
@@ -260,13 +262,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverAgentFilterRef.current = options?.serverAgentFilter;
   const serverSearchTermRef = useRef(options?.serverSearchTerm);
   serverSearchTermRef.current = options?.serverSearchTerm;
+  const serverCallbacksOnlyRef = useRef(options?.serverCallbacksOnly);
+  serverCallbacksOnlyRef.current = options?.serverCallbacksOnly;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm]);
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -430,11 +434,17 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       const applyServerDateFilter = (query: any) => {
         if (serverSearchTermRef.current?.trim()) return query;
+        if (serverCallbacksOnlyRef.current) return query;
 
         const dateFilter = serverDateFilterRef.current;
         if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
         if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
         return query;
+      };
+
+      const applyCallbacksFilter = (query: any) => {
+        if (!serverCallbacksOnlyRef.current) return query;
+        return query.eq('is_callback', true);
       };
 
       const applyServerSearchFilter = (query: any) => {
@@ -494,7 +504,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -502,13 +512,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))
+              )))
             );
           }
 
           if (serverAgentFilter === 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -516,14 +526,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))
+              )))
             );
           }
 
           if (isSalesAgent && currentAdmin?.id) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
-              applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -531,7 +541,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))
+              )))
             );
 
             // 2) Recent unassigned leads so the agent can still claim
@@ -544,6 +554,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
               .limit(500);
             unassignedQ = applyServerDateFilter(unassignedQ);
             unassignedQ = applyServerSearchFilter(unassignedQ);
+            unassignedQ = applyCallbacksFilter(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
@@ -569,6 +580,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           query = applyServerDateFilter(query);
           query = applyServerSearchFilter(query);
+          query = applyCallbacksFilter(query);
 
           return await query;
         })(),
