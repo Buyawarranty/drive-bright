@@ -443,6 +443,28 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
         const escapedTerm = rawTerm.replace(/[%_]/g, '\\$&').replace(/,/g, ' ');
         const wildcardTerm = `%${escapedTerm}%`;
+        const digitsOnly = rawTerm.replace(/\D/g, '');
+        const compactTerm = rawTerm.replace(/\s+/g, '');
+        const phoneVariants = new Set<string>();
+        const regVariants = new Set<string>();
+
+        if (digitsOnly.length >= 6) {
+          phoneVariants.add(digitsOnly);
+          phoneVariants.add(digitsOnly.replace(/^(\d{5})(\d+)/, '$1 $2'));
+          if (digitsOnly.startsWith('44')) {
+            phoneVariants.add(`0${digitsOnly.slice(2)}`);
+          } else if (digitsOnly.startsWith('0')) {
+            phoneVariants.add(`+44${digitsOnly.slice(1)}`);
+            phoneVariants.add(`44${digitsOnly.slice(1)}`);
+          }
+        }
+
+        if (/^[a-z0-9]{5,}$/i.test(compactTerm)) {
+          const upperCompact = compactTerm.toUpperCase();
+          regVariants.add(upperCompact);
+          regVariants.add(`${upperCompact.slice(0, -3)} ${upperCompact.slice(-3)}`);
+        }
+
         return query.or([
           `email.ilike.${wildcardTerm}`,
           `first_name.ilike.${wildcardTerm}`,
@@ -450,6 +472,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
           `phone.ilike.${wildcardTerm}`,
           `vehicle_reg.ilike.${wildcardTerm}`,
           `plan_interest.ilike.${wildcardTerm}`,
+          ...Array.from(phoneVariants).map(value => `phone.ilike.%${value}%`),
+          ...Array.from(regVariants).map(value => `vehicle_reg.ilike.%${value}%`),
         ].join(','));
       };
 
