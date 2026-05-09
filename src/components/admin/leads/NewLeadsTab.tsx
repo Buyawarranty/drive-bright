@@ -154,6 +154,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   // Source filter visibility: admin, super_admin, and lead_gen only
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
@@ -233,6 +234,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return { from: boundaries.from, to: boundaries.to };
     }, [dateRange]),
     serverAgentFilter: agentFilter,
+    serverSearchTerm: debouncedSearchTerm,
   });
 
   useEffect(() => {
@@ -264,9 +266,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSortOption('latest_submitted');
     }
   }, [setFilter, sortOption]);
-
-  // Debounce search term to avoid filtering on every keystroke
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Handle reminders filter before the switch since it's not a LeadStatus
@@ -375,12 +374,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Apply search filter
     if (debouncedSearchTerm) {
       const term = debouncedSearchTerm.toLowerCase();
+      const compactTerm = term.replace(/\s+/g, '');
+      const digitsTerm = term.replace(/\D/g, '');
       result = result.filter(lead =>
         lead.email.toLowerCase().includes(term) ||
         (lead.first_name?.toLowerCase().includes(term)) ||
         (lead.last_name?.toLowerCase().includes(term)) ||
+        (`${lead.first_name || ''} ${lead.last_name || ''}`.toLowerCase().includes(term)) ||
         (lead.phone?.toLowerCase().includes(term)) ||
+        (!!digitsTerm && (lead.phone?.replace(/\D/g, '').includes(digitsTerm))) ||
         (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+        (!!compactTerm && (lead.vehicle_reg?.toLowerCase().replace(/\s+/g, '').includes(compactTerm))) ||
         (lead.plan_interest?.toLowerCase().includes(term))
       );
     }

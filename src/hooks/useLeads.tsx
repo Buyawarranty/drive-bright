@@ -235,6 +235,8 @@ interface UseLeadsOptions {
   serverDateFilter?: { from?: Date; to?: Date };
   /** Server-side agent scope used for historical agent views so counts are not based on the recent global window. */
   serverAgentFilter?: string;
+  /** Server-side database-wide search used when the user searches leads by core fields. */
+  serverSearchTerm?: string;
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
@@ -256,13 +258,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverDateFilterRef.current = options?.serverDateFilter;
   const serverAgentFilterRef = useRef(options?.serverAgentFilter);
   serverAgentFilterRef.current = options?.serverAgentFilter;
+  const serverSearchTermRef = useRef(options?.serverSearchTerm);
+  serverSearchTermRef.current = options?.serverSearchTerm;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter]);
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -425,10 +429,52 @@ export const useLeads = (options?: UseLeadsOptions) => {
       `;
 
       const applyServerDateFilter = (query: any) => {
+        if (serverSearchTermRef.current?.trim()) return query;
+
         const dateFilter = serverDateFilterRef.current;
         if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
         if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
         return query;
+      };
+
+      const applyServerSearchFilter = (query: any) => {
+        const rawTerm = serverSearchTermRef.current?.trim();
+        if (!rawTerm) return query;
+
+        const escapedTerm = rawTerm.replace(/[%_]/g, '\\$&').replace(/,/g, ' ');
+        const wildcardTerm = `%${escapedTerm}%`;
+        const digitsOnly = rawTerm.replace(/\D/g, '');
+        const compactTerm = rawTerm.replace(/\s+/g, '');
+        const phoneVariants = new Set<string>();
+        const regVariants = new Set<string>();
+
+        if (digitsOnly.length >= 6) {
+          phoneVariants.add(digitsOnly);
+          phoneVariants.add(digitsOnly.replace(/^(\d{5})(\d+)/, '$1 $2'));
+          if (digitsOnly.startsWith('44')) {
+            phoneVariants.add(`0${digitsOnly.slice(2)}`);
+          } else if (digitsOnly.startsWith('0')) {
+            phoneVariants.add(`+44${digitsOnly.slice(1)}`);
+            phoneVariants.add(`44${digitsOnly.slice(1)}`);
+          }
+        }
+
+        if (/^[a-z0-9]{5,}$/i.test(compactTerm)) {
+          const upperCompact = compactTerm.toUpperCase();
+          regVariants.add(upperCompact);
+          regVariants.add(`${upperCompact.slice(0, -3)} ${upperCompact.slice(-3)}`);
+        }
+
+        return query.or([
+          `email.ilike.${wildcardTerm}`,
+          `first_name.ilike.${wildcardTerm}`,
+          `last_name.ilike.${wildcardTerm}`,
+          `phone.ilike.${wildcardTerm}`,
+          `vehicle_reg.ilike.${wildcardTerm}`,
+          `plan_interest.ilike.${wildcardTerm}`,
+          ...Array.from(phoneVariants).map(value => `phone.ilike.%${value}%`),
+          ...Array.from(regVariants).map(value => `vehicle_reg.ilike.%${value}%`),
+        ].join(','));
       };
 
       const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any) => {
@@ -448,7 +494,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerDateFilter(
+              applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -456,13 +502,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )
+              ))
             );
           }
 
           if (serverAgentFilter === 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerDateFilter(
+              applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -470,14 +516,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )
+              ))
             );
           }
 
           if (isSalesAgent && currentAdmin?.id) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
-              applyServerDateFilter(
+              applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -485,7 +531,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )
+              ))
             );
 
             // 2) Recent unassigned leads so the agent can still claim
@@ -497,6 +543,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
               .order('id', { ascending: false })
               .limit(500);
             unassignedQ = applyServerDateFilter(unassignedQ);
+            unassignedQ = applyServerSearchFilter(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
@@ -521,6 +568,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
             .limit(LEADS_LIST_LIMIT);
 
           query = applyServerDateFilter(query);
+          query = applyServerSearchFilter(query);
 
           return await query;
         })(),
