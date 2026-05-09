@@ -235,6 +235,8 @@ interface UseLeadsOptions {
   serverDateFilter?: { from?: Date; to?: Date };
   /** Server-side agent scope used for historical agent views so counts are not based on the recent global window. */
   serverAgentFilter?: string;
+  /** Server-side database-wide search used when the user searches leads by core fields. */
+  serverSearchTerm?: string;
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
@@ -261,8 +263,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter]);
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
