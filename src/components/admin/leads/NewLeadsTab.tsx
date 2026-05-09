@@ -154,6 +154,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   // Source filter visibility: admin, super_admin, and lead_gen only
   const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
@@ -265,9 +266,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSortOption('latest_submitted');
     }
   }, [setFilter, sortOption]);
-
-  // Debounce search term to avoid filtering on every keystroke
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Handle reminders filter before the switch since it's not a LeadStatus
