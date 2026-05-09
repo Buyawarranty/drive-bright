@@ -504,7 +504,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -518,7 +518,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           if (serverAgentFilter === 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -533,7 +533,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           if (isSalesAgent && currentAdmin?.id) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
-              applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -554,6 +554,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
               .limit(500);
             unassignedQ = applyServerDateFilter(unassignedQ);
             unassignedQ = applyServerSearchFilter(unassignedQ);
+            unassignedQ = applyCallbacksFilter(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
@@ -579,6 +580,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           query = applyServerDateFilter(query);
           query = applyServerSearchFilter(query);
+          query = applyCallbacksFilter(query);
 
           return await query;
         })(),
