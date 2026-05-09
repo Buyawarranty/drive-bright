@@ -262,13 +262,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverAgentFilterRef.current = options?.serverAgentFilter;
   const serverSearchTermRef = useRef(options?.serverSearchTerm);
   serverSearchTermRef.current = options?.serverSearchTerm;
+  const serverCallbacksOnlyRef = useRef(options?.serverCallbacksOnly);
+  serverCallbacksOnlyRef.current = options?.serverCallbacksOnly;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm]);
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
