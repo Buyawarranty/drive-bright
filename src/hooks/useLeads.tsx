@@ -434,11 +434,17 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       const applyServerDateFilter = (query: any) => {
         if (serverSearchTermRef.current?.trim()) return query;
+        if (serverCallbacksOnlyRef.current) return query;
 
         const dateFilter = serverDateFilterRef.current;
         if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
         if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
         return query;
+      };
+
+      const applyCallbacksFilter = (query: any) => {
+        if (!serverCallbacksOnlyRef.current) return query;
+        return query.eq('is_callback', true);
       };
 
       const applyServerSearchFilter = (query: any) => {
