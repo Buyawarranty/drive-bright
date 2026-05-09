@@ -470,7 +470,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerDateFilter(
+              applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -478,13 +478,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )
+              ))
             );
           }
 
           if (serverAgentFilter === 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyServerDateFilter(
+              applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -492,14 +492,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )
+              ))
             );
           }
 
           if (isSalesAgent && currentAdmin?.id) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
-              applyServerDateFilter(
+              applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -507,7 +507,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )
+              ))
             );
 
             // 2) Recent unassigned leads so the agent can still claim
