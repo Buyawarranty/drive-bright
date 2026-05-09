@@ -512,7 +512,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))
+              )))
             );
           }
 
@@ -526,7 +526,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))
+              )))
             );
           }
 
@@ -541,7 +541,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))
+              )))
             );
 
             // 2) Recent unassigned leads so the agent can still claim
