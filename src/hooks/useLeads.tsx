@@ -237,6 +237,8 @@ interface UseLeadsOptions {
   serverAgentFilter?: string;
   /** Server-side database-wide search used when the user searches leads by core fields. */
   serverSearchTerm?: string;
+  /** When true, server fetches ALL callback leads (is_callback=true) regardless of date window. */
+  serverCallbacksOnly?: boolean;
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
