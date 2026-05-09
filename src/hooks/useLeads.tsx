@@ -258,6 +258,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverDateFilterRef.current = options?.serverDateFilter;
   const serverAgentFilterRef = useRef(options?.serverAgentFilter);
   serverAgentFilterRef.current = options?.serverAgentFilter;
+  const serverSearchTermRef = useRef(options?.serverSearchTerm);
+  serverSearchTermRef.current = options?.serverSearchTerm;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
@@ -427,10 +429,28 @@ export const useLeads = (options?: UseLeadsOptions) => {
       `;
 
       const applyServerDateFilter = (query: any) => {
+        if (serverSearchTermRef.current?.trim()) return query;
+
         const dateFilter = serverDateFilterRef.current;
         if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
         if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
         return query;
+      };
+
+      const applyServerSearchFilter = (query: any) => {
+        const rawTerm = serverSearchTermRef.current?.trim();
+        if (!rawTerm) return query;
+
+        const escapedTerm = rawTerm.replace(/[%_]/g, '\\$&').replace(/,/g, ' ');
+        const wildcardTerm = `%${escapedTerm}%`;
+        return query.or([
+          `email.ilike.${wildcardTerm}`,
+          `first_name.ilike.${wildcardTerm}`,
+          `last_name.ilike.${wildcardTerm}`,
+          `phone.ilike.${wildcardTerm}`,
+          `vehicle_reg.ilike.${wildcardTerm}`,
+          `plan_interest.ilike.${wildcardTerm}`,
+        ].join(','));
       };
 
       const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any) => {
