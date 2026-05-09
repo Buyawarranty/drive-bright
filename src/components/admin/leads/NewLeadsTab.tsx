@@ -233,6 +233,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return { from: boundaries.from, to: boundaries.to };
     }, [dateRange]),
     serverAgentFilter: agentFilter,
+    serverSearchTerm: debouncedSearchTerm,
   });
 
   useEffect(() => {
