@@ -58,14 +58,24 @@ export const useQuoteRestoration = () => {
       // If we have plan data, save it to localStorage for PricingTable to pick up
       if (planDataJson) {
         console.log('💾 Saving plan data to localStorage:', planDataJson);
+        // CRITICAL: claim limit MUST be a valid matrix value (750/1250/2000/3000/5000).
+        // Previously defaulted to 2500 which is NOT in the matrix → PricingTable
+        // silently fell back to its own default and customers saw a different price
+        // in Step 4 than in Step 3. Default to 1250 (matrix DEFAULT_CLAIM_LIMIT).
+        const VALID_CLAIM_LIMITS = [750, 1250, 2000, 3000, 5000];
+        const restoredClaimLimit = Number(planDataJson.claimLimit);
+        const safeClaimLimit = VALID_CLAIM_LIMITS.includes(restoredClaimLimit) ? restoredClaimLimit : 1250;
         const planSettings = {
           paymentType: planDataJson.paymentType || '12months',
-          claimLimit: planDataJson.claimLimit || 2500,
+          claimLimit: safeClaimLimit,
           labourRate: planDataJson.labourRate || 70,
-          voluntaryExcess: planDataJson.voluntaryExcess || 0,
+          voluntaryExcess: planDataJson.voluntaryExcess ?? 100,
           boostAddon: planDataJson.boostAddon || false,
           addOns: planDataJson.addOns || []
         };
+        if (restoredClaimLimit && !VALID_CLAIM_LIMITS.includes(restoredClaimLimit)) {
+          console.warn('⚠️ Quote restoration: invalid claimLimit', restoredClaimLimit, '→ falling back to', safeClaimLimit);
+        }
         localStorage.setItem('buyawarranty_quotePlanSettings', JSON.stringify(planSettings));
       }
       
