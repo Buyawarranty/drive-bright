@@ -2567,7 +2567,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div>
                       <p className="text-sm font-bold text-[#1a1a1a] leading-tight">How claims work</p>
                       <p className="text-sm text-[#555] mt-1 leading-relaxed">
-                        Claims for mechanical and electrical breakdown can be made after your first 14 days.
+                        Claims can be made after your first 14 days of cover.
                       </p>
                     </div>
                   </div>

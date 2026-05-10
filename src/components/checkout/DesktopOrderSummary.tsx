@@ -85,7 +85,7 @@ const DesktopDeclaration = () => {
         <div>
           <h4 className="text-xs font-bold text-[#1a1a1a] mb-1">How claims work</h4>
           <p className="text-xs text-[#1a1a1a] leading-relaxed">
-            Claims for mechanical and electrical breakdown can be made after your first 14 days.
+            Claims can be made after your first 14 days of cover.
           </p>
         </div>
       </CollapsibleContent>
