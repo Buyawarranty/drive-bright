@@ -655,8 +655,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Motorbikes</span>
                   </div>
                 </div>
-                
-                
+
+                <TooltipProvider delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-green-600 hover:text-green-700 transition-colors cursor-help"
+                      >
+                        <Clock className="w-4 h-4" />
+                        Instant activation
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs text-center">
+                      You're protected immediately. Claims can be submitted after the first 14 days of cover.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
               </div>
             </div>
