@@ -606,6 +606,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // This matches Step 3's "Total: £X" which is calculated as monthlyPrice * 12
   // NOT the raw totalPrice (which may differ due to flooring)
   const bumperTotalPrice = monthlyPrice * 12;
+
+  // INVARIANT GUARD: Step 3 should hand us values that satisfy monthlyPrice*12 === totalPrice.
+  // If they don't, log loudly so we can pinpoint which upstream path produced bad data
+  // (stale localStorage selectedPlan / quote restoration / surcharge desync).
+  if (typeof window !== 'undefined' && updatedPricingData?.totalPrice && updatedPricingData?.monthlyPrice) {
+    const expected = updatedPricingData.monthlyPrice * 12;
+    if (expected !== updatedPricingData.totalPrice) {
+      console.warn('⚠️ Step 4 pricing invariant broken (monthly*12 ≠ total):', {
+        receivedTotal: updatedPricingData.totalPrice,
+        receivedMonthly: updatedPricingData.monthlyPrice,
+        expectedTotal: expected,
+        canonicalBumperTotal: bumperTotalPrice,
+        delta: updatedPricingData.totalPrice - expected,
+        paymentType,
+        planId,
+        voluntaryExcess: updatedPricingData.voluntaryExcess,
+        claimLimit: updatedPricingData.claimLimit,
+        labourRate: updatedPricingData.labourRate,
+        boostAddon: updatedPricingData.boostAddon,
+        highMileageSurchargeApplied,
+        highMileageSurchargeAmount,
+      });
+    }
+  }
   
   // Pay in full uses 10% discount on the floored monthly total
   // CRITICAL: Must match Step 3's formula: total - Math.floor(total * 0.10)
