@@ -661,9 +661,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-green-600 hover:text-green-700 transition-colors cursor-help"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-100 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-green-100 transition-colors cursor-help"
                       >
-                        <Clock className="w-4 h-4" />
+                        <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                         Instant activation
                       </button>
                     </TooltipTrigger>
