@@ -1530,7 +1530,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (dupCheck.isDuplicate) {
         setIsLoading(false);
         toast.error(
-          'This vehicle registration already has an active warranty with us. Please use a different vehicle registration to continue.',
+          'This vehicle registration already has an active warranty with us. Please use a different vehicle registration to continue, or contact us for further support.',
           {
             duration: 10000,
             closeButton: true,
