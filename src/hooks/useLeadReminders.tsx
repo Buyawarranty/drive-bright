@@ -269,22 +269,19 @@ export const useLeadReminders = (leadId?: string) => {
 
       const { data, error } = await (supabase
         .from('lead_reminders' as any)
-        .insert({
+        .upsert({
           lead_id: targetLeadId,
           user_id: userId,
           reminder_time: reminderTime.toISOString(),
-          label: label?.trim() || null
-        })
+          label: label?.trim() || null,
+          status: 'pending',
+          snoozed_until: null,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'lead_id,user_id' })
         .select()
         .maybeSingle() as any);
 
-      if (error) {
-        if (error.code === '23505') {
-          toast.error('You already have an active reminder for this lead');
-          return null;
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       toast.success('Reminder set');
       if (leadId) {
