@@ -59,7 +59,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
   const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
   
   const quoteLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3`;
-  const promoLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3&promo=SAVE50NOW`;
+  const promoLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3&promo=SAVE25GO`;
   
   return `
     <!DOCTYPE html>
@@ -74,12 +74,20 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
         body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
       </style>
       <![endif]-->
+      <style type="text/css">
+        @media only screen and (max-width: 600px) {
+          .baw-pad-32 { padding-left: 18px !important; padding-right: 18px !important; }
+          .baw-h1 { font-size: 19px !important; }
+          .baw-cta { font-size: 16px !important; padding: 14px 18px !important; }
+          .baw-promo-code { font-size: 18px !important; padding: 12px 22px !important; letter-spacing: 1.5px !important; }
+        }
+      </style>
     </head>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1A1A1A; margin: 0; padding: 0; background-color: #F7F9FC; -webkit-font-smoothing: antialiased;">
       
       <!-- Hidden preheader text -->
       <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
-        Save £50 when you return to your quote.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        Save £25 when you return to your quote.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
       </div>
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #F7F9FC;">
@@ -99,8 +107,8 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- Hero Section -->
               <tr>
-                <td style="padding: 0 32px 24px 32px;">
-                  <h1 style="font-size: 22px; font-weight: 700; color: #1A1A1A; margin: 0 0 8px 0; line-height: 1.35; text-align: center;">
+                <td class="baw-pad-32" style="padding: 0 32px 24px 32px;">
+                  <h1 class="baw-h1" style="font-size: 22px; font-weight: 700; color: #1A1A1A; margin: 0 0 8px 0; line-height: 1.35; text-align: center;">
                     Your ${vehicleDisplay} warranty quote is ready
                   </h1>
                   <p style="font-size: 15px; color: #555555; margin: 0; text-align: center; line-height: 1.5;">
@@ -111,16 +119,16 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
 
               <!-- Voucher Block -->
               <tr>
-                <td style="padding: 0 32px 20px 32px;">
+                <td class="baw-pad-32" style="padding: 0 32px 20px 32px;">
                   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #FFF4D6; border-radius: 6px; border: 1px solid #F0E4B8;">
                     <tr>
                       <td align="center" style="padding: 18px 16px;">
                          <p style="font-size: 15px; color: #1A1A1A; font-weight: 600; margin: 0 0 10px 0;">
-                          Save £50 today with code
+                          Save £25 today with code
                         </p>
-                        <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 10px 28px; text-decoration: none; border-radius: 4px; font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace;">SAVE50NOW</a>
+                        <a href="${promoLink}" class="baw-promo-code" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-size: 20px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace; user-select: all; -webkit-user-select: all;">SAVE25GO</a>
                          <p style="font-size: 12px; color: #777777; margin: 10px 0 0 0;">
-                           Tap to copy &bull; Valid for 24 hours &bull; Minimum order £350
+                           Tap the code to apply it automatically &bull; Valid for 24 hours
                          </p>
                       </td>
                     </tr>
@@ -130,10 +138,11 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- Primary CTA -->
               <tr>
-                <td align="center" style="padding: 0 32px 28px 32px;">
-                  <a href="${quoteLink}" target="_blank" style="display: block; width: 100%; background-color: #FF7A00; color: #ffffff; padding: 16px 24px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 17px; text-align: center; box-sizing: border-box;">
+                <td class="baw-pad-32" align="center" style="padding: 0 32px 28px 32px;">
+                  <a href="${quoteLink}" target="_blank" class="baw-cta" style="display: block; width: 100%; background-color: #FF7A00; color: #ffffff; padding: 16px 24px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 17px; text-align: center; box-sizing: border-box;">
                     Complete my purchase
                   </a>
+                  <p style="font-size: 12px; color: #888; margin: 10px 0 0 0; text-align: center;">We'll take you straight back to your saved selection.</p>
                 </td>
               </tr>
               
@@ -146,7 +155,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- Benefits Block -->
               <tr>
-                <td style="padding: 24px 32px;">
+                <td class="baw-pad-32" style="padding: 24px 32px;">
                   <p style="font-size: 14px; font-weight: 700; color: #1A1A1A; margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                     Your quote includes:
                   </p>
@@ -154,7 +163,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                     <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;Comprehensive mechanical &amp; electrical cover</td></tr>
                     <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;UK-based customer support</td></tr>
                     <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;Fast claims approval</td></tr>
-                    <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;14-day money-back guarantee</td></tr>
+                    <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;14-day cooling off period</td></tr>
                   </table>
                 </td>
               </tr>
@@ -168,7 +177,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- What Happens Next -->
               <tr>
-                <td style="padding: 24px 32px;">
+                <td class="baw-pad-32" style="padding: 24px 32px;">
                   <p style="font-size: 14px; font-weight: 700; color: #1A1A1A; margin: 0 0 6px 0;">
                     What happens next?
                   </p>
