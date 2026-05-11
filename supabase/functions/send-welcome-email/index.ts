@@ -569,6 +569,33 @@ serve(async (req) => {
         .eq('is_active', true)
         .single();
 
+      // Schedule "How to make a claim" follow-up email 90 minutes after welcome
+      if (feedbackTemplate && !templateError) {
+        try {
+          const claimInfoSendAt = new Date(Date.now() + 90 * 60 * 1000);
+          const { error: claimScheduleError } = await supabaseClient
+            .from('scheduled_emails')
+            .insert({
+              template_id: feedbackTemplate.id, // FK stub; routing uses metadata.emailType
+              customer_id: userId,
+              recipient_email: email,
+              scheduled_for: claimInfoSendAt.toISOString(),
+              metadata: {
+                emailType: 'claim_info',
+                customerFirstName: finalCustomerName,
+                policyNumber,
+              }
+            });
+          if (claimScheduleError) {
+            logStep('Failed to schedule claim info email', { error: claimScheduleError });
+          } else {
+            logStep('Claim info email scheduled', { scheduledFor: claimInfoSendAt.toISOString() });
+          }
+        } catch (e) {
+          logStep('Error scheduling claim info email', e);
+        }
+      }
+
       if (feedbackTemplate && !templateError) {
         // Calculate first Tuesday at 10am after purchase
         const purchaseDate = new Date();
