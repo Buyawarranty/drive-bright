@@ -116,11 +116,11 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                     <tr>
                       <td align="center" style="padding: 18px 16px;">
                          <p style="font-size: 15px; color: #1A1A1A; font-weight: 600; margin: 0 0 10px 0;">
-                          Save £50 today with code
+                          Save £25 today with code
                         </p>
-                        <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 10px 28px; text-decoration: none; border-radius: 4px; font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace;">SAVE50NOW</a>
+                        <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-size: 20px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace; user-select: all; -webkit-user-select: all;">SAVE25GO</a>
                          <p style="font-size: 12px; color: #777777; margin: 10px 0 0 0;">
-                           Tap to copy &bull; Valid for 24 hours &bull; Minimum order £350
+                           Tap the code to apply it automatically &bull; Valid for 24 hours
                          </p>
                       </td>
                     </tr>
