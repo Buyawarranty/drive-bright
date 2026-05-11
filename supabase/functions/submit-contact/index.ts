@@ -143,24 +143,48 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Send confirmation email to customer
       const confirmationEmailContent = `
-        <h2>Thank you for contacting us!</h2>
-        <p>Dear ${body.name},</p>
-        <p>We have received your message and will get back to you within 1-2 business days.</p>
-        ${body.message ? `<p><strong>Your message:</strong><br>${body.message.replace(/\n/g, '<br>')}</p>` : ''}
-        <p>If you have any urgent queries, please don't hesitate to contact us:</p>
-        <ul>
-          <li>Email: support@buyawarranty.co.uk</li>
-          <li>Phone: 0330 229 5040</li>
-        </ul>
-        <p>Best regards,<br>The Buy a Warranty Team</p>
-        <hr>
-        <p><small>Reference ID: ${submission.id}</small></p>
+        <div style="font-family: Arial, sans-serif; color: #1a1a1a; line-height: 1.6; max-width: 600px;">
+          <p>Dear ${body.name},</p>
+
+          <p>Thank you for getting in touch with Buy a Warranty.</p>
+
+          <p>We've successfully received your enquiry and a member of our customer support team will review your message and get back to you as soon as possible, usually within <strong>1 business day</strong>.</p>
+
+          ${body.message ? `
+            <p>For your reference, here is a copy of your message:</p>
+            <blockquote style="border-left: 3px solid #ddd; padding: 10px 15px; margin: 15px 0; color: #555; background: #f9f9f9;">
+              ${body.message.replace(/\n/g, '<br>')}
+            </blockquote>
+          ` : ''}
+
+          <p style="margin-top: 25px;"><strong>Why customers choose Buy a Warranty:</strong></p>
+          <ul style="padding-left: 20px;">
+            <li>UK-based support team</li>
+            <li>Simple and straightforward claims process</li>
+            <li>Flexible warranty options for most vehicles</li>
+            <li>Friendly customer service you can rely on</li>
+          </ul>
+
+          <p>We appreciate you contacting us and look forward to assisting you.</p>
+
+          <p style="margin-top: 25px;">Kind regards,<br>
+          <strong>Customer Support Team</strong><br>
+          Buy a Warranty</p>
+
+          <p style="margin-top: 15px;">
+            📞 <a href="tel:03302295045" style="color: #1a1a1a; text-decoration: none;">0330 229 5045</a><br>
+            📧 <a href="mailto:support@buyawarranty.co.uk" style="color: #1a1a1a; text-decoration: none;">support@buyawarranty.co.uk</a>
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+          <p style="font-size: 12px; color: #999;">Reference ID: ${submission.id}</p>
+        </div>
       `;
 
       const confirmationResponse = await resend.emails.send({
-        from: 'Buyawarranty Customer Care <support@buyawarranty.co.uk>',
+        from: 'Buy a Warranty <support@buyawarranty.co.uk>',
         to: [body.email],
-        subject: 'Thank you for contacting BuyaWarranty',
+        subject: "We've Received Your Enquiry – Buy a Warranty",
         html: confirmationEmailContent,
       });
 
