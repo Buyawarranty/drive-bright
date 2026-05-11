@@ -399,7 +399,7 @@ serve(async (req) => {
 
             ${seasonalBonusMonths > 0 ? `
             <!-- Seasonal Bonus -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 20px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-top: 3px solid #eb6b1f;">
+            <div class="baw-card-sm" style="background-color: #ffffff; border-radius: 8px; padding: 20px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-top: 3px solid #eb6b1f;">
               <p style="margin: 0; color: #1d3a8a; font-size: 16px; font-weight: 700;">Bonus coverage included</p>
               <p style="margin: 6px 0 0 0; color: #4b5563; font-size: 15px; line-height: 1.5;">You've received an extra <strong>${seasonalBonusMonths} months</strong> of coverage at no additional cost. Your protection now runs until <strong>${formatDate(endDate)}</strong>.</p>
             </div>
