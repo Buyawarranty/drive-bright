@@ -422,7 +422,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // plus the most recent unassigned leads so they can still claim new ones.
       // For admin / sales_lead / super_admin: keep the global recent-750 window.
       const currentAdmin = await getCachedAdminUser();
-      const isSalesAgent = currentAdmin?.role === 'sales';
+      // Sales agents are normally restricted to assigned + unassigned leads.
+      // Granting `tab_new-leads_all-leads` lifts that restriction (manager-style global view).
+      const hasAllLeadsPerm = currentAdmin?.permissions?.['tab_new-leads_all-leads'] === true;
+      const isSalesAgent = currentAdmin?.role === 'sales' && !hasAllLeadsPerm;
 
       const SELECT_COLUMNS = `
         id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
