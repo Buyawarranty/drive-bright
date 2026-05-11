@@ -283,8 +283,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
   userRef.current = user;
 
   // Cache admin user ID to avoid repeated auth lookups
-  const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string; role: string } | null>(null);
-  const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string; role: string } | null> | null>(null);
+  const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string; role: string; permissions: Record<string, boolean> } | null>(null);
+  const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string; role: string; permissions: Record<string, boolean> } | null> | null>(null);
   const pendingStatusFlushRef = useRef<Promise<void> | null>(null);
 
   const getCachedAdminUser = useCallback(async () => {
@@ -299,7 +299,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
       
       const { data: adminUser } = await supabase
         .from('admin_users')
-        .select('id, first_name, email, role')
+        .select('id, first_name, email, role, permissions')
         .eq('user_id', user.id)
         .maybeSingle();
       
@@ -308,7 +308,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
           id: adminUser.id, 
           firstName: adminUser.first_name || adminUser.email?.split('@')[0] || 'Admin',
           email: adminUser.email,
-          role: adminUser.role || 'sales'
+          role: adminUser.role || 'sales',
+          permissions: (adminUser.permissions as Record<string, boolean>) || {}
         };
         cachedAdminUserRef.current = cached;
         return cached;
@@ -421,7 +422,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // plus the most recent unassigned leads so they can still claim new ones.
       // For admin / sales_lead / super_admin: keep the global recent-750 window.
       const currentAdmin = await getCachedAdminUser();
-      const isSalesAgent = currentAdmin?.role === 'sales';
+      // Sales agents are normally restricted to assigned + unassigned leads.
+      // Granting `tab_new-leads_all-leads` lifts that restriction (manager-style global view).
+      const hasAllLeadsPerm = currentAdmin?.permissions?.['tab_new-leads_all-leads'] === true;
+      const isSalesAgent = currentAdmin?.role === 'sales' && !hasAllLeadsPerm;
 
       const SELECT_COLUMNS = `
         id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
