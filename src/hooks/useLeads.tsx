@@ -239,6 +239,8 @@ interface UseLeadsOptions {
   serverSearchTerm?: string;
   /** When true, server fetches ALL callback leads (is_callback=true) regardless of date window. */
   serverCallbacksOnly?: boolean;
+  /** Explicit lead IDs to load, used for reminders so old callback leads do not disappear from the list. */
+  serverLeadIds?: string[];
 }
 
 export const useLeads = (options?: UseLeadsOptions) => {
@@ -264,13 +266,16 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverSearchTermRef.current = options?.serverSearchTerm;
   const serverCallbacksOnlyRef = useRef(options?.serverCallbacksOnly);
   serverCallbacksOnlyRef.current = options?.serverCallbacksOnly;
+  const serverLeadIdsRef = useRef(options?.serverLeadIds);
+  serverLeadIdsRef.current = options?.serverLeadIds;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly]);
+    const explicitLeadIdsKey = options?.serverLeadIds ? [...options.serverLeadIds].sort().join('|') : '';
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}_${explicitLeadIdsKey}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly, options?.serverLeadIds]);
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
