@@ -769,6 +769,7 @@ export function DiscountCodesTab() {
                     placeholder="0 = no minimum"
                   />
                   <p className="text-xs text-muted-foreground">Leave at 0 for no minimum spend requirement.</p>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="code">Code (Auto-generated)</Label>
