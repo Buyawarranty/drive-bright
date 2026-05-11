@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Try customers table first
       const { data: customerData } = await supabase
         .from('customers')
-        .select('mileage, signup_date, registration_plate')
+        .select('mileage, signup_date, registration_plate, warranty_number, warranty_reference_number')
         .or(`registration_plate.eq.${normalizedReg},registration_plate.ilike.%${normalizedReg}%`)
         .order('created_at', { ascending: false })
         .limit(1)
