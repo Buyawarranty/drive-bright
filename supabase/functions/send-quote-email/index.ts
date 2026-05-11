@@ -154,7 +154,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                     <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;Comprehensive mechanical &amp; electrical cover</td></tr>
                     <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;UK-based customer support</td></tr>
                     <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;Fast claims approval</td></tr>
-                    <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;14-day money-back guarantee</td></tr>
+                    <tr><td style="padding: 5px 0; font-size: 14px; color: #333333;">&#10003;&nbsp;&nbsp;14-day cooling off period</td></tr>
                   </table>
                 </td>
               </tr>
