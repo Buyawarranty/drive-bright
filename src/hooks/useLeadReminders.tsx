@@ -267,24 +267,42 @@ export const useLeadReminders = (leadId?: string) => {
         ? customTime 
         : getPresetTime(preset);
 
-      const { data, error } = await (supabase
+      const { data: existingReminder, error: existingError } = await (supabase
         .from('lead_reminders' as any)
-        .insert({
-          lead_id: targetLeadId,
-          user_id: userId,
-          reminder_time: reminderTime.toISOString(),
-          label: label?.trim() || null
-        })
-        .select()
+        .select('id')
+        .eq('lead_id', targetLeadId)
+        .eq('user_id', userId)
+        .in('status', ['pending', 'snoozed'])
         .maybeSingle() as any);
 
-      if (error) {
-        if (error.code === '23505') {
-          toast.error('You already have an active reminder for this lead');
-          return null;
-        }
-        throw error;
-      }
+      if (existingError) throw existingError;
+
+      const reminderPayload = {
+        reminder_time: reminderTime.toISOString(),
+        label: label?.trim() || null,
+        status: 'pending',
+        snoozed_until: null,
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = existingReminder?.id
+        ? await (supabase
+            .from('lead_reminders' as any)
+            .update(reminderPayload)
+            .eq('id', existingReminder.id)
+            .select()
+            .maybeSingle() as any)
+        : await (supabase
+            .from('lead_reminders' as any)
+            .insert({
+              lead_id: targetLeadId,
+              user_id: userId,
+              ...reminderPayload
+            })
+            .select()
+            .maybeSingle() as any);
+
+      if (error) throw error;
 
       toast.success('Reminder set');
       if (leadId) {
