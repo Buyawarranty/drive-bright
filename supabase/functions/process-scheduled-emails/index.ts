@@ -65,14 +65,21 @@ serve(async (req) => {
           .update({ status: 'processing' })
           .eq('id', scheduledEmail.id);
 
-        // Send the email
-        const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-email', {
-          body: {
-            templateId: scheduledEmail.template_id,
-            recipientEmail: scheduledEmail.recipient_email,
-            customerId: scheduledEmail.customer_id,
-            variables: scheduledEmail.metadata || {}
-          }
+        // Route based on emailType - claim_info goes to dedicated edge function
+        const isClaimInfo = scheduledEmail.metadata?.emailType === 'claim_info';
+        const targetFn = isClaimInfo ? 'send-claim-info-email' : 'send-email';
+        const targetBody = isClaimInfo ? {
+          email: scheduledEmail.recipient_email,
+          customerFirstName: scheduledEmail.metadata?.customerFirstName,
+        } : {
+          templateId: scheduledEmail.template_id,
+          recipientEmail: scheduledEmail.recipient_email,
+          customerId: scheduledEmail.customer_id,
+          variables: scheduledEmail.metadata || {}
+        };
+
+        const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke(targetFn, {
+          body: targetBody
         });
 
         if (emailError) {
