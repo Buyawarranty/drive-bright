@@ -167,8 +167,8 @@ const Terms = () => {
             >
               <FileText className="w-5 h-5 mr-2" />
               <div className="text-center">
-                <div>Your Extended Warranty Guide</div>
-                <div className="text-sm opacity-90">See full terms and conditions (PDF)</div>
+              <div>Terms and Conditions</div>
+                <div className="text-sm opacity-90">Extended Warranty Guide (PDF)</div>
               </div>
             </a>
           ) : (
