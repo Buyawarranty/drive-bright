@@ -59,6 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     let warrantyStartDate: string | null = null;
     let daysOnRisk: number | null = null;
     let mileageDriven: number | null = null;
+    let warrantyNumber: string | null = null;
 
     if (vehicleReg) {
       const normalizedReg = vehicleReg.replace(/\s+/g, '').toUpperCase();
