@@ -514,7 +514,7 @@ serve(async (req) => {
             </div>
 
             <!-- Closing -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
               <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">Thank you again for choosing Buy a Warranty. We are delighted to have you covered.</p>
               <p style="color: #1f2937; font-size: 15px; line-height: 1.6; margin: 0;">Kind regards,<br><strong>The Buy a Warranty Team</strong></p>
             </div>
