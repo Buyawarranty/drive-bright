@@ -106,14 +106,13 @@ export const useDueReminders = () => {
     }
   }, [dismissedIds]);
 
+  // Dismiss only hides the popup locally — it does NOT mark the reminder
+  // as completed. The reminder stays pending so it remains visible in the
+  // "Reminders" filter and the My Reminders panel until the agent explicitly
+  // completes or deletes it.
   const dismissReminder = useCallback(async (reminderId: string) => {
-    try {
-      await (supabase.from('lead_reminders' as any).update({ status: 'completed' }).eq('id', reminderId) as any);
-      setDismissedIds(prev => new Set([...prev, reminderId]));
-      setDueReminders(prev => prev.filter(r => r.id !== reminderId));
-    } catch (err) {
-      console.error('Error dismissing reminder:', err);
-    }
+    setDismissedIds(prev => new Set([...prev, reminderId]));
+    setDueReminders(prev => prev.filter(r => r.id !== reminderId));
   }, []);
 
   useEffect(() => {
