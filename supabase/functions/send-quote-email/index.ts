@@ -126,7 +126,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                          <p style="font-size: 15px; color: #1A1A1A; font-weight: 600; margin: 0 0 10px 0;">
                           Save £25 today with code
                         </p>
-                        <a href="${promoLink}" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-size: 20px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace; user-select: all; -webkit-user-select: all;">SAVE25GO</a>
+                        <a href="${promoLink}" class="baw-promo-code" style="display: inline-block; background-color: #1A1A1A; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-size: 20px; font-weight: 800; letter-spacing: 2px; font-family: 'Courier New', monospace; user-select: all; -webkit-user-select: all;">SAVE25GO</a>
                          <p style="font-size: 12px; color: #777777; margin: 10px 0 0 0;">
                            Tap the code to apply it automatically &bull; Valid for 24 hours
                          </p>
