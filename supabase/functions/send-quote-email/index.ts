@@ -79,7 +79,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
       
       <!-- Hidden preheader text -->
       <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
-        Save £50 when you return to your quote.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        Save £25 when you return to your quote.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
       </div>
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #F7F9FC;">
