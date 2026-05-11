@@ -387,6 +387,9 @@ serve(async (req) => {
 
             <!-- Hero Card -->
             <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 35px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <div style="text-align: center; margin: -10px 0 18px 0;">
+                <img src="https://buyawarranty.co.uk/images/welcome-panda-claim.jpg" alt="Buy a Warranty - your protection is active" width="520" style="width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none;" />
+              </div>
               <h1 class="baw-h1" style="color: #1d3a8a; font-size: 24px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.3;">Your Buy a Warranty protection is now active</h1>
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0 0 0;">Hi <strong>${finalCustomerName}</strong>,</p>
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 12px 0 0 0;">Congratulations and thank you for choosing Buy a Warranty. Your protection plan is now active and your policy documents are attached to this email for your records.</p>
