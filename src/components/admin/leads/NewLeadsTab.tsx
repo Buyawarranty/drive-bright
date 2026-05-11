@@ -377,12 +377,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
     }
 
-    // Apply search filter
+    // Apply search filter. If the active status/assignment view hides the match,
+    // fall back to all loaded non-archived leads so saved callbacks remain findable.
     if (debouncedSearchTerm) {
       const term = debouncedSearchTerm.toLowerCase();
       const compactTerm = term.replace(/\s+/g, '');
       const digitsTerm = term.replace(/\D/g, '');
-      result = result.filter(lead =>
+      const matchesSearch = (lead: Lead) =>
         lead.email.toLowerCase().includes(term) ||
         (lead.first_name?.toLowerCase().includes(term)) ||
         (lead.last_name?.toLowerCase().includes(term)) ||
@@ -391,8 +392,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         (!!digitsTerm && (lead.phone?.replace(/\D/g, '').includes(digitsTerm))) ||
         (lead.vehicle_reg?.toLowerCase().includes(term)) ||
         (!!compactTerm && (lead.vehicle_reg?.toLowerCase().replace(/\s+/g, '').includes(compactTerm))) ||
-        (lead.plan_interest?.toLowerCase().includes(term))
-      );
+        (lead.plan_interest?.toLowerCase().includes(term));
+
+      const activeViewMatches = result.filter(matchesSearch);
+      result = activeViewMatches.length > 0 ? activeViewMatches : visibleLeads.filter(matchesSearch);
     }
 
     result = [...result].sort((a, b) => {
