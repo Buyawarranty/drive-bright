@@ -125,81 +125,85 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     body = "Your saved quote is still here, but your £25 discount expires tonight. Tap below to pick up exactly where you left off.";
   }
   
+  // Build a promo link that ALSO restores the saved cart so users land back on their selections
+  const promoLink = continueUrl.includes('?')
+    ? `${continueUrl}&promo=${promoCode}`
+    : `${continueUrl}?promo=${promoCode}`;
+
   const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Mobile-first padding adjustments */
+    @media only screen and (max-width: 600px) {
+      .baw-content { padding: 0 20px !important; }
+      .baw-header { padding: 20px 16px !important; }
+      .baw-promo-code { font-size: 20px !important; padding: 12px 18px !important; letter-spacing: 1.5px !important; }
+      .baw-cta { font-size: 16px !important; padding: 14px 20px !important; display: block !important; }
+      .baw-h1 { font-size: 20px !important; }
+    }
+  </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif; background-color: #f6f9fc;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; margin-bottom: 64px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
     <!-- Header -->
-    <div style="padding: 24px; text-align: center;">
-      <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="200" alt="Buy A Warranty" style="margin: 0 auto;" />
+    <div class="baw-header" style="padding: 24px; text-align: center;">
+      <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="margin: 0 auto; max-width: 100%; height: auto;" />
     </div>
-    
+
     <!-- Content -->
-    <div style="padding: 0 48px;">
-      <h1 style="color: #1a1a1a; font-size: 24px; font-weight: 700; line-height: 1.3; margin: 16px 0;">${heading}</h1>
-      
-      <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">Hi ${firstName},</p>
-      
-      <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">${intro}</p>
-      
-      <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">${body}</p>
+    <div class="baw-content" style="padding: 0 32px;">
+      <h1 class="baw-h1" style="color: #1a1a1a; font-size: 24px; font-weight: 700; line-height: 1.3; margin: 8px 0 16px;">${heading}</h1>
+
+      <p style="color: #484848; font-size: 16px; line-height: 1.55; margin: 12px 0;">Hi ${firstName},</p>
+      <p style="color: #484848; font-size: 16px; line-height: 1.55; margin: 12px 0;">${intro}</p>
+      <p style="color: #484848; font-size: 16px; line-height: 1.55; margin: 12px 0;">${body}</p>
 
       ${showPromo ? `
       <!-- Promo Section -->
-      <div style="background-color: #FFF8E7; border: 2px solid #FF7A00; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-        <p style="color: #1A1A1A; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
-        <a href="https://buyawarranty.co.uk?promo=${promoCode}" style="background-color: #1A1A1A; color: #fff; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace; text-decoration: none; cursor: pointer;">${promoCode}</a>
-        <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">Tap to copy &bull; <strong>Valid for 24 hours</strong> &bull; Minimum order £350</p>
+      <div style="background-color: #FFF8E7; border: 2px solid #FF7A00; border-radius: 10px; padding: 22px 18px; margin: 24px 0; text-align: center;">
+        <p style="color: #1A1A1A; font-size: 15px; font-weight: 600; margin: 0 0 14px 0; line-height: 1.4;">${promoText}</p>
+        <a href="${promoLink}" class="baw-promo-code" style="background-color: #1A1A1A; color: #fff; font-size: 24px; font-weight: 800; padding: 14px 26px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: 'Courier New', monospace; text-decoration: none; user-select: all; -webkit-user-select: all;">${promoCode}</a>
+        <p style="color: #666666; font-size: 12px; margin: 12px 0 0 0;">Tap the code to apply it automatically &bull; <strong>Valid for 24 hours</strong></p>
       </div>
       ` : ''}
 
-      <!-- Benefits -->
-      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <p style="color: #1a1a1a; font-size: 18px; font-weight: 600; margin: 0 0 12px 0;">Your Quote Includes:</p>
-        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Comprehensive vehicle warranty coverage</p>
-        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• UK-based customer support</p>
-        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Easy claims, Fast payouts</p>
-        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• 14-day money back guarantee</p>
-      </div>
-
       <!-- CTA Button -->
-      <div style="text-align: center; margin: 32px 0;">
-        <a href="${continueUrl}" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="${continueUrl}" class="baw-cta" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
           ${ctaText}
         </a>
+        <p style="color: #888; font-size: 12px; margin: 10px 0 0 0;">We'll take you straight back to your saved selection.</p>
       </div>
 
-      <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 32px 0;" />
+      <!-- Benefits -->
+      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 18px 20px; margin: 24px 0;">
+        <p style="color: #1a1a1a; font-size: 17px; font-weight: 600; margin: 0 0 10px 0;">Your Quote Includes:</p>
+        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• Comprehensive vehicle warranty coverage</p>
+        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• UK-based customer support</p>
+        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• Easy claims, fast payouts</p>
+        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• 14-day cooling off period</p>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 28px 0;" />
 
       <!-- Footer -->
-      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 16px 0;">
+      <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 12px 0;">
         If you have any questions about your quote, please don't hesitate to contact us.
       </p>
-
-      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 16px 0;">
-        Best regards,
-      </p>
-      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 8px 0;">
-        The Buy A Warranty Team
-      </p>
-      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 8px 0;">
+      <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 12px 0 4px;">Best regards,</p>
+      <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 0 0 12px;">The Buy A Warranty Team</p>
+      <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 4px 0;">
         <a href="https://buyawarranty.co.uk" style="color: #0066cc; text-decoration: underline;">buyawarranty.co.uk</a>
       </p>
-
-      <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0;">
-        📧 support@buyawarranty.co.uk
-      </p>
-      <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0 24px 0;">
-        📞 0330 229 5040
-      </p>
+      <p style="color: #8898aa; font-size: 13px; line-height: 1.5; margin: 4px 0;">📧 support@buyawarranty.co.uk</p>
+      <p style="color: #8898aa; font-size: 13px; line-height: 1.5; margin: 4px 0 24px 0;">📞 0330 229 5040</p>
 
       <div style="border-top: 1px solid #e6ebf1; padding-top: 16px; margin-top: 16px; text-align: center;">
-        <p style="color: #aab7c4; font-size: 11px; line-height: 16px; margin: 0;">
+        <p style="color: #aab7c4; font-size: 11px; line-height: 1.5; margin: 0;">
           You're receiving this email because you requested a warranty quote from Buy A Warranty.<br>
           <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(request.email)}&token=${btoa(request.email.trim().toLowerCase() + '_baw_unsub_2024')}" style="color: #aab7c4; text-decoration: underline;">Unsubscribe</a> from future emails.
         </p>
