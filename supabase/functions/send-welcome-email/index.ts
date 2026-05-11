@@ -492,19 +492,19 @@ serve(async (req) => {
             </div>
 
             <!-- Need help -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 8px 0;">Need help?</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 8px 0;">Need help?</h2>
               <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">If you have any questions, our team is here to help.</p>
 
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
+                  <td class="baw-contact-cell" style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
                     <p style="margin: 0 0 8px 0; color: #1d3a8a; font-size: 14px; font-weight: 700;">Customer Support</p>
                     <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 14px;"><a href="tel:03302295040" style="color: #1f2937; text-decoration: none;">0330 229 5040</a></p>
                     <p style="margin: 0; color: #1f2937; font-size: 14px;"><a href="mailto:support@buyawarranty.co.uk" style="color: #1f2937; text-decoration: none;">support@buyawarranty.co.uk</a></p>
                   </td>
                   <td style="width: 8px;"></td>
-                  <td style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
+                  <td class="baw-contact-cell" style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
                     <p style="margin: 0 0 8px 0; color: #1d3a8a; font-size: 14px; font-weight: 700;">Claims Team</p>
                     <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 14px;"><a href="tel:03302295045" style="color: #1f2937; text-decoration: none;">0330 229 5045</a></p>
                     <p style="margin: 0; color: #1f2937; font-size: 14px;"><a href="mailto:claims@buyawarranty.co.uk" style="color: #1f2937; text-decoration: none;">claims@buyawarranty.co.uk</a></p>
