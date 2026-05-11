@@ -107,8 +107,8 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- Hero Section -->
               <tr>
-                <td style="padding: 0 32px 24px 32px;">
-                  <h1 style="font-size: 22px; font-weight: 700; color: #1A1A1A; margin: 0 0 8px 0; line-height: 1.35; text-align: center;">
+                <td class="baw-pad-32" style="padding: 0 32px 24px 32px;">
+                  <h1 class="baw-h1" style="font-size: 22px; font-weight: 700; color: #1A1A1A; margin: 0 0 8px 0; line-height: 1.35; text-align: center;">
                     Your ${vehicleDisplay} warranty quote is ready
                   </h1>
                   <p style="font-size: 15px; color: #555555; margin: 0; text-align: center; line-height: 1.5;">
@@ -119,7 +119,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
 
               <!-- Voucher Block -->
               <tr>
-                <td style="padding: 0 32px 20px 32px;">
+                <td class="baw-pad-32" style="padding: 0 32px 20px 32px;">
                   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #FFF4D6; border-radius: 6px; border: 1px solid #F0E4B8;">
                     <tr>
                       <td align="center" style="padding: 18px 16px;">
@@ -154,7 +154,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- Benefits Block -->
               <tr>
-                <td style="padding: 24px 32px;">
+                <td class="baw-pad-32" style="padding: 24px 32px;">
                   <p style="font-size: 14px; font-weight: 700; color: #1A1A1A; margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                     Your quote includes:
                   </p>
@@ -176,7 +176,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- What Happens Next -->
               <tr>
-                <td style="padding: 24px 32px;">
+                <td class="baw-pad-32" style="padding: 24px 32px;">
                   <p style="font-size: 14px; font-weight: 700; color: #1A1A1A; margin: 0 0 6px 0;">
                     What happens next?
                   </p>
