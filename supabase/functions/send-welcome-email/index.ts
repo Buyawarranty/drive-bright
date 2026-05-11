@@ -406,8 +406,8 @@ serve(async (req) => {
             ` : ''}
 
             <!-- Policy Summary -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">Your policy summary</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">Your policy summary</h2>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6; width: 45%;">Vehicle Registration</td>
