@@ -203,7 +203,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           </p>
 
           <div className="mt-[18px] flex justify-center gap-[18px] flex-wrap">
-            {['Easy claims, fast payouts', 'Excellent 4.8 out of 5', '14-day money-back guarantee'].map((t) => (
+            {['Easy claims, fast payouts', 'Excellent 4.8 out of 5', '14-day cooling off period'].map((t) => (
               <div key={t} className="inline-flex items-center gap-2 border border-[#e9e9e7] bg-white rounded-full px-3.5 py-2.5 text-[13px] text-[#4f4f4f] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
                 <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0">
                   <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
@@ -460,7 +460,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <div className="bg-white border border-[#e9e9e7] rounded-2xl p-4 shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
                 <h3 className="m-0 mb-3 text-base tracking-tight text-[#161616]">Your cover, made simple</h3>
                 <ul className="m-0 p-0 list-none grid gap-2.5 text-sm text-[#4f4f4f]">
-                  {['No hidden catches or surprise exclusions', 'Fast claims and quick payouts', '14-day money-back guarantee'].map(t => (
+                  {['No hidden catches or surprise exclusions', 'Fast claims and quick payouts', '14-day cooling off period'].map(t => (
                     <li key={t} className="flex gap-2.5 items-start leading-snug">
                       <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0 mt-0.5">
                         <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
