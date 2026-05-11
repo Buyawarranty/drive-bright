@@ -10,7 +10,7 @@ interface CoverageTransparencyProps {
 const summaryBullets = [
   'No hidden catches',
   'Easy claims, Fast payouts',
-  '14-day money-back guarantee'
+  '14-day cooling off period'
 ];
 
 const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({

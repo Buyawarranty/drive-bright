@@ -35,7 +35,7 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
         <TrustpilotHeader className="flex-shrink-0" />
         <div className="flex items-center gap-1.5 text-sm">
           <Shield className="w-5 h-5 text-amber-500 fill-amber-500/20" />
-          <span className="font-medium text-foreground">14-day money-back guarantee</span>
+          <span className="font-medium text-foreground">14-day cooling off period</span>
         </div>
       </div>
 
