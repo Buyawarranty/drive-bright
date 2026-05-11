@@ -50,6 +50,7 @@ interface DiscountCodeFormData {
   usage_limit: number | null;
   campaign_source: string;
   active: boolean;
+  min_order_amount: number;
 }
 
 const CAMPAIGN_SOURCES = [
