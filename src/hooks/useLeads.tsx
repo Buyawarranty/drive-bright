@@ -508,6 +508,26 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return { data: rows, error: null } as any;
       };
 
+      const fetchExplicitLeads = async (ids: string[]) => {
+        const cleanedIds = [...new Set(ids.filter(id => id && !id.startsWith('cart_') && !id.startsWith('customer_') && !id.startsWith('claim_')))];
+        if (cleanedIds.length === 0) return { data: [], error: null } as any;
+
+        const rows: any[] = [];
+        for (let i = 0; i < cleanedIds.length; i += LEAD_TAG_BATCH_SIZE) {
+          const batch = cleanedIds.slice(i, i + LEAD_TAG_BATCH_SIZE);
+          const { data, error } = await applyServerSearchFilter(
+            supabase
+              .from('sales_leads')
+              .select(SELECT_COLUMNS)
+              .in('id', batch)
+          );
+          if (error) return { data: rows, error } as any;
+          rows.push(...(data || []));
+        }
+
+        return { data: rows, error: null } as any;
+      };
+
       const allSalesLeadsResult = await withTimeout(
         (async () => {
           const serverAgentFilter = serverAgentFilterRef.current;
@@ -600,9 +620,20 @@ export const useLeads = (options?: UseLeadsOptions) => {
       const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
       if (salesError) throw salesError;
 
-      console.log(`[Leads] Fetched ${allSalesLeadsData?.length || 0} sales leads (sales agent: ${isSalesAgent})`);
+      const explicitLeadIds = serverLeadIdsRef.current || [];
+      const explicitLeadsResult = explicitLeadIds.length > 0
+        ? await withTimeout(fetchExplicitLeads(explicitLeadIds), LEADS_FETCH_TIMEOUT_MS, 'Reminder leads fetch timed out')
+        : { data: [], error: null } as any;
+      if (explicitLeadsResult.error) throw explicitLeadsResult.error;
 
-      const salesLeadsWithFlags = (allSalesLeadsData || []).map((lead: any) => {
+      const salesLeadRowsById = new Map<string, any>();
+      [...(allSalesLeadsData || []), ...(explicitLeadsResult.data || [])].forEach((lead: any) => {
+        if (!salesLeadRowsById.has(lead.id)) salesLeadRowsById.set(lead.id, lead);
+      });
+
+      console.log(`[Leads] Fetched ${salesLeadRowsById.size} sales leads (sales agent: ${isSalesAgent})`);
+
+      const salesLeadsWithFlags = Array.from(salesLeadRowsById.values()).map((lead: any) => {
         const fullName = lead.first_name || lead.last_name
           ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
           : lead.full_name || null;
