@@ -372,8 +372,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = result.filter(lead => lead.lead_source === sourceFilter);
     }
 
-    // Apply date range filter — but skip it when actively searching so leads are always findable
-    if (!debouncedSearchTerm && (dateRange.from || dateRange.to)) {
+    // Apply date range filter — but skip it when actively searching or viewing reminders so callback leads stay findable
+    const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
+    if (!debouncedSearchTerm && !isReminderView && (dateRange.from || dateRange.to)) {
       result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
     }
 
@@ -541,8 +542,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           (l.status as string) !== 'archived'
       ).length,
       fake: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'fake_lead').length,
-      reminders: dateFilteredVisibleLeadsForFilters.filter(l => reminderLeadIds.has(l.id)).length,
-      due_today: dateFilteredVisibleLeadsForFilters.filter(l => {
+      reminders: visibleLeads.filter(l => reminderLeadIds.has(l.id)).length,
+      due_today: visibleLeads.filter(l => {
         const rt = reminderTimesMap[l.id];
         if (!rt) return false;
         const d = new Date(rt);
@@ -556,7 +557,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
       source_organic_live: dateFilteredVisibleLeadsForFilters.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, reminderLeadIds]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
