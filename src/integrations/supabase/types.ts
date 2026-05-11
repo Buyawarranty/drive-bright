@@ -4002,6 +4002,7 @@ export type Database = {
           id: string
           is_public: boolean
           is_referral_code: boolean | null
+          min_order_amount: number
           public_description: string | null
           referrer_email: string | null
           stripe_coupon_id: string | null
@@ -4027,6 +4028,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           is_referral_code?: boolean | null
+          min_order_amount?: number
           public_description?: string | null
           referrer_email?: string | null
           stripe_coupon_id?: string | null
@@ -4052,6 +4054,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           is_referral_code?: boolean | null
+          min_order_amount?: number
           public_description?: string | null
           referrer_email?: string | null
           stripe_coupon_id?: string | null
