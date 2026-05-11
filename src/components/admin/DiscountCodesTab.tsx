@@ -358,6 +358,7 @@ export function DiscountCodesTab() {
       usage_limit: 1,
       campaign_source: 'SAVE',
       active: true,
+      min_order_amount: 0,
     });
     setEditingCode(null);
     setIsCreateOpen(false);
