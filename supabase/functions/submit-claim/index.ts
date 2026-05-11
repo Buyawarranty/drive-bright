@@ -59,6 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     let warrantyStartDate: string | null = null;
     let daysOnRisk: number | null = null;
     let mileageDriven: number | null = null;
+    let warrantyNumber: string | null = null;
 
     if (vehicleReg) {
       const normalizedReg = vehicleReg.replace(/\s+/g, '').toUpperCase();
@@ -66,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Try customers table first
       const { data: customerData } = await supabase
         .from('customers')
-        .select('mileage, signup_date, registration_plate')
+        .select('mileage, signup_date, registration_plate, warranty_number, warranty_reference_number')
         .or(`registration_plate.eq.${normalizedReg},registration_plate.ilike.%${normalizedReg}%`)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -94,6 +95,9 @@ const handler = async (req: Request): Promise<Response> => {
           daysOnRisk = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         }
         
+        // Capture warranty number for customer-facing reference
+        warrantyNumber = customerData.warranty_number || customerData.warranty_reference_number || null;
+
         // Calculate mileage driven since purchase
         if (purchaseMileage && currentMileage && currentMileage > 0) {
           mileageDriven = currentMileage - purchaseMileage;
@@ -387,48 +391,160 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Email sent successfully with attachment:', emailResponse.data?.id);
     }
 
-    // Send confirmation email to customer
-    const customerEmailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #eb4b00;">Claim Submission Received</h1>
-        
-        <p>Dear ${name},</p>
-        
-        <p>Thank you for submitting your claim for vehicle registration: <strong>${regPlateDisplay}</strong>. We've received your request and our team will process your claim during our working hours.</p>
-        
-        <div style="background-color: #fff7ed; border: 2px solid #fdba74; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 0; font-size: 16px; color: #9a3412;"><strong>📅 Claims department hours: Monday to Friday, 9:00 AM – 5:00 PM</strong></p>
-          <p style="margin: 8px 0 0 0; font-size: 14px; color: #7c2d12;">Submissions sent outside these hours will be reviewed on the next working day. Thank you for your patience.</p>
-        </div>
+    // Send confirmation email to customer (mobile + desktop friendly)
+    const firstName = (name || '').trim().split(/\s+/)[0] || 'there';
+    const customerRef = warrantyNumber || regPlateDisplay;
+    const refLabel = warrantyNumber ? 'Your warranty number' : 'Your vehicle registration';
 
-        <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 0;"><strong>Submission ID:</strong> ${submissionData.id}</p>
-          <p style="margin: 10px 0 0 0;"><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
-        </div>
-        
-        <p>If you need urgent assistance during these hours, you can:</p>
-        <ul style="margin: 10px 0; padding-left: 20px;">
-          <li style="margin-bottom: 8px;"><strong>Call us:</strong> 0330 229 5045</li>
-          <li><strong>Email us:</strong> <a href="mailto:claims@buyawarranty.co.uk" style="color: #eb4b00;">claims@buyawarranty.co.uk</a></li>
-        </ul>
+    const customerEmailHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>We've received your claim</title>
+<style>
+  body { margin:0; padding:0; background-color:#f3f4f6; -webkit-font-smoothing:antialiased; }
+  table { border-collapse:collapse; }
+  img { border:0; outline:none; text-decoration:none; display:block; }
+  a { color:#1d3a8a; }
+  .baw-wrap { width:100%; background-color:#f3f4f6; padding:24px 12px; }
+  .baw-container { max-width:600px; margin:0 auto; }
+  .baw-card { background-color:#ffffff; border-radius:8px; padding:28px 30px; margin-bottom:16px; border:1px solid #e5e7eb; }
+  .baw-h1 { color:#1d3a8a; font-size:24px; font-weight:700; margin:0 0 8px 0; line-height:1.3; }
+  .baw-h2 { color:#1d3a8a; font-size:17px; font-weight:700; margin:0 0 10px 0; }
+  .baw-btn { display:inline-block; background-color:#eb6b1f; color:#ffffff !important; padding:14px 28px; border-radius:6px; text-decoration:none; font-weight:700; font-size:15px; }
+  .baw-col { vertical-align:top; }
+  @media only screen and (max-width:600px) {
+    .baw-wrap { padding:12px 6px !important; }
+    .baw-card { padding:20px 18px !important; border-radius:6px !important; }
+    .baw-h1 { font-size:20px !important; }
+    .baw-h2 { font-size:16px !important; }
+    .baw-stack, .baw-stack > tbody > tr > td { display:block !important; width:100% !important; padding:0 0 12px 0 !important; }
+    .baw-btn { display:block !important; text-align:center !important; padding:14px 16px !important; }
+    .baw-hide-sm { display:none !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2937;">
+<div class="baw-wrap">
+  <div class="baw-container">
 
-        <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px 20px; border-radius: 8px; margin: 24px 0;">
-          <p style="margin: 0 0 8px 0; font-weight: bold; color: #0c4a6e;">Need to send more evidence?</p>
-          <p style="margin: 0 0 12px 0; color: #334155; font-size: 14px;">No need to fill in the form again — just upload extra files (photos, garage reports, invoices) using the link below.</p>
-          <a href="https://buyawarranty.co.uk/add-evidence/" style="display: inline-block; background-color: #0ea5e9; color: #ffffff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600;">Upload additional evidence</a>
-        </div>
+    <!-- Header -->
+    <div style="text-align:center;padding:8px 0 18px 0;">
+      <p style="margin:0;color:#1d3a8a;font-size:18px;font-weight:700;letter-spacing:0.3px;">Buy a Warranty</p>
+    </div>
 
-        <p>Thank you for your patience – we're here to help!</p>
+    <!-- Hero -->
+    <div class="baw-card">
+      <span style="display:inline-block;background-color:#dcfce7;color:#15803d;font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;margin-bottom:12px;">✓ Claim received</span>
+      <h1 class="baw-h1">Thank you ${firstName}, we've got it from here.</h1>
+      <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:6px 0 0 0;">We've received your claim for vehicle registration <strong style="color:#1d3a8a;">${regPlateDisplay}</strong> and our claims team will review it as soon as possible.</p>
 
-        <p style="margin-top: 30px;">Best regards,</p>
-        <p style="margin: 5px 0;"><strong>Buy a Warranty Claims Team</strong></p>
+      <div style="margin-top:22px;padding:16px 20px;background-color:#f9fafb;border-left:4px solid #eb6b1f;border-radius:4px;">
+        <p style="margin:0;color:#6b7280;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${refLabel}</p>
+        <p style="margin:4px 0 0 0;color:#1d3a8a;font-size:18px;font-weight:700;font-family:'Courier New',monospace;">${customerRef}</p>
       </div>
-    `;
+      <p style="color:#6b7280;font-size:13px;margin:10px 0 0 0;">Please quote this in any future correspondence about your claim.</p>
+    </div>
+
+    <!-- What happens next -->
+    <div class="baw-card">
+      <h2 class="baw-h2">What happens next</h2>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+        <tr>
+          <td width="36" style="vertical-align:top;padding:8px 0;"><div style="width:28px;height:28px;line-height:28px;text-align:center;background:#1d3a8a;color:#fff;border-radius:50%;font-weight:700;font-size:13px;">1</div></td>
+          <td style="vertical-align:top;padding:8px 0 8px 12px;"><p style="margin:0;color:#1f2937;font-size:14px;font-weight:600;">We review your claim</p><p style="margin:2px 0 0 0;color:#6b7280;font-size:13px;line-height:1.5;">Our claims team will assess the details and supporting evidence you've provided.</p></td>
+        </tr>
+        <tr>
+          <td width="36" style="vertical-align:top;padding:8px 0;"><div style="width:28px;height:28px;line-height:28px;text-align:center;background:#1d3a8a;color:#fff;border-radius:50%;font-weight:700;font-size:13px;">2</div></td>
+          <td style="vertical-align:top;padding:8px 0 8px 12px;"><p style="margin:0;color:#1f2937;font-size:14px;font-weight:600;">We get in touch</p><p style="margin:2px 0 0 0;color:#6b7280;font-size:13px;line-height:1.5;">A member of our team will contact you to confirm next steps and request anything else we need.</p></td>
+        </tr>
+        <tr>
+          <td width="36" style="vertical-align:top;padding:8px 0;"><div style="width:28px;height:28px;line-height:28px;text-align:center;background:#1d3a8a;color:#fff;border-radius:50%;font-weight:700;font-size:13px;">3</div></td>
+          <td style="vertical-align:top;padding:8px 0 8px 12px;"><p style="margin:0;color:#1f2937;font-size:14px;font-weight:600;">Decision and authorisation</p><p style="margin:2px 0 0 0;color:#6b7280;font-size:13px;line-height:1.5;">Once authorised, we'll arrange payment in line with your warranty plan.</p></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Two columns: Hours + Before repairs -->
+    <table width="100%" cellpadding="0" cellspacing="0" class="baw-stack">
+      <tr>
+        <td class="baw-col" width="50%" style="padding-right:8px;">
+          <div class="baw-card" style="margin-bottom:16px;">
+            <h2 class="baw-h2">Claims Team Opening Hours</h2>
+            <p style="color:#1f2937;font-size:14px;margin:6px 0;font-weight:600;">📅 Monday to Friday</p>
+            <p style="color:#1f2937;font-size:14px;margin:6px 0;font-weight:600;">🕘 9:00am to 5:00pm</p>
+            <p style="color:#6b7280;font-size:13px;margin:10px 0 0 0;line-height:1.5;">Submissions outside these hours will be reviewed on the next working day.</p>
+          </div>
+        </td>
+        <td class="baw-col" width="50%" style="padding-left:8px;">
+          <div class="baw-card" style="margin-bottom:16px;background-color:#fff7ed;border-color:#fdba74;">
+            <h2 class="baw-h2" style="color:#9a3412;">⚠ Before any repairs begin</h2>
+            <p style="color:#7c2d12;font-size:14px;line-height:1.5;margin:6px 0 0 0;">Please do <strong>not</strong> authorise any repairs until your claim has been reviewed and approved by our team.</p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Add evidence -->
+    <div class="baw-card" style="background-color:#eff6ff;border-color:#bfdbfe;">
+      <h2 class="baw-h2">Need to send more evidence?</h2>
+      <p style="color:#334155;font-size:14px;line-height:1.5;margin:0 0 14px 0;">No need to fill in the form again — upload extra photos, garage reports or invoices below. Diagnostic costs are reimbursed up to <strong>£50</strong> or <strong>1 hour</strong> of labour.</p>
+      <a href="https://buyawarranty.co.uk/add-evidence/" class="baw-btn">Upload additional evidence</a>
+    </div>
+
+    <!-- Important notice -->
+    <div class="baw-card" style="background-color:#fef2f2;border-color:#fecaca;">
+      <h2 class="baw-h2" style="color:#991b1b;">⚠ Important</h2>
+      <p style="color:#7f1d1d;font-size:14px;line-height:1.6;margin:0;">Once costs have been incurred against your policy, it cannot be cancelled and is no longer eligible for a refund.</p>
+    </div>
+
+    <!-- Contact + links -->
+    <table width="100%" cellpadding="0" cellspacing="0" class="baw-stack">
+      <tr>
+        <td class="baw-col" width="50%" style="padding-right:8px;">
+          <div class="baw-card" style="margin-bottom:16px;">
+            <h2 class="baw-h2">Need to speak to us?</h2>
+            <p style="color:#1f2937;font-size:14px;margin:6px 0;">📞 <a href="tel:03302295045" style="color:#1d3a8a;text-decoration:none;font-weight:600;">0330 229 5045</a></p>
+            <p style="color:#1f2937;font-size:14px;margin:6px 0;">📧 <a href="mailto:claims@buyawarranty.co.uk" style="color:#1d3a8a;text-decoration:none;font-weight:600;">claims@buyawarranty.co.uk</a></p>
+          </div>
+        </td>
+        <td class="baw-col" width="50%" style="padding-left:8px;">
+          <div class="baw-card" style="margin-bottom:16px;">
+            <h2 class="baw-h2">Helpful links</h2>
+            <p style="margin:6px 0;font-size:14px;"><a href="https://buyawarranty.co.uk/make-a-claim/" style="color:#1d3a8a;font-weight:600;text-decoration:none;">Make a claim</a></p>
+            <p style="margin:6px 0;font-size:14px;"><a href="https://buyawarranty.co.uk/cancellation-policy/" style="color:#1d3a8a;font-weight:600;text-decoration:none;">Cancellation policy</a></p>
+            <p style="margin:6px 0;font-size:14px;"><a href="https://buyawarranty.co.uk/terms/" style="color:#1d3a8a;font-weight:600;text-decoration:none;">Terms &amp; conditions</a></p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Sign off -->
+    <div class="baw-card">
+      <p style="color:#1f2937;font-size:15px;line-height:1.6;margin:0 0 6px 0;">Thank you for your patience — we're here to help.</p>
+      <p style="color:#1f2937;font-size:15px;margin:14px 0 2px 0;">Kind regards,</p>
+      <p style="color:#1d3a8a;font-size:15px;font-weight:700;margin:0;">Buy a Warranty Claims Team</p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color:#1d3a8a;border-radius:8px;padding:18px 22px;text-align:center;">
+      <p style="margin:0;color:#ffffff;font-size:13px;line-height:1.6;">
+        <a href="https://buyawarranty.co.uk" style="color:#ffffff;text-decoration:none;font-weight:600;">buyawarranty.co.uk</a>
+        &nbsp;·&nbsp; 0330 229 5045 &nbsp;·&nbsp;
+        <a href="mailto:claims@buyawarranty.co.uk" style="color:#ffffff;text-decoration:none;">claims@buyawarranty.co.uk</a>
+      </p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>`;
 
     await resend.emails.send({
-      from: "Buyawarranty Customer Care <claims@buyawarranty.co.uk>",
+      from: "Buy a Warranty Claims <claims@buyawarranty.co.uk>",
       to: [email],
-      subject: "Claim Submission Received",
+      subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
     });
 
