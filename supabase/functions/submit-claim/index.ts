@@ -95,6 +95,9 @@ const handler = async (req: Request): Promise<Response> => {
           daysOnRisk = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         }
         
+        // Capture warranty number for customer-facing reference
+        warrantyNumber = customerData.warranty_number || customerData.warranty_reference_number || null;
+
         // Calculate mileage driven since purchase
         if (purchaseMileage && currentMileage && currentMileage > 0) {
           mileageDriven = currentMileage - purchaseMileage;
