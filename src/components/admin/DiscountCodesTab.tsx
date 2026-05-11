@@ -374,6 +374,7 @@ export function DiscountCodesTab() {
       usage_limit: code.usage_limit,
       campaign_source: code.campaign_source || 'GENERAL',
       active: code.active,
+      min_order_amount: Number((code as any).min_order_amount ?? 0),
     });
     setEditingCode(code);
     setIsCreateOpen(true);
