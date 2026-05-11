@@ -86,6 +86,7 @@ export function DiscountCodesTab() {
     usage_limit: 1,
     campaign_source: 'GENERAL',
     active: true,
+    min_order_amount: 0,
   });
   const { toast } = useToast();
 
