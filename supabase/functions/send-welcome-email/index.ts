@@ -437,8 +437,8 @@ serve(async (req) => {
             </div>
 
             <!-- Customer Portal -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Access your customer portal</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Access your customer portal</h2>
               <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 8px 0;">Log in to your customer portal to:</p>
               <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0 0 20px 0; padding-left: 20px;">
                 <li>View your policy documents</li>
