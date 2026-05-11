@@ -448,7 +448,7 @@ serve(async (req) => {
               </ul>
 
               <div style="text-align: center; margin: 24px 0;">
-                <a href="https://buyawarranty.co.uk/auth" style="display: inline-block; background-color: #eb6b1f; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-size: 16px; font-weight: 700;">Log in to your portal</a>
+                <a href="https://buyawarranty.co.uk/auth" class="baw-cta" style="display: inline-block; background-color: #eb6b1f; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-size: 16px; font-weight: 700;">Log in to your portal</a>
               </div>
 
               <table style="width: 100%; border-collapse: collapse; margin-top: 16px; background-color: #f9fafb; border-radius: 6px;">
