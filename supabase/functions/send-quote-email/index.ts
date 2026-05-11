@@ -74,6 +74,14 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
         body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
       </style>
       <![endif]-->
+      <style type="text/css">
+        @media only screen and (max-width: 600px) {
+          .baw-pad-32 { padding-left: 18px !important; padding-right: 18px !important; }
+          .baw-h1 { font-size: 19px !important; }
+          .baw-cta { font-size: 16px !important; padding: 14px 18px !important; }
+          .baw-promo-code { font-size: 18px !important; padding: 12px 22px !important; letter-spacing: 1.5px !important; }
+        }
+      </style>
     </head>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1A1A1A; margin: 0; padding: 0; background-color: #F7F9FC; -webkit-font-smoothing: antialiased;">
       
