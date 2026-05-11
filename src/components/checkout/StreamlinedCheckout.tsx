@@ -2542,6 +2542,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Combined declaration card */}
             <div
+              data-highlight-target
               className={`rounded-xl border transition-colors ${
                 declarationError && !declarationChecked
                   ? 'bg-red-50 border-red-300'
