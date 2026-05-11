@@ -138,10 +138,11 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               
               <!-- Primary CTA -->
               <tr>
-                <td align="center" style="padding: 0 32px 28px 32px;">
-                  <a href="${quoteLink}" target="_blank" style="display: block; width: 100%; background-color: #FF7A00; color: #ffffff; padding: 16px 24px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 17px; text-align: center; box-sizing: border-box;">
+                <td class="baw-pad-32" align="center" style="padding: 0 32px 28px 32px;">
+                  <a href="${quoteLink}" target="_blank" class="baw-cta" style="display: block; width: 100%; background-color: #FF7A00; color: #ffffff; padding: 16px 24px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 17px; text-align: center; box-sizing: border-box;">
                     Complete my purchase
                   </a>
+                  <p style="font-size: 12px; color: #888; margin: 10px 0 0 0; text-align: center;">We'll take you straight back to your saved selection.</p>
                 </td>
               </tr>
               
