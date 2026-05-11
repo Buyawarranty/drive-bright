@@ -1422,9 +1422,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // Offset ~120px from top so the section sits clearly in view above the sticky bottom bar
       const top = window.scrollY + rect.top - 120;
       window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
-      el.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
+      // Highlight a specific child if marked, otherwise fall back to the section itself
+      const target = (el.querySelector('[data-highlight-target]') as HTMLElement) || el;
+      target.classList.add('ring-2', 'ring-red-500', 'ring-offset-2', 'rounded-xl');
       setTimeout(() => {
-        el.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+        target.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2', 'rounded-xl');
       }, 2500);
     };
 
@@ -2540,6 +2542,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Combined declaration card */}
             <div
+              data-highlight-target
               className={`rounded-xl border transition-colors ${
                 declarationError && !declarationChecked
                   ? 'bg-red-50 border-red-300'
