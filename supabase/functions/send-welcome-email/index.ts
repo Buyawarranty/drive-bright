@@ -364,7 +364,20 @@ serve(async (req) => {
       },
       ...(attachments.length > 0 && { attachments }),
       html: `
-        <div style="background-color: #f5f6f8; padding: 30px 15px; font-family: Arial, Helvetica, sans-serif; color: #1f2937;">
+        <style>
+          @media only screen and (max-width: 600px) {
+            .baw-wrap { padding: 16px 10px !important; }
+            .baw-card { padding: 22px 18px !important; }
+            .baw-card-sm { padding: 18px !important; }
+            .baw-h1 { font-size: 20px !important; }
+            .baw-h2 { font-size: 17px !important; }
+            .baw-cta { padding: 13px 24px !important; font-size: 15px !important; display: block !important; }
+            .baw-contact-cell { display: block !important; width: 100% !important; box-sizing: border-box; margin-bottom: 10px; }
+            .baw-row-label, .baw-row-value { font-size: 13px !important; }
+            .baw-portal-cell { padding: 12px 14px !important; font-size: 13px !important; }
+          }
+        </style>
+        <div class="baw-wrap" style="background-color: #f5f6f8; padding: 30px 15px; font-family: Arial, Helvetica, sans-serif; color: #1f2937;">
           <div style="max-width: 600px; margin: 0 auto;">
 
             <!-- Header / Logo -->
@@ -373,8 +386,8 @@ serve(async (req) => {
             </div>
 
             <!-- Hero Card -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 35px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h1 style="color: #1d3a8a; font-size: 24px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.3;">Your Buy a Warranty protection is now active</h1>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 35px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h1 class="baw-h1" style="color: #1d3a8a; font-size: 24px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.3;">Your Buy a Warranty protection is now active</h1>
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0 0 0;">Hi <strong>${finalCustomerName}</strong>,</p>
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 12px 0 0 0;">Congratulations and thank you for choosing Buy a Warranty. Your protection plan is now active and your policy documents are attached to this email for your records.</p>
 
@@ -386,15 +399,15 @@ serve(async (req) => {
 
             ${seasonalBonusMonths > 0 ? `
             <!-- Seasonal Bonus -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 20px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-top: 3px solid #eb6b1f;">
-              <p style="margin: 0; color: #1d3a8a; font-size: 16px; font-weight: 700;">Bonus coverage included</p>
+            <div class="baw-card-sm" style="background-color: #ffffff; border-radius: 8px; padding: 20px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-top: 3px solid #eb6b1f;">
+              <p class="baw-h2" style="margin: 0; color: #1d3a8a; font-size: 16px; font-weight: 700;">Bonus coverage included</p>
               <p style="margin: 6px 0 0 0; color: #4b5563; font-size: 15px; line-height: 1.5;">You've received an extra <strong>${seasonalBonusMonths} months</strong> of coverage at no additional cost. Your protection now runs until <strong>${formatDate(endDate)}</strong>.</p>
             </div>
             ` : ''}
 
             <!-- Policy Summary -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">Your policy summary</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">Your policy summary</h2>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6; width: 45%;">Vehicle Registration</td>
@@ -424,8 +437,8 @@ serve(async (req) => {
             </div>
 
             <!-- Customer Portal -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Access your customer portal</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Access your customer portal</h2>
               <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 8px 0;">Log in to your customer portal to:</p>
               <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0 0 20px 0; padding-left: 20px;">
                 <li>View your policy documents</li>
@@ -435,7 +448,7 @@ serve(async (req) => {
               </ul>
 
               <div style="text-align: center; margin: 24px 0;">
-                <a href="https://buyawarranty.co.uk/auth" style="display: inline-block; background-color: #eb6b1f; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-size: 16px; font-weight: 700;">Log in to your portal</a>
+                <a href="https://buyawarranty.co.uk/auth" class="baw-cta" style="display: inline-block; background-color: #eb6b1f; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-size: 16px; font-weight: 700;">Log in to your portal</a>
               </div>
 
               <table style="width: 100%; border-collapse: collapse; margin-top: 16px; background-color: #f9fafb; border-radius: 6px;">
@@ -460,8 +473,8 @@ serve(async (req) => {
             </div>
 
             <!-- Documents Include -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Your documents include</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Your documents include</h2>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Warranty terms and conditions</td>
@@ -479,19 +492,19 @@ serve(async (req) => {
             </div>
 
             <!-- Need help -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 8px 0;">Need help?</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 8px 0;">Need help?</h2>
               <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">If you have any questions, our team is here to help.</p>
 
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
+                  <td class="baw-contact-cell" style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
                     <p style="margin: 0 0 8px 0; color: #1d3a8a; font-size: 14px; font-weight: 700;">Customer Support</p>
                     <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 14px;"><a href="tel:03302295040" style="color: #1f2937; text-decoration: none;">0330 229 5040</a></p>
                     <p style="margin: 0; color: #1f2937; font-size: 14px;"><a href="mailto:support@buyawarranty.co.uk" style="color: #1f2937; text-decoration: none;">support@buyawarranty.co.uk</a></p>
                   </td>
                   <td style="width: 8px;"></td>
-                  <td style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
+                  <td class="baw-contact-cell" style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
                     <p style="margin: 0 0 8px 0; color: #1d3a8a; font-size: 14px; font-weight: 700;">Claims Team</p>
                     <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 14px;"><a href="tel:03302295045" style="color: #1f2937; text-decoration: none;">0330 229 5045</a></p>
                     <p style="margin: 0; color: #1f2937; font-size: 14px;"><a href="mailto:claims@buyawarranty.co.uk" style="color: #1f2937; text-decoration: none;">claims@buyawarranty.co.uk</a></p>
@@ -501,7 +514,7 @@ serve(async (req) => {
             </div>
 
             <!-- Closing -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
               <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">Thank you again for choosing Buy a Warranty. We are delighted to have you covered.</p>
               <p style="color: #1f2937; font-size: 15px; line-height: 1.6; margin: 0;">Kind regards,<br><strong>The Buy a Warranty Team</strong></p>
             </div>
