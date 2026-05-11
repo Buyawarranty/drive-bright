@@ -829,6 +829,18 @@ export const UserPermissionsTab = () => {
                         </Button>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteUser(u.id)}
+                        title="Permanently delete this user"
+                        className="text-xs"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
