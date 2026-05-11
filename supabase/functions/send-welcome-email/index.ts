@@ -473,8 +473,8 @@ serve(async (req) => {
             </div>
 
             <!-- Documents Include -->
-            <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Your documents include</h2>
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Your documents include</h2>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Warranty terms and conditions</td>
