@@ -462,10 +462,32 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
         const escapedTerm = rawTerm.replace(/[%_]/g, '\\$&').replace(/,/g, ' ');
         const wildcardTerm = `%${escapedTerm}%`;
+        const nameParts = escapedTerm.split(/\s+/).filter(Boolean);
         const digitsOnly = rawTerm.replace(/\D/g, '');
         const compactTerm = rawTerm.replace(/\s+/g, '');
         const phoneVariants = new Set<string>();
         const regVariants = new Set<string>();
+        const searchClauses = [
+          `email.ilike.${wildcardTerm}`,
+          `first_name.ilike.${wildcardTerm}`,
+          `last_name.ilike.${wildcardTerm}`,
+          `phone.ilike.${wildcardTerm}`,
+          `vehicle_reg.ilike.${wildcardTerm}`,
+          `vehicle_make.ilike.${wildcardTerm}`,
+          `vehicle_model.ilike.${wildcardTerm}`,
+          `vehicle_year.ilike.${wildcardTerm}`,
+          `plan_interest.ilike.${wildcardTerm}`,
+          `notes.ilike.${wildcardTerm}`,
+        ];
+
+        if (nameParts.length >= 2) {
+          const firstPart = `%${nameParts[0]}%`;
+          const lastPart = `%${nameParts.slice(1).join(' ')}%`;
+          const reversedFirst = `%${nameParts[nameParts.length - 1]}%`;
+          const reversedLast = `%${nameParts.slice(0, -1).join(' ')}%`;
+          searchClauses.push(`and(first_name.ilike.${firstPart},last_name.ilike.${lastPart})`);
+          searchClauses.push(`and(first_name.ilike.${reversedFirst},last_name.ilike.${reversedLast})`);
+        }
 
         if (digitsOnly.length >= 6) {
           phoneVariants.add(digitsOnly);
@@ -484,16 +506,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
           regVariants.add(`${upperCompact.slice(0, -3)} ${upperCompact.slice(-3)}`);
         }
 
-        return query.or([
-          `email.ilike.${wildcardTerm}`,
-          `first_name.ilike.${wildcardTerm}`,
-          `last_name.ilike.${wildcardTerm}`,
-          `phone.ilike.${wildcardTerm}`,
-          `vehicle_reg.ilike.${wildcardTerm}`,
-          `plan_interest.ilike.${wildcardTerm}`,
-          ...Array.from(phoneVariants).map(value => `phone.ilike.%${value}%`),
-          ...Array.from(regVariants).map(value => `vehicle_reg.ilike.%${value}%`),
-        ].join(','));
+        searchClauses.push(...Array.from(phoneVariants).map(value => `phone.ilike.%${value}%`));
+        searchClauses.push(...Array.from(regVariants).map(value => `vehicle_reg.ilike.%${value}%`));
+
+        return query.or(searchClauses.join(','));
       };
 
       const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any) => {
@@ -600,6 +616,20 @@ export const useLeads = (options?: UseLeadsOptions) => {
             return { data, error: null } as any;
           }
 
+          const hasServerSearch = !!serverSearchTermRef.current?.trim();
+          if (hasServerSearch) {
+            return await fetchPagedLeads((from, to) =>
+              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+                supabase
+                  .from('sales_leads')
+                  .select(SELECT_COLUMNS)
+                  .order('created_at', { ascending: false })
+                  .order('id', { ascending: false })
+                  .range(from, to)
+              )))
+            );
+          }
+
           let query = supabase
             .from('sales_leads')
             .select(SELECT_COLUMNS)
@@ -608,7 +638,6 @@ export const useLeads = (options?: UseLeadsOptions) => {
             .limit(LEADS_LIST_LIMIT);
 
           query = applyServerDateFilter(query);
-          query = applyServerSearchFilter(query);
           query = applyCallbacksFilter(query);
 
           return await query;
