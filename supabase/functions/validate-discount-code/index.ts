@@ -124,13 +124,13 @@ serve(async (req) => {
       }
     }
 
-    // Check minimum spend for fixed/monetary discount codes (£350 minimum)
-    const MINIMUM_SPEND_FOR_FIXED = 350;
-    if (discountCode.type === 'fixed' && orderAmount && orderAmount < MINIMUM_SPEND_FOR_FIXED) {
-      logStep("Order amount below minimum spend for fixed discount", { code, orderAmount, minimumSpend: MINIMUM_SPEND_FOR_FIXED });
+    // Check minimum spend (configured per-code via min_order_amount, defaults to 0 = no minimum)
+    const minOrderAmount = Number(discountCode.min_order_amount ?? 0);
+    if (minOrderAmount > 0 && orderAmount && orderAmount < minOrderAmount) {
+      logStep("Order amount below minimum spend for code", { code, orderAmount, minOrderAmount });
       return new Response(JSON.stringify({
         valid: false,
-        error: `Minimum order of £${MINIMUM_SPEND_FOR_FIXED} required to use this code. Your current order is £${orderAmount}.`
+        error: `Minimum order of £${minOrderAmount} required to use this code. Your current order is £${orderAmount}.`
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
