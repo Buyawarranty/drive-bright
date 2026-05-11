@@ -50,6 +50,7 @@ interface DiscountCodeFormData {
   usage_limit: number | null;
   campaign_source: string;
   active: boolean;
+  min_order_amount: number;
 }
 
 const CAMPAIGN_SOURCES = [
@@ -85,6 +86,7 @@ export function DiscountCodesTab() {
     usage_limit: 1,
     campaign_source: 'GENERAL',
     active: true,
+    min_order_amount: 0,
   });
   const { toast } = useToast();
 
@@ -356,6 +358,7 @@ export function DiscountCodesTab() {
       usage_limit: 1,
       campaign_source: 'SAVE',
       active: true,
+      min_order_amount: 0,
     });
     setEditingCode(null);
     setIsCreateOpen(false);
@@ -371,6 +374,7 @@ export function DiscountCodesTab() {
       usage_limit: code.usage_limit,
       campaign_source: code.campaign_source || 'GENERAL',
       active: code.active,
+      min_order_amount: Number((code as any).min_order_amount ?? 0),
     });
     setEditingCode(code);
     setIsCreateOpen(true);
@@ -747,10 +751,24 @@ export function DiscountCodesTab() {
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">£</span>
                       )}
                     </div>
-                    {formData.type === 'fixed' && (
-                      <p className="text-xs text-amber-600">⚠️ Fixed (£) discounts require a minimum order of £350</p>
+                    {formData.type === 'fixed' && formData.min_order_amount > 0 && (
+                      <p className="text-xs text-amber-600">⚠️ This code requires a minimum order of £{formData.min_order_amount}</p>
                     )}
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="min_order_amount">Minimum Order Amount (£)</Label>
+                  <Input
+                    id="min_order_amount"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.min_order_amount || ''}
+                    onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value ? parseFloat(e.target.value) : 0 })}
+                    placeholder="0 = no minimum"
+                  />
+                  <p className="text-xs text-muted-foreground">Leave at 0 for no minimum spend requirement.</p>
                 </div>
 
                 <div className="space-y-2">

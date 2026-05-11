@@ -371,25 +371,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, [appliedDiscountCodes]);
 
   // Auto-apply promo code from email link (?promo=SAVE10TODAY)
-  // Only applies when order total is £350+
+  // Per-code minimum spend is enforced server-side by validate-discount-code.
   const hasAutoAppliedPromo = React.useRef(false);
   useEffect(() => {
     if (hasAutoAppliedPromo.current) return;
     const savedPromo = localStorage.getItem('buyawarranty_promoCode');
     if (savedPromo && appliedDiscountCodes.length === 0) {
-      // Check minimum order amount (£350)
-      const orderTotal = pricingData.totalPrice || 0;
-      if (orderTotal < 350) {
-        console.log('🎟️ Promo code not auto-applied: order total £' + orderTotal + ' is below £350 minimum');
-        toast.error(`Code ${savedPromo} requires a minimum order of £350. Your current order is £${orderTotal}.`, {
-          duration: 5000,
-          id: 'promo-minimum',
-        });
-        localStorage.removeItem('buyawarranty_promoCode');
-        hasAutoAppliedPromo.current = true;
-        return;
-      }
-
       hasAutoAppliedPromo.current = true;
       localStorage.removeItem('buyawarranty_promoCode');
       // Set the input and trigger apply
