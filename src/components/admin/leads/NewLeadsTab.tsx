@@ -566,10 +566,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     assigned: dateAndStatusFilteredLeads.filter(l => !!l.assigned_to).length,
   }), [dateAndStatusFilteredLeads]);
 
-  // Agent lead counts - respects date + active status filter.
+  // Agent lead counts show true assignment totals for the selected date range.
+  // Do not tie these badges to the active status filter, otherwise round-robin
+  // looks uneven when agents move leads to Lost/Fake/Converted at different speeds.
   const agentLeadCounts = useMemo(() => {
     const counts: Record<string, number> = { unassigned: 0 };
-    dateAndStatusFilteredLeads.forEach(lead => {
+    dateFilteredVisibleLeadsForFilters.forEach(lead => {
       if (!lead.assigned_to) {
         counts.unassigned = (counts.unassigned || 0) + 1;
       } else {
@@ -577,7 +579,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
     });
     return counts;
-  }, [dateAndStatusFilteredLeads]);
+  }, [dateFilteredVisibleLeadsForFilters]);
 
   // Memoize handlers to prevent re-renders
   const handleSelectLead = useCallback((leadId: string) => {
