@@ -363,12 +363,14 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <SelectContent>
               <SelectItem value="all">All Agents</SelectItem>
               <SelectItem value="unassigned">
-                Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLiveLeadCounts?.['unassigned'] ?? agentLeadCounts?.['unassigned'] ?? 0}/{agentLeadCounts?.['unassigned'] || 0}</Badge>
+                Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.['unassigned'] || 0} allocated</Badge>
+                <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.['unassigned'] ?? agentLeadCounts?.['unassigned'] ?? 0} live</span>
               </SelectItem>
               {salesUsers.map(user => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.first_name} {user.last_name}
-                  <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLiveLeadCounts?.[user.id] ?? agentLeadCounts?.[user.id] ?? 0}/{agentLeadCounts?.[user.id] || 0}</Badge>
+                  <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.[user.id] || 0} allocated</Badge>
+                  <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.[user.id] ?? agentLeadCounts?.[user.id] ?? 0} live</span>
                 </SelectItem>
               ))}
             </SelectContent>
