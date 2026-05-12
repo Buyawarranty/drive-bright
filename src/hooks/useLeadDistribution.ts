@@ -197,20 +197,36 @@ export const useLeadDistribution = () => {
   // Remove overflow recipient
   const removeOverflowRecipient = useCallback(async (id: string) => {
     try {
-      const { error } = await supabase
+      const previousRecipients = overflowRecipients;
+      setOverflowRecipients(prev => prev.filter(recipient => recipient.id !== id));
+
+      const { error: stateError } = await supabase
+        .from('overflow_round_robin_state')
+        .update({ last_assigned_overflow_id: null })
+        .eq('last_assigned_overflow_id', id);
+
+      if (stateError) throw stateError;
+
+      const { data: removedRows, error } = await supabase
         .from('overflow_recipients')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
+      if (!removedRows || removedRows.length === 0) {
+        throw new Error('Delete blocked — you may not have permission to change overflow recipients.');
+      }
       await fetchOverflowRecipients();
       toast({ title: 'Overflow recipient removed' });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error removing overflow recipient:', error);
+      await fetchOverflowRecipients();
+      toast({ title: 'Error', description: error?.message || 'Failed to remove overflow recipient.', variant: 'destructive' });
       return false;
     }
-  }, [fetchOverflowRecipients]);
+  }, [fetchOverflowRecipients, overflowRecipients]);
 
   // Update distribution settings
   const updateSettings = useCallback(async (updates: Partial<DistributionSettings>) => {
