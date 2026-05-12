@@ -225,7 +225,7 @@ export const useLeadDistribution = () => {
       toast({ title: 'Error', description: error?.message || 'Failed to remove overflow recipient.', variant: 'destructive' });
       return false;
     }
-  }, [fetchOverflowRecipients, overflowRecipients]);
+  }, [fetchOverflowRecipients]);
 
   // Update distribution settings
   const updateSettings = useCallback(async (updates: Partial<DistributionSettings>) => {
