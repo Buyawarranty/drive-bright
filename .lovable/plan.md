@@ -1,31 +1,73 @@
+## Goal
+Every step 2 submission keeps landing in the admin dashboard (`sales_leads` via `track-abandoned-cart`) **and** is also pushed to GoHighLevel — with no blocking and an automatic retry on failure.
 
+## Recommended connection method
+Use a **GHL Inbound Webhook URL** (created in a GHL Workflow → trigger "Inbound Webhook"). Reasons:
+- No OAuth, no Location ID, no token expiry.
+- One secret to store: `GHL_WEBHOOK_URL`.
+- GHL workflow on their side can map fields → create/update Contact → tag → start nurture. Easy for non-devs to tweak later without code changes.
+- Works perfectly with fire-and-forget + retry queue.
 
-## Diagnosis: cancellation worked correctly — this is by design
+(If later you want full API control — contact upserts, opportunities, custom fields by ID — we can swap to the API method without touching the frontend.)
 
-I checked the database. The customer record (`accepttest accepttest`, B11 CSD, signup 17/04/2026 20:00) now has `status = 'Cancelled'` and was last updated at 20:08:02 — exactly when you cancelled. **The cancellation succeeded.**
+## Architecture
 
-The reason it's still visible: cancelled customers are **intentionally kept in the Customer Management list** with a highlighted "Cancelled" status. The `CancelWarrantyDialog` itself even tells you this:
+```text
+Step 2 submit
+   │
+   ▼
+track-abandoned-cart  ──►  sales_leads (admin dashboard)  ✅ existing
+   │
+   └──►  push-to-ghl  (fire-and-forget, awaited 0ms)
+              │
+              ├── POST GHL webhook  ──► success → done
+              │
+              └── on failure / non-2xx
+                       │
+                       ▼
+                ghl_push_queue (retry row)
+                       │
+                       ▼
+              cron every 5 min → retry-ghl-pushes (max 5 attempts, exp backoff)
+```
 
-> "Customer will remain visible. Cancelled/refunded customers stay in the dashboard with highlighted status. Use **Archive** to hide them."
+## Steps
 
-This matches the project's archiving standard — cancellations preserve audit history and commission/unwind tracking; **Archive** is the action that removes a row from the visible list (`is_deleted = true`).
+1. **Add secret** `GHL_WEBHOOK_URL` (user pastes the Inbound Webhook URL from their GHL workflow).
 
-### What you can do now
+2. **Migration** — create `ghl_push_queue`:
+   - `payload jsonb`, `status` (pending / sent / failed), `attempts int`, `last_error text`, `next_attempt_at timestamptz`, `sent_at timestamptz`.
+   - RLS: service-role only (no client access). Index on `(status, next_attempt_at)`.
 
-Three possible paths — pick one:
+3. **New edge function `push-to-ghl`**:
+   - Input: normalized lead payload (name, email, phone, address, vehicle reg/make/model/year/mileage, step, source, fbclid/gclid, plan info).
+   - POST to `GHL_WEBHOOK_URL` with `AbortSignal.timeout(4000)`.
+   - On non-2xx or network error → insert into `ghl_push_queue` with `next_attempt_at = now() + 1 min`. Never throws upward.
+   - `verify_jwt = false`, internal-only (called from other edge functions).
 
-**Option A — Archive this specific record now (no code change)**
-Open the row's actions menu and click **Archive**. The row will disappear from the list (it'll be soft-deleted like the 20+ older `buyawarranty1@gmail.com` test rows already in the DB).
+4. **Wire it into `track-abandoned-cart`**:
+   - After the existing `sales_leads` upsert succeeds, call `push-to-ghl` via `EdgeRuntime.waitUntil(...)` so the user response is unaffected.
+   - No try/catch impact on the main flow — GHL failures never block lead saving.
 
-**Option B — Add a "Hide cancelled" filter toggle (small UI change)**
-Add a toggle/checkbox at the top of Customer Management called "Hide cancelled & refunded". When ON, the default `all` view filters out rows where `status` is `cancelled` or `refunded`. Off by default (preserves current behaviour and audit visibility). One-line filter addition in `CustomersTab.tsx` around line 715.
+5. **New edge function `retry-ghl-pushes`** + pg_cron job (every 5 min):
+   - Select up to 50 rows where `status='pending' AND next_attempt_at <= now() AND attempts < 5`.
+   - Re-POST each. On success mark `sent`. On failure bump `attempts`, set `next_attempt_at = now() + (2^attempts) minutes`, store `last_error`. After 5 attempts mark `failed`.
 
-**Option C — Auto-archive on cancellation (changes documented behaviour)**
-Modify `CancelWarrantyDialog.tsx` so cancelling also sets `is_deleted = true`. This contradicts the existing "Customer remains visible" UX promise and the archiving standard memory, and would break the **Cancellations tab**, commission unwinds, and refund analytics that rely on these rows being queryable. **Not recommended.**
+6. **Admin visibility (small)**:
+   - Add a tiny "GHL sync" badge column logic later if you want — out of scope for this task; the queue table is enough for diagnostics via SQL.
 
-### My recommendation
+## Field mapping sent to GHL
+```text
+firstName, lastName, email, phone, address1, city, postalCode,
+customField.vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage,
+customField.step_abandoned, source ("buyawarranty - step 2"),
+customField.fbclid, gclid, plan_name, total_price
+```
 
-**Option B** — it's the cleanest fix for your frustration without breaking unwind/commission tracking. You get a one-click way to hide cancelled rows when you don't want to see them, while audit trails remain intact.
+## What does NOT change
+- Step 2 frontend code is untouched.
+- `sales_leads` saving, round-robin assignment, abandoned cart emails, SMS, WhatsApp, FB CAPI, Google offline conversions — all unchanged.
+- No new client-side dependencies.
 
-Let me know which option you'd like and I'll implement it.
-
+## Risk / rollback
+- All new code is additive. Removing the secret immediately disables GHL pushes (function logs a warning and exits). Drop the table + cron to fully remove.
