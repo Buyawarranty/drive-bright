@@ -4407,6 +4407,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ghl_push_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          last_error: string | null
+          next_attempt_at: string
+          payload: Json
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload: Json
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           brand_logo_url: string | null

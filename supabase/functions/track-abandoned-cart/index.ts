@@ -336,6 +336,27 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Fire-and-forget push to GoHighLevel (never blocks user response, never throws upward)
+    try {
+      const ghlPromise = fetch(`${supabaseUrl}/functions/v1/push-to-ghl`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify(cartData),
+      }).catch((err) => {
+        console.error('GHL push trigger error (non-blocking):', err);
+      });
+      // @ts-ignore EdgeRuntime is provided by Supabase
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(ghlPromise);
+      }
+    } catch (ghlErr) {
+      console.error('GHL push setup error (non-blocking):', ghlErr);
+    }
+
     return new Response(
       JSON.stringify({ success: true, message: "Abandoned cart tracked successfully" }),
       {
