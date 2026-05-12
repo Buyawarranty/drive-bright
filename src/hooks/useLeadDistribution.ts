@@ -197,7 +197,6 @@ export const useLeadDistribution = () => {
   // Remove overflow recipient
   const removeOverflowRecipient = useCallback(async (id: string) => {
     try {
-      const previousRecipients = overflowRecipients;
       setOverflowRecipients(prev => prev.filter(recipient => recipient.id !== id));
 
       const { error: stateError } = await supabase
