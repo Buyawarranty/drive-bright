@@ -1,0 +1,8 @@
+ALTER TABLE public.overflow_round_robin_state
+DROP CONSTRAINT IF EXISTS overflow_round_robin_state_last_assigned_overflow_id_fkey;
+
+ALTER TABLE public.overflow_round_robin_state
+ADD CONSTRAINT overflow_round_robin_state_last_assigned_overflow_id_fkey
+FOREIGN KEY (last_assigned_overflow_id)
+REFERENCES public.overflow_recipients(id)
+ON DELETE SET NULL;
