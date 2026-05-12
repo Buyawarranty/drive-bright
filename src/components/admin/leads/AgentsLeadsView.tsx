@@ -1582,10 +1582,16 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                       <span className="text-xs">{name}</span>
                       {isFullAdmin && (
                         <button
-                          onClick={() => removeOverflowRecipient(recipient.id)}
-                          className="ml-1 hover:text-destructive"
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeOverflowRecipient(recipient.id);
+                          }}
+                          className="ml-1 hover:text-destructive cursor-pointer"
+                          aria-label={`Remove ${name}`}
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-3 w-3 pointer-events-none" />
                         </button>
                       )}
                     </Badge>
