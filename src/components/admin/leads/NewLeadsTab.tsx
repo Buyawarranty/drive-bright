@@ -581,6 +581,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return counts;
   }, [dateFilteredVisibleLeadsForFilters]);
 
+  const agentLiveLeadCounts = useMemo(() => {
+    const counts: Record<string, number> = { unassigned: 0 };
+    dateFilteredVisibleLeadsForFilters.forEach(lead => {
+      if (lead.status === 'lost' || lead.status === 'fake_lead' || (lead.status as string) === 'archived') return;
+      if (!lead.assigned_to) {
+        counts.unassigned = (counts.unassigned || 0) + 1;
+      } else {
+        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [dateFilteredVisibleLeadsForFilters]);
+
   // Memoize handlers to prevent re-renders
   const handleSelectLead = useCallback((leadId: string) => {
     setSelectedLeads(prev => {
@@ -1050,6 +1063,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
+            agentLiveLeadCounts={agentLiveLeadCounts}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
