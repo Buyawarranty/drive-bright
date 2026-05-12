@@ -91,6 +91,12 @@ verify_jwt = false
 [functions.track-abandoned-cart]
 verify_jwt = false
 
+[functions.push-to-ghl]
+verify_jwt = false
+
+[functions.retry-ghl-pushes]
+verify_jwt = false
+
 [functions.sync-to-brevo]
 verify_jwt = false
 
