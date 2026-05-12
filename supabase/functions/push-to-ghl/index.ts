@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function buildGhlPayload(input: any) {
+function buildGhlPayload(input: any, locationId: string) {
   const fullName: string = (input.full_name || "").trim();
   const [firstName, ...rest] = fullName.split(/\s+/);
   const lastName = rest.join(" ");
@@ -16,7 +16,25 @@ function buildGhlPayload(input: any) {
     .join(" ")
     .trim();
 
+  const customFields = [
+    { key: "vehicle_reg", value: input.vehicle_reg },
+    { key: "vehicle_make", value: input.vehicle_make },
+    { key: "vehicle_model", value: input.vehicle_model },
+    { key: "vehicle_year", value: input.vehicle_year },
+    { key: "mileage", value: input.mileage },
+    { key: "step_abandoned", value: input.step_abandoned },
+    { key: "plan_name", value: input.plan_name },
+    { key: "plan_id", value: input.plan_id },
+    { key: "total_price", value: input.total_price },
+    { key: "payment_type", value: input.payment_type },
+    { key: "fbclid", value: input.fbclid },
+    { key: "gclid", value: input.gclid },
+  ]
+    .filter((f) => f.value !== undefined && f.value !== null && f.value !== "")
+    .map((f) => ({ key: String(f.key), field_value: String(f.value) }));
+
   return {
+    locationId,
     firstName: firstName || undefined,
     lastName: lastName || undefined,
     name: fullName || undefined,
@@ -29,41 +47,35 @@ function buildGhlPayload(input: any) {
     country: addr.country || "GB",
     source: "buyawarranty - step 2",
     tags: ["buyawarranty", `step-${input.step_abandoned ?? ""}`],
-    customField: {
-      vehicle_reg: input.vehicle_reg,
-      vehicle_make: input.vehicle_make,
-      vehicle_model: input.vehicle_model,
-      vehicle_year: input.vehicle_year,
-      mileage: input.mileage,
-      step_abandoned: input.step_abandoned,
-      plan_name: input.plan_name,
-      plan_id: input.plan_id,
-      total_price: input.total_price,
-      payment_type: input.payment_type,
-      fbclid: input.fbclid,
-      gclid: input.gclid,
-    },
+    customFields,
   };
 }
 
-async function postToGhl(webhookUrl: string, payload: any): Promise<{ ok: boolean; status: number; body: string }> {
-  const res = await fetch(webhookUrl, {
+async function postToGhl(apiKey: string, payload: any): Promise<{ ok: boolean; status: number; body: string }> {
+  // Try v2 upsert endpoint first (works with Private Integration tokens "pit-...")
+  const res = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      "Version": "2021-07-28",
+      "Accept": "application/json",
+    },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(4000),
+    signal: AbortSignal.timeout(8000),
   });
   const body = await res.text().catch(() => "");
-  return { ok: res.ok, status: res.status, body: body.slice(0, 500) };
+  return { ok: res.ok, status: res.status, body: body.slice(0, 800) };
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const webhookUrl = Deno.env.get("GHL_WEBHOOK_URL");
-    if (!webhookUrl) {
-      console.warn("GHL_WEBHOOK_URL not configured — skipping push");
+    const apiKey = Deno.env.get("GHL_API_KEY");
+    const locationId = Deno.env.get("GHL_LOCATION_ID");
+    if (!apiKey || !locationId) {
+      console.warn("GHL_API_KEY or GHL_LOCATION_ID not configured — skipping push");
       return new Response(JSON.stringify({ skipped: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -71,17 +83,17 @@ serve(async (req) => {
     }
 
     const input = await req.json();
-    const payload = buildGhlPayload(input);
+    const payload = buildGhlPayload(input, locationId);
 
     let result;
     try {
-      result = await postToGhl(webhookUrl, payload);
+      result = await postToGhl(apiKey, payload);
     } catch (err: any) {
       result = { ok: false, status: 0, body: err?.message || "network_error" };
     }
 
     if (result.ok) {
-      console.log(`✅ GHL push success for ${input.email}`);
+      console.log(`✅ GHL contact upserted for ${input.email}: ${result.body}`);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
