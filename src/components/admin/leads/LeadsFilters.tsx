@@ -75,6 +75,7 @@ interface LeadsFiltersProps {
   agentFilter?: string;
   onAgentFilterChange?: (agentId: string) => void;
   agentLeadCounts?: Record<string, number>;
+  agentLiveLeadCounts?: Record<string, number>;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
   userRole?: string;
@@ -128,6 +129,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   agentFilter = 'all',
   onAgentFilterChange,
   agentLeadCounts,
+  agentLiveLeadCounts,
   sourceFilter = 'all',
   onSourceFilterChange,
   showRecoveredPill = false,
@@ -361,12 +363,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <SelectContent>
               <SelectItem value="all">All Agents</SelectItem>
               <SelectItem value="unassigned">
-                Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.['unassigned'] || 0}</Badge>
+                Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLiveLeadCounts?.['unassigned'] ?? agentLeadCounts?.['unassigned'] ?? 0}/{agentLeadCounts?.['unassigned'] || 0}</Badge>
               </SelectItem>
               {salesUsers.map(user => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.first_name} {user.last_name}
-                  <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.[user.id] || 0}</Badge>
+                  <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLiveLeadCounts?.[user.id] ?? agentLeadCounts?.[user.id] ?? 0}/{agentLeadCounts?.[user.id] || 0}</Badge>
                 </SelectItem>
               ))}
             </SelectContent>
