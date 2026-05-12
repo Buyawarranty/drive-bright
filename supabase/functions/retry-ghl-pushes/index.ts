@@ -12,9 +12,10 @@ const BATCH_SIZE = 50;
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const webhookUrl = Deno.env.get("GHL_WEBHOOK_URL");
-  if (!webhookUrl) {
-    return new Response(JSON.stringify({ skipped: "no GHL_WEBHOOK_URL" }), {
+  const apiKey = Deno.env.get("GHL_API_KEY");
+  const locationId = Deno.env.get("GHL_LOCATION_ID");
+  if (!apiKey || !locationId) {
+    return new Response(JSON.stringify({ skipped: "no GHL_API_KEY/GHL_LOCATION_ID" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -53,11 +54,17 @@ serve(async (req) => {
     let errMsg = "";
     let httpStatus = 0;
     try {
-      const res = await fetch(webhookUrl, {
+      const payload = { ...(row.payload || {}), locationId };
+      const res = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(row.payload),
-        signal: AbortSignal.timeout(6000),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+          "Version": "2021-07-28",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(8000),
       });
       httpStatus = res.status;
       const body = await res.text().catch(() => "");
