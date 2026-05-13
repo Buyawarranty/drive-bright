@@ -1064,6 +1064,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
           {/* Sales Executive Header removed - agents focus on leads only */}
+          {isSuperAdmin && (
+            <div className="flex items-center justify-end">
+              <Button
+                type="button"
+                variant={superAdminHideSource ? 'default' : 'outline'}
+                size="sm"
+                onClick={toggleSuperAdminHideSource}
+                title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+                className="h-7 px-2 text-[11px] font-semibold gap-1.5"
+              >
+                {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                H
+              </Button>
+            </div>
+          )}
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
             filter={activeFilter}
