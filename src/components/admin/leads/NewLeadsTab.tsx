@@ -180,10 +180,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return next;
     });
   };
-  const sourceHidden = isSupportUser || (isSuperAdmin && superAdminHideSource);
-
-  // Source filter visibility: admin, super_admin, and lead_gen only — but never for support@ or when super admin toggled H
-  const canSeeSourceFilter = !sourceHidden && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen');
+  // Only lead_gen always sees source. Super admin can opt in via the H toggle (hidden by default).
+  // Everyone else (admin, sales, sales_lead, support@, etc.) never sees source.
+  const sourceVisible =
+    !isSupportUser &&
+    (isLeadGenUser || (isSuperAdmin && !superAdminHideSource));
+  const sourceHidden = !sourceVisible;
+  const canSeeSourceFilter = sourceVisible;
 
   // Fetch active reminder lead IDs for the current admin user
   const fetchReminderLeadIds = useCallback(async () => {
