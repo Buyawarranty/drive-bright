@@ -34,7 +34,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { EyeOff, Eye } from 'lucide-react';
 
 import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
@@ -160,8 +162,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [reminderLeadIds]
   );
   
-  // Source filter visibility: admin, super_admin, and lead_gen only
-  const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
+  // Source visibility rules
+  // - Hide entirely from support@ users
+  // - Super admin gets a personal "H" toggle (localStorage) to hide source from their own view
+  const { user } = useAuth();
+  const userEmail = (user?.email || '').toLowerCase();
+  const isSupportUser = userEmail.startsWith('support@');
+  const isSuperAdmin = userRole === 'super_admin';
+  const [superAdminHideSource, setSuperAdminHideSource] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('newLeads.hideSource.superAdmin') === '1';
+  });
+  const toggleSuperAdminHideSource = () => {
+    setSuperAdminHideSource((prev) => {
+      const next = !prev;
+      try { localStorage.setItem('newLeads.hideSource.superAdmin', next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
+  const sourceHidden = isSupportUser || (isSuperAdmin && superAdminHideSource);
+
+  // Source filter visibility: admin, super_admin, and lead_gen only — but never for support@ or when super admin toggled H
+  const canSeeSourceFilter = !sourceHidden && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen');
 
   // Fetch active reminder lead IDs for the current admin user
   const fetchReminderLeadIds = useCallback(async () => {
@@ -650,7 +672,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       'Phone': lead.phone || '',
       'Status': lead.status,
       'Priority': lead.priority,
-      'Source': lead.lead_source,
+      ...(sourceHidden ? {} : { 'Source': lead.lead_source }),
       'Vehicle Reg': lead.vehicle_reg || '',
       'Vehicle': `${lead.vehicle_make || ''} ${lead.vehicle_model || ''} ${lead.vehicle_year || ''}`.trim(),
       'Plan Interest': lead.plan_interest || '',
@@ -1042,6 +1064,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
           {/* Sales Executive Header removed - agents focus on leads only */}
+          {isSuperAdmin && (
+            <div className="flex items-center justify-end">
+              <Button
+                type="button"
+                variant={superAdminHideSource ? 'default' : 'outline'}
+                size="sm"
+                onClick={toggleSuperAdminHideSource}
+                title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+                className="h-7 px-2 text-[11px] font-semibold gap-1.5"
+              >
+                {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                H
+              </Button>
+            </div>
+          )}
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
             filter={activeFilter}
@@ -1123,7 +1160,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onSendQuote={handleSendQuote}
                     showFbBadge={isDigitalAccess}
                     showRecoveredBadge={isAdminOrSuperAdmin}
-                    showSourceColumn={isAdminOrSuperAdmin || isLeadGenUser}
+                    showSourceColumn={!sourceHidden && (isAdminOrSuperAdmin || isLeadGenUser)}
                     isPaidLocked={isPaidLocked}
                     paidLeadAccessCheck={paidLeadAccessCheck}
                     onRequestPaidAccess={handleRequestPaidAccess}
@@ -1179,7 +1216,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   onSendQuote={handleSendQuote}
                   showFbBadge={isDigitalAccess}
                   showRecoveredBadge={isAdminOrSuperAdmin}
-                  showSourceColumn={isAdminOrSuperAdmin || isLeadGenUser}
+                  showSourceColumn={!sourceHidden && (isAdminOrSuperAdmin || isLeadGenUser)}
                   isPaidLocked={isPaidLocked}
                   paidLeadAccessCheck={paidLeadAccessCheck}
                   onRequestPaidAccess={handleRequestPaidAccess}
