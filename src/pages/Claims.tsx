@@ -594,10 +594,10 @@ Additional Information: ${formData.additionalInfo}
         .claims-pro .pro-divider-soft { border-top: 1px solid var(--c-border); }
       `}</style>
 
-      <div className="min-h-screen bg-[#F4F6F8] claims-pro">
+      <div className="min-h-screen bg-white claims-pro">
         {/* Hero Section - UX Optimized with Orange Branding */}
         {/* Hero + intro */}
-        <section className="bg-[#F4F6F8] pt-10 sm:pt-14 pb-6 px-4 sm:px-6">
+        <section className="bg-white pt-10 sm:pt-14 pb-6 px-4 sm:px-6">
           <div className="max-w-2xl mx-auto">
             <button
               type="button"
@@ -678,7 +678,7 @@ Additional Information: ${formData.additionalInfo}
         </section>
 
         {/* Form section */}
-        <section className="bg-[#F4F6F8] pt-4 pb-16 px-4 sm:px-6">
+        <section className="bg-white pt-4 pb-16 px-4 sm:px-6">
           <div className="max-w-2xl mx-auto">
             <div id="claim-form">
               <div className="mb-6 text-left">
@@ -1184,7 +1184,7 @@ Additional Information: ${formData.additionalInfo}
 
 
         {/* Your repair limit explained */}
-        <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
+        <section className="py-12 lg:py-16 px-4 bg-white">
           <div className="max-w-2xl mx-auto">
             <p className="text-[11px] font-medium text-[#E8541A] uppercase tracking-[0.07em] mb-3 text-left">
               Your repair limit
@@ -1210,7 +1210,7 @@ Additional Information: ${formData.additionalInfo}
         </section>
 
         {/* Contact us */}
-        <section className="py-12 lg:py-16 px-4 bg-[#F4F6F8]">
+        <section className="py-12 lg:py-16 px-4 bg-white">
           <div className="max-w-2xl mx-auto">
             <p className="text-[11px] font-medium text-[#E8541A] uppercase tracking-[0.07em] mb-3 text-left">
               Get in touch
