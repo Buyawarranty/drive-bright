@@ -781,7 +781,7 @@ const Protected = () => {
       </div>
 
       {/* ── 8. TRUSTPILOT REVIEWS — social proof after decision ── */}
-      <section className="bg-white py-12 text-center border-b border-gray-200">
+      <section className="bg-gray-50 py-12 text-center border-b border-gray-200">
         <div className="relative max-w-7xl mx-auto px-6">
           <h2
             className="font-bold tracking-tight mb-6 text-foreground"
