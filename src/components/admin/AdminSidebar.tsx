@@ -349,26 +349,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'sales') {
-      // Sales agents: check if they have custom permissions first
+      // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
+      const defaultSalesTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'timesheets', 'account'];
+
+      // If custom permissions exist, union them with the defaults so admins can grant
+      // extra access without removing the baseline sales sidebar
       if (userPermissions && Object.keys(userPermissions).length > 0) {
-        const allowedTabs = defaultTabs.filter(tab => {
+        const allowedIds = new Set(defaultSalesTabIds);
+        defaultTabs.forEach(tab => {
           const permKey = `tab_${tab.id}`;
-          // Always show account settings
-          if (tab.id === 'account') return true;
-          // Always show selling-tips for sales staff
-          if (tab.id === 'selling-tips') return true;
-          return userPermissions[permKey] === true;
+          if (userPermissions[permKey] === true) allowedIds.add(tab.id);
         });
-        
-        if (allowedTabs.length > 1) { // More than just account
-          return allowedTabs;
-        }
+        return defaultTabs.filter(tab => allowedIds.has(tab.id));
       }
-      
-      // Fallback: restricted view for sales without custom permissions
-      // Only their dashboard, quotes, and tips
-      const salesTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'timesheets', 'account'];
-      return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
+
+      return defaultTabs.filter(tab => defaultSalesTabIds.includes(tab.id));
     }
     
     // For member, viewer, guest - check tab permissions
