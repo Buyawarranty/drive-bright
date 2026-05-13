@@ -672,7 +672,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       'Phone': lead.phone || '',
       'Status': lead.status,
       'Priority': lead.priority,
-      'Source': lead.lead_source,
+      ...(sourceHidden ? {} : { 'Source': lead.lead_source }),
       'Vehicle Reg': lead.vehicle_reg || '',
       'Vehicle': `${lead.vehicle_make || ''} ${lead.vehicle_model || ''} ${lead.vehicle_year || ''}`.trim(),
       'Plan Interest': lead.plan_interest || '',
