@@ -607,7 +607,7 @@ Additional Information: ${formData.additionalInfo}
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
             {/* Slim working hours pill */}
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A]">
+            <div className="mb-5 ml-4 inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A]">
               <CalendarDays className="w-3.5 h-3.5" />
               Claims team open Monday–Friday, 9am–5pm
             </div>
