@@ -34,7 +34,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { EyeOff, Eye } from 'lucide-react';
 
 import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
