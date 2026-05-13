@@ -368,7 +368,8 @@ const Protected = () => {
 
       {/* ── 3. COVERAGE GRID — most urgent question first ── */}
       <div ref={coverageRef}>
-        <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
+        <section className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
             Coverage
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
