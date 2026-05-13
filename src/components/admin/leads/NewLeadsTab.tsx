@@ -162,8 +162,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [reminderLeadIds]
   );
   
-  // Source filter visibility: admin, super_admin, and lead_gen only
-  const canSeeSourceFilter = userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen';
+  // Source visibility rules
+  // - Hide entirely from support@ users
+  // - Super admin gets a personal "H" toggle (localStorage) to hide source from their own view
+  const { user } = useAuth();
+  const userEmail = (user?.email || '').toLowerCase();
+  const isSupportUser = userEmail.startsWith('support@');
+  const isSuperAdmin = userRole === 'super_admin';
+  const [superAdminHideSource, setSuperAdminHideSource] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('newLeads.hideSource.superAdmin') === '1';
+  });
+  const toggleSuperAdminHideSource = () => {
+    setSuperAdminHideSource((prev) => {
+      const next = !prev;
+      try { localStorage.setItem('newLeads.hideSource.superAdmin', next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
+  const sourceHidden = isSupportUser || (isSuperAdmin && superAdminHideSource);
+
+  // Source filter visibility: admin, super_admin, and lead_gen only — but never for support@ or when super admin toggled H
+  const canSeeSourceFilter = !sourceHidden && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'lead_gen');
 
   // Fetch active reminder lead IDs for the current admin user
   const fetchReminderLeadIds = useCallback(async () => {
