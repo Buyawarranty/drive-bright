@@ -5032,14 +5032,15 @@ Please log in and change your password after first login.`;
                           )}
                        </div>
                      </TableCell>
-                     {/* Purchase Source */}
-                     <TableCell className="bg-purple-50/30">
-                       <PurchaseSourceBadge 
-                         source={customer.purchase_source} 
-                         bumperOrderId={customer.bumper_order_id}
-                         stripeSessionId={customer.stripe_session_id}
-                       />
-                     </TableCell>
+                     {canSeeSourceColumn && (
+                       <TableCell className="bg-purple-50/30">
+                         <PurchaseSourceBadge 
+                           source={customer.purchase_source} 
+                           bumperOrderId={customer.bumper_order_id}
+                           stripeSessionId={customer.stripe_session_id}
+                         />
+                       </TableCell>
+                     )}
                        <TableCell>
                          <div className="flex items-center gap-1">
                            {isSalesAgent ? (
