@@ -3039,7 +3039,12 @@ export const CustomersTab = ({
                   <Label className="text-sm font-medium">Date</Label>
                   <DateRangeFilter
                     dateRange={dateRange}
-                    onDateRangeChange={(r) => setDateRange(r)}
+                    onDateRangeChange={(r) => {
+                      setDateRange(r);
+                      // Keep the Revenue total in sync with the selected date range
+                      // so the £ figure reflects the same window as the table.
+                      setRevenueDateRange(r ?? undefined);
+                    }}
                     className="w-full"
                   />
                 </div>
