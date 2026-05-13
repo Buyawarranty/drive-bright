@@ -368,7 +368,8 @@ const Protected = () => {
 
       {/* ── 3. COVERAGE GRID — most urgent question first ── */}
       <div ref={coverageRef}>
-        <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
+        <section className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
             Coverage
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
@@ -421,6 +422,7 @@ const Protected = () => {
 
           {/* PDF documents — placed right after the coverage grid */}
           <DocLinksRow variant="coverage" />
+          </div>
         </section>
 
         {/* ── 4. COVERED / NOT COVERED COLUMNS ── */}
@@ -482,7 +484,8 @@ const Protected = () => {
         </section>
 
         {/* ── 5. CLAIM LIMITS — conversion decision point ── */}
-        <section className="max-w-6xl mx-auto px-6 py-12 border-b border-gray-200">
+        <section className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="text-xs uppercase tracking-[0.14em] text-brand-orange font-semibold mb-3 flex items-center gap-2">
             Protection Levels
             <span className="flex-1 max-w-[40px] h-px bg-brand-orange/40" />
@@ -593,6 +596,7 @@ const Protected = () => {
                 </div>
               ))}
             </div>
+          </div>
           </div>
         </section>
 
@@ -777,7 +781,7 @@ const Protected = () => {
       </div>
 
       {/* ── 8. TRUSTPILOT REVIEWS — social proof after decision ── */}
-      <section className="bg-white py-12 text-center border-b border-gray-200">
+      <section className="bg-gray-50 py-12 text-center border-b border-gray-200">
         <div className="relative max-w-7xl mx-auto px-6">
           <h2
             className="font-bold tracking-tight mb-6 text-foreground"
