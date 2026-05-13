@@ -3109,7 +3109,8 @@ export const CustomersTab = ({
                 </Select>
               </div>
 
-              {/* Filter by Source */}
+              {/* Filter by Source — only super_admin and lead_gen */}
+              {canSeeSourceColumn && (
               <div className="space-y-1">
                 <Label htmlFor="sourceFilter" className="text-sm font-medium">Purchase Source</Label>
                 <Select value={filterBySource} onValueChange={setFilterBySource}>
@@ -3178,6 +3179,7 @@ export const CustomersTab = ({
                   </SelectContent>
                 </Select>
                </div>
+              )}
             </div>
             )}
 
@@ -3510,7 +3512,7 @@ export const CustomersTab = ({
               {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
-              <TableHead className="bg-purple-50">Source</TableHead>
+              {canSeeSourceColumn && <TableHead className="bg-purple-50">Source</TableHead>}
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
               <TableHead>Claims Made</TableHead>
@@ -5032,14 +5034,15 @@ Please log in and change your password after first login.`;
                           )}
                        </div>
                      </TableCell>
-                     {/* Purchase Source */}
-                     <TableCell className="bg-purple-50/30">
-                       <PurchaseSourceBadge 
-                         source={customer.purchase_source} 
-                         bumperOrderId={customer.bumper_order_id}
-                         stripeSessionId={customer.stripe_session_id}
-                       />
-                     </TableCell>
+                     {canSeeSourceColumn && (
+                       <TableCell className="bg-purple-50/30">
+                         <PurchaseSourceBadge 
+                           source={customer.purchase_source} 
+                           bumperOrderId={customer.bumper_order_id}
+                           stripeSessionId={customer.stripe_session_id}
+                         />
+                       </TableCell>
+                     )}
                        <TableCell>
                          <div className="flex items-center gap-1">
                            {isSalesAgent ? (
