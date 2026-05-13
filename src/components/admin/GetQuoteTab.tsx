@@ -540,6 +540,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         return;
       }
 
+      // Hard block excluded makes/models (e.g. Maserati, Ferrari, Lamborghini, Bentley...)
+      // No override — these brands are not eligible regardless of age override.
+      if (data.blocked) {
+        toast({
+          title: "Vehicle Not Eligible",
+          description: data.blockReason || `${data.make} ${data.model || ''} is on our excluded vehicle list and cannot be quoted.`,
+          variant: "destructive",
+        });
+        setIsLookingUp(false);
+        return;
+      }
+
       if (data.yearOfManufacture || data.year) {
         const currentYear = new Date().getFullYear();
         const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
@@ -636,6 +648,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         setExternalPaymentStep('details');
         setCompletionStatus(null);
         setShowConfirmPaymentDialog(true);
+        setIsQuickConfirming(false);
+        return;
+      }
+
+      // Hard block excluded makes/models — no override available even on Quick Confirm.
+      if (data.blocked) {
+        toast({
+          title: "Vehicle Not Eligible",
+          description: data.blockReason || `${data.make} ${data.model || ''} is on our excluded vehicle list and cannot be sold.`,
+          variant: "destructive",
+        });
         setIsQuickConfirming(false);
         return;
       }

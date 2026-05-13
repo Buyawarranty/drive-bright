@@ -803,7 +803,20 @@ serve(async (req) => {
     const isBlocked = !vehicleValidation.isValid;
     const blockReason = vehicleValidation.errorMessage;
     if (isBlocked) {
-      console.log(`Vehicle ${registrationNumber} blocked - ${blockReason} (returning details with notice)`);
+      console.log(`Vehicle ${registrationNumber} blocked - ${blockReason} (hard stop)`);
+      // Hard stop for excluded makes/models (e.g. Maserati, Ferrari, Bentley...).
+      // skipAgeCheck does NOT bypass brand exclusions.
+      return new Response(JSON.stringify({
+        found: false,
+        blocked: true,
+        blockReason,
+        error: blockReason,
+        make,
+        model,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     // Check vehicle age (must be 15 years or newer)
