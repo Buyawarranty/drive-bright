@@ -422,6 +422,7 @@ const Protected = () => {
 
           {/* PDF documents — placed right after the coverage grid */}
           <DocLinksRow variant="coverage" />
+          </div>
         </section>
 
         {/* ── 4. COVERED / NOT COVERED COLUMNS ── */}
