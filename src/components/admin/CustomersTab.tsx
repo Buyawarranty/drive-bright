@@ -3109,7 +3109,8 @@ export const CustomersTab = ({
                 </Select>
               </div>
 
-              {/* Filter by Source */}
+              {/* Filter by Source — only super_admin and lead_gen */}
+              {canSeeSourceColumn && (
               <div className="space-y-1">
                 <Label htmlFor="sourceFilter" className="text-sm font-medium">Purchase Source</Label>
                 <Select value={filterBySource} onValueChange={setFilterBySource}>
@@ -3178,6 +3179,7 @@ export const CustomersTab = ({
                   </SelectContent>
                 </Select>
                </div>
+              )}
             </div>
             )}
 
