@@ -652,6 +652,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         return;
       }
 
+      // Hard block excluded makes/models — no override available even on Quick Confirm.
+      if (data.blocked) {
+        toast({
+          title: "Vehicle Not Eligible",
+          description: data.blockReason || `${data.make} ${data.model || ''} is on our excluded vehicle list and cannot be sold.`,
+          variant: "destructive",
+        });
+        setIsQuickConfirming(false);
+        return;
+      }
+
       if (data.yearOfManufacture || data.year) {
         const currentYear = new Date().getFullYear();
         const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
