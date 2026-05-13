@@ -597,6 +597,7 @@ const Protected = () => {
               ))}
             </div>
           </div>
+          </div>
         </section>
 
         {/* ── 7. FULL COVERAGE BY VEHICLE TYPE ── */}
