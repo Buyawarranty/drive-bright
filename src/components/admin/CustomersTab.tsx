@@ -4756,17 +4756,15 @@ Please log in and change your password after first login.`;
                   {canSeeSourceColumn && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
-                        // Use acquisition_source (marketing channel from sales_leads),
-                        // not purchase_source (payment method). Fall back to gclid for Google.
-                        const acq = customer.acquisition_source?.toLowerCase();
-                        const hasGclid = !!(customer as any).gclid;
-                        if (acq === 'google_ads' || hasGclid) {
+                        // Use acquisition_source (marketing channel from sales_leads), not purchase_source (payment method).
+                        const channel = getCustomerAcquisitionChannel(customer);
+                        if (channel === 'google_ads') {
                           return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Google</Badge>;
                         }
-                        if (acq === 'facebook_ads') {
+                        if (channel === 'facebook_ads') {
                           return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Facebook</Badge>;
                         }
-                        if (acq === 'website') {
+                        if (channel === 'website') {
                           return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Website</Badge>;
                         }
                         return <Badge className="bg-gray-100 text-gray-500 border-gray-200 text-[10px]">Unknown</Badge>;
