@@ -786,23 +786,23 @@ export const CustomersTab = ({
                            customer.warranty_number || '';
         
         if (filterBySource === 'website') {
-          // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
-          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          // BAW- prefix (but NOT BAW-S-) = website sale, even when the lead is assigned for follow-up
+          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
         } else if (filterBySource === 'website_google') {
           // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
-          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'google_ads';
         } else if (filterBySource === 'website_facebook') {
           // Website sale with Facebook Ads attribution
-          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'facebook_ads';
         } else if (filterBySource === 'website_organic') {
           // Website sale with no paid attribution (organic / direct website)
-          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'website';
         } else if (filterBySource === 'staff_purchase') {
-          // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
-          return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
+          // BAW-S- prefix = staff claimed purchase
+          return warrantyNum.startsWith('BAW-S-');
         } else if (filterBySource === 'quote_order') {
           // ADM- prefix = sales team confirmed / manual entry
           return warrantyNum.startsWith('ADM');
