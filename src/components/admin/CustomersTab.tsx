@@ -789,22 +789,17 @@ export const CustomersTab = ({
           // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
           return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
         } else if (filterBySource === 'website_google') {
-          // Website sale with Google Ads attribution (use acquisition_source, fall back to gclid)
+          // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const acq = customer.acquisition_source?.toLowerCase() || '';
-          const hasGclid = !!(customer as any).gclid;
-          return isWebsite && (acq === 'google_ads' || hasGclid);
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'google_ads';
         } else if (filterBySource === 'website_facebook') {
           // Website sale with Facebook Ads attribution
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const acq = customer.acquisition_source?.toLowerCase() || '';
-          return isWebsite && acq === 'facebook_ads';
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'facebook_ads';
         } else if (filterBySource === 'website_organic') {
           // Website sale with no paid attribution (organic / direct website)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const acq = customer.acquisition_source?.toLowerCase() || '';
-          const hasGclid = !!(customer as any).gclid;
-          return isWebsite && acq !== 'google_ads' && acq !== 'facebook_ads' && !hasGclid;
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'website';
         } else if (filterBySource === 'staff_purchase') {
           // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
           return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
