@@ -208,6 +208,7 @@ interface Customer {
   purchase_source?: string | null;
   // Acquisition source (marketing channel: google_ads / facebook_ads / website)
   acquisition_source?: string | null;
+  gclid?: string | null;
   customer_dob?: string | null;
   admin_users?: {
     id: string;
@@ -302,6 +303,17 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
       </div>
     </div>
   );
+};
+
+const getCustomerAcquisitionChannel = (customer: Pick<Customer, 'acquisition_source' | 'gclid'>) => {
+  const source = (customer.acquisition_source || '').trim().toLowerCase();
+  const hasGclid = !!customer.gclid?.trim();
+
+  if (hasGclid || ['google_ads', 'google_ad', 'google', 'g'].includes(source)) return 'google_ads';
+  if (['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f'].includes(source)) return 'facebook_ads';
+  if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
+
+  return source || 'unknown';
 };
 
 interface CustomersTabProps {
