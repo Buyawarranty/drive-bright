@@ -208,6 +208,7 @@ interface Customer {
   purchase_source?: string | null;
   // Acquisition source (marketing channel: google_ads / facebook_ads / website)
   acquisition_source?: string | null;
+  gclid?: string | null;
   customer_dob?: string | null;
   admin_users?: {
     id: string;
@@ -302,6 +303,17 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
       </div>
     </div>
   );
+};
+
+const getCustomerAcquisitionChannel = (customer: Pick<Customer, 'acquisition_source' | 'gclid'>) => {
+  const source = (customer.acquisition_source || '').trim().toLowerCase();
+  const hasGclid = !!customer.gclid?.trim();
+
+  if (hasGclid || ['google_ads', 'google_ad', 'google', 'g'].includes(source)) return 'google_ads';
+  if (['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f'].includes(source)) return 'facebook_ads';
+  if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
+
+  return source || 'unknown';
 };
 
 interface CustomersTabProps {
@@ -774,28 +786,23 @@ export const CustomersTab = ({
                            customer.warranty_number || '';
         
         if (filterBySource === 'website') {
-          // BAW- prefix (but NOT BAW-S-) AND not assigned to an agent = pure website sale
-          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
+          // BAW- prefix (but NOT BAW-S-) = website sale, even when the lead is assigned for follow-up
+          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
         } else if (filterBySource === 'website_google') {
-          // Website sale with Google Ads attribution (use acquisition_source, fall back to gclid)
-          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const acq = customer.acquisition_source?.toLowerCase() || '';
-          const hasGclid = !!(customer as any).gclid;
-          return isWebsite && (acq === 'google_ads' || hasGclid);
+          // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'google_ads';
         } else if (filterBySource === 'website_facebook') {
           // Website sale with Facebook Ads attribution
-          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const acq = customer.acquisition_source?.toLowerCase() || '';
-          return isWebsite && acq === 'facebook_ads';
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'facebook_ads';
         } else if (filterBySource === 'website_organic') {
           // Website sale with no paid attribution (organic / direct website)
-          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-') && !customer.assigned_to;
-          const acq = customer.acquisition_source?.toLowerCase() || '';
-          const hasGclid = !!(customer as any).gclid;
-          return isWebsite && acq !== 'google_ads' && acq !== 'facebook_ads' && !hasGclid;
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'website';
         } else if (filterBySource === 'staff_purchase') {
-          // BAW-S- prefix OR BAW- with an agent assigned = staff claimed purchase
-          return warrantyNum.startsWith('BAW-S-') || (warrantyNum.startsWith('BAW-') && !!customer.assigned_to);
+          // BAW-S- prefix = staff claimed purchase
+          return warrantyNum.startsWith('BAW-S-');
         } else if (filterBySource === 'quote_order') {
           // ADM- prefix = sales team confirmed / manual entry
           return warrantyNum.startsWith('ADM');
@@ -4749,17 +4756,15 @@ Please log in and change your password after first login.`;
                   {canSeeSourceColumn && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
-                        // Use acquisition_source (marketing channel from sales_leads),
-                        // not purchase_source (payment method). Fall back to gclid for Google.
-                        const acq = customer.acquisition_source?.toLowerCase();
-                        const hasGclid = !!(customer as any).gclid;
-                        if (acq === 'google_ads' || hasGclid) {
+                        // Use acquisition_source (marketing channel from sales_leads), not purchase_source (payment method).
+                        const channel = getCustomerAcquisitionChannel(customer);
+                        if (channel === 'google_ads') {
                           return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Google</Badge>;
                         }
-                        if (acq === 'facebook_ads') {
+                        if (channel === 'facebook_ads') {
                           return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Facebook</Badge>;
                         }
-                        if (acq === 'website') {
+                        if (channel === 'website') {
                           return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Website</Badge>;
                         }
                         return <Badge className="bg-gray-100 text-gray-500 border-gray-200 text-[10px]">Unknown</Badge>;
