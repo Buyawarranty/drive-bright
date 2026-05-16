@@ -178,13 +178,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         <button onClick={onBack} className="text-primary text-sm font-semibold">Edit</button>
       </div>
 
-      {/* Step title */}
-      <div className="px-4 mt-4">
-        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-          Step {step + 1} of {TOTAL_STEPS}
-        </p>
-        <h1 className="text-xl font-bold text-foreground mt-0.5">{STEP_TITLES[step]}</h1>
-      </div>
 
       {/* Step content */}
       <div className="px-4 mt-4 space-y-6">
