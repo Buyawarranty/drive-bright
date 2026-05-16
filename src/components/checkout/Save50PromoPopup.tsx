@@ -210,7 +210,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       });
 
       writeState({ status: 'applied', email: customerEmail });
-      toast.success(`🎉 ${CODE} applied — £${DISCOUNT_AMOUNT} off your order!`, {
+      toast.success(`🎉 ${CODE} applied, £${DISCOUNT_AMOUNT} off your order!`, {
         style: {
           background: '#E91E63',
           color: '#ffffff',
@@ -335,11 +335,11 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <ul className="space-y-2 mb-5 text-sm text-gray-700">
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Applies instantly — one tap, no typing needed.</span>
+              <span>Applies instantly with one tap, no typing needed.</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Reserved just for you — exclusive to this order.</span>
+              <span>Reserved just for you, exclusive to this order.</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
@@ -354,7 +354,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               onClick={handleClose}
               className="w-full h-12 rounded-xl bg-gray-200 text-gray-600 font-semibold text-base"
             >
-              Offer expired — close
+              Offer expired, close
             </button>
           ) : (
             <button
@@ -368,7 +368,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           )}
 
           <p className="text-[11px] text-center text-gray-500 mt-3">
-            Your best-value discount — not valid with other promotions.
+            Your best value discount, valid on its own.
           </p>
         </div>
       </div>
