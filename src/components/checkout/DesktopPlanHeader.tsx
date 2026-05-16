@@ -150,7 +150,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
             <span className="text-xs font-bold text-[#1a1a1a] leading-tight">Claims handled by real people</span>
           </div>
           <p className="text-[11px] text-gray-600 leading-snug">
-            0330 229 5040<br/>Mon–Sat 9am to 6pm
+            0330 229 5040<br/>Mon–Fri 9am–5pm
           </p>
         </div>
       </div>
