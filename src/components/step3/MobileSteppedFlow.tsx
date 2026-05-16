@@ -429,16 +429,21 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <span className="text-xs text-muted-foreground">Equal to <span className="font-bold text-foreground">{dayLabel}</span></span>
             </div>
 
-            {/* Row 3: payments + savings */}
-            <div className="flex items-center justify-between gap-3 mt-1">
+            {/* Row 3: payments + total/savings */}
+            <div className="flex items-start justify-between gap-3 mt-1">
               <div className="text-[11px] text-muted-foreground">
                 {paymentsCount} payments · Covers {years} {years === 1 ? 'year' : 'years'}
               </div>
-              {marketingSavings > 0 && (
-                <div className="text-xs font-bold text-success">
-                  Save £{marketingSavings} today
+              <div className="flex flex-col items-end leading-tight">
+                <div className="text-[11px] text-muted-foreground">
+                  Pay in full <span className="font-bold text-foreground">£{currentMonthlyPrice * 12}</span>
                 </div>
-              )}
+                {marketingSavings > 0 && (
+                  <div className="text-xs font-bold text-success">
+                    Save £{marketingSavings} today
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-2 mt-3">
@@ -463,7 +468,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
             <div className="flex items-center justify-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
               <Lock className="w-3 h-3" />
-              <span>Secure checkout · 14 days to cancel</span>
+              <span>Secure checkout · 14 day cooling period</span>
             </div>
           </div>
         </div>
