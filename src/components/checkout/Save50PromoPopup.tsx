@@ -335,7 +335,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <ul className="space-y-2 mb-5 text-sm text-gray-700">
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Applies instantly — one tap, no typing needed.</span>
+              <span>Applies instantly with one tap, no typing needed.</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
