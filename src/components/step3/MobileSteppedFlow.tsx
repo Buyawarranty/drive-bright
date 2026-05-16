@@ -59,8 +59,8 @@ const EXCESS_OPTIONS = [
 
 const TERM_META: Record<PaymentType, { years: string; payments: string; badge?: string; badgeTone?: 'orange' | 'green' }> = {
   '12months': { years: '1 Year', payments: '12 payments' },
-  '24months': { years: '2 Years', payments: '24 payments', badge: 'Most Popular', badgeTone: 'orange' },
-  '36months': { years: '3 Years', payments: '36 payments', badge: 'Best Value', badgeTone: 'green' },
+  '24months': { years: '2 Years', payments: '12 payments', badge: 'Most Popular', badgeTone: 'orange' },
+  '36months': { years: '3 Years', payments: '12 payments', badge: 'Best Value', badgeTone: 'green' },
 };
 
 const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
