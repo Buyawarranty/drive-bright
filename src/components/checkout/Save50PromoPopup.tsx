@@ -3,11 +3,11 @@ import { X, Car, Clock, Check, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const CODE = 'SAVE50';
-const MIN_SPEND = 350;
+const CODE = 'SAVE25';
+const DISCOUNT_AMOUNT = 25;
 const COUNTDOWN_SECONDS = 15 * 60; // 15 minutes
 const INACTIVITY_MS = 20 * 1000; // 20 seconds
-const STORAGE_KEY = 'baw_save50_state_v1';
+const STORAGE_KEY = 'baw_save25_state_v1';
 
 type StoredState = {
   status: 'shown' | 'dismissed' | 'applied';
