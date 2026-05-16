@@ -52,7 +52,9 @@ const EXCESS_OPTIONS = [
   { value: 0, label: '£0', sub: 'Nothing to pay' },
   { value: 50, label: '£50', sub: 'Lower monthly' },
   { value: 100, label: '£100', sub: 'Best balance', best: true },
-  { value: 150, label: '£150', sub: 'Lowest monthly' },
+  { value: 150, label: '£150', sub: 'Lower monthly' },
+  { value: 250, label: '£250', sub: 'Save more' },
+  { value: 500, label: '£500', sub: 'Biggest saving' },
 ];
 
 const TERM_META: Record<PaymentType, { years: string; payments: string; badge?: string; badgeTone?: 'orange' | 'green' }> = {
@@ -273,7 +275,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         {step === 1 && (
           <>
             <section>
-              <h2 className="text-base font-bold text-foreground">1. Where would you repair your car?</h2>
+              <h2 className="text-base font-bold text-foreground">3. Where would you repair your car?</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 This helps us tailor your cover and price
               </p>
@@ -305,11 +307,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-foreground">2. Choose your excess</h2>
+              <h2 className="text-base font-bold text-foreground">4. Choose your excess</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Higher excess lowers your monthly payments
               </p>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {EXCESS_OPTIONS.map(ex => {
                   const selected = voluntaryExcess === ex.value;
                   return (
