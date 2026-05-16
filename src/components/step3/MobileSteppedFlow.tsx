@@ -314,11 +314,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                     >
                       {opt.recommended && (
                         <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
-                          Recommended
+                          Most popular
+                        </span>
+                      )}
+                      {opt.bestValue && (
+                        <span className="absolute -top-2 left-2 bg-success text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          Best value
                         </span>
                       )}
                       <Icon className={cn('w-5 h-5 mb-1.5', selected ? 'text-primary' : 'text-muted-foreground')} />
-                      <div className="text-sm font-bold text-foreground leading-tight">{opt.title}</div>
+                      <div className="text-base font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-[10px] font-normal text-muted-foreground">/hr</span></div>
+                      <div className="text-sm font-bold text-foreground leading-tight mt-1">{opt.title}</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{opt.sub}</div>
                     </button>
                   );
