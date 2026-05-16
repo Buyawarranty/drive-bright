@@ -270,7 +270,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Fault diagnostics',
         'Consequential damage cover',
         'Fast claims process',
-        '14-day money-back guarantee',
+        '14-day cooling off period',
         'Optional extras available'
       ],
       exclusions: [
@@ -298,7 +298,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Vehicle recovery claim-back',
         'Consequential damage cover',
         'Fast claims process',
-        '14-day money-back guarantee',
+        '14-day cooling off period',
         'Optional extras available'
       ],
       exclusions: [
@@ -328,7 +328,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Vehicle rental cover',
         'Consequential damage cover',
         'Fast claims process',
-        '14-day money-back guarantee',
+        '14-day cooling off period',
         'Optional extras available'
       ],
       exclusions: [

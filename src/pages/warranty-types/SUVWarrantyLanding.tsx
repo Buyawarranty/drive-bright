@@ -1250,7 +1250,7 @@ const SUVWarrantyLanding: React.FC = () => {
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
                 <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day cooling off period</h3>
                 <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">

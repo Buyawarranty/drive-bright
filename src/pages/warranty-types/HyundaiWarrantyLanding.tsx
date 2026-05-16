@@ -308,7 +308,7 @@ const HyundaiWarrantyLanding: React.FC = () => {
             </div>
             <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-                {[{ emoji: '✅', title: 'No hidden catches', desc: 'What you see is what you get' }, { emoji: '💰', title: '14-day money-back guarantee', desc: 'Try risk-free' }, { emoji: '⭐', title: '94% of claims approved fast', desc: 'We pay when you need us' }].map((c, i) => (
+                {[{ emoji: '✅', title: 'No hidden catches', desc: 'What you see is what you get' }, { emoji: '💰', title: '14-day cooling off period', desc: 'Try risk-free' }, { emoji: '⭐', title: '94% of claims approved fast', desc: 'We pay when you need us' }].map((c, i) => (
                   <div key={i} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center"><div className="text-3xl md:text-4xl mb-3 md:mb-4">{c.emoji}</div><h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{c.title}</h3><p className="text-gray-600 text-xs md:text-sm">{c.desc}</p></div>
                 ))}
               </div>
