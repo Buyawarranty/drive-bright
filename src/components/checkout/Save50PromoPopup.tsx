@@ -335,15 +335,15 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <ul className="space-y-2 mb-5 text-sm text-gray-700">
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Applies instantly — no need to type anything.</span>
+              <span>Applies instantly — one tap, no typing needed.</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>One-time use — can only be redeemed on this order.</span>
+              <span>Reserved just for you — exclusive to this order.</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Valid for the next 15 minutes only.</span>
+              <span>Claim within the next 15 minutes.</span>
             </li>
           </ul>
 
