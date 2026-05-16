@@ -34,17 +34,18 @@ interface MobileSteppedFlowProps {
   isFormValid: boolean;
 }
 
-// Repair preference (labour rate) options — order matches mockup top-left to bottom-right
+// Repair preference (labour rate) options
 const REPAIR_OPTIONS: {
   value: number;
   title: string;
   sub: string;
   icon: React.ComponentType<{ className?: string }>;
   recommended?: boolean;
+  bestValue?: boolean;
 }[] = [
+  { value: 50, title: 'Local Garage', sub: 'Affordable everyday repairs', icon: Car, bestValue: true },
   { value: 70, title: 'Independent Garages', sub: 'Ideal for your trusted local garage', icon: ShieldCheck, recommended: true },
   { value: 100, title: 'Approved Garage', sub: 'Broader approved network', icon: Building2 },
-  { value: 50, title: 'Local Garage', sub: 'Affordable everyday repairs', icon: Car },
   { value: 200, title: 'Expert Garages', sub: 'Main dealers and specialists', icon: Wrench },
 ];
 
@@ -195,7 +196,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
           <>
             {/* Cover level */}
             <section>
-              <h2 className="text-base font-bold text-foreground">1. Choose your cover level</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Claim limit</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your cover level</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Select the amount we'll pay towards repairs
               </p>
@@ -236,7 +238,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
             {/* Cover length */}
             <section>
-              <h2 className="text-base font-bold text-foreground">2. Choose your cover length</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Term length</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your cover length</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Longer cover means more savings
               </p>
@@ -291,9 +294,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         {step === 1 && (
           <>
             <section>
-              <h2 className="text-base font-bold text-foreground">3. Where would you repair your car?</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Where do you usually repair your car?</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
-                This helps us tailor your cover and price
+                Pick the garage type that matches where you'd feel comfortable having repairs done
               </p>
               <div className="grid grid-cols-2 gap-2.5">
                 {REPAIR_OPTIONS.map(opt => {
@@ -310,11 +314,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                     >
                       {opt.recommended && (
                         <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
-                          Recommended
+                          Most popular
+                        </span>
+                      )}
+                      {opt.bestValue && (
+                        <span className="absolute -top-2 left-2 bg-success text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          Best value
                         </span>
                       )}
                       <Icon className={cn('w-5 h-5 mb-1.5', selected ? 'text-primary' : 'text-muted-foreground')} />
-                      <div className="text-sm font-bold text-foreground leading-tight">{opt.title}</div>
+                      <div className="text-base font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-[10px] font-normal text-muted-foreground">/hr</span></div>
+                      <div className="text-sm font-bold text-foreground leading-tight mt-1">{opt.title}</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{opt.sub}</div>
                     </button>
                   );
@@ -323,7 +333,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-foreground">4. Choose your excess</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Voluntary excess</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your excess</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Higher excess lowers your monthly payments
               </p>
