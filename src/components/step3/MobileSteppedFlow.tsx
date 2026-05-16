@@ -460,7 +460,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 className="flex flex-col items-end leading-tight flex-shrink-0"
               >
                 <span className="text-[11px] font-bold text-foreground">Excellent</span>
-                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3 w-auto my-0.5" />
+                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-5 w-auto my-0.5" />
                 <span className="text-[10px] text-muted-foreground">Trustpilot · 4.8/5</span>
               </a>
             </div>
@@ -476,7 +476,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             {/* Row 3: payments + savings */}
             <div className="flex items-center justify-between gap-3 mt-1">
               <div className="text-[11px] text-muted-foreground">
-                {paymentsCount} payments · Covers {years * 12} months
+                {paymentsCount} payments · Covers {years} {years === 1 ? 'year' : 'years'}
               </div>
               {marketingSavings > 0 && (
                 <div className="text-xs font-bold text-success">
