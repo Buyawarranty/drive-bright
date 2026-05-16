@@ -52,7 +52,9 @@ const EXCESS_OPTIONS = [
   { value: 0, label: '£0', sub: 'Nothing to pay' },
   { value: 50, label: '£50', sub: 'Lower monthly' },
   { value: 100, label: '£100', sub: 'Best balance', best: true },
-  { value: 150, label: '£150', sub: 'Lowest monthly' },
+  { value: 150, label: '£150', sub: 'Lower monthly' },
+  { value: 250, label: '£250', sub: 'Save more' },
+  { value: 500, label: '£500', sub: 'Biggest saving' },
 ];
 
 const TERM_META: Record<PaymentType, { years: string; payments: string; badge?: string; badgeTone?: 'orange' | 'green' }> = {
