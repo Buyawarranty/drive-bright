@@ -215,9 +215,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
       {/* Vehicle card */}
       <div className="mx-4 mt-3 bg-card border border-border rounded-xl p-3 flex items-center gap-3">
-        <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-          <Car className="w-7 h-7 text-muted-foreground" />
-        </div>
         <div className="flex-1 min-w-0">
           <div className="font-bold text-foreground text-sm leading-tight">
             {vehicleData.year} {vehicleData.make} {vehicleData.model}
