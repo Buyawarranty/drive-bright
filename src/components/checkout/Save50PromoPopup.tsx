@@ -210,7 +210,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       });
 
       writeState({ status: 'applied', email: customerEmail });
-      toast.success('🎉 SAVE50 applied — £50 off your order!', {
+      toast.success(`🎉 ${CODE} applied — £${DISCOUNT_AMOUNT} off your order!`, {
         style: {
           background: '#E91E63',
           color: '#ffffff',
