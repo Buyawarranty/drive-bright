@@ -238,7 +238,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
             {/* Cover length */}
             <section>
-              <h2 className="text-base font-bold text-foreground">2. Choose your cover length</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Term length</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your cover length</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Longer cover means more savings
               </p>
