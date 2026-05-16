@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
+import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 
 type PaymentType = '12months' | '24months' | '36months';
 
