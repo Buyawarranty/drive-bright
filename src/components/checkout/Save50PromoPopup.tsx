@@ -85,7 +85,6 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   useEffect(() => {
     if (suppress) return;
     if (hasDiscountApplied) return;
-    if (orderTotal < MIN_SPEND) return;
 
     const stored = readState();
 
