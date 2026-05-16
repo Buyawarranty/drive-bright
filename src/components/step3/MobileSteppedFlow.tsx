@@ -245,6 +245,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   const selected = paymentType === term;
                   const monthly = calculateMonthlyPrice(term);
                   const meta = TERM_META[term];
+                  const termYears = term === '36months' ? 3 : term === '24months' ? 2 : 1;
+                  const oneYrMonthly = calculateMonthlyPrice('12months');
+                  const cardSavings = termYears > 1
+                    ? Math.max(0, (oneYrMonthly * termYears - monthly) * 12)
+                    : 0;
                   return (
                     <button
                       key={term}
@@ -268,7 +273,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       )}
                       <div className="text-xs font-semibold text-foreground">{meta.years}</div>
                       <div className="text-base font-bold text-foreground mt-1">£{monthly}<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">{meta.payments}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">12 payments</div>
+                      {cardSavings > 0 && (
+                        <div className="text-[10px] font-bold text-success mt-0.5">Save £{cardSavings}</div>
+                      )}
                       <div className="mt-2 flex justify-center">
                         <RadioDot selected={selected} small />
                       </div>
