@@ -14,6 +14,8 @@ const excessOptions = [
   { value: 50, label: '£50' },
   { value: 100, label: '£100', isRecommended: true },
   { value: 150, label: '£150' },
+  { value: 250, label: '£250' },
+  { value: 500, label: '£500' },
 ];
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
