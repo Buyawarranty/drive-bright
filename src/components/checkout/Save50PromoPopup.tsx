@@ -351,9 +351,6 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               <p className="text-2xl sm:text-[28px] font-extrabold text-gray-900 tracking-wide leading-tight">
                 {CODE}
               </p>
-              <p className="text-sm text-gray-600 mt-1.5 leading-snug">
-                £{DISCOUNT_AMOUNT} discount will be applied automatically at checkout.
-              </p>
             </div>
             <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#E6F4EC] flex items-center justify-center">
               <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1F5D3A]" strokeWidth={2} />
@@ -373,17 +370,6 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
                 <p className="text-xs sm:text-sm text-gray-500 mt-0.5">No code needed</p>
               </div>
             </li>
-            <li className="flex items-start gap-3 py-3 border-b border-gray-100">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
-                <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                  Valid for this order only
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">One-time use</p>
-              </div>
-            </li>
             <li className="flex items-start gap-3 py-3">
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
                 <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
@@ -399,20 +385,22 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             </li>
           </ul>
 
-          {/* CTA — pulsating breathing */}
-          <button
-            type="button"
-            onClick={handleApply}
-            disabled={isApplying}
-            className="save25-breathe w-full h-14 sm:h-[60px] px-6 rounded-2xl bg-[#F26A1F] hover:bg-[#e25f15] text-white font-bold text-base sm:text-lg inline-flex items-center justify-center gap-2.5 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isApplying ? 'Applying…' : (
-              <>
-                <span>Continue with £{DISCOUNT_AMOUNT} saving</span>
-                <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
-              </>
-            )}
-          </button>
+          {/* CTA — pulsating breathing (animation on wrapper so the button hit-area stays stable) */}
+          <div className="save25-breathe rounded-2xl">
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={isApplying}
+              className="relative z-10 w-full h-14 sm:h-[60px] px-6 rounded-2xl bg-[#F26A1F] hover:bg-[#e25f15] text-white font-bold text-base sm:text-lg inline-flex items-center justify-center gap-2.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isApplying ? 'Applying…' : (
+                <>
+                  <span>Continue with £{DISCOUNT_AMOUNT} saving</span>
+                  <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+                </>
+              )}
+            </button>
+          </div>
 
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-600 inline-flex items-center justify-center gap-1.5">
