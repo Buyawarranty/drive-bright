@@ -275,7 +275,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         {step === 1 && (
           <>
             <section>
-              <h2 className="text-base font-bold text-foreground">1. Where would you repair your car?</h2>
+              <h2 className="text-base font-bold text-foreground">3. Where would you repair your car?</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 This helps us tailor your cover and price
               </p>
