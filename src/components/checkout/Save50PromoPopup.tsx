@@ -339,7 +339,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Reserved just for you — exclusive to this order.</span>
+              <span>Reserved just for you, exclusive to this order.</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
