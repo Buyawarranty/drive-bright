@@ -171,8 +171,40 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         </div>
       </div>
 
+      {/* Build-your-warranty progress pills */}
+      <div className="px-4 pt-4">
+        <div className="flex items-center gap-2">
+          {['Your cover', 'Your garage', 'Review'].map((label, i) => {
+            const isActive = i === step;
+            const isDone = i < step;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => isDone && setStep(i)}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-[11px] font-semibold transition-colors',
+                  isActive && 'bg-primary/10 text-primary',
+                  isDone && 'bg-success/10 text-success cursor-pointer',
+                  !isActive && !isDone && 'bg-muted text-muted-foreground'
+                )}
+              >
+                {isDone ? <Check className="w-3 h-3" /> : (
+                  <span className={cn(
+                    'w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold',
+                    isActive ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground'
+                  )}>{i + 1}</span>
+                )}
+                <span className="truncate">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-muted-foreground text-center mt-1.5">Building your warranty plan</p>
+      </div>
+
       {/* Vehicle card */}
-      <div className="mx-4 mt-4 bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+      <div className="mx-4 mt-3 bg-card border border-border rounded-xl p-3 flex items-center gap-3">
         <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
           <Car className="w-7 h-7 text-muted-foreground" />
         </div>
