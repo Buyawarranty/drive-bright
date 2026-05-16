@@ -211,7 +211,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all border-2 ${
                     selectedPayment === 'monthly'
                       ? 'border-[#FF6B00] bg-[#FFF5EB] text-[#FF6B00]'
-                      : 'border-[#E5E5E5] bg-white text-gray-500 hover:border-gray-300'
+                      : 'border-[#FFE0C4] bg-[#FFF8F3] text-[#FF6B00] hover:border-[#FF6B00]'
                   }`}
                 >
                   Monthly
@@ -221,7 +221,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                   className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all border-2 ${
                     selectedPayment === 'full'
                       ? 'border-[#0BA360] bg-[#F0FDF4] text-[#0BA360]'
-                      : 'border-[#E5E5E5] bg-white text-gray-500 hover:border-gray-300'
+                      : 'border-[#B8E2CE] bg-[#F0FAF4] text-[#0BA360] hover:border-[#0BA360]'
                   }`}
                 >
                   Pay in Full
