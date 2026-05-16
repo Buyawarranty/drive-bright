@@ -1,8 +1,9 @@
 import React from 'react';
-import { ArrowRight, ArrowLeft, Check, Info } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
-import Step3Header from './Step3Header';
+import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
+import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -13,9 +14,9 @@ interface MobileSteppedFlowProps {
     model?: string;
     fuelType?: string;
     year?: string;
+    mileage?: string;
   };
   onBack: () => void;
-  // Selections
   selectedClaimLimit: number | null;
   onClaimLimitChange: (v: number) => void;
   selectedLabourRate: number;
@@ -25,53 +26,50 @@ interface MobileSteppedFlowProps {
   voluntaryExcess: number | null;
   onVoluntaryExcessChange: (v: number) => void;
   availableDurations: PaymentType[];
-  // Pricing
   currentMonthlyPrice: number;
   currentTotalPrice: number;
   calculateMonthlyPrice: (term: string) => number;
-  // Continue
   onContinue: () => void;
   isLoading: boolean;
   isFormValid: boolean;
 }
 
-const LABOUR_RATES = [
-  { value: 50, label: 'Local garages', sub: 'Small independents, best value' },
-  { value: 75, label: 'Independent', sub: 'Trusted local garages', popular: true },
-  { value: 100, label: 'Approved', sub: 'Nationwide branded chains' },
-  { value: 150, label: 'Expert', sub: 'Main dealers & specialists' },
+// Repair preference (labour rate) options — order matches mockup top-left to bottom-right
+const REPAIR_OPTIONS: {
+  value: number;
+  title: string;
+  sub: string;
+  icon: React.ComponentType<{ className?: string }>;
+  recommended?: boolean;
+}[] = [
+  { value: 75, title: 'Independent Specialist', sub: 'Trusted local workshops', icon: ShieldCheck, recommended: true },
+  { value: 100, title: 'Approved Garage', sub: 'Broader approved network', icon: Building2 },
+  { value: 50, title: 'Local Garage', sub: 'Affordable everyday repairs', icon: Car },
+  { value: 150, title: 'Main Dealer', sub: 'Manufacturer & specialist repairs', icon: Wrench },
 ];
 
-const TERMS: { value: PaymentType; label: string; sub: string; popular?: boolean }[] = [
-  { value: '12months', label: '1 Year cover', sub: 'Pay over 12 months' },
-  { value: '24months', label: '2 Years cover', sub: 'Year 2 free · best value', popular: true },
-  { value: '36months', label: '3 Years cover', sub: 'Years 2 & 3 free' },
+const EXCESS_OPTIONS = [
+  { value: 0, label: '£0', sub: 'Nothing to pay' },
+  { value: 50, label: '£50', sub: 'Lower monthly' },
+  { value: 100, label: '£100', sub: 'Best balance', best: true },
+  { value: 150, label: '£150', sub: 'Lowest monthly' },
 ];
 
-const EXCESSES = [
-  { value: 0, label: 'No excess', sub: 'Pay nothing per claim' },
-  { value: 50, label: '£50 excess', sub: 'Lower your monthly cost' },
-  { value: 100, label: '£100 excess', sub: 'Most popular balance', popular: true },
-  { value: 150, label: '£150 excess', sub: 'Cheapest monthly price' },
-];
+const TERM_META: Record<PaymentType, { years: string; payments: string; badge?: string; badgeTone?: 'orange' | 'green' }> = {
+  '12months': { years: '1 Year', payments: '12 payments' },
+  '24months': { years: '2 Years', payments: '24 payments', badge: 'Most Popular', badgeTone: 'orange' },
+  '36months': { years: '3 Years', payments: '36 payments', badge: 'Best Value', badgeTone: 'green' },
+};
 
-const STEP_TITLES = [
-  "What's your car worth?",
-  'Where do you get it fixed?',
-  'How long do you want cover?',
-  'Choose your excess',
-  'Review your cover',
-];
+const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
+  750: { title: 'Basic cover', sub: 'Good for smaller repairs' },
+  2000: { title: 'Most popular', sub: 'Covers most common repairs' },
+  3000: { title: 'Higher protection', sub: 'Greater peace of mind' },
+  5000: { title: 'Maximum cover', sub: 'Complete confidence' },
+};
 
-const STEP_SUBTITLES = [
-  'Set your claim limit to match your car value.',
-  'Pick the labour rate that suits your usual garage.',
-  'Longer terms unlock free years.',
-  'Excess is what you pay towards a claim. Lower excess = higher monthly cost.',
-  "You're all set — review and continue.",
-];
-
-const TOTAL_STEPS = 5;
+const STEP_TITLES = ['Cover level & term', 'Repair preference', 'Review your cover'];
+const TOTAL_STEPS = 3;
 
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
@@ -90,7 +88,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   calculateMonthlyPrice,
   onContinue,
   isLoading,
-  isFormValid,
 }) => {
   const [step, setStep] = React.useState(0);
 
@@ -99,13 +96,13 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];
 
-  const visibleTerms = TERMS.filter(t => availableDurations.includes(t.value));
+  const visibleTerms = (Object.keys(TERM_META) as PaymentType[]).filter(t =>
+    availableDurations.includes(t)
+  );
 
   const canAdvance = (() => {
-    if (step === 0) return selectedClaimLimit !== null;
-    if (step === 1) return selectedLabourRate !== null;
-    if (step === 2) return paymentType !== null;
-    if (step === 3) return voluntaryExcess !== null;
+    if (step === 0) return selectedClaimLimit !== null && paymentType !== null;
+    if (step === 1) return !!selectedLabourRate && voluntaryExcess !== null;
     return true;
   })();
 
@@ -119,207 +116,356 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   };
 
   const handleBack = () => {
-    if (step === 0) {
-      onBack();
-    } else {
+    if (step === 0) onBack();
+    else {
       setStep(s => s - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  // Whisper price after selection
-  const whisper = currentMonthlyPrice > 0
-    ? `From £${currentMonthlyPrice}/mo with this choice`
-    : null;
+  // Footer copy
+  const termMeta = paymentType ? TERM_META[paymentType] : TERM_META['24months'];
+  const planLabel = `${termMeta.years} Platinum Cover`;
+  const pencePerDay = currentMonthlyPrice > 0
+    ? Math.round((currentMonthlyPrice * 12 * 100) / 365)
+    : 0;
+  const dayLabel = pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}/day` : `${pencePerDay}p/day`;
+  const marketingSavings = paymentType ? getMarketingSavings(paymentType as PaymentPeriod) : 60;
+  const paymentsCount = paymentType === '36months' ? 36 : paymentType === '24months' ? 24 : 12;
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(14rem+env(safe-area-inset-bottom))]">
-      <Step3Header currentStep={0} />
-
-      {/* Progress bar */}
-      <div className="px-4 pt-4">
-        <div className="flex gap-1.5 mb-2">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                'flex-1 h-1.5 rounded-full transition-colors',
-                i < step ? 'bg-success' : i === step ? 'bg-primary' : 'bg-muted'
-              )}
+    <div className="min-h-screen bg-background pb-[calc(13rem+env(safe-area-inset-bottom))]">
+      {/* Top bar */}
+      <div className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <a href="/" className="hover:opacity-80">
+            <img
+              src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
+              alt="buyawarranty"
+              className="h-6 w-auto"
             />
+          </a>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Lock className="w-3.5 h-3.5" />
+            Secure
+          </div>
+        </div>
+
+        {/* Numbered step indicator */}
+        <div className="px-4 pb-3 flex items-center justify-center gap-2">
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+            <React.Fragment key={i}>
+              <div
+                className={cn(
+                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors',
+                  i < step
+                    ? 'bg-success text-white'
+                    : i === step
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                )}
+              >
+                {i < step ? <Check className="w-4 h-4" /> : i + 1}
+              </div>
+              {i < TOTAL_STEPS - 1 && (
+                <div className={cn('w-8 h-0.5', i < step ? 'bg-success' : 'bg-border')} />
+              )}
+            </React.Fragment>
           ))}
         </div>
-        <p className="text-primary text-sm font-semibold text-center">
-          Step {step + 1} of {TOTAL_STEPS} — {STEP_TITLES[step].toLowerCase()}
-        </p>
       </div>
 
-      {/* Vehicle chip */}
-      <div className="mx-4 mt-4 bg-blue-50 rounded-lg px-3 py-2 flex items-center justify-between text-sm">
-        <span className="text-foreground">
-          {vehicleData.year} {vehicleData.make} · {vehicleData.fuelType}{' '}
-          <span className="ml-1 inline-block bg-yellow-300 text-foreground font-bold px-1.5 py-0.5 rounded">
-            {vehicleData.regNumber}
-          </span>
-        </span>
-        <button onClick={onBack} className="text-primary font-semibold">
-          Change
-        </button>
-      </div>
-
-      {/* Card */}
-      <div className="mx-4 mt-4 bg-card border border-border rounded-2xl p-4 shadow-sm">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-            {step + 1}
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-bold text-foreground leading-tight">
-              {STEP_TITLES[step]}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {STEP_SUBTITLES[step]}
-            </p>
-          </div>
-          <Info className="w-5 h-5 text-success flex-shrink-0 mt-1" />
+      {/* Vehicle card */}
+      <div className="mx-4 mt-4 bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+        <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+          <Car className="w-7 h-7 text-muted-foreground" />
         </div>
-
-        {/* Step content */}
-        {step === 0 && (
-          <div className="space-y-2.5">
-            {claimTiers.map(tier => {
-              const selected = selectedClaimLimit === tier.value;
-              return (
-                <OptionRow
-                  key={tier.value}
-                  selected={selected}
-                  popular={tier.popular}
-                  onClick={() => onClaimLimitChange(tier.value)}
-                  primary={`£${(tier.displayValue ?? tier.value).toLocaleString()} limit`}
-                  secondary={getCarValueLabel(tier.value)}
-                  trailing={tier.name}
-                />
-              );
-            })}
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-foreground text-sm leading-tight">
+            {vehicleData.year} {vehicleData.make} {vehicleData.model}
           </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            <span className="font-mono font-semibold text-foreground">{vehicleData.regNumber}</span>
+            {vehicleData.fuelType && <> · {vehicleData.fuelType}</>}
+            {vehicleData.mileage && <> · Under {Math.ceil((parseInt(String(vehicleData.mileage).replace(/[^0-9]/g, '')) || 0) / 10000) * 10000} miles</>}
+          </div>
+        </div>
+        <button onClick={onBack} className="text-primary text-sm font-semibold">Edit</button>
+      </div>
+
+      {/* Step title */}
+      <div className="px-4 mt-4">
+        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          Step {step + 1} of {TOTAL_STEPS}
+        </p>
+        <h1 className="text-xl font-bold text-foreground mt-0.5">{STEP_TITLES[step]}</h1>
+      </div>
+
+      {/* Step content */}
+      <div className="px-4 mt-4 space-y-6">
+        {step === 0 && (
+          <>
+            {/* Cover level */}
+            <section>
+              <h2 className="text-base font-bold text-foreground">1. Choose your cover level</h2>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                Select the amount we'll pay towards repairs
+              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {claimTiers.map(tier => {
+                  const selected = selectedClaimLimit === tier.value;
+                  const copy = CLAIM_COPY[tier.value] || { title: tier.shortName, sub: '' };
+                  const recommended = tier.value === 2000;
+                  return (
+                    <button
+                      key={tier.value}
+                      onClick={() => onClaimLimitChange(tier.value)}
+                      className={cn(
+                        'relative text-left rounded-xl border-2 p-3 transition-all',
+                        selected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border bg-card hover:border-primary/40'
+                      )}
+                    >
+                      {recommended && (
+                        <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          Recommended
+                        </span>
+                      )}
+                      <div className="text-lg font-bold text-foreground leading-tight">
+                        £{tier.displayValue.toLocaleString()}
+                      </div>
+                      <div className="text-xs font-semibold text-foreground mt-1">{copy.title}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{copy.sub}</div>
+                      <div className="mt-2 flex justify-end">
+                        <RadioDot selected={selected} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Cover length */}
+            <section>
+              <h2 className="text-base font-bold text-foreground">2. Choose your cover length</h2>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                Longer cover means more savings
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {visibleTerms.map(term => {
+                  const selected = paymentType === term;
+                  const monthly = calculateMonthlyPrice(term);
+                  const meta = TERM_META[term];
+                  return (
+                    <button
+                      key={term}
+                      onClick={() => onPaymentTypeChange(term)}
+                      className={cn(
+                        'relative rounded-xl border-2 p-3 text-center transition-all',
+                        selected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border bg-card hover:border-primary/40'
+                      )}
+                    >
+                      {meta.badge && (
+                        <span
+                          className={cn(
+                            'absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap text-white',
+                            meta.badgeTone === 'green' ? 'bg-success' : 'bg-primary'
+                          )}
+                        >
+                          {meta.badge}
+                        </span>
+                      )}
+                      <div className="text-xs font-semibold text-foreground">{meta.years}</div>
+                      <div className="text-base font-bold text-foreground mt-1">£{monthly}<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{meta.payments}</div>
+                      <div className="mt-2 flex justify-center">
+                        <RadioDot selected={selected} small />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          </>
         )}
 
         {step === 1 && (
-          <div className="space-y-2.5">
-            {LABOUR_RATES.map(rate => {
-              const selected = selectedLabourRate === rate.value;
-              return (
-                <OptionRow
-                  key={rate.value}
-                  selected={selected}
-                  popular={rate.popular}
-                  onClick={() => onLabourRateChange(rate.value)}
-                  primary={`£${rate.value}/hr · ${rate.label}`}
-                  secondary={rate.sub}
-                />
-              );
-            })}
-          </div>
+          <>
+            <section>
+              <h2 className="text-base font-bold text-foreground">1. Where would you repair your car?</h2>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                This helps us tailor your cover and price
+              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {REPAIR_OPTIONS.map(opt => {
+                  const selected = selectedLabourRate === opt.value;
+                  const Icon = opt.icon;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => onLabourRateChange(opt.value)}
+                      className={cn(
+                        'relative text-left rounded-xl border-2 p-3 transition-all min-h-[110px] flex flex-col',
+                        selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
+                      )}
+                    >
+                      {opt.recommended && (
+                        <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          Recommended
+                        </span>
+                      )}
+                      <Icon className={cn('w-5 h-5 mb-1.5', selected ? 'text-primary' : 'text-muted-foreground')} />
+                      <div className="text-sm font-bold text-foreground leading-tight">{opt.title}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-base font-bold text-foreground">2. Choose your excess</h2>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                Higher excess lowers your monthly payments
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {EXCESS_OPTIONS.map(ex => {
+                  const selected = voluntaryExcess === ex.value;
+                  return (
+                    <button
+                      key={ex.value}
+                      onClick={() => onVoluntaryExcessChange(ex.value)}
+                      className={cn(
+                        'relative rounded-xl border-2 p-2 text-center transition-all',
+                        selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
+                      )}
+                    >
+                      {ex.best && (
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                          Best
+                        </span>
+                      )}
+                      <div className="text-sm font-bold text-foreground">{ex.label}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{ex.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          </>
         )}
 
         {step === 2 && (
-          <div className="space-y-2.5">
-            {visibleTerms.map(term => {
-              const selected = paymentType === term.value;
-              const monthly = calculateMonthlyPrice(term.value);
-              return (
-                <OptionRow
-                  key={term.value}
-                  selected={selected}
-                  popular={term.popular}
-                  onClick={() => onPaymentTypeChange(term.value)}
-                  primary={term.label}
-                  secondary={term.sub}
-                  trailing={`£${monthly}/mo`}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-2.5">
-            {EXCESSES.map(ex => {
-              const selected = voluntaryExcess === ex.value;
-              const monthly = paymentType ? calculateMonthlyPrice(paymentType) : 0;
-              return (
-                <OptionRow
-                  key={ex.value}
-                  selected={selected}
-                  popular={ex.popular}
-                  onClick={() => onVoluntaryExcessChange(ex.value)}
-                  primary={ex.label}
-                  secondary={ex.sub}
-                  trailing={selected && monthly ? `£${monthly}/mo` : undefined}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-3">
-            <SummaryRow label="Cover term" value={termLabel(paymentType)} />
-            <SummaryRow
-              label="Claim limit"
-              value={`£${getDisplay(selectedClaimLimit).toLocaleString()} per claim`}
-            />
-            <SummaryRow label="Labour rate" value={`£${selectedLabourRate}/hr`} />
-            <SummaryRow label="Voluntary excess" value={voluntaryExcess !== null ? `£${voluntaryExcess}` : '—'} />
-            <div className="border-t border-border pt-3 mt-3">
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm text-muted-foreground">Monthly price</span>
-                <span className="text-2xl font-bold text-foreground">
-                  £{currentMonthlyPrice}
-                  <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 text-right">
-                Total £{currentTotalPrice} over 12 payments
-              </p>
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-base font-bold text-foreground">Review your cover</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Please check everything looks right</p>
             </div>
-          </div>
-        )}
 
-        {/* Whisper */}
-        {step < 4 && canAdvance && whisper && (
-          <p className="mt-4 text-center text-sm font-semibold text-success animate-fade-in">
-            {whisper}
-          </p>
+            <div className="bg-card border border-border rounded-xl divide-y divide-border">
+              <ReviewRow label="Cover level" value={`£${getDisplay(selectedClaimLimit).toLocaleString()}`} onEdit={() => setStep(0)} />
+              <ReviewRow label="Cover length" value={termMeta.years} onEdit={() => setStep(0)} />
+              <ReviewRow label="Repair preference" value={REPAIR_OPTIONS.find(o => o.value === selectedLabourRate)?.title || '—'} onEdit={() => setStep(1)} />
+              <ReviewRow label="Excess" value={voluntaryExcess !== null ? `£${voluntaryExcess}` : '—'} onEdit={() => setStep(1)} />
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h3 className="font-bold text-foreground mb-3">What's included</h3>
+              <ul className="space-y-2">
+                {[
+                  'Mechanical & electrical components',
+                  'Nationwide garage network',
+                  'Labour, parts & diagnosis',
+                  'No hidden catches or exclusions',
+                  '14-day money-back guarantee',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                    <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <a
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 text-sm"
+            >
+              <span className="font-bold text-foreground">Excellent</span>
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4 w-auto" />
+              <span className="text-muted-foreground">4.8 out of 5</span>
+            </a>
+          </section>
         )}
       </div>
 
-      {/* Sticky footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3 flex items-center gap-3 z-50">
-        <button
-          onClick={handleBack}
-          className="flex-shrink-0 px-4 py-3 text-foreground font-semibold flex items-center gap-1"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={!canAdvance || isLoading}
-          className={cn(
-            'flex-1 py-3.5 rounded-lg font-bold text-base flex items-center justify-center gap-2 transition-colors',
-            canAdvance && !isLoading
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-              : 'bg-muted text-muted-foreground cursor-not-allowed'
-          )}
-        >
-          {step === TOTAL_STEPS - 1
-            ? isLoading
-              ? 'Loading…'
-              : 'Continue to checkout'
-            : 'Continue'}
-          <ArrowRight className="w-4 h-4" />
-        </button>
+      {/* Sticky quote + CTA footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+        <div className="px-4 pt-3 pb-[env(safe-area-inset-bottom,8px)]">
+          <div className="bg-card rounded-lg">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] text-muted-foreground">Your quote</div>
+                <div className="text-xs font-semibold text-foreground leading-tight">{planLabel}</div>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-2xl font-extrabold text-foreground">£{currentMonthlyPrice}</span>
+                  <span className="text-xs text-muted-foreground">/mo</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground">Equal to {dayLabel}</div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                {marketingSavings > 0 && (
+                  <div className="text-xs font-bold text-success leading-tight">
+                    Save £{marketingSavings} today
+                  </div>
+                )}
+                <div className="text-[10px] text-muted-foreground mt-0.5">
+                  {paymentsCount} payments of
+                </div>
+                <div className="text-[11px] font-semibold text-foreground">£{currentMonthlyPrice}.00</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mt-3">
+              {step > 0 && (
+                <button
+                  onClick={handleBack}
+                  className="flex-shrink-0 px-3 py-3 text-foreground text-sm font-semibold flex items-center gap-1"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={handleNext}
+                disabled={!canAdvance || isLoading}
+                className={cn(
+                  'flex-1 py-3.5 rounded-lg font-bold text-base flex items-center justify-center gap-2 transition-colors',
+                  canAdvance && !isLoading
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                )}
+              >
+                {step === TOTAL_STEPS - 1
+                  ? isLoading
+                    ? 'Loading…'
+                    : 'Continue to checkout'
+                  : 'Continue'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
+              <Lock className="w-3 h-3" />
+              <span>Secure checkout · 14 days to cancel</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -327,88 +473,36 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
 // ---- Subcomponents ----
 
-interface OptionRowProps {
-  selected: boolean;
-  popular?: boolean;
-  onClick: () => void;
-  primary: string;
-  secondary?: string;
-  trailing?: string;
-}
-
-const OptionRow: React.FC<OptionRowProps> = ({
-  selected,
-  popular,
-  onClick,
-  primary,
-  secondary,
-  trailing,
-}) => (
-  <button
-    onClick={onClick}
+const RadioDot: React.FC<{ selected: boolean; small?: boolean }> = ({ selected, small }) => (
+  <div
     className={cn(
-      'relative w-full text-left rounded-xl border-2 p-3.5 transition-all',
-      selected
-        ? 'border-primary bg-primary/5'
-        : 'border-border bg-card hover:border-primary/50'
+      'rounded-full border-2 flex items-center justify-center',
+      small ? 'w-4 h-4' : 'w-5 h-5',
+      selected ? 'border-primary bg-primary' : 'border-border bg-card'
     )}
   >
-    {popular && (
-      <span className="absolute -top-2 right-3 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">
-        Most popular
-      </span>
-    )}
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-foreground text-base leading-tight">{primary}</div>
-        {secondary && (
-          <div className="text-xs text-muted-foreground mt-0.5">{secondary}</div>
-        )}
-      </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {trailing && (
-          <span className="text-sm font-semibold text-foreground">{trailing}</span>
-        )}
-        {selected ? (
-          <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
-            <Check className="w-4 h-4 text-white" />
-          </div>
-        ) : (
-          <div className="w-6 h-6 rounded-full border-2 border-border" />
-        )}
-      </div>
-    </div>
-  </button>
-);
-
-const SummaryRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="flex items-center justify-between text-sm">
-    <span className="text-muted-foreground">{label}</span>
-    <span className="font-semibold text-foreground">{value}</span>
+    {selected && <div className={cn('rounded-full bg-white', small ? 'w-1.5 h-1.5' : 'w-2 h-2')} />}
   </div>
 );
 
-// ---- Helpers ----
-
-function getCarValueLabel(value: number): string {
-  if (value === 750) return 'Car value up to £5,000';
-  if (value === 2000) return 'Car value £5k–£12k';
-  if (value === 3000) return 'Car value £12k–£25k';
-  if (value === 5000) return 'Car value over £25k';
-  return '';
-}
+const ReviewRow: React.FC<{ label: string; value: string; onEdit: () => void }> = ({
+  label,
+  value,
+  onEdit,
+}) => (
+  <div className="flex items-center justify-between px-4 py-3">
+    <span className="text-sm text-muted-foreground">{label}</span>
+    <div className="flex items-center gap-3">
+      <span className="text-sm font-semibold text-foreground">{value}</span>
+      <button onClick={onEdit} className="text-primary text-sm font-semibold">Edit</button>
+    </div>
+  </div>
+);
 
 function getDisplay(value: number | null): number {
   if (!value) return 0;
   const tier = CLAIM_LIMIT_TIERS.find(t => t.value === value);
   return tier?.displayValue ?? value;
-}
-
-function termLabel(t: PaymentType | null): string {
-  if (t === '12months') return '1 Year';
-  if (t === '24months') return '2 Years (Year 2 free)';
-  if (t === '36months') return '3 Years (Years 2 & 3 free)';
-  return '—';
 }
 
 export default MobileSteppedFlow;
