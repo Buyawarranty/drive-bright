@@ -258,10 +258,62 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <X className="w-5 h-5 text-gray-600" />
         </button>
 
+        {/* Local keyframes for header car + CTA breathing */}
+        <style>{`
+          @keyframes save25-car-drive {
+            0%   { transform: translateX(-14%) rotate(-2deg); }
+            45%  { transform: translateX(0) rotate(0deg); }
+            55%  { transform: translateX(0) rotate(0deg); }
+            100% { transform: translateX(14%) rotate(2deg); }
+          }
+          @keyframes save25-car-bob {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-2px); }
+          }
+          @keyframes save25-wheel-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+          @keyframes save25-breathe {
+            0%, 100% { transform: scale(1);    box-shadow: 0 6px 16px -6px rgba(242,106,31,0.55); }
+            50%      { transform: scale(1.02); box-shadow: 0 12px 28px -8px rgba(242,106,31,0.75); }
+          }
+          .save25-breathe { animation: save25-breathe 2.8s ease-in-out infinite; transform-origin: center; will-change: transform; }
+        `}</style>
+
         {/* Orange header */}
         <div className="bg-[#F26A1F] px-6 sm:px-8 pt-8 sm:pt-10 pb-7 sm:pb-8 text-center text-white">
-          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full border-2 border-white/90 mb-3 sm:mb-4">
-            <Car className="w-7 h-7 sm:w-8 sm:h-8 text-white" strokeWidth={2} />
+          <div className="relative inline-flex items-center justify-center w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full border-2 border-white/90 mb-3 sm:mb-4 overflow-hidden">
+            <div
+              className="flex items-center justify-center"
+              style={{ animation: 'save25-car-bob 1.6s ease-in-out infinite' }}
+            >
+              <div style={{ animation: 'save25-car-drive 2.6s ease-in-out infinite alternate' }}>
+                <svg
+                  viewBox="0 0 48 32"
+                  className="w-9 h-9 sm:w-10 sm:h-10"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 22h40" />
+                  <path d="M7 22l3-9h22l5 6 6 1v2" />
+                  <path d="M10 13l2-5h14l4 5" />
+                  <g style={{ transformOrigin: '14px 24px', animation: 'save25-wheel-spin 0.6s linear infinite' }}>
+                    <circle cx="14" cy="24" r="3.2" />
+                    <line x1="14" y1="21" x2="14" y2="27" />
+                    <line x1="11" y1="24" x2="17" y2="24" />
+                  </g>
+                  <g style={{ transformOrigin: '36px 24px', animation: 'save25-wheel-spin 0.6s linear infinite' }}>
+                    <circle cx="36" cy="24" r="3.2" />
+                    <line x1="36" y1="21" x2="36" y2="27" />
+                    <line x1="33" y1="24" x2="39" y2="24" />
+                  </g>
+                </svg>
+              </div>
+            </div>
           </div>
           <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-white/95">
             Limited time offer
@@ -278,7 +330,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <div className="mt-4 sm:mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/90">
             <Clock className="w-4 h-4 text-white" strokeWidth={2.4} />
             <span className="text-sm font-semibold text-white tabular-nums">
-              {isExpired ? 'Offer expired' : `Offer reserved for ${Math.ceil(secondsLeft / 60)} minutes`}
+              Offer reserved for {Math.max(1, Math.ceil(secondsLeft / 60))} minutes
             </span>
           </div>
         </div>
@@ -338,7 +390,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               </span>
               <div className="min-w-0">
                 <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                  {isExpired ? 'Offer expired' : `Expires in ${Math.ceil(secondsLeft / 60)} minutes`}
+                  Expires in {Math.max(1, Math.ceil(secondsLeft / 60))} minutes
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
                   Don't miss out on this exclusive saving
@@ -347,30 +399,20 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             </li>
           </ul>
 
-          {/* CTA */}
-          {isExpired ? (
-            <button
-              type="button"
-              onClick={handleClose}
-              className="w-full h-14 rounded-xl bg-gray-200 text-gray-600 font-semibold text-base"
-            >
-              Offer expired, close
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleApply}
-              disabled={isApplying}
-              className="w-full h-14 rounded-xl bg-[#F26A1F] hover:bg-[#e25f15] text-white font-bold text-base sm:text-lg shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
-            >
-              {isApplying ? 'Applying…' : (
-                <>
-                  Continue with £{DISCOUNT_AMOUNT} saving
-                  <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
-                </>
-              )}
-            </button>
-          )}
+          {/* CTA — pulsating breathing */}
+          <button
+            type="button"
+            onClick={handleApply}
+            disabled={isApplying}
+            className="save25-breathe w-full h-14 sm:h-[60px] px-6 rounded-2xl bg-[#F26A1F] hover:bg-[#e25f15] text-white font-bold text-base sm:text-lg inline-flex items-center justify-center gap-2.5 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isApplying ? 'Applying…' : (
+              <>
+                <span>Continue with £{DISCOUNT_AMOUNT} saving</span>
+                <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+              </>
+            )}
+          </button>
 
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-600 inline-flex items-center justify-center gap-1.5">
