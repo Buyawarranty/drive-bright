@@ -354,7 +354,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               onClick={handleClose}
               className="w-full h-12 rounded-xl bg-gray-200 text-gray-600 font-semibold text-base"
             >
-              Offer expired — close
+              Offer expired, close
             </button>
           ) : (
             <button
