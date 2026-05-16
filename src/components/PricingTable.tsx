@@ -1247,9 +1247,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const displayPlans = ensureCarOnly();
 
   const calculateMobileTermMonthlyPrice = useCallback((term: string) => {
+    const effectiveExcess = voluntaryExcess ?? 100;
+    const effectiveClaimLimit = selectedClaimLimit ?? 2000;
     const warrantyYears = term === '12months' ? 1 : term === '24months' ? 2 : 3;
     const termVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-    const termBasePrice = getPricingData(voluntaryExcess, selectedClaimLimit, term);
+    const termBasePrice = getPricingData(effectiveExcess, effectiveClaimLimit, term);
     const adjustedBasePrice = applyPriceAdjustment(termBasePrice, termVehicleAdjustment);
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
@@ -1266,7 +1268,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     });
 
     const addOnTotal = calculateAddOnPrice(termAddOns, term, durationMonths);
-    const premiumSurcharge = getClaimLimitSurcharge(selectedClaimLimit, term, voluntaryExcess || 100);
+    const premiumSurcharge = getClaimLimitSurcharge(effectiveClaimLimit, term, effectiveExcess);
     const total = adjustedBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
 
     return Math.floor(total / 12);
