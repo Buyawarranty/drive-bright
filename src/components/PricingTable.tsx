@@ -44,6 +44,7 @@ import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import PriceHelpPanel from '@/components/step3/PriceHelpPanel';
 import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
 import Step3Desktop from '@/components/step3/Step3Desktop';
+import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -1245,6 +1246,34 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const ensureCarOnly = () => plans;
   const displayPlans = ensureCarOnly();
 
+  const calculateMobileTermMonthlyPrice = useCallback((term: string) => {
+    const effectiveExcess = voluntaryExcess ?? 100;
+    const effectiveClaimLimit = selectedClaimLimit ?? 2000;
+    const warrantyYears = term === '12months' ? 1 : term === '24months' ? 2 : 3;
+    const termVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+    const termBasePrice = getPricingData(effectiveExcess, effectiveClaimLimit, term);
+    const adjustedBasePrice = applyPriceAdjustment(termBasePrice, termVehicleAdjustment);
+    const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
+    const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
+    const termAutoIncluded = getAutoIncludedAddOns(term);
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const termAddOns = { ...selectedProtectionAddOns };
+
+    termAutoIncluded.forEach(key => { termAddOns[key] = true; });
+    allPossibleAutoIncluded.forEach(key => {
+      if (!termAutoIncluded.includes(key)) {
+        const wasAutoIncludedElsewhere = getAutoIncludedAddOns('24months').includes(key) || getAutoIncludedAddOns('36months').includes(key);
+        if (wasAutoIncludedElsewhere) termAddOns[key] = false;
+      }
+    });
+
+    const addOnTotal = calculateAddOnPrice(termAddOns, term, durationMonths);
+    const premiumSurcharge = getClaimLimitSurcharge(effectiveClaimLimit, term, effectiveExcess);
+    const total = adjustedBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
+
+    return Math.floor(total / 12);
+  }, [vehicleData, getPricingData, voluntaryExcess, selectedClaimLimit, selectedLabourRate, selectedProtectionAddOns, boostTotalAdjustment]);
+
   // Check for vehicle exclusions first
   if (!vehicleValidation.isValid) {
     return (
@@ -1320,8 +1349,41 @@ const PricingTable: React.FC<PricingTableProps> = ({
         />
       </div>
 
-      {/* Existing mobile layout (<md) */}
-      <div className="md:hidden min-h-screen bg-white pb-[calc(14rem+env(safe-area-inset-bottom))]">
+      <div className="md:hidden">
+        <MobileSteppedFlow
+          vehicleData={vehicleData}
+          onBack={onBack}
+          selectedClaimLimit={selectedClaimLimit}
+          onClaimLimitChange={(v) => {
+            setSelectedClaimLimit(v);
+            setBoostAddon(false);
+            setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+          }}
+          selectedLabourRate={selectedLabourRate}
+          onLabourRateChange={setSelectedLabourRate}
+          paymentType={paymentType}
+          onPaymentTypeChange={(v) => {
+            isUserPaymentTypeChange.current = true;
+            setPaymentType(v);
+            setValidationErrors(prev => ({ ...prev, paymentType: false }));
+          }}
+          voluntaryExcess={voluntaryExcess}
+          onVoluntaryExcessChange={(v) => {
+            toggleVoluntaryExcess(v);
+            setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+          }}
+          availableDurations={availableDurations as ('12months' | '24months' | '36months')[]}
+          currentMonthlyPrice={monthlyPrice}
+          currentTotalPrice={totalPrice}
+          calculateMonthlyPrice={calculateMobileTermMonthlyPrice}
+          onContinue={handleSelectPlan}
+          isLoading={Object.values(loading).some(Boolean)}
+          isFormValid={!validationErrors.voluntaryExcess && !validationErrors.claimLimit && !validationErrors.paymentType}
+        />
+      </div>
+
+      {/* Legacy mobile layout retained but no longer rendered */}
+      <div className="hidden min-h-screen bg-white pb-[calc(14rem+env(safe-area-inset-bottom))]">
       
       {/* Header with Back button and Get Covered heading */}
       <div className="bg-white border-b">
