@@ -471,15 +471,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </div>
 
             <div className="flex items-center gap-2 mt-3">
-              {step > 0 && (
-                <button
-                  onClick={handleBack}
-                  className="flex-shrink-0 px-3 py-3 text-foreground text-sm font-semibold flex items-center gap-1"
-                  aria-label="Back"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              )}
               <button
                 onClick={handleNext}
                 disabled={!canAdvance || isLoading}
