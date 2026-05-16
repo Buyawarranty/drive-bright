@@ -1932,25 +1932,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               {vehicleData.make || 'vehicle'} is nearly protected
             </h1>
 
-            <div className="bg-[#E8F7F2] border border-[#a8dfc9] rounded-xl px-5 py-4">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#0F6E56] mb-3">
-                <CheckCircle className="w-4 h-4" />
-                What happens after you activate
+            <div className="bg-white border border-gray-200 rounded-xl px-5 py-4">
+              <h3 className="text-base font-bold text-[#1a1a1a] mb-3">
+                What happens after you pay
               </h3>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {[
-                  { n: 1, t: 'Policy documents arrive in seconds', s: 'Emailed instantly to your inbox' },
-                  { n: 2, t: 'Cover starts on your selected date', s: "You're protected for breakdowns" },
-                  { n: 3, t: 'Claim online or by phone anytime', s: '0330 229 5045 — answered by real people' },
+                  { n: 1, t: <>Policy emailed instantly – your documents arrive in seconds</> },
+                  { n: 2, t: <>Cover starts today – you're protected from this moment</> },
+                  { n: 3, t: <>Claim anytime — online or by phone <span className="font-bold">0330 229 5045</span></> },
                 ].map((row) => (
                   <div key={row.n} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center mt-0.5">
                       {row.n}
                     </div>
-                    <div className="leading-tight">
-                      <div className="text-sm font-medium text-[#0F6E56]">{row.t}</div>
-                      <div className="text-xs text-[#1D9E75]">{row.s}</div>
-                    </div>
+                    <div className="text-sm text-[#1a1a1a] leading-snug">{row.t}</div>
                   </div>
                 ))}
               </div>
