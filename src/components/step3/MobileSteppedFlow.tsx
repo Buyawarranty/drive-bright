@@ -458,9 +458,9 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 onClick={handleNext}
                 disabled={!canAdvance || isLoading}
                 className={cn(
-                  'flex-1 py-3.5 rounded-lg font-bold text-base flex items-center justify-center gap-2 transition-colors',
+                  'flex-1 px-6 py-4 rounded-lg font-bold text-base flex items-center justify-center gap-2',
                   canAdvance && !isLoading
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90 animate-breathing'
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                 )}
               >
@@ -469,7 +469,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                     ? 'Loading…'
                     : 'Continue to checkout'
                   : 'Continue'}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-5 h-5" strokeWidth={3} />
               </button>
             </div>
 
