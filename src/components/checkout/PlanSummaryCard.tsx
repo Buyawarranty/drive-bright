@@ -142,34 +142,6 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                 </div>
               )}
 
-              {/* Good to know */}
-              <div className="space-y-2 mt-3">
-                <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-3 py-2.5">
-                  <span className="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#0BA360]" />
-                  <p className="text-xs text-[#1a1a1a] leading-relaxed">
-                    <strong>Cover starts today.</strong> Your vehicle is protected from the moment payment is confirmed.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 rounded-lg bg-[#E8F6EF] border border-[#B8E2CE] px-3 py-2.5">
-                  <span className="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#0BA360]" />
-                  <p className="text-xs text-[#1a1a1a] leading-relaxed">
-                    <strong>14-day cooling-off period.</strong> Refund minus days covered and a £40 processing fee if no claim made.
-                  </p>
-                </div>
-              </div>
-
-              {/* Trust signals */}
-              <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-[#E5E5E5] text-[11px] text-gray-600">
-                <span className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-[#0BA360]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                  256-bit SSL secure checkout
-                </span>
-                <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:opacity-80">
-                  <span>Rated</span>
-                  <span className="text-[#1a1a1a] font-semibold">"Excellent"</span>
-                  <img src={trustpilotLogo} alt="Trustpilot" className="h-3.5 w-auto" loading="lazy" />
-                </a>
-              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
