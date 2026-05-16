@@ -70,6 +70,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
       <div className="px-4 pt-3 pb-[env(safe-area-inset-bottom,8px)]">
         {/* Trustpilot + Cover label row */}
         <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
+            <span className="text-[12px] font-bold text-gray-900">{planLabel}</span>
+          </div>
           <a
             href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
             target="_blank"
@@ -79,10 +83,6 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             <span className="text-sm font-bold text-gray-900 leading-none">Excellent</span>
             <img src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot" className="h-4 w-auto" />
           </a>
-          <div className="flex flex-col items-end leading-tight">
-            <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
-            <span className="text-[12px] font-bold text-gray-900">{planLabel}</span>
-          </div>
         </div>
 
         {/* Price row */}
