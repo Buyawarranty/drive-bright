@@ -418,7 +418,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         onPayClick={handleNext}
       />
     </div>
-    </div>
   );
 };
 
