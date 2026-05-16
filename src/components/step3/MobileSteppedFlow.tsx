@@ -59,8 +59,8 @@ const EXCESS_OPTIONS = [
 
 const TERM_META: Record<PaymentType, { years: string; payments: string; badge?: string; badgeTone?: 'orange' | 'green' }> = {
   '12months': { years: '1 Year', payments: '12 payments' },
-  '24months': { years: '2 Years', payments: '24 payments', badge: 'Most Popular', badgeTone: 'orange' },
-  '36months': { years: '3 Years', payments: '36 payments', badge: 'Best Value', badgeTone: 'green' },
+  '24months': { years: '2 Years', payments: '12 payments', badge: 'Most Popular', badgeTone: 'orange' },
+  '36months': { years: '3 Years', payments: '12 payments', badge: 'Best Value', badgeTone: 'green' },
 };
 
 const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
@@ -132,8 +132,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     ? Math.round((currentMonthlyPrice * 12 * 100) / 365)
     : 0;
   const dayLabel = pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}/day` : `${pencePerDay}p/day`;
-  const marketingSavings = paymentType ? getMarketingSavings(paymentType as PaymentPeriod) : 60;
-  const paymentsCount = paymentType === '36months' ? 36 : paymentType === '24months' ? 24 : 12;
+
+  // Real savings = (1yr equivalent total × N years) − selected term total.
+  // All plans are billed over 12 monthly payments, so total = monthly × 12.
+  const years = paymentType === '36months' ? 3 : paymentType === '24months' ? 2 : 1;
+  const oneYearMonthly = calculateMonthlyPrice('12months');
+  const selectedMonthly = currentMonthlyPrice;
+  const marketingSavings = years > 1
+    ? Math.max(0, (oneYearMonthly * years - selectedMonthly) * 12)
+    : 0;
+  const paymentsCount = 12;
 
   return (
     <div className="min-h-screen bg-background pb-[calc(13rem+env(safe-area-inset-bottom))]">
@@ -237,6 +245,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   const selected = paymentType === term;
                   const monthly = calculateMonthlyPrice(term);
                   const meta = TERM_META[term];
+                  const termYears = term === '36months' ? 3 : term === '24months' ? 2 : 1;
+                  const oneYrMonthly = calculateMonthlyPrice('12months');
+                  const cardSavings = termYears > 1
+                    ? Math.max(0, (oneYrMonthly * termYears - monthly) * 12)
+                    : 0;
                   return (
                     <button
                       key={term}
@@ -260,7 +273,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       )}
                       <div className="text-xs font-semibold text-foreground">{meta.years}</div>
                       <div className="text-base font-bold text-foreground mt-1">£{monthly}<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">{meta.payments}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">12 payments</div>
+                      {cardSavings > 0 && (
+                        <div className="text-[10px] font-bold text-success mt-0.5">Save £{cardSavings}</div>
+                      )}
                       <div className="mt-2 flex justify-center">
                         <RadioDot selected={selected} small />
                       </div>
