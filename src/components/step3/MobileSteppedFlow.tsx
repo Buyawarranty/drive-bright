@@ -196,7 +196,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
           <>
             {/* Cover level */}
             <section>
-              <h2 className="text-base font-bold text-foreground">1. Choose your cover level</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Claim limit</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your cover level</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Select the amount we'll pay towards repairs
               </p>
