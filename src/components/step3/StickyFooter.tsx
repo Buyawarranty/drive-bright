@@ -144,14 +144,14 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-6 px-6 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
+              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold py-6 px-6 rounded-xl text-base gap-2 shadow-lg animate-breathing"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
                   Continue to checkout
-                  <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+                  <ArrowRight className="w-5 h-5" strokeWidth={3} />
                 </>
               )}
             </Button>
@@ -273,14 +273,14 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0 animate-breathing"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
                   Continue
-                  <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                  <ArrowRight className="w-4 h-4" strokeWidth={3} />
                 </>
               )}
             </Button>
