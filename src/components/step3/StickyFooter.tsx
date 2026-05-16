@@ -273,14 +273,14 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0 animate-breathing"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
                   Continue
-                  <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                  <ArrowRight className="w-4 h-4" strokeWidth={3} />
                 </>
               )}
             </Button>
