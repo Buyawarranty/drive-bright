@@ -379,21 +379,9 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1F5D3A]" strokeWidth={2} />
             </div>
           </div>
-
-          {/* Benefit rows */}
-          <ul className="mb-5">
-            <li className="flex items-start gap-3 py-3 border-b border-gray-100">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
-                <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                  £{DISCOUNT_AMOUNT} discount applied instantly
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">No code needed</p>
-              </div>
-            </li>
-          </ul>
+          <p className="text-sm sm:text-base text-gray-600 text-center mb-5 -mt-2">
+            No promo code needed
+          </p>
 
           {/* CTA — pulsating breathing (animation on wrapper so the button hit-area stays stable) */}
           <div className="save25-breathe rounded-2xl">
