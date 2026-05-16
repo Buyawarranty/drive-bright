@@ -333,7 +333,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-foreground">4. Choose your excess</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Voluntary excess</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your excess</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Higher excess lowers your monthly payments
               </p>
