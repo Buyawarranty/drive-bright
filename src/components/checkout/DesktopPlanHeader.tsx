@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Check, Calendar as CalendarIcon, Car, Pencil } from 'lucide-react';
+import { CheckCircle, Calendar as CalendarIcon, Car, Mail, Shield, Headphones } from 'lucide-react';
 import { format, isToday, startOfDay, addDays, isBefore, isAfter } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
