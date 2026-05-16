@@ -71,8 +71,8 @@ const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
   5000: { title: 'Maximum cover', sub: 'Complete confidence' },
 };
 
-const STEP_TITLES = ['Cover level & term', 'Repair preference', 'Review your cover'];
-const TOTAL_STEPS = 3;
+const STEP_TITLES = ['Cover level & term', 'Repair preference'];
+const TOTAL_STEPS = 2;
 
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
@@ -174,7 +174,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
       {/* Build-your-warranty progress pills */}
       <div className="px-4 pt-4">
         <div className="flex items-center gap-2">
-          {['Your cover', 'Your garage', 'Review'].map((label, i) => {
+          {['Your cover', 'Your garage'].map((label, i) => {
             const isActive = i === step;
             const isDone = i < step;
             return (
@@ -397,50 +397,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
           </>
         )}
 
-        {step === 2 && (
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-base font-bold text-foreground">Review your cover</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Please check everything looks right</p>
-            </div>
-
-            <div className="bg-card border border-border rounded-xl divide-y divide-border">
-              <ReviewRow label="Cover level" value={`£${getDisplay(selectedClaimLimit).toLocaleString()}`} onEdit={() => setStep(0)} />
-              <ReviewRow label="Cover length" value={termMeta.years} onEdit={() => setStep(0)} />
-              <ReviewRow label="Hourly labour rate covered" value={selectedLabourRate ? `£${selectedLabourRate}/hour` : '—'} onEdit={() => setStep(1)} />
-              <ReviewRow label="Excess" value={voluntaryExcess !== null ? `£${voluntaryExcess}` : '—'} onEdit={() => setStep(1)} />
-            </div>
-
-            <div className="bg-card border border-border rounded-xl p-4">
-              <h3 className="font-bold text-foreground mb-3">What's included</h3>
-              <ul className="space-y-2">
-                {[
-                  'Mechanical & electrical components',
-                  'Nationwide garage network',
-                  'Labour, parts & diagnosis',
-                  'No hidden catches or exclusions',
-                  '14-day cooling off period',
-                ].map(item => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <a
-              href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 text-sm"
-            >
-              <span className="font-bold text-foreground">Excellent</span>
-              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-4 w-auto" />
-              <span className="text-muted-foreground">4.8 out of 5</span>
-            </a>
-          </section>
-        )}
       </div>
 
       {/* Sticky quote + CTA footer */}
