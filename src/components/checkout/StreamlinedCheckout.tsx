@@ -1922,17 +1922,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         <div className="flex gap-8 items-start">
           {/* Main Content Column */}
           <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-4 lg:pb-4 lg:space-y-0 min-w-0">
-          {/* ==================== HERO TITLE + WHAT HAPPENS NEXT ==================== */}
-          <section className="space-y-4 mb-2">
-            <h1 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-[#1a1a1a]">
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#E8F7F2]">
-                <Shield className="w-4 h-4 text-[#0F6E56]" />
-              </span>
-              {vehicleData.year ? `Your ${vehicleData.year} ` : 'Your '}
-              {vehicleData.make || 'vehicle'} is nearly protected
-            </h1>
+          {/* Hero title moved into DesktopPlanHeader to avoid duplication */}
 
-          </section>
 
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
