@@ -279,7 +279,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             One-time offer just for you
           </p>
           <h2 id="save50-title" className="text-3xl sm:text-4xl font-extrabold mt-1">
-            £50 OFF
+            £{DISCOUNT_AMOUNT} OFF
           </h2>
           <p className="text-sm sm:text-base mt-1 opacity-95">your warranty today</p>
         </div>
