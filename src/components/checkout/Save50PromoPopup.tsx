@@ -330,7 +330,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <div className="mt-4 sm:mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/90">
             <Clock className="w-4 h-4 text-white" strokeWidth={2.4} />
             <span className="text-sm font-semibold text-white tabular-nums">
-              Offer reserved for {Math.max(1, Math.ceil(secondsLeft / 60))} minutes
+              Offer reserved for 15 minutes
             </span>
           </div>
         </div>
