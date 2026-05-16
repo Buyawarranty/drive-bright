@@ -1347,8 +1347,41 @@ const PricingTable: React.FC<PricingTableProps> = ({
         />
       </div>
 
-      {/* Existing mobile layout (<md) */}
-      <div className="md:hidden min-h-screen bg-white pb-[calc(14rem+env(safe-area-inset-bottom))]">
+      <div className="md:hidden">
+        <MobileSteppedFlow
+          vehicleData={vehicleData}
+          onBack={onBack}
+          selectedClaimLimit={selectedClaimLimit}
+          onClaimLimitChange={(v) => {
+            setSelectedClaimLimit(v);
+            setBoostAddon(false);
+            setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+          }}
+          selectedLabourRate={selectedLabourRate}
+          onLabourRateChange={setSelectedLabourRate}
+          paymentType={paymentType}
+          onPaymentTypeChange={(v) => {
+            isUserPaymentTypeChange.current = true;
+            setPaymentType(v);
+            setValidationErrors(prev => ({ ...prev, paymentType: false }));
+          }}
+          voluntaryExcess={voluntaryExcess}
+          onVoluntaryExcessChange={(v) => {
+            toggleVoluntaryExcess(v);
+            setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+          }}
+          availableDurations={availableDurations as ('12months' | '24months' | '36months')[]}
+          currentMonthlyPrice={monthlyPrice}
+          currentTotalPrice={totalPrice}
+          calculateMonthlyPrice={calculateMobileTermMonthlyPrice}
+          onContinue={handleSelectPlan}
+          isLoading={Object.values(loading).some(Boolean)}
+          isFormValid={!validationErrors.voluntaryExcess && !validationErrors.claimLimit && !validationErrors.paymentType}
+        />
+      </div>
+
+      {/* Legacy mobile layout retained but no longer rendered */}
+      <div className="hidden min-h-screen bg-white pb-[calc(14rem+env(safe-area-inset-bottom))]">
       
       {/* Header with Back button and Get Covered heading */}
       <div className="bg-white border-b">
