@@ -156,12 +156,6 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                     <strong>14-day cooling-off period.</strong> Refund minus days covered and a £40 processing fee if no claim made.
                   </p>
                 </div>
-                <div className="flex items-start gap-3 rounded-lg bg-[#FFF5EB] border border-[#FFD9A8] px-3 py-2.5">
-                  <span className="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#FF6B00]" />
-                  <p className="text-xs text-[#1a1a1a] leading-relaxed">
-                    <strong>Using your cover.</strong> Your warranty runs for its full term, giving you continuous protection throughout. Please note that once a claim has been made, your policy is no longer eligible for a refund.
-                  </p>
-                </div>
               </div>
 
               {/* Trust signals */}
