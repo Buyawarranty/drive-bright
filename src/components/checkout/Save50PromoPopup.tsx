@@ -368,7 +368,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           )}
 
           <p className="text-[11px] text-center text-gray-500 mt-3">
-            Cannot be used with any other offer.
+            Your best-value discount — not valid with other promotions.
           </p>
         </div>
       </div>
