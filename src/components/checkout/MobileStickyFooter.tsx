@@ -95,10 +95,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                     <span className="text-xl font-extrabold text-gray-900">£{monthlyPrice}</span>
                     <span className="text-sm text-gray-600">/month</span>
                   </div>
+                  <span className="text-[11px] font-bold text-gray-700">Paid over 12 months</span>
                   <span className="text-[11px] text-gray-600">
                     Equal to <span className="font-semibold text-gray-700">{pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day</span>
                   </span>
-                  <span className="text-[11px] text-gray-500">Paid over 12 months</span>
                 </>
               ) : (
                 <>
