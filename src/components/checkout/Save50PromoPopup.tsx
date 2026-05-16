@@ -363,12 +363,12 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               disabled={isApplying}
               className="w-full h-12 sm:h-13 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#E91E63] text-white font-bold text-base shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isApplying ? 'Applying…' : 'Apply £50 off now'}
+              {isApplying ? 'Applying…' : `Apply £${DISCOUNT_AMOUNT} off now`}
             </button>
           )}
 
           <p className="text-[11px] text-center text-gray-500 mt-3">
-            Minimum spend £{MIN_SPEND}. Not combinable with other codes.
+            Cannot be used with any other offer.
           </p>
         </div>
       </div>
