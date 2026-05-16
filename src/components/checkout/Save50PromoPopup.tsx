@@ -3,11 +3,11 @@ import { X, Car, Clock, Check, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const CODE = 'SAVE50';
-const MIN_SPEND = 350;
+const CODE = 'SAVE25';
+const DISCOUNT_AMOUNT = 25;
 const COUNTDOWN_SECONDS = 15 * 60; // 15 minutes
 const INACTIVITY_MS = 20 * 1000; // 20 seconds
-const STORAGE_KEY = 'baw_save50_state_v1';
+const STORAGE_KEY = 'baw_save25_state_v1';
 
 type StoredState = {
   status: 'shown' | 'dismissed' | 'applied';
@@ -85,7 +85,6 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   useEffect(() => {
     if (suppress) return;
     if (hasDiscountApplied) return;
-    if (orderTotal < MIN_SPEND) return;
 
     const stored = readState();
 
@@ -211,7 +210,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       });
 
       writeState({ status: 'applied', email: customerEmail });
-      toast.success('🎉 SAVE50 applied — £50 off your order!', {
+      toast.success(`🎉 ${CODE} applied — £${DISCOUNT_AMOUNT} off your order!`, {
         style: {
           background: '#E91E63',
           color: '#ffffff',
@@ -280,7 +279,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             One-time offer just for you
           </p>
           <h2 id="save50-title" className="text-3xl sm:text-4xl font-extrabold mt-1">
-            £50 OFF
+            £{DISCOUNT_AMOUNT} OFF
           </h2>
           <p className="text-sm sm:text-base mt-1 opacity-95">your warranty today</p>
         </div>
@@ -364,12 +363,12 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               disabled={isApplying}
               className="w-full h-12 sm:h-13 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#E91E63] text-white font-bold text-base shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isApplying ? 'Applying…' : 'Apply £50 off now'}
+              {isApplying ? 'Applying…' : `Apply £${DISCOUNT_AMOUNT} off now`}
             </button>
           )}
 
           <p className="text-[11px] text-center text-gray-500 mt-3">
-            Minimum spend £{MIN_SPEND}. Not combinable with other codes.
+            Cannot be used with any other offer.
           </p>
         </div>
       </div>
