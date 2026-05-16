@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Car, Clock, Check, Copy } from 'lucide-react';
+import { X, Car, Clock, Check, Tag, Lock, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -258,92 +258,92 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
           <X className="w-5 h-5 text-gray-600" />
         </button>
 
-        {/* Top accent band */}
-        <div className="bg-gradient-to-br from-[#FF8C00] via-[#FF6B00] to-[#E91E63] px-5 sm:px-6 pt-6 sm:pt-7 pb-5 sm:pb-6 text-center text-white">
-          <div className="relative inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur mb-2.5 sm:mb-3 overflow-hidden">
-            <Car
-              className="w-6 h-6 sm:w-7 sm:h-7 text-white animate-[car-drive_2.2s_ease-in-out_infinite]"
-              strokeWidth={2.5}
-            />
+        {/* Orange header */}
+        <div className="bg-[#F26A1F] px-6 sm:px-8 pt-8 sm:pt-10 pb-7 sm:pb-8 text-center text-white">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full border-2 border-white/90 mb-3 sm:mb-4">
+            <Car className="w-7 h-7 sm:w-8 sm:h-8 text-white" strokeWidth={2} />
           </div>
-          <style>{`
-            @keyframes car-drive {
-              0%   { transform: translateX(-140%); opacity: 0; }
-              15%  { opacity: 1; }
-              50%  { transform: translateX(0); opacity: 1; }
-              85%  { opacity: 1; }
-              100% { transform: translateX(140%); opacity: 0; }
-            }
-          `}</style>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider opacity-90">
-            One-time offer just for you
+          <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-white/95">
+            Limited time offer
           </p>
-          <h2 id="save50-title" className="text-3xl sm:text-4xl font-extrabold mt-1">
-            £{DISCOUNT_AMOUNT} OFF
+          <h2
+            id="save50-title"
+            className="text-[44px] sm:text-[56px] leading-none font-black mt-2 sm:mt-3 tracking-tight"
+          >
+            SAVE £{DISCOUNT_AMOUNT}
           </h2>
-          <p className="text-sm sm:text-base mt-1 opacity-95">your warranty today</p>
+          <p className="text-base sm:text-lg mt-2 sm:mt-3 text-gray-900 font-medium">
+            on your warranty today
+          </p>
+          <div className="mt-4 sm:mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/90">
+            <Clock className="w-4 h-4 text-white" strokeWidth={2.4} />
+            <span className="text-sm font-semibold text-white tabular-nums">
+              {isExpired ? 'Offer expired' : `Offer reserved for ${Math.ceil(secondsLeft / 60)} minutes`}
+            </span>
+          </div>
         </div>
 
-        {/* Body */}
-        <div className="px-5 sm:px-6 py-5 sm:py-6">
-          {/* Code chip */}
-          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 mb-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">
-                  Your code
-                </p>
-                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wider select-all break-all">{CODE}</p>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-gray-600 flex-shrink-0">
-                <Clock className="w-4 h-4 text-[#E91E63]" />
-                <span className="font-semibold tabular-nums">
-                  {isExpired ? 'Expired' : formatTime(secondsLeft)}
+        {/* White body */}
+        <div className="px-5 sm:px-6 py-5 sm:py-6 bg-white">
+          {/* Discount-applied card */}
+          <div className="bg-[#F5F6F7] rounded-xl border border-gray-200 p-4 sm:p-5 mb-5 flex items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#2BB673]">
+                  Discount applied
+                </span>
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#2BB673]">
+                  <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                 </span>
               </div>
+              <p className="text-2xl sm:text-[28px] font-extrabold text-gray-900 tracking-wide leading-tight">
+                {CODE}
+              </p>
+              <p className="text-sm text-gray-600 mt-1.5 leading-snug">
+                £{DISCOUNT_AMOUNT} discount will be applied automatically at checkout.
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  if (navigator.clipboard?.writeText) {
-                    await navigator.clipboard.writeText(CODE);
-                  } else {
-                    const ta = document.createElement('textarea');
-                    ta.value = CODE;
-                    ta.style.position = 'fixed';
-                    ta.style.opacity = '0';
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                  }
-                  toast.success('Code copied!');
-                } catch {
-                  toast.error('Could not copy. Long-press the code to copy.');
-                }
-              }}
-              aria-label="Copy code"
-              className="mt-2.5 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 active:scale-[0.99] transition-all text-xs font-semibold text-gray-700 shadow-sm"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              Copy code
-            </button>
+            <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#E6F4EC] flex items-center justify-center">
+              <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1F5D3A]" strokeWidth={2} />
+            </div>
           </div>
 
-          {/* Bullets */}
-          <ul className="space-y-2 mb-5 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Applies instantly with one tap, no typing needed.</span>
+          {/* Benefit rows */}
+          <ul className="mb-5">
+            <li className="flex items-start gap-3 py-3 border-b border-gray-100">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
+                <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                  £{DISCOUNT_AMOUNT} discount applied instantly
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">No code needed</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Reserved just for you, exclusive to this order.</span>
+            <li className="flex items-start gap-3 py-3 border-b border-gray-100">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
+                <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                  Valid for this order only
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">One-time use</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-[#2BB673] mt-0.5 flex-shrink-0" />
-              <span>Claim within the next 15 minutes.</span>
+            <li className="flex items-start gap-3 py-3">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
+                <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                  {isExpired ? 'Offer expired' : `Expires in ${Math.ceil(secondsLeft / 60)} minutes`}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                  Don't miss out on this exclusive saving
+                </p>
+              </div>
             </li>
           </ul>
 
@@ -352,7 +352,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             <button
               type="button"
               onClick={handleClose}
-              className="w-full h-12 rounded-xl bg-gray-200 text-gray-600 font-semibold text-base"
+              className="w-full h-14 rounded-xl bg-gray-200 text-gray-600 font-semibold text-base"
             >
               Offer expired, close
             </button>
@@ -361,15 +361,26 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
               type="button"
               onClick={handleApply}
               disabled={isApplying}
-              className="w-full h-12 sm:h-13 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#E91E63] text-white font-bold text-base shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-xl bg-[#F26A1F] hover:bg-[#e25f15] text-white font-bold text-base sm:text-lg shadow-md hover:shadow-lg active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
             >
-              {isApplying ? 'Applying…' : `Apply £${DISCOUNT_AMOUNT} off now`}
+              {isApplying ? 'Applying…' : (
+                <>
+                  Continue with £{DISCOUNT_AMOUNT} saving
+                  <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+                </>
+              )}
             </button>
           )}
 
-          <p className="text-[11px] text-center text-gray-500 mt-3">
-            Your best value discount, valid on its own.
-          </p>
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-600 inline-flex items-center justify-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-gray-500" strokeWidth={2} />
+              Secure & trusted checkout
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Not valid with any other promotions.
+            </p>
+          </div>
         </div>
       </div>
     </div>
