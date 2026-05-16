@@ -370,19 +370,6 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
                 <p className="text-xs sm:text-sm text-gray-500 mt-0.5">No code needed</p>
               </div>
             </li>
-            <li className="flex items-start gap-3 py-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#E6F4EC] flex items-center justify-center mt-0.5">
-                <Check className="w-4 h-4 text-[#1F5D3A]" strokeWidth={3} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                  Expires in {Math.max(1, Math.ceil(secondsLeft / 60))} minutes
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                  Don't miss out on this exclusive saving
-                </p>
-              </div>
-            </li>
           </ul>
 
           {/* CTA — pulsating breathing (animation on wrapper so the button hit-area stays stable) */}
