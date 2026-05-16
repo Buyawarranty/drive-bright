@@ -407,80 +407,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
       </div>
 
-      {/* Sticky quote + CTA footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-        <div className="px-4 pt-3 pb-[env(safe-area-inset-bottom,8px)]">
-          <div className="bg-card rounded-lg">
-            {/* Row 1: Your cover + Trustpilot */}
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-primary">Your cover</div>
-                <div className="text-sm font-bold text-foreground leading-tight">{planLabel}</div>
-              </div>
-              <a
-                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-end leading-tight flex-shrink-0"
-              >
-                <span className="text-[11px] font-bold text-foreground">Excellent</span>
-                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-5 w-auto my-0.5" />
-                <span className="text-[10px] text-muted-foreground">Trustpilot · 4.8/5</span>
-              </a>
-            </div>
-
-            {/* Row 2: Price + equal to */}
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-extrabold text-foreground">£{currentMonthlyPrice}</span>
-              <span className="text-xs text-muted-foreground">/mo</span>
-              <span className="text-muted-foreground">|</span>
-              <span className="text-xs text-muted-foreground">Equal to <span className="font-bold text-foreground">{dayLabel}</span></span>
-            </div>
-
-            {/* Row 3: payments + total/savings */}
-            <div className="flex items-start justify-between gap-3 mt-1">
-              <div className="text-[11px] text-muted-foreground">
-                {paymentsCount} payments · Covers {years} {years === 1 ? 'year' : 'years'}
-              </div>
-              <div className="flex flex-col items-end leading-tight">
-                <div className="text-[11px] text-muted-foreground">
-                  Pay in full <span className="font-bold text-foreground">£{currentMonthlyPrice * 12}</span>
-                </div>
-                {marketingSavings > 0 && (
-                  <div className="text-xs font-bold text-success">
-                    Save £{marketingSavings} today
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 mt-3">
-              <button
-                onClick={handleNext}
-                disabled={!canAdvance || isLoading}
-                className={cn(
-                  'flex-1 px-6 py-4 rounded-lg font-bold text-base flex items-center justify-center gap-2',
-                  canAdvance && !isLoading
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90 animate-breathing'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
-                )}
-              >
-                {step === TOTAL_STEPS - 1
-                  ? isLoading
-                    ? 'Loading…'
-                    : 'Continue to checkout'
-                  : 'Continue'}
-                <ArrowRight className="w-5 h-5" strokeWidth={3} />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
-              <Lock className="w-3 h-3" />
-              <span>Secure checkout · 14 day cooling period</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Sticky checkout footer (shared with step 4) */}
+      <MobileStickyFooter
+        selectedPayment="monthly"
+        monthlyPrice={currentMonthlyPrice}
+        fullPrice={Math.max(0, currentMonthlyPrice * 12 - marketingSavings)}
+        paymentType={paymentType || '24months'}
+        isLoading={isLoading}
+        isFormValid={canAdvance}
+        onPayClick={handleNext}
+      />
+    </div>
     </div>
   );
 };
