@@ -137,7 +137,15 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     <div className="min-h-screen bg-background pb-[calc(13rem+env(safe-area-inset-bottom))]">
       {/* Top bar */}
       <div className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="px-4 py-3 flex items-center justify-between">
+        <div className="px-4 py-3 flex items-center justify-between gap-2">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1 text-sm font-semibold text-foreground hover:text-primary transition-colors -ml-1 px-1 py-1"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
           <a href="/" className="hover:opacity-80">
             <img
               src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
@@ -149,29 +157,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             <Lock className="w-3.5 h-3.5" />
             Secure
           </div>
-        </div>
-
-        {/* Numbered step indicator */}
-        <div className="px-4 pb-3 flex items-center justify-center gap-2">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <React.Fragment key={i}>
-              <div
-                className={cn(
-                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors',
-                  i < step
-                    ? 'bg-success text-white'
-                    : i === step
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {i < step ? <Check className="w-4 h-4" /> : i + 1}
-              </div>
-              {i < TOTAL_STEPS - 1 && (
-                <div className={cn('w-8 h-0.5', i < step ? 'bg-success' : 'bg-border')} />
-              )}
-            </React.Fragment>
-          ))}
         </div>
       </div>
 
