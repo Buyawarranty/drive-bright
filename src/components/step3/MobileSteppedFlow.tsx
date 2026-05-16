@@ -132,8 +132,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     ? Math.round((currentMonthlyPrice * 12 * 100) / 365)
     : 0;
   const dayLabel = pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}/day` : `${pencePerDay}p/day`;
-  const marketingSavings = paymentType ? getMarketingSavings(paymentType as PaymentPeriod) : 60;
-  const paymentsCount = paymentType === '36months' ? 36 : paymentType === '24months' ? 24 : 12;
+
+  // Real savings = (1yr equivalent total × N years) − selected term total.
+  // All plans are billed over 12 monthly payments, so total = monthly × 12.
+  const years = paymentType === '36months' ? 3 : paymentType === '24months' ? 2 : 1;
+  const oneYearMonthly = calculateMonthlyPrice('12months');
+  const selectedMonthly = currentMonthlyPrice;
+  const marketingSavings = years > 1
+    ? Math.max(0, (oneYearMonthly * years - selectedMonthly) * 12)
+    : 0;
+  const paymentsCount = 12;
 
   return (
     <div className="min-h-screen bg-background pb-[calc(13rem+env(safe-area-inset-bottom))]">
