@@ -476,7 +476,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             {/* Row 3: payments + savings */}
             <div className="flex items-center justify-between gap-3 mt-1">
               <div className="text-[11px] text-muted-foreground">
-                {paymentsCount} payments · Covers {years * 12} months
+                {paymentsCount} payments · Covers {years} {years === 1 ? 'year' : 'years'}
               </div>
               {marketingSavings > 0 && (
                 <div className="text-xs font-bold text-success">
