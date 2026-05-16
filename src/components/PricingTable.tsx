@@ -1246,6 +1246,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const ensureCarOnly = () => plans;
   const displayPlans = ensureCarOnly();
 
+  const calculateMobileTermMonthlyPrice = useCallback((term: string) => {
+    const warrantyYears = term === '12months' ? 1 : term === '24months' ? 2 : 3;
+    const termVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+    const termBasePrice = getPricingData(voluntaryExcess, selectedClaimLimit, term);
+    const adjustedBasePrice = applyPriceAdjustment(termBasePrice, termVehicleAdjustment);
+    const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
+    const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
+    const termAutoIncluded = getAutoIncludedAddOns(term);
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const termAddOns = { ...selectedProtectionAddOns };
+
+    termAutoIncluded.forEach(key => { termAddOns[key] = true; });
+    allPossibleAutoIncluded.forEach(key => {
+      if (!termAutoIncluded.includes(key)) {
+        const wasAutoIncludedElsewhere = getAutoIncludedAddOns('24months').includes(key) || getAutoIncludedAddOns('36months').includes(key);
+        if (wasAutoIncludedElsewhere) termAddOns[key] = false;
+      }
+    });
+
+    const addOnTotal = calculateAddOnPrice(termAddOns, term, durationMonths);
+    const premiumSurcharge = getClaimLimitSurcharge(selectedClaimLimit, term, voluntaryExcess || 100);
+    const total = adjustedBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
+
+    return Math.floor(total / 12);
+  }, [vehicleData, getPricingData, voluntaryExcess, selectedClaimLimit, selectedLabourRate, selectedProtectionAddOns, boostTotalAdjustment]);
+
   // Check for vehicle exclusions first
   if (!vehicleValidation.isValid) {
     return (
