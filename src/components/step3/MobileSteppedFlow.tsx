@@ -34,17 +34,18 @@ interface MobileSteppedFlowProps {
   isFormValid: boolean;
 }
 
-// Repair preference (labour rate) options — order matches mockup top-left to bottom-right
+// Repair preference (labour rate) options
 const REPAIR_OPTIONS: {
   value: number;
   title: string;
   sub: string;
   icon: React.ComponentType<{ className?: string }>;
   recommended?: boolean;
+  bestValue?: boolean;
 }[] = [
+  { value: 50, title: 'Local Garage', sub: 'Affordable everyday repairs', icon: Car, bestValue: true },
   { value: 70, title: 'Independent Garages', sub: 'Ideal for your trusted local garage', icon: ShieldCheck, recommended: true },
   { value: 100, title: 'Approved Garage', sub: 'Broader approved network', icon: Building2 },
-  { value: 50, title: 'Local Garage', sub: 'Affordable everyday repairs', icon: Car },
   { value: 200, title: 'Expert Garages', sub: 'Main dealers and specialists', icon: Wrench },
 ];
 
