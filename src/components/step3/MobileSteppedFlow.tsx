@@ -294,9 +294,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         {step === 1 && (
           <>
             <section>
-              <h2 className="text-base font-bold text-foreground">3. Where would you repair your car?</h2>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
+              <h2 className="text-base font-bold text-foreground mt-0.5">Where do you usually repair your car?</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
-                This helps us tailor your cover and price
+                Pick the garage type that matches where you'd feel comfortable having repairs done
               </p>
               <div className="grid grid-cols-2 gap-2.5">
                 {REPAIR_OPTIONS.map(opt => {
