@@ -51,7 +51,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
       />
 
       {/* Excess Chips - matched sizing with other selectors */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mb-4">
         {excessOptions.map((option) => {
           const isSelected = selectedExcess === option.value;
           
