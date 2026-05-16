@@ -447,27 +447,42 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
         <div className="px-4 pt-3 pb-[env(safe-area-inset-bottom,8px)]">
           <div className="bg-card rounded-lg">
+            {/* Row 1: Your cover + Trustpilot */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] text-muted-foreground">Your quote</div>
-                <div className="text-xs font-semibold text-foreground leading-tight">{planLabel}</div>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-extrabold text-foreground">£{currentMonthlyPrice}</span>
-                  <span className="text-xs text-muted-foreground">/mo</span>
-                </div>
-                <div className="text-[11px] text-muted-foreground">Equal to {dayLabel}</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-primary">Your cover</div>
+                <div className="text-sm font-bold text-foreground leading-tight">{planLabel}</div>
               </div>
-              <div className="text-right flex-shrink-0">
-                {marketingSavings > 0 && (
-                  <div className="text-xs font-bold text-success leading-tight">
-                    Save £{marketingSavings} today
-                  </div>
-                )}
-                <div className="text-[10px] text-muted-foreground mt-0.5">
-                  {paymentsCount} payments of
-                </div>
-                <div className="text-[11px] font-semibold text-foreground">£{currentMonthlyPrice}.00</div>
+              <a
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-end leading-tight flex-shrink-0"
+              >
+                <span className="text-[11px] font-bold text-foreground">Excellent</span>
+                <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-3 w-auto my-0.5" />
+                <span className="text-[10px] text-muted-foreground">Trustpilot · 4.8/5</span>
+              </a>
+            </div>
+
+            {/* Row 2: Price + equal to */}
+            <div className="flex items-baseline gap-2 mt-2">
+              <span className="text-2xl font-extrabold text-foreground">£{currentMonthlyPrice}</span>
+              <span className="text-xs text-muted-foreground">/mo</span>
+              <span className="text-muted-foreground">|</span>
+              <span className="text-xs text-muted-foreground">Equal to <span className="font-bold text-foreground">{dayLabel}</span></span>
+            </div>
+
+            {/* Row 3: payments + savings */}
+            <div className="flex items-center justify-between gap-3 mt-1">
+              <div className="text-[11px] text-muted-foreground">
+                {paymentsCount} payments · Covers {years * 12} months
               </div>
+              {marketingSavings > 0 && (
+                <div className="text-xs font-bold text-success">
+                  Save £{marketingSavings} today
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 mt-3">
