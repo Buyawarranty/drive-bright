@@ -290,27 +290,50 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
             >
               <div style={{ animation: 'save25-car-drive 2.6s ease-in-out infinite alternate' }}>
                 <svg
-                  viewBox="0 0 48 32"
-                  className="w-9 h-9 sm:w-10 sm:h-10"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  viewBox="0 0 64 36"
+                  className="w-10 h-10 sm:w-11 sm:h-11"
+                  fill="white"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d="M4 22h40" />
-                  <path d="M7 22l3-9h22l5 6 6 1v2" />
-                  <path d="M10 13l2-5h14l4 5" />
-                  <g style={{ transformOrigin: '14px 24px', animation: 'save25-wheel-spin 0.6s linear infinite' }}>
-                    <circle cx="14" cy="24" r="3.2" />
-                    <line x1="14" y1="21" x2="14" y2="27" />
-                    <line x1="11" y1="24" x2="17" y2="24" />
+                  {/* Solid car silhouette — hatchback / SUV profile */}
+                  <path
+                    d="M5 24
+                       C5 22.3 6.3 21 8 21
+                       L9 21
+                       C9.6 17.2 11.5 14 14 12
+                       L20 8.5
+                       C22 7.3 24.3 6.8 26.6 6.8
+                       L38 6.8
+                       C41 6.8 43.8 8.2 45.7 10.5
+                       L50 16
+                       L56 17.2
+                       C58.4 17.7 60 19.8 60 22.2
+                       L60 24
+                       C60 25.4 58.9 26.5 57.5 26.5
+                       L52 26.5
+                       A6 6 0 0 0 40 26.5
+                       L24 26.5
+                       A6 6 0 0 0 12 26.5
+                       L7.5 26.5
+                       C6.1 26.5 5 25.4 5 24 Z
+                       M22 11 L20 16 L31 16 L31 10 L26.6 10 C24.9 10 23.3 10.4 22 11 Z
+                       M33 10 L33 16 L46 16 L43 12 C41.8 10.7 40.1 10 38.3 10 L33 10 Z"
+                  />
+                  {/* Wheels — dark with white hub, spinning */}
+                  <g style={{ transformOrigin: '18px 26.5px', animation: 'save25-wheel-spin 0.6s linear infinite' }}>
+                    <circle cx="18" cy="26.5" r="5" fill="#1a1a1a" />
+                    <circle cx="18" cy="26.5" r="1.6" fill="white" />
+                    <rect x="17.2" y="22.3" width="1.6" height="8.4" fill="white" opacity="0.85" />
+                    <rect x="13.8" y="25.7" width="8.4" height="1.6" fill="white" opacity="0.85" />
                   </g>
-                  <g style={{ transformOrigin: '36px 24px', animation: 'save25-wheel-spin 0.6s linear infinite' }}>
-                    <circle cx="36" cy="24" r="3.2" />
-                    <line x1="36" y1="21" x2="36" y2="27" />
-                    <line x1="33" y1="24" x2="39" y2="24" />
+                  <g style={{ transformOrigin: '46px 26.5px', animation: 'save25-wheel-spin 0.6s linear infinite' }}>
+                    <circle cx="46" cy="26.5" r="5" fill="#1a1a1a" />
+                    <circle cx="46" cy="26.5" r="1.6" fill="white" />
+                    <rect x="45.2" y="22.3" width="1.6" height="8.4" fill="white" opacity="0.85" />
+                    <rect x="41.8" y="25.7" width="8.4" height="1.6" fill="white" opacity="0.85" />
                   </g>
+                  {/* Headlight accent */}
+                  <circle cx="57" cy="21" r="1.2" fill="#F26A1F" />
                 </svg>
               </div>
             </div>
