@@ -1940,7 +1940,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {[
                   { n: 1, t: <>Policy emailed instantly – your documents arrive in seconds</> },
                   { n: 2, t: <>Cover starts today – you're protected from this moment</> },
-                  { n: 3, t: <>Claim online or by phone <span className="font-bold">0330 229 5045</span></> },
+                  { n: 3, t: <>Claim online or by phone 0330 229 5045</> },
                 ].map((row) => (
                   <div key={row.n} className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center mt-0.5">
