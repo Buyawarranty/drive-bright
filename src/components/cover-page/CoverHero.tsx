@@ -41,7 +41,7 @@ const CoverHero: React.FC = () => {
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Shield className="w-3.5 h-3.5 text-green-500" />
-            14-day money-back guarantee
+            14-day cooling off period
           </span>
           <span className="flex items-center gap-1">
             <Lock className="w-3.5 h-3.5 text-green-500" />

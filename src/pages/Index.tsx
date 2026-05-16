@@ -1429,7 +1429,7 @@ const Index = () => {
       <FAQSchema faqs={defaultWarrantyFAQs} />
       <ProductSchema 
         name="Car Warranty UK"
-        description="Comprehensive car warranty protection for UK vehicles. Flexible plans from £20/month with instant online quotes and 14-day money-back guarantee."
+        description="Comprehensive car warranty protection for UK vehicles. Flexible plans from £20/month with instant online quotes and 14-day cooling off period."
         price="20"
         priceCurrency="GBP"
       />

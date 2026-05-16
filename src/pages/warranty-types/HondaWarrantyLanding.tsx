@@ -587,7 +587,7 @@ const HondaWarrantyLanding: React.FC = () => {
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         
         <meta name="ai-content-declaration" content="This page provides information about Honda extended warranty services in the UK, covering Civic, CR-V, Jazz, HR-V, ZR-V, Accord, Honda e, and e:Ny1 models. Human-authored and fact-checked." />
-        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Honda extended warranty plans in the UK from £19/month. Coverage includes engine, gearbox, electrical, hybrid and EV components for all Honda models 2012-2026. Nationwide garage network, unlimited claims, 14-day money-back guarantee." />
+        <meta name="ai-summary" content="Buy A Warranty offers comprehensive Honda extended warranty plans in the UK from £19/month. Coverage includes engine, gearbox, electrical, hybrid and EV components for all Honda models 2012-2026. Nationwide garage network, unlimited claims, 14-day cooling off period." />
         <meta name="author" content="Buy A Warranty" />
         <meta name="publisher" content="Buy A Warranty" />
         <meta name="coverage" content="United Kingdom" />
@@ -1053,7 +1053,7 @@ const HondaWarrantyLanding: React.FC = () => {
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
                 <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day cooling off period</h3>
                 <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
               </div>
               <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">

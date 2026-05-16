@@ -49,7 +49,7 @@ ${totalPrice ? `Your quote was £${totalPrice.toFixed(2)} – this price is stil
 Here's a quick reminder of what you'll get:
 ✓ Comprehensive mechanical & electrical cover
 ✓ Fast claims – 94% approved
-✓ 14-day money-back guarantee
+✓ 14-day cooling off period
 ✓ No hidden fees
 
 If you'd like to complete your purchase or have any questions, just reply to this email or give us a call on 0330 229 5040.

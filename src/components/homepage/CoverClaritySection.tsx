@@ -93,7 +93,7 @@ const CoverClaritySection = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>14-day money-back guarantee</span>
+                    <span>14-day cooling off period</span>
                   </li>
                 </ul>
                 {platinumDocUrl ? (

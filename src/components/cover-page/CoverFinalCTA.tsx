@@ -39,7 +39,7 @@ const CoverFinalCTA: React.FC = () => {
           </span>
           <span className="flex items-center gap-1">
             <Shield className="w-3.5 h-3.5" />
-            14-day money-back guarantee
+            14-day cooling off period
           </span>
         </div>
       </div>

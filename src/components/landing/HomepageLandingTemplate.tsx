@@ -94,7 +94,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
     'Parts & labour included',
     'UK-wide garage network',
     'Fast claims - 94% approved',
-    '14-day money-back guarantee'
+    '14-day cooling off period'
   ];
 
   const benefits = heroContent?.benefits || defaultBenefits;
