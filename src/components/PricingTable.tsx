@@ -44,6 +44,7 @@ import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import PriceHelpPanel from '@/components/step3/PriceHelpPanel';
 import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
 import Step3Desktop from '@/components/step3/Step3Desktop';
+import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
