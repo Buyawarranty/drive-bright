@@ -307,11 +307,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-foreground">2. Choose your excess</h2>
+              <h2 className="text-base font-bold text-foreground">4. Choose your excess</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Higher excess lowers your monthly payments
               </p>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {EXCESS_OPTIONS.map(ex => {
                   const selected = voluntaryExcess === ex.value;
                   return (
