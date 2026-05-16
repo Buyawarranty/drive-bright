@@ -84,25 +84,6 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
           </button>
         </div>
 
-        {/* What happens after you pay */}
-        <div className="pt-1">
-          <p className="text-sm font-bold text-[#1a1a1a] mb-3">What happens after you pay</p>
-          <div className="space-y-2.5">
-            <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#0BA360] text-white text-xs font-bold flex items-center justify-center mt-0.5">1</span>
-              <p className="text-sm text-gray-700">Policy emailed instantly – your documents arrive in seconds</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#0BA360] text-white text-xs font-bold flex items-center justify-center mt-0.5">2</span>
-              <p className="text-sm text-gray-700">Cover starts today – you're protected from this moment</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#0BA360] text-white text-xs font-bold flex items-center justify-center mt-0.5">3</span>
-              <p className="text-sm text-gray-700">Claim anytime — online or by phone <span className="font-semibold">0330 229 5045</span></p>
-            </div>
-          </div>
-        </div>
-        
         {error && (
           <p className="text-red-500 text-sm flex items-center gap-1" role="alert">
             <span className="inline-block w-4 h-4 rounded-full bg-red-100 flex items-center justify-center text-xs">!</span>
