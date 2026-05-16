@@ -407,7 +407,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             <div className="bg-card border border-border rounded-xl divide-y divide-border">
               <ReviewRow label="Cover level" value={`£${getDisplay(selectedClaimLimit).toLocaleString()}`} onEdit={() => setStep(0)} />
               <ReviewRow label="Cover length" value={termMeta.years} onEdit={() => setStep(0)} />
-              <ReviewRow label="Repair preference" value={REPAIR_OPTIONS.find(o => o.value === selectedLabourRate)?.title || '—'} onEdit={() => setStep(1)} />
+              <ReviewRow label="Hourly labour rate covered" value={selectedLabourRate ? `£${selectedLabourRate}/hour` : '—'} onEdit={() => setStep(1)} />
               <ReviewRow label="Excess" value={voluntaryExcess !== null ? `£${voluntaryExcess}` : '—'} onEdit={() => setStep(1)} />
             </div>
 
