@@ -1846,8 +1846,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('💳 processStripeCheckout: Stripe checkout error:', error);
+      struggleTracker.reportPaymentFailed('stripe', error?.message || 'Stripe checkout exception');
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
