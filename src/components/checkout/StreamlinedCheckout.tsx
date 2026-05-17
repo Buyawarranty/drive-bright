@@ -1685,7 +1685,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
+      struggleTracker.reportPaymentFailed('bumper', error?.message || 'Bumper checkout exception');
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
