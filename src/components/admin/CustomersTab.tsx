@@ -3525,6 +3525,7 @@ export const CustomersTab = ({
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
               {canSeeSourceColumn && <TableHead className="bg-purple-50">Source</TableHead>}
+              {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
               <TableHead>Claims Made</TableHead>
@@ -5044,15 +5045,34 @@ Please log in and change your password after first login.`;
                           )}
                        </div>
                      </TableCell>
-                     {canSeeSourceColumn && (
-                       <TableCell className="bg-purple-50/30">
-                         <PurchaseSourceBadge 
-                           source={customer.purchase_source} 
-                           bumperOrderId={customer.bumper_order_id}
-                           stripeSessionId={customer.stripe_session_id}
-                         />
-                       </TableCell>
-                     )}
+                      {canSeeSourceColumn && (
+                        <TableCell className="bg-purple-50/30">
+                          <PurchaseSourceBadge 
+                            source={customer.purchase_source} 
+                            bumperOrderId={customer.bumper_order_id}
+                            stripeSessionId={customer.stripe_session_id}
+                          />
+                        </TableCell>
+                      )}
+                      {isSuperAdmin && (
+                        <TableCell className="bg-purple-50/30">
+                          {customer.device_type ? (
+                            <Badge
+                              className={
+                                customer.device_type === 'mobile'
+                                  ? 'bg-blue-100 text-blue-700 border-blue-200 text-[10px] capitalize'
+                                  : customer.device_type === 'tablet'
+                                  ? 'bg-amber-100 text-amber-700 border-amber-200 text-[10px] capitalize'
+                                  : 'bg-slate-100 text-slate-700 border-slate-200 text-[10px] capitalize'
+                              }
+                            >
+                              {customer.device_type}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
                        <TableCell>
                          <div className="flex items-center gap-1">
                            {isSalesAgent ? (
