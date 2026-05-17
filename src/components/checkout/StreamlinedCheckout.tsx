@@ -19,6 +19,7 @@ import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
 import { detectDeviceType } from '@/utils/deviceDetection';
+import { useCheckoutStruggleTracker } from '@/hooks/useCheckoutStruggleTracker';
 import { checkDuplicateWarranty } from '@/lib/duplicateWarrantyCheck';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import trustpilotLogo from '@/assets/trustpilot-logo.png';
