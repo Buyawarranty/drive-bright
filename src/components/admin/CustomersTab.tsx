@@ -123,6 +123,7 @@ function calculateExpiryDate(startDate: string, paymentType: string): Date {
 
 interface Customer {
   id: string;
+  device_type?: string | null;
   name: string;
   email: string;
   phone?: string;
