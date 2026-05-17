@@ -1779,6 +1779,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       if (paymentIntentError) {
         console.error('💳 processStripeCheckout: PaymentIntent creation error:', paymentIntentError);
+        struggleTracker.reportPaymentFailed('stripe', paymentIntentError?.message || 'PaymentIntent creation failed');
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
         return;
