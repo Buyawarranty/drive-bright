@@ -2199,6 +2199,7 @@ export type Database = {
           dealer_id: string | null
           deleted_at: string | null
           deleted_by: string | null
+          device_type: string | null
           discount_amount: number | null
           discount_code: string | null
           email: string
@@ -2287,6 +2288,7 @@ export type Database = {
           dealer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          device_type?: string | null
           discount_amount?: number | null
           discount_code?: string | null
           email: string
@@ -2375,6 +2377,7 @@ export type Database = {
           dealer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          device_type?: string | null
           discount_amount?: number | null
           discount_code?: string | null
           email?: string

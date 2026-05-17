@@ -401,7 +401,9 @@ serve(async (req) => {
       // Default all website sales to support@buyawarranty.co.uk
       assigned_to: 'e39499b8-f88c-4963-9f0d-63e1addb3025',
       // Customer date of birth for identity verification
-      customer_dob: customerData?.customer_dob || metadata?.customer_dob || null
+      customer_dob: customerData?.customer_dob || metadata?.customer_dob || null,
+      // Device type captured at checkout (mobile/tablet/desktop)
+      device_type: metadata?.device_type || customerData?.device_type || null
     };
 
     // Detect Facebook Ads attribution from abandoned cart metadata

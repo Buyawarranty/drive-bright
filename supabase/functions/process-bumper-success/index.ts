@@ -503,6 +503,8 @@ serve(async (req) => {
         vehicle_fuel_type: vehicleData?.fuelType || customerData?.vehicle_fuel_type,
         vehicle_transmission: vehicleData?.transmission || customerData?.vehicle_transmission,
         vehicle_mileage: vehicleData?.mileage || customerData?.vehicle_mileage,
+        // Device type captured at checkout (mobile/tablet/desktop)
+        device_type: customerData?.device_type || null,
         // Add-ons metadata for W2000 compatibility
         addon_tyre_cover: addOnFields.tyre_cover ? 'true' : 'false',
         addon_wear_tear: addOnFields.wear_tear ? 'true' : 'false',

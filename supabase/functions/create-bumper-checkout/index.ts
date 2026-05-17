@@ -57,7 +57,8 @@ serve(async (req) => {
       seasonalBonusMonths = 0,
       labourRate = 70,
       startDate = null,
-      trackingData = {} // GCLID and Client ID for server-side conversion
+      trackingData = {}, // GCLID and Client ID for server-side conversion
+      device_type = null
     } = requestData;
 
     // Validate vehicle age (must be 15 years or newer)
@@ -238,7 +239,8 @@ serve(async (req) => {
         vehicle_year: customerData?.vehicle_year || vehicleData?.year,
         vehicle_fuel_type: customerData?.vehicle_fuel_type || vehicleData?.fuelType,
         vehicle_transmission: customerData?.vehicle_transmission || vehicleData?.transmission,
-        vehicle_mileage: customerData?.vehicle_mileage || vehicleData?.mileage
+        vehicle_mileage: customerData?.vehicle_mileage || vehicleData?.mileage,
+        device_type: device_type || customerData?.device_type || null
       },
       vehicle_data: {
         ...vehicleData,

@@ -41,7 +41,8 @@ serve(async (req) => {
       seasonalBonusMonths,
       startDate,
       gclid,
-      gaClientId
+      gaClientId,
+      device_type
     } = body;
     
     logStep("Request data", { planName, planId, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns });
@@ -235,6 +236,7 @@ serve(async (req) => {
         // Tracking data
         gclid: gclid || '',
         ga_client_id: gaClientId || '',
+        device_type: device_type || '',
         
         // Flag to identify embedded checkout
         is_embedded_checkout: 'true'

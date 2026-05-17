@@ -18,6 +18,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
+import { detectDeviceType } from '@/utils/deviceDetection';
 import { checkDuplicateWarranty } from '@/lib/duplicateWarrantyCheck';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import trustpilotLogo from '@/assets/trustpilot-logo.png';
@@ -1069,6 +1070,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
             ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
             ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
+            device_type: detectDeviceType(),
           }
         });
       } catch (error) {
@@ -1589,6 +1591,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
           trackingData,
+          device_type: detectDeviceType(),
           protectionAddOns: {
             tyre: updatedPricingData.protectionAddOns?.tyre || false,
             wearAndTear: updatedPricingData.protectionAddOns?.wearAndTear || false,
@@ -1741,6 +1744,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           // Tracking data for conversions
           gclid: trackingData.gclid || '',
           gaClientId: trackingData.clientId || '',
+          device_type: detectDeviceType(),
         }
       });
 

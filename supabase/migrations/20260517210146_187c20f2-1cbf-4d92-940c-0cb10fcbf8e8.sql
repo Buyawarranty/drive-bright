@@ -1,0 +1,2 @@
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS device_type text;
+COMMENT ON COLUMN public.customers.device_type IS 'Device used by the customer at point of sale: mobile, tablet, desktop, or null if unknown. Visible only to super_admin in admin UI.';
