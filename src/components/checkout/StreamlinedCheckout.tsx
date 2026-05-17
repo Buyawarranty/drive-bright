@@ -1744,6 +1744,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           // Tracking data for conversions
           gclid: trackingData.gclid || '',
           gaClientId: trackingData.clientId || '',
+          device_type: detectDeviceType(),
         }
       });
 
