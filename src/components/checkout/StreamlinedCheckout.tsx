@@ -1627,6 +1627,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       if (checkoutError) {
         const errorMessage = checkoutError?.message || '';
+        struggleTracker.reportPaymentFailed('bumper', errorMessage);
         if (errorMessage.includes('is not available for Bumper') || errorMessage.includes('Monthly payments are not available')) {
           toast.error('Monthly payments unavailable. Please pay in full.', {
             duration: 8000,
