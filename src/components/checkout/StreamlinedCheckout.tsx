@@ -676,6 +676,24 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // This ensures "Total £X" always matches the displayed monthly price × 12
   const displayBumperTotal = hasValidDiscountCodes ? discountedMonthlyPrice * 12 : bumperTotalPrice;
 
+  // ------------------------------------------------------------------
+  // Checkout struggle tracker — flags stuck/failed customers to admins
+  // ------------------------------------------------------------------
+  const struggleTracker = useCheckoutStruggleTracker({
+    enabled: true,
+    customer: {
+      first_name: customerData.first_name,
+      last_name: customerData.last_name,
+      email: customerData.email,
+      phone: customerData.phone,
+    },
+    vehicleReg: vehicleData.regNumber,
+    paymentType: selectedPayment || undefined,
+    planName,
+    amount: selectedPayment === 'full' ? discountedStripePrice : discountedBumperPrice,
+    paymentMethod: selectedPayment === 'full' ? 'stripe' : 'bumper',
+  });
+
   // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
     return !!(
