@@ -1147,6 +1147,69 @@ export type Database = {
           },
         ]
       }
+      checkout_struggle_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          amount: number | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          details: Json | null
+          device_type: string | null
+          id: string
+          payment_method: string | null
+          plan_name: string | null
+          resolved_at: string | null
+          session_key: string
+          signal_type: string
+          status: string
+          updated_at: string
+          vehicle_reg: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          amount?: number | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          details?: Json | null
+          device_type?: string | null
+          id?: string
+          payment_method?: string | null
+          plan_name?: string | null
+          resolved_at?: string | null
+          session_key: string
+          signal_type: string
+          status?: string
+          updated_at?: string
+          vehicle_reg?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          amount?: number | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          details?: Json | null
+          device_type?: string | null
+          id?: string
+          payment_method?: string | null
+          plan_name?: string | null
+          resolved_at?: string | null
+          session_key?: string
+          signal_type?: string
+          status?: string
+          updated_at?: string
+          vehicle_reg?: string | null
+        }
+        Relationships: []
+      }
       claim_communications: {
         Row: {
           claim_id: string
