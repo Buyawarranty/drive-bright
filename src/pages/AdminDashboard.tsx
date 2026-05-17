@@ -14,6 +14,7 @@ import { useUserPresence } from '@/hooks/useUserPresence';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
+import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
