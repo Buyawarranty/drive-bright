@@ -1,73 +1,86 @@
 ## Goal
-Every step 2 submission keeps landing in the admin dashboard (`sales_leads` via `track-abandoned-cart`) **and** is also pushed to GoHighLevel — with no blocking and an automatic retry on failure.
+Detect when customers are struggling on Step 4 (checkout/payment) and surface a real-time **red alert bar** at the top of the admin dashboard (super admin + admin only) with the customer's name and contact info so an agent can call them immediately.
 
-## Recommended connection method
-Use a **GHL Inbound Webhook URL** (created in a GHL Workflow → trigger "Inbound Webhook"). Reasons:
-- No OAuth, no Location ID, no token expiry.
-- One secret to store: `GHL_WEBHOOK_URL`.
-- GHL workflow on their side can map fields → create/update Contact → tag → start nurture. Easy for non-devs to tweak later without code changes.
-- Works perfectly with fire-and-forget + retry queue.
+---
 
-(If later you want full API control — contact upserts, opportunities, custom fields by ID — we can swap to the API method without touching the frontend.)
+## What counts as "struggling"
+We track signals automatically from the checkout page and fire an alert when any threshold is hit:
 
-## Architecture
+| Signal | Threshold |
+|---|---|
+| Time on Step 4 without progress | > 90 seconds idle, or > 3 min total on page |
+| Payment attempt failed (Stripe `payment_failed` / Bumper rejection) | ≥ 1 failure |
+| Multiple payment attempts | ≥ 2 attempts in the session |
+| Form field re-edits | Same field edited > 3 times (suggests confusion) |
+| Switched payment method | Toggled Monthly ↔ Pay-in-Full > 2 times |
+| Bumper redirect returned without success | Detected via `cancel` / back navigation |
 
-```text
-Step 2 submit
-   │
-   ▼
-track-abandoned-cart  ──►  sales_leads (admin dashboard)  ✅ existing
-   │
-   └──►  push-to-ghl  (fire-and-forget, awaited 0ms)
-              │
-              ├── POST GHL webhook  ──► success → done
-              │
-              └── on failure / non-2xx
-                       │
-                       ▼
-                ghl_push_queue (retry row)
-                       │
-                       ▼
-              cron every 5 min → retry-ghl-pushes (max 5 attempts, exp backoff)
-```
+Each event includes: customer name, email, phone, registration, device type, signal type, plan, amount, and timestamp.
 
-## Steps
+---
 
-1. **Add secret** `GHL_WEBHOOK_URL` (user pastes the Inbound Webhook URL from their GHL workflow).
+## Build
 
-2. **Migration** — create `ghl_push_queue`:
-   - `payload jsonb`, `status` (pending / sent / failed), `attempts int`, `last_error text`, `next_attempt_at timestamptz`, `sent_at timestamptz`.
-   - RLS: service-role only (no client access). Index on `(status, next_attempt_at)`.
+### 1. Database
+New table `checkout_struggle_alerts`:
+- `customer_name`, `customer_email`, `customer_phone`, `vehicle_reg`
+- `device_type` (mobile / tablet / desktop)
+- `payment_method` (stripe / bumper)
+- `signal_type` (timeout / payment_failed / multi_attempt / form_thrash / bumper_cancelled)
+- `details` (jsonb — failure message, attempts count, etc.)
+- `plan_name`, `amount`
+- `status` (`active`, `acknowledged`, `resolved`) — auto-resolves when the customer pays
+- `acknowledged_by`, `acknowledged_at`, `resolved_at`
+- Realtime enabled
+- RLS: only `admin` and `super_admin` can read/update
 
-3. **New edge function `push-to-ghl`**:
-   - Input: normalized lead payload (name, email, phone, address, vehicle reg/make/model/year/mileage, step, source, fbclid/gclid, plan info).
-   - POST to `GHL_WEBHOOK_URL` with `AbortSignal.timeout(4000)`.
-   - On non-2xx or network error → insert into `ghl_push_queue` with `next_attempt_at = now() + 1 min`. Never throws upward.
-   - `verify_jwt = false`, internal-only (called from other edge functions).
+Auto-resolve trigger: when a matching payment lands in `customers` (by email + reg), mark alerts resolved.
 
-4. **Wire it into `track-abandoned-cart`**:
-   - After the existing `sales_leads` upsert succeeds, call `push-to-ghl` via `EdgeRuntime.waitUntil(...)` so the user response is unaffected.
-   - No try/catch impact on the main flow — GHL failures never block lead saving.
+### 2. Client-side tracker
+New hook `useCheckoutStruggleTracker.ts` mounted inside `StreamlinedCheckout.tsx` (Step 4 only):
+- Idle timer + page-time timer
+- Listens to Stripe payment errors and Bumper failures
+- Watches form-field edit counts and payment-method toggles
+- Inserts into `checkout_struggle_alerts` (debounced; one row per session per signal type)
 
-5. **New edge function `retry-ghl-pushes`** + pg_cron job (every 5 min):
-   - Select up to 50 rows where `status='pending' AND next_attempt_at <= now() AND attempts < 5`.
-   - Re-POST each. On success mark `sent`. On failure bump `attempts`, set `next_attempt_at = now() + (2^attempts) minutes`, store `last_error`. After 5 attempts mark `failed`.
+### 3. Edge-function hook
+In `create-payment-intent` and `create-bumper-checkout`, on caught errors, also insert an alert row (server-side fallback, since some failures never reach the browser).
 
-6. **Admin visibility (small)**:
-   - Add a tiny "GHL sync" badge column logic later if you want — out of scope for this task; the queue table is enough for diagnostics via SQL.
+### 4. Admin UI — Red Alert Bar
+New component `CheckoutStruggleAlertBar.tsx` mounted at the top of the admin dashboard layout (visible only to `admin` / `super_admin`):
+- Bright red sticky bar pinned above the dashboard content
+- Subscribes via Supabase realtime to `checkout_struggle_alerts` where `status='active'`
+- Shows the most recent customer:
+  > 🚨 **John Smith** is stuck on checkout (Stripe, mobile) — AB12 CDE — 07xxx xxxxxx — *Payment failed: card declined*
+- Buttons: **Call now** (tel:), **Acknowledge** (marks as seen), **View** (jumps to that customer/lead), **Dismiss**
+- If multiple active alerts: shows count badge "+3 more" with dropdown
+- Plays a subtle ping sound on new alert (super admin only, can mute)
 
-## Field mapping sent to GHL
-```text
-firstName, lastName, email, phone, address1, city, postalCode,
-customField.vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage,
-customField.step_abandoned, source ("buyawarranty - step 2"),
-customField.fbclid, gclid, plan_name, total_price
-```
+### 5. Where the bar appears
+Mounted once at the top of the admin shell so it's visible on every admin tab.
 
-## What does NOT change
-- Step 2 frontend code is untouched.
-- `sales_leads` saving, round-robin assignment, abandoned cart emails, SMS, WhatsApp, FB CAPI, Google offline conversions — all unchanged.
-- No new client-side dependencies.
+---
 
-## Risk / rollback
-- All new code is additive. Removing the secret immediately disables GHL pushes (function logs a warning and exits). Drop the table + cron to fully remove.
+## Files to add / edit
+
+**New**
+- `supabase/migrations/...sql` — `checkout_struggle_alerts` table + RLS + realtime + auto-resolve trigger
+- `src/hooks/useCheckoutStruggleTracker.ts`
+- `src/components/admin/CheckoutStruggleAlertBar.tsx`
+
+**Edit**
+- `src/components/checkout/StreamlinedCheckout.tsx` — mount the tracker
+- `src/components/checkout/DesktopOrderSummary.tsx` — emit payment-method-toggle signal
+- `supabase/functions/create-payment-intent/index.ts` — log server-side failures
+- `supabase/functions/create-bumper-checkout/index.ts` — log server-side failures
+- Admin dashboard shell (the layout that wraps admin tabs) — mount `CheckoutStruggleAlertBar`
+
+---
+
+## Open questions before I build
+
+1. **Sound on new alert** — want a soft ping for super admins, or silent (visual-only)?
+2. **Auto-dismiss timing** — should an unacknowledged alert auto-hide after, say, 30 minutes if the customer abandoned? Or stay until manually dismissed?
+3. **Which admin shell file** mounts the dashboard? I'll find it (likely `src/components/admin/AdminDashboard.tsx` or similar) — confirm if you have a preferred location.
+
+Reply with answers (or just "go" for: silent, 30-min auto-hide, top of admin dashboard) and I'll build it.

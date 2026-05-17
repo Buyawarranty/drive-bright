@@ -19,6 +19,7 @@ import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
 import { detectDeviceType } from '@/utils/deviceDetection';
+import { useCheckoutStruggleTracker } from '@/hooks/useCheckoutStruggleTracker';
 import { checkDuplicateWarranty } from '@/lib/duplicateWarrantyCheck';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import trustpilotLogo from '@/assets/trustpilot-logo.png';
@@ -675,6 +676,24 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Display total for monthly option: when promo applied, show discounted total (monthly * 12)
   // This ensures "Total £X" always matches the displayed monthly price × 12
   const displayBumperTotal = hasValidDiscountCodes ? discountedMonthlyPrice * 12 : bumperTotalPrice;
+
+  // ------------------------------------------------------------------
+  // Checkout struggle tracker — flags stuck/failed customers to admins
+  // ------------------------------------------------------------------
+  const struggleTracker = useCheckoutStruggleTracker({
+    enabled: true,
+    customer: {
+      first_name: customerData.first_name,
+      last_name: customerData.last_name,
+      email: customerData.email,
+      phone: customerData.phone,
+    },
+    vehicleReg: vehicleData.regNumber,
+    paymentType: selectedPayment || undefined,
+    planName,
+    amount: selectedPayment === 'full' ? discountedStripePrice : discountedBumperPrice,
+    paymentMethod: selectedPayment === 'full' ? 'stripe' : 'bumper',
+  });
 
   // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
@@ -1562,6 +1581,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       
       const trackingData = getTrackingData();
 
+      struggleTracker.reportPaymentAttempt('bumper');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
           planId,
@@ -1607,6 +1627,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       if (checkoutError) {
         const errorMessage = checkoutError?.message || '';
+        struggleTracker.reportPaymentFailed('bumper', errorMessage);
         if (errorMessage.includes('is not available for Bumper') || errorMessage.includes('Monthly payments are not available')) {
           toast.error('Monthly payments unavailable. Please pay in full.', {
             duration: 8000,
@@ -1664,7 +1685,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
+      struggleTracker.reportPaymentFailed('bumper', error?.message || 'Bumper checkout exception');
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
@@ -1702,6 +1724,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const trackingData = getTrackingData();
 
       // Create PaymentIntent for embedded checkout (no redirect)
+      struggleTracker.reportPaymentAttempt('stripe');
       const { data: paymentIntentData, error: paymentIntentError } = await supabase.functions.invoke('create-payment-intent', {
         body: {
           planId,
@@ -1757,6 +1780,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
       if (paymentIntentError) {
         console.error('💳 processStripeCheckout: PaymentIntent creation error:', paymentIntentError);
+        struggleTracker.reportPaymentFailed('stripe', paymentIntentError?.message || 'PaymentIntent creation failed');
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
         return;
@@ -1822,8 +1846,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('💳 processStripeCheckout: Stripe checkout error:', error);
+      struggleTracker.reportPaymentFailed('stripe', error?.message || 'Stripe checkout exception');
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
