@@ -1581,6 +1581,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       
       const trackingData = getTrackingData();
 
+      struggleTracker.reportPaymentAttempt('bumper');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
           planId,
