@@ -1723,6 +1723,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const trackingData = getTrackingData();
 
       // Create PaymentIntent for embedded checkout (no redirect)
+      struggleTracker.reportPaymentAttempt('stripe');
       const { data: paymentIntentData, error: paymentIntentError } = await supabase.functions.invoke('create-payment-intent', {
         body: {
           planId,
