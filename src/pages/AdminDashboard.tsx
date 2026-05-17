@@ -604,6 +604,9 @@ const AdminDashboardInner: React.FC<{
         </div>
       </header>
 
+      {/* Checkout struggle alert bar — admin & super_admin only */}
+      <CheckoutStruggleAlertBar userRole={userRole} />
+
       {/* Impersonation banner */}
       {isImpersonating && (
         <div className="bg-amber-500 text-white text-center py-1.5 text-sm font-medium shadow-md z-40">
