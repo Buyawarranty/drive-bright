@@ -317,15 +317,16 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   }, [filteredCustomers]);
 
 
-  // Helper function to categorize customer by source - uses purchase_source and is_manual_entry
-  const getCustomerSource = (customer: Customer): 'website' | 'staff_purchase' | 'sales_team' | 'unknown' => {
-    const source = customer.purchase_source?.toLowerCase() || '';
-    const isManual = customer.is_manual_entry === true;
+  // Helper function to categorize customer by source.
+  // Rule (exhaustive — never returns 'unknown' so buckets always reconcile to total):
+  //   1. BAW-S- warranty prefix → staff purchase
+  //   2. is_manual_entry = true → sales team (admin/back-office entered)
+  //   3. otherwise → website (self-serve checkout via Stripe / Bumper / etc.)
+  const getCustomerSource = (customer: Customer): 'website' | 'staff_purchase' | 'sales_team' => {
     const warrantyNum = customer.warranty_reference_number || '';
     if (warrantyNum.startsWith('BAW-S-')) return 'staff_purchase';
-    if (isManual || source === 'quote_link' || source === 'external' || source === 'admin_external') return 'sales_team';
-    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '') return 'website';
-    return 'unknown';
+    if (customer.is_manual_entry === true) return 'sales_team';
+    return 'website';
   };
 
   // Sub-categorize website sales by ad channel — check both purchase_source AND click IDs
