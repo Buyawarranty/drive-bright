@@ -28,36 +28,8 @@ const getRankStyle = (rank: number) => {
   }
 };
 
-/**
- * Performance badges are now target-driven:
- * - 🔥 On Fire: exceeded target (100%+) or 15+ sales if no target
- * - ⚡ Crushing It: 75-99% of target or 10+ sales
- * - ✅ On Target: 50-74% of target or 5+ sales
- * - 📊 Building: 25-49% of target or 2+ sales
- * - 🚀 Getting Started: <25% with at least 1 sale
- * - ❄️ Cold Start: 0 sales
- */
-const getPerformanceBadge = (agent: AgentScore) => {
-  const { salesCount, monthlyTarget } = agent;
 
-  if (monthlyTarget && monthlyTarget > 0) {
-    const pct = (salesCount / monthlyTarget) * 100;
-    if (pct >= 100) return { text: '🔥 On Fire', className: 'bg-red-100 text-red-700 border-red-300', tooltip: `${pct.toFixed(0)}% of target` };
-    if (pct >= 75) return { text: '⚡ Crushing It', className: 'bg-purple-100 text-purple-700 border-purple-300', tooltip: `${pct.toFixed(0)}% of target` };
-    if (pct >= 50) return { text: '✅ On Target', className: 'bg-green-100 text-green-700 border-green-300', tooltip: `${pct.toFixed(0)}% of target` };
-    if (pct >= 25) return { text: '📊 Building', className: 'bg-amber-100 text-amber-700 border-amber-300', tooltip: `${pct.toFixed(0)}% of target` };
-    if (salesCount > 0) return { text: '🚀 Getting Started', className: 'bg-sky-100 text-sky-700 border-sky-300', tooltip: `${pct.toFixed(0)}% of target` };
-    return { text: '❄️ Cold Start', className: 'bg-gray-100 text-gray-500 border-gray-300', tooltip: '0 sales' };
-  }
 
-  // Fallback when no target is set — absolute thresholds
-  if (salesCount >= 15) return { text: '🔥 On Fire', className: 'bg-red-100 text-red-700 border-red-300', tooltip: `${salesCount} sales` };
-  if (salesCount >= 10) return { text: '⚡ Crushing It', className: 'bg-purple-100 text-purple-700 border-purple-300', tooltip: `${salesCount} sales` };
-  if (salesCount >= 5) return { text: '✅ On Target', className: 'bg-green-100 text-green-700 border-green-300', tooltip: `${salesCount} sales` };
-  if (salesCount >= 2) return { text: '📊 Building', className: 'bg-amber-100 text-amber-700 border-amber-300', tooltip: `${salesCount} sales` };
-  if (salesCount >= 1) return { text: '🚀 Getting Started', className: 'bg-sky-100 text-sky-700 border-sky-300', tooltip: `${salesCount} sale` };
-  return null;
-};
 
 export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period }) => {
   const prevFirstRef = useRef<string | null>(null);
