@@ -441,7 +441,7 @@ export const CustomersTab = ({
   const isAdmin = normalizedRole === 'admin';
   const isLeadGen = normalizedRole === 'lead_gen';
   const isClaimsManager = normalizedRole === 'claims_manager';
-  const canSeeSourceColumn = isSuperAdmin || isLeadGen;
+  const canSeeSourceColumn = isSuperAdmin;
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
@@ -496,7 +496,7 @@ export const CustomersTab = ({
     } else if (filterByStatus !== 'all') {
       statusLabel = filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds' : filterByStatus;
     }
-    const sourceFilterActive = filterBySource !== 'all';
+    const sourceFilterActive = filterBySource !== 'all_view';
     return {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
@@ -789,9 +789,9 @@ export const CustomersTab = ({
       }
     }
 
-    // Apply source filter based on warranty number prefix as single source of truth
+    // Apply source filter for super admins only.
     // BAW- = website/self-service, ADM- = manual/sales-team confirmed
-    if (filterBySource !== 'all_view') {
+    if (isSuperAdmin && filterBySource !== 'all_view') {
       filtered = filtered.filter(customer => {
         // Get the definitive warranty number (from policy first, then customer record)
         const warrantyNum = customer.customer_policies?.[0]?.warranty_number || 
@@ -923,7 +923,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -3134,7 +3134,7 @@ export const CustomersTab = ({
                 </Select>
               </div>
 
-              {/* Filter by Source — only super_admin and lead_gen */}
+              {/* Filter by Source — super admin only */}
               {canSeeSourceColumn && (
               <div className="space-y-1">
                 <Label htmlFor="sourceFilter" className="text-sm font-medium">Purchase Source</Label>
@@ -3155,28 +3155,24 @@ export const CustomersTab = ({
                         Website (BAW)
                       </div>
                     </SelectItem>
-                    {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'lead_gen') && (
-                      <>
-                        <SelectItem value="website_google">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                            Website G (Google Ads)
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="website_facebook">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-sky-500" />
-                            Website F (Facebook Ads)
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="website_organic">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-amber-500" />
-                            Website O (Organic)
-                          </div>
-                        </SelectItem>
-                      </>
-                    )}
+                    <SelectItem value="website_google">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Website G (Google Ads)
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="website_facebook">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-sky-500" />
+                        Website F (Facebook Ads)
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="website_organic">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        Website O (Organic)
+                      </div>
+                    </SelectItem>
                     <SelectItem value="staff_purchase">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -3490,7 +3486,7 @@ export const CustomersTab = ({
                     setFilterByStatus('all');
                     setFilterByTag('all');
                     setFilterByWarrantyPeriod('all');
-                    setFilterBySource(isSalesAgent ? 'all_view' : 'website');
+                    setFilterBySource('all_view');
                     setFilterByAgent(isSalesAgent && currentAdminUser ? currentAdminUser.id : 'all');
                     setTotalSalesDateFilter(isSalesAgent ? '60days' : '30days');
                     const resetRange = isSalesAgent ? getAgentCountsDateRange('60days') : null;
