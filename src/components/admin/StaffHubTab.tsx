@@ -55,7 +55,7 @@ const formatBytes = (n: number | null) => {
 export const StaffHubTab: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { adminId } = useCurrentAdminId();
+  const adminId = useCurrentAdminId();
 
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
