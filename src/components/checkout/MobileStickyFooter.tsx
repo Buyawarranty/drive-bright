@@ -108,16 +108,6 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               )}
             </div>
 
-            {isMonthly && savings > 0 && (
-              <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
-                <span className="text-[11px] font-bold text-gray-900 leading-tight whitespace-nowrap">
-                  Pay in full £{fullPrice}
-                </span>
-                <span className="text-[11px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
-                  Save £{savings}
-                </span>
-              </div>
-            )}
             {isFull && savings > 0 && (
               <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
                 <span className="text-[11px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
@@ -126,6 +116,13 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               </div>
             )}
           </div>
+
+          {isMonthly && savings > 0 && (
+            <div className="text-[12px] leading-snug mb-2">
+              <span className="font-bold text-[#0BA360]">Pay in full £{fullPrice}</span>
+              <span className="text-gray-700"> – You save £{savings} today – One-time payment</span>
+            </div>
+          )}
         )}
 
         {/* CTA Button */}
