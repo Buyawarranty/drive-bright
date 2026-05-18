@@ -346,44 +346,22 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const paidOrders = activeRevenueCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
   const overallAOV = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
 
-  // Calculate AOV by source (using effectiveDateRange for both chart clicks and date picker)
+  // Calculate AOV by source — based on activeRevenueCustomers so it stays
+  // in sync with the top KPI cards (same date filter, same source filter,
+  // same cancelled/refunded exclusion). Sum of website + staffPurchase +
+  // salesTeam buckets equals the "Total Revenue" / "paid orders" cards.
   const sourceMetrics = useMemo(() => {
-    // Filter by effective date range (includes selected month from chart click)
-    const dateFilteredCustomers = customers.filter(customer => {
-      if (effectiveDateRange?.from) {
-        const signupDate = new Date(customer.signup_date);
-        const fromStart = new Date(effectiveDateRange.from);
-        fromStart.setHours(0, 0, 0, 0);
-        if (signupDate < fromStart) return false;
-        
-        if (effectiveDateRange.to) {
-          const toEnd = new Date(effectiveDateRange.to);
-          toEnd.setHours(23, 59, 59, 999);
-          if (signupDate > toEnd) return false;
-        }
-      }
-      return true;
-    });
+    const paid = activeRevenueCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
 
-    // Exclude cancelled/refunded from revenue calculations
-    const websiteCustomers = dateFilteredCustomers.filter(c => 
-      getCustomerSource(c) === 'website' && 
-      c.final_amount && 
-      Number(c.final_amount) > 0 &&
-      !isRevenueLost(c.status)
-    );
-    const salesTeamCustomers = dateFilteredCustomers.filter(c => 
-      getCustomerSource(c) === 'sales_team' && 
-      c.final_amount && 
-      Number(c.final_amount) > 0 &&
-      !isRevenueLost(c.status)
-    );
+    const websiteCustomers = paid.filter(c => getCustomerSource(c) === 'website');
+    const staffPurchaseCustomers = paid.filter(c => getCustomerSource(c) === 'staff_purchase');
+    const salesTeamCustomers = paid.filter(c => getCustomerSource(c) === 'sales_team');
 
     // Website channel breakdown
     const googleCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'google');
     const facebookCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'facebook');
     const pureWebsiteCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'pure');
-    
+
     const calcStats = (custs: Customer[]) => {
       const revenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
       return {
@@ -392,15 +370,17 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         aov: custs.length > 0 ? Math.round(revenue / custs.length) : 0
       };
     };
-    
+
     return {
+      allSources: calcStats(paid),
       website: calcStats(websiteCustomers),
+      staffPurchase: calcStats(staffPurchaseCustomers),
       salesTeam: calcStats(salesTeamCustomers),
       google: calcStats(googleCustomers),
       facebook: calcStats(facebookCustomers),
       pureWebsite: calcStats(pureWebsiteCustomers),
     };
-  }, [customers, effectiveDateRange]);
+  }, [activeRevenueCustomers]);
 
   // Price metrics by source: lowest, highest, average — respects both date AND source filter
   const priceMetrics = useMemo(() => {
