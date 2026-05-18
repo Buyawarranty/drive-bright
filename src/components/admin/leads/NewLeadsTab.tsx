@@ -1083,6 +1083,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </Button>
             </div>
           )}
+          {/* Failed-payment / struggling-checkout claimable leads */}
+          <PaymentFailedLeadsPanel userRole={userRole} />
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
             filter={activeFilter}
