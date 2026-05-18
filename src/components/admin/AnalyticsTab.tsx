@@ -954,8 +954,74 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               </div>
             </div>
           </div>
+
+          {/* Sales Team lead-source sub-breakdown */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">
+              Sales Team (ADM) lead source — where the converted lead originally came from (sum equals Sales Team tile above)
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Target className="h-4 w-4 text-emerald-600" />
+                  <span className="font-semibold text-sm text-emerald-700">Google Ads lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesGoogle.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-emerald-600">£{sourceMetrics.salesGoogle.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-emerald-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-emerald-700">£{sourceMetrics.salesGoogle.aov}</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Facebook className="h-4 w-4 text-indigo-600" />
+                  <span className="font-semibold text-sm text-indigo-700">Facebook Ads lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesFacebook.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-indigo-600">£{sourceMetrics.salesFacebook.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-indigo-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-indigo-700">£{sourceMetrics.salesFacebook.aov}</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="h-4 w-4 text-sky-600" />
+                  <span className="font-semibold text-sm text-sky-700">Organic / Website lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesOrganic.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-sky-600">£{sourceMetrics.salesOrganic.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-sky-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-sky-700">£{sourceMetrics.salesOrganic.aov}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
 
       {/* Price Metrics: Lowest, Highest, Average - by Source */}
       <Card>
