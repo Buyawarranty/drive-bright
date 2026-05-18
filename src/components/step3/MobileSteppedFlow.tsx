@@ -180,12 +180,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
           <>
             {/* Cover level */}
             <section>
-              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Claim limit</p>
-              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your cover level</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+              <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Claim limit</p>
+              <h2 className="text-lg font-bold text-foreground mt-1">Choose your cover level</h2>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
                 Select the amount we'll pay towards repairs
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 {claimTiers.map(tier => {
                   const selected = selectedClaimLimit === tier.value;
                   const copy = CLAIM_COPY[tier.value] || { title: tier.shortName, sub: '' };
@@ -195,22 +195,22 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       key={tier.value}
                       onClick={() => onClaimLimitChange(tier.value)}
                       className={cn(
-                        'relative text-left rounded-xl border-2 p-3 transition-all',
+                        'relative text-left rounded-xl border-2 p-4 min-h-[120px] transition-all',
                         selected
                           ? 'border-primary bg-primary/5'
                           : 'border-border bg-card hover:border-primary/40'
                       )}
                     >
                       {recommended && (
-                        <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
                           Recommended
                         </span>
                       )}
-                      <div className="text-lg font-bold text-foreground leading-tight">
+                      <div className="text-2xl font-bold text-foreground leading-tight">
                         £{tier.displayValue.toLocaleString()}
                       </div>
-                      <div className="text-xs font-semibold text-foreground mt-1">{copy.title}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{copy.sub}</div>
+                      <div className="text-sm font-semibold text-foreground mt-1.5">{copy.title}</div>
+                      <div className="text-xs text-muted-foreground mt-1 leading-snug">{copy.sub}</div>
                       <div className="mt-2 flex justify-end">
                         <RadioDot selected={selected} />
                       </div>
@@ -222,12 +222,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
             {/* Cover length */}
             <section>
-              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Term length</p>
-              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your cover length</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+              <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Term length</p>
+              <h2 className="text-lg font-bold text-foreground mt-1">Choose your cover length</h2>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
                 Longer cover means more savings
               </p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 {visibleTerms.map(term => {
                   const selected = paymentType === term;
                   const monthly = calculateMonthlyPrice(term);
@@ -242,7 +242,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       key={term}
                       onClick={() => onPaymentTypeChange(term)}
                       className={cn(
-                        'relative rounded-xl border-2 p-3 text-center transition-all',
+                        'relative rounded-xl border-2 p-3 min-h-[120px] text-center transition-all',
                         selected
                           ? 'border-primary bg-primary/5'
                           : 'border-border bg-card hover:border-primary/40'
@@ -251,18 +251,18 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       {meta.badge && (
                         <span
                           className={cn(
-                            'absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap text-white',
+                            'absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap text-white',
                             meta.badgeTone === 'green' ? 'bg-success' : 'bg-primary'
                           )}
                         >
                           {meta.badge}
                         </span>
                       )}
-                      <div className="text-xs font-semibold text-foreground">{meta.years}</div>
-                      <div className="text-base font-bold text-foreground mt-1">£{monthly}<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">12 payments</div>
+                      <div className="text-sm font-semibold text-foreground">{meta.years}</div>
+                      <div className="text-xl font-bold text-foreground mt-1.5">£{monthly}<span className="text-xs font-normal text-muted-foreground">/mo</span></div>
+                      <div className="text-[11px] text-muted-foreground mt-1">12 payments</div>
                       {cardSavings > 0 && (
-                        <div className="text-[10px] font-bold text-success mt-0.5">Save £{cardSavings}</div>
+                        <div className="text-[11px] font-bold text-success mt-1">Save £{cardSavings}</div>
                       )}
                       <div className="mt-2 flex justify-center">
                         <RadioDot selected={selected} small />
@@ -274,12 +274,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
-              <h2 className="text-base font-bold text-foreground mt-0.5">Where do you usually repair your car?</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+              <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
+              <h2 className="text-lg font-bold text-foreground mt-1">Where do you usually repair your car?</h2>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
                 Pick the garage type that matches where you'd feel comfortable having repairs done
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 {REPAIR_OPTIONS.map(opt => {
                   const selected = selectedLabourRate === opt.value;
                   const Icon = opt.icon;
@@ -288,24 +288,24 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       key={opt.value}
                       onClick={() => onLabourRateChange(opt.value)}
                       className={cn(
-                        'relative text-left rounded-xl border-2 p-3 transition-all min-h-[110px] flex flex-col',
+                        'relative text-left rounded-xl border-2 p-4 transition-all min-h-[140px] flex flex-col',
                         selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
                       )}
                     >
                       {opt.recommended && (
-                        <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
                           Most popular
                         </span>
                       )}
                       {opt.bestValue && (
-                        <span className="absolute -top-2 left-2 bg-success text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        <span className="absolute -top-2 left-2 bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded">
                           Best value
                         </span>
                       )}
-                      <Icon className={cn('w-5 h-5 mb-1.5', selected ? 'text-primary' : 'text-muted-foreground')} />
-                      <div className="text-base font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-[10px] font-normal text-muted-foreground">/hour</span></div>
+                      <Icon className={cn('w-6 h-6 mb-2', selected ? 'text-primary' : 'text-muted-foreground')} />
+                      <div className="text-lg font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-xs font-normal text-muted-foreground">/hour</span></div>
                       <div className="text-sm font-bold text-foreground leading-tight mt-1">{opt.title}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{opt.sub}</div>
+                      <div className="text-xs text-muted-foreground mt-1 leading-snug">{opt.sub}</div>
                     </button>
                   );
                 })}
@@ -313,12 +313,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-              <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Voluntary excess</p>
-              <h2 className="text-base font-bold text-foreground mt-0.5">Choose your excess</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+              <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Voluntary excess</p>
+              <h2 className="text-lg font-bold text-foreground mt-1">Choose your excess</h2>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
                 Higher excess lowers your monthly payments
               </p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 {EXCESS_OPTIONS.map(ex => {
                   const selected = voluntaryExcess === ex.value;
                   return (
@@ -326,17 +326,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       key={ex.value}
                       onClick={() => onVoluntaryExcessChange(ex.value)}
                       className={cn(
-                        'relative rounded-xl border-2 p-2 text-center transition-all',
+                        'relative rounded-xl border-2 p-3 min-h-[72px] text-center transition-all',
                         selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
                       )}
                     >
                       {ex.best && (
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
                           Best
                         </span>
                       )}
-                      <div className="text-sm font-bold text-foreground">{ex.label}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{ex.sub}</div>
+                      <div className="text-base font-bold text-foreground">{ex.label}</div>
+                      <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{ex.sub}</div>
                     </button>
                   );
                 })}
