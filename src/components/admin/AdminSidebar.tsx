@@ -287,6 +287,12 @@ const defaultTabs: Tab[] = [
     description: 'Control how leads are tagged Organic / Google / Facebook'
   },
   {
+    id: 'staff-hub',
+    label: 'Staff Hub',
+    icon: FolderOpen,
+    description: 'Staff policies, timesheet rules, holiday & handbook documents'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
