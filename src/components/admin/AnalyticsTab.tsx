@@ -1100,13 +1100,16 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${value}`} />
               <Tooltip 
                 formatter={(value: number, name: string) => {
+                  if (name === 'salesCount') {
+                    return [value.toLocaleString('en-GB'), 'Warranties Sold'];
+                  }
                   const label = name === 'revenue' ? 'Revenue' : name === 'aov' ? 'Avg Order Value' : name;
                   return [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, label];
                 }}
                 labelStyle={{ fontWeight: 'bold' }}
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
               />
-              <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value} />
+              <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
               <Bar 
                 yAxisId="left"
                 dataKey="revenue" 
