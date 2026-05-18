@@ -180,8 +180,21 @@ export function calculateTotalWarrantyPrice(params: {
   // 4. Add boost claim limit adjustment
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
   
-  // 5. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
-  const totalPrice = adjustedBasePrice + labourAdjustment + boostAdjustment + addOnPrice;
+  // 5. Compute warranty subtotal (before add-ons) and enforce minimum price floor
+  //    to cover acquisition + lead costs. Applies to step 3 checkout AND all
+  //    admin pricing surfaces (Get Quote, Confirm External Payment, Bulk
+  //    Pricing, Discounts Given) since they share this function.
+  const warrantySubtotal = adjustedBasePrice + labourAdjustment + boostAdjustment;
+  const MIN_TOTAL_BY_PERIOD: Record<PaymentPeriod, number> = {
+    '12months': 240,
+    '24months': 400,
+    '36months': 540,
+  };
+  const minTotal = MIN_TOTAL_BY_PERIOD[paymentPeriod] ?? 0;
+  const flooredWarranty = Math.max(warrantySubtotal, minTotal);
+
+  // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
+  const totalPrice = flooredWarranty + addOnPrice;
   
   // 6. Calculate monthly price (always 12 installments, FLOOR not round)
   const monthlyPrice = Math.floor(totalPrice / 12);
