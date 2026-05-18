@@ -306,13 +306,18 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
   );
 };
 
-const getCustomerAcquisitionChannel = (customer: Pick<Customer, 'acquisition_source' | 'gclid'>) => {
+const getCustomerAcquisitionChannel = (
+  customer: Pick<Customer, 'acquisition_source' | 'gclid'> & { is_manual_entry?: boolean | null }
+) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
 
   if (hasGclid || ['google_ads', 'google_ad', 'google', 'g'].includes(source)) return 'google_ads';
   if (['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f'].includes(source)) return 'facebook_ads';
   if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
+
+  // Manual back-office sale with no recoverable marketing source
+  if (customer.is_manual_entry === true) return 'manual';
 
   return source || 'unknown';
 };
