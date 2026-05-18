@@ -274,7 +274,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             <section>
-            <section>
               <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
               <h2 className="text-base font-bold text-foreground mt-0.5">Where do you usually repair your car?</h2>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
