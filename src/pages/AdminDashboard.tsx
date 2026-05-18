@@ -42,6 +42,7 @@ const TestingTabContent = lazy(() => import('@/components/admin/TestingTabConten
 const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
 const SellingTipsSection = lazy(() => import('@/components/admin/SellingTipsSection').then(m => ({ default: m.SellingTipsSection })));
 const TimesheetsTab = lazy(() => import('@/components/admin/timesheets/TimesheetsTab').then(m => ({ default: m.TimesheetsTab })));
+const StaffHubTab = lazy(() => import('@/components/admin/StaffHubTab').then(m => ({ default: m.StaffHubTab })));
 const ReviewsTab = lazy(() => import('@/components/admin/ReviewsTab').then(m => ({ default: m.ReviewsTab })));
 const MarketingAudienceTab = lazy(() => import('@/components/admin/marketing/MarketingAudienceTab').then(m => ({ default: m.MarketingAudienceTab })));
 const SalesCustomerManagement = lazy(() => import('@/components/admin/sales/SalesCustomerManagement'));
