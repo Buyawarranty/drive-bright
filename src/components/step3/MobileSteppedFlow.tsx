@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
@@ -104,6 +104,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     paymentType !== null &&
     !!selectedLabourRate &&
     voluntaryExcess !== null;
+
+  const [stickyPayment, setStickyPayment] = useState<'monthly' | 'full'>('monthly');
 
   const handleNext = () => {
     onContinue();
@@ -349,7 +351,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
-        selectedPayment="monthly"
+        selectedPayment={stickyPayment}
+        onPaymentChange={setStickyPayment}
         monthlyPrice={currentMonthlyPrice}
         fullPrice={Math.max(0, currentMonthlyPrice * 12 - marketingSavings)}
         paymentType={paymentType || '24months'}
