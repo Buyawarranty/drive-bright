@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Award, BarChart3, FileText } from 'lucide-react';
+import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare } from 'lucide-react';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
@@ -9,9 +9,10 @@ import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { CommissionTimesheetForm } from './CommissionTimesheetForm';
+import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
 import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } from 'date-fns';
 
 const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: '📅 Today' },
@@ -80,7 +81,7 @@ export const SalesScoreboardTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Period Buttons + Date Range Filter */}
+      {/* Quick Period Buttons + Month Navigator + Date Range Filter */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap gap-2">
           {QUICK_PERIODS.map(p => (
@@ -95,6 +96,52 @@ export const SalesScoreboardTab: React.FC = () => {
             </Button>
           ))}
         </div>
+
+        {/* Month-by-month navigator */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Previous month"
+            onClick={() => {
+              const base = dateRange?.from ? startOfMonth(dateRange.from) : startOfMonth(new Date());
+              const prev = subMonths(base, 1);
+              setDateRange({ from: startOfMonth(prev), to: endOfMonth(prev) });
+            }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="min-w-[180px] text-center px-4 py-2 rounded-md border bg-card text-sm font-semibold">
+            {dateRange?.from
+              ? format(startOfMonth(dateRange.from), 'MMMM yyyy')
+              : format(new Date(), 'MMMM yyyy')}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Next month"
+            onClick={() => {
+              const base = dateRange?.from ? startOfMonth(dateRange.from) : startOfMonth(new Date());
+              const next = addMonths(base, 1);
+              setDateRange({ from: startOfMonth(next), to: endOfMonth(next) });
+            }}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {dateRange?.from && !isSameMonth(dateRange.from, new Date()) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const now = new Date();
+                setDateRange({ from: startOfMonth(now), to: endOfMonth(now) });
+              }}
+            >
+              Jump to this month
+            </Button>
+          )}
+        </div>
+
         <DateRangeFilter
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
@@ -118,6 +165,10 @@ export const SalesScoreboardTab: React.FC = () => {
           <TabsTrigger value="awards" className="gap-2">
             <Award className="h-4 w-4" />
             Awards
+          </TabsTrigger>
+          <TabsTrigger value="compare" className="gap-2">
+            <GitCompare className="h-4 w-4" />
+            Compare Months
           </TabsTrigger>
           <TabsTrigger value="commission" className="gap-2">
             <FileText className="h-4 w-4" />
@@ -155,6 +206,10 @@ export const SalesScoreboardTab: React.FC = () => {
 
         <TabsContent value="awards">
           <ScoreboardAwards agents={agents} currentAdminUserId={currentAdminUserId} />
+        </TabsContent>
+
+        <TabsContent value="compare">
+          <ScoreboardMonthCompare />
         </TabsContent>
 
         <TabsContent value="commission">
