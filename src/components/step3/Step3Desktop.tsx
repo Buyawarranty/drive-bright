@@ -4,6 +4,7 @@ import { Check, Info, Edit3, ArrowLeft, Star } from 'lucide-react';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly } from '@/lib/claimLimitTiers';
 import {
   calculateLabourRateAdjustment,
+  applyBasePriceFloor,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
