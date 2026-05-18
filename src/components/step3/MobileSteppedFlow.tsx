@@ -72,9 +72,6 @@ const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
   5000: { title: 'Maximum cover', sub: 'Complete confidence' },
 };
 
-const STEP_TITLES = ['Cover level & term', 'Repair preference'];
-const TOTAL_STEPS = 2;
-
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
   onBack,
@@ -93,8 +90,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   onContinue,
   isLoading,
 }) => {
-  const [step, setStep] = React.useState(0);
-
   const isPremium = isPremiumVehicle(vehicleData?.make);
   const claimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
@@ -104,27 +99,18 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     availableDurations.includes(t)
   );
 
-  const canAdvance = (() => {
-    if (step === 0) return selectedClaimLimit !== null && paymentType !== null;
-    if (step === 1) return !!selectedLabourRate && voluntaryExcess !== null;
-    return true;
-  })();
+  const canAdvance =
+    selectedClaimLimit !== null &&
+    paymentType !== null &&
+    !!selectedLabourRate &&
+    voluntaryExcess !== null;
 
   const handleNext = () => {
-    if (step < TOTAL_STEPS - 1) {
-      setStep(s => s + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      onContinue();
-    }
+    onContinue();
   };
 
   const handleBack = () => {
-    if (step === 0) onBack();
-    else {
-      setStep(s => s - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    onBack();
   };
 
   // Footer copy
@@ -172,48 +158,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         </div>
       </div>
 
-      {/* Build-your-warranty progress steps */}
-      <div className="px-4 pt-4">
-        <div className="flex items-center gap-2">
-          {['Your cover', 'Your garage'].map((label, i) => {
-            const isActive = i === step;
-            const isDone = i < step;
-            return (
-              <React.Fragment key={label}>
-                <div
-                  onClick={() => isDone && setStep(i)}
-                  className={cn(
-                    'flex items-center gap-2',
-                    isDone && 'cursor-pointer'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold',
-                      isActive && 'bg-primary text-primary-foreground',
-                      isDone && 'bg-success text-success-foreground',
-                      !isActive && !isDone && 'bg-muted text-muted-foreground'
-                    )}
-                  >
-                    {isDone ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : i + 1}
-                  </span>
-                  <span
-                    className={cn(
-                      'text-xs font-semibold',
-                      isActive ? 'text-foreground' : 'text-muted-foreground'
-                    )}
-                  >
-                    {label}
-                  </span>
-                </div>
-                {i === 0 && <div className="flex-1 h-px bg-border" />}
-              </React.Fragment>
-            );
-          })}
-        </div>
-        <p className="text-[10px] text-muted-foreground text-center mt-1.5">Building your warranty plan</p>
-      </div>
-
       {/* Vehicle card */}
       <div className="mx-4 mt-3 bg-card border border-border rounded-xl p-3 flex items-center gap-3">
         <div className="flex-1 min-w-0">
@@ -232,7 +176,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
       {/* Step content */}
       <div className="px-4 mt-4 space-y-6">
-        {step === 0 && (
+        {true && (
           <>
             {/* Cover level */}
             <section>
@@ -328,11 +272,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 })}
               </div>
             </section>
-          </>
-        )}
 
-        {step === 1 && (
-          <>
             <section>
               <p className="text-[11px] font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
               <h2 className="text-base font-bold text-foreground mt-0.5">Where do you usually repair your car?</h2>
