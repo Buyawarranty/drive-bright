@@ -391,6 +391,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     return defaultTabs;
   };
 
+  // Staff Hub is super_admin only during initial roll-out — strip it for everyone else
+  const filterRestricted = (tabs: Tab[]) =>
+    userRole === 'super_admin' ? tabs : tabs.filter(t => t.id !== 'staff-hub');
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
