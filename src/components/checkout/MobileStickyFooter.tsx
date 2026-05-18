@@ -166,8 +166,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         <Button
           onClick={onPayClick}
           disabled={isLoading || !selectedPayment}
-          aria-label={selectedPayment ? 'Secure my cover' : 'Select payment option'}
-          className="w-full bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold py-5 rounded-xl text-base gap-2 shadow-lg animate-breathing tracking-wide uppercase"
+          aria-label={selectedPayment ? 'Continue to checkout' : 'Select payment option'}
+          className="w-full bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold py-5 rounded-xl text-base gap-2 shadow-lg animate-breathing"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
@@ -176,7 +176,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              Secure my cover
+              Continue to checkout
               <ArrowRight className="w-5 h-5" strokeWidth={3} />
             </span>
           )}
