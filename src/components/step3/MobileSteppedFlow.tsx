@@ -105,6 +105,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     !!selectedLabourRate &&
     voluntaryExcess !== null;
 
+  const [stickyPayment, setStickyPayment] = useState<'monthly' | 'full'>('monthly');
+
   const handleNext = () => {
     onContinue();
   };
