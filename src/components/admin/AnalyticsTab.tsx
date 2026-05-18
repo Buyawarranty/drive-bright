@@ -339,6 +339,17 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return 'pure';
   };
 
+  // Sub-categorize Sales Team (ADM) sales by the lead's original acquisition source.
+  // Sales team sales are admin-entered, so purchase_source is quote_link/external —
+  // attribution lives on acquisition_source (copied from the originating lead).
+  const getSalesTeamLeadSource = (customer: Customer): 'google' | 'facebook' | 'organic' => {
+    const acq = customer.acquisition_source?.toLowerCase() || '';
+    const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
+    if (acq === 'google_ads' || hasGclid) return 'google';
+    if (acq === 'facebook_ads') return 'facebook';
+    return 'organic';
+  };
+
   // Calculate metrics with safe defaults - EXCLUDING cancelled/refunded from revenue
   const totalCustomers = filteredCustomers.length;
   const activeCustomers = filteredCustomers.filter(c => c.status === 'Active').length;
