@@ -131,12 +131,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="text-xs text-muted-foreground">{agent.salesCount} sales{agent.cancelledCount > 0 ? ` · ${agent.cancelledCount} refunds` : ''}</div>
                   </div>
 
-                  {/* Performance badge */}
-                  {perfBadge && (
-                    <Badge variant="outline" className={`hidden lg:inline-flex text-xs ${perfBadge.className}`} title={perfBadge.tooltip}>
-                      {perfBadge.text}
-                    </Badge>
-                  )}
                 </div>
               );
             })}
