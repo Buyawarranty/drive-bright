@@ -375,6 +375,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const facebookCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'facebook');
     const pureWebsiteCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'pure');
 
+    // Sales Team lead-source breakdown
+    const salesGoogle = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'google');
+    const salesFacebook = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'facebook');
+    const salesOrganic = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'organic');
+
     const calcStats = (custs: Customer[]) => {
       const revenue = custs.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
       return {
@@ -392,6 +397,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       google: calcStats(googleCustomers),
       facebook: calcStats(facebookCustomers),
       pureWebsite: calcStats(pureWebsiteCustomers),
+      salesGoogle: calcStats(salesGoogle),
+      salesFacebook: calcStats(salesFacebook),
+      salesOrganic: calcStats(salesOrganic),
     };
   }, [activeRevenueCustomers]);
 
