@@ -111,14 +111,17 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
             {isMonthly && (() => {
               const displaySavings = savings > 0 ? savings : Math.round(baseTotal * 0.1);
-              const savePct = baseTotal > 0 ? Math.round((displaySavings / baseTotal) * 100) : 0;
+              const discountedFull = fullPrice - (savings > 0 ? 0 : displaySavings);
               return (
-                <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
-                  <span className="text-[13px] font-extrabold text-[#0BA360] leading-tight whitespace-nowrap">
-                    Pay in full £{fullPrice}
+                <div className="flex flex-col items-center bg-[#E8F7EF] border-2 border-[#0BA360]/30 rounded-xl px-3 py-2 flex-shrink-0">
+                  <span className="text-2xl font-extrabold text-[#0BA360] leading-none">
+                    £{discountedFull}
                   </span>
-                  <span className="text-[10px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
-                    Save {savePct}% (£{displaySavings})
+                  <span className="text-[11px] font-bold text-gray-900 leading-tight mt-0.5">
+                    Pay in full
+                  </span>
+                  <span className="text-[11px] font-bold text-[#0BA360] leading-tight mt-1 pt-1 border-t border-[#0BA360]/20 w-full text-center">
+                    Save £{displaySavings}
                   </span>
                 </div>
               );
