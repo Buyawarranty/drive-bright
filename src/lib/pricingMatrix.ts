@@ -174,17 +174,8 @@ export function calculateTotalWarrantyPrice(params: {
   // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
   const adjustedBasePrice = basePrice + vehicleAdjustment;
 
-  // 3. Enforce minimum BASE price floor (covers acquisition + lead cost).
-  //    Floor is applied to the matrix base ONLY, so labour-rate, boost, and
-  //    add-on upgrades always charge their full incremental amount on top.
-  //    Applies to step 3 checkout AND all admin pricing surfaces.
-  const MIN_BASE_BY_PERIOD: Record<PaymentPeriod, number> = {
-    '12months': 240,
-    '24months': 400,
-    '36months': 540,
-  };
-  const minBase = MIN_BASE_BY_PERIOD[paymentPeriod] ?? 0;
-  const flooredBase = Math.max(adjustedBasePrice, minBase);
+  // 3. Enforce minimum BASE price floor (see applyBasePriceFloor below)
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod);
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
   const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
