@@ -349,7 +349,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
-        selectedPayment="monthly"
+        selectedPayment={stickyPayment}
+        onPaymentChange={setStickyPayment}
         monthlyPrice={currentMonthlyPrice}
         fullPrice={Math.max(0, currentMonthlyPrice * 12 - marketingSavings)}
         paymentType={paymentType || '24months'}
