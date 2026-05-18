@@ -66,7 +66,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
             {agents.map((agent) => {
               const style = getRankStyle(agent.rank);
               const isMe = agent.id === currentAdminUserId;
-              const perfBadge = getPerformanceBadge(agent);
+              
 
               return (
                 <div
