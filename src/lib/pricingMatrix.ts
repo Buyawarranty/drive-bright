@@ -173,28 +173,27 @@ export function calculateTotalWarrantyPrice(params: {
   
   // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
   const adjustedBasePrice = basePrice + vehicleAdjustment;
-  
-  // 3. Add labour rate adjustment (can be negative for £50/hr)
-  const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
-  
-  // 4. Add boost claim limit adjustment
-  const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
-  
-  // 5. Compute warranty subtotal (before add-ons) and enforce minimum price floor
-  //    to cover acquisition + lead costs. Applies to step 3 checkout AND all
-  //    admin pricing surfaces (Get Quote, Confirm External Payment, Bulk
-  //    Pricing, Discounts Given) since they share this function.
-  const warrantySubtotal = adjustedBasePrice + labourAdjustment + boostAdjustment;
-  const MIN_TOTAL_BY_PERIOD: Record<PaymentPeriod, number> = {
+
+  // 3. Enforce minimum BASE price floor (covers acquisition + lead cost).
+  //    Floor is applied to the matrix base ONLY, so labour-rate, boost, and
+  //    add-on upgrades always charge their full incremental amount on top.
+  //    Applies to step 3 checkout AND all admin pricing surfaces.
+  const MIN_BASE_BY_PERIOD: Record<PaymentPeriod, number> = {
     '12months': 240,
     '24months': 400,
     '36months': 540,
   };
-  const minTotal = MIN_TOTAL_BY_PERIOD[paymentPeriod] ?? 0;
-  const flooredWarranty = Math.max(warrantySubtotal, minTotal);
+  const minBase = MIN_BASE_BY_PERIOD[paymentPeriod] ?? 0;
+  const flooredBase = Math.max(adjustedBasePrice, minBase);
+
+  // 4. Add labour rate adjustment (can be negative for £50/hr)
+  const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
+
+  // 5. Add boost claim limit adjustment
+  const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
-  const totalPrice = flooredWarranty + addOnPrice;
+  const totalPrice = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
   
   // 6. Calculate monthly price (always 12 installments, FLOOR not round)
   const monthlyPrice = Math.floor(totalPrice / 12);
