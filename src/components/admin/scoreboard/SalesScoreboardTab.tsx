@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Award, BarChart3, FileText } from 'lucide-react';
+import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare } from 'lucide-react';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
@@ -9,9 +9,10 @@ import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { CommissionTimesheetForm } from './CommissionTimesheetForm';
+import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
 import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } from 'date-fns';
 
 const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: '📅 Today' },
