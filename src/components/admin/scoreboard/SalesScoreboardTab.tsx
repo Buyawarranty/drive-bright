@@ -166,6 +166,10 @@ export const SalesScoreboardTab: React.FC = () => {
             <Award className="h-4 w-4" />
             Awards
           </TabsTrigger>
+          <TabsTrigger value="compare" className="gap-2">
+            <GitCompare className="h-4 w-4" />
+            Compare Months
+          </TabsTrigger>
           <TabsTrigger value="commission" className="gap-2">
             <FileText className="h-4 w-4" />
             Commission
