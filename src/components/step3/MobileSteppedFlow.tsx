@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
