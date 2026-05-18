@@ -306,13 +306,18 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
   );
 };
 
-const getCustomerAcquisitionChannel = (customer: Pick<Customer, 'acquisition_source' | 'gclid'>) => {
+const getCustomerAcquisitionChannel = (
+  customer: Pick<Customer, 'acquisition_source' | 'gclid'> & { is_manual_entry?: boolean | null }
+) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
 
   if (hasGclid || ['google_ads', 'google_ad', 'google', 'g'].includes(source)) return 'google_ads';
   if (['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f'].includes(source)) return 'facebook_ads';
   if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
+
+  // Manual back-office sale with no recoverable marketing source
+  if (customer.is_manual_entry === true) return 'manual';
 
   return source || 'unknown';
 };
@@ -4768,6 +4773,9 @@ Please log in and change your password after first login.`;
                         }
                         if (channel === 'website') {
                           return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Website</Badge>;
+                        }
+                        if (channel === 'manual') {
+                          return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]" title="Manual back-office sale — no marketing source recorded">Manual</Badge>;
                         }
                         return <Badge className="bg-gray-100 text-gray-500 border-gray-200 text-[10px]">Unknown</Badge>;
                       })()}
