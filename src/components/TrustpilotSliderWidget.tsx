@@ -1,12 +1,49 @@
 import React, { useEffect, useRef } from 'react';
 
+const BOOTSTRAP_SRC = 'https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
+
+function ensureBootstrap(): void {
+  if (typeof window === 'undefined') return;
+  if ((window as any).Trustpilot) return;
+  if (document.querySelector(`script[src="${BOOTSTRAP_SRC}"]`)) return;
+  const s = document.createElement('script');
+  s.src = BOOTSTRAP_SRC;
+  s.async = true;
+  document.head.appendChild(s);
+}
+
 const TrustpilotSliderWidget: React.FC<{ className?: string }> = ({ className = '' }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (ref.current && (window as any).Trustpilot) {
-      (window as any).Trustpilot.loadFromElement(ref.current, true);
-    }
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 100; // ~10s at 100ms
+
+    ensureBootstrap();
+
+    const tryLoad = () => {
+      if (cancelled || !ref.current) return;
+      const TP = (window as any).Trustpilot;
+      if (TP && typeof TP.loadFromElement === 'function') {
+        try {
+          TP.loadFromElement(ref.current, true);
+        } catch (e) {
+          console.warn('[Trustpilot] loadFromElement failed', e);
+        }
+        return;
+      }
+      if (++attempts < maxAttempts) {
+        setTimeout(tryLoad, 100);
+      } else {
+        console.warn('[Trustpilot] bootstrap script never became available');
+      }
+    };
+
+    tryLoad();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
