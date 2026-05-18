@@ -263,7 +263,10 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
      // £3000 and £5000 claim limit surcharge
     const premiumSurcharge = getClaimLimitSurcharge(termClaimLimit, term, voluntaryExcess || 100);
     
-    return adjustedPrice + addOnPrice + labourAdjust + premiumSurcharge;
+    // Apply minimum BASE price floor (acquisition + lead cost protection).
+    // Floor goes on base only so labour/boost/add-ons still cost extra on top.
+    const flooredBase = applyBasePriceFloor(adjustedPrice, term as PaymentPeriod);
+    return flooredBase + addOnPrice + labourAdjust + premiumSurcharge;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, selectedLabourRate, getBasePrice]);
 
   // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
