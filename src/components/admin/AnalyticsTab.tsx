@@ -1226,6 +1226,12 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     }}
                   />
                 ))}
+                <LabelList
+                  dataKey="salesCount"
+                  position="top"
+                  formatter={(value: number) => value > 0 ? `${value} ${value === 1 ? 'deal' : 'deals'}` : ''}
+                  style={{ fill: '#065f46', fontSize: 11, fontWeight: 600 }}
+                />
               </Bar>
               <Line 
                 yAxisId="right"
