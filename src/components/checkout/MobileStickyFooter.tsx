@@ -87,6 +87,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
         {/* Price row */}
         {selectedPayment && (
+          <>
           <div className="flex items-end justify-between gap-3 mb-2">
             <div className="flex flex-col leading-tight min-w-0">
               {isMonthly ? (
@@ -123,6 +124,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               <span className="text-gray-700"> – You save £{savings} today – One-time payment</span>
             </div>
           )}
+          </>
         )}
 
         {/* CTA Button */}
