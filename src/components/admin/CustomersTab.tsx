@@ -3309,13 +3309,20 @@ export const CustomersTab = ({
                     })}
                   </div>
                   {filteredRevenueStats && (
-                    <div className="flex items-center gap-2 pb-1.5">
-                      <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
-                        £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        {filteredRevenueStats.count} {filteredRevenueStats.label}
-                      </Badge>
+                    <div className="flex flex-col gap-0.5 pb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                          £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {filteredRevenueStats.count} {filteredRevenueStats.label}
+                        </Badge>
+                      </div>
+                      {filteredRevenueStats.dateFilterActive && filteredRevenueStats.sourceFilterActive && filteredRevenueStats.hiddenByDate > 0 && (
+                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                          Date filter applied · {filteredRevenueStats.hiddenByDate} more outside range
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
