@@ -465,6 +465,16 @@ const AdminDashboard = () => {
           );
         }
         return <AttributionSettingsTab />;
+      case 'staff-hub':
+        if (effectiveUserRole !== 'super_admin') {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Staff Hub is currently restricted to super admins.</p>
+            </div>
+          );
+        }
+        return <StaffHubTab />;
       default:
         return <CustomersTab />;
     }
