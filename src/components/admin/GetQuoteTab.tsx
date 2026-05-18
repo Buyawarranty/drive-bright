@@ -53,7 +53,7 @@ const termOptions = [
   { id: '36months', label: '3-Year Cover', months: 36, bonus: 3, isBestValue: true }
 ];
 
-const excessOptions = [0, 50, 100, 150];
+const excessOptions = [0, 50, 100, 150, 250, 500];
 
 const claimLimitOptions = [
   { value: 750, label: '£1,000', description: 'AutoCare Basic' },
