@@ -254,3 +254,6 @@ verify_jwt = false
 
 [functions.list-google-conversion-actions]
 verify_jwt = false
+
+[functions.seed-staff-hub-doc]
+verify_jwt = false
