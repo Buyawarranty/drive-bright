@@ -786,19 +786,35 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-blue-500" />
-            Website Sales Breakdown
+            Sales Breakdown by Source
           </CardTitle>
           <CardDescription>
-            All website sales (Stripe &amp; Bumper) broken down by acquisition channel
+            Reconciles with the Total Revenue card above — All Sources = Website + Staff Purchase + Sales Team
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* All Website Sales */}
+        <CardContent className="space-y-4">
+          {/* Reconciliation total — should equal Total Revenue card */}
+          <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">All Sources (Total)</span>
+                <Badge variant="secondary" className="text-[10px]">matches Total Revenue</Badge>
+              </div>
+              <div className="flex gap-6">
+                <div className="text-sm"><span className="text-muted-foreground">Orders </span><span className="font-bold">{sourceMetrics.allSources.count}</span></div>
+                <div className="text-sm"><span className="text-muted-foreground">Revenue </span><span className="font-bold text-primary">£{sourceMetrics.allSources.revenue.toLocaleString('en-GB')}</span></div>
+                <div className="text-sm"><span className="text-muted-foreground">AOV </span><span className="font-bold">£{sourceMetrics.allSources.aov}</span></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top-level source split */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg border-2 border-blue-300 bg-blue-50/40 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="h-4 w-4 text-blue-600" />
-                <span className="font-semibold text-sm text-blue-700">All Website Sales</span>
+                <span className="font-semibold text-sm text-blue-700">Website (BAW)</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Orders</span>
@@ -814,96 +830,111 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               </div>
             </div>
 
-            {/* Website Google */}
-            <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
+            <div className="p-4 rounded-lg border-2 border-green-300 bg-green-50/40 space-y-2">
               <div className="flex items-center gap-2 mb-1">
-                <Target className="h-4 w-4 text-emerald-600" />
-                <span className="font-semibold text-sm text-emerald-700">Website G (Google Ads)</span>
+                <Globe className="h-4 w-4 text-green-600" />
+                <span className="font-semibold text-sm text-green-700">Staff Purchase (BAW-S)</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Orders</span>
-                <span className="font-bold text-lg">{sourceMetrics.google.count}</span>
+                <span className="font-bold text-lg">{sourceMetrics.staffPurchase.count}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Revenue</span>
-                <span className="font-bold text-lg text-emerald-600">£{sourceMetrics.google.revenue.toLocaleString('en-GB')}</span>
+                <span className="font-bold text-lg text-green-600">£{sourceMetrics.staffPurchase.revenue.toLocaleString('en-GB')}</span>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t border-emerald-200">
+              <div className="flex justify-between items-center pt-2 border-t border-green-200">
                 <span className="text-xs font-medium">AOV</span>
-                <span className="font-bold text-emerald-700">£{sourceMetrics.google.aov}</span>
+                <span className="font-bold text-green-700">£{sourceMetrics.staffPurchase.aov}</span>
               </div>
             </div>
 
-            {/* Website Facebook */}
-            <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50/30 space-y-2">
+            <div className="p-4 rounded-lg border-2 border-orange-300 bg-orange-50/40 space-y-2">
               <div className="flex items-center gap-2 mb-1">
-                <Facebook className="h-4 w-4 text-indigo-600" />
-                <span className="font-semibold text-sm text-indigo-700">Website F (Facebook Ads)</span>
+                <Phone className="h-4 w-4 text-orange-600" />
+                <span className="font-semibold text-sm text-orange-700">Sales Team (ADM)</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Orders</span>
-                <span className="font-bold text-lg">{sourceMetrics.facebook.count}</span>
+                <span className="font-bold text-lg">{sourceMetrics.salesTeam.count}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Revenue</span>
-                <span className="font-bold text-lg text-indigo-600">£{sourceMetrics.facebook.revenue.toLocaleString('en-GB')}</span>
+                <span className="font-bold text-lg text-orange-600">£{sourceMetrics.salesTeam.revenue.toLocaleString('en-GB')}</span>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t border-indigo-200">
+              <div className="flex justify-between items-center pt-2 border-t border-orange-200">
                 <span className="text-xs font-medium">AOV</span>
-                <span className="font-bold text-indigo-700">£{sourceMetrics.facebook.aov}</span>
+                <span className="font-bold text-orange-700">£{sourceMetrics.salesTeam.aov}</span>
               </div>
             </div>
+          </div>
 
-            {/* Pure Website (Organic) */}
-            <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Globe className="h-4 w-4 text-sky-600" />
-                <span className="font-semibold text-sm text-sky-700">Pure Website (Organic)</span>
+          {/* Website channel sub-breakdown */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">
+              Website (BAW) acquisition channels — sum equals Website tile above
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Target className="h-4 w-4 text-emerald-600" />
+                  <span className="font-semibold text-sm text-emerald-700">Google Ads</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.google.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-emerald-600">£{sourceMetrics.google.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-emerald-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-emerald-700">£{sourceMetrics.google.aov}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Orders</span>
-                <span className="font-bold text-lg">{sourceMetrics.pureWebsite.count}</span>
+
+              <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Facebook className="h-4 w-4 text-indigo-600" />
+                  <span className="font-semibold text-sm text-indigo-700">Facebook Ads</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.facebook.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-indigo-600">£{sourceMetrics.facebook.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-indigo-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-indigo-700">£{sourceMetrics.facebook.aov}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Revenue</span>
-                <span className="font-bold text-lg text-sky-600">£{sourceMetrics.pureWebsite.revenue.toLocaleString('en-GB')}</span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-sky-200">
-                <span className="text-xs font-medium">AOV</span>
-                <span className="font-bold text-sky-700">£{sourceMetrics.pureWebsite.aov}</span>
+
+              <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="h-4 w-4 text-sky-600" />
+                  <span className="font-semibold text-sm text-sky-700">Pure Website (Organic)</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.pureWebsite.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-sky-600">£{sourceMetrics.pureWebsite.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-sky-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-sky-700">£{sourceMetrics.pureWebsite.aov}</span>
+                </div>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Sales Team Card */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <Card className="border-l-4 border-l-orange-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Phone className="h-4 w-4 text-orange-500" />
-              Sales Team (ADM)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-8">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Orders</span>
-                <span className="font-semibold">{sourceMetrics.salesTeam.count}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Revenue</span>
-                <span className="font-semibold">£{sourceMetrics.salesTeam.revenue.toLocaleString('en-GB')}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">AOV</span>
-                <span className="text-xl font-bold text-orange-600">£{sourceMetrics.salesTeam.aov}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Price Metrics: Lowest, Highest, Average - by Source */}
       <Card>
