@@ -454,20 +454,23 @@ export const CustomersTab = ({
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin) return null;
     // Use filteredCustomers which already respects status, agent, source, tag, and other filters
-    let filtered = [...filteredCustomers];
+    let base = [...filteredCustomers];
     // Only exclude cancelled/refunded when viewing 'all' status AND not specifically looking at cancelled_refunded source
     if (filterByStatus === 'all' && filterBySource !== 'cancelled_refunded') {
-      filtered = filtered.filter(c => {
+      base = base.filter(c => {
         const status = (c.status || '').toLowerCase();
         return status !== 'cancelled' && status !== 'refunded';
       });
     }
+    let filtered = base;
+    let dateFilterActive = false;
     if (revenueDateRange?.from) {
+      dateFilterActive = true;
       const from = new Date(revenueDateRange.from);
       from.setHours(0, 0, 0, 0);
       const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
       to.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(c => {
+      filtered = base.filter(c => {
         const signupDate = c.signup_date ? new Date(c.signup_date) : (c.created_at ? new Date(c.created_at) : null);
         return signupDate && signupDate >= from && signupDate <= to;
       });
@@ -493,10 +496,14 @@ export const CustomersTab = ({
     } else if (filterByStatus !== 'all') {
       statusLabel = filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds' : filterByStatus;
     }
+    const sourceFilterActive = filterBySource !== 'all';
     return {
       count: filtered.length,
       revenue: filtered.reduce((sum, c) => sum + (c.final_amount || 0), 0),
       label: statusLabel,
+      dateFilterActive,
+      sourceFilterActive,
+      hiddenByDate: dateFilterActive ? Math.max(0, base.length - filtered.length) : 0,
     };
   }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
@@ -3302,13 +3309,20 @@ export const CustomersTab = ({
                     })}
                   </div>
                   {filteredRevenueStats && (
-                    <div className="flex items-center gap-2 pb-1.5">
-                      <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
-                        £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        {filteredRevenueStats.count} {filteredRevenueStats.label}
-                      </Badge>
+                    <div className="flex flex-col gap-0.5 pb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                          £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {filteredRevenueStats.count} {filteredRevenueStats.label}
+                        </Badge>
+                      </div>
+                      {filteredRevenueStats.dateFilterActive && filteredRevenueStats.sourceFilterActive && filteredRevenueStats.hiddenByDate > 0 && (
+                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                          Date filter applied · {filteredRevenueStats.hiddenByDate} more outside range
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
