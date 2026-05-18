@@ -158,48 +158,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         </div>
       </div>
 
-      {/* Build-your-warranty progress steps */}
-      <div className="px-4 pt-4">
-        <div className="flex items-center gap-2">
-          {['Your cover', 'Your garage'].map((label, i) => {
-            const isActive = i === step;
-            const isDone = i < step;
-            return (
-              <React.Fragment key={label}>
-                <div
-                  onClick={() => isDone && setStep(i)}
-                  className={cn(
-                    'flex items-center gap-2',
-                    isDone && 'cursor-pointer'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold',
-                      isActive && 'bg-primary text-primary-foreground',
-                      isDone && 'bg-success text-success-foreground',
-                      !isActive && !isDone && 'bg-muted text-muted-foreground'
-                    )}
-                  >
-                    {isDone ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : i + 1}
-                  </span>
-                  <span
-                    className={cn(
-                      'text-xs font-semibold',
-                      isActive ? 'text-foreground' : 'text-muted-foreground'
-                    )}
-                  >
-                    {label}
-                  </span>
-                </div>
-                {i === 0 && <div className="flex-1 h-px bg-border" />}
-              </React.Fragment>
-            );
-          })}
-        </div>
-        <p className="text-[10px] text-muted-foreground text-center mt-1.5">Building your warranty plan</p>
-      </div>
-
       {/* Vehicle card */}
       <div className="mx-4 mt-3 bg-card border border-border rounded-xl p-3 flex items-center gap-3">
         <div className="flex-1 min-w-0">
