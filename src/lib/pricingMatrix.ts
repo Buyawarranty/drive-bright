@@ -87,6 +87,23 @@ export type ExcessAmount = keyof typeof BASE_PRICING_MATRIX['12months'];
 export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
 
 /**
+ * Per-duration minimum BASE price (after vehicle adjustment, before labour/boost/add-ons).
+ * Protects margin against acquisition + lead cost on cheap excess/claim combos.
+ * Labour-rate, boost, and add-ons always charge their full incremental amount on top
+ * because the floor is applied to the base only.
+ */
+export const MIN_BASE_PRICE_BY_PERIOD: Record<PaymentPeriod, number> = {
+  '12months': 240,
+  '24months': 400,
+  '36months': 540,
+};
+
+export function applyBasePriceFloor(adjustedBasePrice: number, paymentPeriod: PaymentPeriod): number {
+  const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
+  return Math.max(adjustedBasePrice, minBase);
+}
+
+/**
  * Get base price from the pricing matrix
  * PROMO: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
  * (customer gets £2000 coverage for the price of £1250)
