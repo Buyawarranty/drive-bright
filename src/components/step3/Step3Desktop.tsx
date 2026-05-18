@@ -4,6 +4,7 @@ import { Check, Info, Edit3, ArrowLeft, Star } from 'lucide-react';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly } from '@/lib/claimLimitTiers';
 import {
   calculateLabourRateAdjustment,
+  applyBasePriceFloor,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
@@ -120,7 +121,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
     const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
-    const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+    const adjustedBasePrice = applyBasePriceFloor(
+      applyPriceAdjustment(basePrice, vehicleAdjustment),
+      durationId as PaymentPeriod
+    );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
     const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;

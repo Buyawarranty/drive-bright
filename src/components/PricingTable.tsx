@@ -34,6 +34,7 @@ import {
   calculateLabourRateAdjustment,
   calculateBoostAdjustment,
   getMarketingSavings,
+  applyBasePriceFloor,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
@@ -840,7 +841,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
       discountApplied: basePrice !== adjustedPrice
     });
     
-    return adjustedPrice;
+    // Apply minimum BASE price floor (acquisition + lead cost protection).
+    // Floor is on base only so labour/boost/add-ons still charge extra on top.
+    return applyBasePriceFloor(adjustedPrice, paymentType as PaymentPeriod);
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData]);
 
   // CRITICAL: Compute "effective add-ons" synchronized with paymentType to prevent race condition.
@@ -1077,7 +1080,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
       }
       // £50/hr is the default with no adjustment
       
-      const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
+      // Apply minimum BASE price floor (acquisition + lead cost protection)
+      const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod);
+      const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
@@ -1699,8 +1704,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
               
               // NO automatic discounts - base prices from Excel are already final
-              // The base price already includes multi-year pricing
-              const finalBasePrice = adjustedBasePrice;
+              // The base price already includes multi-year pricing.
+              // Apply minimum BASE price floor (acquisition + lead cost protection).
+              const finalBasePrice = applyBasePriceFloor(adjustedBasePrice, durationId as PaymentPeriod);
               
               // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
               // Apply user's selection consistently to all cards for fair comparison
