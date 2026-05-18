@@ -208,6 +208,10 @@ export const SalesScoreboardTab: React.FC = () => {
           <ScoreboardAwards agents={agents} currentAdminUserId={currentAdminUserId} />
         </TabsContent>
 
+        <TabsContent value="compare">
+          <ScoreboardMonthCompare />
+        </TabsContent>
+
         <TabsContent value="commission">
           <CommissionTimesheetForm
             agent={agents.find(a => a.id === currentAdminUserId) || null}
