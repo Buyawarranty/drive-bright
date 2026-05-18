@@ -6672,6 +6672,51 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_hub_documents: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number | null
+          id: string
+          is_archived: boolean
+          mime_type: string | null
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size?: number | null
+          id?: string
+          is_archived?: boolean
+          mime_type?: string | null
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          is_archived?: boolean
+          mime_type?: string | null
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       staff_timesheets: {
         Row: {
           admin_user_id: string | null
@@ -7862,6 +7907,7 @@ export type Database = {
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
       log_agent_interaction: {
         Args: { p_event_type?: string }
         Returns: undefined

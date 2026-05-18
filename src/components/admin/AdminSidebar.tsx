@@ -287,6 +287,12 @@ const defaultTabs: Tab[] = [
     description: 'Control how leads are tagged Organic / Google / Facebook'
   },
   {
+    id: 'staff-hub',
+    label: 'Staff Hub',
+    icon: FolderOpen,
+    description: 'Staff policies, timesheet rules, holiday & handbook documents'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
@@ -385,6 +391,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     return defaultTabs;
   };
 
+  // Staff Hub is super_admin only during initial roll-out — strip it for everyone else
+  const filterRestricted = (tabs: Tab[]) =>
+    userRole === 'super_admin' ? tabs : tabs.filter(t => t.id !== 'staff-hub');
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -394,7 +404,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
   // Load saved order from localStorage (only for non-blog writers and non-sales)
   useEffect(() => {
-    const visibleTabs = getVisibleTabs();
+    const visibleTabs = filterRestricted(getVisibleTabs());
     
     // Blog writers and sales users don't need custom ordering
     if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_manager') {
