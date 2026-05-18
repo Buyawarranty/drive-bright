@@ -176,7 +176,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
 
       {/* Step content */}
       <div className="px-4 mt-4 space-y-6">
-        {step === 0 && (
+        {true && (
           <>
             {/* Cover level */}
             <section>
