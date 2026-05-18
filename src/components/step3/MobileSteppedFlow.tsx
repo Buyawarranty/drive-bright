@@ -132,7 +132,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   const paymentsCount = 12;
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(13rem+env(safe-area-inset-bottom))]">
+    <div className="min-h-screen bg-background pb-[calc(9rem+env(safe-area-inset-bottom))]">
       {/* Top bar */}
       <div className="bg-card border-b border-border sticky top-0 z-40">
         <div className="px-4 py-3 flex items-center justify-between gap-2">
