@@ -3486,7 +3486,7 @@ export const CustomersTab = ({
                     setFilterByStatus('all');
                     setFilterByTag('all');
                     setFilterByWarrantyPeriod('all');
-                    setFilterBySource(isSalesAgent ? 'all_view' : 'website');
+                    setFilterBySource('all_view');
                     setFilterByAgent(isSalesAgent && currentAdminUser ? currentAdminUser.id : 'all');
                     setTotalSalesDateFilter(isSalesAgent ? '60days' : '30days');
                     const resetRange = isSalesAgent ? getAgentCountsDateRange('60days') : null;
