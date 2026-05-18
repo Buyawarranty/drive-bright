@@ -109,18 +109,20 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               )}
             </div>
 
-            {isMonthly && (
-              <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
-                <span className="text-[13px] font-extrabold text-[#0BA360] leading-tight whitespace-nowrap">
-                  Pay in full £{fullPrice}
-                </span>
-                {savings > 0 && (
-                  <span className="text-[10px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
-                    Save £{savings} today
+            {isMonthly && (() => {
+              const displaySavings = savings > 0 ? savings : Math.round(baseTotal * 0.1);
+              const savePct = baseTotal > 0 ? Math.round((displaySavings / baseTotal) * 100) : 0;
+              return (
+                <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
+                  <span className="text-[13px] font-extrabold text-[#0BA360] leading-tight whitespace-nowrap">
+                    Pay in full £{fullPrice}
                   </span>
-                )}
-              </div>
-            )}
+                  <span className="text-[10px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
+                    Save {savePct}% (£{displaySavings})
+                  </span>
+                </div>
+              );
+            })()}
 
             {isFull && savings > 0 && (
               <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
