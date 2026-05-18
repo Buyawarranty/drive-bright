@@ -109,14 +109,16 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               )}
             </div>
 
-            {isMonthly && savings > 0 && (
+            {isMonthly && (
               <div className="flex flex-col items-end bg-[#E8F7EF] border border-[#0BA360]/20 rounded-lg px-2.5 py-1.5 flex-shrink-0">
                 <span className="text-[13px] font-extrabold text-[#0BA360] leading-tight whitespace-nowrap">
                   Pay in full £{fullPrice}
                 </span>
-                <span className="text-[10px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
-                  Save £{savings} today
-                </span>
+                {savings > 0 && (
+                  <span className="text-[10px] font-semibold text-[#0BA360] leading-tight whitespace-nowrap">
+                    Save £{savings} today
+                  </span>
+                )}
               </div>
             )}
 
