@@ -3,6 +3,7 @@ import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
+import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
 
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
