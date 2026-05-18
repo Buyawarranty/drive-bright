@@ -72,9 +72,6 @@ const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
   5000: { title: 'Maximum cover', sub: 'Complete confidence' },
 };
 
-const STEP_TITLES = ['Cover level & term', 'Repair preference'];
-const TOTAL_STEPS = 2;
-
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
   onBack,
@@ -93,8 +90,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   onContinue,
   isLoading,
 }) => {
-  const [step, setStep] = React.useState(0);
-
   const isPremium = isPremiumVehicle(vehicleData?.make);
   const claimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
@@ -104,27 +99,18 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     availableDurations.includes(t)
   );
 
-  const canAdvance = (() => {
-    if (step === 0) return selectedClaimLimit !== null && paymentType !== null;
-    if (step === 1) return !!selectedLabourRate && voluntaryExcess !== null;
-    return true;
-  })();
+  const canAdvance =
+    selectedClaimLimit !== null &&
+    paymentType !== null &&
+    !!selectedLabourRate &&
+    voluntaryExcess !== null;
 
   const handleNext = () => {
-    if (step < TOTAL_STEPS - 1) {
-      setStep(s => s + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      onContinue();
-    }
+    onContinue();
   };
 
   const handleBack = () => {
-    if (step === 0) onBack();
-    else {
-      setStep(s => s - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    onBack();
   };
 
   // Footer copy
