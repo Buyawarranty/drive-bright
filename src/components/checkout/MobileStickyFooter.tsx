@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Shield, ArrowRight } from 'lucide-react';
+import { Lock, Shield, ArrowRight, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 
