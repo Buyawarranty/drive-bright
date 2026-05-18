@@ -125,7 +125,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
       </div>
 
       {/* Three benefit boxes */}
-      <div className="grid grid-cols-3 gap-3 mt-4">
+      <div className="grid grid-cols-2 gap-3 mt-4">
         <div className="bg-[#F0FAF4] border border-[#B8E2CE] rounded-lg p-3">
           <div className="flex items-start gap-2 mb-1.5">
             <Mail className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
@@ -133,15 +133,6 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
           </div>
           <p className="text-[11px] text-gray-600 leading-snug">
             Your policy documents arrive in seconds.
-          </p>
-        </div>
-        <div className="bg-[#F0FAF4] border border-[#B8E2CE] rounded-lg p-3">
-          <div className="flex items-start gap-2 mb-1.5">
-            <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0 mt-0.5" />
-            <span className="text-xs font-bold text-[#1a1a1a] leading-tight">Cover starts immediately</span>
-          </div>
-          <p className="text-[11px] text-gray-600 leading-snug">
-            You're protected as soon as your payment is confirmed.
           </p>
         </div>
         <div className="bg-[#F0FAF4] border border-[#B8E2CE] rounded-lg p-3">
