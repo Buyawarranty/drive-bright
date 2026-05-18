@@ -1700,8 +1700,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
               
               // NO automatic discounts - base prices from Excel are already final
-              // The base price already includes multi-year pricing
-              const finalBasePrice = adjustedBasePrice;
+              // The base price already includes multi-year pricing.
+              // Apply minimum BASE price floor (acquisition + lead cost protection).
+              const finalBasePrice = applyBasePriceFloor(adjustedBasePrice, durationId as PaymentPeriod);
               
               // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
               // Apply user's selection consistently to all cards for fair comparison
