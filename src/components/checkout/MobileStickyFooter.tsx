@@ -81,26 +81,28 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
     children: React.ReactNode;
   }) => {
     const isSelected = selected === type;
+    const accent = type === 'monthly' ? '#FF6B00' : '#0BA360';
+    const selectedBg = type === 'monthly' ? '#FFE9D6' : '#E6F7EF';
     return (
       <button
         type="button"
         onClick={() => onPaymentChange?.(type)}
         className={cn(
           'relative text-left rounded-2xl border-2 transition-all flex-1 px-3 py-2.5',
-          isSelected
-            ? 'bg-[#FFE9D6] border-[#FF6B00]'
-            : 'bg-[#D9DEE3] border-transparent'
+          isSelected ? '' : 'bg-white border-gray-200'
         )}
+        style={isSelected ? { backgroundColor: selectedBg, borderColor: accent } : undefined}
       >
         <div className="flex items-start justify-between gap-2">
           <span className="text-sm font-bold text-gray-900">{title}</span>
           <span
             className={cn(
               'mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-              isSelected ? 'border-[#FF6B00]' : 'border-gray-400 bg-white'
+              isSelected ? '' : 'border-gray-400 bg-white'
             )}
+            style={isSelected ? { borderColor: accent } : undefined}
           >
-            {isSelected && <span className="w-2 h-2 rounded-full bg-[#FF6B00]" />}
+            {isSelected && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />}
           </span>
         </div>
         {children}

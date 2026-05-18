@@ -57,26 +57,28 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     children: React.ReactNode;
   }) => {
     const isSelected = selected === type;
+    const accent = type === 'monthly' ? '#FF6B00' : '#0BA360';
+    const selectedBg = type === 'monthly' ? '#FFE9D6' : '#E6F7EF';
     return (
       <button
         type="button"
         onClick={() => setSelected(type)}
         className={cn(
           'relative text-left rounded-2xl border-2 transition-all flex-1 px-4 py-3 md:px-5 md:py-4',
-          isSelected
-            ? 'bg-[#FFE9D6] border-[#FF6B00]'
-            : 'bg-[#D9DEE3] border-transparent'
+          isSelected ? '' : 'bg-white border-gray-200'
         )}
+        style={isSelected ? { backgroundColor: selectedBg, borderColor: accent } : undefined}
       >
         <div className="flex items-start justify-between gap-2">
           <span className="text-base md:text-lg font-bold text-gray-900">{title}</span>
           <span
             className={cn(
               'mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-              isSelected ? 'border-[#FF6B00]' : 'border-gray-400 bg-white'
+              isSelected ? '' : 'border-gray-400 bg-white'
             )}
+            style={isSelected ? { borderColor: accent } : undefined}
           >
-            {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />}
+            {isSelected && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: accent }} />}
           </span>
         </div>
         {children}
