@@ -9,6 +9,7 @@ import {
   calculateLabourRateAdjustment,
   calculateBoostAdjustment,
   getMarketingSavings,
+  applyBasePriceFloor,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
