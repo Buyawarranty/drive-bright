@@ -3477,6 +3477,11 @@ export const CustomersTab = ({
                           Date filter applied · {filteredRevenueStats.hiddenByDate} more outside range
                         </span>
                       )}
+                      {filteredRevenueStats.sourceFilterActive && filteredRevenueStats.count === 0 && sourceBreakdownStats?.[filterBySource] && sourceBreakdownStats[filterBySource].count > 0 && (
+                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                          No sales in this range · widen the date filter to see {sourceBreakdownStats[filterBySource].count} {filteredRevenueStats.label}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
