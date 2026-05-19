@@ -1,8 +1,27 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, PoundSterling, Target, TrendingUp, Flame, CheckCircle2, Clock } from 'lucide-react';
+import { Trophy, PoundSterling, Target, TrendingUp, Flame, CheckCircle2, Clock, Rocket, Zap, Star, Inbox } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
+
+interface Milestone {
+  threshold: number;
+  label: string;
+  icon: React.ReactNode;
+  tone: string;
+}
+
+const MILESTONES: Milestone[] = [
+  { threshold: 100, label: 'Target smashed!', icon: <Trophy className="h-4 w-4" />, tone: 'text-green-600' },
+  { threshold: 90,  label: 'Almost there — final push!', icon: <Star className="h-4 w-4 fill-current" />, tone: 'text-amber-600' },
+  { threshold: 75,  label: 'On the home stretch', icon: <Zap className="h-4 w-4" />, tone: 'text-orange-600' },
+  { threshold: 50,  label: 'Halfway hero', icon: <Flame className="h-4 w-4" />, tone: 'text-rose-600' },
+  { threshold: 25,  label: 'Quarter way there', icon: <Rocket className="h-4 w-4" />, tone: 'text-sky-600' },
+  { threshold: 0,   label: "Let's get started", icon: <Rocket className="h-4 w-4" />, tone: 'text-slate-600' },
+];
+
+const getMilestone = (pct: number): Milestone =>
+  MILESTONES.find(m => pct >= m.threshold) || MILESTONES[MILESTONES.length - 1];
 
 interface Props {
   agents: AgentScore[];
@@ -49,19 +68,26 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
               </div>
               <div className="flex-1 max-w-md">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium">
-                    {myProgress! >= 100 ? (
-                      <span className="text-green-600 flex items-center gap-1">🎯 Target smashed!</span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Flame className="h-3 w-3 text-orange-500" />
-                        {myRemaining} more to go
-                      </span>
+                  <span className={`text-xs font-semibold flex items-center gap-1.5 ${getMilestone(myProgress!).tone}`}>
+                    {getMilestone(myProgress!).icon}
+                    {getMilestone(myProgress!).label}
+                    {myProgress! < 100 && (
+                      <span className="text-muted-foreground font-normal">· {myRemaining} more to go</span>
                     )}
                   </span>
                   <span className="text-xs font-bold">{myProgress!.toFixed(0)}%</span>
                 </div>
                 <Progress value={myProgress!} className="h-3" />
+                {/* Milestone tick marks */}
+                <div className="relative h-3 -mt-3 pointer-events-none">
+                  {[25, 50, 75, 90].map(t => (
+                    <div
+                      key={t}
+                      className={`absolute top-0 h-3 w-px ${myProgress! >= t ? 'bg-white/70' : 'bg-foreground/20'}`}
+                      style={{ left: `${t}%` }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -69,7 +95,19 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
       )}
 
       {/* KPI Cards — focused on what matters */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        {/* 0. Leads Taken from New Leads */}
+        <Card className="border bg-indigo-50 border-indigo-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2 text-indigo-600">
+              <Inbox className="h-5 w-5" />
+              <span className="text-xs font-medium truncate">Leads Taken</span>
+            </div>
+            <div className="text-xl font-bold">{myAgent?.leadsAssigned ?? 0}</div>
+            <div className="text-xs text-muted-foreground mt-1">from New Leads</div>
+          </CardContent>
+        </Card>
+
         {/* 1. Target (Goal) */}
         <Card className="border bg-blue-50 border-blue-200">
           <CardContent className="p-4">
