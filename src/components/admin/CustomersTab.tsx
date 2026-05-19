@@ -507,6 +507,88 @@ export const CustomersTab = ({
     };
   }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
+  // Super-admin-only: per-source totals shown inside the Purchase Source dropdown
+  const sourceBreakdownStats = useMemo(() => {
+    if (!isSuperAdmin) return null;
+    const empty = () => ({ count: 0, revenue: 0 });
+    const buckets: Record<string, { count: number; revenue: number }> = {
+      all_view: empty(),
+      website: empty(),
+      website_google: empty(),
+      website_facebook: empty(),
+      website_organic: empty(),
+      staff_purchase: empty(),
+      quote_order: empty(),
+      agent_sales: empty(),
+      cancelled_refunded: empty(),
+    };
+    customers.forEach((c) => {
+      const warrantyNum =
+        c.customer_policies?.[0]?.warranty_number ||
+        c.warranty_reference_number ||
+        c.warranty_number ||
+        '';
+      const status = (c.status || '').toLowerCase();
+      const amount = c.final_amount || 0;
+      const isCancelled = status === 'cancelled' || status === 'refunded';
+
+      if (isCancelled) {
+        buckets.cancelled_refunded.count += 1;
+        buckets.cancelled_refunded.revenue += amount;
+        return; // exclude from active-sales buckets
+      }
+
+      buckets.all_view.count += 1;
+      buckets.all_view.revenue += amount;
+
+      const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+      const isStaff = warrantyNum.startsWith('BAW-S-');
+      const isAdm = warrantyNum.startsWith('ADM');
+
+      if (isWebsite) {
+        buckets.website.count += 1;
+        buckets.website.revenue += amount;
+        const channel = getCustomerAcquisitionChannel(c);
+        if (channel === 'google_ads') {
+          buckets.website_google.count += 1;
+          buckets.website_google.revenue += amount;
+        } else if (channel === 'facebook_ads') {
+          buckets.website_facebook.count += 1;
+          buckets.website_facebook.revenue += amount;
+        } else {
+          buckets.website_organic.count += 1;
+          buckets.website_organic.revenue += amount;
+        }
+      }
+      if (isStaff) {
+        buckets.staff_purchase.count += 1;
+        buckets.staff_purchase.revenue += amount;
+      }
+      if (isAdm) {
+        buckets.quote_order.count += 1;
+        buckets.quote_order.revenue += amount;
+      }
+      if (isStaff || isAdm) {
+        buckets.agent_sales.count += 1;
+        buckets.agent_sales.revenue += amount;
+      }
+    });
+    return buckets;
+  }, [customers, isSuperAdmin]);
+
+  const formatSourceStat = (key: string) => {
+    const s = sourceBreakdownStats?.[key];
+    if (!s) return null;
+    const aov = s.count > 0 ? s.revenue / s.count : 0;
+    const fmt = (n: number) =>
+      new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        maximumFractionDigits: 0,
+      }).format(n);
+    return `${s.count} · ${fmt(s.revenue)} · AOV ${fmt(aov)}`;
+  };
+
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
     const today = new Date();
