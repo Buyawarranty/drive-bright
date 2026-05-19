@@ -526,23 +526,40 @@ export const CustomersTab = ({
       cancelled_refunded: empty(),
     };
 
+    // Honour the same date window the main table uses (dateRange/revenueDateRange
+    // are kept in sync), and align date-field selection (signup_date only) so
+    // breakdown totals match the filtered list exactly.
     let from: Date | null = null;
     let to: Date | null = null;
-    if (revenueDateRange?.from) {
-      from = new Date(revenueDateRange.from);
+    const activeRange = revenueDateRange ?? dateRange;
+    if (activeRange?.from) {
+      from = new Date(activeRange.from);
       from.setHours(0, 0, 0, 0);
-      to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
+      to = activeRange.to ? new Date(activeRange.to) : new Date(from);
       to.setHours(23, 59, 59, 999);
     }
 
     const inRange = (c: any) => {
       if (!from || !to) return true;
-      const d = c.signup_date ? new Date(c.signup_date) : (c.created_at ? new Date(c.created_at) : null);
-      return !!(d && d >= from && d <= to);
+      if (!c.signup_date) return false;
+      const d = new Date(c.signup_date);
+      return d >= from && d <= to;
+    };
+
+    // Honour the active status filter so source totals reflect what the user
+    // is looking at (e.g. switching to "Active" updates every bucket).
+    const matchesStatus = (c: any) => {
+      const status = (c.status || '').toLowerCase();
+      if (filterByStatus === 'all') return true;
+      if (filterByStatus === 'cancelled_and_refunded') {
+        return status === 'cancelled' || status === 'refunded';
+      }
+      return status === filterByStatus.toLowerCase();
     };
 
     customers.forEach((c) => {
       if (!inRange(c)) return;
+      if (!matchesStatus(c)) return;
 
       const warrantyNum =
         c.customer_policies?.[0]?.warranty_number ||
@@ -602,7 +619,7 @@ export const CustomersTab = ({
       }
     });
     return buckets;
-  }, [customers, isSuperAdmin, revenueDateRange]);
+  }, [customers, isSuperAdmin, revenueDateRange, dateRange, filterByStatus]);
 
   const formatSourceStat = (key: string) => {
     const s = sourceBreakdownStats?.[key];
