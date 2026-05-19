@@ -113,6 +113,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
   const [showEmailError, setShowEmailError] = useState(false);
+  const customerInfoRef = React.useRef<HTMLDivElement>(null);
+  const customerNameInputRef = React.useRef<HTMLInputElement>(null);
   const [customMonthlyPrice, setCustomMonthlyPrice] = useState('');
   const [customFullPrice, setCustomFullPrice] = useState('');
   const [showEmailDialog, setShowEmailDialog] = useState(false);
