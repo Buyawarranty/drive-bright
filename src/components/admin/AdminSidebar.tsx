@@ -356,7 +356,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'sales') {
       // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
-      const defaultSalesTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'timesheets', 'account'];
+      const defaultSalesTabIds = ['new-leads', 'get-quote', 'selling-tips', 'timesheets', 'account'];
 
       // If custom permissions exist, union them with the defaults so admins can grant
       // extra access without removing the baseline sales sidebar
