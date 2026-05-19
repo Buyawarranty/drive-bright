@@ -195,7 +195,8 @@ serve(async (req) => {
         additional_notes: additionalNotes || null,
         access_token: accessToken,
         status: 'sent',
-        created_by_name: createdByName || null,
+        created_by: user.id,
+        created_by_name: resolvedAdminName || createdByName || null,
         share_link: `https://buyawarranty.co.uk/quote/${accessToken}`,
         customer_dob: customerDob || null
       })
