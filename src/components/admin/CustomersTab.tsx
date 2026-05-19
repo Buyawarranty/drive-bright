@@ -442,7 +442,11 @@ export const CustomersTab = ({
   const isAdmin = normalizedRole === 'admin';
   const isLeadGen = normalizedRole === 'lead_gen';
   const isClaimsManager = normalizedRole === 'claims_manager';
-  const canSeeSourceColumn = isSuperAdmin;
+  // See Source column — granular permission with role-based defaults
+  // (super_admin, admin, lead_gen ON by default; togglable per user)
+  const seeSourceGranular = hasGranularPermission('customers', 'see-source');
+  const seeSourceDefault = isSuperAdmin || normalizedRole === 'admin' || normalizedRole === 'lead_gen';
+  const canSeeSourceColumn = seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular;
   const isSalesAgent = normalizedRole === 'sales';
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;

@@ -181,11 +181,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       return next;
     });
   };
-  // Only lead_gen always sees source. Super admin can opt in via the H toggle (hidden by default).
-  // Everyone else (admin, sales, sales_lead, support@, etc.) never sees source.
+  // Granular permission: tab_new-leads_see-source.
+  // Defaults: super_admin, admin and lead_gen see source. Others don't.
+  // Super admin can still locally hide via the H toggle.
+  const seeSourceGranular = hasGranularPermission('new-leads', 'see-source');
+  const isAdminRole = userRole === 'admin';
+  const seeSourceDefault = isSuperAdmin || isAdminRole || isLeadGenUser;
+  const seeSourceAllowed = seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular;
   const sourceVisible =
     !isSupportUser &&
-    (isLeadGenUser || (isSuperAdmin && !superAdminHideSource));
+    seeSourceAllowed &&
+    !(isSuperAdmin && superAdminHideSource);
   const sourceHidden = !sourceVisible;
   const canSeeSourceFilter = sourceVisible;
 

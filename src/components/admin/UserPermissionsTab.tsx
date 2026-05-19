@@ -77,12 +77,14 @@ const GRANULAR_PERMISSIONS = {
   'customers': [
     { key: 'view', label: 'View', description: 'Can view customer data' },
     { key: 'own-only', label: 'Own Customers Only', description: 'Only see customers from their own orders (via Quotes & Orders)' },
+    { key: 'see-source', label: 'See Source', description: 'Can see the customer acquisition source (Google/Facebook/Organic/Website)' },
     { key: 'export', label: 'Export', description: 'Can export customer data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete customer records' },
   ],
   'new-leads': [
     { key: 'view', label: 'View', description: 'Can view lead data' },
     { key: 'assign', label: 'Assign Leads', description: 'Can assign or reassign leads to agents' },
+    { key: 'see-source', label: 'See Source', description: 'Can see the lead source (Google/Facebook/Organic)' },
     { key: 'export', label: 'Export', description: 'Can export lead data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete lead records' },
     { key: 'all-leads', label: 'See All Leads', description: 'Can see all leads (OFF = only their own assigned leads)' },
@@ -93,9 +95,9 @@ const GRANULAR_PERMISSIONS = {
 
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
-  super_admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
-  admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
-  dev_tester: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
+  admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
+  dev_tester: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
   sales_lead: {
     'tab_new-leads': true,
     'tab_get-quote': true,
@@ -132,6 +134,8 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_google-ads': true,
     'tab_new-leads': true,
     'tab_new-leads_view': true,
+    'tab_new-leads_see-source': true,
+    'tab_customers_see-source': true,
   },
   accounts: {
     'tab_new-leads': true,
