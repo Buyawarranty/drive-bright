@@ -76,8 +76,8 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
             admin_user_id: agentId,
             target_amount: target,
             target_period: 'monthly',
-            start_date: monthStart.toISOString().split('T')[0],
-            end_date: monthEnd.toISOString().split('T')[0],
+            start_date: monthStart.toISOString(),
+            end_date: monthEnd.toISOString(),
           });
         if (error) throw error;
       }
