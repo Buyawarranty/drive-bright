@@ -508,7 +508,9 @@ export const CustomersTab = ({
     };
   }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
-  // Super-admin-only: per-source totals shown inside the Purchase Source dropdown
+  // Super-admin-only: per-source totals shown inside the Purchase Source dropdown.
+  // Computed ALL-TIME (independent of date filter) so the dropdown always shows
+  // an accurate total for each source — the headline revenue card narrows by date.
   const sourceBreakdownStats = useMemo(() => {
     if (!isSuperAdmin) return null;
     const empty = () => ({ count: 0, revenue: 0 });
@@ -523,6 +525,7 @@ export const CustomersTab = ({
       agent_sales: empty(),
       cancelled_refunded: empty(),
     };
+
     customers.forEach((c) => {
       const warrantyNum =
         c.customer_policies?.[0]?.warranty_number ||
@@ -536,7 +539,7 @@ export const CustomersTab = ({
       if (isCancelled) {
         buckets.cancelled_refunded.count += 1;
         buckets.cancelled_refunded.revenue += amount;
-        return; // exclude from active-sales buckets
+        return;
       }
 
       buckets.all_view.count += 1;
@@ -546,10 +549,17 @@ export const CustomersTab = ({
       const isStaff = warrantyNum.startsWith('BAW-S-');
       const isAdm = warrantyNum.startsWith('ADM');
 
-      if (isWebsite) {
-        buckets.website.count += 1;
-        buckets.website.revenue += amount;
-        const channel = getCustomerAcquisitionChannel(c);
+      // Channel attribution falls back to acquisition_source/gclid so that customers
+      // without a warranty number yet still count toward Google/Facebook totals.
+      const channel = getCustomerAcquisitionChannel(c);
+      const channelOnly = !isWebsite && !isStaff && !isAdm &&
+        (channel === 'google_ads' || channel === 'facebook_ads' || channel === 'website');
+
+      if (isWebsite || channelOnly) {
+        if (isWebsite) {
+          buckets.website.count += 1;
+          buckets.website.revenue += amount;
+        }
         if (channel === 'google_ads') {
           buckets.website_google.count += 1;
           buckets.website_google.revenue += amount;
@@ -3440,6 +3450,11 @@ export const CustomersTab = ({
                       {filteredRevenueStats.dateFilterActive && filteredRevenueStats.sourceFilterActive && filteredRevenueStats.hiddenByDate > 0 && (
                         <span className="text-[11px] text-muted-foreground whitespace-nowrap">
                           Date filter applied · {filteredRevenueStats.hiddenByDate} more outside range
+                        </span>
+                      )}
+                      {filteredRevenueStats.sourceFilterActive && filteredRevenueStats.count === 0 && sourceBreakdownStats?.[filterBySource] && sourceBreakdownStats[filterBySource].count > 0 && (
+                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                          No sales in this range · widen the date filter to see {sourceBreakdownStats[filterBySource].count} {filteredRevenueStats.label}
                         </span>
                       )}
                     </div>
