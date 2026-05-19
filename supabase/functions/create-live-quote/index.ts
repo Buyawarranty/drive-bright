@@ -73,6 +73,8 @@ serve(async (req) => {
       );
     }
 
+    let resolvedAdmin: { first_name?: string | null; last_name?: string | null; email?: string | null } | null = adminUser ?? null;
+
     if (!adminUser) {
       // Fallback: check by email
       logStep("No admin by user_id, trying email fallback", { userId: user.id, email: user.email });
@@ -89,6 +91,7 @@ serve(async (req) => {
           .update({ user_id: user.id })
           .eq('id', adminByEmail.id);
         logStep("Admin found by email, updated user_id mapping", { adminEmail: adminByEmail.email });
+        resolvedAdmin = adminByEmail;
       } else {
         logStep("Not an admin user", { userId: user.id, email: user.email });
         return new Response(
@@ -105,6 +108,12 @@ serve(async (req) => {
     } else {
       logStep("Admin verified", { adminEmail: adminUser.email });
     }
+
+    const resolvedAdminName = [resolvedAdmin?.first_name, resolvedAdmin?.last_name]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+
 
     const body = await req.json();
     const {
@@ -186,7 +195,8 @@ serve(async (req) => {
         additional_notes: additionalNotes || null,
         access_token: accessToken,
         status: 'sent',
-        created_by_name: createdByName || null,
+        created_by: user.id,
+        created_by_name: resolvedAdminName || createdByName || null,
         share_link: `https://buyawarranty.co.uk/quote/${accessToken}`,
         customer_dob: customerDob || null
       })
