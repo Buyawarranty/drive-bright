@@ -1105,10 +1105,7 @@ export default function LiveQuotePage() {
                         <CheckCircle className="w-4 h-4 flex-shrink-0" />
                         <span>Any VAT-registered garage</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-green-700">
-                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                        <span>No waiting period</span>
-                      </div>
+                    
                       {quote.cover.breakdownIncluded && (
                         <div className="flex items-center gap-2 text-sm text-blue-700">
                           <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -1505,10 +1502,7 @@ export default function LiveQuotePage() {
                         <CheckCircle className="w-4 h-4 flex-shrink-0" />
                         <span>Any VAT-registered garage</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-green-700">
-                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                        <span>No waiting period</span>
-                      </div>
+                    
                       {quote.cover.breakdownIncluded && (
                         <div className="flex items-center gap-2 text-sm text-blue-700">
                           <CheckCircle className="w-4 h-4 flex-shrink-0" />
