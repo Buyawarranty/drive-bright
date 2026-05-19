@@ -1141,9 +1141,16 @@ export const UserPermissionsTab = () => {
                 </Select>
               </div>
 
-              {/* Show tab permissions for all non-admin roles */}
-              {editingUser.role !== 'admin' && editingUser.role !== 'dev_tester' && (
-                renderTabPermissionsSection(editingUser.permissions, true)
+              {/* Show tab permissions tickboxes for all editable roles (including Admin so super admins can restrict access) */}
+              {editingUser.role !== 'super_admin' && editingUser.role !== 'dev_tester' && (
+                <>
+                  {editingUser.role === 'admin' && (
+                    <p className="text-xs text-muted-foreground -mb-2">
+                      Administrators have access to all tabs by default. Untick to revoke access to specific tabs.
+                    </p>
+                  )}
+                  {renderTabPermissionsSection(editingUser.permissions, true)}
+                </>
               )}
 
               <div className="flex justify-end gap-2 pt-4">
