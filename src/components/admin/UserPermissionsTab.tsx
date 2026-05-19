@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { useAuth } from '@/hooks/useAuth';
@@ -469,21 +469,20 @@ export const UserPermissionsTab = () => {
   const toggleTabPermission = (tabId: string, isEditing: boolean) => {
     const permKey = `tab_${tabId}`;
     if (isEditing && editingUser) {
-      setEditingUser(prev => prev ? {
-        ...prev,
-        permissions: {
-          ...prev.permissions,
-          [permKey]: !prev.permissions[permKey]
-        }
-      } : null);
+      setEditingUser(prev => {
+        if (!prev) return null;
+        const current = prev.role === 'admin'
+          ? !(permKey in prev.permissions && prev.permissions[permKey] === false)
+          : (prev.permissions[permKey] === true);
+        return { ...prev, permissions: { ...prev.permissions, [permKey]: !current } };
+      });
     } else {
-      setInviteData(prev => ({
-        ...prev,
-        permissions: {
-          ...prev.permissions,
-          [permKey]: !prev.permissions[permKey]
-        }
-      }));
+      setInviteData(prev => {
+        const current = prev.role === 'admin'
+          ? !(permKey in prev.permissions && prev.permissions[permKey] === false)
+          : (prev.permissions[permKey] === true);
+        return { ...prev, permissions: { ...prev.permissions, [permKey]: !current } };
+      });
     }
   };
 
@@ -599,7 +598,7 @@ export const UserPermissionsTab = () => {
     return acc;
   }, {} as Record<string, Permission[]>);
 
-  const renderTabPermissionsSection = (perms: Record<string, boolean>, isEditing: boolean) => (
+  const renderTabPermissionsSection = (perms: Record<string, boolean>, isEditing: boolean, role?: string) => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Label className="text-base font-semibold">Tab Access Permissions</Label>
@@ -628,7 +627,10 @@ export const UserPermissionsTab = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto border rounded-lg p-4">
         {ADMIN_TABS.map((tab) => {
           const permKey = `tab_${tab.id}`;
-          const isChecked = perms[permKey] || false;
+          // Admin role: default ON unless explicitly set to false
+          const isChecked = role === 'admin'
+            ? !(permKey in perms && perms[permKey] === false)
+            : (perms[permKey] || false);
           const granularPerms = GRANULAR_PERMISSIONS[tab.id as keyof typeof GRANULAR_PERMISSIONS];
           
           return (
@@ -1141,9 +1143,16 @@ export const UserPermissionsTab = () => {
                 </Select>
               </div>
 
-              {/* Show tab permissions for all non-admin roles */}
-              {editingUser.role !== 'admin' && editingUser.role !== 'dev_tester' && (
-                renderTabPermissionsSection(editingUser.permissions, true)
+              {/* Show tab permissions tickboxes for all editable roles (including Admin so super admins can restrict access) */}
+              {editingUser.role !== 'super_admin' && editingUser.role !== 'dev_tester' && (
+                <>
+                  {editingUser.role === 'admin' && (
+                    <p className="text-xs text-muted-foreground -mb-2">
+                      Administrators have access to all tabs by default. Untick to revoke access to specific tabs.
+                    </p>
+                  )}
+                  {renderTabPermissionsSection(editingUser.permissions, true, editingUser.role)}
+                </>
               )}
 
               <div className="flex justify-end gap-2 pt-4">
@@ -1192,7 +1201,7 @@ export const UserPermissionsTab = () => {
             <TableBody>
               {users.map((user) => {
                 const isExpanded = expandedPermsUserId === user.id;
-                const canExpand = currentAdminUser?.role === 'super_admin';
+                const canExpand = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
                 return (
                 <React.Fragment key={user.id}>
                 <TableRow data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
@@ -1281,11 +1290,13 @@ export const UserPermissionsTab = () => {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="default"
                         onClick={() => openEditDialog(user)}
-                        title="Edit Permissions"
+                        title="Edit Permissions & Tab Access"
+                        className="bg-primary hover:bg-primary/90"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
                       </Button>
                       {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                       <Button
