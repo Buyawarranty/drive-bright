@@ -68,19 +68,26 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
               </div>
               <div className="flex-1 max-w-md">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium">
-                    {myProgress! >= 100 ? (
-                      <span className="text-green-600 flex items-center gap-1">🎯 Target smashed!</span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Flame className="h-3 w-3 text-orange-500" />
-                        {myRemaining} more to go
-                      </span>
+                  <span className={`text-xs font-semibold flex items-center gap-1.5 ${getMilestone(myProgress!).tone}`}>
+                    {getMilestone(myProgress!).icon}
+                    {getMilestone(myProgress!).label}
+                    {myProgress! < 100 && (
+                      <span className="text-muted-foreground font-normal">· {myRemaining} more to go</span>
                     )}
                   </span>
                   <span className="text-xs font-bold">{myProgress!.toFixed(0)}%</span>
                 </div>
                 <Progress value={myProgress!} className="h-3" />
+                {/* Milestone tick marks */}
+                <div className="relative h-3 -mt-3 pointer-events-none">
+                  {[25, 50, 75, 90].map(t => (
+                    <div
+                      key={t}
+                      className={`absolute top-0 h-3 w-px ${myProgress! >= t ? 'bg-white/70' : 'bg-foreground/20'}`}
+                      style={{ left: `${t}%` }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </CardContent>
