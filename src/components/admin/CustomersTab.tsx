@@ -551,9 +551,8 @@ export const CustomersTab = ({
     const matchesStatus = (c: any) => {
       const status = (c.status || '').toLowerCase();
       if (filterByStatus === 'all') return true;
-      if (filterByStatus === 'refunded') return refundedCustomerIds.has(c.id);
       if (filterByStatus === 'cancelled_and_refunded') {
-        return refundedCustomerIds.has(c.id) || status === 'cancelled';
+        return status === 'cancelled' || status === 'refunded';
       }
       return status === filterByStatus.toLowerCase();
     };
