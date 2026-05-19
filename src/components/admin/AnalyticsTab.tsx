@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
+import { QuickMonthFilter } from './QuickMonthFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
@@ -702,6 +703,20 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             }}
             className="min-w-[280px]"
           />
+
+          {(userRole === 'super_admin' || userRole === 'admin') && (
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Quick month</Label>
+              <QuickMonthFilter
+                dateRange={dateRange}
+                onDateRangeChange={(range) => {
+                  setDateRange(range);
+                  setSelectedMonth(null);
+                  setComparisonPeriod(null);
+                }}
+              />
+            </div>
+          )}
           
           <div className="space-y-1 min-w-[200px]">
             <Label className="text-sm font-medium">Sales Source</Label>

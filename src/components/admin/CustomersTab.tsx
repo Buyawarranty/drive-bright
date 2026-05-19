@@ -64,6 +64,7 @@ import { PaymentDueDatePicker } from './PaymentDueDatePicker';
 import { CancellationsTab } from './CancellationsTab';
 import { RemindMePopover } from './leads/RemindMePopover';
 import { DateRangeFilter } from './DateRangeFilter';
+import { QuickMonthFilter } from './QuickMonthFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { AddClaimDialog } from './claims/AddClaimDialog';
 import { format } from 'date-fns';
@@ -3148,6 +3149,19 @@ export const CustomersTab = ({
                       setRevenueDateRange(r ?? undefined);
                     }}
                     className="w-full"
+                  />
+                </div>
+              )}
+
+              {(isSuperAdmin || isAdmin) && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Quick month</Label>
+                  <QuickMonthFilter
+                    dateRange={dateRange}
+                    onDateRangeChange={(r) => {
+                      setDateRange(r);
+                      setRevenueDateRange(r ?? undefined);
+                    }}
                   />
                 </div>
               )}
