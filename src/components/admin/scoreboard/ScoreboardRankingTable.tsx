@@ -85,7 +85,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   {/* Avatar & Name */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-muted text-muted-foreground'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
                         {agent.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
