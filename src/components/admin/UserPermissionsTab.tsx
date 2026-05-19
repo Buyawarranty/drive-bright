@@ -1201,7 +1201,7 @@ export const UserPermissionsTab = () => {
             <TableBody>
               {users.map((user) => {
                 const isExpanded = expandedPermsUserId === user.id;
-                const canExpand = currentAdminUser?.role === 'super_admin';
+                const canExpand = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
                 return (
                 <React.Fragment key={user.id}>
                 <TableRow data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
