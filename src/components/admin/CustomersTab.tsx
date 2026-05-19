@@ -3224,62 +3224,89 @@ export const CustomersTab = ({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all_view">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gray-400" />
-                        All View
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        Website (BAW)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website_google">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Website G (Google Ads)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website_facebook">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-sky-500" />
-                        Website F (Facebook Ads)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website_organic">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                        Website O (Organic)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="staff_purchase">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        Staff Purchase (BAW-S)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="quote_order">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-purple-500" />
-                        Quote & Orders (ADM)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="agent_sales">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-orange-500" />
-                        Agent Sales (BAW-S + ADM)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="cancelled_refunded">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        Cancelled / Refunded
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
+                   <SelectContent className="max-w-[420px]">
+                     <SelectItem value="all_view">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-gray-400" />
+                         <span>All View</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('all_view')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-blue-500" />
+                         <span>Website (BAW)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website_google">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                         <span>Website G (Google Ads)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_google')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website_facebook">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-sky-500" />
+                         <span>Website F (Facebook Ads)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_facebook')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website_organic">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-amber-500" />
+                         <span>Website O (Organic)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_organic')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="staff_purchase">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-green-500" />
+                         <span>Staff Purchase (BAW-S)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('staff_purchase')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="quote_order">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-purple-500" />
+                         <span>Quote & Orders (ADM)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('quote_order')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="agent_sales">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-orange-500" />
+                         <span>Agent Sales (BAW-S + ADM)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('agent_sales')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="cancelled_refunded">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-red-500" />
+                         <span>Cancelled / Refunded</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('cancelled_refunded')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                   </SelectContent>
                 </Select>
                </div>
               )}
