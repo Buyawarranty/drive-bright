@@ -70,7 +70,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
           .eq('id', existingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('sales_targets')
           .insert({
             admin_user_id: agentId,
@@ -78,12 +78,18 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
             target_period: 'monthly',
             start_date: monthStart.toISOString(),
             end_date: monthEnd.toISOString(),
-          });
+          })
+          .select('id')
+          .single();
         if (error) throw error;
+        if (data?.id) {
+          setExistingTargets(prev => ({ ...prev, [agentId]: data.id }));
+        }
       }
 
       toast.success('Target saved');
-      onTargetSaved();
+      // Note: intentionally not calling onTargetSaved() here to avoid
+      // a parent refresh that resets the Tabs view back to the leaderboard.
     } catch (error) {
       console.error('Error saving target:', error);
       toast.error('Failed to save target');
