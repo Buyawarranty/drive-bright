@@ -95,9 +95,9 @@ const GRANULAR_PERMISSIONS = {
 
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
-  super_admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
-  admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
-  dev_tester: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
+  admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
+  dev_tester: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
   sales_lead: {
     'tab_new-leads': true,
     'tab_get-quote': true,
