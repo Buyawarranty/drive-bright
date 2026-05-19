@@ -1290,11 +1290,13 @@ export const UserPermissionsTab = () => {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="default"
                         onClick={() => openEditDialog(user)}
-                        title="Edit Permissions"
+                        title="Edit Permissions & Tab Access"
+                        className="bg-primary hover:bg-primary/90"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
                       </Button>
                       {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                       <Button
