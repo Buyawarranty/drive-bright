@@ -767,8 +767,23 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         description: "Please fill in customer name and a valid email address",
         variant: "destructive",
       });
-      // Auto-scroll to the top so user can see the error fields
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Auto-scroll to the customer info section so user can see the error fields
+      // Use scrollIntoView (works inside any scroll container) and focus the first invalid field
+      setTimeout(() => {
+        const target = customerInfoRef.current;
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        // Also try common scroll containers as a fallback
+        document.querySelectorAll('[data-scroll-container], main, .overflow-y-auto, .overflow-auto').forEach((el) => {
+          try { (el as HTMLElement).scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+        });
+        setTimeout(() => {
+          if (!customerName.trim()) customerNameInputRef.current?.focus();
+        }, 350);
+      }, 0);
       return;
     }
     setStep(3);
