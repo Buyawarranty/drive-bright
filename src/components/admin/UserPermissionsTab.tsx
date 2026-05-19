@@ -469,21 +469,20 @@ export const UserPermissionsTab = () => {
   const toggleTabPermission = (tabId: string, isEditing: boolean) => {
     const permKey = `tab_${tabId}`;
     if (isEditing && editingUser) {
-      setEditingUser(prev => prev ? {
-        ...prev,
-        permissions: {
-          ...prev.permissions,
-          [permKey]: !prev.permissions[permKey]
-        }
-      } : null);
+      setEditingUser(prev => {
+        if (!prev) return null;
+        const current = prev.role === 'admin'
+          ? !(permKey in prev.permissions && prev.permissions[permKey] === false)
+          : (prev.permissions[permKey] === true);
+        return { ...prev, permissions: { ...prev.permissions, [permKey]: !current } };
+      });
     } else {
-      setInviteData(prev => ({
-        ...prev,
-        permissions: {
-          ...prev.permissions,
-          [permKey]: !prev.permissions[permKey]
-        }
-      }));
+      setInviteData(prev => {
+        const current = prev.role === 'admin'
+          ? !(permKey in prev.permissions && prev.permissions[permKey] === false)
+          : (prev.permissions[permKey] === true);
+        return { ...prev, permissions: { ...prev.permissions, [permKey]: !current } };
+      });
     }
   };
 
