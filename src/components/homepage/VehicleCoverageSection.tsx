@@ -320,34 +320,30 @@ const VehicleCoverageSection: React.FC<VehicleCoverageSectionProps> = ({ heading
               <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="mt-3 p-6 bg-red-50 rounded-lg border border-red-200">
-                <p className="text-gray-700 font-medium mb-4">
-                  We keep things straightforward and transparent.
-                </p>
-                <ul className="grid md:grid-cols-2 gap-3 text-sm">
-                  <li className="flex items-start gap-2">
-                    <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Pre-existing faults</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Gradual wear without mechanical failure</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Accident, fire, flood, or theft damage</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Routine servicing and maintenance</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Vehicles used for hire or reward</span>
-                  </li>
+              <div className="mt-3 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="flex items-center gap-3 bg-red-50 px-6 py-4 border-b border-gray-200">
+                  <X className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <span className="font-semibold text-red-600">Not Covered</span>
+                </div>
+                <ul className="divide-y divide-gray-200">
+                  {[
+                    "Wear and tear (tyres, brake pads, etc.)",
+                    "Accidental or cosmetic damage",
+                    "Pre-existing faults at purchase",
+                    "Negligence or lack of servicing",
+                    "Modifications that affect covered parts",
+                    "High-performance / track cars",
+                    "Vehicles used for hire or reward",
+                    "Flood, fire, theft or weather damage",
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 px-6 py-3">
+                      <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">{item}</span>
+                    </li>
+                  ))}
                 </ul>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full mt-4 pt-3 border-t border-red-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                  <button className="w-full px-6 py-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
                     <span className="text-sm font-medium">Close</span>
                     <ChevronDown className="w-5 h-5 rotate-180" />
                   </button>
