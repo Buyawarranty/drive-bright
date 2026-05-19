@@ -602,7 +602,7 @@ export const CustomersTab = ({
       }
     });
     return buckets;
-  }, [customers, isSuperAdmin]);
+  }, [customers, isSuperAdmin, revenueDateRange]);
 
   const formatSourceStat = (key: string) => {
     const s = sourceBreakdownStats?.[key];
