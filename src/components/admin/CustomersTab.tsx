@@ -509,8 +509,8 @@ export const CustomersTab = ({
   }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
   // Super-admin-only: per-source totals shown inside the Purchase Source dropdown.
-  // Computed ALL-TIME (independent of date filter) so the dropdown always shows
-  // an accurate total for each source — the headline revenue card narrows by date.
+  // Honors the active date filter (Quick month / custom range) so April vs May
+  // show their own numbers. Falls back to all-time when no date is selected.
   const sourceBreakdownStats = useMemo(() => {
     if (!isSuperAdmin) return null;
     const empty = () => ({ count: 0, revenue: 0 });
@@ -526,7 +526,24 @@ export const CustomersTab = ({
       cancelled_refunded: empty(),
     };
 
+    let from: Date | null = null;
+    let to: Date | null = null;
+    if (revenueDateRange?.from) {
+      from = new Date(revenueDateRange.from);
+      from.setHours(0, 0, 0, 0);
+      to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
+      to.setHours(23, 59, 59, 999);
+    }
+
+    const inRange = (c: any) => {
+      if (!from || !to) return true;
+      const d = c.signup_date ? new Date(c.signup_date) : (c.created_at ? new Date(c.created_at) : null);
+      return !!(d && d >= from && d <= to);
+    };
+
     customers.forEach((c) => {
+      if (!inRange(c)) return;
+
       const warrantyNum =
         c.customer_policies?.[0]?.warranty_number ||
         c.warranty_reference_number ||
