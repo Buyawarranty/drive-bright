@@ -95,7 +95,19 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
       )}
 
       {/* KPI Cards — focused on what matters */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        {/* 0. Leads Taken from New Leads */}
+        <Card className="border bg-indigo-50 border-indigo-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2 text-indigo-600">
+              <Inbox className="h-5 w-5" />
+              <span className="text-xs font-medium truncate">Leads Taken</span>
+            </div>
+            <div className="text-xl font-bold">{myAgent?.leadsAssigned ?? 0}</div>
+            <div className="text-xs text-muted-foreground mt-1">from New Leads</div>
+          </CardContent>
+        </Card>
+
         {/* 1. Target (Goal) */}
         <Card className="border bg-blue-50 border-blue-200">
           <CardContent className="p-4">
