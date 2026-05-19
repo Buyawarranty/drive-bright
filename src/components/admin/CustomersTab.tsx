@@ -507,6 +507,88 @@ export const CustomersTab = ({
     };
   }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
+  // Super-admin-only: per-source totals shown inside the Purchase Source dropdown
+  const sourceBreakdownStats = useMemo(() => {
+    if (!isSuperAdmin) return null;
+    const empty = () => ({ count: 0, revenue: 0 });
+    const buckets: Record<string, { count: number; revenue: number }> = {
+      all_view: empty(),
+      website: empty(),
+      website_google: empty(),
+      website_facebook: empty(),
+      website_organic: empty(),
+      staff_purchase: empty(),
+      quote_order: empty(),
+      agent_sales: empty(),
+      cancelled_refunded: empty(),
+    };
+    customers.forEach((c) => {
+      const warrantyNum =
+        c.customer_policies?.[0]?.warranty_number ||
+        c.warranty_reference_number ||
+        c.warranty_number ||
+        '';
+      const status = (c.status || '').toLowerCase();
+      const amount = c.final_amount || 0;
+      const isCancelled = status === 'cancelled' || status === 'refunded';
+
+      if (isCancelled) {
+        buckets.cancelled_refunded.count += 1;
+        buckets.cancelled_refunded.revenue += amount;
+        return; // exclude from active-sales buckets
+      }
+
+      buckets.all_view.count += 1;
+      buckets.all_view.revenue += amount;
+
+      const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+      const isStaff = warrantyNum.startsWith('BAW-S-');
+      const isAdm = warrantyNum.startsWith('ADM');
+
+      if (isWebsite) {
+        buckets.website.count += 1;
+        buckets.website.revenue += amount;
+        const channel = getCustomerAcquisitionChannel(c);
+        if (channel === 'google_ads') {
+          buckets.website_google.count += 1;
+          buckets.website_google.revenue += amount;
+        } else if (channel === 'facebook_ads') {
+          buckets.website_facebook.count += 1;
+          buckets.website_facebook.revenue += amount;
+        } else {
+          buckets.website_organic.count += 1;
+          buckets.website_organic.revenue += amount;
+        }
+      }
+      if (isStaff) {
+        buckets.staff_purchase.count += 1;
+        buckets.staff_purchase.revenue += amount;
+      }
+      if (isAdm) {
+        buckets.quote_order.count += 1;
+        buckets.quote_order.revenue += amount;
+      }
+      if (isStaff || isAdm) {
+        buckets.agent_sales.count += 1;
+        buckets.agent_sales.revenue += amount;
+      }
+    });
+    return buckets;
+  }, [customers, isSuperAdmin]);
+
+  const formatSourceStat = (key: string) => {
+    const s = sourceBreakdownStats?.[key];
+    if (!s) return null;
+    const aov = s.count > 0 ? s.revenue / s.count : 0;
+    const fmt = (n: number) =>
+      new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        maximumFractionDigits: 0,
+      }).format(n);
+    return `${s.count} · ${fmt(s.revenue)} · AOV ${fmt(aov)}`;
+  };
+
   // Detect customers with future activations due today
   const dueTodayCustomers = useMemo(() => {
     const today = new Date();
@@ -3142,62 +3224,89 @@ export const CustomersTab = ({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all_view">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gray-400" />
-                        All View
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        Website (BAW)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website_google">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Website G (Google Ads)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website_facebook">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-sky-500" />
-                        Website F (Facebook Ads)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="website_organic">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                        Website O (Organic)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="staff_purchase">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        Staff Purchase (BAW-S)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="quote_order">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-purple-500" />
-                        Quote & Orders (ADM)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="agent_sales">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-orange-500" />
-                        Agent Sales (BAW-S + ADM)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="cancelled_refunded">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        Cancelled / Refunded
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
+                   <SelectContent className="max-w-[420px]">
+                     <SelectItem value="all_view">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-gray-400" />
+                         <span>All View</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('all_view')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-blue-500" />
+                         <span>Website (BAW)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website_google">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                         <span>Website G (Google Ads)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_google')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website_facebook">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-sky-500" />
+                         <span>Website F (Facebook Ads)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_facebook')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="website_organic">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-amber-500" />
+                         <span>Website O (Organic)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_organic')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="staff_purchase">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-green-500" />
+                         <span>Staff Purchase (BAW-S)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('staff_purchase')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="quote_order">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-purple-500" />
+                         <span>Quote & Orders (ADM)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('quote_order')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="agent_sales">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-orange-500" />
+                         <span>Agent Sales (BAW-S + ADM)</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('agent_sales')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                     <SelectItem value="cancelled_refunded">
+                       <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-red-500" />
+                         <span>Cancelled / Refunded</span>
+                         {sourceBreakdownStats && (
+                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('cancelled_refunded')}</span>
+                         )}
+                       </div>
+                     </SelectItem>
+                   </SelectContent>
                 </Select>
                </div>
               )}
