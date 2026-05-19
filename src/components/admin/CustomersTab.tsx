@@ -508,7 +508,8 @@ export const CustomersTab = ({
     };
   }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
 
-  // Super-admin-only: per-source totals shown inside the Purchase Source dropdown
+  // Super-admin-only: per-source totals shown inside the Purchase Source dropdown.
+  // Respects the active revenueDateRange so the dropdown numbers match the headline card.
   const sourceBreakdownStats = useMemo(() => {
     if (!isSuperAdmin) return null;
     const empty = () => ({ count: 0, revenue: 0 });
@@ -523,7 +524,23 @@ export const CustomersTab = ({
       agent_sales: empty(),
       cancelled_refunded: empty(),
     };
+
+    let from: Date | null = null;
+    let to: Date | null = null;
+    if (revenueDateRange?.from) {
+      from = new Date(revenueDateRange.from);
+      from.setHours(0, 0, 0, 0);
+      to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
+      to.setHours(23, 59, 59, 999);
+    }
+
     customers.forEach((c) => {
+      // Date filter (matches filteredRevenueStats)
+      if (from && to) {
+        const signupDate = c.signup_date ? new Date(c.signup_date) : (c.created_at ? new Date(c.created_at) : null);
+        if (!signupDate || signupDate < from || signupDate > to) return;
+      }
+
       const warrantyNum =
         c.customer_policies?.[0]?.warranty_number ||
         c.warranty_reference_number ||
@@ -545,6 +562,24 @@ export const CustomersTab = ({
       const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
       const isStaff = warrantyNum.startsWith('BAW-S-');
       const isAdm = warrantyNum.startsWith('ADM');
+
+      // Fallback: customers with no warranty number yet (recent signups) should
+      // still appear in the channel buckets so Google/Facebook totals are not 0.
+      if (!warrantyNum) {
+        const channel = getCustomerAcquisitionChannel(c);
+        if (channel === 'google_ads') {
+          buckets.website_google.count += 1;
+          buckets.website_google.revenue += amount;
+        } else if (channel === 'facebook_ads') {
+          buckets.website_facebook.count += 1;
+          buckets.website_facebook.revenue += amount;
+        } else {
+          buckets.website_organic.count += 1;
+          buckets.website_organic.revenue += amount;
+        }
+        buckets.website.count += 1;
+        buckets.website.revenue += amount;
+      }
 
       if (isWebsite) {
         buckets.website.count += 1;
@@ -575,7 +610,7 @@ export const CustomersTab = ({
       }
     });
     return buckets;
-  }, [customers, isSuperAdmin]);
+  }, [customers, isSuperAdmin, revenueDateRange]);
 
   const formatSourceStat = (key: string) => {
     const s = sourceBreakdownStats?.[key];
