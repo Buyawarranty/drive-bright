@@ -699,6 +699,44 @@ export type Database = {
           },
         ]
       }
+      api_webhook_endpoints: {
+        Row: {
+          active: boolean
+          created_at: string
+          dealer_id: string
+          events: string[]
+          id: string
+          secret: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          dealer_id: string
+          events?: string[]
+          id?: string
+          secret: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          dealer_id?: string
+          events?: string[]
+          id?: string
+          secret?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_webhook_endpoints_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_ips: {
         Row: {
           blocked_at: string
@@ -3635,6 +3673,50 @@ export type Database = {
         }
         Relationships: []
       }
+      dealer_api_keys: {
+        Row: {
+          created_at: string
+          dealer_id: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          label: string
+          last_used_at: string | null
+          revoked_at: string | null
+          scopes: string[]
+        }
+        Insert: {
+          created_at?: string
+          dealer_id: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          label: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Update: {
+          created_at?: string
+          dealer_id?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          label?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_api_keys_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealer_customers: {
         Row: {
           address_line_1: string | null
@@ -3979,35 +4061,50 @@ export type Database = {
       }
       dealers: {
         Row: {
+          commission_tier: string | null
           company_name: string
           created_at: string
           discount_pct: number
           email: string
+          fca_number: string | null
+          finance_limit: number | null
           id: string
           name: string
           phone: string | null
+          status: string | null
+          trading_name: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          commission_tier?: string | null
           company_name: string
           created_at?: string
           discount_pct?: number
           email: string
+          fca_number?: string | null
+          finance_limit?: number | null
           id?: string
           name: string
           phone?: string | null
+          status?: string | null
+          trading_name?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          commission_tier?: string | null
           company_name?: string
           created_at?: string
           discount_pct?: number
           email?: string
+          fca_number?: string | null
+          finance_limit?: number | null
           id?: string
           name?: string
           phone?: string | null
+          status?: string | null
+          trading_name?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -4472,6 +4569,353 @@ export type Database = {
           vehicle_reg?: string | null
         }
         Relationships: []
+      }
+      finance_application_docs: {
+        Row: {
+          application_id: string
+          created_at: string
+          doc_type: string
+          file_path: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          doc_type: string
+          file_path: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          doc_type?: string
+          file_path?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_application_docs_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "finance_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_application_events: {
+        Row: {
+          actor: string | null
+          application_id: string
+          created_at: string
+          event_type: string
+          from_status:
+            | Database["public"]["Enums"]["finance_application_status"]
+            | null
+          id: string
+          payload: Json | null
+          to_status:
+            | Database["public"]["Enums"]["finance_application_status"]
+            | null
+        }
+        Insert: {
+          actor?: string | null
+          application_id: string
+          created_at?: string
+          event_type: string
+          from_status?:
+            | Database["public"]["Enums"]["finance_application_status"]
+            | null
+          id?: string
+          payload?: Json | null
+          to_status?:
+            | Database["public"]["Enums"]["finance_application_status"]
+            | null
+        }
+        Update: {
+          actor?: string | null
+          application_id?: string
+          created_at?: string
+          event_type?: string
+          from_status?:
+            | Database["public"]["Enums"]["finance_application_status"]
+            | null
+          id?: string
+          payload?: Json | null
+          to_status?:
+            | Database["public"]["Enums"]["finance_application_status"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_application_events_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "finance_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_application_finance: {
+        Row: {
+          application_id: string
+          apr: number | null
+          balloon: number | null
+          cash_price: number | null
+          commission: number | null
+          data: Json | null
+          deposit: number | null
+          lender_id: string | null
+          monthly: number | null
+          product: string | null
+          term_months: number | null
+        }
+        Insert: {
+          application_id: string
+          apr?: number | null
+          balloon?: number | null
+          cash_price?: number | null
+          commission?: number | null
+          data?: Json | null
+          deposit?: number | null
+          lender_id?: string | null
+          monthly?: number | null
+          product?: string | null
+          term_months?: number | null
+        }
+        Update: {
+          application_id?: string
+          apr?: number | null
+          balloon?: number | null
+          cash_price?: number | null
+          commission?: number | null
+          data?: Json | null
+          deposit?: number | null
+          lender_id?: string | null
+          monthly?: number | null
+          product?: string | null
+          term_months?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_application_finance_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "finance_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_application_messages: {
+        Row: {
+          application_id: string
+          author: string | null
+          author_role: string
+          body: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          application_id: string
+          author?: string | null
+          author_role: string
+          body: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          application_id?: string
+          author?: string | null
+          author_role?: string
+          body?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_application_messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "finance_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_application_vehicle: {
+        Row: {
+          application_id: string
+          condition: string | null
+          data: Json | null
+          derivative: string | null
+          hpi_clear: boolean | null
+          make: string | null
+          mileage: number | null
+          model: string | null
+          valuation: number | null
+          vrm: string | null
+          year: number | null
+        }
+        Insert: {
+          application_id: string
+          condition?: string | null
+          data?: Json | null
+          derivative?: string | null
+          hpi_clear?: boolean | null
+          make?: string | null
+          mileage?: number | null
+          model?: string | null
+          valuation?: number | null
+          vrm?: string | null
+          year?: number | null
+        }
+        Update: {
+          application_id?: string
+          condition?: string | null
+          data?: Json | null
+          derivative?: string | null
+          hpi_clear?: boolean | null
+          make?: string | null
+          mileage?: number | null
+          model?: string | null
+          valuation?: number | null
+          vrm?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_application_vehicle_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "finance_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_applications: {
+        Row: {
+          assigned_underwriter: string | null
+          created_at: string
+          customer: Json
+          dealer_id: string
+          decided_at: string | null
+          decision: Json | null
+          id: string
+          notes: string | null
+          reference: string
+          status: Database["public"]["Enums"]["finance_application_status"]
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_underwriter?: string | null
+          created_at?: string
+          customer?: Json
+          dealer_id: string
+          decided_at?: string | null
+          decision?: Json | null
+          id?: string
+          notes?: string | null
+          reference?: string
+          status?: Database["public"]["Enums"]["finance_application_status"]
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_underwriter?: string | null
+          created_at?: string
+          customer?: Json
+          dealer_id?: string
+          decided_at?: string | null
+          decision?: Json | null
+          id?: string
+          notes?: string | null
+          reference?: string
+          status?: Database["public"]["Enums"]["finance_application_status"]
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_applications_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_lenders: {
+        Row: {
+          active: boolean
+          contact: Json | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          contact?: Json | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          contact?: Json | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      finance_products: {
+        Row: {
+          active: boolean
+          commission_split: Json | null
+          created_at: string
+          id: string
+          lender_id: string
+          name: string
+          product_type: string
+          rate_card: Json
+        }
+        Insert: {
+          active?: boolean
+          commission_split?: Json | null
+          created_at?: string
+          id?: string
+          lender_id: string
+          name: string
+          product_type: string
+          rate_card?: Json
+        }
+        Update: {
+          active?: boolean
+          commission_split?: Json | null
+          created_at?: string
+          id?: string
+          lender_id?: string
+          name?: string
+          product_type?: string
+          rate_card?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_products_lender_id_fkey"
+            columns: ["lender_id"]
+            isOneToOne: false
+            referencedRelation: "finance_lenders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ghl_push_queue: {
         Row: {
@@ -5645,6 +6089,54 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          application_id: string | null
+          created_at: string
+          dealer_id: string
+          id: string
+          paid_at: string | null
+          period: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          application_id?: string | null
+          created_at?: string
+          dealer_id: string
+          id?: string
+          paid_at?: string | null
+          period?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          application_id?: string | null
+          created_at?: string
+          dealer_id?: string
+          id?: string
+          paid_at?: string | null
+          period?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "finance_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
             referencedColumns: ["id"]
           },
         ]
@@ -7288,6 +7780,30 @@ export type Database = {
           },
         ]
       }
+      underwriting_rules: {
+        Row: {
+          active: boolean
+          id: string
+          name: string
+          rules: Json
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          id?: string
+          name: string
+          rules?: Json
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          id?: string
+          name?: string
+          rules?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_activity_log: {
         Row: {
           activity_type: string
@@ -7859,6 +8375,7 @@ export type Database = {
         Args: { p_agent_id: string; p_lead_id: string }
         Returns: Json
       }
+      current_dealer_id: { Args: never; Returns: string }
       delete_admin_user_cascade: {
         Args: { p_admin_user_id: string }
         Returns: undefined
@@ -7907,6 +8424,7 @@ export type Database = {
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       log_agent_interaction: {
         Args: { p_event_type?: string }
@@ -7978,6 +8496,19 @@ export type Database = {
     }
     Enums: {
       action_scope: "none" | "own" | "team" | "department" | "global"
+      finance_application_status:
+        | "draft"
+        | "submitted"
+        | "pre_screen"
+        | "underwriting"
+        | "referred"
+        | "approved"
+        | "docs_pending"
+        | "payout_pending"
+        | "paid"
+        | "completed"
+        | "declined"
+        | "withdrawn"
       interaction_type: "call" | "email" | "chat" | "in_person"
       lead_priority: "low" | "medium" | "high" | "urgent"
       lead_source:
@@ -8163,6 +8694,20 @@ export const Constants = {
   public: {
     Enums: {
       action_scope: ["none", "own", "team", "department", "global"],
+      finance_application_status: [
+        "draft",
+        "submitted",
+        "pre_screen",
+        "underwriting",
+        "referred",
+        "approved",
+        "docs_pending",
+        "payout_pending",
+        "paid",
+        "completed",
+        "declined",
+        "withdrawn",
+      ],
       interaction_type: ["call", "email", "chat", "in_person"],
       lead_priority: ["low", "medium", "high", "urgent"],
       lead_source: [
