@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
+import { QuickMonthFilter } from './QuickMonthFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
