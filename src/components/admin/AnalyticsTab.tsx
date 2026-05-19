@@ -1243,12 +1243,13 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                 activeDot={{ r: 6 }}
               />
               <Line
-                yAxisId="left"
+                yAxisId="right"
+                type="monotone"
                 dataKey="salesCount"
-                stroke="transparent"
-                dot={false}
-                activeDot={false}
-                legendType="none"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={{ fill: '#3b82f6', r: 4 }}
+                activeDot={{ r: 6, fill: '#2563eb' }}
               />
             </ComposedChart>
           </ResponsiveContainer>
