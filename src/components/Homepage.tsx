@@ -728,7 +728,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-base text-brand-dark-text"><strong>14-day</strong> money-back guarantee</span>
+                    <span className="text-base text-brand-dark-text"><strong>14-day</strong> cooling off period</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
