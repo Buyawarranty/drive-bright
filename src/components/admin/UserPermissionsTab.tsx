@@ -134,6 +134,8 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_google-ads': true,
     'tab_new-leads': true,
     'tab_new-leads_view': true,
+    'tab_new-leads_see-source': true,
+    'tab_customers_see-source': true,
   },
   accounts: {
     'tab_new-leads': true,
