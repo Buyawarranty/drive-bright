@@ -1151,7 +1151,7 @@ export const UserPermissionsTab = () => {
                       Administrators have access to all tabs by default. Untick to revoke access to specific tabs.
                     </p>
                   )}
-                  {renderTabPermissionsSection(editingUser.permissions, true)}
+                  {renderTabPermissionsSection(editingUser.permissions, true, editingUser.role)}
                 </>
               )}
 
