@@ -619,7 +619,7 @@ export const CustomersTab = ({
       }
     });
     return buckets;
-  }, [customers, isSuperAdmin, revenueDateRange, dateRange, filterByStatus, refundedCustomerIds]);
+  }, [customers, isSuperAdmin, revenueDateRange, dateRange, filterByStatus]);
 
   const formatSourceStat = (key: string) => {
     const s = sourceBreakdownStats?.[key];
