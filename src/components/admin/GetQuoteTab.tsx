@@ -2217,10 +2217,11 @@ Questions? Call 0330 229 5040`;
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Customer Info */}
-                <div className="grid grid-cols-3 gap-4">
+                <div ref={customerInfoRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
                   <div className="space-y-2">
                     <Label>Customer Name <span className="text-red-500">*</span></Label>
                     <Input
+                      ref={customerNameInputRef}
                       value={customerName}
                       onChange={(e) => {
                         setCustomerName(e.target.value);
