@@ -444,6 +444,14 @@ const AdminDashboard = () => {
       case 'timesheets':
         return <TimesheetsTab />;
       case 'sales-scoreboard':
+        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin' && effectiveUserRole !== 'sales_lead') {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">The Sales Scoreboard is restricted to super admins and sales leads.</p>
+            </div>
+          );
+        }
         return <SalesScoreboardTab />;
       case 'testing':
         return <TestingTabContent />;
