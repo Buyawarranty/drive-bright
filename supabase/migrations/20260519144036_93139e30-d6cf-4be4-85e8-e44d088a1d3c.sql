@@ -1,0 +1,1 @@
+UPDATE agent_distribution_caps SET daily_cap = 6 WHERE admin_user_id = '9035beaf-f510-442c-82eb-05fc484cc9c6';
