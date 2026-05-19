@@ -1,8 +1,27 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, PoundSterling, Target, TrendingUp, Flame, CheckCircle2, Clock } from 'lucide-react';
+import { Trophy, PoundSterling, Target, TrendingUp, Flame, CheckCircle2, Clock, Rocket, Zap, Star, Inbox } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
+
+interface Milestone {
+  threshold: number;
+  label: string;
+  icon: React.ReactNode;
+  tone: string;
+}
+
+const MILESTONES: Milestone[] = [
+  { threshold: 100, label: 'Target smashed!', icon: <Trophy className="h-4 w-4" />, tone: 'text-green-600' },
+  { threshold: 90,  label: 'Almost there — final push!', icon: <Star className="h-4 w-4 fill-current" />, tone: 'text-amber-600' },
+  { threshold: 75,  label: 'On the home stretch', icon: <Zap className="h-4 w-4" />, tone: 'text-orange-600' },
+  { threshold: 50,  label: 'Halfway hero', icon: <Flame className="h-4 w-4" />, tone: 'text-rose-600' },
+  { threshold: 25,  label: 'Quarter way there', icon: <Rocket className="h-4 w-4" />, tone: 'text-sky-600' },
+  { threshold: 0,   label: "Let's get started", icon: <Rocket className="h-4 w-4" />, tone: 'text-slate-600' },
+];
+
+const getMilestone = (pct: number): Milestone =>
+  MILESTONES.find(m => pct >= m.threshold) || MILESTONES[MILESTONES.length - 1];
 
 interface Props {
   agents: AgentScore[];
