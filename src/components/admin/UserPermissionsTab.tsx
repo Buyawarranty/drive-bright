@@ -832,6 +832,18 @@ export const UserPermissionsTab = () => {
                         </Button>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEditDialog(u)}
+                        title="Edit role and tab permissions"
+                        className="text-xs bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
+                        Edit Permissions
+                      </Button>
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button
                         size="sm"
