@@ -3152,6 +3152,19 @@ export const CustomersTab = ({
                 </div>
               )}
 
+              {(isSuperAdmin || isAdmin) && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Quick month</Label>
+                  <QuickMonthFilter
+                    dateRange={dateRange}
+                    onDateRangeChange={(r) => {
+                      setDateRange(r);
+                      setRevenueDateRange(r ?? undefined);
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Filter by Status */}
               <div className="space-y-1">
                 <Label htmlFor="statusFilter" className="text-sm font-medium">Status</Label>
