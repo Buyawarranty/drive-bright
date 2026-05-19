@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { useAuth } from '@/hooks/useAuth';
