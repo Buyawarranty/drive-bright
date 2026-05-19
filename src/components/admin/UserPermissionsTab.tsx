@@ -774,6 +774,7 @@ export const UserPermissionsTab = () => {
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Password Actions</TableHead>
+                  <TableHead>Permissions</TableHead>
                   <TableHead className="text-right">Delete</TableHead>
                 </TableRow>
               </TableHeader>
@@ -830,6 +831,18 @@ export const UserPermissionsTab = () => {
                           Reset
                         </Button>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEditDialog(u)}
+                        title="Edit role and tab permissions"
+                        className="text-xs bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
+                        Edit Permissions
+                      </Button>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
