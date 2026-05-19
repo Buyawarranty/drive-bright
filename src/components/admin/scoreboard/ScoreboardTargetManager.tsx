@@ -32,13 +32,14 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
       const agentIds = agents.map(a => a.id);
       if (!agentIds.length) return;
 
+      const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from('sales_targets')
-        .select('id, admin_user_id, target_amount')
+        .select('id, admin_user_id, target_amount, start_date, end_date')
         .in('admin_user_id', agentIds)
         .eq('target_period', 'monthly')
-        .gte('start_date', monthStart.toISOString().split('T')[0])
-        .lte('start_date', monthEnd.toISOString().split('T')[0]);
+        .lte('start_date', nowIso)
+        .gte('end_date', nowIso);
 
       const tMap: Record<string, number> = {};
       const eMap: Record<string, string> = {};
@@ -75,8 +76,8 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
             admin_user_id: agentId,
             target_amount: target,
             target_period: 'monthly',
-            start_date: monthStart.toISOString().split('T')[0],
-            end_date: monthEnd.toISOString().split('T')[0],
+            start_date: monthStart.toISOString(),
+            end_date: monthEnd.toISOString(),
           });
         if (error) throw error;
       }

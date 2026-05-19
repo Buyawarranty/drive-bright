@@ -102,8 +102,15 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
                     <div className="text-center">
-                      <div className="font-bold text-lg">{agent.salesCount}</div>
-                      <div className="text-xs text-muted-foreground">Sales</div>
+                      <div className="font-bold text-lg">
+                        {agent.salesCount}
+                        {agent.monthlyTarget ? (
+                          <span className="text-sm font-medium text-muted-foreground"> / {agent.monthlyTarget}</span>
+                        ) : null}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Sales{agent.monthlyTarget ? ` (${Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100))}%)` : ''}
+                      </div>
                     </div>
                     <div className="text-center">
                       <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>

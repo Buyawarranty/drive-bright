@@ -176,15 +176,14 @@ export const useScoreboardData = (): ScoreboardData => {
       const { data: approvedClaims } = await claimsQuery;
 
       // Fetch monthly targets
-      const monthStart = startOfMonth(new Date());
-      const monthEnd = endOfMonth(new Date());
+      const nowIso = new Date().toISOString();
       const { data: targets } = await supabase
         .from('sales_targets')
         .select('admin_user_id, target_amount, target_period')
         .in('admin_user_id', agentIds)
         .eq('target_period', 'monthly')
-        .gte('start_date', monthStart.toISOString().split('T')[0])
-        .lte('start_date', monthEnd.toISOString().split('T')[0]);
+        .lte('start_date', nowIso)
+        .gte('end_date', nowIso);
 
       const targetMap = new Map<string, number>();
       (targets || []).forEach(t => {
