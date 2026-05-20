@@ -3294,9 +3294,11 @@ export const CustomersTab = ({
                     )}
                   </SelectContent>
                 </Select>
+             </div>
             </div>
             </div>
             {/* ───────── Section 2: ATTRIBUTES ───────── */}
+
               {!isSalesAgent && (
               <div className="p-4 space-y-3">
                 <div className="flex items-center gap-2">
