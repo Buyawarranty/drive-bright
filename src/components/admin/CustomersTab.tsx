@@ -989,14 +989,19 @@ export const CustomersTab = ({
       });
     }
 
-    // Apply Payment Source filter (Bumper / Stripe / Payment Assist)
+    // Apply Payment Source filter (Bumper / Stripe / Payment Assist / PayPal / Other)
     if (filterByPaymentSource !== 'all') {
       filtered = filtered.filter(customer => {
         const hasBumper = !!customer.bumper_order_id;
         const hasStripe = !!customer.stripe_session_id;
+        const sessionId = (customer.stripe_session_id || '').toLowerCase();
+        const paymentTypeStr = (customer.payment_type || '').toLowerCase();
+        const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
         if (filterByPaymentSource === 'bumper') return hasBumper;
-        if (filterByPaymentSource === 'stripe') return hasStripe;
-        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe;
+        if (filterByPaymentSource === 'stripe') return hasStripe && !isPaypal;
+        if (filterByPaymentSource === 'paypal') return isPaypal;
+        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe && !isPaypal;
+        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal;
         return true;
       });
     }
