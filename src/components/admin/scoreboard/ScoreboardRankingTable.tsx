@@ -1,14 +1,22 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Crown, Star, Flame } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Trophy, Medal, Crown, Star, Flame, Pencil, Save, Loader2 } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
+import { supabase } from '@/integrations/supabase/client';
+import { startOfMonth, endOfMonth } from 'date-fns';
+import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 interface Props {
   agents: AgentScore[];
   currentAdminUserId: string | null;
   period: TimePeriod;
+  currentUserRole?: string | null;
+  onTargetSaved?: () => void;
 }
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
