@@ -242,6 +242,7 @@ export const useScoreboardData = (): ScoreboardData => {
           previousRank: null,
           trend: 'same' as const,
           monthlyTarget: targetMap.get(u.id) || null,
+          manualLeadsCount: manualLeadsMap.get(u.id) ?? null,
           cancelledCount,
           cancelledRevenue,
         };
