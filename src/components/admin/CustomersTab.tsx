@@ -366,6 +366,8 @@ export const CustomersTab = ({
   const [filterByTag, setFilterByTag] = useState('all');
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
+  const [filterByPaymentSource, setFilterByPaymentSource] = useState('all'); // all | bumper | stripe | payment_assist
+  const [paymentSourceDateFilter, setPaymentSourceDateFilter] = useState('all');
   const [filterByAgent, setFilterByAgent] = useState('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
@@ -806,7 +808,7 @@ export const CustomersTab = ({
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -987,6 +989,31 @@ export const CustomersTab = ({
       });
     }
 
+    // Apply Payment Source filter (Bumper / Stripe / Payment Assist)
+    if (filterByPaymentSource !== 'all') {
+      filtered = filtered.filter(customer => {
+        const hasBumper = !!customer.bumper_order_id;
+        const hasStripe = !!customer.stripe_session_id;
+        if (filterByPaymentSource === 'bumper') return hasBumper;
+        if (filterByPaymentSource === 'stripe') return hasStripe;
+        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe;
+        return true;
+      });
+    }
+
+    // Apply Payment Source date filter (uses signup_date)
+    if (paymentSourceDateFilter !== 'all') {
+      const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
+      if (psRange) {
+        filtered = filtered.filter(customer => {
+          const ds = customer.signup_date || customer.created_at;
+          if (!ds) return false;
+          const d = new Date(ds);
+          return d >= psRange.start && d <= psRange.end;
+        });
+      }
+    }
+
     // Apply date range filter — bypass when actively searching (so users can find any customer by name/email/reg)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
     const isActivelySearching = !!debouncedSearchTerm;
@@ -1055,7 +1082,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -3374,6 +3401,45 @@ export const CustomersTab = ({
                </div>
               )}
             </div>
+            )}
+
+            {/* Payment Source filter + date filter — hidden for sales agents */}
+            {!isSalesAgent && (
+              <div className="flex items-end gap-4 flex-wrap">
+                <div className="space-y-1 w-[220px]">
+                  <Label htmlFor="paymentSourceFilter" className="text-sm font-medium">Payment Source</Label>
+                  <Select value={filterByPaymentSource} onValueChange={setFilterByPaymentSource}>
+                    <SelectTrigger id="paymentSourceFilter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Payment Sources</SelectItem>
+                      <SelectItem value="bumper">Payments by Bumper</SelectItem>
+                      <SelectItem value="stripe">Payments by Stripe</SelectItem>
+                      <SelectItem value="payment_assist">Payments by Payment Assist</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1 w-[180px]">
+                  <Label htmlFor="paymentSourceDateFilter" className="text-sm font-medium">Payment Source Date</Label>
+                  <Select value={paymentSourceDateFilter} onValueChange={setPaymentSourceDateFilter}>
+                    <SelectTrigger id="paymentSourceDateFilter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="yesterday">Yesterday</SelectItem>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="14days">Last 14 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="60days">Last 60 Days</SelectItem>
+                      <SelectItem value="this_month">This Month</SelectItem>
+                      <SelectItem value="last_month">Last Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             )}
 
              {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
