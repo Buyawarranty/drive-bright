@@ -212,11 +212,13 @@ export const useScoreboardData = (): ScoreboardData => {
         const salesCount = userCustomers.length + userClaims.length;
         const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
-        const leadsAssigned = userLeads.length;
+        const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
+        // Prefer accurate MTD count from SECURITY DEFINER RPC (bypasses RLS) over RLS-limited query
+        const leadsAssigned = mtdAssigned || userLeads.length;
         const leadsConverted = userConvertedLeads.length;
         const target = targetMap.get(u.id) || 0;
-        const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
         const conversionRate = target > 0 ? (mtdAssigned / target) * 100 : 0;
+
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
         const cancelledCount = userCancelled.length;
         const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
