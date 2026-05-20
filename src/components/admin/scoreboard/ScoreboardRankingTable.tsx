@@ -40,7 +40,7 @@ const getRankStyle = (rank: number) => {
 
 
 export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved }) => {
-  const isSuperAdmin = currentUserRole === 'super_admin';
+  const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
   const prevFirstRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
-                {isSuperAdmin && <div className="w-20 text-center">Target</div>}
+                {canEditTargets && <div className="w-20 text-center">Target</div>}
               </div>
 
             </div>
@@ -150,7 +150,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     </div>
                     <div className="w-16 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
-                      <div className="font-bold">{agent.conversionRate.toFixed(0)}%</div>
+                      <div className="font-bold">{agent.conversionRate.toFixed(1)}%</div>
                     </div>
                     <div className="w-20 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
@@ -170,7 +170,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="text-xs text-muted-foreground">{agent.salesCount} sales{agent.cancelledCount > 0 ? ` · ${agent.cancelledCount} refunds` : ''}</div>
                   </div>
 
-                  {isSuperAdmin && (
+                  {canEditTargets && (
                     <EditTargetButton
                       agentId={agent.id}
                       currentTarget={agent.monthlyTarget}
