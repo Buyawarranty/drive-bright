@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, PoundSterling, TrendingDown, Target, AlertTriangle, Pencil, Save, Lock } from 'lucide-react';
+import { Loader2, PoundSterling, TrendingDown, Target, AlertTriangle, Pencil, Save, Lock, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { toast } from 'sonner';
