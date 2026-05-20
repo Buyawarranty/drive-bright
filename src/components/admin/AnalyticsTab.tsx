@@ -661,6 +661,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
           <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
         </div>
+
+        {/* Cost Efficiency (super-admin only) */}
+        <CostEfficiencyPanel
+          currentUserRole={userRole ?? null}
+          referenceDate={effectiveDateRange?.from || dateRange?.from || new Date()}
+        />
+
+
         
         {/* Filters Row */}
         <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/30 rounded-lg border">
