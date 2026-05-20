@@ -3489,7 +3489,48 @@ export const CustomersTab = ({
                     </SelectContent>
                   </Select>
                 </div>
+                {(() => {
+                  const stats = customers.reduce((acc, customer) => {
+                    const status = (customer.status || '').toLowerCase();
+                    if (status === 'cancelled' || status === 'refunded') return acc;
+                    const hasBumper = !!customer.bumper_order_id;
+                    const hasStripe = !!customer.stripe_session_id;
+                    const sessionId = (customer.stripe_session_id || '').toLowerCase();
+                    const paymentTypeStr = (customer.payment_type || '').toLowerCase();
+                    const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
+                    let matchesSource = true;
+                    if (filterByPaymentSource === 'bumper') matchesSource = hasBumper;
+                    else if (filterByPaymentSource === 'stripe') matchesSource = hasStripe && !isPaypal;
+                    else if (filterByPaymentSource === 'paypal') matchesSource = isPaypal;
+                    else if (filterByPaymentSource === 'payment_assist') matchesSource = !hasBumper && !hasStripe && !isPaypal;
+                    else if (filterByPaymentSource === 'other') matchesSource = !hasBumper && !hasStripe && !isPaypal;
+                    if (!matchesSource) return acc;
+                    if (paymentSourceDateFilter !== 'all') {
+                      const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
+                      if (psRange) {
+                        const ds = customer.signup_date || customer.created_at;
+                        if (!ds) return acc;
+                        const d = new Date(ds);
+                        if (d < psRange.start || d > psRange.end) return acc;
+                      }
+                    }
+                    acc.count += 1;
+                    acc.total += Number(customer.final_amount) || 0;
+                    return acc;
+                  }, { count: 0, total: 0 });
+                  return (
+                    <div className="flex items-end gap-2 pb-1.5">
+                      <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                        £{stats.total.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <Badge variant="outline" className="text-xs whitespace-nowrap">
+                        {stats.count} {stats.count === 1 ? 'sale' : 'sales'}
+                      </Badge>
+                    </div>
+                  );
+                })()}
               </div>
+
               </div>
             )}
 
