@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, PoundSterling, TrendingDown, Target, AlertTriangle, Pencil, Save, Lock } from 'lucide-react';
+import { Loader2, PoundSterling, TrendingDown, Target, AlertTriangle, Pencil, Save, Lock, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -31,6 +31,7 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
   const [editing, setEditing] = useState(false);
   const [spendInput, setSpendInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   const anchor = referenceDate || new Date();
   const monthStart = startOfMonth(anchor);
@@ -70,7 +71,7 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
     }
   };
 
-  useEffect(() => { fetchAll(); /* eslint-disable-next-line */ }, [isSuperAdmin, monthStart.getTime()]);
+  useEffect(() => { if (visible) fetchAll(); /* eslint-disable-next-line */ }, [isSuperAdmin, monthStart.getTime(), visible]);
 
   const saveSpend = async () => {
     const amount = parseFloat(spendInput);
@@ -115,6 +116,18 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
 
   if (!isSuperAdmin) return null;
 
+  if (!visible) {
+    return (
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50" onClick={() => setVisible(true)}>
+          <Eye className="h-3.5 w-3.5" />
+          Show Cost Efficiency
+          <Badge variant="outline" className="ml-1 text-[10px] border-amber-400 text-amber-700">Super admin</Badge>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50/40 to-orange-50/20">
       <CardHeader className="pb-3">
@@ -152,6 +165,10 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
               </div>
             </PopoverContent>
           </Popover>
+          <Button variant="ghost" size="sm" className="gap-1" onClick={() => setVisible(false)}>
+            <EyeOff className="h-3.5 w-3.5" />
+            Hide
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
