@@ -3294,12 +3294,17 @@ export const CustomersTab = ({
                     )}
                   </SelectContent>
                 </Select>
-              </div>
             </div>
+            </div>
+            {/* ───────── Section 2: ATTRIBUTES ───────── */}
+              {!isSalesAgent && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filter by attributes</h4>
+                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
 
-              {/* Row 2: Sort, Warranty Period, Purchase Source - hidden for sales agents */}
-             {!isSalesAgent && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                {/* Sort by */}
                <div className="space-y-1">
                  <Label htmlFor="sortBy" className="text-sm font-medium">Sort by</Label>
