@@ -3679,7 +3679,7 @@ export const CustomersTab = ({
           </div>
 
           {/* Column visibility toggles */}
-          {canSeeSourceColumn && (
+          {isSuperAdmin && (
             <div className="flex justify-end px-1">
               <Button
                 variant="ghost"
