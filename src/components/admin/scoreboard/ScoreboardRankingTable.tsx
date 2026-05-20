@@ -39,7 +39,8 @@ const getRankStyle = (rank: number) => {
 
 
 
-export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period }) => {
+export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved }) => {
+  const isSuperAdmin = currentUserRole === 'super_admin';
   const prevFirstRef = useRef<string | null>(null);
 
   useEffect(() => {
