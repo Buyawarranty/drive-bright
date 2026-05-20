@@ -31,6 +31,7 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
   const [editing, setEditing] = useState(false);
   const [spendInput, setSpendInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   const anchor = referenceDate || new Date();
   const monthStart = startOfMonth(anchor);
