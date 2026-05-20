@@ -116,6 +116,18 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
 
   if (!isSuperAdmin) return null;
 
+  if (!visible) {
+    return (
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50" onClick={() => setVisible(true)}>
+          <Eye className="h-3.5 w-3.5" />
+          Show Cost Efficiency
+          <Badge variant="outline" className="ml-1 text-[10px] border-amber-400 text-amber-700">Super admin</Badge>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50/40 to-orange-50/20">
       <CardHeader className="pb-3">
