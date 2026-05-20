@@ -175,6 +175,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               );
             })}
           </div>
+          </>
         )}
       </CardContent>
     </Card>
