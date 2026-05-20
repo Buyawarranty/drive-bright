@@ -190,6 +190,22 @@ export const useScoreboardData = (): ScoreboardData => {
         targetMap.set(t.admin_user_id, t.target_amount);
       });
 
+      // Fetch month-to-date leads assigned per agent (for conv. rate vs target)
+      const mtdStart = startOfMonth(new Date());
+      const mtdEnd = new Date();
+      const { data: mtdLeads } = await supabase
+        .from('sales_leads')
+        .select('id, assigned_to, created_at')
+        .in('assigned_to', agentIds)
+        .gte('created_at', mtdStart.toISOString())
+        .lte('created_at', mtdEnd.toISOString());
+
+      const mtdLeadsMap = new Map<string, number>();
+      (mtdLeads || []).forEach(l => {
+        if (!l.assigned_to) return;
+        mtdLeadsMap.set(l.assigned_to, (mtdLeadsMap.get(l.assigned_to) || 0) + 1);
+      });
+
       const scores: AgentScore[] = adminUsers.map(u => {
         const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
@@ -203,7 +219,9 @@ export const useScoreboardData = (): ScoreboardData => {
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const leadsAssigned = userLeads.length;
         const leadsConverted = userConvertedLeads.length;
-        const conversionRate = leadsAssigned > 0 ? (leadsConverted / leadsAssigned) * 100 : 0;
+        const target = targetMap.get(u.id) || 0;
+        const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
+        const conversionRate = target > 0 ? (mtdAssigned / target) * 100 : 0;
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
         const cancelledCount = userCancelled.length;
         const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
