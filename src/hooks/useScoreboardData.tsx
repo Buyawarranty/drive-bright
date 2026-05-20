@@ -20,6 +20,7 @@ export interface AgentScore {
   previousRank: number | null;
   trend: 'up' | 'down' | 'same' | 'new';
   monthlyTarget: number | null;
+  manualLeadsCount: number | null;
   cancelledCount: number;
   cancelledRevenue: number;
 }
