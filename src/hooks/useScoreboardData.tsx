@@ -190,6 +190,22 @@ export const useScoreboardData = (): ScoreboardData => {
         targetMap.set(t.admin_user_id, t.target_amount);
       });
 
+      // Fetch month-to-date leads assigned per agent (for conv. rate vs target)
+      const mtdStart = startOfMonth(new Date());
+      const mtdEnd = new Date();
+      const { data: mtdLeads } = await supabase
+        .from('sales_leads')
+        .select('id, assigned_to, created_at')
+        .in('assigned_to', agentIds)
+        .gte('created_at', mtdStart.toISOString())
+        .lte('created_at', mtdEnd.toISOString());
+
+      const mtdLeadsMap = new Map<string, number>();
+      (mtdLeads || []).forEach(l => {
+        if (!l.assigned_to) return;
+        mtdLeadsMap.set(l.assigned_to, (mtdLeadsMap.get(l.assigned_to) || 0) + 1);
+      });
+
       const scores: AgentScore[] = adminUsers.map(u => {
         const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
