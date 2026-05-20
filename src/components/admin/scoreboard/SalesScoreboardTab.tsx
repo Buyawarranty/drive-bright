@@ -11,6 +11,7 @@ import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { CommissionTimesheetForm } from './CommissionTimesheetForm';
 import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
+import { CostEfficiencyPanel } from './CostEfficiencyPanel';
 import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } from 'date-fns';
