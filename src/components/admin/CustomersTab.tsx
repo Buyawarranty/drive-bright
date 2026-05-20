@@ -423,6 +423,7 @@ export const CustomersTab = ({
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
+  const [showPurchaseSource, setShowPurchaseSource] = useState(false);
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
