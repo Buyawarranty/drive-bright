@@ -217,7 +217,7 @@ export const useScoreboardData = (): ScoreboardData => {
         const leadsAssigned = mtdAssigned || userLeads.length;
         const leadsConverted = userConvertedLeads.length;
         const target = targetMap.get(u.id) || 0;
-        const conversionRate = target > 0 ? (mtdAssigned / target) * 100 : 0;
+        const conversionRate = leadsAssigned > 0 ? (salesCount / leadsAssigned) * 100 : 0;
 
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
         const cancelledCount = userCancelled.length;
