@@ -3403,6 +3403,45 @@ export const CustomersTab = ({
             </div>
             )}
 
+            {/* Payment Source filter + date filter — hidden for sales agents */}
+            {!isSalesAgent && (
+              <div className="flex items-end gap-4 flex-wrap">
+                <div className="space-y-1 w-[220px]">
+                  <Label htmlFor="paymentSourceFilter" className="text-sm font-medium">Payment Source</Label>
+                  <Select value={filterByPaymentSource} onValueChange={setFilterByPaymentSource}>
+                    <SelectTrigger id="paymentSourceFilter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Payment Sources</SelectItem>
+                      <SelectItem value="bumper">Payments by Bumper</SelectItem>
+                      <SelectItem value="stripe">Payments by Stripe</SelectItem>
+                      <SelectItem value="payment_assist">Payments by Payment Assist</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1 w-[180px]">
+                  <Label htmlFor="paymentSourceDateFilter" className="text-sm font-medium">Payment Source Date</Label>
+                  <Select value={paymentSourceDateFilter} onValueChange={setPaymentSourceDateFilter}>
+                    <SelectTrigger id="paymentSourceDateFilter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="yesterday">Yesterday</SelectItem>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="14days">Last 14 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="60days">Last 60 Days</SelectItem>
+                      <SelectItem value="this_month">This Month</SelectItem>
+                      <SelectItem value="last_month">Last Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
              {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
             <div className="flex items-end gap-4 flex-wrap">
               {/* Filter by Agent */}
