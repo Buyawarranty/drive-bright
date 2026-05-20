@@ -989,6 +989,31 @@ export const CustomersTab = ({
       });
     }
 
+    // Apply Payment Source filter (Bumper / Stripe / Payment Assist)
+    if (filterByPaymentSource !== 'all') {
+      filtered = filtered.filter(customer => {
+        const hasBumper = !!customer.bumper_order_id;
+        const hasStripe = !!customer.stripe_session_id;
+        if (filterByPaymentSource === 'bumper') return hasBumper;
+        if (filterByPaymentSource === 'stripe') return hasStripe;
+        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe;
+        return true;
+      });
+    }
+
+    // Apply Payment Source date filter (uses signup_date)
+    if (paymentSourceDateFilter !== 'all') {
+      const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
+      if (psRange) {
+        filtered = filtered.filter(customer => {
+          const ds = customer.signup_date || customer.created_at;
+          if (!ds) return false;
+          const d = new Date(ds);
+          return d >= psRange.start && d <= psRange.end;
+        });
+      }
+    }
+
     // Apply date range filter — bypass when actively searching (so users can find any customer by name/email/reg)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
     const isActivelySearching = !!debouncedSearchTerm;
