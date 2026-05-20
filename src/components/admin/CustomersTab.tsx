@@ -423,6 +423,7 @@ export const CustomersTab = ({
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
+  const [showPurchaseSource, setShowPurchaseSource] = useState(false);
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
@@ -3677,6 +3678,22 @@ export const CustomersTab = ({
             </div>
           </div>
 
+          {/* Column visibility toggles */}
+          {canSeeSourceColumn && (
+            <div className="flex justify-end px-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPurchaseSource(v => !v)}
+                className="text-xs gap-1.5 h-8"
+                title={showPurchaseSource ? 'Hide Purchase Source column' : 'Show Purchase Source column'}
+              >
+                {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                Purchase Source
+              </Button>
+            </div>
+          )}
+
       {/* Results Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden mt-2">
 
@@ -3699,7 +3716,7 @@ export const CustomersTab = ({
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
               <TableHead>Payment</TableHead>
-              {canSeeSourceColumn && <TableHead className="bg-purple-50">SRC</TableHead>}
+              {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
               <TableHead>Warranties Register</TableHead>
@@ -4933,19 +4950,21 @@ Please log in and change your password after first login.`;
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <PurchaseSourceBadge
-                        source={customer.purchase_source} 
-                        bumperOrderId={customer.bumper_order_id}
-                        stripeSessionId={customer.stripe_session_id}
-                        className="text-[10px]"
-                      />
-                      {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && customer.final_amount ? (
-                        <span className="text-xs font-semibold text-foreground">£{Number(customer.final_amount).toFixed(2)}</span>
-                      ) : null}
-                    </div>
-                  </TableCell>
+                  {canSeeSourceColumn && showPurchaseSource && (
+                    <TableCell>
+                      <div className="flex flex-col gap-0.5">
+                        <PurchaseSourceBadge
+                          source={customer.purchase_source} 
+                          bumperOrderId={customer.bumper_order_id}
+                          stripeSessionId={customer.stripe_session_id}
+                          className="text-[10px]"
+                        />
+                        {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && customer.final_amount ? (
+                          <span className="text-xs font-semibold text-foreground">£{Number(customer.final_amount).toFixed(2)}</span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  )}
                   {canSeeSourceColumn && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
