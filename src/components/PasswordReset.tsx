@@ -19,88 +19,124 @@ const PasswordReset = () => {
   
   useEffect(() => {
     const initializePasswordReset = async () => {
-      console.log('Initializing password reset...');
-      console.log('Current URL:', window.location.href);
-      console.log('Hash:', window.location.hash);
-      console.log('Search params:', window.location.search);
-      
-      // First, handle hash-based URL parameters (most common format)
+      console.log('Initializing password reset...', window.location.href);
+
       const hash = window.location.hash.substring(1);
       const hashParams = new URLSearchParams(hash);
-      
-      // Then check regular URL parameters as fallback
-      const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
-      const type = hashParams.get('type') || searchParams.get('type');
-      
-      console.log('Password reset tokens found:', { 
-        hasAccessToken: !!accessToken, 
-        hasRefreshToken: !!refreshToken, 
-        type,
-        hashParamsSize: Array.from(hashParams.entries()).length,
-        searchParamsSize: Array.from(searchParams.entries()).length
-      });
-      
-      if (type === 'recovery' && accessToken && refreshToken) {
+
+      // Surface Supabase auth errors that come back in the hash or query
+      const errorDescription =
+        hashParams.get('error_description') || searchParams.get('error_description');
+      const errorCode = hashParams.get('error') || searchParams.get('error');
+      if (errorCode || errorDescription) {
+        console.error('Password reset link error:', { errorCode, errorDescription });
+        toast({
+          title: 'Reset link invalid or expired',
+          description:
+            errorDescription?.replace(/\+/g, ' ') ||
+            'Please request a new password reset email.',
+          variant: 'destructive',
+        });
+        setTimeout(() => navigate('/auth'), 4000);
+        return;
+      }
+
+      // 1) Modern PKCE flow: ?code=...
+      const code = searchParams.get('code');
+      if (code) {
         try {
-          console.log('Attempting to set session with recovery tokens...');
-          
-          // Set the session using the tokens from the URL
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          
-          if (error) {
-            console.error('Error setting session:', error);
-            toast({
-              title: "Invalid reset link",
-              description: "This password reset link is invalid or has expired. Please request a new one from the sign-in page.",
-              variant: "destructive",
-            });
-            // Redirect after 3 seconds to give user time to read the message
-            setTimeout(() => navigate('/auth'), 3000);
-          } else if (data.session) {
-            console.log('Session set successfully for password reset');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          if (data.session) {
             setIsValidSession(true);
-            
-            // Clean up the URL by removing the hash parameters
-            const cleanUrl = window.location.pathname + window.location.search;
-            window.history.replaceState({}, document.title, cleanUrl);
-            
-            toast({
-              title: "Reset link validated",
-              description: "You can now set your new password.",
-            });
+            window.history.replaceState({}, document.title, window.location.pathname);
+            toast({ title: 'Reset link validated', description: 'You can now set your new password.' });
+            return;
           }
-        } catch (error) {
-          console.error('Error in password reset initialization:', error);
+        } catch (err: any) {
+          console.error('exchangeCodeForSession failed:', err);
           toast({
-            title: "Error",
-            description: "Failed to initialize password reset. Please try clicking the link from your email again.",
-            variant: "destructive",
+            title: 'Invalid reset link',
+            description: 'This password reset link is invalid or has expired. Please request a new one.',
+            variant: 'destructive',
           });
-          setTimeout(() => navigate('/auth'), 3000);
-        }
-      } else {
-        console.log('No valid recovery tokens found, checking for existing session...');
-        
-        // Check if user is already authenticated (rare but possible)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          console.log('User already has valid session');
-          setIsValidSession(true);
-        } else {
-          console.log('No valid session or recovery tokens found');
-          toast({
-            title: "Reset link required",
-            description: "Please click the password reset link from your email to access this page. If you haven't received an email, try requesting a new password reset from the sign-in page.",
-            variant: "destructive",
-          });
-          // Redirect after 5 seconds to give user time to read the message
-          setTimeout(() => navigate('/auth'), 5000);
+          setTimeout(() => navigate('/auth'), 4000);
+          return;
         }
       }
+
+      // 2) OTP / token_hash flow: ?token_hash=...&type=recovery
+      const tokenHash = searchParams.get('token_hash') || hashParams.get('token_hash');
+      const verifyType = (searchParams.get('type') || hashParams.get('type')) as any;
+      if (tokenHash && verifyType === 'recovery') {
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token_hash: tokenHash,
+          });
+          if (error) throw error;
+          if (data.session) {
+            setIsValidSession(true);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            toast({ title: 'Reset link validated', description: 'You can now set your new password.' });
+            return;
+          }
+        } catch (err: any) {
+          console.error('verifyOtp failed:', err);
+          toast({
+            title: 'Invalid reset link',
+            description: 'This password reset link is invalid or has expired. Please request a new one.',
+            variant: 'destructive',
+          });
+          setTimeout(() => navigate('/auth'), 4000);
+          return;
+        }
+      }
+
+      // 3) Legacy implicit flow: #access_token=...&refresh_token=...&type=recovery
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const type = hashParams.get('type');
+
+      if (type === 'recovery' && accessToken && refreshToken) {
+        try {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
+          if (data.session) {
+            setIsValidSession(true);
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            toast({ title: 'Reset link validated', description: 'You can now set your new password.' });
+            return;
+          }
+        } catch (err) {
+          console.error('setSession failed:', err);
+          toast({
+            title: 'Invalid reset link',
+            description: 'This password reset link is invalid or has expired. Please request a new one.',
+            variant: 'destructive',
+          });
+          setTimeout(() => navigate('/auth'), 4000);
+          return;
+        }
+      }
+
+      // 4) Fallback: maybe a session is already active
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setIsValidSession(true);
+        return;
+      }
+
+      toast({
+        title: 'Reset link required',
+        description:
+          "Open this page by clicking the link in your password reset email. If you didn't receive one, request a new one from the sign-in page.",
+        variant: 'destructive',
+      });
+      setTimeout(() => navigate('/auth'), 5000);
     };
 
     initializePasswordReset();
