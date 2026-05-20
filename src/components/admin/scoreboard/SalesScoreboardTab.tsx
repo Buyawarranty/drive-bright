@@ -183,7 +183,7 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <ScoreboardRankingTable agents={agents} currentAdminUserId={currentAdminUserId} period={period} />
+          <ScoreboardRankingTable agents={agents} currentAdminUserId={currentAdminUserId} period={period} currentUserRole={currentUserRole} onTargetSaved={refresh} />
         </TabsContent>
 
         <TabsContent value="profile">
