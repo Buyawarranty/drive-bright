@@ -989,14 +989,19 @@ export const CustomersTab = ({
       });
     }
 
-    // Apply Payment Source filter (Bumper / Stripe / Payment Assist)
+    // Apply Payment Source filter (Bumper / Stripe / Payment Assist / PayPal / Other)
     if (filterByPaymentSource !== 'all') {
       filtered = filtered.filter(customer => {
         const hasBumper = !!customer.bumper_order_id;
         const hasStripe = !!customer.stripe_session_id;
+        const sessionId = (customer.stripe_session_id || '').toLowerCase();
+        const paymentTypeStr = (customer.payment_type || '').toLowerCase();
+        const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
         if (filterByPaymentSource === 'bumper') return hasBumper;
-        if (filterByPaymentSource === 'stripe') return hasStripe;
-        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe;
+        if (filterByPaymentSource === 'stripe') return hasStripe && !isPaypal;
+        if (filterByPaymentSource === 'paypal') return isPaypal;
+        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe && !isPaypal;
+        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal;
         return true;
       });
     }
@@ -3417,6 +3422,8 @@ export const CustomersTab = ({
                       <SelectItem value="bumper">Payments by Bumper</SelectItem>
                       <SelectItem value="stripe">Payments by Stripe</SelectItem>
                       <SelectItem value="payment_assist">Payments by Payment Assist</SelectItem>
+                      <SelectItem value="paypal">Payments by PayPal</SelectItem>
+                      <SelectItem value="other">Other / Manual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
