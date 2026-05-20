@@ -50,7 +50,7 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext }) => {
                 <div className="w-7 text-center text-sm font-bold text-muted-foreground">#{a.rank}</div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{a.name}</div>
-                  <div className="text-xs text-muted-foreground">{a.salesCount} sales · {a.conversionRate.toFixed(0)}% conv.</div>
+                  <div className="text-xs text-muted-foreground">{a.salesCount} sales · {a.conversionRate.toFixed(1)}% conv.</div>
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-sm text-emerald-600">£{a.revenue.toLocaleString()}</div>
