@@ -3198,359 +3198,200 @@ export const CustomersTab = ({
               ))}
             </div>
           )}
-          {/* Enhanced Search and Filter Controls — grouped UX redesign */}
-          <div className="bg-white rounded-lg border divide-y">
-            {/* ───────── Section 1: FIND ───────── */}
-            <div className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Find customers</h4>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setFilterByStatus('all');
-                    setSortBy('newest');
-                    setFilterByWarrantyPeriod('all');
-                    if (canSeeSourceColumn) setFilterBySource('all_view');
-                    setFilterByPaymentSource('all');
-                    setPaymentSourceDateFilter('all');
-                    setFilterByAgent('all');
-                    setTotalSalesDateFilter('30days');
-                    setDateRange(undefined);
-                    setRevenueDateRange(undefined);
-                  }}
-                >
-                  Clear all filters
-                </Button>
-              </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-              {/* Search */}
-              <div className={cn("space-y-1", canUseDateFilter ? "lg:col-span-2" : "lg:col-span-3") }>
-                <Label htmlFor="search" className="text-sm font-medium">Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Search by name, email, phone, reg plate, vehicle, address..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+          {/* Compact filter toolbar */}
+          <div className="bg-white rounded-lg border p-3 space-y-2">
+            {/* Row 1: Search + primary date controls + status + clear */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative flex-1 min-w-[260px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Search name, email, phone, reg, vehicle, address…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-9"
+                />
               </div>
 
-              {/* Date filter - only for super_admin, admin, lead_gen, claims_manager */}
               {canUseDateFilter && (
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">Date</Label>
-                  <DateRangeFilter
-                    dateRange={dateRange}
-                    onDateRangeChange={(r) => {
-                      setDateRange(r);
-                      // Keep the Revenue total in sync with the selected date range
-                      // so the £ figure reflects the same window as the table.
-                      setRevenueDateRange(r ?? undefined);
-                    }}
-                    className="w-full"
-                  />
-                </div>
+                <DateRangeFilter
+                  dateRange={dateRange}
+                  onDateRangeChange={(r) => {
+                    setDateRange(r);
+                    setRevenueDateRange(r ?? undefined);
+                  }}
+                  className="h-9"
+                />
               )}
 
               {(isSuperAdmin || isAdmin) && (
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">Quick month</Label>
-                  <QuickMonthFilter
-                    dateRange={dateRange}
-                    onDateRangeChange={(r) => {
-                      setDateRange(r);
-                      setRevenueDateRange(r ?? undefined);
-                    }}
-                  />
-                </div>
+                <QuickMonthFilter
+                  dateRange={dateRange}
+                  onDateRangeChange={(r) => {
+                    setDateRange(r);
+                    setRevenueDateRange(r ?? undefined);
+                  }}
+                />
               )}
 
-              {/* Filter by Status */}
-              <div className="space-y-1">
-                <Label htmlFor="statusFilter" className="text-sm font-medium">Status</Label>
-                <Select value={filterByStatus} onValueChange={setFilterByStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                    <SelectItem value="refunded">Refunded</SelectItem>
-                    <SelectItem value="cancelled_and_refunded">Cancelled & Refunded</SelectItem>
-                    {!isSalesScopedRole && (
-                      <SelectItem value="claim_made">Claim Made</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-             </div>
-            </div>
-            </div>
-            {/* ───────── Section 2: ATTRIBUTES ───────── */}
+              <Select value={filterByStatus} onValueChange={setFilterByStatus}>
+                <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="refunded">Refunded</SelectItem>
+                  <SelectItem value="cancelled_and_refunded">Cancelled & Refunded</SelectItem>
+                  {!isSalesScopedRole && (<SelectItem value="claim_made">Claim Made</SelectItem>)}
+                </SelectContent>
+              </Select>
 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 text-xs text-muted-foreground hover:text-foreground ml-auto"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterByStatus('all');
+                  setSortBy('newest');
+                  setFilterByWarrantyPeriod('all');
+                  if (canSeeSourceColumn) setFilterBySource('all_view');
+                  setFilterByPaymentSource('all');
+                  setPaymentSourceDateFilter('all');
+                  setFilterByAgent('all');
+                  setTotalSalesDateFilter('30days');
+                  setDateRange(undefined);
+                  setRevenueDateRange(undefined);
+                }}
+              >
+                Clear all filters
+              </Button>
+            </div>
+
+            {/* Row 2: secondary filters in a single compact row */}
+            <div className="flex items-center gap-2 flex-wrap">
               {!isSalesAgent && (
-              <div className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filter by attributes</h4>
-                </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-
-               {/* Sort by */}
-               <div className="space-y-1">
-                 <Label htmlFor="sortBy" className="text-sm font-medium">Sort by</Label>
-                 <Select value={sortBy} onValueChange={setSortBy}>
-                   <SelectTrigger id="sortBy">
-                     <SelectValue />
-                   </SelectTrigger>
+                <>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="h-9 w-[160px]"><SelectValue placeholder="Sort by" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="newest">Newest first</SelectItem>
                       <SelectItem value="oldest">Oldest first</SelectItem>
-                      <SelectItem value="highest_amount">Highest amount first</SelectItem>
-                      <SelectItem value="lowest_amount">Lowest amount first</SelectItem>
+                      <SelectItem value="highest_amount">Highest amount</SelectItem>
+                      <SelectItem value="lowest_amount">Lowest amount</SelectItem>
                       <SelectItem value="name_az">Name (A–Z)</SelectItem>
                       <SelectItem value="name_za">Name (Z–A)</SelectItem>
                       <SelectItem value="email">Email (A–Z)</SelectItem>
                       <SelectItem value="plan">Plan</SelectItem>
-                      <SelectItem value="reg">Registration plate</SelectItem>
+                      <SelectItem value="reg">Reg plate</SelectItem>
                     </SelectContent>
-                 </Select>
-               </div>
+                  </Select>
 
-               {/* Filter by Warranty Period */}
-              <div className="space-y-1">
-                <Label htmlFor="warrantyPeriodFilter" className="text-sm font-medium">Warranty Period</Label>
-                <Select value={filterByWarrantyPeriod} onValueChange={setFilterByWarrantyPeriod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Periods</SelectItem>
-                    <SelectItem value="12">1 Year (12 months)</SelectItem>
-                    <SelectItem value="24">2 Years (24 months)</SelectItem>
-                    <SelectItem value="36">3 Years (36 months)</SelectItem>
-                    <SelectItem value="48">4 Years (48 months)</SelectItem>
-                    <SelectItem value="60">5 Years (60 months)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Filter by Source — super admin only */}
-              {canSeeSourceColumn && (
-              <div className="space-y-1">
-                <Label htmlFor="sourceFilter" className="text-sm font-medium">Purchase Source</Label>
-                <Select value={filterBySource} onValueChange={setFilterBySource}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                   <SelectContent className="max-w-[420px]">
-                     <SelectItem value="all_view">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-gray-400" />
-                         <span>All View</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('all_view')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="website">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-blue-500" />
-                         <span>Website (BAW)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="website_google">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                         <span>Website G (Google Ads)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_google')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="website_facebook">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-sky-500" />
-                         <span>Website F (Facebook Ads)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_facebook')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="website_organic">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-amber-500" />
-                         <span>Website O (Organic)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_organic')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="staff_purchase">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-green-500" />
-                         <span>Staff Purchase (BAW-S)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('staff_purchase')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="quote_order">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-purple-500" />
-                         <span>Quote & Orders (ADM)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('quote_order')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="agent_sales">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-orange-500" />
-                         <span>Agent Sales (BAW-S + ADM)</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('agent_sales')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="cancelled_refunded">
-                       <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-red-500" />
-                         <span>Cancelled / Refunded</span>
-                         {sourceBreakdownStats && (
-                           <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('cancelled_refunded')}</span>
-                         )}
-                       </div>
-                     </SelectItem>
-                   </SelectContent>
-                </Select>
-               </div>
-              )}
-            </div>
-            </div>
-            )}
-
-            {/* ───────── Section 3: PAYMENTS ───────── */}
-            {!isSalesAgent && (
-              <div className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <PoundSterling className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment method</h4>
-                  <span className="text-xs text-muted-foreground/70">— filter by gateway, scoped to a payment date window</span>
-                </div>
-              <div className="flex items-end gap-4 flex-wrap">
-
-                <div className="space-y-1 w-[220px]">
-                  <Label htmlFor="paymentSourceFilter" className="text-sm font-medium">Payment Source</Label>
-                  <Select value={filterByPaymentSource} onValueChange={setFilterByPaymentSource}>
-                    <SelectTrigger id="paymentSourceFilter">
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select value={filterByWarrantyPeriod} onValueChange={setFilterByWarrantyPeriod}>
+                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Warranty" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Payment Sources</SelectItem>
-                      <SelectItem value="bumper">Payments by Bumper</SelectItem>
-                      <SelectItem value="stripe">Payments by Stripe</SelectItem>
-                      <SelectItem value="payment_assist">Payments by Payment Assist</SelectItem>
-                      <SelectItem value="paypal">Payments by PayPal</SelectItem>
+                      <SelectItem value="all">All Periods</SelectItem>
+                      <SelectItem value="12">1 Year</SelectItem>
+                      <SelectItem value="24">2 Years</SelectItem>
+                      <SelectItem value="36">3 Years</SelectItem>
+                      <SelectItem value="48">4 Years</SelectItem>
+                      <SelectItem value="60">5 Years</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {canSeeSourceColumn && (
+                    <Select value={filterBySource} onValueChange={setFilterBySource}>
+                      <SelectTrigger className="h-9 w-[200px]"><SelectValue placeholder="Purchase source" /></SelectTrigger>
+                      <SelectContent className="max-w-[420px]">
+                        <SelectItem value="all_view"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400" /><span>All View</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('all_view')}</span>)}</div></SelectItem>
+                        <SelectItem value="website"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /><span>Website (BAW)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website')}</span>)}</div></SelectItem>
+                        <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Website G (Google)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_google')}</span>)}</div></SelectItem>
+                        <SelectItem value="website_facebook"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span>Website F (Facebook)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_facebook')}</span>)}</div></SelectItem>
+                        <SelectItem value="website_organic"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Website O (Organic)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_organic')}</span>)}</div></SelectItem>
+                        <SelectItem value="staff_purchase"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500" /><span>Staff (BAW-S)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('staff_purchase')}</span>)}</div></SelectItem>
+                        <SelectItem value="quote_order"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span>Quote & Orders (ADM)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('quote_order')}</span>)}</div></SelectItem>
+                        <SelectItem value="agent_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /><span>Agent Sales</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('agent_sales')}</span>)}</div></SelectItem>
+                        <SelectItem value="cancelled_refunded"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500" /><span>Cancelled / Refunded</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('cancelled_refunded')}</span>)}</div></SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  <Select value={filterByPaymentSource} onValueChange={setFilterByPaymentSource}>
+                    <SelectTrigger className="h-9 w-[170px]"><PoundSterling className="h-3.5 w-3.5 mr-1 text-muted-foreground" /><SelectValue placeholder="Payment" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Payments</SelectItem>
+                      <SelectItem value="bumper">Bumper</SelectItem>
+                      <SelectItem value="stripe">Stripe</SelectItem>
+                      <SelectItem value="payment_assist">Payment Assist</SelectItem>
+                      <SelectItem value="paypal">PayPal</SelectItem>
                       <SelectItem value="other">Other / Manual</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1 w-[180px]">
-                  <Label htmlFor="paymentSourceDateFilter" className="text-sm font-medium">Payment Source Date</Label>
+
                   <Select value={paymentSourceDateFilter} onValueChange={setPaymentSourceDateFilter}>
-                    <SelectTrigger id="paymentSourceDateFilter">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Pay date" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="yesterday">Yesterday</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="14days">Last 14 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                      <SelectItem value="60days">Last 60 Days</SelectItem>
-                      <SelectItem value="this_month">This Month</SelectItem>
-                      <SelectItem value="last_month">Last Month</SelectItem>
+                      <SelectItem value="all">Pay: All Time</SelectItem>
+                      <SelectItem value="today">Pay: Today</SelectItem>
+                      <SelectItem value="yesterday">Pay: Yesterday</SelectItem>
+                      <SelectItem value="7days">Pay: Last 7d</SelectItem>
+                      <SelectItem value="14days">Pay: Last 14d</SelectItem>
+                      <SelectItem value="30days">Pay: Last 30d</SelectItem>
+                      <SelectItem value="60days">Pay: Last 60d</SelectItem>
+                      <SelectItem value="this_month">Pay: This Month</SelectItem>
+                      <SelectItem value="last_month">Pay: Last Month</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                {(() => {
-                  const stats = customers.reduce((acc, customer) => {
-                    const status = (customer.status || '').toLowerCase();
-                    if (status === 'cancelled' || status === 'refunded') return acc;
-                    const hasBumper = !!customer.bumper_order_id;
-                    const hasStripe = !!customer.stripe_session_id;
-                    const sessionId = (customer.stripe_session_id || '').toLowerCase();
-                    const paymentTypeStr = (customer.payment_type || '').toLowerCase();
-                    const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
-                    let matchesSource = true;
-                    if (filterByPaymentSource === 'bumper') matchesSource = hasBumper;
-                    else if (filterByPaymentSource === 'stripe') matchesSource = hasStripe && !isPaypal;
-                    else if (filterByPaymentSource === 'paypal') matchesSource = isPaypal;
-                    else if (filterByPaymentSource === 'payment_assist') matchesSource = !hasBumper && !hasStripe && !isPaypal;
-                    else if (filterByPaymentSource === 'other') matchesSource = !hasBumper && !hasStripe && !isPaypal;
-                    if (!matchesSource) return acc;
-                    if (paymentSourceDateFilter !== 'all') {
-                      const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
-                      if (psRange) {
-                        const ds = customer.signup_date || customer.created_at;
-                        if (!ds) return acc;
-                        const d = new Date(ds);
-                        if (d < psRange.start || d > psRange.end) return acc;
+
+                  {(() => {
+                    const stats = customers.reduce((acc, customer) => {
+                      const status = (customer.status || '').toLowerCase();
+                      if (status === 'cancelled' || status === 'refunded') return acc;
+                      const hasBumper = !!customer.bumper_order_id;
+                      const hasStripe = !!customer.stripe_session_id;
+                      const sessionId = (customer.stripe_session_id || '').toLowerCase();
+                      const paymentTypeStr = (customer.payment_type || '').toLowerCase();
+                      const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
+                      let matchesSource = true;
+                      if (filterByPaymentSource === 'bumper') matchesSource = hasBumper;
+                      else if (filterByPaymentSource === 'stripe') matchesSource = hasStripe && !isPaypal;
+                      else if (filterByPaymentSource === 'paypal') matchesSource = isPaypal;
+                      else if (filterByPaymentSource === 'payment_assist') matchesSource = !hasBumper && !hasStripe && !isPaypal;
+                      else if (filterByPaymentSource === 'other') matchesSource = !hasBumper && !hasStripe && !isPaypal;
+                      if (!matchesSource) return acc;
+                      if (paymentSourceDateFilter !== 'all') {
+                        const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
+                        if (psRange) {
+                          const ds = customer.signup_date || customer.created_at;
+                          if (!ds) return acc;
+                          const d = new Date(ds);
+                          if (d < psRange.start || d > psRange.end) return acc;
+                        }
                       }
-                    }
-                    acc.count += 1;
-                    acc.total += Number(customer.final_amount) || 0;
-                    return acc;
-                  }, { count: 0, total: 0 });
-                  return (
-                    <div className="flex items-end gap-2 pb-1.5">
-                      <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
-                        £{stats.total.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <Badge variant="outline" className="text-xs whitespace-nowrap">
-                        {stats.count} {stats.count === 1 ? 'sale' : 'sales'}
-                      </Badge>
-                    </div>
-                  );
-                })()}
-              </div>
+                      acc.count += 1;
+                      acc.total += Number(customer.final_amount) || 0;
+                      return acc;
+                    }, { count: 0, total: 0 });
+                    if (filterByPaymentSource === 'all' && paymentSourceDateFilter === 'all') return null;
+                    return (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                          £{stats.total.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        <Badge variant="outline" className="text-xs whitespace-nowrap">
+                          {stats.count} {stats.count === 1 ? 'sale' : 'sales'}
+                        </Badge>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
 
-              </div>
-            )}
-
-            {/* ───────── Section 4: AGENTS & REVENUE ───────── */}
-            <div className="p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sales agents & revenue</h4>
-              </div>
-            <div className="flex items-end gap-4 flex-wrap">
-
-              {/* Filter by Agent */}
               {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                 <>
-                <div className="space-y-1 w-[220px]">
-                  <Label className="text-sm font-medium">Sales by Agent</Label>
                   <Select value={filterByAgent} onValueChange={setFilterByAgent}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-9 w-[170px]"><Trophy className="h-3.5 w-3.5 mr-1 text-muted-foreground" /><SelectValue placeholder="Agent" /></SelectTrigger>
                     <SelectContent>
                       {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                         <>
@@ -3563,118 +3404,91 @@ export const CustomersTab = ({
                         .map(user => {
                           const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                           const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
-                          const isSalesAgentRole = isSalesAgent;
                           return (
                             <SelectItem key={user.id} value={user.id}>
-                              {displayName}{!isSalesAgentRole && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
+                              {displayName}{!isSalesAgent && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
                             </SelectItem>
                           );
                         })}
                     </SelectContent>
                   </Select>
-                </div>
 
-                {/* Deals Period Selector */}
-                <div className="space-y-1 w-[160px]">
-                  <Label className="text-sm font-medium">Deals Period</Label>
                   <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Deals period" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="yesterday">Yesterday</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="14days">Last 14 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                      <SelectItem value="60days">Last 60 Days</SelectItem>
-                      <SelectItem value="this_month">This Month</SelectItem>
-                      <SelectItem value="last_month">Last Month</SelectItem>
-                      {!isSalesAgent && <SelectItem value="all">All Time</SelectItem>}
+                      <SelectItem value="today">Deals: Today</SelectItem>
+                      <SelectItem value="yesterday">Deals: Yesterday</SelectItem>
+                      <SelectItem value="7days">Deals: Last 7d</SelectItem>
+                      <SelectItem value="14days">Deals: Last 14d</SelectItem>
+                      <SelectItem value="30days">Deals: Last 30d</SelectItem>
+                      <SelectItem value="60days">Deals: Last 60d</SelectItem>
+                      <SelectItem value="this_month">Deals: This Month</SelectItem>
+                      <SelectItem value="last_month">Deals: Last Month</SelectItem>
+                      {!isSalesAgent && <SelectItem value="all">Deals: All Time</SelectItem>}
                     </SelectContent>
                   </Select>
-                </div>
                 </>
               )}
 
-              {/* Revenue by Date - inline (super_admin only) */}
-              {isSuperAdmin && (
-                <div className="flex items-end gap-3 border-l pl-4">
-                  <div className="flex items-center gap-2 pb-1.5">
-                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium whitespace-nowrap">Revenue:</span>
-                  </div>
-                  <div className="flex items-center gap-1 pb-0.5">
-                    {[
-                      { label: 'Today', getRange: () => { const d = new Date(); return { from: d, to: d }; } },
-                      { label: 'Yesterday', getRange: () => { const d = new Date(); d.setDate(d.getDate() - 1); return { from: d, to: d }; } },
-                      { label: 'This Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now }; } },
-                      { label: 'Last Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth() - 1, 1), to: new Date(now.getFullYear(), now.getMonth(), 0) }; } },
-                      { label: 'All Time', getRange: () => undefined as DateRange | undefined },
-                    ].map((preset) => {
-                      const isActive = (() => {
-                        const r = preset.getRange();
-                        if (!r && !revenueDateRange?.from) return true;
-                        if (!r || !revenueDateRange?.from) return false;
-                        const rf = new Date(r.from); rf.setHours(0,0,0,0);
-                        const rt = r.to ? new Date(r.to) : rf; rt.setHours(0,0,0,0);
-                        const cf = new Date(revenueDateRange.from); cf.setHours(0,0,0,0);
-                        const ct = revenueDateRange.to ? new Date(revenueDateRange.to) : cf; ct.setHours(0,0,0,0);
-                        return rf.getTime() === cf.getTime() && rt.getTime() === ct.getTime();
-                      })();
-                      return (
-                        <Button
-                          key={preset.label}
-                          variant={isActive ? 'default' : 'outline'}
-                          size="sm"
-                          className="text-xs h-7 px-2.5"
-                          onClick={() => {
-                            const range = preset.getRange();
-                            setRevenueDateRange(range ?? { from: new Date(2020, 0, 1), to: new Date() });
-                            // Also filter the table by the same range so it matches the Revenue stat
-                            setDateRange(range ?? undefined);
-                          }}
-                        >
-                          {preset.label}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  {filteredRevenueStats && (
-                    <div className="flex flex-col gap-0.5 pb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
-                          £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                        <Badge variant="outline" className="text-xs">
-                          {filteredRevenueStats.count} {filteredRevenueStats.label}
-                        </Badge>
-                      </div>
-                      {filteredRevenueStats.dateFilterActive && filteredRevenueStats.sourceFilterActive && filteredRevenueStats.hiddenByDate > 0 && (
-                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
-                          Date filter applied · {filteredRevenueStats.hiddenByDate} more outside range
-                        </span>
-                      )}
-                      {filteredRevenueStats.sourceFilterActive && filteredRevenueStats.count === 0 && sourceBreakdownStats?.[filterBySource] && sourceBreakdownStats[filterBySource].count > 0 && (
-                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
-                          No sales in this range · widen the date filter to see {sourceBreakdownStats[filterBySource].count} {filteredRevenueStats.label}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Activity summary - hidden for sales agents */}
               {!isSalesAgent && (
-              <div className="flex items-end pb-0.5 ml-auto">
-                <span className="text-sm text-muted-foreground">
-                  Showing {filteredCustomers.length} of {customers.length} customers
+                <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
+                  {filteredCustomers.length} of {customers.length}
                 </span>
-              </div>
               )}
             </div>
-            </div>
+
+            {/* Row 3 (super admin only): Revenue presets inline */}
+            {isSuperAdmin && (
+              <div className="flex items-center gap-2 flex-wrap pt-1 border-t">
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <CalendarIcon className="h-3.5 w-3.5" /> Revenue:
+                </span>
+                {[
+                  { label: 'Today', getRange: () => { const d = new Date(); return { from: d, to: d }; } },
+                  { label: 'Yesterday', getRange: () => { const d = new Date(); d.setDate(d.getDate() - 1); return { from: d, to: d }; } },
+                  { label: 'This Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now }; } },
+                  { label: 'Last Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth() - 1, 1), to: new Date(now.getFullYear(), now.getMonth(), 0) }; } },
+                  { label: 'All Time', getRange: () => undefined as DateRange | undefined },
+                ].map((preset) => {
+                  const isActive = (() => {
+                    const r = preset.getRange();
+                    if (!r && !revenueDateRange?.from) return true;
+                    if (!r || !revenueDateRange?.from) return false;
+                    const rf = new Date(r.from); rf.setHours(0,0,0,0);
+                    const rt = r.to ? new Date(r.to) : rf; rt.setHours(0,0,0,0);
+                    const cf = new Date(revenueDateRange.from); cf.setHours(0,0,0,0);
+                    const ct = revenueDateRange.to ? new Date(revenueDateRange.to) : cf; ct.setHours(0,0,0,0);
+                    return rf.getTime() === cf.getTime() && rt.getTime() === ct.getTime();
+                  })();
+                  return (
+                    <Button
+                      key={preset.label}
+                      variant={isActive ? 'default' : 'outline'}
+                      size="sm"
+                      className="text-xs h-7 px-2.5"
+                      onClick={() => {
+                        const range = preset.getRange();
+                        setRevenueDateRange(range ?? { from: new Date(2020, 0, 1), to: new Date() });
+                        setDateRange(range ?? undefined);
+                      }}
+                    >
+                      {preset.label}
+                    </Button>
+                  );
+                })}
+                {filteredRevenueStats && (
+                  <div className="flex items-center gap-2 ml-1">
+                    <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                      £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      {filteredRevenueStats.count} {filteredRevenueStats.label}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            )}
+
 
             {/* Results Summary and Bulk Actions */}
             <div className="flex items-center justify-between text-sm text-muted-foreground p-3">
