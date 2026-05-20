@@ -170,7 +170,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="text-xs text-muted-foreground">{agent.salesCount} sales{agent.cancelledCount > 0 ? ` · ${agent.cancelledCount} refunds` : ''}</div>
                   </div>
 
-                  {isSuperAdmin && (
+                  {canEditTargets && (
                     <EditTargetButton
                       agentId={agent.id}
                       currentTarget={agent.monthlyTarget}
