@@ -5,6 +5,7 @@ import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, Chevr
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
+// pass currentUserRole through
 import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
@@ -182,7 +183,7 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <ScoreboardRankingTable agents={agents} currentAdminUserId={currentAdminUserId} period={period} />
+          <ScoreboardRankingTable agents={agents} currentAdminUserId={currentAdminUserId} period={period} currentUserRole={currentUserRole} onTargetSaved={refresh} />
         </TabsContent>
 
         <TabsContent value="profile">

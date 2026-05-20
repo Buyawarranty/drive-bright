@@ -1,14 +1,22 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Crown, Star, Flame } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Trophy, Medal, Crown, Star, Flame, Pencil, Save, Loader2 } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
+import { supabase } from '@/integrations/supabase/client';
+import { startOfMonth, endOfMonth } from 'date-fns';
+import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 interface Props {
   agents: AgentScore[];
   currentAdminUserId: string | null;
   period: TimePeriod;
+  currentUserRole?: string | null;
+  onTargetSaved?: () => void;
 }
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
@@ -31,7 +39,8 @@ const getRankStyle = (rank: number) => {
 
 
 
-export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period }) => {
+export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved }) => {
+  const isSuperAdmin = currentUserRole === 'super_admin';
   const prevFirstRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -138,6 +147,14 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="text-xs text-muted-foreground">{agent.salesCount} sales{agent.cancelledCount > 0 ? ` · ${agent.cancelledCount} refunds` : ''}</div>
                   </div>
 
+                  {isSuperAdmin && (
+                    <EditTargetButton
+                      agentId={agent.id}
+                      currentTarget={agent.monthlyTarget}
+                      onSaved={onTargetSaved}
+                    />
+                  )}
+
                 </div>
               );
             })}
@@ -145,5 +162,106 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
         )}
       </CardContent>
     </Card>
+  );
+};
+
+interface EditTargetButtonProps {
+  agentId: string;
+  currentTarget: number | null;
+  onSaved?: () => void;
+}
+
+const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTarget, onSaved }) => {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<string>(currentTarget?.toString() ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setValue(currentTarget?.toString() ?? '');
+  }, [currentTarget, open]);
+
+  const handleSave = async () => {
+    const target = parseInt(value);
+    if (isNaN(target) || target < 0) {
+      toast.error('Enter a valid target');
+      return;
+    }
+    setSaving(true);
+    try {
+      const monthStart = startOfMonth(new Date());
+      const monthEnd = endOfMonth(new Date());
+      const nowIso = new Date().toISOString();
+
+      const { data: existing } = await supabase
+        .from('sales_targets')
+        .select('id')
+        .eq('admin_user_id', agentId)
+        .eq('target_period', 'monthly')
+        .lte('start_date', nowIso)
+        .gte('end_date', nowIso)
+        .maybeSingle();
+
+      if (existing?.id) {
+        const { error } = await supabase
+          .from('sales_targets')
+          .update({ target_amount: target })
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('sales_targets')
+          .insert({
+            admin_user_id: agentId,
+            target_amount: target,
+            target_period: 'monthly',
+            start_date: monthStart.toISOString(),
+            end_date: monthEnd.toISOString(),
+          });
+        if (error) throw error;
+      }
+      toast.success('Target saved');
+      setOpen(false);
+      onSaved?.();
+    } catch (e: any) {
+      console.error('Save target error', e);
+      toast.error(e?.message || 'Failed to save target');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 px-2 gap-1"
+          title="Edit monthly target"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline text-xs">Target</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64" align="end">
+        <div className="space-y-3">
+          <div>
+            <div className="text-sm font-semibold">Monthly target</div>
+            <div className="text-xs text-muted-foreground">Number of deals for this month</div>
+          </div>
+          <Input
+            type="number"
+            min={0}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="0"
+            autoFocus
+          />
+          <Button onClick={handleSave} disabled={saving} className="w-full" size="sm">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1" /> Save</>}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };
