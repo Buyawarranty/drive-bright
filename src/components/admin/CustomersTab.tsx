@@ -3631,9 +3631,11 @@ export const CustomersTab = ({
               </div>
               )}
             </div>
+            </div>
 
             {/* Results Summary and Bulk Actions */}
-            <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
+            <div className="flex items-center justify-between text-sm text-muted-foreground p-3">
+
               <div className="flex items-center gap-4">
                 {selectedCustomers.size > 0 && (() => {
                   const selectedItems = filteredCustomers.filter(c => selectedCustomers.has(c.id));
