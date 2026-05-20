@@ -215,8 +215,9 @@ export const useScoreboardData = (): ScoreboardData => {
         const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
-        // Prefer accurate MTD count from SECURITY DEFINER RPC (bypasses RLS) over RLS-limited query
-        const leadsAssigned = mtdAssigned || userLeads.length;
+        const manualLeads = manualLeadsMap.get(u.id);
+        // Prefer manually-set leads count (set per agent based on days worked), fall back to MTD assigned
+        const leadsAssigned = manualLeads != null ? manualLeads : (mtdAssigned || userLeads.length);
         const leadsConverted = userConvertedLeads.length;
         const target = targetMap.get(u.id) || 0;
         const conversionRate = leadsAssigned > 0 ? (salesCount / leadsAssigned) * 100 : 0;
