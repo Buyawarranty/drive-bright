@@ -219,7 +219,9 @@ export const useScoreboardData = (): ScoreboardData => {
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const leadsAssigned = userLeads.length;
         const leadsConverted = userConvertedLeads.length;
-        const conversionRate = leadsAssigned > 0 ? (leadsConverted / leadsAssigned) * 100 : 0;
+        const target = targetMap.get(u.id) || 0;
+        const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
+        const conversionRate = target > 0 ? (mtdAssigned / target) * 100 : 0;
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
         const cancelledCount = userCancelled.length;
         const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
