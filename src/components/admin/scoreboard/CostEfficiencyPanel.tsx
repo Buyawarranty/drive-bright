@@ -71,7 +71,7 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
     }
   };
 
-  useEffect(() => { fetchAll(); /* eslint-disable-next-line */ }, [isSuperAdmin, monthStart.getTime()]);
+  useEffect(() => { if (visible) fetchAll(); /* eslint-disable-next-line */ }, [isSuperAdmin, monthStart.getTime(), visible]);
 
   const saveSpend = async () => {
     const amount = parseFloat(spendInput);
