@@ -27,6 +27,9 @@ export const SalesScoreboardTab: React.FC = () => {
   const { agents, loading, period, setPeriod, dateRange, setDateRange, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [myDeals, setMyDeals] = useState<{ name: string; registration_plate: string | null; final_amount: number; created_at: string }[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('leaderboard');
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  useEffect(() => { if (!loading) setHasLoadedOnce(true); }, [loading]);
 
   const selectedAgent = selectedAgentId
     ? agents.find(a => a.id === selectedAgentId) || null
@@ -56,7 +59,7 @@ export const SalesScoreboardTab: React.FC = () => {
     fetchDeals();
   }, [agents, currentAdminUserId]);
 
-  if (loading) {
+  if (loading && !hasLoadedOnce) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -155,7 +158,7 @@ export const SalesScoreboardTab: React.FC = () => {
 
 
       {/* Main Content */}
-      <Tabs defaultValue="leaderboard" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-muted/50">
           <TabsTrigger value="leaderboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
