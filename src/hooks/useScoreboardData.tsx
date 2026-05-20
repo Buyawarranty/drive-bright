@@ -20,6 +20,7 @@ export interface AgentScore {
   previousRank: number | null;
   trend: 'up' | 'down' | 'same' | 'new';
   monthlyTarget: number | null;
+  manualLeadsCount: number | null;
   cancelledCount: number;
   cancelledRevenue: number;
 }
@@ -179,15 +180,17 @@ export const useScoreboardData = (): ScoreboardData => {
       const nowIso = new Date().toISOString();
       const { data: targets } = await supabase
         .from('sales_targets')
-        .select('admin_user_id, target_amount, target_period')
+        .select('admin_user_id, target_amount, target_period, manual_leads_count')
         .in('admin_user_id', agentIds)
         .eq('target_period', 'monthly')
         .lte('start_date', nowIso)
         .gte('end_date', nowIso);
 
       const targetMap = new Map<string, number>();
-      (targets || []).forEach(t => {
+      const manualLeadsMap = new Map<string, number>();
+      (targets || []).forEach((t: any) => {
         targetMap.set(t.admin_user_id, t.target_amount);
+        if (t.manual_leads_count != null) manualLeadsMap.set(t.admin_user_id, t.manual_leads_count);
       });
 
       // Fetch month-to-date leads assigned per agent (for conv. rate vs target)
@@ -213,8 +216,9 @@ export const useScoreboardData = (): ScoreboardData => {
         const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
-        // Prefer accurate MTD count from SECURITY DEFINER RPC (bypasses RLS) over RLS-limited query
-        const leadsAssigned = mtdAssigned || userLeads.length;
+        const manualLeads = manualLeadsMap.get(u.id);
+        // Prefer manually-set leads count (set per agent based on days worked), fall back to MTD assigned
+        const leadsAssigned = manualLeads != null ? manualLeads : (mtdAssigned || userLeads.length);
         const leadsConverted = userConvertedLeads.length;
         const target = targetMap.get(u.id) || 0;
         const conversionRate = leadsAssigned > 0 ? (salesCount / leadsAssigned) * 100 : 0;
@@ -238,6 +242,7 @@ export const useScoreboardData = (): ScoreboardData => {
           previousRank: null,
           trend: 'same' as const,
           monthlyTarget: targetMap.get(u.id) || null,
+          manualLeadsCount: manualLeadsMap.get(u.id) ?? null,
           cancelledCount,
           cancelledRevenue,
         };

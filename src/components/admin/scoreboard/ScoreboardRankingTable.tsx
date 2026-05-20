@@ -174,6 +174,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <EditTargetButton
                       agentId={agent.id}
                       currentTarget={agent.monthlyTarget}
+                      currentLeads={agent.manualLeadsCount}
                       onSaved={onTargetSaved}
                     />
                   )}
@@ -192,17 +193,20 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 interface EditTargetButtonProps {
   agentId: string;
   currentTarget: number | null;
+  currentLeads: number | null;
   onSaved?: () => void;
 }
 
-const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTarget, onSaved }) => {
+const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTarget, currentLeads, onSaved }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>(currentTarget?.toString() ?? '');
+  const [leadsValue, setLeadsValue] = useState<string>(currentLeads?.toString() ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setValue(currentTarget?.toString() ?? '');
-  }, [currentTarget, open]);
+    setLeadsValue(currentLeads?.toString() ?? '');
+  }, [currentTarget, currentLeads, open]);
 
   const handleSave = async () => {
     const target = parseInt(value);
@@ -210,6 +214,17 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
       toast.error('Enter a valid target');
       return;
     }
+    const leadsTrimmed = leadsValue.trim();
+    let manualLeads: number | null = null;
+    if (leadsTrimmed !== '') {
+      const parsed = parseInt(leadsTrimmed);
+      if (isNaN(parsed) || parsed < 0) {
+        toast.error('Enter a valid leads number (or leave blank)');
+        return;
+      }
+      manualLeads = parsed;
+    }
+
     setSaving(true);
     try {
       const monthStart = startOfMonth(new Date());
@@ -228,7 +243,7 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
       if (existing?.id) {
         const { error } = await supabase
           .from('sales_targets')
-          .update({ target_amount: target })
+          .update({ target_amount: target, manual_leads_count: manualLeads })
           .eq('id', existing.id);
         if (error) throw error;
       } else {
@@ -237,18 +252,19 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
           .insert({
             admin_user_id: agentId,
             target_amount: target,
+            manual_leads_count: manualLeads,
             target_period: 'monthly',
             start_date: monthStart.toISOString(),
             end_date: monthEnd.toISOString(),
           });
         if (error) throw error;
       }
-      toast.success('Target saved');
+      toast.success('Saved');
       setOpen(false);
       onSaved?.();
     } catch (e: any) {
       console.error('Save target error', e);
-      toast.error(e?.message || 'Failed to save target');
+      toast.error(e?.message || 'Failed to save');
     } finally {
       setSaving(false);
     }
@@ -261,13 +277,13 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
           variant="outline"
           size="sm"
           className="h-8 px-2 gap-1"
-          title="Edit monthly target"
+          title="Edit monthly target & leads"
         >
           <Pencil className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline text-xs">Target</span>
+          <span className="hidden sm:inline text-xs">Edit</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64" align="end">
+      <PopoverContent className="w-72" align="end">
         <div className="space-y-3">
           <div>
             <div className="text-sm font-semibold">Monthly target</div>
@@ -280,6 +296,17 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
             onChange={(e) => setValue(e.target.value)}
             placeholder="0"
             autoFocus
+          />
+          <div className="pt-2 border-t">
+            <div className="text-sm font-semibold">Leads this month</div>
+            <div className="text-xs text-muted-foreground">Manual override (leave blank to use auto count)</div>
+          </div>
+          <Input
+            type="number"
+            min={0}
+            value={leadsValue}
+            onChange={(e) => setLeadsValue(e.target.value)}
+            placeholder="Auto"
           />
           <Button onClick={handleSave} disabled={saving} className="w-full" size="sm">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1" /> Save</>}
