@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Save, UserPlus, Trash2, Info, Zap, AlertCircle, UserCheck, RotateCcw } from 'lucide-react';
 import { AgentSchedulePanel } from './AgentSchedulePanel';
+import { AgentWorkingDays } from './AgentWorkingDays';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -404,6 +405,10 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                     )}
                   </div>
                 </div>
+
+                {/* Working days quick-toggle */}
+                <AgentWorkingDays adminUserId={cap.admin_user_id} />
+
 
                 {/* Schedule & Availability */}
                 <Separator className="my-2" />
