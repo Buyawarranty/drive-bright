@@ -179,15 +179,17 @@ export const useScoreboardData = (): ScoreboardData => {
       const nowIso = new Date().toISOString();
       const { data: targets } = await supabase
         .from('sales_targets')
-        .select('admin_user_id, target_amount, target_period')
+        .select('admin_user_id, target_amount, target_period, manual_leads_count')
         .in('admin_user_id', agentIds)
         .eq('target_period', 'monthly')
         .lte('start_date', nowIso)
         .gte('end_date', nowIso);
 
       const targetMap = new Map<string, number>();
-      (targets || []).forEach(t => {
+      const manualLeadsMap = new Map<string, number>();
+      (targets || []).forEach((t: any) => {
         targetMap.set(t.admin_user_id, t.target_amount);
+        if (t.manual_leads_count != null) manualLeadsMap.set(t.admin_user_id, t.manual_leads_count);
       });
 
       // Fetch month-to-date leads assigned per agent (for conv. rate vs target)
