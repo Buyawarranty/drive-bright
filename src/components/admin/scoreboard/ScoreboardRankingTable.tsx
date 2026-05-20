@@ -71,6 +71,22 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
         {agents.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">No sales data for this period yet.</div>
         ) : (
+          <>
+            {/* Column headers (desktop only) */}
+            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="flex-shrink-0 w-12 text-center">Rank</div>
+              <div className="flex-1 min-w-0">Agent</div>
+              <div className="flex items-center gap-6">
+                <div className="w-16 text-center">Sales</div>
+                <div className="w-20 text-center">Revenue</div>
+                <div className="w-14 text-center">Conv.</div>
+                <div className="w-16 text-center">AOV</div>
+                {agents.some(a => a.cancelledCount > 0) && (
+                  <div className="w-16 text-center">Refunds</div>
+                )}
+                {isSuperAdmin && <div className="w-20 text-center">Target</div>}
+              </div>
+            </div>
           <div className="divide-y">
             {agents.map((agent) => {
               const style = getRankStyle(agent.rank);
