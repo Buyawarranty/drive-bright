@@ -64,11 +64,15 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
     try {
       const existingId = existingTargets[agentId];
       if (existingId) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('sales_targets')
-          .update({ target_amount: target })
-          .eq('id', existingId);
+          .update({ target_amount: target, updated_at: new Date().toISOString() })
+          .eq('id', existingId)
+          .select('id');
         if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error('No permission to update this target');
+        }
       } else {
         const { data, error } = await supabase
           .from('sales_targets')
@@ -88,11 +92,10 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
       }
 
       toast.success('Target saved');
-      // Note: intentionally not calling onTargetSaved() here to avoid
-      // a parent refresh that resets the Tabs view back to the leaderboard.
-    } catch (error) {
+      onTargetSaved();
+    } catch (error: any) {
       console.error('Error saving target:', error);
-      toast.error('Failed to save target');
+      toast.error(error?.message || 'Failed to save target');
     } finally {
       setSaving(false);
     }
