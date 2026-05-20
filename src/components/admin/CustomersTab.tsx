@@ -3198,10 +3198,38 @@ export const CustomersTab = ({
               ))}
             </div>
           )}
-          {/* Enhanced Search and Filter Controls */}
-          <div className="bg-white p-4 rounded-lg border space-y-4">
-            {/* Row 1: Search, Date Filter (privileged roles), Status */}
+          {/* Enhanced Search and Filter Controls — grouped UX redesign */}
+          <div className="bg-white rounded-lg border divide-y">
+            {/* ───────── Section 1: FIND ───────── */}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Find customers</h4>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterByStatus('all');
+                    setSortBy('newest');
+                    setFilterByWarrantyPeriod('all');
+                    if (canSeeSourceColumn) setFilterBySource('all_view');
+                    setFilterByPaymentSource('all');
+                    setPaymentSourceDateFilter('all');
+                    setFilterByAgent('all');
+                    setTotalSalesDateFilter('30days');
+                    setDateRange(undefined);
+                    setRevenueDateRange(undefined);
+                  }}
+                >
+                  Clear all filters
+                </Button>
+              </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
               {/* Search */}
               <div className={cn("space-y-1", canUseDateFilter ? "lg:col-span-2" : "lg:col-span-3") }>
                 <Label htmlFor="search" className="text-sm font-medium">Search</Label>
@@ -3266,12 +3294,19 @@ export const CustomersTab = ({
                     )}
                   </SelectContent>
                 </Select>
-              </div>
+             </div>
             </div>
+            </div>
+            {/* ───────── Section 2: ATTRIBUTES ───────── */}
 
-              {/* Row 2: Sort, Warranty Period, Purchase Source - hidden for sales agents */}
-             {!isSalesAgent && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+              {!isSalesAgent && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filter by attributes</h4>
+                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+
                {/* Sort by */}
                <div className="space-y-1">
                  <Label htmlFor="sortBy" className="text-sm font-medium">Sort by</Label>
@@ -3406,11 +3441,19 @@ export const CustomersTab = ({
                </div>
               )}
             </div>
+            </div>
             )}
 
-            {/* Payment Source filter + date filter — hidden for sales agents */}
+            {/* ───────── Section 3: PAYMENTS ───────── */}
             {!isSalesAgent && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <PoundSterling className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment method</h4>
+                  <span className="text-xs text-muted-foreground/70">— filter by gateway, scoped to a payment date window</span>
+                </div>
               <div className="flex items-end gap-4 flex-wrap">
+
                 <div className="space-y-1 w-[220px]">
                   <Label htmlFor="paymentSourceFilter" className="text-sm font-medium">Payment Source</Label>
                   <Select value={filterByPaymentSource} onValueChange={setFilterByPaymentSource}>
@@ -3447,10 +3490,17 @@ export const CustomersTab = ({
                   </Select>
                 </div>
               </div>
+              </div>
             )}
 
-             {/* Row 3: Sales by Agent + Deals Period + Revenue by Date */}
+            {/* ───────── Section 4: AGENTS & REVENUE ───────── */}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sales agents & revenue</h4>
+              </div>
             <div className="flex items-end gap-4 flex-wrap">
+
               {/* Filter by Agent */}
               {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                 <>
@@ -3583,9 +3633,11 @@ export const CustomersTab = ({
               </div>
               )}
             </div>
+            </div>
 
             {/* Results Summary and Bulk Actions */}
-            <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
+            <div className="flex items-center justify-between text-sm text-muted-foreground p-3">
+
               <div className="flex items-center gap-4">
                 {selectedCustomers.size > 0 && (() => {
                   const selectedItems = filteredCustomers.filter(c => selectedCustomers.has(c.id));
