@@ -191,21 +191,15 @@ export const useScoreboardData = (): ScoreboardData => {
       });
 
       // Fetch month-to-date leads assigned per agent (for conv. rate vs target)
-      // Use per-agent count queries to bypass the 1000-row default limit.
-      const mtdStart = startOfMonth(new Date());
-      const mtdEnd = new Date();
+      // Uses a SECURITY DEFINER RPC so sales agents (who can't read other agents' leads via RLS)
+      // still see aggregate counts on the scoreboard.
       const mtdLeadsMap = new Map<string, number>();
-      await Promise.all(
-        agentIds.map(async (aid) => {
-          const { count } = await supabase
-            .from('sales_leads')
-            .select('id', { count: 'exact', head: true })
-            .eq('assigned_to', aid)
-            .gte('created_at', mtdStart.toISOString())
-            .lte('created_at', mtdEnd.toISOString());
-          mtdLeadsMap.set(aid, count || 0);
-        })
-      );
+      const { data: mtdRows, error: mtdErr } = await supabase
+        .rpc('get_mtd_leads_per_agent', { _agent_ids: agentIds });
+      if (mtdErr) console.error('get_mtd_leads_per_agent error', mtdErr);
+      (mtdRows || []).forEach((r: any) => {
+        if (r.assigned_to) mtdLeadsMap.set(r.assigned_to, Number(r.lead_count) || 0);
+      });
 
       const scores: AgentScore[] = adminUsers.map(u => {
         const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
