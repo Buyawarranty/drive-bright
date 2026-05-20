@@ -3439,11 +3439,19 @@ export const CustomersTab = ({
                </div>
               )}
             </div>
+            </div>
             )}
 
-            {/* Payment Source filter + date filter — hidden for sales agents */}
+            {/* ───────── Section 3: PAYMENTS ───────── */}
             {!isSalesAgent && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <PoundSterling className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment method</h4>
+                  <span className="text-xs text-muted-foreground/70">— filter by gateway, scoped to a payment date window</span>
+                </div>
               <div className="flex items-end gap-4 flex-wrap">
+
                 <div className="space-y-1 w-[220px]">
                   <Label htmlFor="paymentSourceFilter" className="text-sm font-medium">Payment Source</Label>
                   <Select value={filterByPaymentSource} onValueChange={setFilterByPaymentSource}>
