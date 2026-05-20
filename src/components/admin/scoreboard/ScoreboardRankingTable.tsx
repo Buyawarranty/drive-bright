@@ -77,9 +77,9 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               <div className="flex-shrink-0 w-12 text-center">Rank</div>
               <div className="flex-1 min-w-0">Agent</div>
               <div className="flex items-center gap-6">
-                <div className="w-16 text-center">Leads</div>
                 <div className="w-24 text-center">Sales</div>
                 <div className="w-24 text-center">Revenue</div>
+                <div className="w-16 text-center">Leads</div>
                 <div className="w-16 text-center">Conv.</div>
                 <div className="w-20 text-center">AOV</div>
                 {agents.some(a => a.cancelledCount > 0) && (
@@ -128,10 +128,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
-                    <div className="w-16 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Leads</div>
-                      <div className="font-bold text-lg text-blue-600">{agent.leadsAssigned}</div>
-                    </div>
                     <div className="w-24 text-center">
 
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
@@ -147,6 +143,10 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
                       <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>
+                    </div>
+                    <div className="w-16 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Leads</div>
+                      <div className="font-bold text-lg text-blue-600">{agent.leadsAssigned}</div>
                     </div>
                     <div className="w-16 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
