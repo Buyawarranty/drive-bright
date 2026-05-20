@@ -406,6 +406,10 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                   </div>
                 </div>
 
+                {/* Working days quick-toggle */}
+                <AgentWorkingDays adminUserId={cap.admin_user_id} />
+
+
                 {/* Schedule & Availability */}
                 <Separator className="my-2" />
                 <AgentSchedulePanel
