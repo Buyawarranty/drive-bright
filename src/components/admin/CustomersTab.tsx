@@ -3422,6 +3422,8 @@ export const CustomersTab = ({
                       <SelectItem value="bumper">Payments by Bumper</SelectItem>
                       <SelectItem value="stripe">Payments by Stripe</SelectItem>
                       <SelectItem value="payment_assist">Payments by Payment Assist</SelectItem>
+                      <SelectItem value="paypal">Payments by PayPal</SelectItem>
+                      <SelectItem value="other">Other / Manual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
