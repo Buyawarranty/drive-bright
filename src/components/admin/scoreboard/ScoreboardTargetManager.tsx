@@ -110,7 +110,6 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
         }
       }
 
-      toast.success('Target saved');
       onTargetSaved();
     } catch (error: any) {
       console.error('Error saving target:', error);
