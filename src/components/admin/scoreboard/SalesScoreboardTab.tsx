@@ -158,7 +158,7 @@ export const SalesScoreboardTab: React.FC = () => {
 
 
       {/* Main Content */}
-      <Tabs defaultValue="leaderboard" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-muted/50">
           <TabsTrigger value="leaderboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
