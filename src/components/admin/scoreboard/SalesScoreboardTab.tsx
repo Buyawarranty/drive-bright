@@ -153,6 +153,12 @@ export const SalesScoreboardTab: React.FC = () => {
       {/* KPI Cards */}
       <ScoreboardKPICards agents={agents} period={period} currentAdminUserId={currentAdminUserId} />
 
+      {/* Cost Efficiency (super-admin only) */}
+      <CostEfficiencyPanel
+        currentUserRole={currentUserRole}
+        referenceDate={dateRange?.from || new Date()}
+      />
+
       {/* Main Content */}
       <Tabs defaultValue="leaderboard" className="space-y-4">
         <TabsList className="bg-muted/50">
