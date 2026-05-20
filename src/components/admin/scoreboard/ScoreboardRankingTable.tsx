@@ -128,10 +128,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
-                    <div className="w-16 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Leads</div>
-                      <div className="font-bold text-lg text-blue-600">{agent.leadsAssigned}</div>
-                    </div>
                     <div className="w-24 text-center">
 
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
@@ -147,6 +143,10 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
                       <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>
+                    </div>
+                    <div className="w-16 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Leads</div>
+                      <div className="font-bold text-lg text-blue-600">{agent.leadsAssigned}</div>
                     </div>
                     <div className="w-16 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
