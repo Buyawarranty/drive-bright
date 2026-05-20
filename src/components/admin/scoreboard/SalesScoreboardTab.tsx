@@ -11,6 +11,7 @@ import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { CommissionTimesheetForm } from './CommissionTimesheetForm';
 import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
+import { CostEfficiencyPanel } from './CostEfficiencyPanel';
 import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } from 'date-fns';
@@ -151,6 +152,12 @@ export const SalesScoreboardTab: React.FC = () => {
 
       {/* KPI Cards */}
       <ScoreboardKPICards agents={agents} period={period} currentAdminUserId={currentAdminUserId} />
+
+      {/* Cost Efficiency (super-admin only) */}
+      <CostEfficiencyPanel
+        currentUserRole={currentUserRole}
+        referenceDate={dateRange?.from || new Date()}
+      />
 
       {/* Main Content */}
       <Tabs defaultValue="leaderboard" className="space-y-4">
