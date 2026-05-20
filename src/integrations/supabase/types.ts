@@ -8436,6 +8436,13 @@ export type Database = {
         Args: { p_column: string; p_user_id: string }
         Returns: string
       }
+      get_mtd_leads_per_agent: {
+        Args: { _agent_ids: string[] }
+        Returns: {
+          assigned_to: string
+          lead_count: number
+        }[]
+      }
       get_next_eligible_agent:
         | { Args: { p_distribution_mode?: string }; Returns: string }
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
