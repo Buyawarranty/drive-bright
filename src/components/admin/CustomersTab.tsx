@@ -3678,6 +3678,22 @@ export const CustomersTab = ({
             </div>
           </div>
 
+          {/* Column visibility toggles */}
+          {canSeeSourceColumn && (
+            <div className="flex justify-end px-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPurchaseSource(v => !v)}
+                className="text-xs gap-1.5 h-8"
+                title={showPurchaseSource ? 'Hide Purchase Source column' : 'Show Purchase Source column'}
+              >
+                {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                Purchase Source
+              </Button>
+            </div>
+          )}
+
       {/* Results Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden mt-2">
 
