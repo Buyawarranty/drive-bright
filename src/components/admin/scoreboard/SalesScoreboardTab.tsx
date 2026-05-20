@@ -27,6 +27,9 @@ export const SalesScoreboardTab: React.FC = () => {
   const { agents, loading, period, setPeriod, dateRange, setDateRange, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [myDeals, setMyDeals] = useState<{ name: string; registration_plate: string | null; final_amount: number; created_at: string }[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('leaderboard');
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  useEffect(() => { if (!loading) setHasLoadedOnce(true); }, [loading]);
 
   const selectedAgent = selectedAgentId
     ? agents.find(a => a.id === selectedAgentId) || null
