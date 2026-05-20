@@ -126,33 +126,33 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
-                    <div className="text-center">
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
+                        Sales{agent.monthlyTarget ? ` (${Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100))}%)` : ''}
+                      </div>
                       <div className="font-bold text-lg">
                         {agent.salesCount}
                         {agent.monthlyTarget ? (
                           <span className="text-sm font-medium text-muted-foreground"> / {agent.monthlyTarget}</span>
                         ) : null}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Sales{agent.monthlyTarget ? ` (${Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100))}%)` : ''}
-                      </div>
                     </div>
-                    <div className="text-center">
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
                       <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">Revenue</div>
                     </div>
-                    <div className="text-center">
+                    <div className="w-16 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
                       <div className="font-bold">{agent.conversionRate.toFixed(0)}%</div>
-                      <div className="text-xs text-muted-foreground">Conv.</div>
                     </div>
-                    <div className="text-center">
+                    <div className="w-20 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
                       <div className="font-bold">£{agent.avgOrderValue.toFixed(0)}</div>
-                      <div className="text-xs text-muted-foreground">AOV</div>
                     </div>
                     {agent.cancelledCount > 0 && (
-                      <div className="text-center">
+                      <div className="w-16 text-center">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-red-500 mb-0.5">Refunds</div>
                         <div className="font-bold text-red-600">{agent.cancelledCount}</div>
-                        <div className="text-xs text-red-500">Refunds</div>
                       </div>
                     )}
                   </div>
