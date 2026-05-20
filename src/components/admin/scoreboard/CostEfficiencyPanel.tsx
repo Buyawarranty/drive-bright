@@ -165,6 +165,10 @@ export const CostEfficiencyPanel: React.FC<Props> = ({ currentUserRole, referenc
               </div>
             </PopoverContent>
           </Popover>
+          <Button variant="ghost" size="sm" className="gap-1" onClick={() => setVisible(false)}>
+            <EyeOff className="h-3.5 w-3.5" />
+            Hide
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
