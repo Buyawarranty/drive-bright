@@ -77,15 +77,17 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               <div className="flex-shrink-0 w-12 text-center">Rank</div>
               <div className="flex-1 min-w-0">Agent</div>
               <div className="flex items-center gap-6">
-                <div className="w-16 text-center">Sales</div>
-                <div className="w-20 text-center">Revenue</div>
-                <div className="w-14 text-center">Conv.</div>
-                <div className="w-16 text-center">AOV</div>
+                <div className="w-16 text-center">Leads</div>
+                <div className="w-24 text-center">Sales</div>
+                <div className="w-24 text-center">Revenue</div>
+                <div className="w-16 text-center">Conv.</div>
+                <div className="w-20 text-center">AOV</div>
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
                 {isSuperAdmin && <div className="w-20 text-center">Target</div>}
               </div>
+
             </div>
           <div className="divide-y">
             {agents.map((agent) => {
