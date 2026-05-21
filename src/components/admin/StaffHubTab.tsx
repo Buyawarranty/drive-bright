@@ -342,7 +342,19 @@ export const StaffHubTab: React.FC = () => {
               </CardHeader>
               <CardContent className="pt-0 divide-y">
                 {grouped.get(cat.id)!.map(doc => (
-                  <div key={doc.id} className="py-3 flex items-start gap-3">
+                  <div
+                    key={doc.id}
+                    className="py-3 flex items-start gap-3 cursor-pointer hover:bg-muted/40 rounded px-2 -mx-2"
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => handleView(doc, e)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleView(doc);
+                      }
+                    }}
+                  >
                     <div className="h-9 w-9 rounded bg-muted flex items-center justify-center shrink-0">
                       <FileText className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -360,19 +372,20 @@ export const StaffHubTab: React.FC = () => {
                         <span className="truncate">{doc.file_name}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={() => handleView(doc)} title="Open in new tab">
+                    <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <Button size="sm" variant="ghost" onClick={(e) => handleView(doc, e)} title="Preview document">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDownload(doc)} title="Download">
+                      <Button size="sm" variant="ghost" onClick={(e) => handleDownload(doc, e)} title="Download">
                         <Download className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete">
+                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete" onClick={(e) => e.stopPropagation()}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
+
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete this document?</AlertDialogTitle>
