@@ -61,6 +61,10 @@ export const StaffHubTab: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewerDoc, setViewerDoc] = useState<StaffHubDoc | null>(null);
+  const [viewerUrl, setViewerUrl] = useState<string>('');
+  const [viewerLoading, setViewerLoading] = useState(false);
+
 
   // Upload form state
   const [title, setTitle] = useState('');
