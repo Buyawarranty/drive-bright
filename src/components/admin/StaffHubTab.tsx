@@ -61,6 +61,10 @@ export const StaffHubTab: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewerDoc, setViewerDoc] = useState<StaffHubDoc | null>(null);
+  const [viewerUrl, setViewerUrl] = useState<string>('');
+  const [viewerLoading, setViewerLoading] = useState(false);
+
 
   // Upload form state
   const [title, setTitle] = useState('');
@@ -153,29 +157,48 @@ export const StaffHubTab: React.FC = () => {
     }
   };
 
-  const handleDownload = async (doc: StaffHubDoc) => {
+  const handleDownload = async (doc: StaffHubDoc, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     try {
       const { data, error } = await supabase.storage
         .from('staff-hub')
         .createSignedUrl(doc.storage_path, 300, { download: doc.file_name });
       if (error || !data) throw error;
-      window.open(data.signedUrl, '_blank');
+      // Trigger download via hidden anchor to avoid any popup-blocker fallback navigation
+      const a = document.createElement('a');
+      a.href = data.signedUrl;
+      a.download = doc.file_name;
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     } catch (e: any) {
       toast({ title: 'Could not download', description: e.message, variant: 'destructive' });
     }
   };
 
-  const handleView = async (doc: StaffHubDoc) => {
+
+  const handleView = async (doc: StaffHubDoc, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setViewerDoc(doc);
+    setViewerUrl('');
+    setViewerLoading(true);
     try {
       const { data, error } = await supabase.storage
         .from('staff-hub')
-        .createSignedUrl(doc.storage_path, 300);
+        .createSignedUrl(doc.storage_path, 600);
       if (error || !data) throw error;
-      window.open(data.signedUrl, '_blank');
+      setViewerUrl(data.signedUrl);
     } catch (e: any) {
       toast({ title: 'Could not open', description: e.message, variant: 'destructive' });
+      setViewerDoc(null);
+    } finally {
+      setViewerLoading(false);
     }
   };
+
 
   const deleteMutation = useMutation({
     mutationFn: async (doc: StaffHubDoc) => {
@@ -319,7 +342,19 @@ export const StaffHubTab: React.FC = () => {
               </CardHeader>
               <CardContent className="pt-0 divide-y">
                 {grouped.get(cat.id)!.map(doc => (
-                  <div key={doc.id} className="py-3 flex items-start gap-3">
+                  <div
+                    key={doc.id}
+                    className="py-3 flex items-start gap-3 cursor-pointer hover:bg-muted/40 rounded px-2 -mx-2"
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => handleView(doc, e)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleView(doc);
+                      }
+                    }}
+                  >
                     <div className="h-9 w-9 rounded bg-muted flex items-center justify-center shrink-0">
                       <FileText className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -337,19 +372,20 @@ export const StaffHubTab: React.FC = () => {
                         <span className="truncate">{doc.file_name}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={() => handleView(doc)} title="Open in new tab">
+                    <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <Button size="sm" variant="ghost" onClick={(e) => handleView(doc, e)} title="Preview document">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDownload(doc)} title="Download">
+                      <Button size="sm" variant="ghost" onClick={(e) => handleDownload(doc, e)} title="Download">
                         <Download className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete">
+                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete" onClick={(e) => e.stopPropagation()}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
+
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete this document?</AlertDialogTitle>
@@ -376,7 +412,60 @@ export const StaffHubTab: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Inline document viewer */}
+      <Dialog
+        open={!!viewerDoc}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewerDoc(null);
+            setViewerUrl('');
+          }
+        }}
+      >
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle className="truncate pr-8">{viewerDoc?.title}</DialogTitle>
+            <DialogDescription className="truncate">
+              {viewerDoc?.file_name} · {formatBytes(viewerDoc?.file_size ?? null)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 bg-muted/30">
+            {viewerLoading || !viewerUrl ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Loading document…
+              </div>
+            ) : (
+              <iframe
+                src={viewerUrl}
+                title={viewerDoc?.title || 'Document'}
+                className="w-full h-full border-0"
+              />
+            )}
+          </div>
+          <DialogFooter className="p-3 border-t">
+            {viewerDoc && (
+              <Button
+                variant="outline"
+                onClick={(e) => viewerDoc && handleDownload(viewerDoc, e)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                setViewerDoc(null);
+                setViewerUrl('');
+              }}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 };
 
