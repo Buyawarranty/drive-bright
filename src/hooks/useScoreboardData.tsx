@@ -24,6 +24,7 @@ export interface AgentScore {
   cancelledCount: number;
   cancelledRevenue: number;
   callsCount: number;
+  manualActualAttempts: number | null;
 }
 
 export interface ScoreboardData {
