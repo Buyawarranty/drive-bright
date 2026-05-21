@@ -325,41 +325,34 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'blog_writer') {
-      // Blog writers see blog-writing and landing-pages tabs
-      return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages');
+      // Blog writers see blog-writing and landing-pages tabs + Staff Hub
+      return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages' || tab.id === 'staff-hub' || tab.id === 'account');
     }
     
     if (userRole === 'sales_lead') {
-      // Sales leads: manage team, assign leads, view customers, quotes, tips, analytics (restricted), account
-      const salesLeadTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'timesheets', 'account'];
+      const salesLeadTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'timesheets', 'staff-hub', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
-      // Accounts Manager/Payroll: customers, timesheets (with approvals), analytics, user permissions, account
-      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
     if (userRole === 'claims_manager') {
-      // Claims Manager: dedicated Claims access (includes Vehicle Intelligence sub-tab) + account
-      const claimsManagerTabIds = ['claims', 'account'];
+      const claimsManagerTabIds = ['claims', 'staff-hub', 'account'];
       return defaultTabs.filter(tab => claimsManagerTabIds.includes(tab.id));
     }
 
     if (userRole === 'accounts') {
-      // Accounts role: new leads, quotes, customers, discount codes, policy letters, timesheets
-      // (Claims is restricted to super_admin / admin only)
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'account'];
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
     if (userRole === 'sales') {
       // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
-      const defaultSalesTabIds = ['new-leads', 'get-quote', 'selling-tips', 'timesheets', 'account'];
+      const defaultSalesTabIds = ['new-leads', 'get-quote', 'selling-tips', 'timesheets', 'staff-hub', 'account'];
 
-      // If custom permissions exist, union them with the defaults so admins can grant
-      // extra access without removing the baseline sales sidebar
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         const allowedIds = new Set(defaultSalesTabIds);
         defaultTabs.forEach(tab => {
