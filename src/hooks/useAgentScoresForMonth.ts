@@ -95,6 +95,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             cancelledCount: userCancelled.length,
             cancelledRevenue: userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0),
             callsCount: callsMap.get(u.id) || 0,
+            manualActualAttempts: null,
           };
         });
 
