@@ -112,8 +112,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Assign permission - only sales_lead, admin, super_admin can reassign leads to other agents
   const canAssignLeads = isAdmin || userRole === 'sales_lead';
   
-  // Export permission - only super_admin, admin, and sales_lead can export
-  const canExport = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_lead';
+  // Export permission - only super_admin and admin can export (sales_lead removed)
+  const canExport = userRole === 'super_admin' || userRole === 'admin';
   
   // Granular permissions for sub-views
   // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
