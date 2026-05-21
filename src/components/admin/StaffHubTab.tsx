@@ -169,17 +169,26 @@ export const StaffHubTab: React.FC = () => {
     }
   };
 
-  const handleView = async (doc: StaffHubDoc) => {
+  const handleView = async (doc: StaffHubDoc, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setViewerDoc(doc);
+    setViewerUrl('');
+    setViewerLoading(true);
     try {
       const { data, error } = await supabase.storage
         .from('staff-hub')
-        .createSignedUrl(doc.storage_path, 300);
+        .createSignedUrl(doc.storage_path, 600);
       if (error || !data) throw error;
-      window.open(data.signedUrl, '_blank');
+      setViewerUrl(data.signedUrl);
     } catch (e: any) {
       toast({ title: 'Could not open', description: e.message, variant: 'destructive' });
+      setViewerDoc(null);
+    } finally {
+      setViewerLoading(false);
     }
   };
+
 
   const deleteMutation = useMutation({
     mutationFn: async (doc: StaffHubDoc) => {
