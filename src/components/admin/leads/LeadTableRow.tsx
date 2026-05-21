@@ -601,6 +601,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </AlertDialogContent>
         </AlertDialog>
         </>
+        )}
       </TableCell>
       )}
 
