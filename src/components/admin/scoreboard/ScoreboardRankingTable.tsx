@@ -166,9 +166,12 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Act. Att.</div>
                       <div className="font-bold text-lg text-indigo-600">{agent.manualActualAttempts != null ? agent.manualActualAttempts.toLocaleString() : '—'}</div>
                     </div>
-                    <div className="w-16 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
-                      <div className="font-bold">{agent.conversionRate.toFixed(1)}%</div>
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv. / Goal</div>
+                      <div className="font-bold">
+                        <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
+                        <span className="text-muted-foreground font-medium"> / 10%</span>
+                      </div>
                     </div>
                     <div className="w-20 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
