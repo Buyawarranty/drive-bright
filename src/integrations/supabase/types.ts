@@ -6837,6 +6837,7 @@ export type Database = {
           created_at: string
           end_date: string
           id: string
+          manual_actual_attempts: number | null
           manual_leads_count: number | null
           start_date: string
           target_amount: number
@@ -6849,6 +6850,7 @@ export type Database = {
           created_at?: string
           end_date: string
           id?: string
+          manual_actual_attempts?: number | null
           manual_leads_count?: number | null
           start_date: string
           target_amount: number
@@ -6861,6 +6863,7 @@ export type Database = {
           created_at?: string
           end_date?: string
           id?: string
+          manual_actual_attempts?: number | null
           manual_leads_count?: number | null
           start_date?: string
           target_amount?: number

@@ -24,6 +24,7 @@ export interface AgentScore {
   cancelledCount: number;
   cancelledRevenue: number;
   callsCount: number;
+  manualActualAttempts: number | null;
 }
 
 export interface ScoreboardData {
@@ -205,9 +206,11 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const targetMap = new Map<string, number>();
       const manualLeadsMap = new Map<string, number>();
+      const actualAttemptsMap = new Map<string, number>();
       (targets || []).forEach((t: any) => {
         targetMap.set(t.admin_user_id, t.target_amount);
         if (t.manual_leads_count != null) manualLeadsMap.set(t.admin_user_id, t.manual_leads_count);
+        if (t.manual_actual_attempts != null) actualAttemptsMap.set(t.admin_user_id, t.manual_actual_attempts);
       });
 
       // Fetch month-to-date leads assigned per agent (for conv. rate vs target)
@@ -263,6 +266,7 @@ export const useScoreboardData = (): ScoreboardData => {
           cancelledCount,
           cancelledRevenue,
           callsCount: callsMap.get(u.id) || 0,
+          manualActualAttempts: actualAttemptsMap.get(u.id) ?? null,
         };
       });
 

@@ -84,6 +84,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center">Revenue</div>
                 <div className="w-16 text-center">Leads</div>
                 <div className="w-16 text-center">Calls</div>
+                <div className="w-20 text-center" title="Leads × 7">Req. Att.</div>
+                <div className="w-20 text-center">Act. Att.</div>
                 <div className="w-16 text-center">Conv.</div>
                 <div className="w-20 text-center">AOV</div>
                 {agents.some(a => a.cancelledCount > 0) && (
@@ -156,6 +158,14 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Calls</div>
                       <div className="font-bold text-lg text-purple-600">{agent.callsCount}</div>
                     </div>
+                    <div className="w-20 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Leads × 7">Req. Att.</div>
+                      <div className="font-bold text-lg text-amber-600">{(agent.leadsAssigned * 7).toLocaleString()}</div>
+                    </div>
+                    <div className="w-20 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Act. Att.</div>
+                      <div className="font-bold text-lg text-indigo-600">{agent.manualActualAttempts != null ? agent.manualActualAttempts.toLocaleString() : '—'}</div>
+                    </div>
                     <div className="w-16 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
                       <div className="font-bold">{agent.conversionRate.toFixed(1)}%</div>
@@ -183,6 +193,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       agentId={agent.id}
                       currentTarget={agent.monthlyTarget}
                       currentLeads={agent.manualLeadsCount}
+                      currentActualAttempts={agent.manualActualAttempts}
                       onSaved={onTargetSaved}
                     />
                   )}
@@ -202,19 +213,22 @@ interface EditTargetButtonProps {
   agentId: string;
   currentTarget: number | null;
   currentLeads: number | null;
+  currentActualAttempts: number | null;
   onSaved?: () => void;
 }
 
-const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTarget, currentLeads, onSaved }) => {
+const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTarget, currentLeads, currentActualAttempts, onSaved }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>(currentTarget?.toString() ?? '');
   const [leadsValue, setLeadsValue] = useState<string>(currentLeads?.toString() ?? '');
+  const [attemptsValue, setAttemptsValue] = useState<string>(currentActualAttempts?.toString() ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setValue(currentTarget?.toString() ?? '');
     setLeadsValue(currentLeads?.toString() ?? '');
-  }, [currentTarget, currentLeads, open]);
+    setAttemptsValue(currentActualAttempts?.toString() ?? '');
+  }, [currentTarget, currentLeads, currentActualAttempts, open]);
 
   const handleSave = async () => {
     const target = parseInt(value);
@@ -231,6 +245,16 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
         return;
       }
       manualLeads = parsed;
+    }
+    const attemptsTrimmed = attemptsValue.trim();
+    let manualActualAttempts: number | null = null;
+    if (attemptsTrimmed !== '') {
+      const parsed = parseInt(attemptsTrimmed);
+      if (isNaN(parsed) || parsed < 0) {
+        toast.error('Enter a valid actual attempts number (or leave blank)');
+        return;
+      }
+      manualActualAttempts = parsed;
     }
 
     setSaving(true);
@@ -251,7 +275,7 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
       if (existing?.id) {
         const { error } = await supabase
           .from('sales_targets')
-          .update({ target_amount: target, manual_leads_count: manualLeads })
+          .update({ target_amount: target, manual_leads_count: manualLeads, manual_actual_attempts: manualActualAttempts })
           .eq('id', existing.id);
         if (error) throw error;
       } else {
@@ -261,6 +285,7 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
             admin_user_id: agentId,
             target_amount: target,
             manual_leads_count: manualLeads,
+            manual_actual_attempts: manualActualAttempts,
             target_period: 'monthly',
             start_date: monthStart.toISOString(),
             end_date: monthEnd.toISOString(),
@@ -285,7 +310,7 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
           variant="outline"
           size="sm"
           className="h-8 px-2 gap-1"
-          title="Edit monthly target & leads"
+          title="Edit monthly target, leads & attempts"
         >
           <Pencil className="h-3.5 w-3.5" />
           <span className="hidden sm:inline text-xs">Edit</span>
@@ -315,6 +340,17 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
             value={leadsValue}
             onChange={(e) => setLeadsValue(e.target.value)}
             placeholder="Auto"
+          />
+          <div className="pt-2 border-t">
+            <div className="text-sm font-semibold">Actual call attempts</div>
+            <div className="text-xs text-muted-foreground">Manually recorded total attempts (required = leads × 7)</div>
+          </div>
+          <Input
+            type="number"
+            min={0}
+            value={attemptsValue}
+            onChange={(e) => setAttemptsValue(e.target.value)}
+            placeholder="0"
           />
           <Button onClick={handleSave} disabled={saving} className="w-full" size="sm">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1" /> Save</>}

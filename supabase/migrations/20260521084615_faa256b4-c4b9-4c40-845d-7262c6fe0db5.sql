@@ -1,0 +1,1 @@
+ALTER TABLE public.sales_targets ADD COLUMN IF NOT EXISTS manual_actual_attempts integer;
