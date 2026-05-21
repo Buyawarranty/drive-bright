@@ -412,7 +412,60 @@ export const StaffHubTab: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Inline document viewer */}
+      <Dialog
+        open={!!viewerDoc}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewerDoc(null);
+            setViewerUrl('');
+          }
+        }}
+      >
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle className="truncate pr-8">{viewerDoc?.title}</DialogTitle>
+            <DialogDescription className="truncate">
+              {viewerDoc?.file_name} · {formatBytes(viewerDoc?.file_size ?? null)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 bg-muted/30">
+            {viewerLoading || !viewerUrl ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Loading document…
+              </div>
+            ) : (
+              <iframe
+                src={viewerUrl}
+                title={viewerDoc?.title || 'Document'}
+                className="w-full h-full border-0"
+              />
+            )}
+          </div>
+          <DialogFooter className="p-3 border-t">
+            {viewerDoc && (
+              <Button
+                variant="outline"
+                onClick={(e) => viewerDoc && handleDownload(viewerDoc, e)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                setViewerDoc(null);
+                setViewerUrl('');
+              }}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 };
 
