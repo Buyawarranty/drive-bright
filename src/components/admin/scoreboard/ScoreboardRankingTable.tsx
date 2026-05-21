@@ -61,10 +61,13 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
   return (
     <Card className="overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b">
-        <CardTitle className="flex items-center gap-3 text-xl">
+        <CardTitle className="flex items-center gap-3 text-xl flex-wrap">
           <Trophy className="h-6 w-6 text-yellow-500" />
           {PERIOD_LABELS[period]} Leaderboard
           <Flame className="h-5 w-5 text-orange-500 animate-pulse" />
+          <Badge variant="outline" className="text-xs font-semibold border-emerald-500 text-emerald-700 bg-emerald-50">
+            Conversion goal: 10%
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
