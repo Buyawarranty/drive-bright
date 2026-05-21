@@ -84,8 +84,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center">Revenue</div>
                 <div className="w-16 text-center">Leads</div>
                 <div className="w-16 text-center">Calls</div>
-                <div className="w-20 text-center" title="Leads × 7">Req. Att.</div>
-                <div className="w-20 text-center">Act. Att.</div>
+                <div className="w-24 text-center" title="Required dials = Leads × 7">Dials Req.</div>
+                <div className="w-24 text-center" title="Actual dials made">Dials Made</div>
                 <div className="w-24 text-center">Conv. / Goal</div>
                 <div className="w-20 text-center">AOV</div>
                 {agents.some(a => a.cancelledCount > 0) && (
@@ -158,12 +158,12 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Calls</div>
                       <div className="font-bold text-lg text-purple-600">{agent.callsCount}</div>
                     </div>
-                    <div className="w-20 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Leads × 7">Req. Att.</div>
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Leads × 7">Dials Req.</div>
                       <div className="font-bold text-lg text-amber-600">{(agent.leadsAssigned * 7).toLocaleString()}</div>
                     </div>
-                    <div className="w-20 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Act. Att.</div>
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Dials Made</div>
                       <div className="font-bold text-lg text-indigo-600">{agent.manualActualAttempts != null ? agent.manualActualAttempts.toLocaleString() : '—'}</div>
                     </div>
                     <div className="w-24 text-center">
