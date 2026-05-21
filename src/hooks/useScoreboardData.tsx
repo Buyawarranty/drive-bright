@@ -266,6 +266,7 @@ export const useScoreboardData = (): ScoreboardData => {
           cancelledCount,
           cancelledRevenue,
           callsCount: callsMap.get(u.id) || 0,
+          manualActualAttempts: actualAttemptsMap.get(u.id) ?? null,
         };
       });
 
