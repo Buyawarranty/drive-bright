@@ -193,6 +193,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       agentId={agent.id}
                       currentTarget={agent.monthlyTarget}
                       currentLeads={agent.manualLeadsCount}
+                      currentActualAttempts={agent.manualActualAttempts}
                       onSaved={onTargetSaved}
                     />
                   )}
