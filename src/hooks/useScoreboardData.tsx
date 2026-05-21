@@ -262,6 +262,7 @@ export const useScoreboardData = (): ScoreboardData => {
           manualLeadsCount: manualLeadsMap.get(u.id) ?? null,
           cancelledCount,
           cancelledRevenue,
+          callsCount: callsMap.get(u.id) || 0,
         };
       });
 
