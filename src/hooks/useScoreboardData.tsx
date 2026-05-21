@@ -23,6 +23,7 @@ export interface AgentScore {
   manualLeadsCount: number | null;
   cancelledCount: number;
   cancelledRevenue: number;
+  callsCount: number;
 }
 
 export interface ScoreboardData {
@@ -176,6 +177,22 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: approvedClaims } = await claimsQuery;
 
+      // Fetch call attempts per agent for the period
+      let callsQuery = supabase
+        .from('lead_call_logs')
+        .select('agent_id, created_at')
+        .in('agent_id', agentIds);
+      if (period !== 'all') {
+        callsQuery = callsQuery
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+      }
+      const { data: callLogs } = await callsQuery;
+      const callsMap = new Map<string, number>();
+      (callLogs || []).forEach((c: any) => {
+        if (c.agent_id) callsMap.set(c.agent_id, (callsMap.get(c.agent_id) || 0) + 1);
+      });
+
       // Fetch monthly targets
       const nowIso = new Date().toISOString();
       const { data: targets } = await supabase
@@ -245,6 +262,7 @@ export const useScoreboardData = (): ScoreboardData => {
           manualLeadsCount: manualLeadsMap.get(u.id) ?? null,
           cancelledCount,
           cancelledRevenue,
+          callsCount: callsMap.get(u.id) || 0,
         };
       });
 

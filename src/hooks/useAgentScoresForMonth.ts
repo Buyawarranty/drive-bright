@@ -31,7 +31,7 @@ export const useAgentScoresForMonth = (month: Date) => {
         }
         const agentIds = adminUsers.map(u => u.id);
 
-        const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }] = await Promise.all([
+        const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: callLogs }] = await Promise.all([
           supabase.from('customers')
             .select('id, assigned_to, final_amount')
             .eq('is_deleted', false).ilike('status', 'active')
@@ -52,7 +52,16 @@ export const useAgentScoresForMonth = (month: Date) => {
             .eq('status', 'approved')
             .in('agent_id', agentIds)
             .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+          supabase.from('lead_call_logs')
+            .select('agent_id')
+            .in('agent_id', agentIds)
+            .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
         ]);
+
+        const callsMap = new Map<string, number>();
+        (callLogs || []).forEach((c: any) => {
+          if (c.agent_id) callsMap.set(c.agent_id, (callsMap.get(c.agent_id) || 0) + 1);
+        });
 
         const scores: AgentScore[] = adminUsers.map(u => {
           const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
@@ -85,6 +94,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             manualLeadsCount: null,
             cancelledCount: userCancelled.length,
             cancelledRevenue: userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0),
+            callsCount: callsMap.get(u.id) || 0,
           };
         });
 
