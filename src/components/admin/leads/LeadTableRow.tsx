@@ -14,6 +14,16 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
 import { CallCountCell } from './CallCountCell';
@@ -304,6 +314,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
+  const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
   const navigate = useNavigate();
   
   const sla = getUrgencySLA(lead);
@@ -538,9 +549,16 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             onRequestAccess={onRequestAccess || (() => {})}
           />
         ) : (
+        <>
         <Select
           value={lead.status}
-          onValueChange={(value) => onUpdateStatus(value as LeadStatus)}
+          onValueChange={(value) => {
+            if (value === 'converted' && lead.status !== 'converted') {
+              setPendingConvertedStatus(true);
+              return;
+            }
+            onUpdateStatus(value as LeadStatus);
+          }}
         >
           <SelectTrigger className={cn("w-[100px] h-7 text-xs", statusColors[lead.status])}>
             <SelectValue />
@@ -557,6 +575,33 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="fake_lead">Fake 404</SelectItem>
           </SelectContent>
         </Select>
+        <AlertDialog open={pendingConvertedStatus} onOpenChange={setPendingConvertedStatus}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Mark this lead as Converted?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This sends a "New Agent Sale" notification email to the team and attributes
+                the sale to you. Only confirm if the customer has actually paid.
+                <br /><br />
+                <strong>Lead:</strong> {lead.first_name || ''} {lead.last_name || ''} — {lead.email}<br />
+                {lead.vehicle_reg && <><strong>Reg:</strong> {lead.vehicle_reg}</>}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setPendingConvertedStatus(false);
+                  onUpdateStatus('converted' as LeadStatus);
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Yes, mark as Converted
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        </>
         )}
       </TableCell>
       )}
