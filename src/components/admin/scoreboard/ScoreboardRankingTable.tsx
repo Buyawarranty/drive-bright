@@ -84,6 +84,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center">Revenue</div>
                 <div className="w-16 text-center">Leads</div>
                 <div className="w-16 text-center">Calls</div>
+                <div className="w-20 text-center" title="Leads × 7">Req. Att.</div>
+                <div className="w-20 text-center">Act. Att.</div>
                 <div className="w-16 text-center">Conv.</div>
                 <div className="w-20 text-center">AOV</div>
                 {agents.some(a => a.cancelledCount > 0) && (
