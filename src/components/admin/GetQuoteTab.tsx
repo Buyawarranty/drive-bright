@@ -3083,17 +3083,64 @@ Questions? Call 0330 229 5040`;
               </DialogHeader>
               
               <div className="space-y-4">
-                {/* Primary Recipient */}
+                {/* Primary Recipient - editable */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    Sending to
+                    Sending to <span className="text-xs text-muted-foreground font-normal">(primary recipient — edit if incorrect)</span>
                   </Label>
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="font-medium text-green-800">{customerEmail}</p>
-                    <p className="text-xs text-green-600 mt-1">Primary recipient (customer)</p>
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                    <Input
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      className="bg-white border-green-300 focus-visible:ring-green-500"
+                      placeholder="customer@example.com"
+                    />
+                    {customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) && (
+                      <p className="text-xs text-red-600">⚠ This email address looks invalid</p>
+                    )}
                   </div>
                 </div>
+
+                {/* Inline Email Preview */}
+                <details className="border rounded-lg overflow-hidden" open>
+                  <summary className="cursor-pointer select-none p-3 bg-gray-50 border-b text-sm font-medium flex items-center gap-2 hover:bg-gray-100">
+                    <Eye className="w-4 h-4" />
+                    Preview email content
+                  </summary>
+                  <div className="p-4 bg-white max-h-[400px] overflow-y-auto">
+                    <div className="text-center mb-4">
+                      <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" className="h-10 mx-auto mb-3" />
+                      <h2 className="text-lg font-bold text-gray-900">
+                        Here's your {vehicleData?.make} {vehicleData?.model} warranty quote
+                      </h2>
+                    </div>
+                    <p className="text-sm text-gray-800 mb-1">Hi {customerName?.split(' ')[0] || 'there'},</p>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Thanks for requesting your personalised warranty quote. Please review your cover details below.
+                    </p>
+                    <div className="bg-slate-50 rounded-lg border p-3 mb-3 text-xs">
+                      <p className="font-bold text-blue-700 uppercase tracking-wide mb-2">Your Cover at a Glance</p>
+                      <table className="w-full">
+                        <tbody>
+                          <tr className="border-b"><td className="py-1 text-gray-500">Vehicle</td><td className="py-1 text-right font-semibold">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.regNumber})</td></tr>
+                          <tr className="border-b"><td className="py-1 text-gray-500">Mileage</td><td className="py-1 text-right font-semibold">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</td></tr>
+                          <tr className="border-b"><td className="py-1 text-gray-500">Cover period</td><td className="py-1 text-right font-semibold">{termOptions.find(t => t.id === paymentType)?.months} months{freeExtendedCover !== 'none' && <span className="text-green-600"> + {freeExtendedCover === '3months' ? '3' : '6'} FREE</span>}</td></tr>
+                          <tr className="border-b"><td className="py-1 text-gray-500">Claim limit</td><td className="py-1 text-right font-semibold">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} per claim</td></tr>
+                          <tr className="border-b"><td className="py-1 text-gray-500">Excess</td><td className="py-1 text-right font-semibold">£{excessAmount}</td></tr>
+                          <tr><td className="py-2 font-bold">Total price</td><td className="py-2 text-right text-base font-bold text-orange-600">£{currentPrice.monthlyPrice * 12}</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="text-center">
+                      <div className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg font-bold text-sm shadow">
+                        Choose how to pay and activate my warranty
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-2 break-all">Links to: {quoteLink}</p>
+                    </div>
+                  </div>
+                </details>
 
                 {/* Agent Copy Notice */}
                 {adminEmail && adminEmail !== customerEmail && (
@@ -3190,7 +3237,7 @@ Questions? Call 0330 229 5040`;
                 </Button>
                 <Button
                   onClick={handleSendEmail}
-                  disabled={isSendingEmail}
+                  disabled={isSendingEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)}
                 >
                   {isSendingEmail ? (
                     <>
