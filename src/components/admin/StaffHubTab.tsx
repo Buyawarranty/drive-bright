@@ -157,17 +157,27 @@ export const StaffHubTab: React.FC = () => {
     }
   };
 
-  const handleDownload = async (doc: StaffHubDoc) => {
+  const handleDownload = async (doc: StaffHubDoc, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     try {
       const { data, error } = await supabase.storage
         .from('staff-hub')
         .createSignedUrl(doc.storage_path, 300, { download: doc.file_name });
       if (error || !data) throw error;
-      window.open(data.signedUrl, '_blank');
+      // Trigger download via hidden anchor to avoid any popup-blocker fallback navigation
+      const a = document.createElement('a');
+      a.href = data.signedUrl;
+      a.download = doc.file_name;
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     } catch (e: any) {
       toast({ title: 'Could not download', description: e.message, variant: 'destructive' });
     }
   };
+
 
   const handleView = async (doc: StaffHubDoc, e?: React.MouseEvent) => {
     e?.preventDefault();
