@@ -183,6 +183,7 @@ PhoneCopyText.displayName = 'PhoneCopyText';
 
 const EmailCopyText = memo<{ email: string }>(({ email }) => {
   const [copied, setCopied] = useState(false);
+  const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
   
   const handleCopy = useCallback(async () => {
     try {
