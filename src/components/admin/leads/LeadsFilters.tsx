@@ -570,7 +570,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <Upload className="h-3 w-3" /> Import
           </Button>
         )}
-        {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_lead') && (
+        {(userRole === 'super_admin' || userRole === 'admin') && (
           <Button variant="ghost" size="sm" onClick={() => onExport('csv')} className="h-7 px-2 text-[11px] gap-1 rounded-md">
             <Download className="h-3 w-3" /> CSV
           </Button>
