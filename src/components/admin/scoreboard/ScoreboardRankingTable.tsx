@@ -150,6 +150,10 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="font-bold text-lg text-blue-600">{agent.leadsAssigned}</div>
                     </div>
                     <div className="w-16 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Calls</div>
+                      <div className="font-bold text-lg text-purple-600">{agent.callsCount}</div>
+                    </div>
+                    <div className="w-16 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv.</div>
                       <div className="font-bold">{agent.conversionRate.toFixed(1)}%</div>
                     </div>
