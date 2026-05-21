@@ -242,7 +242,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           .select('email, first_name, last_name')
           .eq('user_id', user.id)
           .single();
-        setAdminEmail(adminUser?.email || user.email || null);
+        // Prefer the logged-in auth email so the copy goes to the actual agent
+        // who is signed in, not a generic shared mailbox stored on the admin_users row.
+        setAdminEmail(user.email || adminUser?.email || null);
         const fullName = [adminUser?.first_name, adminUser?.last_name].filter(Boolean).join(' ');
         setAdminName(fullName || null);
       }
