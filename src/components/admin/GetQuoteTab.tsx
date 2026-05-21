@@ -3237,7 +3237,7 @@ Questions? Call 0330 229 5040`;
                 </Button>
                 <Button
                   onClick={handleSendEmail}
-                  disabled={isSendingEmail}
+                  disabled={isSendingEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)}
                 >
                   {isSendingEmail ? (
                     <>
