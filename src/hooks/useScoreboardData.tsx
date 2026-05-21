@@ -23,6 +23,7 @@ export interface AgentScore {
   manualLeadsCount: number | null;
   cancelledCount: number;
   cancelledRevenue: number;
+  callsCount: number;
 }
 
 export interface ScoreboardData {
