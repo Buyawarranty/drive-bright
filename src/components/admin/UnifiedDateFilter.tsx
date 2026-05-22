@@ -322,7 +322,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
                 mode="range"
                 selected={draftRange}
                 onSelect={handleCalendarSelect}
-                numberOfMonths={2}
+                numberOfMonths={1}
                 defaultMonth={draftRange?.from ? subMonths(draftRange.from, 1) : subMonths(new Date(), 1)}
                 disabled={(d) => d > new Date()}
                 className="pointer-events-auto"
