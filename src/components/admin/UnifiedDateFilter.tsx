@@ -260,7 +260,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
                     type="button"
                     onClick={() => handlePreset(p.key)}
                     className={cn(
-                      'w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors',
+                      'w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors',
                       active && 'bg-primary/10 text-primary font-medium',
                     )}
                   >
