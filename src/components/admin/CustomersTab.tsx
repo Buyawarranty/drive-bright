@@ -3422,20 +3422,8 @@ export const CustomersTab = ({
                     </SelectContent>
                   </Select>
 
-                  <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
-                    <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Deals period" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="today">Deals: Today</SelectItem>
-                      <SelectItem value="yesterday">Deals: Yesterday</SelectItem>
-                      <SelectItem value="7days">Deals: Last 7d</SelectItem>
-                      <SelectItem value="14days">Deals: Last 14d</SelectItem>
-                      <SelectItem value="30days">Deals: Last 30d</SelectItem>
-                      <SelectItem value="60days">Deals: Last 60d</SelectItem>
-                      <SelectItem value="this_month">Deals: This Month</SelectItem>
-                      <SelectItem value="last_month">Deals: Last Month</SelectItem>
-                      {!isSalesAgent && <SelectItem value="all">Deals: All Time</SelectItem>}
-                    </SelectContent>
-                  </Select>
+
+
                 </>
               )}
 
