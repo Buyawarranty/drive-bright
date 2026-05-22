@@ -3434,55 +3434,18 @@ export const CustomersTab = ({
               )}
             </div>
 
-            {/* Row 3 (super admin only): Revenue presets inline */}
-            {isSuperAdmin && (
-              <div className="flex items-center gap-2 flex-wrap pt-1 border-t">
+            {/* Revenue stats badge — shown when revenue scope is active */}
+            {isSuperAdmin && unifiedScope === 'revenue' && filteredRevenueStats && (
+              <div className="flex items-center gap-2 pt-1 border-t">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <CalendarIcon className="h-3.5 w-3.5" /> Revenue:
+                  <CalendarIcon className="h-3.5 w-3.5" /> Revenue ({unifiedPeriod === 'custom' ? 'custom' : unifiedPeriod}):
                 </span>
-                {[
-                  { label: 'Today', getRange: () => { const d = new Date(); return { from: d, to: d }; } },
-                  { label: 'Yesterday', getRange: () => { const d = new Date(); d.setDate(d.getDate() - 1); return { from: d, to: d }; } },
-                  { label: 'This Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now }; } },
-                  { label: 'Last Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth() - 1, 1), to: new Date(now.getFullYear(), now.getMonth(), 0) }; } },
-                  { label: 'All Time', getRange: () => undefined as DateRange | undefined },
-                ].map((preset) => {
-                  const isActive = (() => {
-                    const r = preset.getRange();
-                    if (!r && !revenueDateRange?.from) return true;
-                    if (!r || !revenueDateRange?.from) return false;
-                    const rf = new Date(r.from); rf.setHours(0,0,0,0);
-                    const rt = r.to ? new Date(r.to) : rf; rt.setHours(0,0,0,0);
-                    const cf = new Date(revenueDateRange.from); cf.setHours(0,0,0,0);
-                    const ct = revenueDateRange.to ? new Date(revenueDateRange.to) : cf; ct.setHours(0,0,0,0);
-                    return rf.getTime() === cf.getTime() && rt.getTime() === ct.getTime();
-                  })();
-                  return (
-                    <Button
-                      key={preset.label}
-                      variant={isActive ? 'default' : 'outline'}
-                      size="sm"
-                      className="text-xs h-7 px-2.5"
-                      onClick={() => {
-                        const range = preset.getRange();
-                        setRevenueDateRange(range ?? { from: new Date(2020, 0, 1), to: new Date() });
-                        setDateRange(range ?? undefined);
-                      }}
-                    >
-                      {preset.label}
-                    </Button>
-                  );
-                })}
-                {filteredRevenueStats && (
-                  <div className="flex items-center gap-2 ml-1">
-                    <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
-                      £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {filteredRevenueStats.count} {filteredRevenueStats.label}
-                    </Badge>
-                  </div>
-                )}
+                <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                  £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  {filteredRevenueStats.count} {filteredRevenueStats.label}
+                </Badge>
               </div>
             )}
 
