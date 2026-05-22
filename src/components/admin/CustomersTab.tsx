@@ -425,6 +425,10 @@ export const CustomersTab = ({
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
+  // Unified date filter UI state
+  const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('all');
+  const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
