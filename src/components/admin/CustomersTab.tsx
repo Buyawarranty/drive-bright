@@ -3695,7 +3695,7 @@ export const CustomersTab = ({
                 </Button>
               </div>
             </div>
-          </div>
+
 
           {/* Column visibility toggles */}
           {isSuperAdmin && (
