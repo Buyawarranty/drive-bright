@@ -271,7 +271,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             </div>
 
             {/* Right: scope + date inputs + calendar */}
-            <div className="flex-1 p-4 space-y-3">
+            <div className="flex-1 min-w-0 p-3 space-y-3">
               {availableScopes.length > 1 && (
                 <div>
                   <label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
