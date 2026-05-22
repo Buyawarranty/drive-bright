@@ -3316,9 +3316,9 @@ export const CustomersTab = ({
                   </Select>
 
                   <Select value={filterByWarrantyPeriod} onValueChange={setFilterByWarrantyPeriod}>
-                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Warranty" /></SelectTrigger>
+                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="W Length" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Periods</SelectItem>
+                      <SelectItem value="all">All W Length</SelectItem>
                       <SelectItem value="12">1 Year</SelectItem>
                       <SelectItem value="24">2 Years</SelectItem>
                       <SelectItem value="36">3 Years</SelectItem>
