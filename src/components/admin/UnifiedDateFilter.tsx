@@ -65,7 +65,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const isActive = period !== 'all' || (period === 'custom' && !!customRange?.from);
+  const isActive = period !== 'all' && !(period === 'custom' && !customRange?.from);
 
   const buttonLabel = useMemo(() => {
     if (!isActive) return 'Date filter: Off';
