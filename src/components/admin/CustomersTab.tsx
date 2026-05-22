@@ -3277,7 +3277,7 @@ export const CustomersTab = ({
                     {!isSalesAgent && canSeeSourceColumn && (
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                          <Users className="h-3.5 w-3.5" /> Source
+                          <User className="h-3.5 w-3.5" /> Source
                         </label>
                         <Select value={filterBySource} onValueChange={setFilterBySource}>
                           <SelectTrigger className="h-9 w-full"><SelectValue placeholder="All Sources" /></SelectTrigger>
