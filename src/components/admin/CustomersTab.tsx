@@ -3281,9 +3281,12 @@ export const CustomersTab = ({
                   setFilterByPaymentSource('all');
                   setPaymentSourceDateFilter('all');
                   setFilterByAgent('all');
-                  setTotalSalesDateFilter('30days');
+                  setTotalSalesDateFilter('all');
                   setDateRange(undefined);
                   setRevenueDateRange(undefined);
+                  setUnifiedScope('signup');
+                  setUnifiedPeriod('all');
+                  setUnifiedCustomRange(undefined);
                 }}
               >
                 Clear all filters
