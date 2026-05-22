@@ -370,7 +370,10 @@ export const CustomersTab = ({
   const [filterByPaymentSource, setFilterByPaymentSource] = useState('all'); // all | bumper | stripe | payment_assist
   const [paymentSourceDateFilter, setPaymentSourceDateFilter] = useState('all');
   const [filterByAgent, setFilterByAgent] = useState('all');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    return { from: today, to: today };
+  });
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -427,7 +430,7 @@ export const CustomersTab = ({
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   // Unified date filter UI state
   const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
-  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('all');
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('today');
   const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
@@ -3632,7 +3635,7 @@ export const CustomersTab = ({
                 title={showPurchaseSource ? 'Hide Purchase Source column' : 'Show Purchase Source column'}
               >
                 {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                Purchase Source
+                H
               </Button>
             </div>
           )}
