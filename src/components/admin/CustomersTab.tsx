@@ -427,7 +427,7 @@ export const CustomersTab = ({
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
   // Unified date filter UI state
   const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
-  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('all');
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('today');
   const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
