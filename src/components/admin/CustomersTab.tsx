@@ -3219,22 +3219,38 @@ export const CustomersTab = ({
               </div>
 
               {canUseDateFilter && (
-                <DateRangeFilter
-                  dateRange={dateRange}
-                  onDateRangeChange={(r) => {
-                    setDateRange(r);
-                    setRevenueDateRange(r ?? undefined);
-                  }}
-                  className="h-9"
-                />
-              )}
-
-              {(isSuperAdmin || isAdmin) && (
-                <QuickMonthFilter
-                  dateRange={dateRange}
-                  onDateRangeChange={(r) => {
-                    setDateRange(r);
-                    setRevenueDateRange(r ?? undefined);
+                <UnifiedDateFilter
+                  scope={unifiedScope}
+                  period={unifiedPeriod}
+                  customRange={unifiedCustomRange}
+                  availableScopes={
+                    isSuperAdmin
+                      ? ['signup', 'payment', 'deals', 'revenue']
+                      : (isSalesAgent || isSalesScopedRole)
+                        ? ['signup', 'deals']
+                        : ['signup', 'payment', 'deals']
+                  }
+                  onChange={({ scope, period, customRange }) => {
+                    setUnifiedScope(scope);
+                    setUnifiedPeriod(period);
+                    setUnifiedCustomRange(customRange);
+                    // Reset all underlying date filters first
+                    setDateRange(undefined);
+                    setRevenueDateRange(undefined);
+                    setPaymentSourceDateFilter('all');
+                    setTotalSalesDateFilter('all');
+                    if (period === 'all') return;
+                    const range = period === 'custom' ? customRange : periodToRange(period);
+                    if (scope === 'signup') {
+                      setDateRange(range);
+                      setRevenueDateRange(range);
+                    } else if (scope === 'revenue') {
+                      setRevenueDateRange(range);
+                    } else if (scope === 'payment' && period !== 'custom') {
+                      setPaymentSourceDateFilter(period);
+                    } else if (scope === 'deals' && period !== 'custom') {
+                      setTotalSalesDateFilter(period);
+                    }
                   }}
                 />
               )}
