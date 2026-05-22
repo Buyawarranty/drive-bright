@@ -248,7 +248,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           </button>
         )}
 
-        <PopoverContent className="p-0 w-[680px] max-w-[calc(100vw-2rem)] z-50 overflow-hidden" align="end" sideOffset={6} collisionPadding={16}>
+        <PopoverContent className="p-0 w-[560px] max-w-[calc(100vw-2rem)] z-50 overflow-hidden" align="end" sideOffset={6} collisionPadding={16}>
           <div className="flex">
             {/* Left: presets */}
             <div className="w-[180px] shrink-0 border-r bg-muted/30 max-h-[440px] overflow-y-auto py-1">
