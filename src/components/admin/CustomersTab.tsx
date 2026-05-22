@@ -3350,20 +3350,8 @@ export const CustomersTab = ({
                     </SelectContent>
                   </Select>
 
-                  <Select value={paymentSourceDateFilter} onValueChange={setPaymentSourceDateFilter}>
-                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Pay date" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Pay: All Time</SelectItem>
-                      <SelectItem value="today">Pay: Today</SelectItem>
-                      <SelectItem value="yesterday">Pay: Yesterday</SelectItem>
-                      <SelectItem value="7days">Pay: Last 7d</SelectItem>
-                      <SelectItem value="14days">Pay: Last 14d</SelectItem>
-                      <SelectItem value="30days">Pay: Last 30d</SelectItem>
-                      <SelectItem value="60days">Pay: Last 60d</SelectItem>
-                      <SelectItem value="this_month">Pay: This Month</SelectItem>
-                      <SelectItem value="last_month">Pay: Last Month</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+
 
                   {(() => {
                     const stats = customers.reduce((acc, customer) => {
