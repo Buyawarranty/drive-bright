@@ -251,7 +251,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
         <PopoverContent className="p-0 w-[680px] max-w-[calc(100vw-2rem)] z-50 overflow-hidden" align="end" sideOffset={6} collisionPadding={16}>
           <div className="flex">
             {/* Left: presets */}
-            <div className="w-[220px] border-r bg-muted/30 max-h-[440px] overflow-y-auto py-1">
+            <div className="w-[180px] shrink-0 border-r bg-muted/30 max-h-[440px] overflow-y-auto py-1">
               {PRESETS.map((p) => {
                 const active = p.key === draftPreset || (p.key === 'custom' && draftPreset === 'custom');
                 return (
