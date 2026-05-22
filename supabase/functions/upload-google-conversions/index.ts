@@ -105,10 +105,15 @@ Deno.serve(async (req) => {
   try {
     const developerToken = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN');
     const customerId = Deno.env.get('GOOGLE_ADS_CUSTOMER_ID');
-    const conversionActionId = Deno.env.get('GOOGLE_ADS_CONVERSION_ACTION_ID');
+    // Offline conversion action (separate from the online/website purchase conversion,
+    // which is fired client-side via gtag and is unaffected by this env var).
+    // Prefer the explicit OFFLINE secret; fall back to the legacy name for compatibility.
+    const conversionActionId =
+      Deno.env.get('GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID') ||
+      Deno.env.get('GOOGLE_ADS_CONVERSION_ACTION_ID');
 
     if (!developerToken || !customerId || !conversionActionId) {
-      throw new Error('Missing Google Ads configuration. Required: GOOGLE_ADS_DEVELOPER_TOKEN, GOOGLE_ADS_CUSTOMER_ID, GOOGLE_ADS_CONVERSION_ACTION_ID');
+      throw new Error('Missing Google Ads configuration. Required: GOOGLE_ADS_DEVELOPER_TOKEN, GOOGLE_ADS_CUSTOMER_ID, GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID');
     }
 
     logStep('Starting conversion upload', { customerId, conversionActionId });
