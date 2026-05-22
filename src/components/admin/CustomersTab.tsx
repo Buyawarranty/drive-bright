@@ -3635,7 +3635,7 @@ export const CustomersTab = ({
                 title={showPurchaseSource ? 'Hide Purchase Source column' : 'Show Purchase Source column'}
               >
                 {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                Purchase Source
+                H
               </Button>
             </div>
           )}
