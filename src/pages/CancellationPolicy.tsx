@@ -182,9 +182,9 @@ const CancellationPolicy: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
                 {[
-                  { sit: 'Cancel within 14 days, no claim made', out: '✓ Refund minus days used and £40 processing fee', good: true },
+                  { sit: 'Cancel within 14 days, no claim made', out: '✓ Refund minus days of cover and a £40 processing fee', good: true },
                   { sit: 'Cancel within 14 days, claim made or in progress', out: '⚠ Policy continues — no refund', good: false },
-                  { sit: 'Cancel after 14 days, no claim made', out: '✓ Pro-rata refund minus £40 processing fee', good: true },
+                  { sit: 'Cancel after 14 days, no claim made', out: '✓ Refund minus days of cover and a £40 processing fee', good: true },
                   { sit: 'Cancel after 14 days, claim made, in progress or completed', out: '⚠ Policy continues — no refund', good: false },
                 ].map((row, i) => (
                   <tr key={row.sit} className={i % 2 === 1 ? 'bg-[#F9FAFB]' : ''}>
