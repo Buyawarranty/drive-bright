@@ -65,6 +65,7 @@ import { CancellationsTab } from './CancellationsTab';
 import { RemindMePopover } from './leads/RemindMePopover';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickMonthFilter } from './QuickMonthFilter';
+import { UnifiedDateFilter, periodToRange, type DateScope, type PeriodKey } from './UnifiedDateFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { AddClaimDialog } from './claims/AddClaimDialog';
 import { format } from 'date-fns';
@@ -424,6 +425,10 @@ export const CustomersTab = ({
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
+  // Unified date filter UI state
+  const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('all');
+  const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
@@ -3214,22 +3219,38 @@ export const CustomersTab = ({
               </div>
 
               {canUseDateFilter && (
-                <DateRangeFilter
-                  dateRange={dateRange}
-                  onDateRangeChange={(r) => {
-                    setDateRange(r);
-                    setRevenueDateRange(r ?? undefined);
-                  }}
-                  className="h-9"
-                />
-              )}
-
-              {(isSuperAdmin || isAdmin) && (
-                <QuickMonthFilter
-                  dateRange={dateRange}
-                  onDateRangeChange={(r) => {
-                    setDateRange(r);
-                    setRevenueDateRange(r ?? undefined);
+                <UnifiedDateFilter
+                  scope={unifiedScope}
+                  period={unifiedPeriod}
+                  customRange={unifiedCustomRange}
+                  availableScopes={
+                    isSuperAdmin
+                      ? ['signup', 'payment', 'deals', 'revenue']
+                      : (isSalesAgent || isSalesScopedRole)
+                        ? ['signup', 'deals']
+                        : ['signup', 'payment', 'deals']
+                  }
+                  onChange={({ scope, period, customRange }) => {
+                    setUnifiedScope(scope);
+                    setUnifiedPeriod(period);
+                    setUnifiedCustomRange(customRange);
+                    // Reset all underlying date filters first
+                    setDateRange(undefined);
+                    setRevenueDateRange(undefined);
+                    setPaymentSourceDateFilter('all');
+                    setTotalSalesDateFilter('all');
+                    if (period === 'all') return;
+                    const range = period === 'custom' ? customRange : periodToRange(period);
+                    if (scope === 'signup') {
+                      setDateRange(range);
+                      setRevenueDateRange(range);
+                    } else if (scope === 'revenue') {
+                      setRevenueDateRange(range);
+                    } else if (scope === 'payment' && period !== 'custom') {
+                      setPaymentSourceDateFilter(period);
+                    } else if (scope === 'deals' && period !== 'custom') {
+                      setTotalSalesDateFilter(period);
+                    }
                   }}
                 />
               )}
@@ -3260,9 +3281,12 @@ export const CustomersTab = ({
                   setFilterByPaymentSource('all');
                   setPaymentSourceDateFilter('all');
                   setFilterByAgent('all');
-                  setTotalSalesDateFilter('30days');
+                  setTotalSalesDateFilter('all');
                   setDateRange(undefined);
                   setRevenueDateRange(undefined);
+                  setUnifiedScope('signup');
+                  setUnifiedPeriod('all');
+                  setUnifiedCustomRange(undefined);
                 }}
               >
                 Clear all filters
@@ -3329,20 +3353,8 @@ export const CustomersTab = ({
                     </SelectContent>
                   </Select>
 
-                  <Select value={paymentSourceDateFilter} onValueChange={setPaymentSourceDateFilter}>
-                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Pay date" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Pay: All Time</SelectItem>
-                      <SelectItem value="today">Pay: Today</SelectItem>
-                      <SelectItem value="yesterday">Pay: Yesterday</SelectItem>
-                      <SelectItem value="7days">Pay: Last 7d</SelectItem>
-                      <SelectItem value="14days">Pay: Last 14d</SelectItem>
-                      <SelectItem value="30days">Pay: Last 30d</SelectItem>
-                      <SelectItem value="60days">Pay: Last 60d</SelectItem>
-                      <SelectItem value="this_month">Pay: This Month</SelectItem>
-                      <SelectItem value="last_month">Pay: Last Month</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+
 
                   {(() => {
                     const stats = customers.reduce((acc, customer) => {
@@ -3413,20 +3425,8 @@ export const CustomersTab = ({
                     </SelectContent>
                   </Select>
 
-                  <Select value={totalSalesDateFilter} onValueChange={setTotalSalesDateFilter}>
-                    <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Deals period" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="today">Deals: Today</SelectItem>
-                      <SelectItem value="yesterday">Deals: Yesterday</SelectItem>
-                      <SelectItem value="7days">Deals: Last 7d</SelectItem>
-                      <SelectItem value="14days">Deals: Last 14d</SelectItem>
-                      <SelectItem value="30days">Deals: Last 30d</SelectItem>
-                      <SelectItem value="60days">Deals: Last 60d</SelectItem>
-                      <SelectItem value="this_month">Deals: This Month</SelectItem>
-                      <SelectItem value="last_month">Deals: Last Month</SelectItem>
-                      {!isSalesAgent && <SelectItem value="all">Deals: All Time</SelectItem>}
-                    </SelectContent>
-                  </Select>
+
+
                 </>
               )}
 
@@ -3437,55 +3437,18 @@ export const CustomersTab = ({
               )}
             </div>
 
-            {/* Row 3 (super admin only): Revenue presets inline */}
-            {isSuperAdmin && (
-              <div className="flex items-center gap-2 flex-wrap pt-1 border-t">
+            {/* Revenue stats badge — shown when revenue scope is active */}
+            {isSuperAdmin && unifiedScope === 'revenue' && filteredRevenueStats && (
+              <div className="flex items-center gap-2 pt-1 border-t">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <CalendarIcon className="h-3.5 w-3.5" /> Revenue:
+                  <CalendarIcon className="h-3.5 w-3.5" /> Revenue ({unifiedPeriod === 'custom' ? 'custom' : unifiedPeriod}):
                 </span>
-                {[
-                  { label: 'Today', getRange: () => { const d = new Date(); return { from: d, to: d }; } },
-                  { label: 'Yesterday', getRange: () => { const d = new Date(); d.setDate(d.getDate() - 1); return { from: d, to: d }; } },
-                  { label: 'This Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now }; } },
-                  { label: 'Last Month', getRange: () => { const now = new Date(); return { from: new Date(now.getFullYear(), now.getMonth() - 1, 1), to: new Date(now.getFullYear(), now.getMonth(), 0) }; } },
-                  { label: 'All Time', getRange: () => undefined as DateRange | undefined },
-                ].map((preset) => {
-                  const isActive = (() => {
-                    const r = preset.getRange();
-                    if (!r && !revenueDateRange?.from) return true;
-                    if (!r || !revenueDateRange?.from) return false;
-                    const rf = new Date(r.from); rf.setHours(0,0,0,0);
-                    const rt = r.to ? new Date(r.to) : rf; rt.setHours(0,0,0,0);
-                    const cf = new Date(revenueDateRange.from); cf.setHours(0,0,0,0);
-                    const ct = revenueDateRange.to ? new Date(revenueDateRange.to) : cf; ct.setHours(0,0,0,0);
-                    return rf.getTime() === cf.getTime() && rt.getTime() === ct.getTime();
-                  })();
-                  return (
-                    <Button
-                      key={preset.label}
-                      variant={isActive ? 'default' : 'outline'}
-                      size="sm"
-                      className="text-xs h-7 px-2.5"
-                      onClick={() => {
-                        const range = preset.getRange();
-                        setRevenueDateRange(range ?? { from: new Date(2020, 0, 1), to: new Date() });
-                        setDateRange(range ?? undefined);
-                      }}
-                    >
-                      {preset.label}
-                    </Button>
-                  );
-                })}
-                {filteredRevenueStats && (
-                  <div className="flex items-center gap-2 ml-1">
-                    <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
-                      £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {filteredRevenueStats.count} {filteredRevenueStats.label}
-                    </Badge>
-                  </div>
-                )}
+                <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                  £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  {filteredRevenueStats.count} {filteredRevenueStats.label}
+                </Badge>
               </div>
             )}
 
