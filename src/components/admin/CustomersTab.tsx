@@ -3329,9 +3329,9 @@ export const CustomersTab = ({
 
                   {canSeeSourceColumn && (
                     <Select value={filterBySource} onValueChange={setFilterBySource}>
-                      <SelectTrigger className="h-9 w-[200px]"><SelectValue placeholder="Purchase source" /></SelectTrigger>
+                      <SelectTrigger className="h-9 w-[200px]"><SelectValue placeholder="S Type" /></SelectTrigger>
                       <SelectContent className="max-w-[420px]">
-                        <SelectItem value="all_view"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400" /><span>All View</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('all_view')}</span>)}</div></SelectItem>
+                        <SelectItem value="all_view"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400" /><span>S Type</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('all_view')}</span>)}</div></SelectItem>
                         <SelectItem value="website"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /><span>Website (BAW)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website')}</span>)}</div></SelectItem>
                         <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Website G (Google)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_google')}</span>)}</div></SelectItem>
                         <SelectItem value="website_facebook"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span>Website F (Facebook)</span>{sourceBreakdownStats && (<span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatSourceStat('website_facebook')}</span>)}</div></SelectItem>
