@@ -183,9 +183,11 @@ export const UserPermissionsTab = () => {
   const [expandedPermsUserId, setExpandedPermsUserId] = useState<string | null>(null);
   const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
   const [signingInAsId, setSigningInAsId] = useState<string | null>(null);
+  const [signInLink, setSignInLink] = useState<{ email: string; link: string } | null>(null);
+  const [revealedCreds, setRevealedCreds] = useState<{ email: string; password: string } | null>(null);
+  const [generatingCredsId, setGeneratingCredsId] = useState<string | null>(null);
 
   const handleSignInAs = async (u: AdminUser) => {
-    if (!confirm(`Generate a one-time login link for ${u.email}?\n\nThis will open a new tab signed in as this user so you can verify their access. Their existing password is NOT changed.`)) return;
     setSigningInAsId(u.id);
     try {
       const { data, error } = await supabase.functions.invoke('admin-signin-as', {
@@ -193,13 +195,35 @@ export const UserPermissionsTab = () => {
       });
       if (error) throw error;
       if (!data?.action_link) throw new Error('No link returned');
+      // Show in dialog so popup blockers don't break it & admin can copy/share
+      setSignInLink({ email: u.email, link: data.action_link });
       window.open(data.action_link, '_blank', 'noopener,noreferrer');
-      toast.success(`Opened sign-in session for ${u.email}`);
     } catch (err: any) {
       console.error('Sign-in-as error:', err);
       toast.error(err.message || 'Failed to generate sign-in link');
     } finally {
       setSigningInAsId(null);
+    }
+  };
+
+  const handleGenerateAndReveal = async (u: AdminUser) => {
+    if (!confirm(`Generate a NEW password for ${u.email} and reveal it?\n\nTheir current password will be replaced. You'll then be able to copy the new password to share.`)) return;
+    setGeneratingCredsId(u.id);
+    try {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let pw = '';
+      for (let i = 0; i < 14; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
+      const { error } = await supabase.functions.invoke('set-admin-password', {
+        body: { userId: u.user_id || u.id, email: u.email, password: pw }
+      });
+      if (error) throw error;
+      setRevealedCreds({ email: u.email, password: pw });
+      toast.success(`New password generated for ${u.email}`);
+    } catch (err: any) {
+      console.error('Generate password error:', err);
+      toast.error(err.message || 'Failed to generate password');
+    } finally {
+      setGeneratingCredsId(null);
     }
   };
 
@@ -904,10 +928,21 @@ export const UserPermissionsTab = () => {
                         </Button>
                         <Button
                           size="sm"
+                          variant="default"
+                          onClick={() => handleGenerateAndReveal(u)}
+                          disabled={generatingCredsId === u.id}
+                          title="Generate a new password and reveal it so you can share with the user"
+                          className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          {generatingCredsId === u.id ? 'Generating…' : 'Generate & Show'}
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => handleSignInAs(u)}
                           disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
-                          title="Open a new tab signed in as this user (does not change their password)"
+                          title="Generate a one-time sign-in link for this user"
                           className="text-xs border-emerald-500 text-emerald-700 hover:bg-emerald-50"
                         >
                           <LogIn className="h-3 w-3 mr-1" />
@@ -1187,6 +1222,84 @@ export const UserPermissionsTab = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Revealed Credentials Dialog */}
+      <Dialog open={!!revealedCreds} onOpenChange={(o) => !o && setRevealedCreds(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Key className="h-5 w-5 text-purple-600" /> New Login Credentials</DialogTitle>
+          </DialogHeader>
+          {revealedCreds && (
+            <div className="space-y-4">
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                Save or send these now — passwords are hashed and cannot be retrieved later.
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Login URL</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-xs break-all">https://buyawarranty.co.uk/auth</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'rev-url')}>
+                    {copiedField === 'rev-url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-xs font-mono break-all">{revealedCreds.email}</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(revealedCreds.email, 'rev-email')}>
+                    {copiedField === 'rev-email' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Password</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-sm font-mono font-bold break-all">{revealedCreds.password}</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(revealedCreds.password, 'rev-pw')}>
+                    {copiedField === 'rev-pw' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => copyToClipboard(
+                  `Login URL: https://buyawarranty.co.uk/auth\nEmail: ${revealedCreds.email}\nPassword: ${revealedCreds.password}`,
+                  'rev-all'
+                )}
+              >
+                {copiedField === 'rev-all' ? <><Check className="h-4 w-4 mr-2" /> Copied all</> : <><Copy className="h-4 w-4 mr-2" /> Copy all credentials</>}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Sign-in Link Dialog */}
+      <Dialog open={!!signInLink} onOpenChange={(o) => !o && setSignInLink(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><LogIn className="h-5 w-5 text-emerald-600" /> One-time Sign-in Link</DialogTitle>
+          </DialogHeader>
+          {signInLink && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Signing in as <strong>{signInLink.email}</strong>. We tried to open a new tab — if it was blocked, click below or copy the link.
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-muted px-2 py-2 rounded text-xs break-all">{signInLink.link}</code>
+                <Button size="sm" variant="ghost" onClick={() => copyToClipboard(signInLink.link, 'signin-link')}>
+                  {copiedField === 'signin-link' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                </Button>
+              </div>
+              <Button className="w-full" onClick={() => window.open(signInLink.link, '_blank', 'noopener,noreferrer')}>
+                <ExternalLink className="h-4 w-4 mr-2" /> Open sign-in link
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       {/* Edit Permissions Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
