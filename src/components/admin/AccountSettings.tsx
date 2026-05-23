@@ -149,17 +149,34 @@ const AccountSettings = () => {
         <CardHeader>
           <CardTitle>Session Management</CardTitle>
           <CardDescription>
-            Manage your login session
+            Sign out of this account, or switch to a different user
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button 
-            variant="outline" 
+        <CardContent className="space-y-3">
+          <Button
+            variant="outline"
             onClick={handleSignOut}
             className="w-full"
           >
             Sign Out
           </Button>
+          <Button
+            variant="default"
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut();
+              } catch (e) {
+                // ignore — still send them to the login screen
+              }
+              window.location.href = '/auth';
+            }}
+            className="w-full"
+          >
+            Switch User (Sign in as someone else)
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            Signs you out and opens the login screen so another team member can sign in on this device.
+          </p>
         </CardContent>
       </Card>
     </div>
