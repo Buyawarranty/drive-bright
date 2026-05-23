@@ -751,6 +751,54 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Staff Login Guidance */}
+      <Card className="border-blue-200 bg-blue-50/60">
+        <CardContent className="py-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-full bg-blue-100 shrink-0">
+              <Info className="h-5 w-5 text-blue-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-blue-900 text-sm">Staff Login URLs — share with new users</p>
+              <p className="text-xs text-blue-800/80 mb-2">
+                Send these to team members along with their email and a temporary password (use "Set Password" below to assign one).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 bg-white border border-blue-200 rounded px-3 py-2">
+                  <Shield className="h-4 w-4 text-blue-700 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Admin / Management</p>
+                    <code className="text-xs font-mono break-all">https://buyawarranty.co.uk/auth</code>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'login-url-auth')} title="Copy">
+                    {copiedField === 'login-url-auth' ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                  <a href="https://buyawarranty.co.uk/auth" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900" title="Open">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 bg-white border border-blue-200 rounded px-3 py-2">
+                  <Users className="h-4 w-4 text-blue-700 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Sales Agents</p>
+                    <code className="text-xs font-mono break-all">https://buyawarranty.co.uk/sales-login</code>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => copyToClipboard('https://buyawarranty.co.uk/sales-login', 'login-url-sales')} title="Copy">
+                    {copiedField === 'login-url-sales' ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                  <a href="https://buyawarranty.co.uk/sales-login" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900" title="Open">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
+              <p className="text-[11px] text-blue-800/70 mt-2">
+                Passwords are stored as one-way hashes by Supabase and cannot be displayed. Use <strong>Set Password</strong> to assign a known password, or <strong>Sign in as</strong> to verify a user's access without changing anything.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Logged-in Admin Banner */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="py-4">
