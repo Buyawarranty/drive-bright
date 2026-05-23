@@ -182,6 +182,26 @@ export const UserPermissionsTab = () => {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [expandedPermsUserId, setExpandedPermsUserId] = useState<string | null>(null);
   const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
+  const [signingInAsId, setSigningInAsId] = useState<string | null>(null);
+
+  const handleSignInAs = async (u: AdminUser) => {
+    if (!confirm(`Generate a one-time login link for ${u.email}?\n\nThis will open a new tab signed in as this user so you can verify their access. Their existing password is NOT changed.`)) return;
+    setSigningInAsId(u.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-signin-as', {
+        body: { targetEmail: u.email, redirectTo: `${window.location.origin}/admin-dashboard` }
+      });
+      if (error) throw error;
+      if (!data?.action_link) throw new Error('No link returned');
+      window.open(data.action_link, '_blank', 'noopener,noreferrer');
+      toast.success(`Opened sign-in session for ${u.email}`);
+    } catch (err: any) {
+      console.error('Sign-in-as error:', err);
+      toast.error(err.message || 'Failed to generate sign-in link');
+    } finally {
+      setSigningInAsId(null);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
