@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { useAuth } from '@/hooks/useAuth';
@@ -182,6 +182,26 @@ export const UserPermissionsTab = () => {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [expandedPermsUserId, setExpandedPermsUserId] = useState<string | null>(null);
   const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
+  const [signingInAsId, setSigningInAsId] = useState<string | null>(null);
+
+  const handleSignInAs = async (u: AdminUser) => {
+    if (!confirm(`Generate a one-time login link for ${u.email}?\n\nThis will open a new tab signed in as this user so you can verify their access. Their existing password is NOT changed.`)) return;
+    setSigningInAsId(u.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-signin-as', {
+        body: { targetEmail: u.email, redirectTo: `${window.location.origin}/admin-dashboard` }
+      });
+      if (error) throw error;
+      if (!data?.action_link) throw new Error('No link returned');
+      window.open(data.action_link, '_blank', 'noopener,noreferrer');
+      toast.success(`Opened sign-in session for ${u.email}`);
+    } catch (err: any) {
+      console.error('Sign-in-as error:', err);
+      toast.error(err.message || 'Failed to generate sign-in link');
+    } finally {
+      setSigningInAsId(null);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -731,6 +751,54 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Staff Login Guidance */}
+      <Card className="border-blue-200 bg-blue-50/60">
+        <CardContent className="py-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-full bg-blue-100 shrink-0">
+              <Info className="h-5 w-5 text-blue-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-blue-900 text-sm">Staff Login URLs — share with new users</p>
+              <p className="text-xs text-blue-800/80 mb-2">
+                Send these to team members along with their email and a temporary password (use "Set Password" below to assign one).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 bg-white border border-blue-200 rounded px-3 py-2">
+                  <Shield className="h-4 w-4 text-blue-700 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Admin / Management</p>
+                    <code className="text-xs font-mono break-all">https://buyawarranty.co.uk/auth</code>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'login-url-auth')} title="Copy">
+                    {copiedField === 'login-url-auth' ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                  <a href="https://buyawarranty.co.uk/auth" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900" title="Open">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 bg-white border border-blue-200 rounded px-3 py-2">
+                  <Users className="h-4 w-4 text-blue-700 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Sales Agents</p>
+                    <code className="text-xs font-mono break-all">https://buyawarranty.co.uk/sales-login</code>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => copyToClipboard('https://buyawarranty.co.uk/sales-login', 'login-url-sales')} title="Copy">
+                    {copiedField === 'login-url-sales' ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                  <a href="https://buyawarranty.co.uk/sales-login" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900" title="Open">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
+              <p className="text-[11px] text-blue-800/70 mt-2">
+                Passwords are stored as one-way hashes by Supabase and cannot be displayed. Use <strong>Set Password</strong> to assign a known password, or <strong>Sign in as</strong> to verify a user's access without changing anything.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Logged-in Admin Banner */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="py-4">
@@ -813,7 +881,7 @@ export const UserPermissionsTab = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           size="sm"
                           variant="default"
@@ -833,6 +901,17 @@ export const UserPermissionsTab = () => {
                         >
                           <RotateCcw className="h-3 w-3 mr-1" />
                           Reset
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSignInAs(u)}
+                          disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
+                          title="Open a new tab signed in as this user (does not change their password)"
+                          className="text-xs border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                        >
+                          <LogIn className="h-3 w-3 mr-1" />
+                          {signingInAsId === u.id ? 'Opening…' : 'Sign in as'}
                         </Button>
                       </div>
                     </TableCell>
