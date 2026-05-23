@@ -881,7 +881,7 @@ export const UserPermissionsTab = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           size="sm"
                           variant="default"
@@ -901,6 +901,17 @@ export const UserPermissionsTab = () => {
                         >
                           <RotateCcw className="h-3 w-3 mr-1" />
                           Reset
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSignInAs(u)}
+                          disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
+                          title="Open a new tab signed in as this user (does not change their password)"
+                          className="text-xs border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                        >
+                          <LogIn className="h-3 w-3 mr-1" />
+                          {signingInAsId === u.id ? 'Opening…' : 'Sign in as'}
                         </Button>
                       </div>
                     </TableCell>
