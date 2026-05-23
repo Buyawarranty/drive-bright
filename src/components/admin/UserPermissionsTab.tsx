@@ -1223,6 +1223,84 @@ export const UserPermissionsTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Revealed Credentials Dialog */}
+      <Dialog open={!!revealedCreds} onOpenChange={(o) => !o && setRevealedCreds(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Key className="h-5 w-5 text-purple-600" /> New Login Credentials</DialogTitle>
+          </DialogHeader>
+          {revealedCreds && (
+            <div className="space-y-4">
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                Save or send these now — passwords are hashed and cannot be retrieved later.
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Login URL</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-xs break-all">https://buyawarranty.co.uk/auth</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'rev-url')}>
+                    {copiedField === 'rev-url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-xs font-mono break-all">{revealedCreds.email}</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(revealedCreds.email, 'rev-email')}>
+                    {copiedField === 'rev-email' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Password</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-sm font-mono font-bold break-all">{revealedCreds.password}</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(revealedCreds.password, 'rev-pw')}>
+                    {copiedField === 'rev-pw' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => copyToClipboard(
+                  `Login URL: https://buyawarranty.co.uk/auth\nEmail: ${revealedCreds.email}\nPassword: ${revealedCreds.password}`,
+                  'rev-all'
+                )}
+              >
+                {copiedField === 'rev-all' ? <><Check className="h-4 w-4 mr-2" /> Copied all</> : <><Copy className="h-4 w-4 mr-2" /> Copy all credentials</>}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Sign-in Link Dialog */}
+      <Dialog open={!!signInLink} onOpenChange={(o) => !o && setSignInLink(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><LogIn className="h-5 w-5 text-emerald-600" /> One-time Sign-in Link</DialogTitle>
+          </DialogHeader>
+          {signInLink && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Signing in as <strong>{signInLink.email}</strong>. We tried to open a new tab — if it was blocked, click below or copy the link.
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-muted px-2 py-2 rounded text-xs break-all">{signInLink.link}</code>
+                <Button size="sm" variant="ghost" onClick={() => copyToClipboard(signInLink.link, 'signin-link')}>
+                  {copiedField === 'signin-link' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                </Button>
+              </div>
+              <Button className="w-full" onClick={() => window.open(signInLink.link, '_blank', 'noopener,noreferrer')}>
+                <ExternalLink className="h-4 w-4 mr-2" /> Open sign-in link
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
       {/* Edit Permissions Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
