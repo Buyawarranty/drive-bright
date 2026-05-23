@@ -44,10 +44,11 @@ serve(async (req) => {
     const { targetEmail, redirectTo } = await req.json();
     if (!targetEmail) throw new Error("targetEmail required");
 
+    const finalRedirect = redirectTo || "https://buyawarranty.co.uk/admin-dashboard";
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: targetEmail,
-      options: { redirectTo: redirectTo || `${SUPABASE_URL.replace(".supabase.co", "")}/admin-dashboard` },
+      options: { redirectTo: finalRedirect },
     });
     if (linkErr) throw linkErr;
 
