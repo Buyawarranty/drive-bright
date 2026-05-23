@@ -3499,18 +3499,24 @@ export const CustomersTab = ({
                   );
                 })()}
 
-                {/* Revenue stats badge — shown when revenue scope is active */}
-                {isSuperAdmin && unifiedScope === 'revenue' && filteredRevenueStats && (
-                  <div className="flex items-center gap-2 px-4 py-2 border-t bg-emerald-50/40">
+                {/* Revenue stats badge — shown for any active date selection so admins always see the total for what they've filtered */}
+                {isSuperAdmin && filteredRevenueStats && (
+                  <div className="flex items-center gap-2 px-4 py-2 border-t bg-emerald-50/40 flex-wrap">
                     <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                      <CalendarIcon className="h-3.5 w-3.5" /> Revenue ({unifiedPeriod === 'custom' ? 'custom' : unifiedPeriod}):
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      Total for {unifiedScope} ({unifiedPeriod === 'custom' ? 'custom range' : unifiedPeriod}):
                     </span>
-                    <span className="text-emerald-600 font-bold text-sm whitespace-nowrap">
+                    <span className="text-emerald-600 font-bold text-base whitespace-nowrap">
                       £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <Badge variant="outline" className="text-xs">
                       {filteredRevenueStats.count} {filteredRevenueStats.label}
                     </Badge>
+                    {filteredRevenueStats.count > 0 && (
+                      <span className="text-xs text-muted-foreground ml-2">
+                        AOV £{(filteredRevenueStats.revenue / filteredRevenueStats.count).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
