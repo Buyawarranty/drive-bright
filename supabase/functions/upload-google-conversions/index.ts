@@ -38,6 +38,46 @@ async function getAccessToken(): Promise<string> {
   return data.access_token;
 }
 
+// SHA-256 hash, lowercase hex — required by Google for Enhanced Conversions
+async function sha256Hex(input: string): Promise<string> {
+  const buf = new TextEncoder().encode(input);
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hashBuf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Normalize phone to E.164 (assume UK if no country code)
+function normalizePhone(raw: string): string | null {
+  const digits = raw.replace(/[^\d+]/g, '');
+  if (!digits) return null;
+  if (digits.startsWith('+')) return digits;
+  if (digits.startsWith('00')) return '+' + digits.slice(2);
+  if (digits.startsWith('0')) return '+44' + digits.slice(1);
+  if (digits.startsWith('44')) return '+' + digits;
+  return '+' + digits;
+}
+
+async function buildUserIdentifiers(
+  email?: string | null,
+  phone?: string | null,
+): Promise<Array<Record<string, string>>> {
+  const ids: Array<Record<string, string>> = [];
+  if (email) {
+    const normalized = email.trim().toLowerCase();
+    if (normalized.includes('@')) {
+      ids.push({ hashedEmail: await sha256Hex(normalized) });
+    }
+  }
+  if (phone) {
+    const e164 = normalizePhone(phone);
+    if (e164) {
+      ids.push({ hashedPhoneNumber: await sha256Hex(e164) });
+    }
+  }
+  return ids;
+}
+
 // Upload a single conversion to Google Ads API
 async function uploadConversion(
   accessToken: string,
@@ -47,22 +87,24 @@ async function uploadConversion(
   gclid: string,
   conversionDateTime: string,
   conversionValue: number,
-  currencyCode: string = 'GBP'
+  userIdentifiers: Array<Record<string, string>>,
+  currencyCode: string = 'GBP',
 ) {
   const url = `https://googleads.googleapis.com/v21/customers/${customerId}:uploadClickConversions`;
 
-  const body = {
-    conversions: [
-      {
-        gclid: gclid,
-        conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
-        conversionDateTime: conversionDateTime, // Format: yyyy-MM-dd HH:mm:ss+00:00
-        conversionValue: conversionValue,
-        currencyCode: currencyCode,
-      },
-    ],
-    partialFailure: true,
+  const conversion: Record<string, unknown> = {
+    gclid: gclid,
+    conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
+    conversionDateTime: conversionDateTime,
+    conversionValue: conversionValue,
+    currencyCode: currencyCode,
   };
+  if (userIdentifiers.length > 0) {
+    conversion.userIdentifiers = userIdentifiers;
+    conversion.userIdentifierSource = 'FIRST_PARTY';
+  }
+
+  const body = { conversions: [conversion], partialFailure: true };
 
   const response = await fetch(url, {
     method: 'POST',
@@ -130,7 +172,7 @@ Deno.serve(async (req) => {
     // Query customers with GCLID that haven't been uploaded yet
     const { data: pendingCustomers, error: customersError } = await supabase
       .from('customers')
-      .select('id, gclid, final_amount, created_at, email, status')
+      .select('id, gclid, final_amount, created_at, email, phone, status')
       .not('gclid', 'is', null)
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
@@ -156,9 +198,25 @@ Deno.serve(async (req) => {
       logStep('Warning: Failed to query bumper transactions', bumperError.message);
     }
 
+    // Try to enrich bumper rows with email/phone from the matching customer record (by gclid)
+    const bumperGclids = (pendingBumper || []).map((b) => b.gclid).filter(Boolean) as string[];
+    let bumperContactByGclid = new Map<string, { email: string | null; phone: string | null }>();
+    if (bumperGclids.length > 0) {
+      const { data: bumperCustomers } = await supabase
+        .from('customers')
+        .select('gclid, email, phone')
+        .in('gclid', bumperGclids);
+      for (const c of bumperCustomers || []) {
+        if (c.gclid) bumperContactByGclid.set(c.gclid, { email: c.email, phone: c.phone });
+      }
+    }
+
     const allPending = [
-      ...(pendingCustomers || []).map(c => ({ ...c, source: 'customers' as const })),
-      ...(pendingBumper || []).map(b => ({ ...b, source: 'bumper_transactions' as const })),
+      ...(pendingCustomers || []).map((c) => ({ ...c, source: 'customers' as const })),
+      ...(pendingBumper || []).map((b) => {
+        const enrich = bumperContactByGclid.get(b.gclid as string) || { email: null, phone: null };
+        return { ...b, email: enrich.email, phone: enrich.phone, source: 'bumper_transactions' as const };
+      }),
     ];
 
     logStep(`Found ${allPending.length} pending conversions`, {
@@ -176,12 +234,18 @@ Deno.serve(async (req) => {
 
     let uploaded = 0;
     let failed = 0;
+    let withIdentifiers = 0;
     const errors: string[] = [];
 
     for (const record of allPending) {
       try {
         const conversionDate = formatDateForGoogle(record.created_at);
         const value = record.final_amount || 0;
+        const userIdentifiers = await buildUserIdentifiers(
+          (record as any).email,
+          (record as any).phone,
+        );
+        if (userIdentifiers.length > 0) withIdentifiers++;
 
         logStep(`Uploading conversion`, {
           id: record.id,
@@ -189,6 +253,7 @@ Deno.serve(async (req) => {
           value,
           date: conversionDate,
           source: record.source,
+          identifiers: userIdentifiers.length,
         });
 
         const { status, result } = await uploadConversion(
@@ -198,7 +263,8 @@ Deno.serve(async (req) => {
           developerToken,
           record.gclid!,
           conversionDate,
-          value
+          value,
+          userIdentifiers,
         );
 
         // Check for partial failures
@@ -246,6 +312,7 @@ Deno.serve(async (req) => {
       total: allPending.length,
       uploaded,
       failed,
+      withIdentifiers,
       errors: errors.slice(0, 10), // Only first 10 errors
     };
 
