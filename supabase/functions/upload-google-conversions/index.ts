@@ -169,6 +169,10 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Google Ads click-through conversion window is at most 90 days. Skip anything
+    // older than 60 days so we never get "Identifiers or iOS URL parameters are too old".
+    const cutoffISO = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+
     // Query customers with GCLID that haven't been uploaded yet
     const { data: pendingCustomers, error: customersError } = await supabase
       .from('customers')
@@ -177,6 +181,7 @@ Deno.serve(async (req) => {
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
       .eq('is_deleted', false)
+      .gte('created_at', cutoffISO)
       .order('created_at', { ascending: true })
       .limit(200);
 
@@ -191,8 +196,14 @@ Deno.serve(async (req) => {
       .not('gclid', 'is', null)
       .is('google_ads_conversion_uploaded_at', null)
       .eq('status', 'completed')
+      .gte('created_at', cutoffISO)
       .order('created_at', { ascending: true })
       .limit(200);
+
+    if (bumperError) {
+      logStep('Warning: Failed to query bumper transactions', bumperError.message);
+    }
+
 
     if (bumperError) {
       logStep('Warning: Failed to query bumper transactions', bumperError.message);
