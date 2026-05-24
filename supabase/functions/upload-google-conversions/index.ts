@@ -38,6 +38,46 @@ async function getAccessToken(): Promise<string> {
   return data.access_token;
 }
 
+// SHA-256 hash, lowercase hex — required by Google for Enhanced Conversions
+async function sha256Hex(input: string): Promise<string> {
+  const buf = new TextEncoder().encode(input);
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hashBuf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Normalize phone to E.164 (assume UK if no country code)
+function normalizePhone(raw: string): string | null {
+  const digits = raw.replace(/[^\d+]/g, '');
+  if (!digits) return null;
+  if (digits.startsWith('+')) return digits;
+  if (digits.startsWith('00')) return '+' + digits.slice(2);
+  if (digits.startsWith('0')) return '+44' + digits.slice(1);
+  if (digits.startsWith('44')) return '+' + digits;
+  return '+' + digits;
+}
+
+async function buildUserIdentifiers(
+  email?: string | null,
+  phone?: string | null,
+): Promise<Array<Record<string, string>>> {
+  const ids: Array<Record<string, string>> = [];
+  if (email) {
+    const normalized = email.trim().toLowerCase();
+    if (normalized.includes('@')) {
+      ids.push({ hashedEmail: await sha256Hex(normalized) });
+    }
+  }
+  if (phone) {
+    const e164 = normalizePhone(phone);
+    if (e164) {
+      ids.push({ hashedPhoneNumber: await sha256Hex(e164) });
+    }
+  }
+  return ids;
+}
+
 // Upload a single conversion to Google Ads API
 async function uploadConversion(
   accessToken: string,
@@ -47,22 +87,24 @@ async function uploadConversion(
   gclid: string,
   conversionDateTime: string,
   conversionValue: number,
-  currencyCode: string = 'GBP'
+  userIdentifiers: Array<Record<string, string>>,
+  currencyCode: string = 'GBP',
 ) {
   const url = `https://googleads.googleapis.com/v21/customers/${customerId}:uploadClickConversions`;
 
-  const body = {
-    conversions: [
-      {
-        gclid: gclid,
-        conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
-        conversionDateTime: conversionDateTime, // Format: yyyy-MM-dd HH:mm:ss+00:00
-        conversionValue: conversionValue,
-        currencyCode: currencyCode,
-      },
-    ],
-    partialFailure: true,
+  const conversion: Record<string, unknown> = {
+    gclid: gclid,
+    conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
+    conversionDateTime: conversionDateTime,
+    conversionValue: conversionValue,
+    currencyCode: currencyCode,
   };
+  if (userIdentifiers.length > 0) {
+    conversion.userIdentifiers = userIdentifiers;
+    conversion.userIdentifierSource = 'FIRST_PARTY';
+  }
+
+  const body = { conversions: [conversion], partialFailure: true };
 
   const response = await fetch(url, {
     method: 'POST',
