@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
     // Query customers with GCLID that haven't been uploaded yet
     const { data: pendingCustomers, error: customersError } = await supabase
       .from('customers')
-      .select('id, gclid, final_amount, created_at, email, status')
+      .select('id, gclid, final_amount, created_at, email, phone, status')
       .not('gclid', 'is', null)
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
@@ -198,9 +198,25 @@ Deno.serve(async (req) => {
       logStep('Warning: Failed to query bumper transactions', bumperError.message);
     }
 
+    // Try to enrich bumper rows with email/phone from the matching customer record (by gclid)
+    const bumperGclids = (pendingBumper || []).map((b) => b.gclid).filter(Boolean) as string[];
+    let bumperContactByGclid = new Map<string, { email: string | null; phone: string | null }>();
+    if (bumperGclids.length > 0) {
+      const { data: bumperCustomers } = await supabase
+        .from('customers')
+        .select('gclid, email, phone')
+        .in('gclid', bumperGclids);
+      for (const c of bumperCustomers || []) {
+        if (c.gclid) bumperContactByGclid.set(c.gclid, { email: c.email, phone: c.phone });
+      }
+    }
+
     const allPending = [
-      ...(pendingCustomers || []).map(c => ({ ...c, source: 'customers' as const })),
-      ...(pendingBumper || []).map(b => ({ ...b, source: 'bumper_transactions' as const })),
+      ...(pendingCustomers || []).map((c) => ({ ...c, source: 'customers' as const })),
+      ...(pendingBumper || []).map((b) => {
+        const enrich = bumperContactByGclid.get(b.gclid as string) || { email: null, phone: null };
+        return { ...b, email: enrich.email, phone: enrich.phone, source: 'bumper_transactions' as const };
+      }),
     ];
 
     logStep(`Found ${allPending.length} pending conversions`, {
@@ -218,12 +234,18 @@ Deno.serve(async (req) => {
 
     let uploaded = 0;
     let failed = 0;
+    let withIdentifiers = 0;
     const errors: string[] = [];
 
     for (const record of allPending) {
       try {
         const conversionDate = formatDateForGoogle(record.created_at);
         const value = record.final_amount || 0;
+        const userIdentifiers = await buildUserIdentifiers(
+          (record as any).email,
+          (record as any).phone,
+        );
+        if (userIdentifiers.length > 0) withIdentifiers++;
 
         logStep(`Uploading conversion`, {
           id: record.id,
@@ -231,6 +253,7 @@ Deno.serve(async (req) => {
           value,
           date: conversionDate,
           source: record.source,
+          identifiers: userIdentifiers.length,
         });
 
         const { status, result } = await uploadConversion(
@@ -240,7 +263,8 @@ Deno.serve(async (req) => {
           developerToken,
           record.gclid!,
           conversionDate,
-          value
+          value,
+          userIdentifiers,
         );
 
         // Check for partial failures
@@ -288,6 +312,7 @@ Deno.serve(async (req) => {
       total: allPending.length,
       uploaded,
       failed,
+      withIdentifiers,
       errors: errors.slice(0, 10), // Only first 10 errors
     };
 
