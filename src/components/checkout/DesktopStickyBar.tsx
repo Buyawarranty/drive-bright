@@ -20,6 +20,7 @@ interface DesktopStickyBarProps {
   isVisible?: boolean;
   minimised?: boolean;
   trustStripOnly?: boolean;
+  validationError?: string;
 }
 
 const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
