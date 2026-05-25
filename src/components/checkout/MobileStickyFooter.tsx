@@ -18,6 +18,7 @@ interface MobileStickyFooterProps {
   trustStripOnly?: boolean;
   defaultExpanded?: boolean;
   ctaLabel?: string;
+  validationError?: string;
 }
 
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
