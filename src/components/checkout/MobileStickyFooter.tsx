@@ -33,10 +33,16 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   trustStripOnly = false,
   defaultExpanded = false,
   ctaLabel = 'Continue',
+  validationError,
 }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
   const [expanded, setExpanded] = useState(defaultExpanded);
+
+  // Auto-expand when a validation error appears so the inline message is visible above the CTA
+  useEffect(() => {
+    if (validationError) setExpanded(true);
+  }, [validationError]);
 
 
   useEffect(() => {
