@@ -15,6 +15,8 @@ interface DesktopStickyBarProps {
   isLoading: boolean;
   hasPromoDiscount?: boolean;
   onPayClick: () => void;
+  onPaymentChange?: (payment: 'monthly' | 'full') => void;
+  ctaLabel?: string;
   isVisible?: boolean;
   minimised?: boolean;
   trustStripOnly?: boolean;
