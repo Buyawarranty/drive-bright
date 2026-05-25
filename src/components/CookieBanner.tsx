@@ -128,7 +128,7 @@ export function CookieBanner() {
       {showIcon && (
         <button
           onClick={handleReopenFromIcon}
-          className="fixed bottom-24 md:bottom-4 right-4 z-[60] bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:scale-110 transition-transform animate-fade-in"
+          className="fixed bottom-24 md:bottom-4 left-4 z-[60] bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:scale-110 transition-transform animate-fade-in"
           aria-label="Open cookie preferences"
         >
           <Cookie className="w-5 h-5" aria-hidden="true" />
