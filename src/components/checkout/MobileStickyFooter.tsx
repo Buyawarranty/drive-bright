@@ -130,14 +130,15 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           type="button"
           onClick={() => setExpanded(v => !v)}
           aria-label={expanded ? 'Collapse payment details' : 'Expand payment details'}
-          className="w-full flex justify-center pt-2 pb-1"
+          className="w-full flex justify-center pt-1.5 pb-0"
         >
           <span className="w-10 h-1 rounded-full bg-gray-300" />
         </button>
 
+
         {/* Expanded section */}
         {expanded && (
-          <div className="px-4 pt-1 pb-3 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="px-4 pt-0 pb-3 animate-in slide-in-from-bottom-2 duration-200">
             <div className="flex items-center justify-between gap-2 mb-3">
               <span className="text-sm font-semibold text-gray-900">{planLabel}</span>
               <a
@@ -232,7 +233,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
         {/* Compact action bar (collapsed) */}
         {!expanded && (
-          <div className="px-4 pb-3 pt-1">
+          <div className="px-4 pb-3 pt-0">
             <div className="flex items-center gap-3">
               <div className={cn('flex flex-col leading-tight min-w-0 flex-shrink', isPulsing && 'animate-pulse')}>
                 <span className="text-[12px] font-medium text-gray-600 truncate">{planLabel}</span>
