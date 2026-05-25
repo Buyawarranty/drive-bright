@@ -438,7 +438,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   <SummaryRow strong={selectedDuration.label} sub="Platinum Complete Plan" />
                 )}
                 {voluntaryExcess !== null && (
-                  <SummaryRow strong={`£${voluntaryExcess} excess`} sub={voluntaryExcess === 100 ? 'Recommended' : voluntaryExcess === 0 ? 'Pay nothing first' : voluntaryExcess === 150 ? 'Lowest price' : 'Lower upfront'} />
+                  <SummaryRow strong={`£${voluntaryExcess} excess`} sub={EXCESS_OPTIONS.find(o => o.value === voluntaryExcess)?.sub || ''} />
                 )}
               </div>
             </div>
