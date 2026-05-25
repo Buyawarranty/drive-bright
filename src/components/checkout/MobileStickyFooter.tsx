@@ -232,9 +232,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
-                  Continue
+                  {ctaLabel}
                   <ArrowRight className="w-4 h-4" strokeWidth={3} />
                 </span>
+
               )}
             </Button>
           </div>
