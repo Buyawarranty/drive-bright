@@ -31,6 +31,8 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   paymentType,
   isLoading,
   onPayClick,
+  onPaymentChange,
+  ctaLabel = 'Continue to checkout',
   isVisible = true,
   minimised = false,
   trustStripOnly = false,
