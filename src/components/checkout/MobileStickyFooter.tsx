@@ -18,6 +18,7 @@ interface MobileStickyFooterProps {
   trustStripOnly?: boolean;
   defaultExpanded?: boolean;
   ctaLabel?: string;
+  validationError?: string;
 }
 
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
@@ -32,10 +33,16 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   trustStripOnly = false,
   defaultExpanded = false,
   ctaLabel = 'Continue',
+  validationError,
 }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
   const [expanded, setExpanded] = useState(defaultExpanded);
+
+  // Auto-expand when a validation error appears so the inline message is visible above the CTA
+  useEffect(() => {
+    if (validationError) setExpanded(true);
+  }, [validationError]);
 
 
   useEffect(() => {
@@ -222,6 +229,15 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             </div>
 
 
+            {validationError && (
+              <div
+                role="alert"
+                className="mb-2 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-[12px] font-medium text-red-700"
+              >
+                <span aria-hidden className="mt-px">⚠</span>
+                <span>{validationError}</span>
+              </div>
+            )}
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
@@ -246,6 +262,15 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         {/* Compact action bar (collapsed) */}
         {!expanded && (
           <div className="px-4 pb-3 pt-0">
+            {validationError && (
+              <div
+                role="alert"
+                className="mb-2 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-[12px] font-medium text-red-700"
+              >
+                <span aria-hidden className="mt-px">⚠</span>
+                <span>{validationError}</span>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <div className={cn('flex flex-col leading-tight min-w-0 flex-shrink', isPulsing && 'animate-pulse')}>
                 <span className="text-[12px] font-medium text-gray-600 truncate">{planLabel}</span>

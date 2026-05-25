@@ -1522,10 +1522,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setDeclarationError(true);
       const declSection = document.getElementById('vehicle-declaration');
       scrollToSection(declSection);
-      toast.error('Please confirm the vehicle declaration to continue.', {
-        duration: 5000,
-        className: 'border-2 border-red-500 shadow-2xl',
-      });
+      // Inline validation is shown above the sticky CTA and at the checkbox itself —
+      // no floating toast (it was covering the CTA on mobile).
       return;
     }
 
@@ -2787,6 +2785,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isVisible={showDesktopStickyBar}
         minimised={isBottomCtaFullyVisible}
         trustStripOnly={isScrolledPastBottomCta}
+        validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
 
       {/* Mobile Sticky Footer - trust strip only when scrolled past bottom CTA */}
@@ -2807,7 +2806,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         trustStripOnly={isScrolledPastBottomCta}
         defaultExpanded={true}
         ctaLabel="Pay securely"
-
+        validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
     </div>
   );
