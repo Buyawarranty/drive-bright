@@ -2803,6 +2803,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         minimised={isBottomCtaFullyVisible}
         trustStripOnly={isScrolledPastBottomCta}
+        defaultExpanded={true}
+        ctaLabel="Pay securely"
+
       />
     </div>
   );
