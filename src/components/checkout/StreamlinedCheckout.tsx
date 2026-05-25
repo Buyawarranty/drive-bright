@@ -1522,10 +1522,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setDeclarationError(true);
       const declSection = document.getElementById('vehicle-declaration');
       scrollToSection(declSection);
-      toast.error('Please confirm the vehicle declaration to continue.', {
-        duration: 5000,
-        className: 'border-2 border-red-500 shadow-2xl',
-      });
+      // Inline validation is shown above the sticky CTA and at the checkbox itself —
+      // no floating toast (it was covering the CTA on mobile).
       return;
     }
 
