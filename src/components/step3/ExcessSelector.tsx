@@ -60,7 +60,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
               key={option.value}
               onClick={() => onExcessChange(option.value)}
               className={cn(
-                "py-3 px-2 rounded-lg border-2 text-center transition-all relative flex flex-col items-center justify-center min-h-[80px]",
+                "py-4 px-3 rounded-lg border-2 text-center transition-all relative flex flex-col items-center justify-start gap-1 min-h-[110px]",
                 "active:scale-[0.98]",
                 isSelected
                   ? "border-success bg-success/10 text-foreground shadow-sm"
@@ -71,15 +71,17 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
             >
               {option.isRecommended && (
                 <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-success-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
-                  RECOMMENDED
+                  Best
                 </span>
               )}
               <span className="flex items-center justify-center gap-1">
                 {isSelected && (
                   <Check className="w-4 h-4 text-success flex-shrink-0" strokeWidth={2.5} />
                 )}
-                <span className="font-bold text-sm">{option.label}</span>
+                <span className="font-bold text-base">{option.label}</span>
               </span>
+              <span className="text-xs font-semibold text-foreground leading-tight">{option.description}</span>
+              <span className="text-[11px] text-muted-foreground leading-tight mt-auto">{option.hint}</span>
             </button>
           );
         })}
