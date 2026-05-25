@@ -138,7 +138,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
         {/* Expanded section */}
         {expanded && (
-          <div className="px-4 pt-1 pb-3 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="px-4 pt-0 pb-3 animate-in slide-in-from-bottom-2 duration-200">
             <div className="flex items-center justify-between gap-2 mb-3">
               <span className="text-sm font-semibold text-gray-900">{planLabel}</span>
               <a
