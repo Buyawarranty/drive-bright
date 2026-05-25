@@ -68,10 +68,12 @@ const LABOUR_OPTIONS = [
 ];
 
 const EXCESS_OPTIONS = [
-  { value: 0, sub: 'Pay nothing first' },
-  { value: 50, sub: 'Lower upfront' },
-  { value: 100, sub: 'Recommended' },
-  { value: 150, sub: 'Lowest price' },
+  { value: 0, sub: 'Nothing to pay' },
+  { value: 50, sub: 'Lower monthly' },
+  { value: 100, sub: 'Balanced' },
+  { value: 150, sub: 'Best balance' },
+  { value: 250, sub: 'Save more' },
+  { value: 500, sub: 'Biggest saving' },
 ];
 
 const DURATION_OPTIONS: { id: PaymentType; label: string; badge: { text: string; tone: 'orange' | 'green' } | null; perks: string[] }[] = [
@@ -367,14 +369,14 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 subtitle="Excess is what you pay towards a claim. Lower excess = higher monthly cost."
                 onDetails={() => setExcessDetailsOpen(true)}
               />
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {EXCESS_OPTIONS.map((opt) => {
                   const selected = voluntaryExcess === opt.value;
                   return (
                     <OptionCard
                       key={opt.value}
                       selected={selected}
-                      badge={opt.value === 100 ? { text: 'Recommended', tone: 'orange' } : null}
+                      badge={opt.value === 150 ? { text: 'Best', tone: 'orange' } : null}
                       onClick={() => setVoluntaryExcess(opt.value)}
                     >
                       <div className="text-[28px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">
@@ -436,7 +438,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   <SummaryRow strong={selectedDuration.label} sub="Platinum Complete Plan" />
                 )}
                 {voluntaryExcess !== null && (
-                  <SummaryRow strong={`£${voluntaryExcess} excess`} sub={voluntaryExcess === 100 ? 'Recommended' : voluntaryExcess === 0 ? 'Pay nothing first' : voluntaryExcess === 150 ? 'Lowest price' : 'Lower upfront'} />
+                  <SummaryRow strong={`£${voluntaryExcess} excess`} sub={EXCESS_OPTIONS.find(o => o.value === voluntaryExcess)?.sub || ''} />
                 )}
               </div>
             </div>
