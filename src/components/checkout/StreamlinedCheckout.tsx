@@ -2785,6 +2785,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isVisible={showDesktopStickyBar}
         minimised={isBottomCtaFullyVisible}
         trustStripOnly={isScrolledPastBottomCta}
+        validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
 
       {/* Mobile Sticky Footer - trust strip only when scrolled past bottom CTA */}
