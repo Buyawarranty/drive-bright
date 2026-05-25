@@ -86,14 +86,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   };
 
   return (
-    <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
+    <section className="bg-white rounded-2xl border border-[#E5E5E5] p-5 sm:p-7">
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-5">
         <h2 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Choose how you want to pay</h2>
       </div>
 
       {/* Payment Cards - Vertical on mobile, horizontal (side-by-side) on desktop */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-stretch">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-stretch">
         {/* Pay in Full Card — RECOMMENDED */}
         <div
           role="button"
