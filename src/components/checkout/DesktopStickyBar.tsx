@@ -158,7 +158,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             <Button
               onClick={onPayClick}
               disabled={isLoading}
-              aria-label="Continue to checkout"
+              aria-label={ctaLabel}
               className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold h-12 px-7 rounded-lg text-base gap-2 shadow-md hover:shadow-lg transition-all min-w-[248px]"
             >
               {isLoading ? (
@@ -168,7 +168,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                 </span>
               ) : (
                 <>
-                  Continue to checkout
+                  {ctaLabel}
                   <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
                 </>
               )}
