@@ -204,7 +204,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-3 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-4">
             <div className="pl-7">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
