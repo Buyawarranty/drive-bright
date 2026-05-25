@@ -153,7 +153,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
           {/* Per-card CTA */}
           {!hidePayButton && (
-            <div className="mt-4 sm:mt-auto sm:pt-4">
+            <div className="mt-5 sm:mt-auto sm:pt-5">
               <Button
                 type="button"
                 onClick={(e) => handlePayInside('full', e)}
