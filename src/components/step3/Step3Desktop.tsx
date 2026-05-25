@@ -68,10 +68,12 @@ const LABOUR_OPTIONS = [
 ];
 
 const EXCESS_OPTIONS = [
-  { value: 0, sub: 'Pay nothing first' },
-  { value: 50, sub: 'Lower upfront' },
-  { value: 100, sub: 'Recommended' },
-  { value: 150, sub: 'Lowest price' },
+  { value: 0, sub: 'Nothing to pay' },
+  { value: 50, sub: 'Lower monthly' },
+  { value: 100, sub: 'Balanced' },
+  { value: 150, sub: 'Best balance' },
+  { value: 250, sub: 'Save more' },
+  { value: 500, sub: 'Biggest saving' },
 ];
 
 const DURATION_OPTIONS: { id: PaymentType; label: string; badge: { text: string; tone: 'orange' | 'green' } | null; perks: string[] }[] = [
