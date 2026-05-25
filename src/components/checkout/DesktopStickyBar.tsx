@@ -77,6 +77,15 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   return (
     <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white shadow-[0_-6px_22px_rgba(0,0,0,0.12)] border-t border-gray-200 z-50">
       <div className="max-w-7xl mx-auto px-5 py-2">
+        {validationError && (
+          <div
+            role="alert"
+            className="mb-2 flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700"
+          >
+            <span aria-hidden>⚠</span>
+            <span>{validationError}</span>
+          </div>
+        )}
         <div className="flex items-center gap-3 min-h-[58px]">
 
           {/* LEFT: Trust + plan stacked tightly */}
