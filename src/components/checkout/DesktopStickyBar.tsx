@@ -37,6 +37,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   isVisible = true,
   minimised = false,
   trustStripOnly = false,
+  validationError,
 }) => {
   if (!isVisible) return null;
   if (minimised && !trustStripOnly) return null;
