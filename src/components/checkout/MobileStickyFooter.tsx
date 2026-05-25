@@ -197,29 +197,30 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-2 mb-3 rounded-xl border border-gray-200 p-2.5">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+            <div className="grid grid-cols-3 gap-2 mb-3 rounded-xl border border-gray-200 p-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
                 <div className="leading-tight">
-                  <p className="text-[10px] font-bold text-gray-900">14-day</p>
-                  <p className="text-[9px] text-gray-600">cooling off</p>
+                  <p className="text-[13px] font-bold text-gray-900">14-day</p>
+                  <p className="text-[11px] text-gray-600">cooling off</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <InfinityIcon className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+              <div className="flex items-center gap-2">
+                <InfinityIcon className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
                 <div className="leading-tight">
-                  <p className="text-[10px] font-bold text-gray-900">Unlimited</p>
-                  <p className="text-[9px] text-gray-600">claims</p>
+                  <p className="text-[13px] font-bold text-gray-900">Unlimited</p>
+                  <p className="text-[11px] text-gray-600">claims</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
                 <div className="leading-tight">
-                  <p className="text-[10px] font-bold text-gray-900">Nationwide</p>
-                  <p className="text-[9px] text-gray-600">approved repairs</p>
+                  <p className="text-[13px] font-bold text-gray-900">Nationwide</p>
+                  <p className="text-[11px] text-gray-600">approved repairs</p>
                 </div>
               </div>
             </div>
+
 
             <Button
               onClick={onPayClick}
