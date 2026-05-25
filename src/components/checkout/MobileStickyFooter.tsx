@@ -172,15 +172,6 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             </div>
 
             <div className={cn('flex gap-2 mb-3', isPulsing && 'animate-pulse')}>
-              <Card type="monthly" title="Pay Monthly">
-                <div className="flex items-baseline gap-1 mt-1.5">
-                  <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
-                  <span className="text-xs text-gray-700">/month</span>
-                </div>
-                <p className="text-[11px] font-semibold text-gray-900 mt-1.5">Paid over 12 months</p>
-                <p className="text-[10px] text-gray-600 mt-0.5">Equal to {dayLabel}/day</p>
-              </Card>
-
               <Card type="full" title="Pay In Full">
                 <div className="mt-1.5">
                   <span className="text-2xl font-extrabold text-[#0BA360]">£{discountedFull}</span>
@@ -193,7 +184,17 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   </p>
                 )}
               </Card>
+
+              <Card type="monthly" title="Pay Monthly">
+                <div className="flex items-baseline gap-1 mt-1.5">
+                  <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
+                  <span className="text-xs text-gray-700">/month</span>
+                </div>
+                <p className="text-[11px] font-semibold text-gray-900 mt-1.5">Paid over 12 months</p>
+                <p className="text-[10px] text-gray-600 mt-0.5">Equal to {dayLabel}/day</p>
+              </Card>
             </div>
+
 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-2 mb-3 rounded-xl border border-gray-200 p-2.5">
