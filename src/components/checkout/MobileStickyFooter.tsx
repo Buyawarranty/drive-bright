@@ -16,6 +16,8 @@ interface MobileStickyFooterProps {
   onPaymentChange?: (payment: 'monthly' | 'full') => void;
   minimised?: boolean;
   trustStripOnly?: boolean;
+  defaultExpanded?: boolean;
+  ctaLabel?: string;
 }
 
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
@@ -28,10 +30,13 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   onPaymentChange,
   minimised = false,
   trustStripOnly = false,
+  defaultExpanded = false,
+  ctaLabel = 'Continue',
 }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
 
   useEffect(() => {
     if (monthlyPrice !== prevPrice) {
