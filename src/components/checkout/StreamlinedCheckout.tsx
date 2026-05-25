@@ -2806,7 +2806,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         trustStripOnly={isScrolledPastBottomCta}
         defaultExpanded={true}
         ctaLabel="Pay securely"
-
+        validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
     </div>
   );
