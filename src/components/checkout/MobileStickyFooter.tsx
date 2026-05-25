@@ -233,7 +233,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
         {/* Compact action bar (collapsed) */}
         {!expanded && (
-          <div className="px-4 pb-3 pt-1">
+          <div className="px-4 pb-3 pt-0">
             <div className="flex items-center gap-3">
               <div className={cn('flex flex-col leading-tight min-w-0 flex-shrink', isPulsing && 'animate-pulse')}>
                 <span className="text-[12px] font-medium text-gray-600 truncate">{planLabel}</span>
