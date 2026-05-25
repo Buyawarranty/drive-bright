@@ -216,7 +216,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`} per day
               </p>
               <p className="text-sm text-[#1a1a1a] font-medium mt-1">
-                Costs £{savings > 0 ? savings : Math.round(fullPrice * 0.1)} more overall
+                £{monthlyPaidTotal} total · £{savings > 0 ? savings : Math.round(fullPrice * 0.1)} more than paying in full
               </p>
             </div>
 
