@@ -86,21 +86,21 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   };
 
   return (
-    <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
+    <section className="bg-white rounded-2xl border border-[#E5E5E5] p-5 sm:p-7">
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-5">
         <h2 className="text-base sm:text-lg font-bold text-[#1a1a1a]">Choose how you want to pay</h2>
       </div>
 
       {/* Payment Cards - Vertical on mobile, horizontal (side-by-side) on desktop */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-stretch">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-stretch">
         {/* Pay in Full Card — RECOMMENDED */}
         <div
           role="button"
           tabIndex={0}
           onClick={() => handleCardSelect('full')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('full'); } }}
-          className={`w-full sm:flex-1 sm:flex sm:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer ${
+          className={`w-full sm:flex-1 sm:flex sm:flex-col text-left rounded-2xl p-5 sm:p-6 border-2 transition-all cursor-pointer ${
             selectedPayment === 'full'
               ? 'bg-[#F4FBF6] border-[#0BA360] shadow-[0_4px_20px_-8px_rgba(11,163,96,0.4)]'
               : 'bg-white border-[#0BA360]/40 hover:border-[#0BA360] hover:bg-[#F4FBF6]/50'
@@ -125,7 +125,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-3 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-4">
             <div className="pl-7">
               <div className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
                 £{fullPrice}
@@ -153,7 +153,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
           {/* Per-card CTA */}
           {!hidePayButton && (
-            <div className="mt-4 sm:mt-auto sm:pt-4">
+            <div className="mt-5 sm:mt-auto sm:pt-5">
               <Button
                 type="button"
                 onClick={(e) => handlePayInside('full', e)}
@@ -179,7 +179,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           tabIndex={0}
           onClick={() => handleCardSelect('monthly')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardSelect('monthly'); } }}
-          className={`w-full sm:flex-1 sm:flex sm:flex-col text-left rounded-xl p-4 sm:p-5 border-2 transition-all cursor-pointer ${
+          className={`w-full sm:flex-1 sm:flex sm:flex-col text-left rounded-2xl p-5 sm:p-6 border-2 transition-all cursor-pointer ${
             selectedPayment === 'monthly'
               ? 'bg-[#FFF4EC] border-[#FF6B00] shadow-[0_4px_20px_-8px_rgba(255,107,0,0.4)]'
               : 'bg-white border-[#E5E5E5] hover:border-gray-300 hover:bg-[#FFF4EC]/50'
@@ -204,7 +204,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           </div>
 
           {/* Price + benefits row */}
-          <div className="mt-3 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-4">
             <div className="pl-7">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-extrabold text-[#FF6B00] leading-none tracking-tight">
@@ -235,7 +235,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
           {/* Per-card CTA */}
           {!hidePayButton && (
-            <div className="mt-4 sm:mt-auto sm:pt-4">
+            <div className="mt-5 sm:mt-auto sm:pt-5">
               <Button
                 type="button"
                 onClick={(e) => handlePayInside('monthly', e)}
