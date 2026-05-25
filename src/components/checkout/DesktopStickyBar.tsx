@@ -15,6 +15,8 @@ interface DesktopStickyBarProps {
   isLoading: boolean;
   hasPromoDiscount?: boolean;
   onPayClick: () => void;
+  onPaymentChange?: (payment: 'monthly' | 'full') => void;
+  ctaLabel?: string;
   isVisible?: boolean;
   minimised?: boolean;
   trustStripOnly?: boolean;
@@ -29,6 +31,8 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   paymentType,
   isLoading,
   onPayClick,
+  onPaymentChange,
+  ctaLabel = 'Continue to checkout',
   isVisible = true,
   minimised = false,
   trustStripOnly = false,
@@ -116,14 +120,34 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 
           {/* OPTIONAL: Switch-to-full pill (only when on monthly with savings) */}
           {isMonthly && savings > 0 && (
-            <div className="hidden xl:flex items-center gap-2 bg-[#E8F7EF] border border-[#0BA360]/30 rounded-lg px-3 py-1.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => onPaymentChange?.('full')}
+              className="hidden xl:flex items-center gap-2 bg-[#E8F7EF] hover:bg-[#d6f0e2] border border-[#0BA360]/30 hover:border-[#0BA360] rounded-lg px-3 py-1.5 flex-shrink-0 transition-colors cursor-pointer"
+              aria-label={`Switch to one-off payment of £${fullPrice}`}
+            >
               <Wallet className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-              <div className="flex flex-col leading-tight">
+              <div className="flex flex-col leading-tight text-left">
                 <span className="text-[12px] font-bold text-gray-900">Pay £{fullPrice} upfront</span>
                 <span className="text-[11px] font-semibold text-[#0BA360]">Save £{savings}</span>
               </div>
-            </div>
+            </button>
           )}
+          {!isMonthly && (
+            <button
+              type="button"
+              onClick={() => onPaymentChange?.('monthly')}
+              className="hidden xl:flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg px-3 py-1.5 flex-shrink-0 transition-colors cursor-pointer"
+              aria-label={`Switch to monthly payment of £${monthlyPrice}`}
+            >
+              <Wallet className="w-4 h-4 text-gray-700 flex-shrink-0" />
+              <div className="flex flex-col leading-tight text-left">
+                <span className="text-[12px] font-bold text-gray-900">Pay £{monthlyPrice}/mo</span>
+                <span className="text-[11px] font-semibold text-gray-600">12 months · 0% APR</span>
+              </div>
+            </button>
+          )}
+
 
           {/* RIGHT: CTA fills remaining space */}
           <div className="flex-1 flex items-center justify-end gap-3 min-w-0">
@@ -134,7 +158,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             <Button
               onClick={onPayClick}
               disabled={isLoading}
-              aria-label="Continue to checkout"
+              aria-label={ctaLabel}
               className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold h-12 px-7 rounded-lg text-base gap-2 shadow-md hover:shadow-lg transition-all min-w-[248px]"
             >
               {isLoading ? (
@@ -144,7 +168,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                 </span>
               ) : (
                 <>
-                  Continue to checkout
+                  {ctaLabel}
                   <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
                 </>
               )}

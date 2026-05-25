@@ -16,6 +16,8 @@ interface MobileStickyFooterProps {
   onPaymentChange?: (payment: 'monthly' | 'full') => void;
   minimised?: boolean;
   trustStripOnly?: boolean;
+  defaultExpanded?: boolean;
+  ctaLabel?: string;
 }
 
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
@@ -28,10 +30,13 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   onPaymentChange,
   minimised = false,
   trustStripOnly = false,
+  defaultExpanded = false,
+  ctaLabel = 'Continue',
 }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
 
   useEffect(() => {
     if (monthlyPrice !== prevPrice) {
@@ -227,9 +232,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
-                  Continue
+                  {ctaLabel}
                   <ArrowRight className="w-4 h-4" strokeWidth={3} />
                 </span>
+
               )}
             </Button>
           </div>
@@ -263,9 +269,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-1.5">
-                    Continue
+                    {ctaLabel}
                     <ArrowRight className="w-4 h-4" strokeWidth={3} />
                   </span>
+
                 )}
               </Button>
             </div>
