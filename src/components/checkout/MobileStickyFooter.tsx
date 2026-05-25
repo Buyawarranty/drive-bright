@@ -130,10 +130,14 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           type="button"
           onClick={() => setExpanded(v => !v)}
           aria-label={expanded ? 'Collapse payment details' : 'Expand payment details'}
-          className="w-full flex justify-center py-2.5"
+          className="w-full flex flex-col items-center gap-1 pt-2 pb-1.5"
         >
-          <span className="w-12 h-1.5 rounded-full bg-[#0BA360]/40" />
+          <span className="w-10 h-1 rounded-full bg-gray-300" />
+          <span className="text-[11px] font-medium text-gray-500">
+            {expanded ? 'Hide payment options ⌄' : 'View payment options ⌃'}
+          </span>
         </button>
+
 
 
         {/* Expanded section */}
