@@ -229,6 +229,15 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             </div>
 
 
+            {validationError && (
+              <div
+                role="alert"
+                className="mb-2 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-[12px] font-medium text-red-700"
+              >
+                <span aria-hidden className="mt-px">⚠</span>
+                <span>{validationError}</span>
+              </div>
+            )}
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
