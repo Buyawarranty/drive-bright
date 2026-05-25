@@ -10,12 +10,12 @@ interface ExcessSelectorProps {
 }
 
 const excessOptions = [
-  { value: 0, label: '£0' },
-  { value: 50, label: '£50' },
-  { value: 100, label: '£100' },
-  { value: 150, label: '£150', isRecommended: true },
-  { value: 250, label: '£250' },
-  { value: 500, label: '£500' },
+  { value: 0, label: '£0', description: 'Nothing to pay', hint: '+£14/mo' },
+  { value: 50, label: '£50', description: 'Lower monthly', hint: '+£10/mo' },
+  { value: 100, label: '£100', description: 'Balanced', hint: '+£4/mo' },
+  { value: 150, label: '£150', description: 'Best balance', hint: 'Best balance', isRecommended: true },
+  { value: 250, label: '£250', description: 'Save more', hint: '−£9/mo' },
+  { value: 500, label: '£500', description: 'Biggest saving', hint: '−£24/mo' },
 ];
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
