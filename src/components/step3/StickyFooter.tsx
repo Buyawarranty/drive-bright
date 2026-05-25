@@ -117,15 +117,6 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
         {/* Two payment cards */}
         <div className={cn('flex gap-2 md:gap-3 mb-3', isPulsing && 'animate-pulse')}>
-          <Card type="monthly" title="Pay Monthly">
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl md:text-3xl font-extrabold text-gray-900">£{monthlyPrice}</span>
-              <span className="text-sm text-gray-700">/ month</span>
-            </div>
-            <p className="text-[13px] md:text-sm font-semibold text-gray-900 mt-1">Paid over 12 months</p>
-            <p className="text-[11px] md:text-xs text-gray-600">Equal to {dayLabel}/day</p>
-          </Card>
-
           <Card type="full" title="Pay in Full">
             <div className="mt-1">
               <span className="text-2xl md:text-3xl font-extrabold text-[#0BA360]">£{payInFullDiscounted}</span>
@@ -138,7 +129,17 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               </p>
             )}
           </Card>
+
+          <Card type="monthly" title="Pay Monthly">
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-2xl md:text-3xl font-extrabold text-gray-900">£{monthlyPrice}</span>
+              <span className="text-sm text-gray-700">/ month</span>
+            </div>
+            <p className="text-[13px] md:text-sm font-semibold text-gray-900 mt-1">Paid over 12 months</p>
+            <p className="text-[11px] md:text-xs text-gray-600">Equal to {dayLabel}/day</p>
+          </Card>
         </div>
+
 
         {/* CTA */}
         <Button
