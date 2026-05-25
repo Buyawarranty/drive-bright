@@ -219,7 +219,7 @@ const App = () => {
             <ScrollToTop />
             <PageViewTracker />
             <PageViewLogger />
-            <CookieBanner />
+            
             
             <div className="min-h-screen flex flex-col w-full">
               <ConditionalStickyNavigation />
