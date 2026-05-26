@@ -181,10 +181,36 @@ const Auth = () => {
     try {
       console.log("Attempting to sign in with:", email);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      let { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      // If the account exists but isn't confirmed (or password doesn't match a
+      // legacy unconfirmed signup), try to repair it via the customer-self-signup
+      // edge function — which auto-confirms accounts for known customers — then
+      // retry the sign-in once.
+      if (error) {
+        const msg = (error.message || "").toLowerCase();
+        const repairable =
+          msg.includes("email not confirmed") ||
+          msg.includes("not confirmed") ||
+          msg.includes("invalid login credentials");
+
+        if (repairable) {
+          console.log("Sign in failed, attempting customer auth repair:", error.message);
+          const { data: repairData, error: repairError } = await supabase.functions.invoke(
+            'customer-self-signup',
+            { body: { email, password } }
+          );
+
+          if (!repairError && repairData?.success) {
+            const retry = await supabase.auth.signInWithPassword({ email, password });
+            data = retry.data;
+            error = retry.error;
+          }
+        }
+      }
 
       if (error) {
         console.error("Sign in error:", error.message, error);
@@ -198,9 +224,6 @@ const Auth = () => {
 
       console.log("Sign in successful:", data.user?.email);
       console.log("Session:", data.session);
-      
-      // Don't navigate immediately - let the auth state change handler do it
-      // This ensures proper auth state propagation
       
     } catch (error: any) {
       console.error("Sign in failed:", error);
@@ -219,33 +242,36 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      console.log("Attempting to sign up with:", email);
-      
-      const { data, error } = await supabase.auth.signUp({
+      console.log("Attempting customer self-signup for:", email);
+
+      // Use our edge function so the account is auto-confirmed for known
+      // customers and they can log in immediately without email verification.
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        'customer-self-signup',
+        { body: { email, password } }
+      );
+
+      if (fnError || !fnData?.success) {
+        const message =
+          (fnData && (fnData as any).error) ||
+          fnError?.message ||
+          "We couldn't create your account. Please contact support.";
+        throw new Error(message);
+      }
+
+      toast({
+        title: "Account Ready",
+        description: "Your account is set up. Signing you in...",
+      });
+
+      // Immediately sign the user in.
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/customer-dashboard`
-        }
       });
 
-      if (error) {
-        console.error("Sign up error:", error);
-        throw error;
-      }
+      if (signInError) throw signInError;
 
-      console.log("Sign up successful:", data.user?.email);
-      
-      toast({
-        title: "Account Created",
-        description: "Your account has been created successfully! Please check your email to confirm your account.",
-      });
-
-      // For immediate testing, navigate to customer dashboard
-      if (data.session) {
-        navigate('/customer-dashboard', { replace: true });
-      }
-      
     } catch (error: any) {
       console.error("Sign up failed:", error);
       toast({
@@ -257,6 +283,8 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+
 
   const handleResetPassword = async () => {
     if (!email) {
