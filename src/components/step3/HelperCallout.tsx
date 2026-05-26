@@ -6,15 +6,17 @@ export type HelperTopic = 'claim-limit' | 'labour-rate' | 'excess';
 
 interface Content {
   title: string;
+  subtitle?: string;
   short: string;
-  example: string;
-  bullets: string[];
-  takeaway: string;
+  example?: string;
+  bullets?: string[];
+  takeaway?: string;
 }
 
 const CONTENT: Record<HelperTopic, Content> = {
   'claim-limit': {
     title: 'How your claim limit works',
+    subtitle: 'Plain-English explanation with a real example.',
     short:
       'Your claim limit is the maximum we pay towards any single repair. Pick the amount that matches the kind of repair bills you’d want fully covered.',
     example:
@@ -28,21 +30,14 @@ const CONTENT: Record<HelperTopic, Content> = {
     takeaway: 'Pick the limit that matches the most expensive repair you’d ever want fully covered.',
   },
   'labour-rate': {
-    title: 'How the labour rate works',
-    short:
-      'Garages charge by the hour. Your labour rate is the maximum £/hour we contribute towards the repair time on any claim.',
-    example:
-      'Example: a 3-hour repair at a £75/hr garage = £225 labour. If your selected rate is £75/hr, that’s fully covered within your claim limit.',
-    bullets: [
-      'Independent garages typically charge £55–£85/hour.',
-      'Main dealers typically charge £100–£150+/hour.',
-      'Higher labour rate = more freedom over where you repair.',
-      'You can still use any VAT-registered garage at any rate — you just top up any difference.',
-    ],
-    takeaway: 'Choose the rate that matches the type of garage you’d normally use.',
+    title: 'How labour cover works',
+    subtitle: 'A quick, plain-English summary.',
+    short: 'Your selected labour rate is the maximum we contribute per repair hour.',
+    takeaway: 'Use any VAT-registered garage — you only pay the difference if they charge more.',
   },
   excess: {
     title: 'How voluntary excess works',
+    subtitle: 'Plain-English explanation with a real example.',
     short:
       'Excess is the amount you pay towards a claim — we pay the rest, up to your claim limit. Lower excess = higher monthly cost, and vice versa.',
     example:
