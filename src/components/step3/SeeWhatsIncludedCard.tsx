@@ -150,14 +150,14 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
         </button>
       </div>
 
-      {/* "What's covered" overlay (uses the existing accordion content) */}
+      {/* "What's covered" overlay — original colourful vehicle-type accordion */}
       <Dialog open={coveredOpen} onOpenChange={setCoveredOpen}>
         <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>What's covered</DialogTitle>
           </DialogHeader>
           <div className="mt-2">
-            <WhatsCoveredAccordion />
+            <PartsListContent />
           </div>
         </DialogContent>
       </Dialog>
