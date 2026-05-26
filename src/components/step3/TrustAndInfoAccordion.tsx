@@ -13,6 +13,8 @@ interface Section {
   title: string;
   subtitle: string;
   Icon: React.ComponentType<any>;
+  iconBg: string;
+  iconColor: string;
   render: (variant: Variant) => React.ReactNode;
 }
 
@@ -22,6 +24,8 @@ const SECTIONS: Section[] = [
     title: 'Why drivers choose us',
     subtitle: 'No jargon. No surprises. Just great protection so you can drive with confidence.',
     Icon: ShieldCheck,
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
     render: (v) => <TrustBlocks variant={v} />,
   },
   {
@@ -29,6 +33,8 @@ const SECTIONS: Section[] = [
     title: "What's not covered",
     subtitle: 'Clear exclusions so there are no surprises.',
     Icon: XCircle,
+    iconBg: 'bg-rose-100',
+    iconColor: 'text-rose-600',
     render: (v) => <WhatsNotCoveredAccordion variant={v} />,
   },
   {
@@ -36,6 +42,8 @@ const SECTIONS: Section[] = [
     title: 'Policy summary',
     subtitle: 'Key terms and important information.',
     Icon: FileText,
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-700',
     render: (v) => (
       <div id="policy-terms-section">
         <PolicyTermsAccordion variant={v} />
@@ -47,6 +55,8 @@ const SECTIONS: Section[] = [
     title: 'Frequently asked questions',
     subtitle: 'Answers to the most common questions.',
     Icon: HelpCircle,
+    iconBg: 'bg-sky-100',
+    iconColor: 'text-sky-600',
     render: (v) => <CheckoutFAQ variant={v} />,
   },
 ];
@@ -90,8 +100,8 @@ const TrustAndInfoAccordion: React.FC<Props> = ({ variant = 'desktop' }) => {
               )}
               aria-expanded={open}
             >
-              <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center bg-primary/10">
-                <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary" strokeWidth={2} />
+              <div className={cn('flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center', s.iconBg)}>
+                <Icon className={cn('w-6 h-6 md:w-7 md:h-7', s.iconColor)} strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-base md:text-lg leading-tight text-foreground">
