@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { ChevronDown, Mail } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Check, ListChecks, ShieldCheck, Mail } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import PartsListContent from './PartsListContent';
+import PartsListModal from './PartsListModal';
+import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 
 interface VehicleData {
   regNumber: string;
@@ -36,9 +36,19 @@ interface Props {
   selectedPlan: SelectedPlan;
 }
 
+const BULLETS = [
+  'Comprehensive mechanical & electrical cover',
+  'Labour costs included',
+  'Unlimited claims on most plans',
+  'Fast claims & direct garage payments',
+  'Nationwide repair network',
+  '14-day cooling-off period',
+];
+
 const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleData, selectedPlan }) => {
   const isMobile = variant === 'mobile';
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [coveredOpen, setCoveredOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -80,7 +90,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
       });
       if (error) throw error;
       toast.success('Quote emailed — check your inbox.');
-      setDialogOpen(false);
+      setEmailOpen(false);
       setEmail('');
     } catch (err) {
       console.error('send-quote-email error', err);
@@ -91,39 +101,81 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
   };
 
   return (
-    <div className={isMobile ? 'flex items-center gap-2 flex-wrap' : 'flex items-center gap-3 flex-wrap'}>
-      <Collapsible className="group/inc flex-1 min-w-[180px]">
-        <CollapsibleTrigger
-          className={
-            isMobile
-              ? 'w-full flex items-center justify-between gap-2 bg-card border border-border rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors'
-              : 'w-full flex items-center justify-between gap-2 bg-card border border-border rounded-lg px-4 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors'
-          }
-        >
-          <span>See what's included</span>
-          <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]/inc:rotate-180" />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className={isMobile ? 'mt-3' : 'mt-4'}>
-            <PartsListContent />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      <button
-        type="button"
-        onClick={() => setDialogOpen(true)}
+    <div
+      className={
+        // Soft sage-tinted card matching trust/insurance palette
+        'rounded-xl border border-[#D8E9DD] bg-[#F6FBF8] ' +
+        (isMobile ? 'p-4' : 'p-5')
+      }
+    >
+      <ul
         className={
-          isMobile
-            ? 'inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-semibold text-sm underline underline-offset-2'
-            : 'inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-semibold text-sm underline underline-offset-2 whitespace-nowrap'
+          'grid gap-x-5 gap-y-2 ' +
+          (isMobile ? 'grid-cols-1' : 'grid-cols-2')
         }
       >
-        <Mail className="w-4 h-4" />
-        Email me this quote
-      </button>
+        {BULLETS.map((b) => (
+          <li key={b} className="flex items-start gap-2">
+            <Check
+              className={
+                (isMobile ? 'w-4 h-4 ' : 'w-4 h-4 ') +
+                'text-[#3F8A5C] flex-shrink-0 mt-0.5'
+              }
+              strokeWidth={2.5}
+            />
+            <span className={(isMobile ? 'text-sm ' : 'text-sm ') + 'text-foreground leading-snug'}>
+              {b}
+            </span>
+          </li>
+        ))}
+      </ul>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <div className={'mt-4 flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
+        <button
+          type="button"
+          onClick={() => setCoveredOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8E9DD] bg-white hover:bg-[#F3FAF5] text-foreground text-sm font-semibold px-3.5 py-2 transition-colors"
+        >
+          <ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />
+          View what's covered
+        </button>
+
+        <PartsListModal
+          trigger={
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#161616] hover:bg-black text-white text-sm font-semibold px-3.5 py-2 transition-colors"
+            >
+              <ListChecks className="w-4 h-4" />
+              View full parts list
+            </button>
+          }
+        />
+
+        <button
+          type="button"
+          onClick={() => setEmailOpen(true)}
+          className="ml-auto inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-semibold text-sm underline underline-offset-2"
+        >
+          <Mail className="w-4 h-4" />
+          Email quote
+        </button>
+      </div>
+
+      {/* "What's covered" overlay (uses the existing accordion content) */}
+      <Dialog open={coveredOpen} onOpenChange={setCoveredOpen}>
+        <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>What's covered</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2">
+            <WhatsCoveredAccordion />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email quote dialog */}
+      <Dialog open={emailOpen} onOpenChange={setEmailOpen}>
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>Email me this quote</DialogTitle>
@@ -144,7 +196,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={sending}>
+            <Button variant="outline" onClick={() => setEmailOpen(false)} disabled={sending}>
               Cancel
             </Button>
             <Button onClick={handleSend} disabled={sending}>
