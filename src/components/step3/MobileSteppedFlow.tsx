@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, Building2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, Building2, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
@@ -7,7 +8,7 @@ import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
-import TermComparison from './TermComparison';
+
 import HelperCallout from './HelperCallout';
 import {
   CLAIM_LIMIT_SUITABILITY,
@@ -291,13 +292,20 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
-              <TermComparison
-                variant="mobile"
-                selectedTerm={paymentType}
-                onSelectTerm={onPaymentTypeChange}
-                availableTerms={visibleTerms as any}
-              />
+              <Collapsible className="mt-4">
+                <CollapsibleTrigger className="group w-full flex items-center justify-between gap-3 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors px-4 py-3">
+                  <span className="text-sm font-bold text-foreground">See what's included</span>
+                  <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                    Same on all plans
+                    <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
+                  </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3">
+                  <WhatsCoveredAccordion variant="mobile" />
+                </CollapsibleContent>
+              </Collapsible>
             </section>
+
 
             <section>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
