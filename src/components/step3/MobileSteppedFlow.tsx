@@ -380,6 +380,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <HelperCallout topic="excess" />
             </section>
 
+            {/* Trust & reassurance blocks */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <TrustBlocks variant="mobile" />
+            </section>
+
             {/* What's covered — transparency accordion */}
             <section className="bg-card border border-border rounded-2xl p-4">
               <WhatsCoveredAccordion variant="mobile" />
