@@ -373,12 +373,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                         </span>
                       )}
                       <div className="text-base font-bold text-foreground">{ex.label}</div>
-                      <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{ex.sub}</div>
                       {EXCESS_SUITABILITY[ex.value] && (
-                        <div className="mt-1.5 pt-1.5 border-t border-border text-[10px] font-semibold text-emerald-700 leading-snug">
+                        <div className="mt-1 text-[10px] font-semibold text-emerald-700 leading-snug">
                           {EXCESS_SUITABILITY[ex.value]}
                         </div>
                       )}
+
                     </button>
                   );
                 })}
