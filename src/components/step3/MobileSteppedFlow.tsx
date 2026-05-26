@@ -276,8 +276,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       {meta.badge && (
                         <span
                           className={cn(
-                            'absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap text-white',
-                            meta.badgeTone === 'green' ? 'bg-success' : 'bg-primary'
+                            'absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-xl whitespace-nowrap text-white',
+                            meta.badgeTone === 'green' ? 'bg-emerald-700' : 'bg-primary'
                           )}
                         >
                           {meta.badge}
