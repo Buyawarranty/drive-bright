@@ -179,7 +179,7 @@ const PartsListContent: React.FC = () => {
             <p className="text-gray-700 font-medium mb-3">We keep things straightforward and transparent.</p>
             <h4 className="font-semibold text-red-700 mb-2">What's Not Included:</h4>
             <ul className="space-y-2">
-              {['Pre-existing faults','Routine servicing and maintenance','Tyres, brake pads, and wear & tear items','Accidental damage or accident repairs','Motor trader-owned or operated vehicles','Hire and reward use (taxis, rentals, couriers)'].map(t => (
+              {['Pre-existing faults','Routine servicing and maintenance','Accidental damage or accident repairs','Motor trader-owned or operated vehicles','Hire and reward use (taxis, rentals, couriers)'].map(t => (
                 <li key={t} className="flex items-start gap-2">
                   <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-700">{t}</span>
