@@ -14,6 +14,7 @@ import {
   LABOUR_RATE_SUITABILITY,
   EXCESS_SUITABILITY,
 } from './suitabilityCopy';
+import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -377,6 +378,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 })}
               </div>
               <HelperCallout topic="excess" />
+            </section>
+
+            {/* Trust & reassurance blocks */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <TrustBlocks variant="mobile" />
             </section>
 
             {/* What's covered — transparency accordion */}
