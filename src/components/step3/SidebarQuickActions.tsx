@@ -18,7 +18,6 @@ interface SidebarQuickActionsProps {
   selectedTerm: PaymentType | null;
   onSelectTerm: (t: PaymentType) => void;
   availableTerms: PaymentType[];
-  calculateMonthlyPrice: (term: string) => number;
 }
 
 type ModalKey = 'covered' | 'policy' | 'parts' | 'compare' | null;
