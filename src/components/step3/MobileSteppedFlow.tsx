@@ -8,7 +8,7 @@ import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
-import TermComparison from './TermComparison';
+
 import HelperCallout from './HelperCallout';
 import {
   CLAIM_LIMIT_SUITABILITY,
