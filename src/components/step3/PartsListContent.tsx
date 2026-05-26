@@ -1,6 +1,7 @@
 import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Car, Battery, Zap, Bike, ChevronDown, CheckCircle, ShieldCheck, X } from 'lucide-react';
+import { Car, Battery, Zap, Bike, ChevronDown, CheckCircle, ShieldCheck, X, Settings, AlertTriangle, Ban, HelpCircle } from 'lucide-react';
+import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusionsList';
 
 const Item = ({ children }: { children: React.ReactNode }) => (
   <li className="flex items-start gap-2">
@@ -191,6 +192,114 @@ const PartsListContent: React.FC = () => {
                 <ChevronDown className="w-5 h-5 rotate-180" />
               </button>
             </CollapsibleTrigger>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Modifications and Your Cover */}
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-amber-50 text-amber-800 hover:bg-amber-100 font-semibold py-3 px-5 rounded-lg transition-colors group border border-amber-200">
+          <div className="flex items-center gap-3">
+            <Settings className="w-5 h-5" />
+            <span className="text-base">Modifications and Your Cover</span>
+          </div>
+          <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="mt-3 p-5 bg-white rounded-lg border border-gray-200 shadow-sm text-sm space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <h4 className="font-bold text-foreground">Modifications we're happy with</h4>
+              </div>
+              <ul className="space-y-2">
+                {[
+                  'Cosmetic upgrades such as body kits, spoilers, trims or badges',
+                  'Alloy wheels and tyres within safe manufacturer limits',
+                  'Interior upgrades including screens, lighting and seat changes',
+                  'Tow bars fitted correctly',
+                  'Parking sensors, dash cams and other small accessories',
+                  'Road-legal lighting or exhaust upgrades that meet UK standards',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-foreground">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <h4 className="font-bold text-foreground">Modifications that may affect your cover</h4>
+              </div>
+              <p className="text-muted-foreground mb-3 pl-7">We can still cover the car, but not issues caused by these mods.</p>
+              <ul className="space-y-2">
+                {[
+                  'Engine remaps, tuning boxes or performance chips',
+                  'Turbo or supercharger upgrades',
+                  'Lowered or raised suspension and geometry changes',
+                  'Electrical rewiring or aftermarket electrics that cause faults',
+                  'Non-legal exhaust systems or noise-excessive systems',
+                  'Oversized wheels or tyres beyond safe limits',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-foreground">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Ban className="w-5 h-5 text-red-600 flex-shrink-0" />
+                <h4 className="font-bold text-foreground">Modifications we cannot cover</h4>
+              </div>
+              <ul className="space-y-2">
+                {[
+                  'Emissions removals or illegal changes (DPF/EGR delete)',
+                  'Illegal window tints that break UK light-transmission rules',
+                  'Straight-pipe exhausts that break emissions or noise limits',
+                  'Any modification that makes the car unsafe or illegal for UK roads',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-foreground">
+                    <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-muted rounded-lg p-4 border border-border">
+              <div className="flex items-start gap-3">
+                <HelpCircle className="w-5 h-5 text-brand-orange mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Not sure about a modification?</p>
+                  <p className="text-muted-foreground mt-1">Tell us what's been changed and we'll confirm what's covered. It only takes a moment and avoids claim delays.</p>
+                </div>
+              </div>
+            </div>
+
+            <CloseRow />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Exclusions: High-Performance Cars */}
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-sky-100 text-sky-700 hover:bg-sky-200 font-semibold py-3 px-5 rounded-lg transition-colors group border border-sky-200">
+          <div className="flex items-center gap-3">
+            <X className="w-5 h-5" />
+            <span className="text-base">Exclusions: High-Performance Cars</span>
+          </div>
+          <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="mt-3 p-5 bg-white rounded-lg border border-gray-200 shadow-sm text-sm">
+            <HighPerformanceExclusionsList />
+            <CloseRow />
           </div>
         </CollapsibleContent>
       </Collapsible>
