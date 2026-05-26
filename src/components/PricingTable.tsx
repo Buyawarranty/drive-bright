@@ -1911,25 +1911,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                     <CollapsibleContent className="mb-4">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-                        {duration.features.map((feature, idx) => {
-                          const featureText = typeof feature === 'string' ? feature : feature.text;
-                          const isExtra = typeof feature === 'object' && feature.isExtra;
-                          const isExclusion = featureText.toLowerCase().includes('pre-existing faults');
-                          return (
-                            <div key={idx} className="flex items-start gap-2">
-                              {isExclusion ? (
-                                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                              ) : isExtra ? (
-                                <span className="text-base mt-0 flex-shrink-0">⭐</span>
-                              ) : (
-                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                              )}
-                              <span className="text-sm text-gray-700">
-                                {featureText}{isExtra && ' (Bonus benefit)'}
-                              </span>
-                            </div>
-                          );
-                        })}
+                        {[
+                          'Comprehensive mechanical & electrical cover',
+                          'Labour costs included',
+                          'Unlimited claims on most plans',
+                          'Fast claims & direct garage payments',
+                          'Nationwide repair network',
+                          '14-day cooling-off period',
+                        ].map((item, idx) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-gray-700">{item}</span>
+                          </div>
+                        ))}
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
