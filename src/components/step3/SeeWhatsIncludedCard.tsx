@@ -110,7 +110,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
     >
 
       <Collapsible open={coveredOpen} onOpenChange={setCoveredOpen}>
-        <div className={'mt-4 flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
+        <div className={'flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
           <CollapsibleTrigger asChild>
             <button
               type="button"
