@@ -18,6 +18,11 @@ import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import TermComparison from './TermComparison';
 import HelperCallout from './HelperCallout';
+import {
+  CLAIM_LIMIT_SUITABILITY,
+  LABOUR_RATE_SUITABILITY,
+  EXCESS_SUITABILITY,
+} from './suitabilityCopy';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
@@ -274,6 +279,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       </div>
                       <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[34px] leading-tight">{tier.name}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">per claim</div>
+                      {CLAIM_LIMIT_SUITABILITY[tier.value] && (
+                        <div className="mt-2 pt-2 border-t border-[#eee] text-[11.5px] text-[#0a6b3f] font-semibold leading-snug">
+                          {CLAIM_LIMIT_SUITABILITY[tier.value]}
+                        </div>
+                      )}
                     </OptionCard>
                   );
                 })}
