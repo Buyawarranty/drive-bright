@@ -461,6 +461,15 @@ export const DiscountsGivenTab: React.FC = () => {
             </p>
           </CardContent>
         </Card>
+        <Card className="border-amber-200 bg-amber-50/30">
+          <CardContent className="p-4 text-center">
+            <TrendingDown className="h-5 w-5 mx-auto mb-1 text-amber-600" />
+            <p className="text-2xl font-bold text-amber-700">
+              {totals.avgDiscountPct.toFixed(1)}%
+            </p>
+            <p className="text-xs text-muted-foreground">Avg Discount Given</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Data Table */}
