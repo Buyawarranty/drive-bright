@@ -101,7 +101,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* EVs */}
-      <Collapsible>
+      <Collapsible open={openSection === 'ev'} onOpenChange={toggle('ev')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Zap className="w-5 h-5" />
