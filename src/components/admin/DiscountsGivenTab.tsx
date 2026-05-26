@@ -288,20 +288,32 @@ export const DiscountsGivenTab: React.FC = () => {
     let discountCount = 0;
     let overchargeCount = 0;
     let exceededCount = 0;
+    let discountPctSum = 0;
+    let discountedRetailSum = 0;
+    let discountedPaidSum = 0;
 
     enrichedCustomers.forEach(c => {
       if (c.diff !== null && c.retailPrice !== null) {
         totalDiff += c.diff;
         totalPaid += c.final_amount || 0;
         totalRetail += c.retailPrice;
-        if (c.diff < 0) discountCount++;
+        if (c.diff < 0) {
+          discountCount++;
+          if (c.discountPct !== null) discountPctSum += c.discountPct;
+          discountedRetailSum += c.retailPrice;
+          discountedPaidSum += c.final_amount || 0;
+        }
         if (c.diff > 0) overchargeCount++;
         if (c.exceedsLimit) exceededCount++;
       }
     });
 
     const avgPct = totalRetail > 0 ? ((totalPaid - totalRetail) / totalRetail) * 100 : 0;
-    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, count: enrichedCustomers.length };
+    // Weighted average discount % across discounted sales (£-weighted)
+    const avgDiscountPct = discountedRetailSum > 0
+      ? ((discountedRetailSum - discountedPaidSum) / discountedRetailSum) * 100
+      : 0;
+    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, count: enrichedCustomers.length };
   }, [enrichedCustomers]);
 
   if (loading) {
@@ -409,7 +421,7 @@ export const DiscountsGivenTab: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
@@ -447,6 +459,15 @@ export const DiscountsGivenTab: React.FC = () => {
             <p className="text-xs text-muted-foreground">
               Net {totals.totalDiff < 0 ? 'Loss' : 'Gain'} ({totals.avgPct >= 0 ? '+' : ''}{totals.avgPct.toFixed(1)}%)
             </p>
+          </CardContent>
+        </Card>
+        <Card className="border-amber-200 bg-amber-50/30">
+          <CardContent className="p-4 text-center">
+            <TrendingDown className="h-5 w-5 mx-auto mb-1 text-amber-600" />
+            <p className="text-2xl font-bold text-amber-700">
+              {totals.avgDiscountPct.toFixed(1)}%
+            </p>
+            <p className="text-xs text-muted-foreground">Avg Discount Given</p>
           </CardContent>
         </Card>
       </div>
