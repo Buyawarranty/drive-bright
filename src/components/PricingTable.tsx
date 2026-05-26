@@ -1895,38 +1895,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
 
-                  {/* What's Included Collapsible */}
-                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    <CollapsibleTrigger className="w-full mb-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-between w-full border border-gray-300 bg-white rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
-                        <span className="text-sm font-medium text-gray-800">See What's Included</span>
-                        <ChevronDown
-                          className={cn(
-                            "w-5 h-5 text-gray-600 transition-transform duration-300",
-                            isExpanded && "transform rotate-180"
-                          )}
-                        />
+                  {/* What's Included */}
+                  <div className="mb-4 bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                    {[
+                      'Comprehensive mechanical & electrical cover',
+                      'Labour costs included',
+                      'Unlimited claims on most plans',
+                      'Fast claims & direct garage payments',
+                      'Nationwide repair network',
+                      '14-day cooling-off period',
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-gray-700">{item}</span>
                       </div>
-                    </CollapsibleTrigger>
-
-                    <CollapsibleContent className="mb-4">
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-                        {[
-                          'Comprehensive mechanical & electrical cover',
-                          'Labour costs included',
-                          'Unlimited claims on most plans',
-                          'Fast claims & direct garage payments',
-                          'Nationwide repair network',
-                          '14-day cooling-off period',
-                        ].map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm text-gray-700">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                    ))}
+                  </div>
 
                   {/* Forward-driving CTA — replaces dead-end "Selected" */}
                   <Button
