@@ -202,5 +202,5 @@ export const isHighPerformanceModel = (make: string, model: string): boolean => 
  * Get the standard message for high-performance vehicles that cannot be covered
  */
 export const getHighPerformanceBlockMessage = (): string => {
-  return "Thanks for your interest! Unfortunately, we're not able to offer warranty cover for this vehicle. This is down to factors like specialist parts or limited access to suitable repair centres.";
+  return "We're unable to cover high-performance, luxury, or specialist vehicles, including newer models with similar specifications.";
 };

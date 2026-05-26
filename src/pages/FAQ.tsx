@@ -319,7 +319,7 @@ const FAQ = () => {
         {
           id: 'what-not-covered',
           question: 'What\'s not covered?',
-          answer: 'We keep things straightforward and transparent.\n\nWhat\'s Not Included:\n\n* Pre-existing faults\n* Routine servicing or maintenance (e.g. fluids, tyres, brake pads)\n* Vehicles used for hire or reward (e.g. taxi, rental, courier)\n* Accident or collision damage\n* Indirect or knock-on financial losses (e.g. hotel bookings, lost earnings)'
+          answer: 'What\'s Not Included:\n\n* Pre-existing faults\n* Routine servicing or maintenance (e.g. fluids, tyres, brake pads)\n* Vehicles used for hire or reward (e.g. taxi, rental, courier)\n* Accident or collision damage\n* Indirect or knock-on financial losses (e.g. hotel bookings, lost earnings)'
         },
         {
           id: 'what-covered',

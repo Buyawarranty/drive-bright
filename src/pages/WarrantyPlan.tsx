@@ -1628,7 +1628,7 @@ const WarrantyPlan = () => {
                     <div className="mt-8 bg-muted p-6 rounded-lg">
                       <h5 className="text-lg font-bold text-foreground mb-3">Other Vehicles:</h5>
                       <p className="text-muted-foreground leading-relaxed">
-                        We're unable to offer cover for vehicles with similar specifications or servicing requirements to those listed above, including newer versions of the same makes and models.
+                        We're unable to cover high-performance, luxury, or specialist vehicles, including newer models with similar specifications.
                       </p>
                     </div>
                   </div>

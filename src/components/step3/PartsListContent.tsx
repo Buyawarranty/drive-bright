@@ -176,7 +176,6 @@ const PartsListContent: React.FC = () => {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="mt-3 p-5 bg-red-50 rounded-lg border border-red-200 text-sm">
-            <p className="text-gray-700 font-medium mb-3">We keep things straightforward and transparent.</p>
             <h4 className="font-semibold text-red-700 mb-2">What's Not Included:</h4>
             <ul className="space-y-2">
               {['Pre-existing faults','Routine servicing and maintenance','Accidental damage or accident repairs','Motor trader-owned or operated vehicles','Hire and reward use (taxis, rentals, couriers)'].map(t => (
