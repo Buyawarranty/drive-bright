@@ -414,13 +414,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       <div className="text-[28px] font-extrabold tracking-[-0.04em] leading-none mb-2 text-[#161616]">
                         £{opt.value}
                       </div>
-                      <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[18px] leading-tight">{opt.sub}</div>
-                      <div className="text-[12px] text-[#6c6c6c] leading-snug">{excessPillSubText(opt.value)}</div>
                       {EXCESS_SUITABILITY[opt.value] && (
-                        <div className="mt-2 pt-2 border-t border-[#eee] text-[11px] text-[#0a6b3f] font-semibold leading-snug">
+                        <div className="text-[12px] text-[#0a6b3f] font-semibold leading-snug">
                           {EXCESS_SUITABILITY[opt.value]}
                         </div>
                       )}
+
                     </OptionCard>
                   );
                 })}
