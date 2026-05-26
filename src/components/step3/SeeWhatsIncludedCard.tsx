@@ -108,30 +108,9 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
         (isMobile ? 'p-4' : 'p-5')
       }
     >
-      <ul
-        className={
-          'grid gap-x-5 gap-y-2 ' +
-          (isMobile ? 'grid-cols-1' : 'grid-cols-2')
-        }
-      >
-        {BULLETS.map((b) => (
-          <li key={b} className="flex items-start gap-2">
-            <Check
-              className={
-                (isMobile ? 'w-4 h-4 ' : 'w-4 h-4 ') +
-                'text-[#3F8A5C] flex-shrink-0 mt-0.5'
-              }
-              strokeWidth={2.5}
-            />
-            <span className={(isMobile ? 'text-sm ' : 'text-sm ') + 'text-foreground leading-snug'}>
-              {b}
-            </span>
-          </li>
-        ))}
-      </ul>
 
       <Collapsible open={coveredOpen} onOpenChange={setCoveredOpen}>
-        <div className={'mt-4 flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
+        <div className={'flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
           <CollapsibleTrigger asChild>
             <button
               type="button"
