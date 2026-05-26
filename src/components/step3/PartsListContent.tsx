@@ -1,6 +1,7 @@
 import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Car, Battery, Zap, Bike, ChevronDown, CheckCircle, ShieldCheck, X } from 'lucide-react';
+import { Car, Battery, Zap, Bike, ChevronDown, CheckCircle, ShieldCheck, X, Settings, AlertTriangle, Ban, HelpCircle } from 'lucide-react';
+import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusionsList';
 
 const Item = ({ children }: { children: React.ReactNode }) => (
   <li className="flex items-start gap-2">
