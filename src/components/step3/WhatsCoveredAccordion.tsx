@@ -24,8 +24,10 @@ import {
   BatteryCharging,
   Stethoscope,
   ShieldCheck,
+  ListChecks,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import PartsListModal from './PartsListModal';
 
 type Category = {
   id: string;
