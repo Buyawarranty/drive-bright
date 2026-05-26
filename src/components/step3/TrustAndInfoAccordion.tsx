@@ -66,18 +66,11 @@ interface Props {
 }
 
 const TrustAndInfoAccordion: React.FC<Props> = ({ variant = 'desktop' }) => {
-  // All sections open by default; each toggles independently
-  const [openIds, setOpenIds] = useState<Set<string>>(
-    () => new Set(SECTIONS.map((s) => s.id))
-  );
+  // Only one section open at a time
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const toggle = (id: string) => {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setOpenId((prev) => (prev === id ? null : id));
   };
 
   return (
