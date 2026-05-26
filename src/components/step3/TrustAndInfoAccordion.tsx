@@ -13,6 +13,8 @@ interface Section {
   title: string;
   subtitle: string;
   Icon: React.ComponentType<any>;
+  iconBg: string;
+  iconColor: string;
   render: (variant: Variant) => React.ReactNode;
 }
 
@@ -22,6 +24,8 @@ const SECTIONS: Section[] = [
     title: 'Why drivers choose us',
     subtitle: 'No jargon. No surprises. Just great protection so you can drive with confidence.',
     Icon: ShieldCheck,
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
     render: (v) => <TrustBlocks variant={v} />,
   },
   {
@@ -29,6 +33,8 @@ const SECTIONS: Section[] = [
     title: "What's not covered",
     subtitle: 'Clear exclusions so there are no surprises.',
     Icon: XCircle,
+    iconBg: 'bg-rose-100',
+    iconColor: 'text-rose-600',
     render: (v) => <WhatsNotCoveredAccordion variant={v} />,
   },
   {
@@ -36,6 +42,8 @@ const SECTIONS: Section[] = [
     title: 'Policy summary',
     subtitle: 'Key terms and important information.',
     Icon: FileText,
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-700',
     render: (v) => (
       <div id="policy-terms-section">
         <PolicyTermsAccordion variant={v} />
@@ -47,6 +55,8 @@ const SECTIONS: Section[] = [
     title: 'Frequently asked questions',
     subtitle: 'Answers to the most common questions.',
     Icon: HelpCircle,
+    iconBg: 'bg-sky-100',
+    iconColor: 'text-sky-600',
     render: (v) => <CheckoutFAQ variant={v} />,
   },
 ];
