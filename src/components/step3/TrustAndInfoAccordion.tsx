@@ -11,9 +11,14 @@ type Variant = 'desktop' | 'mobile';
 interface Section {
   id: string;
   title: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  subtitle: string;
+  Icon: React.ComponentType<any>;
   bg: string;
-  text: string;
+  border: string;
+  iconBg: string;
+  iconColor: string;
+  titleColor: string;
+  chevronColor: string;
   render: (variant: Variant) => React.ReactNode;
 }
 
@@ -21,25 +26,40 @@ const SECTIONS: Section[] = [
   {
     id: 'trust',
     title: 'Why drivers choose us',
+    subtitle: 'No jargon. No surprises. Just great protection so you can drive with confidence.',
     Icon: ShieldCheck,
-    bg: 'bg-emerald-600 hover:bg-emerald-700',
-    text: 'text-white',
+    bg: 'bg-emerald-50/60 hover:bg-emerald-50',
+    border: 'border border-emerald-200',
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    titleColor: 'text-emerald-700',
+    chevronColor: 'text-emerald-600',
     render: (v) => <TrustBlocks variant={v} />,
   },
   {
     id: 'not-covered',
     title: "What's not covered",
+    subtitle: 'Clear exclusions so there are no surprises.',
     Icon: XCircle,
-    bg: 'bg-rose-50 hover:bg-rose-100 border border-rose-200',
-    text: 'text-rose-800',
+    bg: 'bg-rose-50/60 hover:bg-rose-50',
+    border: 'border border-rose-200',
+    iconBg: 'bg-rose-100',
+    iconColor: 'text-rose-600',
+    titleColor: 'text-rose-700',
+    chevronColor: 'text-rose-500',
     render: (v) => <WhatsNotCoveredAccordion variant={v} />,
   },
   {
     id: 'policy',
-    title: 'Policy & Terms',
+    title: 'Policy summary',
+    subtitle: 'Key terms and important information.',
     Icon: FileText,
-    bg: 'bg-amber-50 hover:bg-amber-100 border border-amber-200',
-    text: 'text-amber-900',
+    bg: 'bg-amber-50/60 hover:bg-amber-50',
+    border: 'border border-amber-200',
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-700',
+    titleColor: 'text-amber-800',
+    chevronColor: 'text-amber-600',
     render: (v) => (
       <div id="policy-terms-section">
         <PolicyTermsAccordion variant={v} />
@@ -49,9 +69,14 @@ const SECTIONS: Section[] = [
   {
     id: 'faq',
     title: 'Frequently asked questions',
+    subtitle: 'Answers to the most common questions.',
     Icon: HelpCircle,
-    bg: 'bg-sky-50 hover:bg-sky-100 border border-sky-200',
-    text: 'text-sky-800',
+    bg: 'bg-sky-50/60 hover:bg-sky-50',
+    border: 'border border-sky-200',
+    iconBg: 'bg-sky-100',
+    iconColor: 'text-sky-600',
+    titleColor: 'text-sky-700',
+    chevronColor: 'text-sky-600',
     render: (v) => <CheckoutFAQ variant={v} />,
   },
 ];
@@ -64,37 +89,46 @@ const TrustAndInfoAccordion: React.FC<Props> = ({ variant = 'desktop' }) => {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       {SECTIONS.map((s) => {
         const open = openId === s.id;
         const Icon = s.Icon;
         return (
-          <div key={s.id} className="rounded-xl overflow-hidden">
+          <div key={s.id} className="rounded-2xl overflow-hidden">
             <button
               type="button"
               onClick={() => setOpenId(open ? null : s.id)}
               className={cn(
-                'w-full flex items-center justify-between gap-3 px-4 md:px-5 py-3.5 md:py-4 rounded-xl transition-colors',
+                'w-full flex items-center gap-4 px-4 md:px-5 py-4 md:py-5 rounded-2xl transition-colors text-left',
                 s.bg,
-                s.text
+                s.border
               )}
               aria-expanded={open}
             >
-              <span className="flex items-center gap-3 min-w-0">
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="font-bold text-sm md:text-base text-left truncate">
+              <div
+                className={cn(
+                  'flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center',
+                  s.iconBg
+                )}
+              >
+                <Icon className={cn('w-6 h-6 md:w-7 md:h-7', s.iconColor)} strokeWidth={2} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className={cn('font-bold text-base md:text-lg leading-tight', s.titleColor)}>
                   {s.title}
-                </span>
-              </span>
+                </h3>
+                <p className="text-sm text-foreground/70 mt-0.5 leading-snug">{s.subtitle}</p>
+              </div>
               <ChevronDown
                 className={cn(
                   'w-5 h-5 flex-shrink-0 transition-transform',
+                  s.chevronColor,
                   open && 'rotate-180'
                 )}
               />
             </button>
             {open && (
-              <div className="mt-2 rounded-xl border border-border bg-card p-3 md:p-4">
+              <div className="mt-2 rounded-2xl border border-border bg-card p-3 md:p-4">
                 {s.render(variant)}
               </div>
             )}
