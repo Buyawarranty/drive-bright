@@ -12,7 +12,7 @@ interface Section {
   id: string;
   title: string;
   subtitle: string;
-  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  Icon: React.ComponentType<any>;
   bg: string;
   border: string;
   iconBg: string;
