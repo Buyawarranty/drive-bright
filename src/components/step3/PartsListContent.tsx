@@ -199,7 +199,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Modifications and Your Cover */}
-      <Collapsible>
+      <Collapsible open={openSection === 'mods'} onOpenChange={toggle('mods')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-amber-50 text-amber-800 hover:bg-amber-100 font-semibold py-3 px-5 rounded-lg transition-colors group border border-amber-200">
           <div className="flex items-center gap-3">
             <Settings className="w-5 h-5" />
