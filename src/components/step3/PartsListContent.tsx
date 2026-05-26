@@ -169,7 +169,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* What's not covered */}
-      <Collapsible>
+      <Collapsible open={openSection === 'notcovered'} onOpenChange={toggle('notcovered')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <X className="w-5 h-5" />
