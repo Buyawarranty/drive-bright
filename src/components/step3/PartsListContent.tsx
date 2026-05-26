@@ -137,7 +137,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Motorcycles */}
-      <Collapsible>
+      <Collapsible open={openSection === 'moto'} onOpenChange={toggle('moto')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-500 text-white hover:bg-green-600 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Bike className="w-5 h-5" />
