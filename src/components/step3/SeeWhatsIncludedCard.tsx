@@ -130,38 +130,35 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
         ))}
       </ul>
 
-      <div className={'mt-4 flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
-        <button
-          type="button"
-          onClick={() => setCoveredOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8E9DD] bg-white hover:bg-[#F3FAF5] text-foreground text-sm font-semibold px-3.5 py-2 transition-colors"
-        >
-          <ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />
-          View what's covered
-        </button>
+      <Collapsible open={coveredOpen} onOpenChange={setCoveredOpen}>
+        <div className={'mt-4 flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8E9DD] bg-white hover:bg-[#F3FAF5] text-foreground text-sm font-semibold px-3.5 py-2 transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />
+              {coveredOpen ? "Hide what's covered" : "View what's covered"}
+              <ChevronDown className={'w-4 h-4 transition-transform ' + (coveredOpen ? 'rotate-180' : '')} />
+            </button>
+          </CollapsibleTrigger>
 
+          <button
+            type="button"
+            onClick={() => setEmailOpen(true)}
+            className="ml-auto inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-semibold text-sm underline underline-offset-2"
+          >
+            <Mail className="w-4 h-4" />
+            Email quote
+          </button>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => setEmailOpen(true)}
-          className="ml-auto inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-semibold text-sm underline underline-offset-2"
-        >
-          <Mail className="w-4 h-4" />
-          Email quote
-        </button>
-      </div>
-
-      {/* "What's covered" overlay — original colourful vehicle-type accordion */}
-      <Dialog open={coveredOpen} onOpenChange={setCoveredOpen}>
-        <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>What's covered</DialogTitle>
-          </DialogHeader>
-          <div className="mt-2">
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+          <div className="mt-4 rounded-lg border border-[#D8E9DD] bg-white p-3 sm:p-4">
             <PartsListContent />
           </div>
-        </DialogContent>
-      </Dialog>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Email quote dialog */}
       <Dialog open={emailOpen} onOpenChange={setEmailOpen}>
