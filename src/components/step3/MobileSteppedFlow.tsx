@@ -9,6 +9,11 @@ import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import TermComparison from './TermComparison';
 import HelperCallout from './HelperCallout';
+import {
+  CLAIM_LIMIT_SUITABILITY,
+  LABOUR_RATE_SUITABILITY,
+  EXCESS_SUITABILITY,
+} from './suitabilityCopy';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -218,6 +223,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       </div>
                       <div className="text-sm font-semibold text-foreground mt-1.5">{copy.title}</div>
                       <div className="text-xs text-muted-foreground mt-1 leading-snug">{copy.sub}</div>
+                      {CLAIM_LIMIT_SUITABILITY[tier.value] && (
+                        <div className="mt-2 pt-2 border-t border-border text-[11px] font-semibold text-emerald-700 leading-snug">
+                          {CLAIM_LIMIT_SUITABILITY[tier.value]}
+                        </div>
+                      )}
                       <div className="mt-2 flex justify-end">
                         <RadioDot selected={selected} />
                       </div>
@@ -320,6 +330,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       <div className="text-lg font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-xs font-normal text-muted-foreground">/hour</span></div>
                       <div className="text-sm font-bold text-foreground leading-tight mt-1">{opt.title}</div>
                       <div className="text-xs text-muted-foreground mt-1 leading-snug">{opt.sub}</div>
+                      {LABOUR_RATE_SUITABILITY[opt.value] && (
+                        <div className="mt-auto pt-2 text-[11px] font-semibold text-emerald-700 leading-snug">
+                          {LABOUR_RATE_SUITABILITY[opt.value]}
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -352,6 +367,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       )}
                       <div className="text-base font-bold text-foreground">{ex.label}</div>
                       <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{ex.sub}</div>
+                      {EXCESS_SUITABILITY[ex.value] && (
+                        <div className="mt-1.5 pt-1.5 border-t border-border text-[10px] font-semibold text-emerald-700 leading-snug">
+                          {EXCESS_SUITABILITY[ex.value]}
+                        </div>
+                      )}
                     </button>
                   );
                 })}
