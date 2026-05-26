@@ -444,8 +444,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
             {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
             <Card step={8}>
-              <PolicyTermsAccordion variant="desktop" />
+              <div id="policy-terms-section">
+                <PolicyTermsAccordion variant="desktop" />
+              </div>
             </Card>
+
 
             {/* CARD 8 - FAQ */}
             <Card step={9}>
