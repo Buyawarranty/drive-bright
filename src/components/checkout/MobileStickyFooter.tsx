@@ -240,7 +240,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
-              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 rounded-xl text-sm gap-1.5 shadow-[0_6px_16px_rgba(255,107,0,0.35)]"
+              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 px-6 rounded-xl text-sm gap-1.5 shadow-[0_6px_16px_rgba(255,107,0,0.35)] animate-breathing disabled:animate-none"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -286,7 +286,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 onClick={onPayClick}
                 disabled={isLoading || !selectedPayment}
                 aria-label={selectedPayment ? 'Continue to checkout' : 'Select payment option'}
-                className="flex-1 bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 rounded-xl text-sm gap-1.5 shadow-[0_6px_16px_rgba(255,107,0,0.35)]"
+                className="flex-1 bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 px-6 rounded-xl text-sm gap-1.5 shadow-[0_6px_16px_rgba(255,107,0,0.35)] animate-breathing disabled:animate-none"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
