@@ -12,11 +12,7 @@ interface Props {
  * Header + button both expand the same Collapsible containing PartsListContent.
  */
 const ComprehensiveCoverCard: React.FC<Props> = ({ variant = 'desktop' }) => {
-  const scrollToPolicy = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const el = document.getElementById('policy-terms-section');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  const policyPdfUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.3-2026-05.pdf';
 
   return (
     <Collapsible className="group/cover">
@@ -30,16 +26,18 @@ const ComprehensiveCoverCard: React.FC<Props> = ({ variant = 'desktop' }) => {
             <ChevronDown className="w-4 h-4 text-foreground transition-transform group-data-[state=open]/cover:rotate-180" />
           </CollapsibleTrigger>
           <div className="mt-3 flex items-start gap-2">
-            <Shield className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="font-semibold text-foreground leading-snug">
                 Labour, Electrical &amp; Mechanical Parts – Everything Covered.
               </p>
               <a
-                href="#policy-terms-section"
-                onClick={scrollToPolicy}
-                className="inline-block mt-1 text-primary underline underline-offset-2 hover:text-primary/80 text-sm"
+                href={policyPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-1 text-primary underline underline-offset-2 hover:text-primary/80 text-sm"
               >
+                <FileText className="w-3.5 h-3.5" />
                 See full policy details
               </a>
             </div>
