@@ -1298,7 +1298,7 @@ const WarrantyPlan = () => {
                     <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg flex items-start gap-4">
                       <Crown className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
                       <p className="text-muted-foreground leading-relaxed">
-                        We're not able to offer warranty cover for high-performance, high-end or luxury vehicles, including those with similar specifications or servicing requirements to the models listed above, as well as newer versions of the same makes and models.
+                        We're unable to cover high-performance, luxury, or specialist vehicles, including newer models with similar specifications.
                       </p>
                     </div>
 

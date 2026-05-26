@@ -24,7 +24,7 @@ const HighPerformanceExclusionsList = () => {
       {/* Disclaimer */}
       <div className="bg-orange-50 p-3 rounded-md">
         <p className="text-xs text-gray-700 leading-relaxed">
-          We're not able to offer warranty cover for high-performance, high-end or luxury vehicles, including those with similar specifications or servicing requirements to the models listed below, as well as newer versions of the same makes and models.
+          We're unable to cover high-performance, luxury, or specialist vehicles, including newer models with similar specifications.
         </p>
       </div>
 
