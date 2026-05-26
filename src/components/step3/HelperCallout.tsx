@@ -6,15 +6,17 @@ export type HelperTopic = 'claim-limit' | 'labour-rate' | 'excess';
 
 interface Content {
   title: string;
+  subtitle?: string;
   short: string;
-  example: string;
-  bullets: string[];
-  takeaway: string;
+  example?: string;
+  bullets?: string[];
+  takeaway?: string;
 }
 
 const CONTENT: Record<HelperTopic, Content> = {
   'claim-limit': {
     title: 'How your claim limit works',
+    subtitle: 'Plain-English explanation with a real example.',
     short:
       'Your claim limit is the maximum we pay towards any single repair. Pick the amount that matches the kind of repair bills you’d want fully covered.',
     example:
@@ -28,21 +30,14 @@ const CONTENT: Record<HelperTopic, Content> = {
     takeaway: 'Pick the limit that matches the most expensive repair you’d ever want fully covered.',
   },
   'labour-rate': {
-    title: 'How the labour rate works',
-    short:
-      'Garages charge by the hour. Your labour rate is the maximum £/hour we contribute towards the repair time on any claim.',
-    example:
-      'Example: a 3-hour repair at a £75/hr garage = £225 labour. If your selected rate is £75/hr, that’s fully covered within your claim limit.',
-    bullets: [
-      'Independent garages typically charge £55–£85/hour.',
-      'Main dealers typically charge £100–£150+/hour.',
-      'Higher labour rate = more freedom over where you repair.',
-      'You can still use any VAT-registered garage at any rate — you just top up any difference.',
-    ],
-    takeaway: 'Choose the rate that matches the type of garage you’d normally use.',
+    title: 'How labour cover works',
+    subtitle: 'A quick, plain-English summary.',
+    short: 'Your selected labour rate is the maximum we contribute per repair hour.',
+    takeaway: 'Use any VAT-registered garage — you only pay the difference if they charge more.',
   },
   excess: {
     title: 'How voluntary excess works',
+    subtitle: 'Plain-English explanation with a real example.',
     short:
       'Excess is the amount you pay towards a claim — we pay the rest, up to your claim limit. Lower excess = higher monthly cost, and vice versa.',
     example:
@@ -88,7 +83,7 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
             {c.title}
           </span>
           <span className="block text-[11px] md:text-xs text-muted-foreground mt-0.5 truncate">
-            Plain-English explanation with a real example.
+            {c.subtitle || 'Plain-English explanation with a real example.'}
           </span>
         </span>
         <ChevronDown
@@ -103,23 +98,29 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
         <div className="px-3 pb-3 pt-1 border-t border-[#D8E9DD] bg-white/70 space-y-2.5">
           <p className="text-[13px] text-foreground/90 leading-snug">{c.short}</p>
 
-          <div className="rounded-lg bg-[#F3FAF5] border border-[#DDEEE2] px-3 py-2 text-[12px] text-foreground leading-snug">
-            <span className="font-semibold">💡 {c.example}</span>
-          </div>
+          {c.example && (
+            <div className="rounded-lg bg-[#F3FAF5] border border-[#DDEEE2] px-3 py-2 text-[12px] text-foreground leading-snug">
+              <span className="font-semibold">💡 {c.example}</span>
+            </div>
+          )}
 
-          <ul className="space-y-1.5">
-            {c.bullets.map((b, i) => (
-              <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#7BA88A] flex-shrink-0" />
-                <span className="leading-snug">{b}</span>
-              </li>
-            ))}
-          </ul>
+          {c.bullets && c.bullets.length > 0 && (
+            <ul className="space-y-1.5">
+              {c.bullets.map((b, i) => (
+                <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
+                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#7BA88A] flex-shrink-0" />
+                  <span className="leading-snug">{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
 
-          <div className="flex items-start gap-2 rounded-lg bg-[#F3FAF5] border border-[#D8E9DD] px-3 py-2">
-            <Lightbulb className="w-4 h-4 text-[#4a7a5a] flex-shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-snug text-foreground font-medium">{c.takeaway}</p>
-          </div>
+          {c.takeaway && (
+            <div className="flex items-start gap-2 rounded-lg bg-[#F3FAF5] border border-[#D8E9DD] px-3 py-2">
+              <Lightbulb className="w-4 h-4 text-[#4a7a5a] flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] leading-snug text-foreground font-medium">{c.takeaway}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
