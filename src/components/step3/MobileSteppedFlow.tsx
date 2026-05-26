@@ -17,6 +17,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
+import ComprehensiveCoverCard from './ComprehensiveCoverCard';
 import CheckoutFAQ from './CheckoutFAQ';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -294,18 +295,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
-              <Collapsible className="mt-4">
-                <CollapsibleTrigger className="group w-full flex items-center justify-between gap-3 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors px-4 py-3">
-                  <span className="text-sm font-bold text-foreground">See what's included</span>
-                  <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                    Same on all plans
-                    <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
-                  </span>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-3">
-                  <WhatsCoveredAccordion variant="mobile" />
-                </CollapsibleContent>
-              </Collapsible>
+              <div className="mt-4">
+                <ComprehensiveCoverCard variant="mobile" />
+              </div>
+
             </section>
 
 
@@ -407,7 +400,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             {/* Policy & Terms — full transparency before checkout */}
-            <section className="relative bg-card border border-border rounded-2xl p-4">
+            <section id="policy-terms-section" className="relative bg-card border border-border rounded-2xl p-4">
               <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">08</span>
               <PolicyTermsAccordion variant="mobile" />
             </section>
