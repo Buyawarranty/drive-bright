@@ -15,6 +15,7 @@ import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
+import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
@@ -400,7 +401,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <WhatsCoveredAccordion variant="desktop" />
             </Card>
 
-            {/* CARD 6 - Policy & Terms (full transparency before checkout) */}
+            {/* CARD 6 - What's not covered (trust through transparency) */}
+            <Card>
+              <WhatsNotCoveredAccordion variant="desktop" />
+            </Card>
+
+            {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
             <Card>
               <PolicyTermsAccordion variant="desktop" />
             </Card>
