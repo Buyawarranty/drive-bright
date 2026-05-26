@@ -28,6 +28,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
+import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import SidebarQuickActions from './SidebarQuickActions';
 import { Lock, Shield, Clock } from 'lucide-react';
 
