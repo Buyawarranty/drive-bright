@@ -83,7 +83,7 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
             {c.title}
           </span>
           <span className="block text-[11px] md:text-xs text-muted-foreground mt-0.5 truncate">
-            Plain-English explanation with a real example.
+            {c.subtitle || 'Plain-English explanation with a real example.'}
           </span>
         </span>
         <ChevronDown
@@ -98,23 +98,29 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
         <div className="px-3 pb-3 pt-1 border-t border-[#D8E9DD] bg-white/70 space-y-2.5">
           <p className="text-[13px] text-foreground/90 leading-snug">{c.short}</p>
 
-          <div className="rounded-lg bg-[#F3FAF5] border border-[#DDEEE2] px-3 py-2 text-[12px] text-foreground leading-snug">
-            <span className="font-semibold">💡 {c.example}</span>
-          </div>
+          {c.example && (
+            <div className="rounded-lg bg-[#F3FAF5] border border-[#DDEEE2] px-3 py-2 text-[12px] text-foreground leading-snug">
+              <span className="font-semibold">💡 {c.example}</span>
+            </div>
+          )}
 
-          <ul className="space-y-1.5">
-            {c.bullets.map((b, i) => (
-              <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#7BA88A] flex-shrink-0" />
-                <span className="leading-snug">{b}</span>
-              </li>
-            ))}
-          </ul>
+          {c.bullets && c.bullets.length > 0 && (
+            <ul className="space-y-1.5">
+              {c.bullets.map((b, i) => (
+                <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
+                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#7BA88A] flex-shrink-0" />
+                  <span className="leading-snug">{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
 
-          <div className="flex items-start gap-2 rounded-lg bg-[#F3FAF5] border border-[#D8E9DD] px-3 py-2">
-            <Lightbulb className="w-4 h-4 text-[#4a7a5a] flex-shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-snug text-foreground font-medium">{c.takeaway}</p>
-          </div>
+          {c.takeaway && (
+            <div className="flex items-start gap-2 rounded-lg bg-[#F3FAF5] border border-[#D8E9DD] px-3 py-2">
+              <Lightbulb className="w-4 h-4 text-[#4a7a5a] flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] leading-snug text-foreground font-medium">{c.takeaway}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
