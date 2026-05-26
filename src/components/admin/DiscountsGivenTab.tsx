@@ -288,20 +288,32 @@ export const DiscountsGivenTab: React.FC = () => {
     let discountCount = 0;
     let overchargeCount = 0;
     let exceededCount = 0;
+    let discountPctSum = 0;
+    let discountedRetailSum = 0;
+    let discountedPaidSum = 0;
 
     enrichedCustomers.forEach(c => {
       if (c.diff !== null && c.retailPrice !== null) {
         totalDiff += c.diff;
         totalPaid += c.final_amount || 0;
         totalRetail += c.retailPrice;
-        if (c.diff < 0) discountCount++;
+        if (c.diff < 0) {
+          discountCount++;
+          if (c.discountPct !== null) discountPctSum += c.discountPct;
+          discountedRetailSum += c.retailPrice;
+          discountedPaidSum += c.final_amount || 0;
+        }
         if (c.diff > 0) overchargeCount++;
         if (c.exceedsLimit) exceededCount++;
       }
     });
 
     const avgPct = totalRetail > 0 ? ((totalPaid - totalRetail) / totalRetail) * 100 : 0;
-    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, count: enrichedCustomers.length };
+    // Weighted average discount % across discounted sales (£-weighted)
+    const avgDiscountPct = discountedRetailSum > 0
+      ? ((discountedRetailSum - discountedPaidSum) / discountedRetailSum) * 100
+      : 0;
+    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, count: enrichedCustomers.length };
   }, [enrichedCustomers]);
 
   if (loading) {
