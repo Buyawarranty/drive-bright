@@ -525,6 +525,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               </div>
             </div>
 
+            {/* Quick actions */}
+            <SidebarQuickActions
+              selectedTerm={paymentType}
+              onSelectTerm={setPaymentType}
+              availableTerms={availableDurations}
+            />
+
             {/* Mini cards */}
             <div className="grid gap-3">
               <div className="bg-white border border-[#e9e9e7] rounded-2xl p-4 shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
