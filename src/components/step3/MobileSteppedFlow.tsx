@@ -386,29 +386,9 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <HelperCallout topic="excess" />
             </section>
 
-            {/* Trust & reassurance blocks */}
-            <section className="relative bg-card border border-border rounded-2xl p-4">
-              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">05</span>
-              <TrustBlocks variant="mobile" />
-            </section>
-
-
-            {/* What's not covered — trust through transparency */}
-            <section className="relative bg-card border border-border rounded-2xl p-4">
-              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">07</span>
-              <WhatsNotCoveredAccordion variant="mobile" />
-            </section>
-
-            {/* Policy & Terms — full transparency before checkout */}
-            <section id="policy-terms-section" className="relative bg-card border border-border rounded-2xl p-4">
-              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">08</span>
-              <PolicyTermsAccordion variant="mobile" />
-            </section>
-
-            {/* FAQ — reduce exits */}
-            <section className="relative bg-card border border-border rounded-2xl p-4">
-              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">09</span>
-              <CheckoutFAQ variant="mobile" />
+            {/* Combined trust + info accordions */}
+            <section className="relative">
+              <TrustAndInfoAccordion variant="mobile" />
             </section>
           </>
         )}
