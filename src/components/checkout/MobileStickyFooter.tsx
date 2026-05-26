@@ -126,8 +126,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 lg:hidden',
-        'transition-all duration-300 ease-out'
+        'fixed bottom-0 left-0 right-0 z-50 lg:hidden'
       )}
     >
       {/* Floating card container with margin for clear separation */}
@@ -154,7 +153,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
         {/* Expanded section */}
         {expanded && (
-          <div className="px-4 pt-0 pb-3 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="px-4 pt-0 pb-3">
             <div className="flex items-center justify-between gap-2 mb-3">
               <span className="text-sm font-semibold text-black">{planLabel}</span>
               <a
@@ -178,7 +177,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               </a>
             </div>
 
-            <div className={cn('flex gap-2 mb-3', isPulsing && 'animate-pulse')}>
+            <div className="flex gap-2 mb-3">
               <Card type="full" title="Pay In Full">
                 <div className="mt-1.5">
                   <span className="text-2xl font-extrabold text-[#0BA360]">£{discountedFull}</span>
@@ -272,7 +271,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               </div>
             )}
             <div className="flex items-center gap-3">
-              <div className={cn('flex flex-col leading-tight min-w-0 flex-shrink', isPulsing && 'animate-pulse')}>
+              <div className="flex flex-col leading-tight min-w-0 flex-shrink">
                 <span className="text-[12px] font-medium text-black truncate">{planLabel}</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-extrabold text-gray-900">£{selected === 'full' ? discountedFull : monthlyPrice}</span>
