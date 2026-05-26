@@ -14,6 +14,7 @@ import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
+import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
