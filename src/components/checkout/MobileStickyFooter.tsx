@@ -156,7 +156,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         {expanded && (
           <div className="px-4 pt-0 pb-3 animate-in slide-in-from-bottom-2 duration-200">
             <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-sm font-semibold text-gray-900">{planLabel}</span>
+              <span className="text-sm font-semibold text-black">{planLabel}</span>
               <a
                 href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
                 target="_blank"
@@ -273,7 +273,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             )}
             <div className="flex items-center gap-3">
               <div className={cn('flex flex-col leading-tight min-w-0 flex-shrink', isPulsing && 'animate-pulse')}>
-                <span className="text-[12px] font-medium text-gray-600 truncate">{planLabel}</span>
+                <span className="text-[12px] font-medium text-black truncate">{planLabel}</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-extrabold text-gray-900">£{selected === 'full' ? discountedFull : monthlyPrice}</span>
                   <span className="text-[12px] text-gray-600">{selected === 'full' ? 'total' : '/mo'}</span>
