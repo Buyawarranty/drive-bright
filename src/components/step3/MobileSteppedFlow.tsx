@@ -16,6 +16,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
+import CheckoutFAQ from './CheckoutFAQ';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -398,6 +399,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             {/* Policy & Terms — full transparency before checkout */}
             <section className="bg-card border border-border rounded-2xl p-4">
               <PolicyTermsAccordion variant="mobile" />
+            </section>
+
+            {/* FAQ — reduce exits */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <CheckoutFAQ variant="mobile" />
             </section>
           </>
         )}

@@ -25,6 +25,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
+import CheckoutFAQ from './CheckoutFAQ';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -446,6 +447,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
             <Card>
               <PolicyTermsAccordion variant="desktop" />
+            </Card>
+
+            {/* CARD 8 - FAQ */}
+            <Card>
+              <CheckoutFAQ variant="desktop" />
             </Card>
 
 
