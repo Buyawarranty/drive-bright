@@ -14,6 +14,7 @@ import {
   LABOUR_RATE_SUITABILITY,
   EXCESS_SUITABILITY,
 } from './suitabilityCopy';
+import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';

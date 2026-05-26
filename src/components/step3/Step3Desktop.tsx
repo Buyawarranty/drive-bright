@@ -23,6 +23,7 @@ import {
   LABOUR_RATE_SUITABILITY,
   EXCESS_SUITABILITY,
 } from './suitabilityCopy';
+import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
@@ -427,7 +428,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <HelperCallout topic="excess" />
             </Card>
 
-            {/* CARD 5 - What's covered (transparency, progressive disclosure) */}
+            {/* CARD 5 - Trust & reassurance blocks */}
+            <Card>
+              <TrustBlocks variant="desktop" />
+            </Card>
+
+            {/* CARD 6 - What's covered (transparency, progressive disclosure) */}
             <Card>
               <WhatsCoveredAccordion variant="desktop" />
             </Card>
