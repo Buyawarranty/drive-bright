@@ -138,7 +138,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
               className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8E9DD] bg-white hover:bg-[#F3FAF5] text-foreground text-sm font-semibold px-3.5 py-2 transition-colors"
             >
               <ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />
-              {coveredOpen ? "Hide what's covered" : "View what's covered"}
+              {coveredOpen ? "Hide what's covered" : "What's covered"}
               <ChevronDown className={'w-4 h-4 transition-transform ' + (coveredOpen ? 'rotate-180' : '')} />
             </button>
           </CollapsibleTrigger>
