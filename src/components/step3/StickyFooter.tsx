@@ -93,7 +93,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex flex-col leading-tight">
             <span className="text-[11px] font-bold text-gray-500 tracking-wider uppercase">Your cover</span>
-            <span className="text-base md:text-lg font-bold text-gray-900 mt-0.5">{planLabel}</span>
+            <span className="text-base md:text-lg font-bold text-black mt-0.5">{planLabel}</span>
           </div>
           <a
             href="https://uk.trustpilot.com/review/buyawarranty.co.uk"

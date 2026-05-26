@@ -101,7 +101,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             </a>
             <div className="flex items-center gap-1.5 leading-none">
               <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Cover</span>
-              <span className="text-[13px] font-bold text-gray-900">{planLabel}</span>
+              <span className="text-[13px] font-bold text-black">{planLabel}</span>
             </div>
           </div>
 
