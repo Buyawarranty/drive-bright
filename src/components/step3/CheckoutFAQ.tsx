@@ -56,24 +56,6 @@ const CheckoutFAQ: React.FC<CheckoutFAQProps> = ({ variant = 'desktop' }) => {
 
   return (
     <div>
-      <div className="flex items-start gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <HelpCircle className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h3
-            className={cn(
-              'font-bold text-foreground leading-tight',
-              isMobile ? 'text-base' : 'text-lg'
-            )}
-          >
-            Frequently asked questions
-          </h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Quick answers to the most common questions
-          </p>
-        </div>
-      </div>
 
       <Accordion type="multiple" className="w-full">
         {FAQS.map((item, idx) => (
