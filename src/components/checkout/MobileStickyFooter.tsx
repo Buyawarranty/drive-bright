@@ -101,7 +101,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         type="button"
         onClick={(e) => { e.stopPropagation(); onPaymentChange?.(type); }}
         className={cn(
-          'relative text-left rounded-2xl border-2 transition-all flex-1 px-3 py-3',
+          'relative text-left rounded-2xl border-2 flex-1 px-3 py-3',
           isSelected ? '' : 'bg-white border-gray-200'
         )}
         style={isSelected ? { backgroundColor: selectedBg, borderColor: accent } : undefined}
