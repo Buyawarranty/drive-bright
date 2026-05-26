@@ -261,7 +261,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           {/* LEFT - Stack of cards */}
           <div className="grid gap-[18px]">
             {/* CARD 1 - Cover Level */}
-            <Card>
+            <Card step={1}>
               <SectionHead
                 eyebrow="Claim limit"
                 title="How much cover do you need?"
@@ -299,7 +299,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 2 - Labour Rate */}
-            <Card>
+            <Card step={2}>
               <SectionHead
                 eyebrow="Labour rate"
                 title="Where do you usually repair your car?"
@@ -334,7 +334,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 3 - Term length */}
-            <Card>
+            <Card step={3}>
               <SectionHead
                 eyebrow="Term length"
                 title="Lock in your price and save"
@@ -401,7 +401,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 4 - Voluntary Excess */}
-            <Card>
+            <Card step={4}>
               <SectionHead
                 eyebrow="Voluntary excess"
                 title="Choose your excess"
@@ -439,27 +439,27 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 5 - Trust & reassurance blocks */}
-            <Card>
+            <Card step={5}>
               <TrustBlocks variant="desktop" />
             </Card>
 
             {/* CARD 6 - What's covered (transparency, progressive disclosure) */}
-            <Card>
+            <Card step={6}>
               <WhatsCoveredAccordion variant="desktop" />
             </Card>
 
             {/* CARD 6 - What's not covered (trust through transparency) */}
-            <Card>
+            <Card step={7}>
               <WhatsNotCoveredAccordion variant="desktop" />
             </Card>
 
             {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
-            <Card>
+            <Card step={8}>
               <PolicyTermsAccordion variant="desktop" />
             </Card>
 
             {/* CARD 8 - FAQ */}
-            <Card>
+            <Card step={9}>
               <CheckoutFAQ variant="desktop" />
             </Card>
 
@@ -651,11 +651,17 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
 /* ───────── helpers ───────── */
 
-const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="bg-white border border-[#e9e9e7] rounded-[18px] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+const Card: React.FC<{ children: React.ReactNode; step?: number }> = ({ children, step }) => (
+  <div className="relative bg-white border border-[#e9e9e7] rounded-[18px] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+    {step !== undefined && (
+      <div className="absolute top-4 right-5 text-[11px] font-semibold tracking-[0.12em] text-[#b8b8b6] tabular-nums select-none pointer-events-none">
+        {String(step).padStart(2, '0')}
+      </div>
+    )}
     <div className="p-6">{children}</div>
   </div>
 );
+
 
 const SectionHead: React.FC<{ eyebrow: string; title: string; subtitle: string; onDetails?: () => void }> = ({ eyebrow, title, subtitle, onDetails }) => (
   <div className="flex items-start justify-between gap-4 mb-4">

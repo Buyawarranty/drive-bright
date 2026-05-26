@@ -194,7 +194,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         {true && (
           <>
             {/* Cover level */}
-            <section>
+            <section className="relative">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">01</span>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Claim limit</p>
               <h2 className="text-lg font-bold text-foreground mt-1">Choose your cover level</h2>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -242,7 +243,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             {/* Cover length */}
-            <section>
+            <section className="relative">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">03</span>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Term length</p>
               <h2 className="text-lg font-bold text-foreground mt-1">Choose your cover length</h2>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -307,7 +309,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
 
-            <section>
+            <section className="relative">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">02</span>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
               <h2 className="text-lg font-bold text-foreground mt-1">Where do you usually repair your car?</h2>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -352,7 +355,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <HelperCallout topic="labour-rate" />
             </section>
 
-            <section>
+            <section className="relative">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">04</span>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Voluntary excess</p>
               <h2 className="text-lg font-bold text-foreground mt-1">Choose your excess</h2>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -390,27 +394,32 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             {/* Trust & reassurance blocks */}
-            <section className="bg-card border border-border rounded-2xl p-4">
+            <section className="relative bg-card border border-border rounded-2xl p-4">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">05</span>
               <TrustBlocks variant="mobile" />
             </section>
 
             {/* What's covered — transparency accordion */}
-            <section className="bg-card border border-border rounded-2xl p-4">
+            <section className="relative bg-card border border-border rounded-2xl p-4">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">06</span>
               <WhatsCoveredAccordion variant="mobile" />
             </section>
 
             {/* What's not covered — trust through transparency */}
-            <section className="bg-card border border-border rounded-2xl p-4">
+            <section className="relative bg-card border border-border rounded-2xl p-4">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">07</span>
               <WhatsNotCoveredAccordion variant="mobile" />
             </section>
 
             {/* Policy & Terms — full transparency before checkout */}
-            <section className="bg-card border border-border rounded-2xl p-4">
+            <section className="relative bg-card border border-border rounded-2xl p-4">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">08</span>
               <PolicyTermsAccordion variant="mobile" />
             </section>
 
             {/* FAQ — reduce exits */}
-            <section className="bg-card border border-border rounded-2xl p-4">
+            <section className="relative bg-card border border-border rounded-2xl p-4">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">09</span>
               <CheckoutFAQ variant="mobile" />
             </section>
           </>
