@@ -194,7 +194,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         {true && (
           <>
             {/* Cover level */}
-            <section>
+            <section className="relative">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">01</span>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Claim limit</p>
               <h2 className="text-lg font-bold text-foreground mt-1">Choose your cover level</h2>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
