@@ -399,11 +399,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <TrustBlocks variant="mobile" />
             </section>
 
-            {/* What's covered — transparency accordion */}
-            <section className="relative bg-card border border-border rounded-2xl p-4">
-              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">06</span>
-              <WhatsCoveredAccordion variant="mobile" />
-            </section>
 
             {/* What's not covered — trust through transparency */}
             <section className="relative bg-card border border-border rounded-2xl p-4">
