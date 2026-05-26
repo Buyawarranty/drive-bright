@@ -17,10 +17,11 @@ export const LABOUR_RATE_SUITABILITY: Record<number, string> = {
 };
 
 export const EXCESS_SUITABILITY: Record<number, string> = {
-  0: 'Lowest upfront claim contribution',
-  50: 'Lower monthly cost with minimal claim payment',
-  100: 'Balanced option for everyday peace of mind',
-  150: 'Best balance of monthly cost & claim payment',
-  250: 'Lower monthly cost — bigger claim contribution',
-  500: 'Lowest monthly cost — highest claim contribution',
+  0: 'No excess',
+  50: 'Low excess',
+  100: 'Balanced cover',
+  150: 'Best balance',
+  250: 'Lower monthly',
+  500: 'Lowest monthly',
 };
+

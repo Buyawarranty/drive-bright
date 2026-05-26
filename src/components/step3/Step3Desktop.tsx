@@ -401,7 +401,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 subtitle="Excess is what you pay towards a claim. Lower excess = higher monthly cost."
                 onDetails={() => setExcessDetailsOpen(true)}
               />
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {EXCESS_OPTIONS.map((opt) => {
                   const selected = voluntaryExcess === opt.value;
                   return (
