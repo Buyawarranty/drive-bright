@@ -1,7 +1,6 @@
 import React from 'react';
-import { Car, Gauge, Calendar, Fuel, Edit, Shield, CheckCircle } from 'lucide-react';
+import { Check, Car, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import TrustpilotHeader from '@/components/TrustpilotHeader';
 
 interface Step3HeroProps {
   vehicleData: {
@@ -15,63 +14,71 @@ interface Step3HeroProps {
   onBack: () => void;
 }
 
+const formatMileage = (mileage?: string) => {
+  if (!mileage) return null;
+  const n = parseInt(String(mileage).replace(/[^0-9]/g, '')) || 0;
+  const rounded = Math.ceil(n / 10000) * 10000;
+  return `Under ${(rounded / 1000).toLocaleString()}k miles`;
+};
+
 const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
+  const mileageLabel = formatMileage(vehicleData.mileage);
+  const titleCaseMake = vehicleData.make
+    ? vehicleData.make.charAt(0).toUpperCase() + vehicleData.make.slice(1).toLowerCase()
+    : '';
+
   return (
-    <div className="px-4 py-6">
-      {/* Hero Text */}
-      <div className="text-center mb-4">
-        <p className="text-sm sm:text-base text-muted-foreground">
-          All plans include <button type="button" onClick={() => document.getElementById('whats-covered')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="font-bold underline underline-offset-2 decoration-success/60 hover:decoration-success cursor-pointer transition-colors text-foreground"><strong>full comprehensive cover</strong></button> - choose your length of cover
-          and level of protection
+    <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
+      {/* Headline */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+          One complete warranty,<br className="hidden sm:block" /> tailored to your car.
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-2">
+          Customise your cover below
         </p>
       </div>
 
-      {/* Trust Badges Row */}
-      <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 flex-wrap">
-        <div className="flex items-center gap-1.5 text-sm">
-          <CheckCircle className="w-5 h-5 text-success fill-success/20" />
-          <span className="font-medium text-foreground">Easy Claims, Fast Payout</span>
-        </div>
-        <TrustpilotHeader className="flex-shrink-0" />
-        <div className="flex items-center gap-1.5 text-sm">
-          <Shield className="w-5 h-5 text-amber-500 fill-amber-500/20" />
-          <span className="font-medium text-foreground">14-day cooling off period</span>
-        </div>
-      </div>
-
-      {/* Pricing Banner */}
-      <div className="bg-muted border border-border rounded-xl px-4 py-3 text-center mb-6">
-        <p className="text-sm sm:text-base text-foreground">
-          From <span className="text-lg sm:text-xl font-bold text-primary">£19/month</span> - <strong>tailored to your car, your garage, your budget</strong>
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          12 interest-free payments  ·  Longer cover = better value, locked in today's price
-        </p>
-      </div>
-      
-      {/* Vehicle Information Card */}
-      <div className="bg-secondary rounded-xl p-4 border border-border">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <h2 className="font-semibold text-foreground text-center">
-            {vehicleData.year} {vehicleData.make} {vehicleData.model}
-          </h2>
-          <Button
-            onClick={onBack}
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:text-primary/80 text-sm font-medium p-0 h-auto"
-          >
-            Change
-          </Button>
-        </div>
-        
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <span className="font-mono bg-card px-2 py-0.5 rounded border border-border text-foreground font-semibold">
+      {/* Vehicle bar */}
+      <div className="bg-muted/60 border border-border rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-sm sm:text-base text-foreground min-w-0">
+          <Car className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <span className="font-semibold">
+            {vehicleData.year} {titleCaseMake} {vehicleData.model}
+          </span>
+          {vehicleData.fuelType && (
+            <span className="text-muted-foreground">· {vehicleData.fuelType}</span>
+          )}
+          {mileageLabel && (
+            <span className="text-muted-foreground">· {mileageLabel}</span>
+          )}
+          <span className="ml-1 font-mono font-bold text-foreground bg-[hsl(var(--reg-plate,48_100%_60%))] bg-yellow-300 px-2 py-0.5 rounded text-sm">
             {vehicleData.regNumber}
           </span>
-          <span>•</span>
-          <span>{vehicleData.fuelType}</span>
         </div>
+        <Button
+          onClick={onBack}
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          Change
+        </Button>
+      </div>
+
+      {/* Trust strip */}
+      <div className="mt-3 grid grid-cols-3 divide-x divide-border border border-border rounded-xl bg-card">
+        {[
+          'Easy claims',
+          '14-day refund',
+          'Fast payouts',
+        ].map((label) => (
+          <div key={label} className="flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm text-foreground">
+            <Check className="w-4 h-4 text-success" />
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
