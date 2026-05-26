@@ -170,7 +170,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               onClick={onPayClick}
               disabled={isLoading}
               aria-label={ctaLabel}
-              className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold h-12 px-8 rounded-lg text-base gap-2 shadow-md min-w-[248px] animate-breathing"
+              className="bg-[#FF6B00] hover:bg-[#e55f00] text-white font-bold h-12 px-8 rounded-lg text-base gap-2 min-w-[248px] animate-breathing"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
