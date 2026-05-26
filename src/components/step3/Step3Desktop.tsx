@@ -16,6 +16,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
+import TermComparison from './TermComparison';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
@@ -362,6 +363,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {validationErrors.paymentType && (
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a warranty duration to continue.</p>
               )}
+              <TermComparison
+                variant="desktop"
+                selectedTerm={paymentType}
+                onSelectTerm={setPaymentType}
+                availableTerms={availableDurations as any}
+              />
             </Card>
 
             {/* CARD 4 - Voluntary Excess */}

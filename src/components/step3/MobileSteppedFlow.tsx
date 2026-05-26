@@ -7,6 +7,7 @@ import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
+import TermComparison from './TermComparison';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -276,6 +277,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
+              <TermComparison
+                variant="mobile"
+                selectedTerm={paymentType}
+                onSelectTerm={onPaymentTypeChange}
+                availableTerms={visibleTerms as any}
+              />
             </section>
 
             <section>
