@@ -443,10 +443,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <TrustBlocks variant="desktop" />
             </Card>
 
-            {/* CARD 6 - What's covered (transparency, progressive disclosure) */}
-            <Card step={6}>
-              <WhatsCoveredAccordion variant="desktop" />
-            </Card>
 
             {/* CARD 6 - What's not covered (trust through transparency) */}
             <Card step={7}>
