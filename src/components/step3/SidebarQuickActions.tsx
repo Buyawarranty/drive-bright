@@ -40,7 +40,6 @@ const SidebarQuickActions: React.FC<SidebarQuickActionsProps> = ({
   selectedTerm,
   onSelectTerm,
   availableTerms,
-  calculateMonthlyPrice,
 }) => {
   const [open, setOpen] = useState<ModalKey>(null);
 
