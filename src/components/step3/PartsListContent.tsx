@@ -22,10 +22,13 @@ const CloseRow = () => (
 );
 
 const PartsListContent: React.FC = () => {
+  const [openSection, setOpenSection] = React.useState<string | null>(null);
+  const toggle = (id: string) => (open: boolean) => setOpenSection(open ? id : null);
+
   return (
     <div className="space-y-4 pt-4">
       {/* Petrol & Diesel */}
-      <Collapsible>
+      <Collapsible open={openSection === 'petrol'} onOpenChange={toggle('petrol')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Car className="w-5 h-5" />
