@@ -11,6 +11,9 @@ verify_jwt = false
 [functions.customer-login]
 verify_jwt = false
 
+[functions.customer-self-signup]
+verify_jwt = false
+
 [functions.send-abandoned-cart-email]
 verify_jwt = false
 
