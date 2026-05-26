@@ -385,18 +385,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {validationErrors.paymentType && (
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a warranty duration to continue.</p>
               )}
-              <Collapsible className="mt-5">
-                <CollapsibleTrigger className="group w-full flex items-center justify-between gap-3 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors px-4 py-3.5">
-                  <span className="text-sm font-bold text-foreground">See what's included</span>
-                  <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                    Same cover on all plans
-                    <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
-                  </span>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-3">
-                  <WhatsCoveredAccordion variant="desktop" />
-                </CollapsibleContent>
-              </Collapsible>
+              <div className="mt-5">
+                <ComprehensiveCoverCard variant="desktop" />
+              </div>
+
 
             </Card>
 
