@@ -139,17 +139,6 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
           View what's covered
         </button>
 
-        <PartsListModal
-          trigger={
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#161616] hover:bg-black text-white text-sm font-semibold px-3.5 py-2 transition-colors"
-            >
-              <ListChecks className="w-4 h-4" />
-              View full parts list
-            </button>
-          }
-        />
 
         <button
           type="button"
