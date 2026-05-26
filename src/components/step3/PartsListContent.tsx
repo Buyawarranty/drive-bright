@@ -22,10 +22,13 @@ const CloseRow = () => (
 );
 
 const PartsListContent: React.FC = () => {
+  const [openSection, setOpenSection] = React.useState<string | null>(null);
+  const toggle = (id: string) => (open: boolean) => setOpenSection(open ? id : null);
+
   return (
     <div className="space-y-4 pt-4">
       {/* Petrol & Diesel */}
-      <Collapsible>
+      <Collapsible open={openSection === 'petrol'} onOpenChange={toggle('petrol')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Car className="w-5 h-5" />
@@ -64,7 +67,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Hybrid & PHEV */}
-      <Collapsible>
+      <Collapsible open={openSection === 'hybrid'} onOpenChange={toggle('hybrid')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-600 text-white hover:bg-gray-700 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Battery className="w-5 h-5" />
@@ -98,7 +101,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* EVs */}
-      <Collapsible>
+      <Collapsible open={openSection === 'ev'} onOpenChange={toggle('ev')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Zap className="w-5 h-5" />
@@ -134,7 +137,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Motorcycles */}
-      <Collapsible>
+      <Collapsible open={openSection === 'moto'} onOpenChange={toggle('moto')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-500 text-white hover:bg-green-600 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Bike className="w-5 h-5" />
@@ -166,7 +169,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* What's not covered */}
-      <Collapsible>
+      <Collapsible open={openSection === 'notcovered'} onOpenChange={toggle('notcovered')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <X className="w-5 h-5" />
@@ -196,7 +199,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Modifications and Your Cover */}
-      <Collapsible>
+      <Collapsible open={openSection === 'mods'} onOpenChange={toggle('mods')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-amber-50 text-amber-800 hover:bg-amber-100 font-semibold py-3 px-5 rounded-lg transition-colors group border border-amber-200">
           <div className="flex items-center gap-3">
             <Settings className="w-5 h-5" />
@@ -287,7 +290,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Exclusions: High-Performance Cars */}
-      <Collapsible>
+      <Collapsible open={openSection === 'exclusions'} onOpenChange={toggle('exclusions')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-sky-100 text-sky-700 hover:bg-sky-200 font-semibold py-3 px-5 rounded-lg transition-colors group border border-sky-200">
           <div className="flex items-center gap-3">
             <X className="w-5 h-5" />
