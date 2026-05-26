@@ -345,10 +345,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 })}
               </div>
             </section>
+
+            {/* What's covered — transparency accordion */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <WhatsCoveredAccordion variant="mobile" />
+            </section>
           </>
         )}
 
       </div>
+
 
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
