@@ -17,7 +17,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
-import TermComparison from './TermComparison';
+
 import HelperCallout from './HelperCallout';
 import {
   CLAIM_LIMIT_SUITABILITY,
