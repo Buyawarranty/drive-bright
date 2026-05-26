@@ -17,7 +17,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
-import ComprehensiveCoverCard from './ComprehensiveCoverCard';
+import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 
@@ -297,7 +297,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 })}
               </div>
               <div className="mt-4">
-                <ComprehensiveCoverCard variant="mobile" />
+                <SeeWhatsIncludedCard
+                  variant="mobile"
+                  vehicleData={vehicleData}
+                  selectedPlan={{
+                    monthlyPrice: currentMonthlyPrice,
+                    paymentType,
+                    claimLimit: selectedClaimLimit,
+                    labourRate: selectedLabourRate,
+                    voluntaryExcess,
+                  }}
+                />
               </div>
 
             </section>

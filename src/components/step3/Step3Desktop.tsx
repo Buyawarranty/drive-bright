@@ -15,7 +15,7 @@ import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
-import ComprehensiveCoverCard from './ComprehensiveCoverCard';
+import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 
@@ -388,7 +388,17 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a warranty duration to continue.</p>
               )}
               <div className="mt-5">
-                <ComprehensiveCoverCard variant="desktop" />
+                <SeeWhatsIncludedCard
+                  variant="desktop"
+                  vehicleData={vehicleData}
+                  selectedPlan={{
+                    monthlyPrice,
+                    paymentType,
+                    claimLimit: selectedClaimLimit,
+                    labourRate: selectedLabourRate,
+                    voluntaryExcess,
+                  }}
+                />
               </div>
 
 
