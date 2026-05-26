@@ -317,6 +317,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       </div>
                       <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[36px] leading-tight">{opt.sub}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">{opt.note}</div>
+                      {LABOUR_RATE_SUITABILITY[opt.value] && (
+                        <div className="mt-2 pt-2 border-t border-[#eee] text-[11.5px] text-[#0a6b3f] font-semibold leading-snug">
+                          {LABOUR_RATE_SUITABILITY[opt.value]}
+                        </div>
+                      )}
                     </OptionCard>
                   );
                 })}
@@ -407,6 +412,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       </div>
                       <div className="text-[13px] font-bold text-[#333] mb-1 min-h-[18px] leading-tight">{opt.sub}</div>
                       <div className="text-[12px] text-[#6c6c6c] leading-snug">{excessPillSubText(opt.value)}</div>
+                      {EXCESS_SUITABILITY[opt.value] && (
+                        <div className="mt-2 pt-2 border-t border-[#eee] text-[11px] text-[#0a6b3f] font-semibold leading-snug">
+                          {EXCESS_SUITABILITY[opt.value]}
+                        </div>
+                      )}
                     </OptionCard>
                   );
                 })}
