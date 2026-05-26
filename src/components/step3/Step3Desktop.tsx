@@ -14,6 +14,7 @@ import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
+import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -392,6 +393,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a voluntary excess to continue.</p>
               )}
             </Card>
+
+            {/* CARD 5 - What's covered (transparency, progressive disclosure) */}
+            <Card>
+              <WhatsCoveredAccordion variant="desktop" />
+            </Card>
+
+
 
             {/* PRICE BEAT */}
             <div className="flex items-center gap-3.5 rounded-xl px-5 py-3.5" style={{ background: '#fffbf0', border: '1px solid #f5e4b0' }}>

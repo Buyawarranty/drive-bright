@@ -5,6 +5,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
+import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -344,10 +345,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 })}
               </div>
             </section>
+
+            {/* What's covered — transparency accordion */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <WhatsCoveredAccordion variant="mobile" />
+            </section>
           </>
         )}
 
       </div>
+
 
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
