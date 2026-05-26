@@ -98,9 +98,6 @@ const PolicyTermsAccordion: React.FC<Props> = ({ variant = 'desktop', className 
             <FileText className="w-5 h-5 text-primary flex-shrink-0" />
             Know exactly what's covered
           </h3>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Protect against costly mechanical and electrical failures. We pay your garage directly — parts and labour included.
-          </p>
         </div>
         <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
           <ShieldCheck className="w-3 h-3" /> Full transparency
