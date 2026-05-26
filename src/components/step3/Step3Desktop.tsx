@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Info, Edit3, ArrowLeft, Star } from 'lucide-react';
+import { Check, Info, Edit3, ArrowLeft, Star, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly } from '@/lib/claimLimitTiers';
 import {
   calculateLabourRateAdjustment,
