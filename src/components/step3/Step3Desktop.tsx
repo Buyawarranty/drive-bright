@@ -651,11 +651,17 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
 /* ───────── helpers ───────── */
 
-const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="bg-white border border-[#e9e9e7] rounded-[18px] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+const Card: React.FC<{ children: React.ReactNode; step?: number }> = ({ children, step }) => (
+  <div className="relative bg-white border border-[#e9e9e7] rounded-[18px] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+    {step !== undefined && (
+      <div className="absolute top-4 right-5 text-[11px] font-semibold tracking-[0.12em] text-[#b8b8b6] tabular-nums select-none pointer-events-none">
+        {String(step).padStart(2, '0')}
+      </div>
+    )}
     <div className="p-6">{children}</div>
   </div>
 );
+
 
 const SectionHead: React.FC<{ eyebrow: string; title: string; subtitle: string; onDetails?: () => void }> = ({ eyebrow, title, subtitle, onDetails }) => (
   <div className="flex items-start justify-between gap-4 mb-4">
