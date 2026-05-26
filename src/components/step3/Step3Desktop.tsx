@@ -430,28 +430,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <HelperCallout topic="excess" />
             </Card>
 
-            {/* CARD 5 - Trust & reassurance blocks */}
+            {/* CARD 5 - Combined trust + info accordions */}
             <Card step={5}>
-              <TrustBlocks variant="desktop" />
-            </Card>
-
-
-            {/* CARD 6 - What's not covered (trust through transparency) */}
-            <Card step={7}>
-              <WhatsNotCoveredAccordion variant="desktop" />
-            </Card>
-
-            {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
-            <Card step={8}>
-              <div id="policy-terms-section">
-                <PolicyTermsAccordion variant="desktop" />
-              </div>
-            </Card>
-
-
-            {/* CARD 8 - FAQ */}
-            <Card step={9}>
-              <CheckoutFAQ variant="desktop" />
+              <TrustAndInfoAccordion variant="desktop" />
             </Card>
 
 
