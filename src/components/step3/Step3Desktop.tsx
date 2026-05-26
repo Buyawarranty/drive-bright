@@ -25,6 +25,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
+import CheckoutFAQ from './CheckoutFAQ';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
