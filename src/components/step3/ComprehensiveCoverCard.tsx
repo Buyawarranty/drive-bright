@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Wrench, ChevronDown } from 'lucide-react';
+import { Shield, Wrench, ChevronDown, CheckCircle2, FileText } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import PartsListContent from './PartsListContent';
 
