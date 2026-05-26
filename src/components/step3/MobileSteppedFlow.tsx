@@ -400,6 +400,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             <section className="bg-card border border-border rounded-2xl p-4">
               <PolicyTermsAccordion variant="mobile" />
             </section>
+
+            {/* FAQ — reduce exits */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <CheckoutFAQ variant="mobile" />
+            </section>
           </>
         )}
 
