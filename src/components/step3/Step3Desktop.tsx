@@ -15,6 +15,7 @@ import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
+import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 

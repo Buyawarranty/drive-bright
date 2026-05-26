@@ -6,6 +6,7 @@ import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
+import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
