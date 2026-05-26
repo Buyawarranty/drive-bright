@@ -78,7 +78,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         <div className="relative">
           {/* Best Value Badge - positioned at top right corner */}
           <div className="absolute -top-3 right-4 z-10">
-            <span className="bg-[#0BA360] text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">
+            <span className="bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl whitespace-nowrap">
               BEST VALUE
             </span>
           </div>
