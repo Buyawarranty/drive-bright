@@ -39,6 +39,7 @@ const TITLES: Record<Exclude<ModalKey, null>, string> = {
 const SidebarQuickActions: React.FC<SidebarQuickActionsProps> = ({
   selectedTerm,
   onSelectTerm,
+  availableTerms,
 }) => {
   const [open, setOpen] = useState<ModalKey>(null);
 
