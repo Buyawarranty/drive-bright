@@ -67,7 +67,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Hybrid & PHEV */}
-      <Collapsible>
+      <Collapsible open={openSection === 'hybrid'} onOpenChange={toggle('hybrid')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-600 text-white hover:bg-gray-700 font-semibold py-3 px-5 rounded-lg transition-colors group">
           <div className="flex items-center gap-3">
             <Battery className="w-5 h-5" />
