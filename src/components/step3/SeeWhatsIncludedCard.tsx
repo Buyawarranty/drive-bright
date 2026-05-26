@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { Check, ListChecks, ShieldCheck, Mail } from 'lucide-react';
+import { Check, ShieldCheck, Mail } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import PartsListModal from './PartsListModal';
-import WhatsCoveredAccordion from './WhatsCoveredAccordion';
+import PartsListContent from './PartsListContent';
 
 interface VehicleData {
   regNumber: string;
@@ -140,17 +139,6 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
           View what's covered
         </button>
 
-        <PartsListModal
-          trigger={
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#161616] hover:bg-black text-white text-sm font-semibold px-3.5 py-2 transition-colors"
-            >
-              <ListChecks className="w-4 h-4" />
-              View full parts list
-            </button>
-          }
-        />
 
         <button
           type="button"
@@ -162,14 +150,14 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleDat
         </button>
       </div>
 
-      {/* "What's covered" overlay (uses the existing accordion content) */}
+      {/* "What's covered" overlay — original colourful vehicle-type accordion */}
       <Dialog open={coveredOpen} onOpenChange={setCoveredOpen}>
         <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>What's covered</DialogTitle>
           </DialogHeader>
           <div className="mt-2">
-            <WhatsCoveredAccordion />
+            <PartsListContent />
           </div>
         </DialogContent>
       </Dialog>
