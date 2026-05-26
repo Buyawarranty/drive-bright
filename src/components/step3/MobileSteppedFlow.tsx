@@ -16,6 +16,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
+import CheckoutFAQ from './CheckoutFAQ';
 
 type PaymentType = '12months' | '24months' | '36months';
 
