@@ -15,6 +15,7 @@ import ExcessDetails from './ExcessDetails';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import PartsListContent from './PartsListContent';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
+import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -397,6 +398,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             {/* CARD 5 - What's covered (transparency, progressive disclosure) */}
             <Card>
               <WhatsCoveredAccordion variant="desktop" />
+            </Card>
+
+            {/* CARD 6 - Policy & Terms (full transparency before checkout) */}
+            <Card>
+              <PolicyTermsAccordion variant="desktop" />
             </Card>
 
 
