@@ -33,9 +33,6 @@ const WhatsNotCoveredAccordion: React.FC<Props> = ({ variant = 'desktop', classN
         </span>
       </div>
 
-      <p className="text-sm text-foreground/80 mb-4">
-        We keep things straightforward and transparent.
-      </p>
 
       <h4 className="text-sm font-semibold text-foreground mb-2">What's Not Included:</h4>
       <ul className="space-y-2">
