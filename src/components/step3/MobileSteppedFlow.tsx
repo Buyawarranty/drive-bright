@@ -213,7 +213,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       key={tier.value}
                       onClick={() => onClaimLimitChange(tier.value)}
                       className={cn(
-                        'relative text-left rounded-xl border-2 p-4 min-h-[120px] transition-all',
+                        'relative text-left rounded-xl border-2 p-4 transition-all',
                         selected
                           ? 'border-primary bg-primary/5'
                           : 'border-border bg-card hover:border-primary/40'
@@ -224,6 +224,9 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                           Recommended
                         </span>
                       )}
+                      <div className="absolute top-2 right-2">
+                        <RadioDot selected={selected} />
+                      </div>
                       <div className="text-2xl font-bold text-foreground leading-tight">
                         £{tier.displayValue.toLocaleString()}
                       </div>
@@ -234,9 +237,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                           {CLAIM_LIMIT_SUITABILITY[tier.value]}
                         </div>
                       )}
-                      <div className="mt-2 flex justify-end">
-                        <RadioDot selected={selected} />
-                      </div>
                     </button>
                   );
                 })}
