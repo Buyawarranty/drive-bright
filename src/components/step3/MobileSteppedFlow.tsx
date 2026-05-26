@@ -8,6 +8,7 @@ import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import TermComparison from './TermComparison';
+import HelperCallout from './HelperCallout';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -224,6 +225,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
+              <HelperCallout topic="claim-limit" />
             </section>
 
             {/* Cover length */}
@@ -322,6 +324,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
+              <HelperCallout topic="labour-rate" />
             </section>
 
             <section>
@@ -353,6 +356,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
+              <HelperCallout topic="excess" />
             </section>
 
             {/* What's covered — transparency accordion */}
