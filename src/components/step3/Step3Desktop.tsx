@@ -261,7 +261,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           {/* LEFT - Stack of cards */}
           <div className="grid gap-[18px]">
             {/* CARD 1 - Cover Level */}
-            <Card>
+            <Card step={1}>
               <SectionHead
                 eyebrow="Claim limit"
                 title="How much cover do you need?"
@@ -299,7 +299,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 2 - Labour Rate */}
-            <Card>
+            <Card step={2}>
               <SectionHead
                 eyebrow="Labour rate"
                 title="Where do you usually repair your car?"
@@ -334,7 +334,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 3 - Term length */}
-            <Card>
+            <Card step={3}>
               <SectionHead
                 eyebrow="Term length"
                 title="Lock in your price and save"
@@ -401,7 +401,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 4 - Voluntary Excess */}
-            <Card>
+            <Card step={4}>
               <SectionHead
                 eyebrow="Voluntary excess"
                 title="Choose your excess"
@@ -439,27 +439,27 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
             </Card>
 
             {/* CARD 5 - Trust & reassurance blocks */}
-            <Card>
+            <Card step={5}>
               <TrustBlocks variant="desktop" />
             </Card>
 
             {/* CARD 6 - What's covered (transparency, progressive disclosure) */}
-            <Card>
+            <Card step={6}>
               <WhatsCoveredAccordion variant="desktop" />
             </Card>
 
             {/* CARD 6 - What's not covered (trust through transparency) */}
-            <Card>
+            <Card step={7}>
               <WhatsNotCoveredAccordion variant="desktop" />
             </Card>
 
             {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
-            <Card>
+            <Card step={8}>
               <PolicyTermsAccordion variant="desktop" />
             </Card>
 
             {/* CARD 8 - FAQ */}
-            <Card>
+            <Card step={9}>
               <CheckoutFAQ variant="desktop" />
             </Card>
 
