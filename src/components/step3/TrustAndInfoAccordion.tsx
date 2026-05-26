@@ -76,7 +76,7 @@ const TrustAndInfoAccordion: React.FC<Props> = ({ variant = 'desktop' }) => {
   return (
     <div className="space-y-3">
       {SECTIONS.map((s) => {
-        const open = openIds.has(s.id);
+        const open = openId === s.id;
         const Icon = s.Icon;
         return (
           <div
