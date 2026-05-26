@@ -290,7 +290,7 @@ const PartsListContent: React.FC = () => {
       </Collapsible>
 
       {/* Exclusions: High-Performance Cars */}
-      <Collapsible>
+      <Collapsible open={openSection === 'exclusions'} onOpenChange={toggle('exclusions')}>
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-sky-100 text-sky-700 hover:bg-sky-200 font-semibold py-3 px-5 rounded-lg transition-colors group border border-sky-200">
           <div className="flex items-center gap-3">
             <X className="w-5 h-5" />
