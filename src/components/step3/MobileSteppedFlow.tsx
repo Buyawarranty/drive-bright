@@ -297,7 +297,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 })}
               </div>
               <div className="mt-4">
-                <ComprehensiveCoverCard variant="mobile" />
+                <SeeWhatsIncludedCard
+                  variant="mobile"
+                  vehicleData={vehicleData}
+                  selectedPlan={{
+                    monthlyPrice: currentMonthlyPrice,
+                    paymentType,
+                    claimLimit: selectedClaimLimit,
+                    labourRate: selectedLabourRate,
+                    voluntaryExcess,
+                  }}
+                />
               </div>
 
             </section>
