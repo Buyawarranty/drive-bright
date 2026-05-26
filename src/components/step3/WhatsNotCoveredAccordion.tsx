@@ -12,7 +12,7 @@ interface Props {
 const NOT_INCLUDED = [
   'Pre-existing faults',
   'Routine servicing and maintenance',
-  'Tyres, brake pads, and wear & tear items',
+  
   'Accidental damage or accident repairs',
   'Motor trader-owned or operated vehicles',
   'Hire and reward use (taxis, rentals, couriers)',
