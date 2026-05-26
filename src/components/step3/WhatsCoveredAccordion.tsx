@@ -291,10 +291,24 @@ const WhatsCoveredAccordion: React.FC<WhatsCoveredAccordionProps> = ({ variant =
             Tap any category to see exactly what's included, what isn't, and how claims work.
           </p>
         </div>
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-[#eaf8f2] text-[#0e6b48] px-3 py-1.5 text-[12px] font-semibold flex-shrink-0">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          13 categories
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-[#eaf8f2] text-[#0e6b48] px-3 py-1.5 text-[12px] font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            13 categories
+          </div>
+          <PartsListModal
+            trigger={
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#161616] hover:bg-[#000] text-white px-3 py-1.5 text-[12px] font-semibold transition"
+              >
+                <ListChecks className="w-3.5 h-3.5" />
+                View full parts list
+              </button>
+            }
+          />
         </div>
+
       </div>
 
       {/* Search */}
