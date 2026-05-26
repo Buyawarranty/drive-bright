@@ -353,6 +353,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <WhatsCoveredAccordion variant="mobile" />
             </section>
 
+            {/* What's not covered — trust through transparency */}
+            <section className="bg-card border border-border rounded-2xl p-4">
+              <WhatsNotCoveredAccordion variant="mobile" />
+            </section>
+
             {/* Policy & Terms — full transparency before checkout */}
             <section className="bg-card border border-border rounded-2xl p-4">
               <PolicyTermsAccordion variant="mobile" />

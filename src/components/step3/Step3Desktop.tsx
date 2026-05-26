@@ -401,7 +401,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <WhatsCoveredAccordion variant="desktop" />
             </Card>
 
-            {/* CARD 6 - Policy & Terms (full transparency before checkout) */}
+            {/* CARD 6 - What's not covered (trust through transparency) */}
+            <Card>
+              <WhatsNotCoveredAccordion variant="desktop" />
+            </Card>
+
+            {/* CARD 7 - Policy & Terms (full transparency before checkout) */}
             <Card>
               <PolicyTermsAccordion variant="desktop" />
             </Card>
