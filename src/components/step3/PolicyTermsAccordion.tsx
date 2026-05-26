@@ -104,74 +104,8 @@ const PolicyTermsAccordion: React.FC<Props> = ({ variant = 'desktop', className 
         </span>
       </div>
 
-      {/* Covered parts grid */}
-      <h4 className="text-sm font-semibold text-foreground mb-2">What your warranty actually covers</h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-        {visibleParts.map((p) => {
-          const Icon = p.Icon;
-          return (
-            <div
-              key={p.title}
-              className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:border-emerald-300 transition-colors"
-            >
-              <span className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-4.5 h-4.5" />
-              </span>
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-foreground leading-tight">{p.title}</div>
-                <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{p.desc}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {COVERED_PARTS.length > 8 && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="mb-5 text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
-        >
-          {showAll ? 'Show fewer' : `See all covered parts (+${COVERED_PARTS.length - 8})`}
-          <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showAll && 'rotate-180')} />
-        </button>
-      )}
 
-      {/* Side-by-side covered / not covered */}
-      <h4 className="text-sm font-semibold text-foreground mb-2 mt-2">What we cover and what we don't</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-              <Check className="w-4 h-4" strokeWidth={3} />
-            </span>
-            <span className="text-sm font-bold text-emerald-800">Covered</span>
-          </div>
-          <ul className="space-y-1.5">
-            {COVERED_LIST.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-xs text-foreground/90">
-                <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                <span className="leading-snug">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center">
-              <X className="w-4 h-4" strokeWidth={3} />
-            </span>
-            <span className="text-sm font-bold text-rose-800">Not covered</span>
-          </div>
-          <ul className="space-y-1.5">
-            {NOT_COVERED_LIST.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-xs text-foreground/90">
-                <X className="w-3.5 h-3.5 text-rose-600 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                <span className="leading-snug">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+
 
       {/* PDF links */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
