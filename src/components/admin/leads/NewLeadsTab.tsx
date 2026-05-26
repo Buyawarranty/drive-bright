@@ -144,11 +144,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
-    // Default window includes overnight leads (yesterday → today) so agents
-    // returning after time off still see leads received while they were away.
-    const today = getTodayLeadFeedSelectionDate();
-    const yesterday = shiftLeadFeedSelectionDate(today, -1);
-    return { from: yesterday, to: today };
+    // Default to All time so agents always see all leads.
+    return { from: undefined, to: undefined };
   });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
