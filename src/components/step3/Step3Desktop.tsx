@@ -394,6 +394,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               )}
             </Card>
 
+            {/* CARD 5 - What's covered (transparency, progressive disclosure) */}
+            <Card>
+              <WhatsCoveredAccordion variant="desktop" />
+            </Card>
+
+
+
             {/* PRICE BEAT */}
             <div className="flex items-center gap-3.5 rounded-xl px-5 py-3.5" style={{ background: '#fffbf0', border: '1px solid #f5e4b0' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#FEF0EA' }}>🏷</div>
