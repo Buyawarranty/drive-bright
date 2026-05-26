@@ -421,7 +421,7 @@ export const DiscountsGivenTab: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
