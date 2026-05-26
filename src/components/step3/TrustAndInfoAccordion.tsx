@@ -13,12 +13,6 @@ interface Section {
   title: string;
   subtitle: string;
   Icon: React.ComponentType<any>;
-  bg: string;
-  border: string;
-  iconBg: string;
-  iconColor: string;
-  titleColor: string;
-  chevronColor: string;
   render: (variant: Variant) => React.ReactNode;
 }
 
@@ -28,12 +22,6 @@ const SECTIONS: Section[] = [
     title: 'Why drivers choose us',
     subtitle: 'No jargon. No surprises. Just great protection so you can drive with confidence.',
     Icon: ShieldCheck,
-    bg: 'bg-emerald-50/60 hover:bg-emerald-50',
-    border: 'border border-emerald-200',
-    iconBg: 'bg-emerald-100',
-    iconColor: 'text-emerald-600',
-    titleColor: 'text-emerald-700',
-    chevronColor: 'text-emerald-600',
     render: (v) => <TrustBlocks variant={v} />,
   },
   {
@@ -41,12 +29,6 @@ const SECTIONS: Section[] = [
     title: "What's not covered",
     subtitle: 'Clear exclusions so there are no surprises.',
     Icon: XCircle,
-    bg: 'bg-rose-50/60 hover:bg-rose-50',
-    border: 'border border-rose-200',
-    iconBg: 'bg-rose-100',
-    iconColor: 'text-rose-600',
-    titleColor: 'text-rose-700',
-    chevronColor: 'text-rose-500',
     render: (v) => <WhatsNotCoveredAccordion variant={v} />,
   },
   {
@@ -54,12 +36,6 @@ const SECTIONS: Section[] = [
     title: 'Policy summary',
     subtitle: 'Key terms and important information.',
     Icon: FileText,
-    bg: 'bg-amber-50/60 hover:bg-amber-50',
-    border: 'border border-amber-200',
-    iconBg: 'bg-amber-100',
-    iconColor: 'text-amber-700',
-    titleColor: 'text-amber-800',
-    chevronColor: 'text-amber-600',
     render: (v) => (
       <div id="policy-terms-section">
         <PolicyTermsAccordion variant={v} />
@@ -71,12 +47,6 @@ const SECTIONS: Section[] = [
     title: 'Frequently asked questions',
     subtitle: 'Answers to the most common questions.',
     Icon: HelpCircle,
-    bg: 'bg-sky-50/60 hover:bg-sky-50',
-    border: 'border border-sky-200',
-    iconBg: 'bg-sky-100',
-    iconColor: 'text-sky-600',
-    titleColor: 'text-sky-700',
-    chevronColor: 'text-sky-600',
     render: (v) => <CheckoutFAQ variant={v} />,
   },
 ];
@@ -86,52 +56,64 @@ interface Props {
 }
 
 const TrustAndInfoAccordion: React.FC<Props> = ({ variant = 'desktop' }) => {
-  const [openId, setOpenId] = useState<string | null>(null);
+  // All sections open by default; each toggles independently
+  const [openIds, setOpenIds] = useState<Set<string>>(
+    () => new Set(SECTIONS.map((s) => s.id))
+  );
+
+  const toggle = (id: string) => {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-3">
       {SECTIONS.map((s) => {
-        const open = openId === s.id;
+        const open = openIds.has(s.id);
         const Icon = s.Icon;
         return (
-          <div key={s.id} className="rounded-2xl overflow-hidden">
+          <div
+            key={s.id}
+            className="rounded-2xl overflow-hidden border border-border bg-card"
+          >
             <button
               type="button"
-              onClick={() => setOpenId(open ? null : s.id)}
+              onClick={() => toggle(s.id)}
               className={cn(
-                'w-full flex items-center gap-4 px-4 md:px-5 py-4 md:py-5 rounded-2xl transition-colors text-left',
-                s.bg,
-                s.border
+                'w-full flex items-center gap-4 px-4 md:px-5 py-4 md:py-5 text-left transition-colors',
+                'hover:bg-primary/5',
+                open && 'border-b border-border'
               )}
               aria-expanded={open}
             >
-              <div
-                className={cn(
-                  'flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center',
-                  s.iconBg
-                )}
-              >
-                <Icon className={cn('w-6 h-6 md:w-7 md:h-7', s.iconColor)} strokeWidth={2} />
+              <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center bg-primary/10">
+                <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={cn('font-bold text-base md:text-lg leading-tight', s.titleColor)}>
+                <h3 className="font-bold text-base md:text-lg leading-tight text-foreground">
                   {s.title}
                 </h3>
-                <p className="text-sm text-foreground/70 mt-0.5 leading-snug">{s.subtitle}</p>
+                <p className="text-sm text-muted-foreground mt-0.5 leading-snug">
+                  {s.subtitle}
+                </p>
               </div>
-              <ChevronDown
+              <div
                 className={cn(
-                  'w-5 h-5 flex-shrink-0 transition-transform',
-                  s.chevronColor,
-                  open && 'rotate-180'
+                  'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors',
+                  open ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground/70'
                 )}
-              />
-            </button>
-            {open && (
-              <div className="mt-2 rounded-2xl border border-border bg-card p-3 md:p-4">
-                {s.render(variant)}
+                aria-hidden
+              >
+                <ChevronDown
+                  className={cn('w-4 h-4 transition-transform', open && 'rotate-180')}
+                />
               </div>
-            )}
+            </button>
+            {open && <div className="p-3 md:p-4 bg-card">{s.render(variant)}</div>}
           </div>
         );
       })}
