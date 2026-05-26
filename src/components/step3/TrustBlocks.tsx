@@ -38,7 +38,6 @@ interface Props {
 
 const TrustBlocks: React.FC<Props> = ({ variant = 'desktop', className }) => {
   const isMobile = variant === 'mobile';
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <div className={cn(isMobile ? 'p-0' : 'p-5', className)}>
@@ -57,62 +56,32 @@ const TrustBlocks: React.FC<Props> = ({ variant = 'desktop', className }) => {
         <TrustpilotMicroWidget />
       </div>
 
-      {/* Compact inline chips */}
-      <div className="flex flex-wrap gap-1.5">
-        {BLOCKS.slice(0, 4).map((b) => {
+      <div
+        className={cn(
+          'grid gap-2',
+          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
+        )}
+      >
+        {BLOCKS.map((b) => {
           const Icon = b.Icon;
           return (
-            <span
+            <div
               key={b.title}
-              className="inline-flex items-center gap-1.5 text-[11.5px] md:text-xs font-medium px-2.5 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200"
+              className="rounded-lg border border-emerald-100 bg-[#F6FBF8] p-2.5 flex items-start gap-2"
             >
-              <Icon className="w-3.5 h-3.5 text-emerald-700" />
-              {b.title}
-            </span>
+              <Icon className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <div className="text-[12px] md:text-[13px] font-semibold text-foreground leading-tight">
+                  {b.title}
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                  {b.micro}
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
-
-      {/* Expand toggle */}
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-      >
-        {expanded ? 'Show less' : 'See all benefits'}
-        <ChevronDown
-          className={cn('w-3.5 h-3.5 transition-transform', expanded && 'rotate-180')}
-        />
-      </button>
-
-      {expanded && (
-        <div
-          className={cn(
-            'mt-3 grid gap-2',
-            isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
-          )}
-        >
-          {BLOCKS.map((b) => {
-            const Icon = b.Icon;
-            return (
-              <div
-                key={b.title}
-                className="rounded-lg border border-emerald-100 bg-[#F6FBF8] p-2.5 flex items-start gap-2"
-              >
-                <Icon className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <div className="text-[12px] md:text-[13px] font-semibold text-foreground leading-tight">
-                    {b.title}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                    {b.micro}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 };
