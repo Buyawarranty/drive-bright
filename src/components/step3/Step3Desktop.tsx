@@ -26,6 +26,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
+import SidebarQuickActions from './SidebarQuickActions';
 import { Lock, Shield, Clock } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -523,6 +524,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 Secure checkout · 14 days to cancel
               </div>
             </div>
+
+            {/* Quick actions */}
+            <SidebarQuickActions
+              selectedTerm={paymentType}
+              onSelectTerm={setPaymentType}
+              availableTerms={availableDurations}
+            />
 
             {/* Mini cards */}
             <div className="grid gap-3">
