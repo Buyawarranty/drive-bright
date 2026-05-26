@@ -17,7 +17,7 @@ import {
 } from './suitabilityCopy';
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
-import ComprehensiveCoverCard from './ComprehensiveCoverCard';
+import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 
