@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Zap,
   Phone,
@@ -8,7 +8,6 @@ import {
   Star,
   ShieldCheck,
   CheckCircle2,
-  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
