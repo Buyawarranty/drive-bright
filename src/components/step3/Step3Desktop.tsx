@@ -17,6 +17,7 @@ import PartsListContent from './PartsListContent';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 import TermComparison from './TermComparison';
+import HelperCallout from './HelperCallout';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import { Lock, Shield, Clock } from 'lucide-react';
 
@@ -280,6 +281,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {validationErrors.claimLimit && (
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a claim limit to continue.</p>
               )}
+              <HelperCallout topic="claim-limit" />
             </Card>
 
             {/* CARD 2 - Labour Rate */}
@@ -309,6 +311,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                   );
                 })}
               </div>
+              <HelperCallout topic="labour-rate" />
             </Card>
 
             {/* CARD 3 - Term length */}
@@ -401,6 +404,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {validationErrors.voluntaryExcess && (
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a voluntary excess to continue.</p>
               )}
+              <HelperCallout topic="excess" />
             </Card>
 
             {/* CARD 5 - What's covered (transparency, progressive disclosure) */}
