@@ -40,7 +40,7 @@ const SECTIONS: Section[] = [
     summary: 'The essentials of how your warranty works.',
     highlights: [
       'Covers sudden mechanical & electrical failure of insured parts.',
-      'Cover starts after a short waiting period from your start date.',
+      'Cover starts immediately. You can claim for repairs after 14 days of cover.',
       'Pay monthly or upfront — same level of cover either way.',
       'UK-wide cover, repairs at any VAT-registered garage.',
     ],
