@@ -19,6 +19,7 @@ import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import ComprehensiveCoverCard from './ComprehensiveCoverCard';
 import CheckoutFAQ from './CheckoutFAQ';
+import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 
 type PaymentType = '12months' | '24months' | '36months';
 
