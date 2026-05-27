@@ -268,6 +268,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
               )}
             </Button>
+            {EmailQuoteLink}
           </div>
         )}
 
@@ -315,6 +316,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 )}
               </Button>
             </div>
+            {EmailQuoteLink}
           </div>
         )}
       </div>
