@@ -95,7 +95,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({
           <Trigger
             id="extras"
             icon={<PackagePlus className="w-4 h-4 text-[#3F8A5C]" />}
-            label="Optional extras"
+            label="Warranty features"
           />
           <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
             <div className="mt-2 rounded-lg border border-[#D8E9DD] bg-white">
