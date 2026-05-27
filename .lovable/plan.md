@@ -1,62 +1,47 @@
-# Offline Conversion Tracking — Root Cause & Fix
+## What needs to change
 
-## The problem
+Three connected fixes around the Step 3 → Step 4 flow.
 
-Your hourly cron (`upload-google-ads-conversions-hourly`) is running every hour and succeeding at the network level, but **every conversion upload since 25 May 2026 is being rejected by Google Ads with HTTP 400**.
+### 1. One promo code, persisted across visits
 
-Sample failure from the DB (`customers.google_ads_conversion_status`):
+**Today:** `appliedDiscountCodes` lives only in `StreamlinedCheckout` React state. If the customer leaves and comes back (new tab, refresh, return from gateway), state resets so they can re-enter another code. The auto-applied promo banner is also unaware of any manually entered code.
 
-```
-failed: HTTP 400: Invalid JSON payload received.
-Unknown name "userIdentifierSource" at 'conversions[0]': Cannot find field.
-```
+**Fix:**
+- Persist `appliedDiscountCodes` in `localStorage` keyed by normalised email + reg plate (`promoApplied:{email}:{reg}`). Hydrate on mount; clear on successful payment.
+- Keep the existing client guard (`appliedDiscountCodes.length > 0` → reject) and reuse it for both manual entry and the auto-apply banner so the two paths can never stack.
+- Harden the `validate-discount-code` edge function: when an `customer_email` + `vehicle_reg` combo already has a different active code recorded against it, reject the new one with `"Only one promo code can be used per purchase"`. (Uses the existing `discount_code_usage` table — no schema changes.)
 
-That's why ~12 recent sales are missing from "Purchase - Offline (API Import)" while older ones (uploaded before Google's v21 enforcement tightened) show as `uploaded` in our DB.
+### 2. Promo visible on Step 3 (price parity with Step 4)
 
-### Why it broke
+**Today:** Promo input only exists on Step 4. Step 3 sticky / cards show the un-discounted monthly, so the price visibly drops on Step 4, which looks like a bug.
 
-In Google Ads API v21, `userIdentifierSource` is **no longer a field on the `ClickConversion` object**. It only exists on each individual `UserIdentifier` entry (and `FIRST_PARTY` is the default, so it can be omitted entirely for enhanced conversions).
+**Fix:**
+- Read the persisted promo (`localStorage`) inside `PricingTable.tsx`.
+- If a valid promo exists, derive a `discountedMonthlyPrice = floor((totalPrice * (1 - pct)) / 12)` (or fixed-amount equivalent) and use it everywhere Step 3 currently shows `displayMonthlyPrice` / `monthlyPrice`: duration cards, mobile sticky, desktop sticky, "Pay in full", email-quote dialog.
+- Show a small inline badge under the sticky price: `Promo CODE applied — Save £X`, with a "Remove" link that clears the persisted promo.
+- Pass the discounted figures through `onPlanSelected` so Step 4 inherits them (per the existing pricing-sync constraint in `.note/pricing-sync-constraint.md`).
 
-Our edge function `supabase/functions/upload-google-conversions/index.ts` (lines 102–105) still sets it at the conversion level:
+### 3. Move "Email quote" out of the sticky bar
 
-```ts
-if (userIdentifiers.length > 0) {
-  conversion.userIdentifiers = userIdentifiers;
-  conversion.userIdentifierSource = 'FIRST_PARTY';   // ❌ rejected by v21
-}
-```
+**Today:** `MobileStickyFooter` renders an "Email quote" link in both collapsed and expanded states, taking vertical space.
 
-Because every recent customer has email + phone, every recent upload hits this branch and gets rejected. The cron keeps retrying them (good — nothing is lost), but they will keep failing until the field is removed.
-
-## The fix
-
-### 1. Remove the invalid field (the actual bug)
-
-In `supabase/functions/upload-google-conversions/index.ts`, drop the `conversion.userIdentifierSource` line. Enhanced conversions default to `FIRST_PARTY`, which is what we want.
-
-```ts
-if (userIdentifiers.length > 0) {
-  conversion.userIdentifiers = userIdentifiers;
-}
-```
-
-No other changes needed — `gclid`, `conversionAction`, `conversionDateTime`, `conversionValue`, `currencyCode`, and `userIdentifiers[*].hashedEmail / hashedPhoneNumber` are all still valid in v21.
-
-### 2. Automatic backfill (no extra work)
-
-The cron query filters on `google_ads_conversion_uploaded_at IS NULL`, and failed rows keep that column NULL. So once the function is redeployed, the **next hourly run will retry every failed conversion automatically** — including the ~12 recent sales — and stamp them as uploaded.
-
-(60-day cutoff still applies, so anything older than that won't backfill — but all the missed ones are within the last few weeks, so they're safe.)
-
-### 3. Verify after the next cron tick
-
-After the next run (top of the hour), I'll re-query the customers table to confirm `google_ads_conversion_status = 'uploaded'` for the previously-failed rows. Google Ads UI typically reflects the conversions within 3–6 hours, sometimes up to 24h.
-
-## What I will NOT change
-
-- Cron schedule, secrets, conversion action ID, hashing, phone normalisation, bumper enrichment, or the 60-day cutoff — all of these are working correctly.
-- Client-side `gtag` purchase firing on the thank-you page — that's the separate "Purchase GTM" action and is unaffected.
+**Fix:**
+- Remove the `EmailQuoteLink` block from `MobileStickyFooter` (keep the `onEmailQuote` prop optional for backward compat but unused there). Tighten the sticky card's vertical padding now that the link is gone (`pb-3` → `pb-2.5`, drop the `mt-2` spacer).
+- In `MobileSteppedFlow.tsx`, render a new "Email me this quote" link directly **after** the `TrustAndInfoAccordion` (which contains "Frequently asked questions"), wired to the existing `setEmailQuoteOpen(true)`.
+- Do the same on desktop (`Step3Desktop.tsx`): drop the email-quote link from any sticky-bar area and add it as a centered link under the FAQ section.
 
 ## Files touched
 
-- `supabase/functions/upload-google-conversions/index.ts` — one-line removal inside `uploadConversion`.
+- `src/components/checkout/StreamlinedCheckout.tsx` — persistence load/save, clear on success
+- `supabase/functions/validate-discount-code/index.ts` — cross-code rejection per email+reg
+- `src/components/PricingTable.tsx` — hydrate promo, apply discount to displayed prices, sticky promo badge, pass discounted figures to Step 4
+- `src/components/checkout/MobileStickyFooter.tsx` — remove email quote link, tighten padding
+- `src/components/step3/MobileSteppedFlow.tsx` — render email quote link below FAQ accordion
+- `src/components/step3/Step3Desktop.tsx` — same email-quote relocation for desktop
+- New helper: `src/lib/promoStorage.ts` — typed get/set/clear for the persisted promo
+
+## Out of scope
+
+- No schema changes; reuses `discount_code_usage`.
+- No changes to Stripe/Bumper checkout-creation logic beyond receiving the already-discounted amount it already accepts.
+- No copy/UX changes to the promo entry form itself.

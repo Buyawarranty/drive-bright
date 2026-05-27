@@ -367,6 +367,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       } else {
         localStorage.removeItem('buyawarranty_appliedDiscountCodes');
       }
+      // Notify any other mounted component (Step 3 sticky bar) that the promo changed
+      window.dispatchEvent(new Event('promoCodesChanged'));
     } catch (error) {
       console.error('❌ Error saving discount codes:', error);
     }

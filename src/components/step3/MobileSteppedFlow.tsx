@@ -21,6 +21,8 @@ import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import EmailQuoteDialog from './EmailQuoteDialog';
+import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos } from '@/lib/promoStorage';
+import { toast } from 'sonner';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -127,6 +129,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     voluntaryExcess !== null;
 
   const [stickyPayment, setStickyPayment] = useState<'monthly' | 'full'>('monthly');
+
+  // Mirror any promo applied on Step 4 so prices stay consistent across steps.
+  const appliedPromos = useAppliedPromos();
+  const promoCode = appliedPromos[0];
+  const baseAnnualPrice = currentMonthlyPrice * 12;
+  const promoDiscount = calcPromoDiscount(baseAnnualPrice, appliedPromos);
+  const discountedAnnualPrice = Math.max(12, baseAnnualPrice - promoDiscount);
+  const discountedMonthlyPrice = promoDiscount > 0
+    ? Math.max(1, Math.floor(discountedAnnualPrice / 12))
+    : currentMonthlyPrice;
 
   const handleNext = () => {
     onContinue();
@@ -412,24 +424,54 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             <section className="relative">
               <TrustAndInfoAccordion variant="mobile" />
             </section>
+
+            {/* Email quote link — placed below FAQ to keep sticky bar compact */}
+            <div className="pt-2 pb-6 text-center">
+              <button
+                type="button"
+                onClick={() => setEmailQuoteOpen(true)}
+                className="text-sm font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+              >
+                Email me this quote
+              </button>
+            </div>
           </>
         )}
 
       </div>
 
 
+      {/* Promo banner — shows above sticky when a code is persisted from Step 4 */}
+      {promoCode && promoDiscount > 0 && (
+        <div className="fixed left-0 right-0 z-40 lg:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)' }}>
+          <div className="mx-3 mb-2 rounded-xl bg-[#FFF1E6] border border-[#FF6B00] px-3 py-2 flex items-center justify-between shadow">
+            <span className="text-[12px] font-semibold text-[#1a1a1a]">
+              Promo <span className="font-bold">{promoCode.code}</span> applied — save £{promoDiscount}
+            </span>
+            <button
+              type="button"
+              onClick={() => { clearAppliedPromos(); toast.success('Promo code removed'); }}
+              className="text-[11px] font-semibold text-gray-600 underline ml-2"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
         selectedPayment={stickyPayment}
         onPaymentChange={setStickyPayment}
-        monthlyPrice={currentMonthlyPrice}
-        fullPrice={Math.max(0, currentMonthlyPrice * 12 - marketingSavings)}
+        monthlyPrice={discountedMonthlyPrice}
+        fullPrice={Math.max(0, discountedMonthlyPrice * 12 - marketingSavings)}
         paymentType={paymentType || '24months'}
         isLoading={isLoading}
         isFormValid={canAdvance}
         onPayClick={handleNext}
         onEmailQuote={() => setEmailQuoteOpen(true)}
       />
+
 
       <EmailQuoteDialog
         open={emailQuoteOpen}
