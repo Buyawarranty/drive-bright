@@ -449,22 +449,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
 
             {/* PRICE BEAT */}
-            <div className="flex items-center gap-3.5 rounded-xl px-5 py-3.5" style={{ background: '#fffbf0', border: '1px solid #f5e4b0' }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#FEF0EA' }}>🏷</div>
-              <div className="flex-1 leading-tight">
-                <strong className="block text-sm font-semibold mb-0.5 text-[#161616]">Price Beat Guarantee</strong>
-                <span className="text-[13px] text-[#666]">Got a cheaper quote? We'll beat it — guaranteed.</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onOpenPriceMatch?.()}
-                className="text-[13px] font-medium whitespace-nowrap bg-transparent border-0 cursor-pointer p-0"
-                style={{ color: '#E8521A' }}
-              >
-                Beat My Quote →
-              </button>
-              <span className="text-[13px] text-[#888]">or call 0330 229 5040</span>
-            </div>
+            <PriceBeatBanner
+              currentMonthlyPrice={monthlyPrice}
+              currentExcess={voluntaryExcess}
+              currentClaimLimit={selectedClaimLimit}
+              currentLabourRate={selectedLabourRate}
+            />
 
           </div>
 
