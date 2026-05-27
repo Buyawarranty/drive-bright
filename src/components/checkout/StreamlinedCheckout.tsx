@@ -2804,7 +2804,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         minimised={isBottomCtaFullyVisible}
         trustStripOnly={isScrolledPastBottomCta}
-        defaultExpanded={true}
+        defaultExpanded={false}
         ctaLabel="Pay securely"
         validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
