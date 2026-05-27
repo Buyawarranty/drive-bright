@@ -2391,21 +2391,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   // Defensive: default to 24 months if paymentType is unset (matches "Most Popular" preselection)
                   const months = paymentType === '36months' ? 36 : paymentType === '12months' ? 12 : 24;
-                  const payInFull = displayMonthlyPrice * 12;
+                  const rawPayInFull = displayMonthlyPrice * 12;
+                  // Apply persisted promo (from Step 4) so Step 3 sticky matches Step 4
+                  const promoDiscount = calcPromoDiscount(rawPayInFull, appliedPromos);
+                  const payInFull = Math.max(12, rawPayInFull - promoDiscount);
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
                   const totalCoverDays = Math.round((months / 12) * 365);
-                  // Daily price uses payInFull (12 payments) divided by total cover days, matching the duration cards
                   const pencePerDayRaw = totalCoverDays > 0 ? (payInFull * 100) / totalCoverDays : 0;
                   const dailyPriceLabel = pencePerDayRaw >= 100
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
-                  // Headline monthly = the actual instalment (paid over 12 months for ALL terms)
-                  const stickyDisplayMonthly = displayMonthlyPrice;
+                  const stickyDisplayMonthly = promoDiscount > 0
+                    ? Math.max(1, Math.floor(payInFull / 12))
+                    : displayMonthlyPrice;
                   const coverLabel =
                     months === 12 ? '1-Year Platinum Cover' :
                     months === 24 ? '2-Year Platinum Cover' :
                     '3-Year Platinum Cover';
+
                   return (
                     <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100 divide-x divide-gray-200 gap-0">
 
