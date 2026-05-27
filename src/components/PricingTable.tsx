@@ -44,6 +44,7 @@ import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import PriceHelpPanel from '@/components/step3/PriceHelpPanel';
 import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
+import PriceBeatBanner from '@/components/step3/PriceBeatBanner';
 import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 
@@ -2247,7 +2248,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Price Help Trigger - Above Comprehensive Cover */}
         <div>
-          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
+          <PriceBeatBanner
+            currentMonthlyPrice={monthlyPrice}
+            currentExcess={voluntaryExcess}
+            currentClaimLimit={selectedClaimLimit}
+            currentLabourRate={selectedLabourRate}
+          />
         </div>
 
         {/* Comprehensive Cover section removed (mobile) */}
