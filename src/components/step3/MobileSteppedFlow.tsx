@@ -226,7 +226,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                       )}
                     >
                       {recommended && (
-                        <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
+                        <span className="absolute -top-2 right-9 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
                           Recommended
                         </span>
                       )}
