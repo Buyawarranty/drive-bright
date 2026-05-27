@@ -2451,7 +2451,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           Equal to <span className="font-semibold text-gray-700">{dailyPriceLabel}</span>
                         </span>
                         <span className="text-[11px] text-gray-500 whitespace-nowrap">Paid over 12 months</span>
+                        {activePromoCode && promoDiscount > 0 && (
+                          <span className="text-[11px] font-semibold text-[#FF6B00] whitespace-nowrap mt-0.5">
+                            Promo {activePromoCode.code} applied · save £{promoDiscount}
+                            <button
+                              type="button"
+                              onClick={() => { clearAppliedPromos(); toast.success('Promo code removed'); }}
+                              className="ml-2 text-[10px] font-medium text-gray-500 underline"
+                            >
+                              Remove
+                            </button>
+                          </span>
+                        )}
                       </div>
+
 
                       {/* SECTION 4: Pay in full pill */}
                       <div className="flex-[1.2] flex items-center justify-center px-5 py-3.5">
