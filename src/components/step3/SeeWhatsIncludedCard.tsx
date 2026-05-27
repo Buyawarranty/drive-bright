@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { ShieldCheck, PackagePlus, ChevronDown } from 'lucide-react';
+import { ShieldCheck, PackagePlus, ChevronDown, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import PartsListContent from './PartsListContent';
-import ExtrasSelector from './ExtrasSelector';
 
 interface VehicleData {
   regNumber: string;
@@ -33,21 +32,29 @@ interface Props {
   onAddOnChange?: (key: string, selected: boolean) => void;
 }
 
-type OpenId = 'covered' | 'extras' | null;
+type OpenId = 'features' | 'parts' | null;
 
-const SeeWhatsIncludedCard: React.FC<Props> = ({
-  variant = 'desktop',
-  selectedPlan,
-  selectedAddOns,
-  onAddOnChange,
-}) => {
+const WARRANTY_FEATURES = [
+  'Mechanical & electrical parts covered',
+  'Labour & diagnostics included',
+  'Unlimited claims',
+  'Vehicle rental contribution',
+  'Breakdown recovery included',
+  'European cover included',
+  'Cover up to your vehicle value',
+  'Use any VAT-registered garage',
+  'Fast claims & direct garage payments',
+  '14-day money-back guarantee',
+];
+
+const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
   const isMobile = variant === 'mobile';
   const [openId, setOpenId] = useState<OpenId>(null);
 
-  const toggle = (id: 'covered' | 'extras') => setOpenId(prev => (prev === id ? null : id));
+  const toggle = (id: 'features' | 'parts') => setOpenId(prev => (prev === id ? null : id));
 
   const Trigger: React.FC<{
-    id: 'covered' | 'extras';
+    id: 'features' | 'parts';
     icon: React.ReactNode;
     label: string;
   }> = ({ id, icon, label }) => {
@@ -68,8 +75,6 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({
     );
   };
 
-  const showExtras = !!onAddOnChange && !!selectedAddOns && !!selectedPlan.paymentType;
-
   return (
     <div
       className={
@@ -77,11 +82,33 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({
         (isMobile ? 'p-3' : 'p-4')
       }
     >
-      <Collapsible open={openId === 'covered'} onOpenChange={() => toggle('covered')}>
+      <Collapsible open={openId === 'features'} onOpenChange={() => toggle('features')}>
         <Trigger
-          id="covered"
+          id="features"
           icon={<ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />}
           label="See what's covered"
+        />
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+          <div className="mt-2 rounded-lg border border-[#D8E9DD] bg-white p-3 sm:p-4">
+            <ul className="space-y-2">
+              {WARRANTY_FEATURES.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                  <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#E6F4EB]">
+                    <Check className="h-3.5 w-3.5 text-[#3F8A5C]" />
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <Collapsible open={openId === 'parts'} onOpenChange={() => toggle('parts')}>
+        <Trigger
+          id="parts"
+          icon={<PackagePlus className="w-4 h-4 text-[#3F8A5C]" />}
+          label="View parts list"
         />
         <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
           <div className="mt-2 rounded-lg border border-[#D8E9DD] bg-white p-3 sm:p-4">
@@ -89,26 +116,6 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
-
-      {showExtras && (
-        <Collapsible open={openId === 'extras'} onOpenChange={() => toggle('extras')}>
-          <Trigger
-            id="extras"
-            icon={<PackagePlus className="w-4 h-4 text-[#3F8A5C]" />}
-            label="Warranty features"
-          />
-          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-            <div className="mt-2 rounded-lg border border-[#D8E9DD] bg-white">
-              <ExtrasSelector
-                selectedAddOns={selectedAddOns!}
-                onAddOnChange={onAddOnChange!}
-                paymentType={selectedPlan.paymentType!}
-                currentMonthlyPrice={selectedPlan.monthlyPrice}
-              />
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
     </div>
   );
 };
