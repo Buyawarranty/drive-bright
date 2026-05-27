@@ -20,6 +20,7 @@ import PolicyTermsAccordion from './PolicyTermsAccordion';
 import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
+import EmailQuoteDialog from './EmailQuoteDialog';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -48,6 +49,8 @@ interface MobileSteppedFlowProps {
   onContinue: () => void;
   isLoading: boolean;
   isFormValid: boolean;
+  selectedAddOns?: { [key: string]: boolean };
+  onAddOnChange?: (key: string, selected: boolean) => void;
 }
 
 // Repair preference (labour rate) options
@@ -104,7 +107,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   calculateMonthlyPrice,
   onContinue,
   isLoading,
+  selectedAddOns,
+  onAddOnChange,
 }) => {
+  const [emailQuoteOpen, setEmailQuoteOpen] = useState(false);
   const isPremium = isPremiumVehicle(vehicleData?.make);
   const claimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
@@ -307,6 +313,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                     labourRate: selectedLabourRate,
                     voluntaryExcess,
                   }}
+                  selectedAddOns={selectedAddOns}
+                  onAddOnChange={onAddOnChange}
                 />
               </div>
 
@@ -417,6 +425,20 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         isLoading={isLoading}
         isFormValid={canAdvance}
         onPayClick={handleNext}
+        onEmailQuote={() => setEmailQuoteOpen(true)}
+      />
+
+      <EmailQuoteDialog
+        open={emailQuoteOpen}
+        onOpenChange={setEmailQuoteOpen}
+        vehicleData={vehicleData}
+        selectedPlan={{
+          monthlyPrice: currentMonthlyPrice,
+          paymentType,
+          claimLimit: selectedClaimLimit,
+          labourRate: selectedLabourRate,
+          voluntaryExcess,
+        }}
       />
     </div>
   );

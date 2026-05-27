@@ -1384,6 +1384,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
           onContinue={handleSelectPlan}
           isLoading={Object.values(loading).some(Boolean)}
           isFormValid={!validationErrors.voluntaryExcess && !validationErrors.claimLimit && !validationErrors.paymentType}
+          selectedAddOns={selectedAddOns['platinum'] || {}}
+          onAddOnChange={(key, selected) => {
+            setSelectedAddOns(prev => ({
+              ...prev,
+              platinum: { ...(prev['platinum'] || {}), [key]: selected },
+            }));
+          }}
         />
       </div>
 
