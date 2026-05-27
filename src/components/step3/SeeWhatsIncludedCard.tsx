@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
-import { Check, ShieldCheck, Mail, ChevronDown } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ShieldCheck, PackagePlus, ChevronDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import PartsListContent from './PartsListContent';
+import ExtrasSelector from './ExtrasSelector';
 
 interface VehicleData {
   regNumber: string;
@@ -34,142 +29,86 @@ interface Props {
   variant?: 'desktop' | 'mobile';
   vehicleData: VehicleData;
   selectedPlan: SelectedPlan;
+  selectedAddOns?: { [key: string]: boolean };
+  onAddOnChange?: (key: string, selected: boolean) => void;
 }
 
-const BULLETS = [
-  'Comprehensive mechanical & electrical cover',
-  'Labour costs included',
-  'Unlimited claims on most plans',
-  'Fast claims & direct garage payments',
-  'Nationwide repair network',
-  '14-day cooling-off period',
-];
+type OpenId = 'covered' | 'extras' | null;
 
-const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop', vehicleData, selectedPlan }) => {
+const SeeWhatsIncludedCard: React.FC<Props> = ({
+  variant = 'desktop',
+  selectedPlan,
+  selectedAddOns,
+  onAddOnChange,
+}) => {
   const isMobile = variant === 'mobile';
-  const [coveredOpen, setCoveredOpen] = useState(false);
-  const [emailOpen, setEmailOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [sending, setSending] = useState(false);
+  const [openId, setOpenId] = useState<OpenId>(null);
 
-  const handleSend = async () => {
-    if (!email || !email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-    if (!selectedPlan.paymentType) {
-      toast.error('Please choose a cover length first');
-      return;
-    }
-    setSending(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-quote-email', {
-        body: {
-          email,
-          firstName: vehicleData.firstName,
-          lastName: vehicleData.lastName,
-          vehicleData: {
-            regNumber: vehicleData.regNumber,
-            make: vehicleData.make,
-            model: vehicleData.model,
-            year: vehicleData.year,
-            mileage: vehicleData.mileage,
-            fuelType: vehicleData.fuelType,
-            transmission: vehicleData.transmission,
-            vehicleType: vehicleData.vehicleType,
-          },
-          selectedPlan: {
-            name: 'Platinum Complete Plan',
-            price: selectedPlan.monthlyPrice,
-            paymentType: selectedPlan.paymentType,
-            claimLimit: selectedPlan.claimLimit,
-            labourRate: selectedPlan.labourRate,
-            voluntaryExcess: selectedPlan.voluntaryExcess,
-          },
-        },
-      });
-      if (error) throw error;
-      toast.success('Quote emailed — check your inbox.');
-      setEmailOpen(false);
-      setEmail('');
-    } catch (err) {
-      console.error('send-quote-email error', err);
-      toast.error('Failed to send quote. Please try again.');
-    } finally {
-      setSending(false);
-    }
+  const toggle = (id: 'covered' | 'extras') => setOpenId(prev => (prev === id ? null : id));
+
+  const Trigger: React.FC<{
+    id: 'covered' | 'extras';
+    icon: React.ReactNode;
+    label: string;
+  }> = ({ id, icon, label }) => {
+    const open = openId === id;
+    return (
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="w-full inline-flex items-center justify-between gap-2 rounded-lg border border-[#D8E9DD] bg-white hover:bg-[#F3FAF5] text-foreground text-sm font-semibold px-4 py-3 transition-colors"
+        >
+          <span className="inline-flex items-center gap-2">
+            {icon}
+            {label}
+          </span>
+          <ChevronDown className={'w-4 h-4 transition-transform ' + (open ? 'rotate-180' : '')} />
+        </button>
+      </CollapsibleTrigger>
+    );
   };
+
+  const showExtras = !!onAddOnChange && !!selectedAddOns && !!selectedPlan.paymentType;
 
   return (
     <div
       className={
-        // Soft sage-tinted card matching trust/insurance palette
-        'rounded-xl border border-[#D8E9DD] bg-[#F6FBF8] ' +
-        (isMobile ? 'p-4' : 'p-5')
+        'rounded-xl border border-[#D8E9DD] bg-[#F6FBF8] space-y-2 ' +
+        (isMobile ? 'p-3' : 'p-4')
       }
     >
-
-      <Collapsible open={coveredOpen} onOpenChange={setCoveredOpen}>
-        <div className={'flex flex-wrap items-center gap-2 ' + (isMobile ? '' : 'gap-3')}>
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8E9DD] bg-white hover:bg-[#F3FAF5] text-foreground text-sm font-semibold px-3.5 py-2 transition-colors"
-            >
-              <ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />
-              {coveredOpen ? "Hide coverage" : "View what's covered"}
-              <ChevronDown className={'w-4 h-4 transition-transform ' + (coveredOpen ? 'rotate-180' : '')} />
-            </button>
-          </CollapsibleTrigger>
-
-          <button
-            type="button"
-            onClick={() => setEmailOpen(true)}
-            className="ml-auto inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-semibold text-sm underline underline-offset-2"
-          >
-            <Mail className="w-4 h-4" />
-            Email quote
-          </button>
-        </div>
-
+      <Collapsible open={openId === 'covered'} onOpenChange={() => toggle('covered')}>
+        <Trigger
+          id="covered"
+          icon={<ShieldCheck className="w-4 h-4 text-[#3F8A5C]" />}
+          label="See what's covered"
+        />
         <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-          <div className="mt-4 rounded-lg border border-[#D8E9DD] bg-white p-3 sm:p-4">
+          <div className="mt-2 rounded-lg border border-[#D8E9DD] bg-white p-3 sm:p-4">
             <PartsListContent />
           </div>
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Email quote dialog */}
-      <Dialog open={emailOpen} onOpenChange={setEmailOpen}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Email me this quote</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <Label htmlFor="quote-email">Email address</Label>
-            <Input
-              id="quote-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              autoFocus
-            />
-            <p className="text-xs text-muted-foreground">
-              We'll send a copy of your quote so you can come back to it anytime.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEmailOpen(false)} disabled={sending}>
-              Cancel
-            </Button>
-            <Button onClick={handleSend} disabled={sending}>
-              {sending ? 'Sending…' : 'Send quote'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {showExtras && (
+        <Collapsible open={openId === 'extras'} onOpenChange={() => toggle('extras')}>
+          <Trigger
+            id="extras"
+            icon={<PackagePlus className="w-4 h-4 text-[#3F8A5C]" />}
+            label="Optional extras"
+          />
+          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+            <div className="mt-2 rounded-lg border border-[#D8E9DD] bg-white">
+              <ExtrasSelector
+                selectedAddOns={selectedAddOns!}
+                onAddOnChange={onAddOnChange!}
+                paymentType={selectedPlan.paymentType!}
+                currentMonthlyPrice={selectedPlan.monthlyPrice}
+              />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 };
