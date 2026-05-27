@@ -30,7 +30,7 @@ import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import SidebarQuickActions from './SidebarQuickActions';
-import { Lock, Shield, Clock } from 'lucide-react';
+import { Lock, Shield, Clock, Zap } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
 
@@ -518,13 +518,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
                 <div className="mt-3.5 flex items-center justify-between text-[12px] font-semibold text-[#4f4f4f]">
                   <span className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={3} /> Secure checkout
+                    <Lock className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={2.25} /> Secure checkout
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={3} /> 14-day cooling off
+                    <Clock className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={2.25} /> 14-day cooling off
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={3} /> Fast claims
+                    <Zap className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={2.25} /> Fast claims
                   </span>
                 </div>
               </div>
