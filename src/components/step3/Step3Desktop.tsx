@@ -479,6 +479,14 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 <div className="mt-2.5 text-[#6c6c6c] text-sm font-semibold">
                   Equal to {dailyLabel} · 12 interest-free payments
                 </div>
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-[#eaf8f2] border border-[#cdebd9] px-3 py-2">
+                  <div className="text-[13px] text-[#3e3e3e] font-semibold">
+                    Or pay in full <strong className="text-[#161616]">£{payInFull}</strong>
+                  </div>
+                  {savings > 0 && (
+                    <div className="text-[12px] text-[#1ca36f] font-extrabold">Save £{savings}</div>
+                  )}
+                </div>
               </div>
 
               <div className="p-[18px] pt-4 grid gap-2 border-b border-[#f3ece7]">
