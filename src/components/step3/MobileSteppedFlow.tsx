@@ -441,18 +441,37 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
       </div>
 
 
+      {/* Promo banner — shows above sticky when a code is persisted from Step 4 */}
+      {promoCode && promoDiscount > 0 && (
+        <div className="fixed left-0 right-0 z-40 lg:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)' }}>
+          <div className="mx-3 mb-2 rounded-xl bg-[#FFF1E6] border border-[#FF6B00] px-3 py-2 flex items-center justify-between shadow">
+            <span className="text-[12px] font-semibold text-[#1a1a1a]">
+              Promo <span className="font-bold">{promoCode.code}</span> applied — save £{promoDiscount}
+            </span>
+            <button
+              type="button"
+              onClick={() => { clearAppliedPromos(); toast.success('Promo code removed'); }}
+              className="text-[11px] font-semibold text-gray-600 underline ml-2"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
         selectedPayment={stickyPayment}
         onPaymentChange={setStickyPayment}
-        monthlyPrice={currentMonthlyPrice}
-        fullPrice={Math.max(0, currentMonthlyPrice * 12 - marketingSavings)}
+        monthlyPrice={discountedMonthlyPrice}
+        fullPrice={Math.max(0, discountedMonthlyPrice * 12 - marketingSavings)}
         paymentType={paymentType || '24months'}
         isLoading={isLoading}
         isFormValid={canAdvance}
         onPayClick={handleNext}
         onEmailQuote={() => setEmailQuoteOpen(true)}
       />
+
 
       <EmailQuoteDialog
         open={emailQuoteOpen}
