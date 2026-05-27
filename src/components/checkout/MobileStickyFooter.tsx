@@ -19,6 +19,7 @@ interface MobileStickyFooterProps {
   defaultExpanded?: boolean;
   ctaLabel?: string;
   validationError?: string;
+  onEmailQuote?: () => void;
 }
 
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
@@ -34,7 +35,19 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   defaultExpanded = false,
   ctaLabel = 'Continue',
   validationError,
+  onEmailQuote,
 }) => {
+  const EmailQuoteLink = onEmailQuote ? (
+    <div className="mt-2 text-center">
+      <button
+        type="button"
+        onClick={onEmailQuote}
+        className="text-[12px] font-medium text-gray-600 hover:text-gray-900 underline underline-offset-2"
+      >
+        Email quote
+      </button>
+    </div>
+  ) : null;
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
   const [expanded, setExpanded] = useState(defaultExpanded);
