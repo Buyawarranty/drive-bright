@@ -54,7 +54,10 @@ const TrustBlocks: React.FC<Props> = ({ variant = 'desktop', className }) => {
             </p>
           </div>
         </div>
-        <TrustpilotMicroWidget />
+        <div className="flex flex-col items-end gap-1 [&_iframe]:!border-0">
+          <TrustpilotMicroWidget />
+          <TrustpilotMicroStarWidget />
+        </div>
       </div>
 
       <div
