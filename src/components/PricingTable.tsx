@@ -1259,6 +1259,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
     const termVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
     const termBasePrice = getPricingData(effectiveExcess, effectiveClaimLimit, term);
     const adjustedBasePrice = applyPriceAdjustment(termBasePrice, termVehicleAdjustment);
+    // Apply minimum BASE price floor for parity with sticky/desktop cards
+    const flooredBasePrice = applyBasePriceFloor(adjustedBasePrice, term as PaymentPeriod);
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     const termAutoIncluded = getAutoIncludedAddOns(term);
@@ -1275,7 +1277,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
     const addOnTotal = calculateAddOnPrice(termAddOns, term, durationMonths);
     const premiumSurcharge = getClaimLimitSurcharge(effectiveClaimLimit, term, effectiveExcess);
-    const total = adjustedBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
+    const total = flooredBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
 
     return Math.floor(total / 12);
   }, [vehicleData, getPricingData, voluntaryExcess, selectedClaimLimit, selectedLabourRate, selectedProtectionAddOns, boostTotalAdjustment]);
