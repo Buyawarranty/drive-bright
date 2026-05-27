@@ -30,6 +30,7 @@ import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import SidebarQuickActions from './SidebarQuickActions';
+import PriceBeatBanner from './PriceBeatBanner';
 import { Lock, Shield, Clock, Zap } from 'lucide-react';
 
 type PaymentType = '12months' | '24months' | '36months';
