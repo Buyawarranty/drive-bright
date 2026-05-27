@@ -468,88 +468,65 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
           </div>
 
-          {/* RIGHT - Sticky summary */}
+          {/* RIGHT - Sticky summary (simplified) */}
           <aside className="lg:sticky lg:top-6 grid gap-4">
-            {/* Price card */}
             <div className="bg-gradient-to-b from-[#fffaf7] to-white border border-[#ffe0cf] rounded-[22px] overflow-hidden shadow-[0_16px_36px_rgba(243,107,33,0.08),0_10px_30px_rgba(16,24,40,0.06)]">
               <div className="p-[22px] pb-[18px] border-b border-[#f3ece7]">
                 <div className="text-[#f36b21] text-[12px] font-extrabold tracking-[0.08em] uppercase mb-2.5">Live price</div>
-                <div className="text-[16px] text-[#6c6c6c] mb-1.5 font-bold">Your personalised cover</div>
-                <p className="text-[48px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] flex items-baseline gap-2">
+                <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] flex items-baseline gap-2">
                   £{monthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
                 </p>
                 <div className="mt-2.5 text-[#6c6c6c] text-sm font-semibold">
                   Equal to {dailyLabel} · 12 interest-free payments
                 </div>
               </div>
-              <div className="p-[18px] pt-4 grid gap-3">
+
+              <div className="p-[18px] pt-4 grid gap-2 border-b border-[#f3ece7]">
                 {selectedTier && (
-                  <SummaryRow strong={`£${(selectedTier.displayValue ?? selectedTier.value).toLocaleString()} per claim`} sub={selectedTier.name} />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#6c6c6c]">Claim limit</span>
+                    <span className="font-bold text-[#161616]">£{(selectedTier.displayValue ?? selectedTier.value).toLocaleString()}</span>
+                  </div>
                 )}
                 {selectedLabour && (
-                  <SummaryRow strong={`${selectedLabour.label} labour`} sub={selectedLabour.sub} />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#6c6c6c]">Labour</span>
+                    <span className="font-bold text-[#161616]">{selectedLabour.label}</span>
+                  </div>
                 )}
                 {selectedDuration && (
-                  <SummaryRow strong={selectedDuration.label} sub="Platinum Complete Plan" />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#6c6c6c]">Cover</span>
+                    <span className="font-bold text-[#161616]">{selectedDuration.label}</span>
+                  </div>
                 )}
                 {voluntaryExcess !== null && (
-                  <SummaryRow strong={`£${voluntaryExcess} excess`} sub={EXCESS_OPTIONS.find(o => o.value === voluntaryExcess)?.sub || ''} />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#6c6c6c]">Excess</span>
+                    <span className="font-bold text-[#161616]">£{voluntaryExcess}</span>
+                  </div>
                 )}
               </div>
-            </div>
 
-            {/* CTA card */}
-            <div className="bg-white border border-[#e9e9e7] rounded-2xl shadow-[0_10px_30px_rgba(16,24,40,0.06)] p-[18px]">
-              {savings > 0 && (
-                <div className="bg-[#e8f7ef] border-2 border-[#1ca36f] rounded-2xl px-4 py-3.5 text-[14px] text-[#0e6b48] mb-3.5 leading-snug font-semibold">
-                  💰 Pay in full for <strong className="text-[#0a5938]">£{payInFull}</strong> and <strong className="text-[#0a5938]">save £{savings}</strong> today versus the standard monthly plan.
+              <div className="p-[18px]">
+                <button
+                  onClick={onSelectPlan}
+                  className="animate-breathing w-full border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-base px-6 py-[18px] min-h-[56px] cursor-pointer shadow-[0_10px_22px_rgba(243,107,33,0.22)] leading-none"
+                >
+                  Continue to checkout →
+                </button>
+
+                <div className="mt-3.5 flex items-center justify-between text-[12px] font-semibold text-[#4f4f4f]">
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={3} /> Secure checkout
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={3} /> 14-day cooling off
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#1ca36f]" strokeWidth={3} /> Fast claims
+                  </span>
                 </div>
-              )}
-              <button
-                onClick={onSelectPlan}
-                className="animate-breathing w-full border-0 rounded-2xl bg-[#f36b21] hover:bg-[#df5d17] text-white font-extrabold text-base px-6 py-[18px] min-h-[56px] cursor-pointer shadow-[0_10px_22px_rgba(243,107,33,0.22)] leading-none"
-              >
-                Continue to checkout →
-              </button>
-              <div className="mt-3 text-center text-[#919191] text-[12px] font-semibold">
-                Secure checkout · 14 days to cancel
-              </div>
-            </div>
-
-            {/* Quick actions */}
-            <SidebarQuickActions
-              selectedTerm={paymentType}
-              onSelectTerm={setPaymentType}
-              availableTerms={availableDurations}
-            />
-
-            {/* Mini cards */}
-            <div className="grid gap-3">
-              <div className="bg-white border border-[#e9e9e7] rounded-2xl p-4 shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
-                <h3 className="m-0 mb-3 text-base tracking-tight text-[#161616]">Your cover, made simple</h3>
-                <ul className="m-0 p-0 list-none grid gap-2.5 text-sm text-[#4f4f4f]">
-                  {['No hidden catches or surprise exclusions', 'Fast claims and quick payouts', '14-day cooling off period'].map(t => (
-                    <li key={t} className="flex gap-2.5 items-start leading-snug">
-                      <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
-                      </span>
-                      <span>{t}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-white border border-[#e9e9e7] rounded-2xl p-4 shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
-                <h3 className="m-0 mb-3 text-base tracking-tight text-[#161616]">What's included</h3>
-                <ul className="m-0 p-0 list-none grid gap-2.5 text-sm text-[#4f4f4f]">
-                  {['Mechanical and electrical parts', 'Nationwide garage network', 'Labour and covered repair costs'].map(t => (
-                    <li key={t} className="flex gap-2.5 items-start leading-snug">
-                      <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
-                      </span>
-                      <span>{t}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
             </div>
           </aside>
