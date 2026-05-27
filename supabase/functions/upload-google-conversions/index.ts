@@ -100,8 +100,9 @@ async function uploadConversion(
     currencyCode: currencyCode,
   };
   if (userIdentifiers.length > 0) {
+    // Note: userIdentifierSource is NOT a field on ClickConversion in Google Ads
+    // API v21+. FIRST_PARTY is the default for enhanced conversions, so we omit it.
     conversion.userIdentifiers = userIdentifiers;
-    conversion.userIdentifierSource = 'FIRST_PARTY';
   }
 
   const body = { conversions: [conversion], partialFailure: true };
