@@ -20,6 +20,7 @@ import PolicyTermsAccordion from './PolicyTermsAccordion';
 import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
+import EmailQuoteDialog from './EmailQuoteDialog';
 
 type PaymentType = '12months' | '24months' | '36months';
 
