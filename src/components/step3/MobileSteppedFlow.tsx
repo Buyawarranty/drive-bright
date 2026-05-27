@@ -425,6 +425,20 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         isLoading={isLoading}
         isFormValid={canAdvance}
         onPayClick={handleNext}
+        onEmailQuote={() => setEmailQuoteOpen(true)}
+      />
+
+      <EmailQuoteDialog
+        open={emailQuoteOpen}
+        onOpenChange={setEmailQuoteOpen}
+        vehicleData={vehicleData}
+        selectedPlan={{
+          monthlyPrice: currentMonthlyPrice,
+          paymentType,
+          claimLimit: selectedClaimLimit,
+          labourRate: selectedLabourRate,
+          voluntaryExcess,
+        }}
       />
     </div>
   );
