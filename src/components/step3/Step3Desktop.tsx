@@ -142,7 +142,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
     const adjustedBasePrice = applyBasePriceFloor(
       applyPriceAdjustment(basePrice, vehicleAdjustment),
-      durationId as PaymentPeriod
+      durationId as PaymentPeriod,
+      voluntaryExcess
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
