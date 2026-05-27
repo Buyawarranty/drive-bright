@@ -153,6 +153,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState<string | null>(null);
+
+  // Promo applied on Step 4 — mirror its discount on Step 3 sticky for price parity
+  const appliedPromos = useAppliedPromos();
+  const activePromoCode = appliedPromos[0];
   
   // Email quote dialog state
   const [emailQuoteDialogOpen, setEmailQuoteDialogOpen] = useState(false);
