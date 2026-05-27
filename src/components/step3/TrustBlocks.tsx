@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 
 type Variant = 'desktop' | 'mobile';
 
