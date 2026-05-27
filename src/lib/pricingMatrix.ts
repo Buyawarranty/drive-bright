@@ -93,9 +93,9 @@ export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
  * because the floor is applied to the base only.
  */
 export const MIN_BASE_PRICE_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 240,
-  '24months': 400,
-  '36months': 540,
+  '12months': 249,
+  '24months': 498,
+  '36months': 747,
 };
 
 export function applyBasePriceFloor(adjustedBasePrice: number, paymentPeriod: PaymentPeriod): number {
