@@ -36,19 +36,14 @@ const CONTENT: Record<HelperTopic, Content> = {
     takeaway: 'Use any VAT-registered garage — you only pay the difference if they charge more.',
   },
   excess: {
-    title: 'How voluntary excess works',
+    title: 'How excess works',
     subtitle: 'Plain-English explanation with a real example.',
-    short:
-      'Excess is the amount you pay towards a claim — we pay the rest, up to your claim limit. Lower excess = higher monthly cost, and vice versa.',
-    example:
-      'Example: a £900 repair with a £150 excess = you pay £150, we pay £750 (within your claim limit).',
+    short: 'You only pay the excess if you make a claim.',
+    example: 'Example: £150 excess means you pay the first £150 towards a claim.',
     bullets: [
-      '£0 excess = nothing to pay at claim time, highest monthly price.',
-      '£150 is the most popular balance of monthly cost vs claim cost.',
-      'Higher excess (£250+) keeps monthly payments lowest.',
-      'You only ever pay the excess if you actually make a claim.',
+      'Lower excess = higher monthly payments.',
+      'Higher excess = lower monthly payments.',
     ],
-    takeaway: 'Pick the excess you’d be comfortable paying once if something goes wrong.',
   },
 };
 
