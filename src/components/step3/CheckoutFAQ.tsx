@@ -39,7 +39,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: 'How quickly are claims paid?',
-    a: 'We aim to process claims quickly and keep repairs moving with minimal hassle.',
+    a: 'We aim to process claims the same day when all documents received and keep repairs moving with minimal hassle.',
   },
   {
     q: 'What happens if my garage charges more?',
