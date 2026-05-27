@@ -313,6 +313,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                     labourRate: selectedLabourRate,
                     voluntaryExcess,
                   }}
+                  selectedAddOns={selectedAddOns}
+                  onAddOnChange={onAddOnChange}
                 />
               </div>
 
