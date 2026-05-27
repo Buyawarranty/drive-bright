@@ -2247,7 +2247,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Price Help Trigger - Above Comprehensive Cover */}
         <div>
-          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
+          <PriceBeatBanner
+            currentMonthlyPrice={monthlyPrice}
+            currentExcess={voluntaryExcess}
+            currentClaimLimit={selectedClaimLimit}
+            currentLabourRate={selectedLabourRate}
+          />
         </div>
 
         {/* Comprehensive Cover section removed (mobile) */}
