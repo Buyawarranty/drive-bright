@@ -1087,7 +1087,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       // £50/hr is the default with no adjustment
       
       // Apply minimum BASE price floor (acquisition + lead cost protection)
-      const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod);
+      const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod, voluntaryExcess);
       const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
       // Don't allow progression if vehicle is too old
