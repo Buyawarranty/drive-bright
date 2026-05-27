@@ -48,6 +48,8 @@ interface MobileSteppedFlowProps {
   onContinue: () => void;
   isLoading: boolean;
   isFormValid: boolean;
+  selectedAddOns?: { [key: string]: boolean };
+  onAddOnChange?: (key: string, selected: boolean) => void;
 }
 
 // Repair preference (labour rate) options
@@ -104,7 +106,10 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   calculateMonthlyPrice,
   onContinue,
   isLoading,
+  selectedAddOns,
+  onAddOnChange,
 }) => {
+  const [emailQuoteOpen, setEmailQuoteOpen] = useState(false);
   const isPremium = isPremiumVehicle(vehicleData?.make);
   const claimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
