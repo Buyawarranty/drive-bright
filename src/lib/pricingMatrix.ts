@@ -88,19 +88,38 @@ export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
 
 /**
  * Per-duration minimum BASE price (after vehicle adjustment, before labour/boost/add-ons).
- * Protects margin against acquisition + lead cost on cheap excess/claim combos.
- * Labour-rate, boost, and add-ons always charge their full incremental amount on top
- * because the floor is applied to the base only.
+ * The £500-excess tier sits at the absolute floor; the £250-excess tier sits one step above
+ * so it is always strictly more expensive than £500. Lower excess tiers (£0–£150) are not
+ * bumped — the matrix already prices them above the floor.
+ * Labour-rate, boost, and add-ons always charge their full incremental amount on top.
  */
 export const MIN_BASE_PRICE_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 249,
-  '24months': 498,
-  '36months': 747,
+  '12months': 280,
+  '24months': 560,
+  '36months': 840,
 };
 
-export function applyBasePriceFloor(adjustedBasePrice: number, paymentPeriod: PaymentPeriod): number {
+// Minimum gap between the £250-excess tier and the £500-excess tier so £500 stays cheaper.
+export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
+  '12months': 20,
+  '24months': 40,
+  '36months': 60,
+};
+
+export function applyBasePriceFloor(
+  adjustedBasePrice: number,
+  paymentPeriod: PaymentPeriod,
+  voluntaryExcess?: number
+): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
-  return Math.max(adjustedBasePrice, minBase);
+  const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
+  // £250 tier must stay above £500 tier; lower excess tiers use the absolute floor
+  // (which the matrix already exceeds, so they are unaffected in practice).
+  const effectiveFloor =
+    voluntaryExcess !== undefined && voluntaryExcess >= 250 && voluntaryExcess < 500
+      ? minBase + step
+      : minBase;
+  return Math.max(adjustedBasePrice, effectiveFloor);
 }
 
 /**
