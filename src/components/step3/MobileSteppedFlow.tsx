@@ -412,6 +412,17 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             <section className="relative">
               <TrustAndInfoAccordion variant="mobile" />
             </section>
+
+            {/* Email quote link — placed below FAQ to keep sticky bar compact */}
+            <div className="pt-2 pb-6 text-center">
+              <button
+                type="button"
+                onClick={() => setEmailQuoteOpen(true)}
+                className="text-sm font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+              >
+                Email me this quote
+              </button>
+            </div>
           </>
         )}
 
