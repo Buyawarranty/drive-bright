@@ -211,7 +211,7 @@ export function calculateTotalWarrantyPrice(params: {
   const adjustedBasePrice = basePrice + vehicleAdjustment;
 
   // 3. Enforce minimum BASE price floor (see applyBasePriceFloor below)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod);
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess);
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
   const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
