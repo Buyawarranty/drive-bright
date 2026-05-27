@@ -1,86 +1,62 @@
-## Goal
-Detect when customers are struggling on Step 4 (checkout/payment) and surface a real-time **red alert bar** at the top of the admin dashboard (super admin + admin only) with the customer's name and contact info so an agent can call them immediately.
+# Offline Conversion Tracking — Root Cause & Fix
 
----
+## The problem
 
-## What counts as "struggling"
-We track signals automatically from the checkout page and fire an alert when any threshold is hit:
+Your hourly cron (`upload-google-ads-conversions-hourly`) is running every hour and succeeding at the network level, but **every conversion upload since 25 May 2026 is being rejected by Google Ads with HTTP 400**.
 
-| Signal | Threshold |
-|---|---|
-| Time on Step 4 without progress | > 90 seconds idle, or > 3 min total on page |
-| Payment attempt failed (Stripe `payment_failed` / Bumper rejection) | ≥ 1 failure |
-| Multiple payment attempts | ≥ 2 attempts in the session |
-| Form field re-edits | Same field edited > 3 times (suggests confusion) |
-| Switched payment method | Toggled Monthly ↔ Pay-in-Full > 2 times |
-| Bumper redirect returned without success | Detected via `cancel` / back navigation |
+Sample failure from the DB (`customers.google_ads_conversion_status`):
 
-Each event includes: customer name, email, phone, registration, device type, signal type, plan, amount, and timestamp.
+```
+failed: HTTP 400: Invalid JSON payload received.
+Unknown name "userIdentifierSource" at 'conversions[0]': Cannot find field.
+```
 
----
+That's why ~12 recent sales are missing from "Purchase - Offline (API Import)" while older ones (uploaded before Google's v21 enforcement tightened) show as `uploaded` in our DB.
 
-## Build
+### Why it broke
 
-### 1. Database
-New table `checkout_struggle_alerts`:
-- `customer_name`, `customer_email`, `customer_phone`, `vehicle_reg`
-- `device_type` (mobile / tablet / desktop)
-- `payment_method` (stripe / bumper)
-- `signal_type` (timeout / payment_failed / multi_attempt / form_thrash / bumper_cancelled)
-- `details` (jsonb — failure message, attempts count, etc.)
-- `plan_name`, `amount`
-- `status` (`active`, `acknowledged`, `resolved`) — auto-resolves when the customer pays
-- `acknowledged_by`, `acknowledged_at`, `resolved_at`
-- Realtime enabled
-- RLS: only `admin` and `super_admin` can read/update
+In Google Ads API v21, `userIdentifierSource` is **no longer a field on the `ClickConversion` object**. It only exists on each individual `UserIdentifier` entry (and `FIRST_PARTY` is the default, so it can be omitted entirely for enhanced conversions).
 
-Auto-resolve trigger: when a matching payment lands in `customers` (by email + reg), mark alerts resolved.
+Our edge function `supabase/functions/upload-google-conversions/index.ts` (lines 102–105) still sets it at the conversion level:
 
-### 2. Client-side tracker
-New hook `useCheckoutStruggleTracker.ts` mounted inside `StreamlinedCheckout.tsx` (Step 4 only):
-- Idle timer + page-time timer
-- Listens to Stripe payment errors and Bumper failures
-- Watches form-field edit counts and payment-method toggles
-- Inserts into `checkout_struggle_alerts` (debounced; one row per session per signal type)
+```ts
+if (userIdentifiers.length > 0) {
+  conversion.userIdentifiers = userIdentifiers;
+  conversion.userIdentifierSource = 'FIRST_PARTY';   // ❌ rejected by v21
+}
+```
 
-### 3. Edge-function hook
-In `create-payment-intent` and `create-bumper-checkout`, on caught errors, also insert an alert row (server-side fallback, since some failures never reach the browser).
+Because every recent customer has email + phone, every recent upload hits this branch and gets rejected. The cron keeps retrying them (good — nothing is lost), but they will keep failing until the field is removed.
 
-### 4. Admin UI — Red Alert Bar
-New component `CheckoutStruggleAlertBar.tsx` mounted at the top of the admin dashboard layout (visible only to `admin` / `super_admin`):
-- Bright red sticky bar pinned above the dashboard content
-- Subscribes via Supabase realtime to `checkout_struggle_alerts` where `status='active'`
-- Shows the most recent customer:
-  > 🚨 **John Smith** is stuck on checkout (Stripe, mobile) — AB12 CDE — 07xxx xxxxxx — *Payment failed: card declined*
-- Buttons: **Call now** (tel:), **Acknowledge** (marks as seen), **View** (jumps to that customer/lead), **Dismiss**
-- If multiple active alerts: shows count badge "+3 more" with dropdown
-- Plays a subtle ping sound on new alert (super admin only, can mute)
+## The fix
 
-### 5. Where the bar appears
-Mounted once at the top of the admin shell so it's visible on every admin tab.
+### 1. Remove the invalid field (the actual bug)
 
----
+In `supabase/functions/upload-google-conversions/index.ts`, drop the `conversion.userIdentifierSource` line. Enhanced conversions default to `FIRST_PARTY`, which is what we want.
 
-## Files to add / edit
+```ts
+if (userIdentifiers.length > 0) {
+  conversion.userIdentifiers = userIdentifiers;
+}
+```
 
-**New**
-- `supabase/migrations/...sql` — `checkout_struggle_alerts` table + RLS + realtime + auto-resolve trigger
-- `src/hooks/useCheckoutStruggleTracker.ts`
-- `src/components/admin/CheckoutStruggleAlertBar.tsx`
+No other changes needed — `gclid`, `conversionAction`, `conversionDateTime`, `conversionValue`, `currencyCode`, and `userIdentifiers[*].hashedEmail / hashedPhoneNumber` are all still valid in v21.
 
-**Edit**
-- `src/components/checkout/StreamlinedCheckout.tsx` — mount the tracker
-- `src/components/checkout/DesktopOrderSummary.tsx` — emit payment-method-toggle signal
-- `supabase/functions/create-payment-intent/index.ts` — log server-side failures
-- `supabase/functions/create-bumper-checkout/index.ts` — log server-side failures
-- Admin dashboard shell (the layout that wraps admin tabs) — mount `CheckoutStruggleAlertBar`
+### 2. Automatic backfill (no extra work)
 
----
+The cron query filters on `google_ads_conversion_uploaded_at IS NULL`, and failed rows keep that column NULL. So once the function is redeployed, the **next hourly run will retry every failed conversion automatically** — including the ~12 recent sales — and stamp them as uploaded.
 
-## Open questions before I build
+(60-day cutoff still applies, so anything older than that won't backfill — but all the missed ones are within the last few weeks, so they're safe.)
 
-1. **Sound on new alert** — want a soft ping for super admins, or silent (visual-only)?
-2. **Auto-dismiss timing** — should an unacknowledged alert auto-hide after, say, 30 minutes if the customer abandoned? Or stay until manually dismissed?
-3. **Which admin shell file** mounts the dashboard? I'll find it (likely `src/components/admin/AdminDashboard.tsx` or similar) — confirm if you have a preferred location.
+### 3. Verify after the next cron tick
 
-Reply with answers (or just "go" for: silent, 30-min auto-hide, top of admin dashboard) and I'll build it.
+After the next run (top of the hour), I'll re-query the customers table to confirm `google_ads_conversion_status = 'uploaded'` for the previously-failed rows. Google Ads UI typically reflects the conversions within 3–6 hours, sometimes up to 24h.
+
+## What I will NOT change
+
+- Cron schedule, secrets, conversion action ID, hashing, phone normalisation, bumper enrichment, or the 60-day cutoff — all of these are working correctly.
+- Client-side `gtag` purchase firing on the thank-you page — that's the separate "Purchase GTM" action and is unaffected.
+
+## Files touched
+
+- `supabase/functions/upload-google-conversions/index.ts` — one-line removal inside `uploadConversion`.
