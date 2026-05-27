@@ -1265,7 +1265,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     const termBasePrice = getPricingData(effectiveExcess, effectiveClaimLimit, term);
     const adjustedBasePrice = applyPriceAdjustment(termBasePrice, termVehicleAdjustment);
     // Apply minimum BASE price floor for parity with sticky/desktop cards
-    const flooredBasePrice = applyBasePriceFloor(adjustedBasePrice, term as PaymentPeriod);
+    const flooredBasePrice = applyBasePriceFloor(adjustedBasePrice, term as PaymentPeriod, effectiveExcess);
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     const termAutoIncluded = getAutoIncludedAddOns(term);
