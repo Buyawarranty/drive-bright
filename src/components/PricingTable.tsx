@@ -849,7 +849,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     
     // Apply minimum BASE price floor (acquisition + lead cost protection).
     // Floor is on base only so labour/boost/add-ons still charge extra on top.
-    return applyBasePriceFloor(adjustedPrice, paymentType as PaymentPeriod);
+    return applyBasePriceFloor(adjustedPrice, paymentType as PaymentPeriod, voluntaryExcess);
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData]);
 
   // CRITICAL: Compute "effective add-ons" synchronized with paymentType to prevent race condition.
