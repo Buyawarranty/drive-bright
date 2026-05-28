@@ -21,6 +21,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
+import { QuickCancellationAdd } from './QuickCancellationAdd';
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
 
@@ -362,6 +363,13 @@ export const CancellationsTab: React.FC<{
             : 'Your cancelled and refunded warranties'}
         </p>
       </div>
+
+      {/* Quick add cancellation/refund (admin & super_admin only) */}
+      {isFinancialRole && (
+        <QuickCancellationAdd onUpdated={() => { setInitialLoadDone(false); fetchCancellations(); }} />
+      )}
+
+
 
       {/* Quick Date Tabs */}
       <div className="flex flex-wrap gap-2">
