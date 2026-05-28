@@ -579,7 +579,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             </SortableContext>
           </nav>
         </DndContext>
+
+        {/* Sticky footer: Change User + Sign Out */}
+        <div className="absolute bottom-0 left-0 right-0 border-t bg-white p-2 space-y-1">
+          <button
+            onClick={handleChangeUser}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+          >
+            <UserCog className="h-4 w-4" />
+            Change User
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </div>
       </div>
+
     </>
   );
 };
