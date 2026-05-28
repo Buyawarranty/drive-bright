@@ -44,7 +44,15 @@ serve(async (req) => {
     const { targetEmail, redirectTo } = await req.json();
     if (!targetEmail) throw new Error("targetEmail required");
 
-    const finalRedirect = redirectTo || "https://buyawarranty.co.uk/admin-dashboard";
+    // Determine a safe default redirect (never localhost)
+    const originHeader = req.headers.get("origin") || "";
+    const safeOrigin = originHeader && !originHeader.includes("localhost")
+      ? originHeader
+      : "https://buyawarranty.co.uk";
+    let finalRedirect = redirectTo && !redirectTo.includes("localhost")
+      ? redirectTo
+      : `${safeOrigin}/admin-dashboard`;
+
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: targetEmail,
@@ -52,17 +60,30 @@ serve(async (req) => {
     });
     if (linkErr) throw linkErr;
 
+    // Supabase may override redirect_to if Site URL allow-list doesn't include ours.
+    // Rebuild the action link from the hashed_token so we control redirect_to.
+    const hashedToken = (linkData.properties as any)?.hashed_token;
+    let actionLink = linkData.properties?.action_link;
+    if (hashedToken) {
+      const url = new URL(`${SUPABASE_URL}/auth/v1/verify`);
+      url.searchParams.set("token", hashedToken);
+      url.searchParams.set("type", "magiclink");
+      url.searchParams.set("redirect_to", finalRedirect);
+      actionLink = url.toString();
+    }
+
     // Audit log
     await admin.from("admin_activity_log").insert({
       admin_user_id: userData.user.id,
       action: "signin_as",
       details: { target_email: targetEmail },
-    }).then(() => {}, () => {}); // ignore failure if table differs
+    }).then(() => {}, () => {});
 
     return new Response(
-      JSON.stringify({ action_link: linkData.properties?.action_link, target: targetEmail }),
+      JSON.stringify({ action_link: actionLink, target: targetEmail, redirect_to: finalRedirect }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (e: any) {
     console.error("admin-signin-as error:", e);
     return new Response(JSON.stringify({ error: e.message || String(e) }), {
