@@ -2132,54 +2132,112 @@ export const CustomersTab = ({
     if (!editingCustomer) return;
 
     try {
-      // Update customer table
+      const nowIso = new Date().toISOString();
+      const normalizedStatus = (editingCustomer.status || '').toLowerCase();
+      const isCancelTransition = normalizedStatus === 'cancelled' || normalizedStatus === 'refunded';
+
+      // Detect whether this edit is the FIRST time the customer is being moved into
+      // a Cancelled/Refunded state so we can mirror the CancelWarrantyDialog flow
+      // (archive, log, cancel linked policy) and the Cancellations tab tallies correctly.
+      let wasAlreadyCancelled = false;
+      if (isCancelTransition) {
+        const { data: existing } = await supabase
+          .from('customers')
+          .select('status, is_deleted')
+          .eq('id', editingCustomer.id)
+          .maybeSingle();
+        const prevStatus = (existing?.status || '').toLowerCase();
+        wasAlreadyCancelled = prevStatus === 'cancelled' || prevStatus === 'refunded';
+      }
+
+      const customerUpdate: Record<string, any> = {
+        name: editingCustomer.name,
+        email: editingCustomer.email,
+        phone: editingCustomer.phone,
+        first_name: editingCustomer.first_name,
+        last_name: editingCustomer.last_name,
+        flat_number: editingCustomer.flat_number,
+        building_name: editingCustomer.building_name,
+        building_number: editingCustomer.building_number,
+        street: editingCustomer.street,
+        town: editingCustomer.town,
+        county: editingCustomer.county,
+        postcode: editingCustomer.postcode,
+        country: editingCustomer.country,
+        registration_plate: editingCustomer.registration_plate,
+        vehicle_make: editingCustomer.vehicle_make,
+        vehicle_model: editingCustomer.vehicle_model,
+        vehicle_year: editingCustomer.vehicle_year,
+        vehicle_fuel_type: editingCustomer.vehicle_fuel_type,
+        vehicle_transmission: editingCustomer.vehicle_transmission,
+        mileage: editingCustomer.mileage,
+        plan_type: editingCustomer.plan_type,
+        payment_type: editingCustomer.payment_type,
+        status: editingCustomer.status,
+        voluntary_excess: editingCustomer.voluntary_excess,
+        claim_limit: editingCustomer.claim_limit,
+        discount_code: editingCustomer.discount_code,
+        original_amount: editingCustomer.original_amount,
+        discount_amount: editingCustomer.discount_amount,
+        final_amount: editingCustomer.final_amount,
+        mot_fee: editingCustomer.mot_fee,
+        tyre_cover: editingCustomer.tyre_cover,
+        wear_tear: editingCustomer.wear_tear,
+        europe_cover: editingCustomer.europe_cover,
+        transfer_cover: editingCustomer.transfer_cover,
+        breakdown_recovery: editingCustomer.breakdown_recovery,
+        vehicle_rental: editingCustomer.vehicle_rental,
+        mot_repair: editingCustomer.mot_repair,
+        lost_key: editingCustomer.lost_key,
+        consequential: editingCustomer.consequential,
+        labour_rate: editingCustomer.labour_rate,
+        updated_at: nowIso,
+      };
+
+      // When the edit dialog flips status to Cancelled/Refunded, perform the
+      // same archival side-effects as the dedicated Cancel Warranty flow so the
+      // Cancellations tab picks it up with the correct cancellation date.
+      if (isCancelTransition && !wasAlreadyCancelled) {
+        customerUpdate.is_deleted = true;
+        customerUpdate.deleted_at = nowIso;
+        customerUpdate.cancellation_note_updated_at = nowIso;
+        const { data: authData } = await supabase.auth.getUser();
+        customerUpdate.cancellation_note_updated_by = authData?.user?.id ?? null;
+      }
+
       const { error: customerError } = await supabase
         .from('customers')
-        .update({
-          name: editingCustomer.name,
-          email: editingCustomer.email,
-          phone: editingCustomer.phone,
-          first_name: editingCustomer.first_name,
-          last_name: editingCustomer.last_name,
-          flat_number: editingCustomer.flat_number,
-          building_name: editingCustomer.building_name,
-          building_number: editingCustomer.building_number,
-          street: editingCustomer.street,
-          town: editingCustomer.town,
-          county: editingCustomer.county,
-          postcode: editingCustomer.postcode,
-          country: editingCustomer.country,
-          registration_plate: editingCustomer.registration_plate,
-          vehicle_make: editingCustomer.vehicle_make,
-          vehicle_model: editingCustomer.vehicle_model,
-          vehicle_year: editingCustomer.vehicle_year,
-          vehicle_fuel_type: editingCustomer.vehicle_fuel_type,
-          vehicle_transmission: editingCustomer.vehicle_transmission,
-          mileage: editingCustomer.mileage,
-          plan_type: editingCustomer.plan_type,
-          payment_type: editingCustomer.payment_type,
-          status: editingCustomer.status,
-          voluntary_excess: editingCustomer.voluntary_excess,
-          claim_limit: editingCustomer.claim_limit,
-          discount_code: editingCustomer.discount_code,
-          original_amount: editingCustomer.original_amount,
-          discount_amount: editingCustomer.discount_amount,
-          final_amount: editingCustomer.final_amount,
-          mot_fee: editingCustomer.mot_fee,
-          tyre_cover: editingCustomer.tyre_cover,
-          wear_tear: editingCustomer.wear_tear,
-          europe_cover: editingCustomer.europe_cover,
-          transfer_cover: editingCustomer.transfer_cover,
-          breakdown_recovery: editingCustomer.breakdown_recovery,
-          vehicle_rental: editingCustomer.vehicle_rental,
-          mot_repair: editingCustomer.mot_repair,
-          lost_key: editingCustomer.lost_key,
-          consequential: editingCustomer.consequential,
-          labour_rate: editingCustomer.labour_rate
-        })
+        .update(customerUpdate)
         .eq('id', editingCustomer.id);
 
       if (customerError) throw customerError;
+
+      // Mirror the cancellation onto the linked policy + audit log so reporting,
+      // commission unwinds and claims views stay in sync.
+      if (isCancelTransition && !wasAlreadyCancelled) {
+        try {
+          await supabase
+            .from('customer_policies')
+            .update({
+              status: 'cancelled',
+              is_deleted: true,
+              deleted_at: nowIso,
+              updated_at: nowIso,
+            })
+            .eq('customer_id', editingCustomer.id);
+
+          await supabase.from('admin_notes').insert({
+            customer_id: editingCustomer.id,
+            note:
+              `WARRANTY ${normalizedStatus.toUpperCase()} via edit dialog\n` +
+              `Customer: ${editingCustomer.name || editingCustomer.email}\n` +
+              `At: ${new Date().toLocaleString()}`,
+          });
+        } catch (sideEffectErr) {
+          console.error('Cancellation side-effects failed (non-blocking):', sideEffectErr);
+        }
+      }
+
 
       let authAccountCreated = false;
       // Create customer dashboard account if credentials provided
