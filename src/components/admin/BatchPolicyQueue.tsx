@@ -163,6 +163,67 @@ export const BatchPolicyQueue: React.FC = () => {
     ].filter(Boolean) as string[];
   };
 
+  // Validate address/name completeness for posting
+  const getIssues = (c: QueuedCustomer): string[] => {
+    const issues: string[] = [];
+    if (!c.name || !c.name.trim()) issues.push('Missing name');
+    const hasStreet = !!(c.street || c.building_number || c.building_name || c.flat_number);
+    if (!hasStreet) issues.push('Missing street/building');
+    if (!c.town || !c.town.trim()) issues.push('Missing town');
+    if (!c.postcode || !c.postcode.trim()) issues.push('Missing postcode');
+    return issues;
+  };
+
+  const incompleteCount = queue.filter(c => getIssues(c).length > 0).length;
+
+  // Download all addresses as a single Word document (.doc) for printing in one go
+  const handleDownloadAddressesWord = () => {
+    if (queue.length === 0) return;
+
+    const rows = queue.map((c, i) => {
+      const issues = getIssues(c);
+      const lines = [c.name, ...formatAddress(c)].filter(Boolean) as string[];
+      const issueLine = issues.length
+        ? `<p style="color:#c00;font-size:10pt;margin:6pt 0 0"><b>⚠ Incomplete:</b> ${issues.join(', ')}</p>`
+        : '';
+      const regLine = c.registration_plate
+        ? `<p style="color:#555;font-size:9pt;margin:6pt 0 0"><b>Reg:</b> ${c.registration_plate}</p>`
+        : '';
+      return `
+        <div style="border:1px solid #999;padding:14pt 16pt;margin-bottom:10pt;page-break-inside:avoid;${issues.length ? 'background:#fff5f5;border-color:#c00;' : ''}">
+          <p style="color:#888;font-size:9pt;margin:0 0 8pt"><b>#${i + 1}</b></p>
+          ${lines.map(l => `<p style="margin:2pt 0;font-size:13pt;font-weight:600">${l}</p>`).join('')}
+          ${regLine}
+          ${issueLine}
+        </div>
+      `;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>Addresses to Post</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>@page { size: A4; margin: 18mm; } body { font-family: 'Segoe UI', Arial, sans-serif; color: #000; }</style>
+</head><body>
+<h1 style="font-size:18pt;margin:0 0 12pt">Addresses to Post — ${new Date().toLocaleDateString('en-GB')}</h1>
+<p style="font-size:11pt;color:#444;margin:0 0 16pt">${queue.length} item${queue.length === 1 ? '' : 's'}${incompleteCount > 0 ? ` &nbsp;•&nbsp; <span style="color:#c00"><b>${incompleteCount} incomplete</b></span>` : ''}</p>
+${rows}
+</body></html>`;
+
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `addresses-to-post-${new Date().toISOString().slice(0, 10)}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    logBatchAction('word_addresses');
+  };
+
+
   // Batch print labels (2x4 grid per page)
   const handleBatchPrintLabels = () => {
     if (queue.length === 0) return;
