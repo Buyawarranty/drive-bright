@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2 } from 'lucide-react';
+import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -163,6 +163,67 @@ export const BatchPolicyQueue: React.FC = () => {
     ].filter(Boolean) as string[];
   };
 
+  // Validate address/name completeness for posting
+  const getIssues = (c: QueuedCustomer): string[] => {
+    const issues: string[] = [];
+    if (!c.name || !c.name.trim()) issues.push('Missing name');
+    const hasStreet = !!(c.street || c.building_number || c.building_name || c.flat_number);
+    if (!hasStreet) issues.push('Missing street/building');
+    if (!c.town || !c.town.trim()) issues.push('Missing town');
+    if (!c.postcode || !c.postcode.trim()) issues.push('Missing postcode');
+    return issues;
+  };
+
+  const incompleteCount = queue.filter(c => getIssues(c).length > 0).length;
+
+  // Download all addresses as a single Word document (.doc) for printing in one go
+  const handleDownloadAddressesWord = () => {
+    if (queue.length === 0) return;
+
+    const rows = queue.map((c, i) => {
+      const issues = getIssues(c);
+      const lines = [c.name, ...formatAddress(c)].filter(Boolean) as string[];
+      const issueLine = issues.length
+        ? `<p style="color:#c00;font-size:10pt;margin:6pt 0 0"><b>⚠ Incomplete:</b> ${issues.join(', ')}</p>`
+        : '';
+      const regLine = c.registration_plate
+        ? `<p style="color:#555;font-size:9pt;margin:6pt 0 0"><b>Reg:</b> ${c.registration_plate}</p>`
+        : '';
+      return `
+        <div style="border:1px solid #999;padding:14pt 16pt;margin-bottom:10pt;page-break-inside:avoid;${issues.length ? 'background:#fff5f5;border-color:#c00;' : ''}">
+          <p style="color:#888;font-size:9pt;margin:0 0 8pt"><b>#${i + 1}</b></p>
+          ${lines.map(l => `<p style="margin:2pt 0;font-size:13pt;font-weight:600">${l}</p>`).join('')}
+          ${regLine}
+          ${issueLine}
+        </div>
+      `;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>Addresses to Post</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>@page { size: A4; margin: 18mm; } body { font-family: 'Segoe UI', Arial, sans-serif; color: #000; }</style>
+</head><body>
+<h1 style="font-size:18pt;margin:0 0 12pt">Addresses to Post — ${new Date().toLocaleDateString('en-GB')}</h1>
+<p style="font-size:11pt;color:#444;margin:0 0 16pt">${queue.length} item${queue.length === 1 ? '' : 's'}${incompleteCount > 0 ? ` &nbsp;•&nbsp; <span style="color:#c00"><b>${incompleteCount} incomplete</b></span>` : ''}</p>
+${rows}
+</body></html>`;
+
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `addresses-to-post-${new Date().toISOString().slice(0, 10)}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    logBatchAction('word_addresses');
+  };
+
+
   // Batch print labels (2x4 grid per page)
   const handleBatchPrintLabels = () => {
     if (queue.length === 0) return;
@@ -281,7 +342,7 @@ export const BatchPolicyQueue: React.FC = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            Batch Print Queue
+            To Post
             {queue.length > 0 && (
               <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-bold">{queue.length}</span>
             )}
@@ -308,7 +369,21 @@ export const BatchPolicyQueue: React.FC = () => {
             )}
           </div>
         </div>
-        <p className="text-muted-foreground text-sm">Search and add multiple customers, then batch print labels, letters, or both.</p>
+        <p className="text-muted-foreground text-sm">
+          Search by name or registration plate to build a list of customers whose warranty packs need to be posted out.
+          Add each one and the section below populates with their address. When ready, print the labels and letters, or
+          download every address in a single Word document for printing in one go. Rows missing a name or address are
+          flagged so they can be fixed before sending.
+        </p>
+        {incompleteCount > 0 && (
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <strong>{incompleteCount}</strong> {incompleteCount === 1 ? 'entry has' : 'entries have'} incomplete name or address details — please fix on the customer record before posting.
+            </div>
+          </div>
+        )}
+
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Search to add */}
@@ -373,27 +448,45 @@ export const BatchPolicyQueue: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {queue.map((c, i) => (
-                  <tr key={c.id} className="border-b hover:bg-muted/20">
-                    <td className="py-2 px-3 text-muted-foreground">{i + 1}</td>
-                    <td className="py-2 px-3">
-                      <p className="font-medium">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">{c.email}</p>
-                    </td>
-                    <td className="py-2 px-3">
-                      <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">{c.registration_plate || '—'}</span>
-                    </td>
-                    <td className="py-2 px-3 text-xs">{c.policy?.plan_type || c.plan_type || '—'}</td>
-                    <td className="py-2 px-3 text-xs font-mono">{c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || '—'}</td>
-                    <td className="py-2 px-3 text-xs text-muted-foreground truncate max-w-[200px]">{formatAddress(c).join(', ') || 'No address'}</td>
-                    <td className="py-2 px-3">
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)}>
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {queue.map((c, i) => {
+                  const issues = getIssues(c);
+                  const hasIssue = issues.length > 0;
+                  return (
+                    <tr
+                      key={c.id}
+                      className={`border-b ${hasIssue ? 'bg-destructive/5 hover:bg-destructive/10' : 'hover:bg-muted/20'}`}
+                    >
+                      <td className="py-2 px-3 text-muted-foreground align-top">{i + 1}</td>
+                      <td className="py-2 px-3 align-top">
+                        <p className="font-medium flex items-center gap-1.5">
+                          {hasIssue && <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />}
+                          {c.name || <span className="text-destructive italic">No name</span>}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{c.email}</p>
+                      </td>
+                      <td className="py-2 px-3 align-top">
+                        <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">{c.registration_plate || '—'}</span>
+                      </td>
+                      <td className="py-2 px-3 text-xs align-top">{c.policy?.plan_type || c.plan_type || '—'}</td>
+                      <td className="py-2 px-3 text-xs font-mono align-top">{c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || '—'}</td>
+                      <td className="py-2 px-3 text-xs align-top max-w-[240px]">
+                        <div className="text-muted-foreground truncate">{formatAddress(c).join(', ') || 'No address'}</div>
+                        {hasIssue && (
+                          <div className="mt-1 text-[11px] font-medium text-destructive flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" /> {issues.join(' • ')}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-2 px-3 align-top">
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+
             </table>
           </div>
         )}
@@ -417,6 +510,11 @@ export const BatchPolicyQueue: React.FC = () => {
               <Printer className="h-4 w-4" />
               Print Labels + Letters
             </Button>
+            <Button onClick={handleDownloadAddressesWord} variant="secondary" className="gap-2 bg-blue-100 text-blue-900 hover:bg-blue-200 border border-blue-300">
+              <FileDown className="h-4 w-4" />
+              Download All Addresses (Word)
+            </Button>
+
           </div>
         )}
 

@@ -469,6 +469,11 @@ export const PolicyDocumentsTab: React.FC = () => {
         <p className="text-gray-500 mt-1">Search for a customer and generate a printable A4 policy document letter to include with posted T&Cs.</p>
       </div>
 
+      {/* To Post — batch queue at top */}
+      <BatchPolicyQueue />
+
+
+
       {/* Search Section */}
       <Card>
         <CardHeader>
@@ -947,11 +952,9 @@ export const PolicyDocumentsTab: React.FC = () => {
         </Card>
       )}
 
-      {/* Batch Print Queue */}
-      <BatchPolicyQueue />
-
       {/* Posted Letters Log Register */}
       <PostedLettersLog />
     </div>
   );
 };
+
