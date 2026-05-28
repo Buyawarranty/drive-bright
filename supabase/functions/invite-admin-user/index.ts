@@ -202,8 +202,15 @@ serve(async (req: Request) => {
           <p>Hello ${firstName},</p>
           <p>You've been invited to join the Buy a Warranty admin dashboard with ${role} access.</p>
           
+          <div style="background-color: #fff8e6; border: 1px solid #f0c674; padding: 16px; margin: 20px 0; border-radius: 8px;">
+            <h3 style="margin-top: 0;">Step 1 — Gate Password (required first)</h3>
+            <p style="margin: 6px 0;">Before the normal login screen, the admin area is protected by a gate password. When you visit the link below you'll first see a "Protected Area" screen — enter this password:</p>
+            <p style="margin: 6px 0;"><strong>Gate Password:</strong> <code style="background-color: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0e0e0;">SmashSales2026!!</code></p>
+            <p style="margin: 6px 0; font-size: 13px; color: #666;">You only need to enter this once per browser session. After unlocking, you'll see the normal login form for your email and password (below).</p>
+          </div>
+
           <div style="background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px;">
-            <h3>Your Login Credentials:</h3>
+            <h3>Step 2 — Your Login Credentials:</h3>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Temporary Password:</strong> ${tempPassword}</p>
           </div>
