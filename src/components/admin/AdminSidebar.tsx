@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DndContext,
   closestCenter,
@@ -303,6 +305,21 @@ const defaultTabs: Tab[] = [
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange, userRole, userPermissions }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tabs, setTabs] = useState<Tab[]>(defaultTabs);
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('masterAdmin');
+    navigate('/auth');
+  };
+
+  const handleChangeUser = async () => {
+    // Sign out and return to login so a different user can sign in
+    await supabase.auth.signOut();
+    localStorage.removeItem('masterAdmin');
+    navigate('/auth');
+  };
+
 
   // Filter tabs based on user role and permissions
   const getVisibleTabs = () => {
@@ -516,6 +533,24 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
                       </CommandItem>
                     ))}
                   </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup heading="Account">
+                    <CommandItem
+                      value="change user"
+                      onSelect={() => { setJumpOpen(false); handleChangeUser(); }}
+                    >
+                      <UserCog className="mr-2 h-4 w-4" />
+                      Change User
+                    </CommandItem>
+                    <CommandItem
+                      value="sign out"
+                      onSelect={() => { setJumpOpen(false); handleSignOut(); }}
+                      className="text-red-600"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </CommandItem>
+                  </CommandGroup>
                 </CommandList>
               </Command>
             </PopoverContent>
@@ -527,7 +562,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <nav className="mt-4 overflow-y-auto h-[calc(100%-100px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
+          <nav className="mt-4 overflow-y-auto h-[calc(100%-180px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
+
             <SortableContext
               items={tabs.map(tab => tab.id)}
               strategy={verticalListSortingStrategy}
@@ -543,7 +579,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             </SortableContext>
           </nav>
         </DndContext>
+
+        {/* Sticky footer: Change User + Sign Out */}
+        <div className="absolute bottom-0 left-0 right-0 border-t bg-white p-2 space-y-1">
+          <button
+            onClick={handleChangeUser}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+          >
+            <UserCog className="h-4 w-4" />
+            Change User
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </div>
       </div>
+
     </>
   );
 };
