@@ -22,6 +22,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
 import { QuickCancellationAdd } from './QuickCancellationAdd';
+import { MonthlyCohortRetention } from './MonthlyCohortRetention';
+
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
 
@@ -439,6 +441,10 @@ export const CancellationsTab: React.FC<{
           </Card>
         )}
       </div>
+
+      {/* Monthly cohort retention: sold vs still-active vs cancelled per signup month */}
+      <MonthlyCohortRetention months={12} />
+
 
       {/* Filters */}
       <div className="bg-card p-4 rounded-lg border space-y-4">
