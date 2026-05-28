@@ -510,6 +510,11 @@ ${rows}
               <Printer className="h-4 w-4" />
               Print Labels + Letters
             </Button>
+            <Button onClick={handleDownloadAddressesWord} variant="secondary" className="gap-2 bg-blue-100 text-blue-900 hover:bg-blue-200 border border-blue-300">
+              <FileDown className="h-4 w-4" />
+              Download All Addresses (Word)
+            </Button>
+
           </div>
         )}
 
