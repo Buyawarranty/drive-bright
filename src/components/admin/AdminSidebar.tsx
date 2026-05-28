@@ -305,6 +305,21 @@ const defaultTabs: Tab[] = [
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange, userRole, userPermissions }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tabs, setTabs] = useState<Tab[]>(defaultTabs);
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('masterAdmin');
+    navigate('/auth');
+  };
+
+  const handleChangeUser = async () => {
+    // Sign out and return to login so a different user can sign in
+    await supabase.auth.signOut();
+    localStorage.removeItem('masterAdmin');
+    navigate('/auth');
+  };
+
 
   // Filter tabs based on user role and permissions
   const getVisibleTabs = () => {
