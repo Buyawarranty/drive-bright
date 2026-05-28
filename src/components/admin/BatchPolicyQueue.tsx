@@ -342,7 +342,7 @@ ${rows}
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            Batch Print Queue
+            To Post
             {queue.length > 0 && (
               <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-bold">{queue.length}</span>
             )}
@@ -369,7 +369,21 @@ ${rows}
             )}
           </div>
         </div>
-        <p className="text-muted-foreground text-sm">Search and add multiple customers, then batch print labels, letters, or both.</p>
+        <p className="text-muted-foreground text-sm">
+          Search by name or registration plate to build a list of customers whose warranty packs need to be posted out.
+          Add each one and the section below populates with their address. When ready, print the labels and letters, or
+          download every address in a single Word document for printing in one go. Rows missing a name or address are
+          flagged so they can be fixed before sending.
+        </p>
+        {incompleteCount > 0 && (
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <strong>{incompleteCount}</strong> {incompleteCount === 1 ? 'entry has' : 'entries have'} incomplete name or address details — please fix on the customer record before posting.
+            </div>
+          </div>
+        )}
+
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Search to add */}
