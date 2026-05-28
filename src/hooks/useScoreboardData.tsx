@@ -122,7 +122,7 @@ export const useScoreboardData = (): ScoreboardData => {
 
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, original_amount, discount_amount, created_at, status')
+        .select('id, assigned_to, final_amount, original_amount, discount_amount, discount_code, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .in('assigned_to', agentIds);
@@ -134,6 +134,25 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
       const { data: customers } = await customerQuery;
+
+      // Build a lookup of discount codes referenced by these sales so we can compute
+      // discount % even when original_amount / discount_amount weren't persisted on the row.
+      const referencedCodes = Array.from(new Set(
+        (customers || [])
+          .map((c: any) => (c.discount_code || '').toString().trim().toUpperCase())
+          .filter(Boolean)
+      ));
+      const codeMap = new Map<string, { type: string; value: number }>();
+      if (referencedCodes.length > 0) {
+        const { data: codeRows } = await supabase
+          .from('discount_codes')
+          .select('code, type, value')
+          .in('code', referencedCodes);
+        (codeRows || []).forEach((r: any) => {
+          codeMap.set(String(r.code).toUpperCase(), { type: r.type, value: Number(r.value) || 0 });
+        });
+      }
+
 
       // Fetch cancelled/refunded customers per agent (merged as one metric)
       let cancelledQuery = supabase
