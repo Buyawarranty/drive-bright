@@ -11,6 +11,7 @@ import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { QuickMonthFilter } from './QuickMonthFilter';
+import { QuickWeekFilter } from './QuickWeekFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
