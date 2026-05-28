@@ -169,7 +169,13 @@ const handler = async (req: Request): Promise<Response> => {
         
         Your admin account invitation has been resent. You can now access the Buy A Warranty admin dashboard.
         
-        Login Credentials:
+        Step 1 — Gate Password (required first):
+        Before the normal login screen, the admin area is protected by a gate password.
+        When you visit the dashboard link, enter this on the "Protected Area" screen:
+        Gate Password: SmashSales2026!!
+        (You only need to enter this once per browser session.)
+
+        Step 2 — Login Credentials:
         Email: ${email}
         Temporary Password: ${tempPassword}
         
