@@ -22,6 +22,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
 import { QuickCancellationAdd } from './QuickCancellationAdd';
+import { MonthlyCohortRetention } from './MonthlyCohortRetention';
+
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
 
