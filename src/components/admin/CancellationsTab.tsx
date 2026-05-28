@@ -442,6 +442,10 @@ export const CancellationsTab: React.FC<{
         )}
       </div>
 
+      {/* Monthly cohort retention: sold vs still-active vs cancelled per signup month */}
+      <MonthlyCohortRetention months={12} />
+
+
       {/* Filters */}
       <div className="bg-card p-4 rounded-lg border space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
