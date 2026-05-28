@@ -952,11 +952,9 @@ export const PolicyDocumentsTab: React.FC = () => {
         </Card>
       )}
 
-      {/* Batch Print Queue */}
-      <BatchPolicyQueue />
-
       {/* Posted Letters Log Register */}
       <PostedLettersLog />
     </div>
   );
 };
+
