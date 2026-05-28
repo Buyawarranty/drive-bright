@@ -25,6 +25,7 @@ export interface AgentScore {
   cancelledRevenue: number;
   callsCount: number;
   manualActualAttempts: number | null;
+  avgDiscountPct: number;
 }
 
 export interface ScoreboardData {
@@ -121,7 +122,7 @@ export const useScoreboardData = (): ScoreboardData => {
 
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, created_at, status')
+        .select('id, assigned_to, final_amount, original_amount, discount_amount, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .in('assigned_to', agentIds);
@@ -247,6 +248,16 @@ export const useScoreboardData = (): ScoreboardData => {
         const cancelledCount = userCancelled.length;
         const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
+        // Average discount % across this agent's sales (only counts sales with an original_amount)
+        const discountRows = userCustomers.filter((c: any) => Number(c.original_amount) > 0);
+        const avgDiscountPct = discountRows.length > 0
+          ? discountRows.reduce((sum: number, c: any) => {
+              const orig = Number(c.original_amount) || 0;
+              const disc = Number(c.discount_amount) || Math.max(orig - (Number(c.final_amount) || 0), 0);
+              return sum + (orig > 0 ? (disc / orig) * 100 : 0);
+            }, 0) / discountRows.length
+          : 0;
+
         return {
           id: u.id,
           name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email.split('@')[0],
@@ -267,6 +278,7 @@ export const useScoreboardData = (): ScoreboardData => {
           cancelledRevenue,
           callsCount: callsMap.get(u.id) || 0,
           manualActualAttempts: actualAttemptsMap.get(u.id) ?? null,
+          avgDiscountPct,
         };
       });
 

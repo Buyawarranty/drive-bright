@@ -88,6 +88,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center" title="Actual dials made">Dials Made</div>
                 <div className="w-24 text-center">Conv. / Goal</div>
                 <div className="w-20 text-center">AOV</div>
+                <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
@@ -176,6 +177,12 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="w-20 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
                       <div className="font-bold">£{agent.avgOrderValue.toFixed(0)}</div>
+                    </div>
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Average discount % given on this agent's sales">Avg Disc.</div>
+                      <div className={`font-bold ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
+                        {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
+                      </div>
                     </div>
                     {agent.cancelledCount > 0 && (
                       <div className="w-16 text-center">
