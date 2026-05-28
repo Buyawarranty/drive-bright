@@ -442,8 +442,8 @@ export const CancellationsTab: React.FC<{
         )}
       </div>
 
-      {/* Monthly cohort retention: sold vs still-active vs cancelled per signup month */}
-      <MonthlyCohortRetention months={12} />
+      {/* Monthly cohort retention: every signup month since launch, grouped by year */}
+      <MonthlyCohortRetention />
 
 
       {/* Filters */}
