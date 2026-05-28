@@ -187,15 +187,38 @@ export const CancellationsTab: React.FC<{
     try {
       if (!initialLoadDone) setLoading(true);
 
+      // Include BOTH explicit status-based cancellations/refunds AND any customer
+      // that has been soft-deleted (deleted from the customer dashboard).
+      // Junk statuses (fake_lead / duplicate / converted_lead) are excluded below
+      // so the tally only reflects real cancelled warranties.
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at, is_test_cancellation')
-        .or('status.ilike.cancelled,status.ilike.refunded')
+        .select('id, name, email, phone, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, status, final_amount, created_at, updated_at, assigned_to, warranty_number, cancellation_note, cancellation_note_updated_at, is_test_cancellation, is_deleted, deleted_at')
+        .or('status.ilike.cancelled,status.ilike.refunded,is_deleted.eq.true')
         .order('updated_at', { ascending: false })
-        .limit(3000);
+        .limit(5000);
 
       if (error) throw error;
-      setRecords(data || []);
+
+      const JUNK_STATUSES = new Set(['fake lead', 'fake_lead', 'duplicate', 'converted_lead']);
+      const normalized = (data || [])
+        .filter((r: any) => !JUNK_STATUSES.has((r.status || '').toLowerCase()))
+        .map((r: any) => {
+          const statusLower = (r.status || '').toLowerCase();
+          const isExplicitCancel = statusLower === 'cancelled' || statusLower === 'refunded';
+          // Soft-deleted records without an explicit cancel/refund status are
+          // surfaced as Cancelled, dated by deleted_at so the per-month tally is accurate.
+          if (!isExplicitCancel && r.is_deleted) {
+            return {
+              ...r,
+              status: 'Cancelled',
+              updated_at: r.deleted_at || r.updated_at,
+            };
+          }
+          return r;
+        });
+
+      setRecords(normalized);
       setInitialLoadDone(true);
     } catch (err) {
       console.error('Error fetching cancellations:', err);
@@ -203,6 +226,7 @@ export const CancellationsTab: React.FC<{
       setLoading(false);
     }
   }, [initialLoadDone]);
+
 
   useEffect(() => {
     fetchCancellations();
