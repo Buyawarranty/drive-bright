@@ -127,8 +127,15 @@ const handler = async (req: Request): Promise<Response> => {
               Your admin account invitation has been resent. You can now access the Buy A Warranty admin dashboard.
             </p>
             
+            <div style="background-color: #fff8e6; border: 1px solid #f0c674; padding: 16px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="color: #333; margin-top: 0;">Step 1 — Gate Password (required first)</h3>
+              <p style="color: #555; margin: 6px 0;">Before the normal login screen, the admin area is protected by a gate password. When you visit the dashboard link below you'll first see a "Protected Area" screen — enter this password:</p>
+              <p style="color: #333; margin: 6px 0;"><strong>Gate Password:</strong> <code style="background-color: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0e0e0;">SmashSales2026!!</code></p>
+              <p style="color: #777; margin: 6px 0; font-size: 13px;">You only need to enter this once per browser session. After unlocking, you'll see the normal login form for your email and password (below).</p>
+            </div>
+
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
-              <h3 style="color: #333; margin-top: 0;">Login Credentials:</h3>
+              <h3 style="color: #333; margin-top: 0;">Step 2 — Login Credentials:</h3>
               <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
               <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background-color: #e9ecef; padding: 2px 6px; border-radius: 4px;">${tempPassword}</code></p>
             </div>
@@ -162,7 +169,13 @@ const handler = async (req: Request): Promise<Response> => {
         
         Your admin account invitation has been resent. You can now access the Buy A Warranty admin dashboard.
         
-        Login Credentials:
+        Step 1 — Gate Password (required first):
+        Before the normal login screen, the admin area is protected by a gate password.
+        When you visit the dashboard link, enter this on the "Protected Area" screen:
+        Gate Password: SmashSales2026!!
+        (You only need to enter this once per browser session.)
+
+        Step 2 — Login Credentials:
         Email: ${email}
         Temporary Password: ${tempPassword}
         
