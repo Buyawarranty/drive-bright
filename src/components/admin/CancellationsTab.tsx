@@ -364,6 +364,13 @@ export const CancellationsTab: React.FC<{
         </p>
       </div>
 
+      {/* Quick add cancellation/refund (admin & super_admin only) */}
+      {isFinancialRole && (
+        <QuickCancellationAdd onUpdated={() => { setInitialLoadDone(false); fetchCancellations(); }} />
+      )}
+
+
+
       {/* Quick Date Tabs */}
       <div className="flex flex-wrap gap-2">
         {([
