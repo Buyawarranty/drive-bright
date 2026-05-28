@@ -11,6 +11,7 @@ import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { QuickMonthFilter } from './QuickMonthFilter';
+import { QuickWeekFilter } from './QuickWeekFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
@@ -717,6 +718,20 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <div className="space-y-1">
               <Label className="text-sm font-medium">Quick month</Label>
               <QuickMonthFilter
+                dateRange={dateRange}
+                onDateRangeChange={(range) => {
+                  setDateRange(range);
+                  setSelectedMonth(null);
+                  setComparisonPeriod(null);
+                }}
+              />
+            </div>
+          )}
+
+          {(userRole === 'super_admin' || userRole === 'admin') && (
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Quick week</Label>
+              <QuickWeekFilter
                 dateRange={dateRange}
                 onDateRangeChange={(range) => {
                   setDateRange(range);
