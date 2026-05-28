@@ -727,6 +727,20 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               />
             </div>
           )}
+
+          {(userRole === 'super_admin' || userRole === 'admin') && (
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Quick week</Label>
+              <QuickWeekFilter
+                dateRange={dateRange}
+                onDateRangeChange={(range) => {
+                  setDateRange(range);
+                  setSelectedMonth(null);
+                  setComparisonPeriod(null);
+                }}
+              />
+            </div>
+          )}
           
           <div className="space-y-1 min-w-[200px]">
             <Label className="text-sm font-medium">Sales Source</Label>
