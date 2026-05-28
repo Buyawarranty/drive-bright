@@ -122,7 +122,7 @@ export const useScoreboardData = (): ScoreboardData => {
 
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, original_amount, discount_amount, created_at, status')
+        .select('id, assigned_to, final_amount, original_amount, discount_amount, discount_code, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .in('assigned_to', agentIds);
@@ -134,6 +134,25 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
       const { data: customers } = await customerQuery;
+
+      // Build a lookup of discount codes referenced by these sales so we can compute
+      // discount % even when original_amount / discount_amount weren't persisted on the row.
+      const referencedCodes = Array.from(new Set(
+        (customers || [])
+          .map((c: any) => (c.discount_code || '').toString().trim().toUpperCase())
+          .filter(Boolean)
+      ));
+      const codeMap = new Map<string, { type: string; value: number }>();
+      if (referencedCodes.length > 0) {
+        const { data: codeRows } = await supabase
+          .from('discount_codes')
+          .select('code, type, value')
+          .in('code', referencedCodes);
+        (codeRows || []).forEach((r: any) => {
+          codeMap.set(String(r.code).toUpperCase(), { type: r.type, value: Number(r.value) || 0 });
+        });
+      }
+
 
       // Fetch cancelled/refunded customers per agent (merged as one metric)
       let cancelledQuery = supabase
@@ -248,15 +267,35 @@ export const useScoreboardData = (): ScoreboardData => {
         const cancelledCount = userCancelled.length;
         const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
-        // Average discount % across this agent's sales (only counts sales with an original_amount)
-        const discountRows = userCustomers.filter((c: any) => Number(c.original_amount) > 0);
-        const avgDiscountPct = discountRows.length > 0
-          ? discountRows.reduce((sum: number, c: any) => {
-              const orig = Number(c.original_amount) || 0;
-              const disc = Number(c.discount_amount) || Math.max(orig - (Number(c.final_amount) || 0), 0);
-              return sum + (orig > 0 ? (disc / orig) * 100 : 0);
-            }, 0) / discountRows.length
+        // Average discount % across this agent's sales. We use the best signal available
+        // per row, in priority order:
+        //   1. original_amount + (discount_amount | final_amount delta) — most accurate
+        //   2. discount_code lookup — percentage codes use their %, fixed codes are
+        //      converted to a % of the implied gross (final + fixed value)
+        const discountPctRows: number[] = [];
+        userCustomers.forEach((c: any) => {
+          const orig = Number(c.original_amount) || 0;
+          const final = Number(c.final_amount) || 0;
+          if (orig > 0) {
+            const disc = Number(c.discount_amount) || Math.max(orig - final, 0);
+            discountPctRows.push((disc / orig) * 100);
+            return;
+          }
+          const code = (c.discount_code || '').toString().trim().toUpperCase();
+          if (!code) return;
+          const meta = codeMap.get(code);
+          if (!meta) return;
+          if (meta.type === 'percentage') {
+            discountPctRows.push(meta.value);
+          } else if (meta.value > 0 && final > 0) {
+            const impliedGross = final + meta.value;
+            discountPctRows.push((meta.value / impliedGross) * 100);
+          }
+        });
+        const avgDiscountPct = discountPctRows.length > 0
+          ? discountPctRows.reduce((a, b) => a + b, 0) / discountPctRows.length
           : 0;
+
 
         return {
           id: u.id,
