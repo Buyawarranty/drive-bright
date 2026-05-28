@@ -533,6 +533,24 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
                       </CommandItem>
                     ))}
                   </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup heading="Account">
+                    <CommandItem
+                      value="change user"
+                      onSelect={() => { setJumpOpen(false); handleChangeUser(); }}
+                    >
+                      <UserCog className="mr-2 h-4 w-4" />
+                      Change User
+                    </CommandItem>
+                    <CommandItem
+                      value="sign out"
+                      onSelect={() => { setJumpOpen(false); handleSignOut(); }}
+                      className="text-red-600"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </CommandItem>
+                  </CommandGroup>
                 </CommandList>
               </Command>
             </PopoverContent>
@@ -544,7 +562,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <nav className="mt-4 overflow-y-auto h-[calc(100%-100px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
+          <nav className="mt-4 overflow-y-auto h-[calc(100%-180px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
+
             <SortableContext
               items={tabs.map(tab => tab.id)}
               strategy={verticalListSortingStrategy}
