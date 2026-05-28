@@ -65,6 +65,7 @@ import { CancellationsTab } from './CancellationsTab';
 import { RemindMePopover } from './leads/RemindMePopover';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickMonthFilter } from './QuickMonthFilter';
+import { QuickWeekFilter } from './QuickWeekFilter';
 import { UnifiedDateFilter, periodToRange, type DateScope, type PeriodKey } from './UnifiedDateFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { AddClaimDialog } from './claims/AddClaimDialog';
