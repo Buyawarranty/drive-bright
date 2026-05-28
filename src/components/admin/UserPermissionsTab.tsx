@@ -929,24 +929,13 @@ export const UserPermissionsTab = () => {
                         <Button
                           size="sm"
                           variant="default"
-                          onClick={() => handleGenerateAndReveal(u)}
-                          disabled={generatingCredsId === u.id}
-                          title="Generate a new password and reveal it so you can share with the user"
-                          className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          {generatingCredsId === u.id ? 'Generating…' : 'Generate & Show'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
                           onClick={() => handleSignInAs(u)}
                           disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
-                          title="Generate a one-time sign-in link for this user"
-                          className="text-xs border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                          title="Open this user's dashboard in a new tab — your admin session stays active"
+                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
                         >
-                          <LogIn className="h-3 w-3 mr-1" />
-                          {signingInAsId === u.id ? 'Opening…' : 'Sign in as'}
+                          <Eye className="h-3 w-3 mr-1" />
+                          {signingInAsId === u.id ? 'Opening…' : 'View As'}
                         </Button>
                       </div>
                     </TableCell>
