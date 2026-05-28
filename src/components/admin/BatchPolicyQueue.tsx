@@ -448,27 +448,45 @@ ${rows}
                 </tr>
               </thead>
               <tbody>
-                {queue.map((c, i) => (
-                  <tr key={c.id} className="border-b hover:bg-muted/20">
-                    <td className="py-2 px-3 text-muted-foreground">{i + 1}</td>
-                    <td className="py-2 px-3">
-                      <p className="font-medium">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">{c.email}</p>
-                    </td>
-                    <td className="py-2 px-3">
-                      <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">{c.registration_plate || '—'}</span>
-                    </td>
-                    <td className="py-2 px-3 text-xs">{c.policy?.plan_type || c.plan_type || '—'}</td>
-                    <td className="py-2 px-3 text-xs font-mono">{c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || '—'}</td>
-                    <td className="py-2 px-3 text-xs text-muted-foreground truncate max-w-[200px]">{formatAddress(c).join(', ') || 'No address'}</td>
-                    <td className="py-2 px-3">
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)}>
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {queue.map((c, i) => {
+                  const issues = getIssues(c);
+                  const hasIssue = issues.length > 0;
+                  return (
+                    <tr
+                      key={c.id}
+                      className={`border-b ${hasIssue ? 'bg-destructive/5 hover:bg-destructive/10' : 'hover:bg-muted/20'}`}
+                    >
+                      <td className="py-2 px-3 text-muted-foreground align-top">{i + 1}</td>
+                      <td className="py-2 px-3 align-top">
+                        <p className="font-medium flex items-center gap-1.5">
+                          {hasIssue && <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />}
+                          {c.name || <span className="text-destructive italic">No name</span>}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{c.email}</p>
+                      </td>
+                      <td className="py-2 px-3 align-top">
+                        <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">{c.registration_plate || '—'}</span>
+                      </td>
+                      <td className="py-2 px-3 text-xs align-top">{c.policy?.plan_type || c.plan_type || '—'}</td>
+                      <td className="py-2 px-3 text-xs font-mono align-top">{c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || '—'}</td>
+                      <td className="py-2 px-3 text-xs align-top max-w-[240px]">
+                        <div className="text-muted-foreground truncate">{formatAddress(c).join(', ') || 'No address'}</div>
+                        {hasIssue && (
+                          <div className="mt-1 text-[11px] font-medium text-destructive flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" /> {issues.join(' • ')}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-2 px-3 align-top">
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+
             </table>
           </div>
         )}
