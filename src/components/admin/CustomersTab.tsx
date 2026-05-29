@@ -3779,28 +3779,22 @@ export const CustomersTab = ({
             </div>
 
 
-          {/* Column visibility toggles */}
+          {/* Column visibility toggle — single "H" control for Payment + SRC */}
           {(isSuperAdmin || isAdmin || isLeadGen) && (
             <div className="flex justify-end gap-1 px-1">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowPaymentColumn(v => !v)}
+                onClick={() => {
+                  const next = !(showPaymentColumn && showPurchaseSource);
+                  setShowPaymentColumn(next);
+                  setShowPurchaseSource(next);
+                }}
                 className="text-xs gap-1.5 h-8"
-                title={showPaymentColumn ? 'Hide Payment columns' : 'Show Payment columns'}
+                title={(showPaymentColumn && showPurchaseSource) ? 'Hide Payment & SRC columns' : 'Show Payment & SRC columns'}
               >
-                {showPaymentColumn ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                Payment
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPurchaseSource(v => !v)}
-                className="text-xs gap-1.5 h-8"
-                title={showPurchaseSource ? 'Hide SRC column' : 'Show SRC column'}
-              >
-                {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                SRC
+                {(showPaymentColumn && showPurchaseSource) ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                H
               </Button>
             </div>
           )}
