@@ -283,8 +283,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
   // Free year text for sticky footer
   const freeYearText = useMemo(() => {
-    if (paymentType === '24months') return 'Year 2: £0/month';
-    if (paymentType === '36months') return 'Years 2 & 3: £0/month';
+    if (paymentType === '24months') return 'Year 2 FREE — only 12 instalments';
+    if (paymentType === '36months') return 'Years 2 & 3 FREE — only 12 instalments';
     return undefined;
   }, [paymentType]);
 
