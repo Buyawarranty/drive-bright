@@ -435,6 +435,7 @@ export const CustomersTab = ({
   const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
+  const [showPaymentColumn, setShowPaymentColumn] = useState(false);
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
