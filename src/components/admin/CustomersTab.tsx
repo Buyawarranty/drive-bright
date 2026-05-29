@@ -3826,7 +3826,7 @@ export const CustomersTab = ({
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
-              <TableHead>Payment</TableHead>
+              {showPaymentColumn && <TableHead>Payment</TableHead>}
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
