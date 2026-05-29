@@ -3844,7 +3844,7 @@ export const CustomersTab = ({
               {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
               {showPaymentColumn && <TableHead>Payment Method</TableHead>}
-              {canSeeSourceColumn && <TableHead className="bg-purple-50">Source</TableHead>}
+              {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">Source</TableHead>}
               {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
@@ -5076,7 +5076,7 @@ Please log in and change your password after first login.`;
                       </div>
                     </TableCell>
                   )}
-                  {canSeeSourceColumn && (
+                  {canSeeSourceColumn && showPurchaseSource && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
                         // Use acquisition_source (marketing channel from sales_leads), not purchase_source (payment method).
@@ -5372,7 +5372,7 @@ Please log in and change your password after first login.`;
                         </div>
                       </TableCell>
                       )}
-                      {canSeeSourceColumn && (
+                      {canSeeSourceColumn && showPurchaseSource && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
                             source={customer.purchase_source} 
