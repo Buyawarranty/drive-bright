@@ -95,8 +95,8 @@ const EXCESS_OPTIONS = [
 
 const DURATION_OPTIONS: { id: PaymentType; label: string; badge: { text: string; tone: 'orange' | 'green' } | null; perks: string[] }[] = [
   { id: '12months', label: '1-year cover', badge: null, perks: ['Lowest monthly cost', 'Flexible shorter-term cover'] },
-  { id: '24months', label: '2-year cover', badge: { text: 'Most popular', tone: 'orange' }, perks: ['Better value over time', 'No renewal needed next year'] },
-  { id: '36months', label: '3-year cover', badge: { text: 'Best value', tone: 'green' }, perks: ['Best long-term value', 'Locked-in protection for 3 years'] },
+  { id: '24months', label: '2-year cover', badge: { text: 'Most popular', tone: 'orange' }, perks: ['Year 2 FREE — only 12 instalments', 'No renewal needed next year'] },
+  { id: '36months', label: '3-year cover', badge: { text: 'Best value', tone: 'green' }, perks: ['Years 2 & 3 FREE — only 12 instalments', 'Locked-in protection for 3 years'] },
 ];
 
 const Step3Desktop: React.FC<Step3DesktopProps> = ({
