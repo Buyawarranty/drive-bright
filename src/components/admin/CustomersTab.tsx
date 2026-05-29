@@ -5372,7 +5372,7 @@ Please log in and change your password after first login.`;
                         </div>
                       </TableCell>
                       )}
-                      {canSeeSourceColumn && (
+                      {canSeeSourceColumn && showPurchaseSource && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
                             source={customer.purchase_source} 
