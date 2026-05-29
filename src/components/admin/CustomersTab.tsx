@@ -3844,7 +3844,7 @@ export const CustomersTab = ({
               {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
               {showPaymentColumn && <TableHead>Payment Method</TableHead>}
-              {canSeeSourceColumn && <TableHead className="bg-purple-50">Source</TableHead>}
+              {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">Source</TableHead>}
               {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
