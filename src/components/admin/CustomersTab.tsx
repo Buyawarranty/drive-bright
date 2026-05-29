@@ -435,6 +435,7 @@ export const CustomersTab = ({
   const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
+  const [showPaymentColumn, setShowPaymentColumn] = useState(false);
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
@@ -3779,17 +3780,27 @@ export const CustomersTab = ({
 
 
           {/* Column visibility toggles */}
-          {isSuperAdmin && (
-            <div className="flex justify-end px-1">
+          {(isSuperAdmin || isAdmin || isLeadGen) && (
+            <div className="flex justify-end gap-1 px-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPaymentColumn(v => !v)}
+                className="text-xs gap-1.5 h-8"
+                title={showPaymentColumn ? 'Hide Payment columns' : 'Show Payment columns'}
+              >
+                {showPaymentColumn ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                Payment
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPurchaseSource(v => !v)}
                 className="text-xs gap-1.5 h-8"
-                title={showPurchaseSource ? 'Hide Purchase Source column' : 'Show Purchase Source column'}
+                title={showPurchaseSource ? 'Hide SRC column' : 'Show SRC column'}
               >
                 {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                H
+                SRC
               </Button>
             </div>
           )}
@@ -3815,7 +3826,7 @@ export const CustomersTab = ({
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
-              <TableHead>Payment</TableHead>
+              {showPaymentColumn && <TableHead>Payment</TableHead>}
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
@@ -3832,7 +3843,7 @@ export const CustomersTab = ({
               
               {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
-              <TableHead>Payment Method</TableHead>
+              {showPaymentColumn && <TableHead>Payment Method</TableHead>}
               {canSeeSourceColumn && <TableHead className="bg-purple-50">Source</TableHead>}
               {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
               <TableHead>Vol. Excess</TableHead>
@@ -5336,29 +5347,31 @@ Please log in and change your password after first login.`;
                        <span className="text-gray-400">N/A</span>
                      )}
                    </TableCell>
-                     <TableCell>
-                       <div className="flex flex-col gap-1">
-                         <div className="flex items-center gap-1">
-                           <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
-                             {customer.is_manual_entry ? 'Manual' :
-                              customer.bumper_order_id ? 'Bumper' : 
-                              customer.stripe_session_id ? 'Stripe' : 'N/A'}
-                           </Badge>
-                           {customer.payment_verified ? (
-                             <span className="text-green-600" title="Payment verified">✓</span>
-                           ) : customer.is_manual_entry ? (
-                             <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
-                           ) : (
-                             <span className="text-red-500" title="Payment not verified">✗</span>
+                      {showPaymentColumn && (
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1">
+                            <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
+                              {customer.is_manual_entry ? 'Manual' :
+                               customer.bumper_order_id ? 'Bumper' : 
+                               customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                            </Badge>
+                            {customer.payment_verified ? (
+                              <span className="text-green-600" title="Payment verified">✓</span>
+                            ) : customer.is_manual_entry ? (
+                              <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
+                            ) : (
+                              <span className="text-red-500" title="Payment not verified">✗</span>
+                            )}
+                          </div>
+                          {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
+                             <span className="text-xs font-medium text-green-700">
+                               £{customer.final_amount.toFixed(2)}
+                             </span>
                            )}
-                         </div>
-                         {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
-                            <span className="text-xs font-medium text-green-700">
-                              £{customer.final_amount.toFixed(2)}
-                            </span>
-                          )}
-                       </div>
-                     </TableCell>
+                        </div>
+                      </TableCell>
+                      )}
                       {canSeeSourceColumn && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
