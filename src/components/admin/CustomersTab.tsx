@@ -3780,17 +3780,27 @@ export const CustomersTab = ({
 
 
           {/* Column visibility toggles */}
-          {isSuperAdmin && (
-            <div className="flex justify-end px-1">
+          {(isSuperAdmin || isAdmin || isLeadGen) && (
+            <div className="flex justify-end gap-1 px-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPaymentColumn(v => !v)}
+                className="text-xs gap-1.5 h-8"
+                title={showPaymentColumn ? 'Hide Payment columns' : 'Show Payment columns'}
+              >
+                {showPaymentColumn ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                Payment
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPurchaseSource(v => !v)}
                 className="text-xs gap-1.5 h-8"
-                title={showPurchaseSource ? 'Hide Purchase Source column' : 'Show Purchase Source column'}
+                title={showPurchaseSource ? 'Hide SRC column' : 'Show SRC column'}
               >
                 {showPurchaseSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                H
+                SRC
               </Button>
             </div>
           )}
