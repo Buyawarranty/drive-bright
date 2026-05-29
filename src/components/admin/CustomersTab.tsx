@@ -5347,29 +5347,31 @@ Please log in and change your password after first login.`;
                        <span className="text-gray-400">N/A</span>
                      )}
                    </TableCell>
-                     <TableCell>
-                       <div className="flex flex-col gap-1">
-                         <div className="flex items-center gap-1">
-                           <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
-                             {customer.is_manual_entry ? 'Manual' :
-                              customer.bumper_order_id ? 'Bumper' : 
-                              customer.stripe_session_id ? 'Stripe' : 'N/A'}
-                           </Badge>
-                           {customer.payment_verified ? (
-                             <span className="text-green-600" title="Payment verified">✓</span>
-                           ) : customer.is_manual_entry ? (
-                             <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
-                           ) : (
-                             <span className="text-red-500" title="Payment not verified">✗</span>
+                      {showPaymentColumn && (
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1">
+                            <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
+                              {customer.is_manual_entry ? 'Manual' :
+                               customer.bumper_order_id ? 'Bumper' : 
+                               customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                            </Badge>
+                            {customer.payment_verified ? (
+                              <span className="text-green-600" title="Payment verified">✓</span>
+                            ) : customer.is_manual_entry ? (
+                              <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
+                            ) : (
+                              <span className="text-red-500" title="Payment not verified">✗</span>
+                            )}
+                          </div>
+                          {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
+                             <span className="text-xs font-medium text-green-700">
+                               £{customer.final_amount.toFixed(2)}
+                             </span>
                            )}
-                         </div>
-                         {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
-                            <span className="text-xs font-medium text-green-700">
-                              £{customer.final_amount.toFixed(2)}
-                            </span>
-                          )}
-                       </div>
-                     </TableCell>
+                        </div>
+                      </TableCell>
+                      )}
                       {canSeeSourceColumn && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
