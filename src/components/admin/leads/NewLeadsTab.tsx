@@ -155,6 +155,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
+  const [showFakeAudit, setShowFakeAudit] = useState(true);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
     () => Array.from(reminderLeadIds).filter(id => !id.startsWith('customer_') && !id.startsWith('cart_') && !id.startsWith('claim_')),
