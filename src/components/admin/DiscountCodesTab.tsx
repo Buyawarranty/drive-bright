@@ -1081,7 +1081,9 @@ export function DiscountCodesTab() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {!isReadOnly && (<></>)}
+                            {isReadOnly ? (
+                              <span className="text-xs text-muted-foreground">View only</span>
+                            ) : (<>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1126,6 +1128,7 @@ export function DiscountCodesTab() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            </>)}
                           </div>
                         </TableCell>
                       </TableRow>
