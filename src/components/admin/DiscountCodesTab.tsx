@@ -91,6 +91,8 @@ export function DiscountCodesTab() {
     min_order_amount: 0,
   });
   const { toast } = useToast();
+  const { userRole } = useAuth();
+  const isReadOnly = userRole === 'sales' || userRole === 'sales_lead';
 
   useEffect(() => {
     fetchDiscountCodes();
