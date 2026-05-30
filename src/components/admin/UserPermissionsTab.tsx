@@ -90,6 +90,7 @@ const GRANULAR_PERMISSIONS = {
     { key: 'all-leads', label: 'See All Leads', description: 'Can see all leads (OFF = only their own assigned leads)' },
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },
+    { key: 'fake-audit', label: 'Fake Lead Audit', description: 'Can access the Fake Lead Audit panel (audit-only review of leads marked Fake 404)' },
   ],
 };
 
@@ -110,6 +111,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads_all-leads': true,
     'tab_new-leads_team-view': true,
     'tab_new-leads_my-dashboard': true,
+    'tab_new-leads_fake-audit': true,
     'tab_customers_view': true,
   },
   sales: {
@@ -135,6 +137,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads': true,
     'tab_new-leads_view': true,
     'tab_new-leads_see-source': true,
+    'tab_new-leads_fake-audit': true,
     'tab_customers_see-source': true,
   },
   accounts: {
