@@ -137,6 +137,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads': true,
     'tab_new-leads_view': true,
     'tab_new-leads_see-source': true,
+    'tab_new-leads_fake-audit': true,
     'tab_customers_see-source': true,
   },
   accounts: {
