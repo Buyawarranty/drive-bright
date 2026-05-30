@@ -560,6 +560,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               setPendingConvertedStatus(true);
               return;
             }
+            if (value === 'fake_lead' && lead.status !== 'fake_lead') {
+              setPendingFakeStatus(true);
+              return;
+            }
             onUpdateStatus(value as LeadStatus);
           }}
         >
