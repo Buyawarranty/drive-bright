@@ -1,47 +1,70 @@
-## What needs to change
+## Fake Leads Audit Process
 
-Three connected fixes around the Step 3 → Step 4 flow.
+Adds an audit trail and review panel for leads marked as **Fake 404**, so managers can verify whether the agent was right to mark them fake (real number? actually tried to call? how many times? any call errors?), and review on a weekly or monthly cadence.
 
-### 1. One promo code, persisted across visits
+### What you'll see (UI)
 
-**Today:** `appliedDiscountCodes` lives only in `StreamlinedCheckout` React state. If the customer leaves and comes back (new tab, refresh, return from gateway), state resets so they can re-enter another code. The auto-applied promo banner is also unaware of any manually entered code.
+Inside `New Leads → Fake 404` tab, a new **"Audit"** toggle (visible to `super_admin`, `admin`, `sales_lead`, `accounts_manager`) that opens an audit table with:
 
-**Fix:**
-- Persist `appliedDiscountCodes` in `localStorage` keyed by normalised email + reg plate (`promoApplied:{email}:{reg}`). Hydrate on mount; clear on successful payment.
-- Keep the existing client guard (`appliedDiscountCodes.length > 0` → reject) and reuse it for both manual entry and the auto-apply banner so the two paths can never stack.
-- Harden the `validate-discount-code` edge function: when an `customer_email` + `vehicle_reg` combo already has a different active code recorded against it, reject the new one with `"Only one promo code can be used per purchase"`. (Uses the existing `discount_code_usage` table — no schema changes.)
+- **Period selector** — This week / Last week / This month / Last month / Custom range, defaulting to current month. Grouped headers show counts per week and per month.
+- **Columns** per fake lead:
+  - Customer (name, email, phone, reg)
+  - **Phone validity** badge — green "Valid UK" / amber "Suspicious" / red "Invalid format" based on UK number regex (mobile `07xxx`, landline, international `+44`, length, repeating-digit pattern detection from existing `suspiciousLeadDetection.ts`)
+  - **Call attempts** — count + expandable list of every `lead_call_logs` row: attempt #, outcome (no_answer, voicemail, wrong_number, disconnected, busy, answered, call_error…), agent, timestamp, notes
+  - **Marked fake by** — agent name + date (relative + absolute)
+  - **Reason** — required free-text reason captured when marking fake
+  - **Audit status** — Pending / ✅ Confirmed fake / ↩️ Reinstated (with auditor + date)
+- **Sort** by: Date marked fake (default desc), call count asc (zero-call ones float to top as suspicious), phone validity (invalid first).
+- **Actions** per row: "Confirm fake", "Reinstate to Live", "Flag for review" (adds note + keeps pending).
+- **Header KPIs**: total marked fake in period, % with zero call attempts, % with invalid phone, % confirmed vs reinstated, top fake-markers leaderboard.
+- **Export** CSV (admin/super_admin only) of the current period.
 
-### 2. Promo visible on Step 3 (price parity with Step 4)
+### Capture flow change
 
-**Today:** Promo input only exists on Step 4. Step 3 sticky / cards show the un-discounted monthly, so the price visibly drops on Step 4, which looks like a bug.
+When an agent picks status `Fake 404`, a small dialog now requires:
+- Reason (dropdown: `wrong_number`, `no_intent`, `competitor_test`, `spam_bot`, `duplicate_test`, `other`) + optional note.
 
-**Fix:**
-- Read the persisted promo (`localStorage`) inside `PricingTable.tsx`.
-- If a valid promo exists, derive a `discountedMonthlyPrice = floor((totalPrice * (1 - pct)) / 12)` (or fixed-amount equivalent) and use it everywhere Step 3 currently shows `displayMonthlyPrice` / `monthlyPrice`: duration cards, mobile sticky, desktop sticky, "Pay in full", email-quote dialog.
-- Show a small inline badge under the sticky price: `Promo CODE applied — Save £X`, with a "Remove" link that clears the persisted promo.
-- Pass the discounted figures through `onPlanSelected` so Step 4 inherits them (per the existing pricing-sync constraint in `.note/pricing-sync-constraint.md`).
+This is stored on the lead so the audit panel always has context.
 
-### 3. Move "Email quote" out of the sticky bar
+### Schema additions (`sales_leads`)
 
-**Today:** `MobileStickyFooter` renders an "Email quote" link in both collapsed and expanded states, taking vertical space.
+- `fake_marked_by uuid` → `admin_users.id`
+- `fake_marked_at timestamptz`
+- `fake_reason text`
+- `fake_reason_note text`
+- `fake_audit_status text` — `pending` (default when fake_lead), `confirmed`, `reinstated`
+- `fake_audited_by uuid` → `admin_users.id`
+- `fake_audited_at timestamptz`
 
-**Fix:**
-- Remove the `EmailQuoteLink` block from `MobileStickyFooter` (keep the `onEmailQuote` prop optional for backward compat but unused there). Tighten the sticky card's vertical padding now that the link is gone (`pb-3` → `pb-2.5`, drop the `mt-2` spacer).
-- In `MobileSteppedFlow.tsx`, render a new "Email me this quote" link directly **after** the `TrustAndInfoAccordion` (which contains "Frequently asked questions"), wired to the existing `setEmailQuoteOpen(true)`.
-- Do the same on desktop (`Step3Desktop.tsx`): drop the email-quote link from any sticky-bar area and add it as a centered link under the FAQ section.
+Index on `(fake_marked_at)` for fast weekly/monthly grouping.
 
-## Files touched
+Backfill: for existing `status = 'fake_lead'` rows, set `fake_marked_at = COALESCE(lost_at, updated_at)` and `fake_audit_status = 'pending'` so they appear in the audit immediately.
 
-- `src/components/checkout/StreamlinedCheckout.tsx` — persistence load/save, clear on success
-- `supabase/functions/validate-discount-code/index.ts` — cross-code rejection per email+reg
-- `src/components/PricingTable.tsx` — hydrate promo, apply discount to displayed prices, sticky promo badge, pass discounted figures to Step 4
-- `src/components/checkout/MobileStickyFooter.tsx` — remove email quote link, tighten padding
-- `src/components/step3/MobileSteppedFlow.tsx` — render email quote link below FAQ accordion
-- `src/components/step3/Step3Desktop.tsx` — same email-quote relocation for desktop
-- New helper: `src/lib/promoStorage.ts` — typed get/set/clear for the persisted promo
+### Auto-population
 
-## Out of scope
+A small trigger on `sales_leads` sets `fake_marked_by/at` whenever status transitions to `fake_lead`, and clears them (sets `fake_audit_status = 'reinstated'` + auditor) when status moves away. Frontend additionally writes `fake_reason` from the dialog.
 
-- No schema changes; reuses `discount_code_usage`.
-- No changes to Stripe/Bumper checkout-creation logic beyond receiving the already-discounted amount it already accepts.
-- No copy/UX changes to the promo entry form itself.
+### Files
+
+```text
+NEW  src/components/admin/leads/FakeLeadsAuditPanel.tsx
+NEW  src/components/admin/leads/MarkFakeReasonDialog.tsx
+NEW  src/hooks/useFakeLeadsAudit.ts
+EDIT src/components/admin/leads/NewLeadsTab.tsx         (mount Audit panel under fake filter)
+EDIT src/components/admin/leads/LeadTableRow.tsx        (open MarkFakeReasonDialog when picking Fake 404)
+EDIT src/hooks/useLeads.tsx                             (include new fake_* columns in SELECT)
+MIGRATION                                               (columns + index + trigger + backfill)
+```
+
+### Permissions
+
+- **All agents**: can still mark fake (now via dialog with reason).
+- **Audit panel view & confirm/reinstate**: `super_admin`, `admin`, `sales_lead`, `accounts_manager`. Other roles don't see the Audit toggle.
+- **Export**: `super_admin`, `admin` only.
+
+### Out of scope (call now if you want it)
+
+- Real phone-number lookup against an external HLR/Twilio Lookup API (would catch disconnected numbers definitively but is a paid integration).
+- Scheduled email digest of the weekly/monthly audit summary.
+
+Approve and I'll ship the migration + UI.

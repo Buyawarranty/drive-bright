@@ -26,6 +26,7 @@ import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive,
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
+import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -154,6 +155,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
+  const [showFakeAudit, setShowFakeAudit] = useState(true);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
     () => Array.from(reminderLeadIds).filter(id => !id.startsWith('customer_') && !id.startsWith('cart_') && !id.startsWith('claim_')),
@@ -1115,6 +1117,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
           />
+          {/* Fake Leads Audit Panel — visible to managers when Fake 404 filter is active */}
+          {activeFilter === 'fake' && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_lead' || userRole === 'accounts_manager') && showFakeAudit && (
+            <FakeLeadsAuditPanel userRole={userRole} currentAdminId={currentAdminId} />
+          )}
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
                   {/* Sticky Control Bar */}

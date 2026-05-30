@@ -34,6 +34,8 @@ import {
   CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { MarkFakeReasonDialog, FakeReasonValue } from './MarkFakeReasonDialog';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -315,6 +317,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
   const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
+  const [pendingFakeStatus, setPendingFakeStatus] = useState(false);
   const navigate = useNavigate();
   
   const sla = getUrgencySLA(lead);
@@ -557,6 +560,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               setPendingConvertedStatus(true);
               return;
             }
+            if (value === 'fake_lead' && lead.status !== 'fake_lead') {
+              setPendingFakeStatus(true);
+              return;
+            }
             onUpdateStatus(value as LeadStatus);
           }}
         >
@@ -601,6 +608,27 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        <MarkFakeReasonDialog
+          open={pendingFakeStatus}
+          onOpenChange={setPendingFakeStatus}
+          leadName={`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || lead.email}
+          leadPhone={lead.phone}
+          callCount={lead.call_count || 0}
+          onConfirm={async ({ reason, note }) => {
+            // Flip status first — trigger will stamp marker/date/audit_status
+            onUpdateStatus('fake_lead' as LeadStatus);
+            // Then persist the reason + note alongside
+            try {
+              await supabase
+                .from('sales_leads')
+                .update({ fake_reason: reason, fake_reason_note: note || null } as any)
+                .eq('id', lead.id);
+            } catch (e) {
+              console.error('Failed to save fake reason:', e);
+            }
+            onLogActivity('fake_lead_marked', `Marked as Fake 404 — reason: ${reason}${note ? ` — ${note}` : ''}`);
+          }}
+        />
         </>
         )}
       </TableCell>

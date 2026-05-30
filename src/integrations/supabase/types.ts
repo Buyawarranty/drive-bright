@@ -6656,6 +6656,13 @@ export type Database = {
           converted_at: string | null
           created_at: string
           email: string
+          fake_audit_status: string | null
+          fake_audited_at: string | null
+          fake_audited_by: string | null
+          fake_marked_at: string | null
+          fake_marked_by: string | null
+          fake_reason: string | null
+          fake_reason_note: string | null
           first_name: string | null
           follow_up_status: string | null
           id: string
@@ -6704,6 +6711,13 @@ export type Database = {
           converted_at?: string | null
           created_at?: string
           email: string
+          fake_audit_status?: string | null
+          fake_audited_at?: string | null
+          fake_audited_by?: string | null
+          fake_marked_at?: string | null
+          fake_marked_by?: string | null
+          fake_reason?: string | null
+          fake_reason_note?: string | null
           first_name?: string | null
           follow_up_status?: string | null
           id?: string
@@ -6752,6 +6766,13 @@ export type Database = {
           converted_at?: string | null
           created_at?: string
           email?: string
+          fake_audit_status?: string | null
+          fake_audited_at?: string | null
+          fake_audited_by?: string | null
+          fake_marked_at?: string | null
+          fake_marked_by?: string | null
+          fake_reason?: string | null
+          fake_reason_note?: string | null
           first_name?: string | null
           follow_up_status?: string | null
           id?: string
