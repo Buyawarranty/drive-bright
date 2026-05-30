@@ -1117,8 +1117,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
           />
-          {/* Fake Leads Audit Panel — visible to managers when Fake 404 filter is active */}
-          {activeFilter === 'fake' && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_lead' || userRole === 'accounts_manager') && showFakeAudit && (
+          {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
+          {activeFilter === 'fake' && showFakeAudit && (
+            userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('new-leads', 'fake-audit') === true
+          ) && (
             <FakeLeadsAuditPanel userRole={userRole} currentAdminId={currentAdminId} />
           )}
           <Card className="overflow-hidden border-2 border-border">
