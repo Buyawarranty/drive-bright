@@ -1,0 +1,1 @@
+UPDATE public.discount_codes SET campaign_source = 'SALESTEAM' WHERE code IN ('SAVE5','SAVE10','SAVE15','SAVE20','SAVE50','SAVE75','SAVE100');
