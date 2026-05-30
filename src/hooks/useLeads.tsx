@@ -575,7 +575,12 @@ export const useLeads = (options?: UseLeadsOptions) => {
             );
           }
 
-          if (isSalesAgent && currentAdmin?.id) {
+          // When a sales agent is actively searching, broaden the query to ALL leads
+          // so they can find any customer (assigned to anyone) and call them back or
+          // hand off to the right salesperson. Without an active search, keep the
+          // narrower assigned+unassigned scope.
+          const hasActiveSearch = !!serverSearchTermRef.current?.trim();
+          if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
