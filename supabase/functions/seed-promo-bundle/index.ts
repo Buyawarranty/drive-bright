@@ -104,7 +104,7 @@ serve(async (req) => {
         usage_limit: USAGE_LIMIT,
         active: true,
         archived: false,
-        campaign_source: "SAVE",
+        campaign_source: "SALESTEAM",
         is_public: true,
         public_description: spec.description,
         min_order_amount: spec.min_order_amount ?? 0,
