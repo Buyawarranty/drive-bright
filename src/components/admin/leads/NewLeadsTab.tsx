@@ -26,6 +26,8 @@ import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive,
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
+import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
+import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
