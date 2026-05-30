@@ -317,6 +317,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
   const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
+  const [pendingFakeStatus, setPendingFakeStatus] = useState(false);
   const navigate = useNavigate();
   
   const sla = getUrgencySLA(lead);
