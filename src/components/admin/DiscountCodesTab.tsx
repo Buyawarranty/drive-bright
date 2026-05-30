@@ -62,6 +62,7 @@ const CAMPAIGN_SOURCES = [
   { value: 'SAVE', label: 'General Campaign' },
   { value: 'AFFILIATE', label: 'Affiliate' },
   { value: 'RETARGETING', label: 'Retargeting' },
+  { value: 'SALESTEAM', label: 'Sales Team' },
 ];
 
 export function DiscountCodesTab() {
