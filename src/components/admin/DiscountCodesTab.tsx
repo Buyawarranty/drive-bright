@@ -645,6 +645,7 @@ export function DiscountCodesTab() {
         </div>
         
         <div className="flex gap-2">
+          {!isReadOnly && (<></>)}
           <Button variant="outline" onClick={autoExpireCodes} disabled={loading}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Auto-Expire
