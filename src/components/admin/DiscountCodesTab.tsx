@@ -15,6 +15,7 @@ import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, Calen
 import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 
 interface DiscountCode {
@@ -90,6 +91,8 @@ export function DiscountCodesTab() {
     min_order_amount: 0,
   });
   const { toast } = useToast();
+  const { userRole } = useAuth();
+  const isReadOnly = userRole === 'sales' || userRole === 'sales_lead';
 
   useEffect(() => {
     fetchDiscountCodes();
@@ -642,6 +645,8 @@ export function DiscountCodesTab() {
         </div>
         
         <div className="flex gap-2">
+          {!isReadOnly && (
+          <>
           <Button variant="outline" onClick={autoExpireCodes} disabled={loading}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Auto-Expire
@@ -881,6 +886,8 @@ export function DiscountCodesTab() {
               </form>
             </DialogContent>
           </Dialog>
+          </>
+          )}
         </div>
       </div>
 
@@ -1060,7 +1067,9 @@ export function DiscountCodesTab() {
                         <TableCell>
                           <Switch
                             checked={code.is_public || false}
+                            disabled={isReadOnly}
                             onCheckedChange={async (checked) => {
+                              if (isReadOnly) return;
                               const { error } = await supabase
                                 .from('discount_codes')
                                 .update({ is_public: checked } as any)
@@ -1074,6 +1083,9 @@ export function DiscountCodesTab() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            {isReadOnly ? (
+                              <span className="text-xs text-muted-foreground">View only</span>
+                            ) : (<>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1118,6 +1130,7 @@ export function DiscountCodesTab() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            </>)}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1186,6 +1199,9 @@ export function DiscountCodesTab() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            {isReadOnly ? (
+                              <span className="text-xs text-muted-foreground">View only</span>
+                            ) : (<>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1223,6 +1239,7 @@ export function DiscountCodesTab() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            </>)}
                           </div>
                         </TableCell>
                       </TableRow>
