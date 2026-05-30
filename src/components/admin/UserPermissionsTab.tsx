@@ -90,6 +90,7 @@ const GRANULAR_PERMISSIONS = {
     { key: 'all-leads', label: 'See All Leads', description: 'Can see all leads (OFF = only their own assigned leads)' },
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },
+    { key: 'fake-audit', label: 'Fake Lead Audit', description: 'Can access the Fake Lead Audit panel (audit-only review of leads marked Fake 404)' },
   ],
 };
 
