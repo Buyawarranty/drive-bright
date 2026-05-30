@@ -1067,7 +1067,9 @@ export function DiscountCodesTab() {
                         <TableCell>
                           <Switch
                             checked={code.is_public || false}
+                            disabled={isReadOnly}
                             onCheckedChange={async (checked) => {
+                              if (isReadOnly) return;
                               const { error } = await supabase
                                 .from('discount_codes')
                                 .update({ is_public: checked } as any)
