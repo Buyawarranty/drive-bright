@@ -55,6 +55,7 @@ interface DiscountCodeFormData {
 }
 
 const CAMPAIGN_SOURCES = [
+  { value: 'SALESTEAM', label: 'Sales Team' },
   { value: 'INSTA', label: 'Instagram' },
   { value: 'BILLO', label: 'UGC Platform' },
   { value: 'WELCOME', label: 'New Users' },
@@ -63,7 +64,6 @@ const CAMPAIGN_SOURCES = [
   { value: 'SAVE', label: 'General Campaign' },
   { value: 'AFFILIATE', label: 'Affiliate' },
   { value: 'RETARGETING', label: 'Retargeting' },
-  { value: 'SALESTEAM', label: 'Sales Team' },
 ];
 
 export function DiscountCodesTab() {
