@@ -15,6 +15,7 @@ import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, Calen
 import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 
 interface DiscountCode {
