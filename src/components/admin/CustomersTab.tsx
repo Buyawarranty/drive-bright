@@ -3543,35 +3543,16 @@ export const CustomersTab = ({
 
                 {/* Payment stats summary (only when payment filter is applied) */}
                 {!isSalesAgent && (() => {
-                  const stats = customers.reduce((acc, customer) => {
+                  if (filterByPaymentSource === 'all' && paymentSourceDateFilter === 'all') return null;
+                  // Use filteredCustomers so this respects the same date range, status,
+                  // source, agent and other active filters as the table itself.
+                  const stats = filteredCustomers.reduce((acc, customer) => {
                     const status = (customer.status || '').toLowerCase();
                     if (status === 'cancelled' || status === 'refunded') return acc;
-                    const hasBumper = !!customer.bumper_order_id;
-                    const hasStripe = !!customer.stripe_session_id;
-                    const sessionId = (customer.stripe_session_id || '').toLowerCase();
-                    const paymentTypeStr = (customer.payment_type || '').toLowerCase();
-                    const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
-                    let matchesSource = true;
-                    if (filterByPaymentSource === 'bumper') matchesSource = hasBumper;
-                    else if (filterByPaymentSource === 'stripe') matchesSource = hasStripe && !isPaypal;
-                    else if (filterByPaymentSource === 'paypal') matchesSource = isPaypal;
-                    else if (filterByPaymentSource === 'payment_assist') matchesSource = !hasBumper && !hasStripe && !isPaypal;
-                    else if (filterByPaymentSource === 'other') matchesSource = !hasBumper && !hasStripe && !isPaypal;
-                    if (!matchesSource) return acc;
-                    if (paymentSourceDateFilter !== 'all') {
-                      const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
-                      if (psRange) {
-                        const ds = customer.signup_date || customer.created_at;
-                        if (!ds) return acc;
-                        const d = new Date(ds);
-                        if (d < psRange.start || d > psRange.end) return acc;
-                      }
-                    }
                     acc.count += 1;
                     acc.total += Number(customer.final_amount) || 0;
                     return acc;
                   }, { count: 0, total: 0 });
-                  if (filterByPaymentSource === 'all' && paymentSourceDateFilter === 'all') return null;
                   return (
                     <div className="flex items-center gap-2 px-4 py-2 border-t">
                       <span className="text-xs text-muted-foreground">Payment filter total:</span>
@@ -3584,6 +3565,7 @@ export const CustomersTab = ({
                     </div>
                   );
                 })()}
+
 
                 {/* Revenue stats badge — shown for any active date selection so admins always see the total for what they've filtered */}
                 {isSuperAdmin && filteredRevenueStats && (
