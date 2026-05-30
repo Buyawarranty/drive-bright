@@ -1117,6 +1117,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
           />
+          {/* Fake Leads Audit Panel — visible to managers when Fake 404 filter is active */}
+          {activeFilter === 'fake' && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_lead' || userRole === 'accounts_manager') && showFakeAudit && (
+            <FakeLeadsAuditPanel userRole={userRole} currentAdminId={currentAdminId} />
+          )}
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
                   {/* Sticky Control Bar */}
