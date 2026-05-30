@@ -886,6 +886,8 @@ export function DiscountCodesTab() {
               </form>
             </DialogContent>
           </Dialog>
+          </>
+          )}
         </div>
       </div>
 
