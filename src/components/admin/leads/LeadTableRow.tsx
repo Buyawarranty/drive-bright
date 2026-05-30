@@ -608,6 +608,27 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        <MarkFakeReasonDialog
+          open={pendingFakeStatus}
+          onOpenChange={setPendingFakeStatus}
+          leadName={`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || lead.email}
+          leadPhone={lead.phone}
+          callCount={lead.call_count || 0}
+          onConfirm={async ({ reason, note }) => {
+            // Flip status first — trigger will stamp marker/date/audit_status
+            onUpdateStatus('fake_lead' as LeadStatus);
+            // Then persist the reason + note alongside
+            try {
+              await supabase
+                .from('sales_leads')
+                .update({ fake_reason: reason, fake_reason_note: note || null } as any)
+                .eq('id', lead.id);
+            } catch (e) {
+              console.error('Failed to save fake reason:', e);
+            }
+            onLogActivity('fake_lead_marked', `Marked as Fake 404 — reason: ${reason}${note ? ` — ${note}` : ''}`);
+          }}
+        />
         </>
         )}
       </TableCell>
