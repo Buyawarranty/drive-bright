@@ -1081,6 +1081,7 @@ export function DiscountCodesTab() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            {!isReadOnly && (<></>)}
                             <Button
                               variant="ghost"
                               size="sm"
