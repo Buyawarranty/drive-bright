@@ -264,14 +264,29 @@ export const StaffHubTab: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="sh-file">File *</Label>
-                <Input id="sh-file" type="file"
+                <label
+                  htmlFor="sh-file"
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-blue-500', 'bg-blue-50'); }}
+                  onDragLeave={(e) => { e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50'); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50');
+                    const dropped = e.dataTransfer.files?.[0];
+                    if (dropped) setFile(dropped);
+                  }}
+                  className="flex flex-col items-center justify-center gap-1 cursor-pointer rounded-md border-2 border-dashed border-muted-foreground/30 bg-muted/30 px-4 py-6 text-center transition-colors hover:bg-muted/50"
+                >
+                  <span className="text-sm font-medium">Drag & drop a file here</span>
+                  <span className="text-xs text-muted-foreground">or click to browse — PDF, Word, Excel or image</span>
+                  {file && (
+                    <span className="mt-2 text-xs font-medium text-foreground">
+                      {file.name} ({formatBytes(file.size)})
+                    </span>
+                  )}
+                </label>
+                <Input id="sh-file" type="file" className="hidden"
                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls"
                   onChange={e => setFile(e.target.files?.[0] || null)} />
-                {file && (
-                  <p className="text-xs text-muted-foreground">
-                    {file.name} ({formatBytes(file.size)})
-                  </p>
-                )}
               </div>
             </div>
             <DialogFooter>
