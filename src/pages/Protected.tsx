@@ -457,8 +457,6 @@ const Protected = () => {
             </div>
           </div>
 
-          {/* PDF documents — high-intent placement after exclusions table */}
-          <DocLinksRow variant="exclusions" />
         </section>
 
         {/* ── 5. CLAIM LIMITS — conversion decision point ── */}
