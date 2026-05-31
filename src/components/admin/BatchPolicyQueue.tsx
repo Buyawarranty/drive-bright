@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown } from 'lucide-react';
+import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -59,14 +59,35 @@ interface QueuedCustomer {
   };
 }
 
+const STORAGE_KEY = 'batchPolicyQueue.v1';
+const SAVED_AT_KEY = 'batchPolicyQueue.savedAt.v1';
+
 export const BatchPolicyQueue: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [queue, setQueue] = useState<QueuedCustomer[]>([]);
+  const [queue, setQueue] = useState<QueuedCustomer[]>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [savedAt, setSavedAt] = useState<string | null>(() => {
+    try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
+  });
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Autosave queue to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+      const now = new Date().toISOString();
+      localStorage.setItem(SAVED_AT_KEY, now);
+      setSavedAt(now);
+    } catch (e) { /* ignore quota */ }
+  }, [queue]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -150,7 +171,32 @@ export const BatchPolicyQueue: React.FC = () => {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
-  const clearQueue = () => setQueue([]);
+  const clearQueue = () => {
+    if (queue.length === 0) return;
+    if (!window.confirm(`Clear all ${queue.length} entries from the batch without marking as posted?`)) return;
+    setQueue([]);
+  };
+
+  const confirmAllPosted = async () => {
+    if (queue.length === 0) return;
+    if (!window.confirm(`Confirm: have all ${queue.length} warranty pack(s) been posted out? This will clear the batch and log them as sent.`)) return;
+    try {
+      const inserts = queue.map(c => ({
+        customer_id: c.id,
+        registration_plate: c.registration_plate || 'N/A',
+        customer_name: c.name,
+        customer_email: c.email,
+        warranty_number: c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || null,
+        plan_type: c.policy?.plan_type || c.plan_type || null,
+        sent_at: new Date().toISOString(),
+        action_type: 'batch_posted',
+        notes: `Confirmed posted — batch of ${queue.length}`,
+      }));
+      await supabase.from('posted_letters_log').insert(inserts as any);
+    } catch (e) { /* silent */ }
+    setQueue([]);
+    toast({ title: 'Batch marked as posted', description: `${queue.length} entries cleared and logged as sent.` });
+  };
 
   const formatAddress = (c: QueuedCustomer) => {
     return [
@@ -363,9 +409,14 @@ ${rows}
               </button>
             </div>
             {queue.length > 0 && (
-              <Button size="sm" variant="ghost" onClick={clearQueue} className="text-destructive hover:text-destructive text-xs gap-1">
-                <Trash2 className="h-3.5 w-3.5" /> Clear All
-              </Button>
+              <>
+                <Button size="sm" onClick={confirmAllPosted} className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Mark All Posted
+                </Button>
+                <Button size="sm" variant="ghost" onClick={clearQueue} className="text-destructive hover:text-destructive text-xs gap-1">
+                  <Trash2 className="h-3.5 w-3.5" /> Clear All
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -373,8 +424,14 @@ ${rows}
           Search by name or registration plate to build a list of customers whose warranty packs need to be posted out.
           Add each one and the section below populates with their address. When ready, print the labels and letters, or
           download every address in a single Word document for printing in one go. Rows missing a name or address are
-          flagged so they can be fixed before sending.
+          flagged so they can be fixed before sending. <strong>This batch is autosaved</strong> — it stays here across page reloads until you click <em>Mark All Posted</em>.
         </p>
+        {queue.length > 0 && savedAt && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Save className="h-3 w-3" />
+            Autosaved {format(new Date(savedAt), 'd MMM yyyy, HH:mm')} • {queue.length} pending
+          </div>
+        )}
         {incompleteCount > 0 && (
           <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
