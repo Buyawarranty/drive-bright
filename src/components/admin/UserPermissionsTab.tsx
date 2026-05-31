@@ -91,6 +91,7 @@ const GRANULAR_PERMISSIONS = {
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },
     { key: 'fake-audit', label: 'Fake Lead Audit', description: 'Can access the Fake Lead Audit panel (audit-only review of leads marked Fake 404)' },
+    { key: 'lead-routing', label: 'Lead Routing & Distribution', description: 'Can configure how Google/Facebook/mixed leads are distributed to teams based on conversion performance thresholds' },
   ],
 };
 
