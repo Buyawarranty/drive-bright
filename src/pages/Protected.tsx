@@ -586,7 +586,9 @@ const Protected = () => {
               <p className="text-sm text-muted-foreground">
                 Select your vehicle type to view everything that's covered.
               </p>
+              <DocLinksRow align="center" />
             </div>
+
 
             <Accordion type="single" collapsible className="space-y-3">
               {vehicleTypes.map((vt) => {
