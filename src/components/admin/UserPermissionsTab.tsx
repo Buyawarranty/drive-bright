@@ -91,13 +91,14 @@ const GRANULAR_PERMISSIONS = {
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },
     { key: 'fake-audit', label: 'Fake Lead Audit', description: 'Can access the Fake Lead Audit panel (audit-only review of leads marked Fake 404)' },
+    { key: 'lead-routing', label: 'Lead Routing & Distribution', description: 'Can configure how Google/Facebook/mixed leads are distributed to teams based on conversion performance thresholds' },
   ],
 };
 
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
-  super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
-  admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
+  super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true, 'tab_new-leads_lead-routing': true },
+  admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true, 'tab_new-leads_lead-routing': true },
   dev_tester: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true },
   sales_lead: {
     'tab_new-leads': true,
@@ -131,6 +132,23 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   blog_writer: {
     'tab_blog-writing': true,
     'tab_landing-pages': true,
+  },
+  performance_manager: {
+    'tab_new-leads': true,
+    'tab_get-quote': true,
+    'tab_customers': true,
+    'tab_selling-tips': true,
+    'tab_sales-scoreboard': true,
+    'tab_timesheets': true,
+    'tab_new-leads_view': true,
+    'tab_new-leads_assign': true,
+    'tab_new-leads_all-leads': true,
+    'tab_new-leads_team-view': true,
+    'tab_new-leads_my-dashboard': true,
+    'tab_new-leads_fake-audit': true,
+    'tab_new-leads_see-source': true,
+    'tab_new-leads_lead-routing': true,
+    'tab_customers_view': true,
   },
   lead_gen: {
     'tab_google-ads': true,
@@ -174,7 +192,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager',
     permissions: {} as Record<string, boolean>
   });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -318,7 +336,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager'] as const;
+      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -595,6 +613,7 @@ export const UserPermissionsTab = () => {
       case 'super_admin': return 'destructive';
       case 'admin': return 'destructive';
       case 'sales_lead': return 'destructive';
+      case 'performance_manager': return 'destructive';
       case 'dev_tester': return 'default';
       case 'member': return 'default';
       case 'viewer': return 'secondary';
@@ -607,6 +626,7 @@ export const UserPermissionsTab = () => {
   const getRoleBadgeClassName = (role: string) => {
     if (role === 'super_admin') return 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600';
     if (role === 'sales_lead') return 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600';
+    if (role === 'performance_manager') return 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white border-fuchsia-600';
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
     if (role === 'lead_gen') return 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
@@ -1065,6 +1085,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="performance_manager">Performance Manager - Sales Lead access plus lead routing & distribution</SelectItem>
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
@@ -1335,6 +1356,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="performance_manager">Performance Manager - Sales Lead access plus lead routing & distribution</SelectItem>
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
