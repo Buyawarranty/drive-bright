@@ -424,8 +424,14 @@ ${rows}
           Search by name or registration plate to build a list of customers whose warranty packs need to be posted out.
           Add each one and the section below populates with their address. When ready, print the labels and letters, or
           download every address in a single Word document for printing in one go. Rows missing a name or address are
-          flagged so they can be fixed before sending.
+          flagged so they can be fixed before sending. <strong>This batch is autosaved</strong> — it stays here across page reloads until you click <em>Mark All Posted</em>.
         </p>
+        {queue.length > 0 && savedAt && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Save className="h-3 w-3" />
+            Autosaved {format(new Date(savedAt), 'd MMM yyyy, HH:mm')} • {queue.length} pending
+          </div>
+        )}
         {incompleteCount > 0 && (
           <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
