@@ -635,17 +635,28 @@ export const useLeads = (options?: UseLeadsOptions) => {
             );
           }
 
-          let query = supabase
+          const dateFilter = serverDateFilterRef.current;
+          const hasDateBoundedView = !!dateFilter?.from || !!dateFilter?.to;
+
+          if (hasDateBoundedView || serverCallbacksOnlyRef.current) {
+            return await fetchPagedLeads((from, to) =>
+              applyCallbacksFilter(applyServerDateFilter(
+                supabase
+                  .from('sales_leads')
+                  .select(SELECT_COLUMNS)
+                  .order('created_at', { ascending: false })
+                  .order('id', { ascending: false })
+                  .range(from, to)
+              ))
+            );
+          }
+
+          return await supabase
             .from('sales_leads')
             .select(SELECT_COLUMNS)
             .order('created_at', { ascending: false })
             .order('id', { ascending: false })
             .limit(LEADS_LIST_LIMIT);
-
-          query = applyServerDateFilter(query);
-          query = applyCallbacksFilter(query);
-
-          return await query;
         })(),
         LEADS_FETCH_TIMEOUT_MS,
         'Leads fetch timed out'
