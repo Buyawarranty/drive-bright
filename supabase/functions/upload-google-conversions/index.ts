@@ -274,7 +274,16 @@ Deno.serve(async (req) => {
 
     for (const record of allPending) {
       try {
-        const conversionDate = formatDateForGoogle(record.created_at);
+        const clickIdentifier = getClickIdentifier(record.gclid);
+        if (!clickIdentifier) {
+          throw new Error('Missing Google click identifier');
+        }
+
+        const conversionTimestamp =
+          record.source === 'customers'
+            ? ((record as any).signup_date || record.created_at)
+            : ((record as any).updated_at || record.created_at);
+        const conversionDate = formatDateForGoogle(conversionTimestamp);
         const value = record.final_amount || 0;
         const userIdentifiers = await buildUserIdentifiers(
           (record as any).email,
@@ -284,7 +293,8 @@ Deno.serve(async (req) => {
 
         logStep(`Uploading conversion`, {
           id: record.id,
-          gclid: record.gclid,
+          clickIdType: clickIdentifier.field,
+          clickIdPrefix: clickIdentifier.value.substring(0, 12),
           value,
           date: conversionDate,
           source: record.source,
@@ -296,7 +306,7 @@ Deno.serve(async (req) => {
           customerId,
           conversionActionId,
           developerToken,
-          record.gclid!,
+          clickIdentifier,
           conversionDate,
           value,
           userIdentifiers,
