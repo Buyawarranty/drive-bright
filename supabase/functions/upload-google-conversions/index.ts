@@ -346,12 +346,19 @@ Deno.serve(async (req) => {
           const errorMsg = hasError 
             ? JSON.stringify(result.partialFailureError) 
             : `HTTP ${status}: ${JSON.stringify(result)}`;
+          const errorCategory = classifyUploadError(errorMsg);
+          const storedStatus =
+            errorCategory === 'braidCountingBlocked'
+              ? 'config_required: set Google Ads offline conversion action counting to MANY_PER_CLICK for gbraid/wbraid uploads'
+              : errorCategory === 'conversionPrecedesClick'
+                ? 'not_uploadable: conversion timestamp is before the Google click time'
+                : `failed: ${errorMsg.substring(0, 200)}`;
           
           // Mark as failed
           await supabase
             .from(record.source)
             .update({
-              google_ads_conversion_status: `failed: ${errorMsg.substring(0, 200)}`,
+              google_ads_conversion_status: storedStatus,
             })
             .eq('id', record.id);
 
