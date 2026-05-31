@@ -52,6 +52,14 @@ const renderHtml = (firstName: string) => `
         <p style="color:#4b5563; font-size:15px; line-height:1.6; margin:10px 0 0 0;">If you ever need to make a claim, the quickest and easiest way to get started is by completing our online claim form.</p>
       </div>
 
+      <!-- 14-day claim notice -->
+      <div class="baw-card" style="background-color:#ecfdf5; border-radius:8px; padding:22px 26px; margin-bottom:16px; border:1px solid #a7f3d0; border-left:4px solid #059669;">
+        <p style="color:#065f46; font-size:15px; font-weight:700; margin:0 0 8px 0;">✅ Your warranty cover is now active.</p>
+        <p style="color:#065f46; font-size:14px; line-height:1.6; margin:0;">Please note that claims can be submitted after your first <strong>14 days of continuous cover</strong>. Full details can be found in your policy documents.</p>
+      </div>
+
+
+
       <!-- Submit Claim -->
       <div class="baw-card" style="background-color:#ffffff; border-radius:8px; padding:28px 30px; margin-bottom:16px; border:1px solid #e5e7eb;">
         <h2 class="baw-h2" style="color:#1d3a8a; font-size:18px; font-weight:700; margin:0 0 6px 0; text-align:center;">Submit your claim online</h2>
