@@ -363,7 +363,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const statusFilteredLeads = useMemo(() => applyStatusFilter(visibleLeads), [visibleLeads, applyStatusFilter]);
 
   const getLeadSubmissionDate = useCallback(
-    (lead: Lead) => new Date(lead.last_resubmitted_at || lead.created_at),
+    (lead: Lead) => new Date(lead.created_at),
     []
   );
 
