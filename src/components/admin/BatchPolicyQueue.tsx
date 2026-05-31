@@ -59,14 +59,35 @@ interface QueuedCustomer {
   };
 }
 
+const STORAGE_KEY = 'batchPolicyQueue.v1';
+const SAVED_AT_KEY = 'batchPolicyQueue.savedAt.v1';
+
 export const BatchPolicyQueue: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [queue, setQueue] = useState<QueuedCustomer[]>([]);
+  const [queue, setQueue] = useState<QueuedCustomer[]>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [savedAt, setSavedAt] = useState<string | null>(() => {
+    try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
+  });
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Autosave queue to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+      const now = new Date().toISOString();
+      localStorage.setItem(SAVED_AT_KEY, now);
+      setSavedAt(now);
+    } catch (e) { /* ignore quota */ }
+  }, [queue]);
 
   // Close dropdown on outside click
   useEffect(() => {
