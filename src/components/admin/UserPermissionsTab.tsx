@@ -69,6 +69,8 @@ const ADMIN_TABS = [
   { id: 'discounts-given', label: 'Discounts Given', description: 'Track agent discounts vs retail pricing' },
   { id: 'cancellations', label: 'Cancellations', description: 'Cancelled & refunded warranties (commission reconciliation)' },
   { id: 'refunds-paid', label: 'Refunds Paid', description: 'Refunds issued to customers (commission reconciliation)' },
+  { id: 'attribution-settings', label: 'Attribution Settings', description: 'Configure lead source attribution rules' },
+  { id: 'staff-hub', label: 'Staff Hub', description: 'Internal staff resources and tools' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
