@@ -623,6 +623,18 @@ Additional Information: ${formData.additionalInfo}
               We know that vehicle issues can be stressful, but making a claim shouldn't be. At Buy-A-Warranty, we've made the process clear, quick and customer focused - so you get the help you need without the hassle.
             </p>
 
+            {/* 14-day cover notice */}
+            <div className="mb-8 rounded-2xl border border-[#A7F3D0] bg-[#ECFDF5] border-l-4 border-l-[#059669] p-4 sm:p-5">
+              <p className="text-[14px] font-semibold text-[#065F46] mb-1.5 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" /> Your warranty cover is now active.
+              </p>
+              <p className="text-[13px] text-[#065F46] leading-[1.6]">
+                Please note that claims can be submitted after your first <strong>14 days of continuous cover</strong>. Full details can be found in your policy documents.
+              </p>
+            </div>
+
+
+
             {/* Why you're in safe hands */}
             <p className="text-[11px] font-medium text-[#E8541A] uppercase tracking-[0.07em] mb-3">
               Why you're in safe hands
