@@ -341,30 +341,8 @@ const Protected = () => {
         </div>
       </section>
 
-      {/* ── 2. TRUST BAR ── */}
-      <div className="flex justify-center gap-8 flex-wrap px-6 py-7 border-y border-border">
-        <a
-          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:opacity-80 transition-opacity"
-        >
-          <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-7 w-auto" />
-          <span><strong className="text-foreground font-medium">4.8/5</strong> rated on Trustpilot</span>
-        </a>
-        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-          <span className="text-lg">🔧</span>
-          <span><strong className="text-foreground font-medium">Approved garages</strong> across the UK</span>
-        </div>
-        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-          <span className="text-lg">💳</span>
-          <span><strong className="text-foreground font-medium">Claims paid</strong> directly to garage</span>
-        </div>
-        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-          <span className="text-lg">📞</span>
-          <span><strong className="text-foreground font-medium">UK support</strong> when you need it</span>
-        </div>
-      </div>
+
+
 
       {/* ── 3. COVERAGE GRID — most urgent question first ── */}
       <div ref={coverageRef}>
@@ -779,6 +757,32 @@ const Protected = () => {
           </div>
         </section>
       </div>
+
+      {/* ── TRUST BAR ── */}
+      <div className="flex justify-center gap-8 flex-wrap px-6 py-7 border-y border-border">
+        <a
+          href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:opacity-80 transition-opacity"
+        >
+          <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-7 w-auto" />
+          <span><strong className="text-foreground font-medium">4.8/5</strong> rated on Trustpilot</span>
+        </a>
+        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+          <span className="text-lg">🔧</span>
+          <span><strong className="text-foreground font-medium">Approved garages</strong> across the UK</span>
+        </div>
+        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+          <span className="text-lg">💳</span>
+          <span><strong className="text-foreground font-medium">Claims paid</strong> directly to garage</span>
+        </div>
+        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+          <span className="text-lg">📞</span>
+          <span><strong className="text-foreground font-medium">UK support</strong> when you need it</span>
+        </div>
+      </div>
+
 
       {/* ── 8. TRUSTPILOT REVIEWS — social proof after decision ── */}
       <section className="bg-gray-50 py-12 text-center border-b border-gray-200">
