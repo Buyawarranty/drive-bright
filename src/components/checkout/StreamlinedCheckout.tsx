@@ -2582,9 +2582,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 )}
               </div>
             </div>
-
-            </div>
           </section>
+
 
           {/* Customer reviews section removed — already shown below the CTA */}
 
