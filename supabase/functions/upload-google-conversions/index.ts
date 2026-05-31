@@ -98,6 +98,21 @@ function getClickIdentifier(rawClickId: string | null | undefined): ClickIdentif
   return { field: 'gclid', value };
 }
 
+type UploadErrorCategory = 'conversionPrecedesClick' | 'braidCountingBlocked' | 'invalidClickId' | 'other';
+
+function classifyUploadError(message: string): UploadErrorCategory {
+  if (message.includes('CONVERSION_PRECEDES_EVENT') || message.includes('conversion_date_time that precedes the click')) {
+    return 'conversionPrecedesClick';
+  }
+  if (message.includes('ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID') || message.includes("one-per-click counting can't be used with gbraid")) {
+    return 'braidCountingBlocked';
+  }
+  if (message.includes('gclid could not be decoded')) {
+    return 'invalidClickId';
+  }
+  return 'other';
+}
+
 async function uploadConversion(
   accessToken: string,
   customerId: string,
