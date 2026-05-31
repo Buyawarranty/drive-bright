@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
       .eq('is_deleted', false)
-      .gte('signup_date', cutoffISO)
+      .gte('created_at', cutoffISO)
       .order('created_at', { ascending: true })
       .limit(200);
 
