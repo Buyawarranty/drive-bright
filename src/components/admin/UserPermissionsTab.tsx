@@ -613,6 +613,7 @@ export const UserPermissionsTab = () => {
       case 'super_admin': return 'destructive';
       case 'admin': return 'destructive';
       case 'sales_lead': return 'destructive';
+      case 'performance_manager': return 'destructive';
       case 'dev_tester': return 'default';
       case 'member': return 'default';
       case 'viewer': return 'secondary';
