@@ -5606,6 +5606,121 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_team_members: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          role_in_team: string
+          team_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          role_in_team?: string
+          team_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          role_in_team?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_team_source_rules: {
+        Row: {
+          allowed: boolean
+          conversion_threshold_pct: number | null
+          created_at: string
+          id: string
+          notes: string | null
+          priority: number
+          source: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          allowed?: boolean
+          conversion_threshold_pct?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          priority?: number
+          source: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          allowed?: boolean
+          conversion_threshold_pct?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          priority?: number
+          source?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_team_source_rules_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_teams: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string | null
+          emoji: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       live_quotes: {
         Row: {
           access_token: string
@@ -8499,6 +8614,7 @@ export type Database = {
         Args: { payment_type: string; start_date: string }
         Returns: string
       }
+      can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
       claim_lead_for_agent: {
         Args: { p_agent_id: string; p_lead_id: string }
         Returns: Json

@@ -22,11 +22,12 @@ import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, Network } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
+import { LeadRoutingDialog } from './LeadRoutingDialog';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -156,6 +157,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
   const [showFakeAudit, setShowFakeAudit] = useState(true);
+  const [showRoutingDialog, setShowRoutingDialog] = useState(false);
+  const canManageRouting =
+    userRole === 'super_admin' ||
+    userRole === 'admin' ||
+    userRole === 'performance_manager' ||
+    hasGranularPermission('new-leads', 'lead-routing') === true;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
     () => Array.from(reminderLeadIds).filter(id => !id.startsWith('customer_') && !id.startsWith('cart_') && !id.startsWith('claim_')),
@@ -1116,6 +1123,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
+          />
+          {/* Lead Routing & Distribution — visible to super_admin, admin, performance_manager, or anyone with the granular permission */}
+          {canManageRouting && (
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => setShowRoutingDialog(true)}>
+                <Network className="h-4 w-4 mr-1" /> Lead Routing &amp; Teams
+              </Button>
+            </div>
+          )}
+          <LeadRoutingDialog
+            open={showRoutingDialog}
+            onOpenChange={setShowRoutingDialog}
+            canEdit={canManageRouting}
           />
           {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
           {activeFilter === 'fake' && showFakeAudit && (
