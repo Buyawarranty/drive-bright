@@ -1356,6 +1356,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="performance_manager">Performance Manager - Sales Lead access plus lead routing & distribution</SelectItem>
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
