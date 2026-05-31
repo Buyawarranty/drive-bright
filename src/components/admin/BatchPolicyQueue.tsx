@@ -171,7 +171,32 @@ export const BatchPolicyQueue: React.FC = () => {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
-  const clearQueue = () => setQueue([]);
+  const clearQueue = () => {
+    if (queue.length === 0) return;
+    if (!window.confirm(`Clear all ${queue.length} entries from the batch without marking as posted?`)) return;
+    setQueue([]);
+  };
+
+  const confirmAllPosted = async () => {
+    if (queue.length === 0) return;
+    if (!window.confirm(`Confirm: have all ${queue.length} warranty pack(s) been posted out? This will clear the batch and log them as sent.`)) return;
+    try {
+      const inserts = queue.map(c => ({
+        customer_id: c.id,
+        registration_plate: c.registration_plate || 'N/A',
+        customer_name: c.name,
+        customer_email: c.email,
+        warranty_number: c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || null,
+        plan_type: c.policy?.plan_type || c.plan_type || null,
+        sent_at: new Date().toISOString(),
+        action_type: 'batch_posted',
+        notes: `Confirmed posted — batch of ${queue.length}`,
+      }));
+      await supabase.from('posted_letters_log').insert(inserts as any);
+    } catch (e) { /* silent */ }
+    setQueue([]);
+    toast({ title: 'Batch marked as posted', description: `${queue.length} entries cleared and logged as sent.` });
+  };
 
   const formatAddress = (c: QueuedCustomer) => {
     return [
