@@ -157,6 +157,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
   const [showFakeAudit, setShowFakeAudit] = useState(true);
+  const [showRoutingDialog, setShowRoutingDialog] = useState(false);
+  const canManageRouting =
+    userRole === 'super_admin' ||
+    userRole === 'admin' ||
+    userRole === 'performance_manager' ||
+    hasGranularPermission('new-leads', 'lead-routing') === true;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
     () => Array.from(reminderLeadIds).filter(id => !id.startsWith('customer_') && !id.startsWith('cart_') && !id.startsWith('claim_')),
