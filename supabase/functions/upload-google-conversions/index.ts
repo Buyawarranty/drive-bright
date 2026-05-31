@@ -79,12 +79,46 @@ async function buildUserIdentifiers(
 }
 
 // Upload a single conversion to Google Ads API
+type ClickIdentifier = {
+  field: 'gclid' | 'gbraid' | 'wbraid';
+  value: string;
+};
+
+function getClickIdentifier(rawClickId: string | null | undefined): ClickIdentifier | null {
+  const value = (rawClickId || '').trim();
+  if (!value) return null;
+
+  // Google iOS App/Safari traffic can produce GBRAID/WBRAID instead of a classic GCLID.
+  // Historic rows stored all three values in the `gclid` column, so infer the API field here.
+  // GBRAID values commonly start with "0A" and are much shorter than classic GCLIDs.
+  if (value.startsWith('0A') || (value.length <= 45 && !value.startsWith('Cj') && !value.startsWith('EAI'))) {
+    return { field: 'gbraid', value };
+  }
+
+  return { field: 'gclid', value };
+}
+
+type UploadErrorCategory = 'conversionPrecedesClick' | 'braidCountingBlocked' | 'invalidClickId' | 'other';
+
+function classifyUploadError(message: string): UploadErrorCategory {
+  if (message.includes('CONVERSION_PRECEDES_EVENT') || message.includes('conversion_date_time that precedes the click')) {
+    return 'conversionPrecedesClick';
+  }
+  if (message.includes('ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID') || message.includes("one-per-click counting can't be used with gbraid")) {
+    return 'braidCountingBlocked';
+  }
+  if (message.includes('gclid could not be decoded')) {
+    return 'invalidClickId';
+  }
+  return 'other';
+}
+
 async function uploadConversion(
   accessToken: string,
   customerId: string,
   conversionActionId: string,
   developerToken: string,
-  gclid: string,
+  clickIdentifier: ClickIdentifier,
   conversionDateTime: string,
   conversionValue: number,
   userIdentifiers: Array<Record<string, string>>,
@@ -93,7 +127,7 @@ async function uploadConversion(
   const url = `https://googleads.googleapis.com/v21/customers/${customerId}:uploadClickConversions`;
 
   const conversion: Record<string, unknown> = {
-    gclid: gclid,
+    [clickIdentifier.field]: clickIdentifier.value,
     conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
     conversionDateTime: conversionDateTime,
     conversionValue: conversionValue,
@@ -174,10 +208,12 @@ Deno.serve(async (req) => {
     // older than 60 days so we never get "Identifiers or iOS URL parameters are too old".
     const cutoffISO = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Query customers with GCLID that haven't been uploaded yet
+    // Query customers with Google click IDs that haven't been uploaded yet.
+    // Prefer signup_date for the conversion timestamp: it represents the actual purchase/sign-up
+    // moment more reliably than created_at on restored/reconciled records.
     const { data: pendingCustomers, error: customersError } = await supabase
       .from('customers')
-      .select('id, gclid, final_amount, created_at, email, phone, status')
+      .select('id, gclid, final_amount, created_at, signup_date, email, phone, status')
       .not('gclid', 'is', null)
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
@@ -191,13 +227,15 @@ Deno.serve(async (req) => {
     }
 
     // Also query bumper transactions
+    // For Bumper, created_at is the finance application start; updated_at is set when payment
+    // succeeds. Use updated_at as the conversion time to avoid "conversion precedes click" errors.
     const { data: pendingBumper, error: bumperError } = await supabase
       .from('bumper_transactions')
-      .select('id, gclid, final_amount, created_at, status')
+      .select('id, gclid, final_amount, created_at, updated_at, status')
       .not('gclid', 'is', null)
       .is('google_ads_conversion_uploaded_at', null)
       .eq('status', 'completed')
-      .gte('created_at', cutoffISO)
+      .gte('updated_at', cutoffISO)
       .order('created_at', { ascending: true })
       .limit(200);
 
@@ -251,7 +289,16 @@ Deno.serve(async (req) => {
 
     for (const record of allPending) {
       try {
-        const conversionDate = formatDateForGoogle(record.created_at);
+        const clickIdentifier = getClickIdentifier(record.gclid);
+        if (!clickIdentifier) {
+          throw new Error('Missing Google click identifier');
+        }
+
+        const conversionTimestamp =
+          record.source === 'customers'
+            ? ((record as any).signup_date || record.created_at)
+            : ((record as any).updated_at || record.created_at);
+        const conversionDate = formatDateForGoogle(conversionTimestamp);
         const value = record.final_amount || 0;
         const userIdentifiers = await buildUserIdentifiers(
           (record as any).email,
@@ -261,7 +308,8 @@ Deno.serve(async (req) => {
 
         logStep(`Uploading conversion`, {
           id: record.id,
-          gclid: record.gclid,
+          clickIdType: clickIdentifier.field,
+          clickIdPrefix: clickIdentifier.value.substring(0, 12),
           value,
           date: conversionDate,
           source: record.source,
@@ -273,7 +321,7 @@ Deno.serve(async (req) => {
           customerId,
           conversionActionId,
           developerToken,
-          record.gclid!,
+          clickIdentifier,
           conversionDate,
           value,
           userIdentifiers,
@@ -298,12 +346,19 @@ Deno.serve(async (req) => {
           const errorMsg = hasError 
             ? JSON.stringify(result.partialFailureError) 
             : `HTTP ${status}: ${JSON.stringify(result)}`;
+          const errorCategory = classifyUploadError(errorMsg);
+          const storedStatus =
+            errorCategory === 'braidCountingBlocked'
+              ? 'config_required: set Google Ads offline conversion action counting to MANY_PER_CLICK for gbraid/wbraid uploads'
+              : errorCategory === 'conversionPrecedesClick'
+                ? 'not_uploadable: conversion timestamp is before the Google click time'
+                : `failed: ${errorMsg.substring(0, 200)}`;
           
           // Mark as failed
           await supabase
             .from(record.source)
             .update({
-              google_ads_conversion_status: `failed: ${errorMsg.substring(0, 200)}`,
+              google_ads_conversion_status: storedStatus,
             })
             .eq('id', record.id);
 

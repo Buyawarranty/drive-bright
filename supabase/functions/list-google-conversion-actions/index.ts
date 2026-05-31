@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
         conversion_action.status,
         conversion_action.type,
         conversion_action.category,
+        conversion_action.counting_type,
         conversion_action.primary_for_goal,
         conversion_action.resource_name
       FROM conversion_action
