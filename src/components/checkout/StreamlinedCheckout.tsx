@@ -2521,7 +2521,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             className="mt-10 sm:mt-12 pt-2 scroll-mt-32"
           >
             <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-3">
-              One quick confirmation
+              🛡️ Activate your warranty
             </h3>
 
             {/* Combined declaration card */}
@@ -2529,36 +2529,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               data-highlight-target
               className={`rounded-xl border transition-colors ${
                 declarationError && !declarationChecked
-                  ? 'bg-red-50 border-red-300'
+                  ? 'bg-[#F4FBF6] border-[#0BA360]'
                   : 'bg-white border-[#E5E5E5]'
               }`}
             >
-              {/* Two-up info panel */}
+              {/* Intro copy */}
               <div className="p-4 sm:p-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 sm:divide-x sm:divide-[#E5E5E5]">
-                  <div className="flex items-start gap-3 sm:pr-6">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#1a1a1a] leading-tight">Your cover starts today</p>
-                      <p className="text-sm text-[#555] mt-1 leading-relaxed">
-                        You're protected as soon as your payment is confirmed.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 sm:pl-6">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6B00] flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-white" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#1a1a1a] leading-tight">How claims work</p>
-                      <p className="text-sm text-[#555] mt-1 leading-relaxed">
-                        Claims can be made after your first 14 days of cover.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-sm text-[#1a1a1a] leading-relaxed">
+                  Your cover will be activated as soon as your payment is confirmed. Your policy documents will be emailed to you immediately.
+                </p>
               </div>
 
               {/* Divider */}
@@ -2577,14 +2556,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     }}
                     className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
                       declarationChecked
-                        ? 'bg-[#FF6B00] border-[#FF6B00]'
+                        ? 'bg-[#0BA360] border-[#0BA360]'
                         : 'bg-white border-[#cfcfcf] hover:border-[#888]'
                     }`}
                   >
                     {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
                   </button>
                   <span className="text-sm text-[#444] leading-relaxed">
-                    I confirm my vehicle is in good condition with no known faults or warning lights, is roadworthy and has been regularly serviced. I understand that pre-existing faults are not covered and I agree to the{' '}
+                    I confirm my vehicle is roadworthy and has no known faults or warning lights. I agree to the{' '}
                     {termsDocUrl ? (
                       <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Terms &amp; Conditions</a>
                     ) : (
@@ -2599,9 +2578,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </span>
                 </label>
                 {declarationError && !declarationChecked && (
-                  <p className="text-xs text-red-600 mt-2 ml-9">Please tick the box to continue.</p>
+                  <p className="text-xs text-[#0BA360] mt-2 ml-9 font-medium">Please tick the box above to activate your cover.</p>
                 )}
               </div>
+            </div>
+
             </div>
           </section>
 
