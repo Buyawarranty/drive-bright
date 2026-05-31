@@ -625,6 +625,7 @@ export const UserPermissionsTab = () => {
   const getRoleBadgeClassName = (role: string) => {
     if (role === 'super_admin') return 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600';
     if (role === 'sales_lead') return 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600';
+    if (role === 'performance_manager') return 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white border-fuchsia-600';
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
     if (role === 'lead_gen') return 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
