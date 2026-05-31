@@ -409,9 +409,14 @@ ${rows}
               </button>
             </div>
             {queue.length > 0 && (
-              <Button size="sm" variant="ghost" onClick={clearQueue} className="text-destructive hover:text-destructive text-xs gap-1">
-                <Trash2 className="h-3.5 w-3.5" /> Clear All
-              </Button>
+              <>
+                <Button size="sm" onClick={confirmAllPosted} className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Mark All Posted
+                </Button>
+                <Button size="sm" variant="ghost" onClick={clearQueue} className="text-destructive hover:text-destructive text-xs gap-1">
+                  <Trash2 className="h-3.5 w-3.5" /> Clear All
+                </Button>
+              </>
             )}
           </div>
         </div>
