@@ -1124,6 +1124,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
           />
+          {/* Lead Routing & Distribution — visible to super_admin, admin, performance_manager, or anyone with the granular permission */}
+          {canManageRouting && (
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => setShowRoutingDialog(true)}>
+                <Network className="h-4 w-4 mr-1" /> Lead Routing &amp; Teams
+              </Button>
+            </div>
+          )}
+          <LeadRoutingDialog
+            open={showRoutingDialog}
+            onOpenChange={setShowRoutingDialog}
+            canEdit={canManageRouting}
+          />
           {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
           {activeFilter === 'fake' && showFakeAudit && (
             userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('new-leads', 'fake-audit') === true
