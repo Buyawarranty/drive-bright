@@ -133,16 +133,17 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               <p className="text-sm text-[#0BA360] font-medium mt-1">
                 {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`} per day
               </p>
-              <p className="text-sm text-[#0BA360] font-semibold mt-1">
-                Save £{savings > 0 ? savings : Math.round(fullPrice * 0.1)} vs £{monthlyPaidTotal} monthly
-              </p>
             </div>
 
             {/* Benefits */}
             <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
-                <span>Instant 10% saving</span>
+                <span>Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} today</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
+                <span>Best value option</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
@@ -212,11 +213,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 </span>
                 <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
+              <p className="text-sm text-[#1a1a1a] font-medium mt-1">
+                Then £{monthlyPrice} monthly
+              </p>
               <p className="text-sm text-[#FF6B00] font-medium mt-1">
                 {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`} per day
-              </p>
-              <p className="text-sm text-[#1a1a1a] font-medium mt-1">
-                £{monthlyPaidTotal} total · £{savings > 0 ? savings : Math.round(fullPrice * 0.1)} more than paying in full
               </p>
             </div>
 
@@ -224,7 +225,11 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
-                <span>0% interest</span>
+                <span>0% APR</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
+                <span>No large upfront payment</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#FF6B00] flex-shrink-0" strokeWidth={3} />
