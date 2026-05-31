@@ -342,8 +342,188 @@ const Protected = () => {
       </section>
 
 
+      {/* ── 2. FULL COVERAGE BY VEHICLE TYPE ── */}
+      <section className="py-12 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Full coverage by vehicle type</h2>
+            <p className="text-sm text-muted-foreground">
+              Select your vehicle type to view everything that's covered.
+            </p>
+            <DocLinksRow align="center" />
+          </div>
 
 
+          <Accordion type="single" collapsible className="space-y-3">
+            {vehicleTypes.map((vt) => {
+              const Icon = vt.icon;
+              return (
+                <AccordionItem key={vt.id} value={vt.id} className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+                  <AccordionTrigger
+                    className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-300 hover:no-underline ${vt.bgClass} ${vt.hoverClass}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className="font-bold text-base sm:text-lg">{vt.title}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 py-5 bg-white">
+                    <ul className="space-y-2 mb-4">
+                      {vt.components.map((component, index) => {
+                        const isBold = component.startsWith('Includes ALL');
+                        return (
+                          <li key={index} className="flex items-start gap-2 text-foreground">
+                            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className={`text-sm leading-relaxed ${isBold ? 'font-bold' : ''}`}>{component}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {vt.showPdf && platinumDocUrl && (
+                      <a
+                        href={platinumDocUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Download Full PDF
+                        <ArrowRight className="w-4 h-4" />
+                      </a>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+
+            {/* What's not covered */}
+            <AccordionItem value="not-covered" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+              <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-red-100 hover:bg-red-200 transition-all duration-300 hover:no-underline text-red-800">
+                <div className="flex items-center gap-3">
+                  <X className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-bold text-base sm:text-lg">What's not covered</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 py-5 bg-white">
+                <ul className="space-y-3">
+                  {notCoveredItems.map((it, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base text-foreground">{it}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  For the complete list of exclusions, please see the full Terms & Conditions PDF.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Modifications and Your Cover */}
+            <AccordionItem value="modifications" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+              <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-amber-50 hover:bg-amber-100 transition-all duration-300 hover:no-underline text-amber-800">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-bold text-base sm:text-lg">Modifications and Your Cover</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 py-5 bg-white">
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      <h4 className="font-bold text-foreground">Modifications we're happy with</h4>
+                    </div>
+                    <ul className="space-y-2 pl-1">
+                      {[
+                        'Cosmetic upgrades such as body kits, spoilers, trims or badges',
+                        'Alloy wheels and tyres within safe manufacturer limits',
+                        'Interior upgrades including screens, lighting and seat changes',
+                        'Tow bars fitted correctly',
+                        'Parking sensors, dash cams and other small accessories',
+                        'Road‑legal lighting or exhaust upgrades that meet UK standards',
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                      <h4 className="font-bold text-foreground">Modifications that may affect your cover</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3 pl-7">We can still cover the car, but not issues caused by these mods.</p>
+                    <ul className="space-y-2 pl-1">
+                      {[
+                        'Engine remaps, tuning boxes or performance chips',
+                        'Turbo or supercharger upgrades',
+                        'Lowered or raised suspension and geometry changes',
+                        'Electrical rewiring or aftermarket electrics that cause faults',
+                        'Non‑legal exhaust systems or noise‑excessive systems',
+                        'Oversized wheels or tyres beyond safe limits',
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Ban className="w-5 h-5 text-red-600 flex-shrink-0" />
+                      <h4 className="font-bold text-foreground">Modifications we cannot cover</h4>
+                    </div>
+                    <ul className="space-y-2 pl-1">
+                      {[
+                        'Emissions removals or illegal changes (DPF/EGR delete)',
+                        'Illegal window tints that break UK light‑transmission rules',
+                        'Straight‑pipe exhausts that break emissions or noise limits',
+                        'Any modification that makes the car unsafe or illegal for UK roads',
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                          <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-muted rounded-lg p-4 border border-border">
+                    <div className="flex items-start gap-3">
+                      <HelpCircle className="w-5 h-5 text-brand-orange mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-foreground text-sm">Not sure about a modification?</p>
+                        <p className="text-sm text-muted-foreground mt-1">Tell us what's been changed and we'll confirm what's covered. It only takes a moment and avoids claim delays.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* High-performance exclusions — placed after Modifications */}
+            <AccordionItem value="high-performance" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+              <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline text-sky-700">
+                <div className="flex items-center gap-3">
+                  <X className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-bold text-base sm:text-lg">Exclusions: High-Performance Cars</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 py-5 bg-white">
+                <HighPerformanceExclusionsList />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
+      
       {/* ── 3. COVERAGE GRID — most urgent question first ── */}
       <div ref={coverageRef}>
         <section className="bg-gray-50 border-b border-gray-200">
@@ -576,186 +756,6 @@ const Protected = () => {
           </div>
         </section>
 
-        {/* ── 7. FULL COVERAGE BY VEHICLE TYPE ── */}
-        <section className="py-12 bg-white border-b border-gray-200">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Full coverage by vehicle type</h2>
-              <p className="text-sm text-muted-foreground">
-                Select your vehicle type to view everything that's covered.
-              </p>
-              <DocLinksRow align="center" />
-            </div>
-
-
-            <Accordion type="single" collapsible className="space-y-3">
-              {vehicleTypes.map((vt) => {
-                const Icon = vt.icon;
-                return (
-                  <AccordionItem key={vt.id} value={vt.id} className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                    <AccordionTrigger
-                      className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-300 hover:no-underline ${vt.bgClass} ${vt.hoverClass}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-bold text-base sm:text-lg">{vt.title}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-5 py-5 bg-white">
-                      <ul className="space-y-2 mb-4">
-                        {vt.components.map((component, index) => {
-                          const isBold = component.startsWith('Includes ALL');
-                          return (
-                            <li key={index} className="flex items-start gap-2 text-foreground">
-                              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                              <span className={`text-sm leading-relaxed ${isBold ? 'font-bold' : ''}`}>{component}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                      {vt.showPdf && platinumDocUrl && (
-                        <a
-                          href={platinumDocUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
-                        >
-                          <FileText className="w-4 h-4" />
-                          Download Full PDF
-                          <ArrowRight className="w-4 h-4" />
-                        </a>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-
-              {/* What's not covered */}
-              <AccordionItem value="not-covered" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-red-100 hover:bg-red-200 transition-all duration-300 hover:no-underline text-red-800">
-                  <div className="flex items-center gap-3">
-                    <X className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-bold text-base sm:text-lg">What's not covered</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-5 py-5 bg-white">
-                  <ul className="space-y-3">
-                    {notCoveredItems.map((it, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm sm:text-base text-foreground">{it}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-4 text-xs text-muted-foreground">
-                    For the complete list of exclusions, please see the full Terms & Conditions PDF.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Modifications and Your Cover */}
-              <AccordionItem value="modifications" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-amber-50 hover:bg-amber-100 transition-all duration-300 hover:no-underline text-amber-800">
-                  <div className="flex items-center gap-3">
-                    <Settings className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-bold text-base sm:text-lg">Modifications and Your Cover</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-5 py-5 bg-white">
-                  <div className="space-y-6">
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                        <h4 className="font-bold text-foreground">Modifications we're happy with</h4>
-                      </div>
-                      <ul className="space-y-2 pl-1">
-                        {[
-                          'Cosmetic upgrades such as body kits, spoilers, trims or badges',
-                          'Alloy wheels and tyres within safe manufacturer limits',
-                          'Interior upgrades including screens, lighting and seat changes',
-                          'Tow bars fitted correctly',
-                          'Parking sensors, dash cams and other small accessories',
-                          'Road‑legal lighting or exhaust upgrades that meet UK standards',
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                        <h4 className="font-bold text-foreground">Modifications that may affect your cover</h4>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3 pl-7">We can still cover the car, but not issues caused by these mods.</p>
-                      <ul className="space-y-2 pl-1">
-                        {[
-                          'Engine remaps, tuning boxes or performance chips',
-                          'Turbo or supercharger upgrades',
-                          'Lowered or raised suspension and geometry changes',
-                          'Electrical rewiring or aftermarket electrics that cause faults',
-                          'Non‑legal exhaust systems or noise‑excessive systems',
-                          'Oversized wheels or tyres beyond safe limits',
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Ban className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <h4 className="font-bold text-foreground">Modifications we cannot cover</h4>
-                      </div>
-                      <ul className="space-y-2 pl-1">
-                        {[
-                          'Emissions removals or illegal changes (DPF/EGR delete)',
-                          'Illegal window tints that break UK light‑transmission rules',
-                          'Straight‑pipe exhausts that break emissions or noise limits',
-                          'Any modification that makes the car unsafe or illegal for UK roads',
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="bg-muted rounded-lg p-4 border border-border">
-                      <div className="flex items-start gap-3">
-                        <HelpCircle className="w-5 h-5 text-brand-orange mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-semibold text-foreground text-sm">Not sure about a modification?</p>
-                          <p className="text-sm text-muted-foreground mt-1">Tell us what's been changed and we'll confirm what's covered. It only takes a moment and avoids claim delays.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* High-performance exclusions — placed after Modifications */}
-              <AccordionItem value="high-performance" className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline text-sky-700">
-                  <div className="flex items-center gap-3">
-                    <X className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-bold text-base sm:text-lg">Exclusions: High-Performance Cars</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-5 py-5 bg-white">
-                  <HighPerformanceExclusionsList />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        </section>
       </div>
 
       {/* ── TRUST BAR ── */}
