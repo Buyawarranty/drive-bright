@@ -210,6 +210,11 @@ const FAQ = () => {
           id: 'older-high-mileage',
           question: 'Do You Cover Older or High Mileage Vehicles?',
           answer: 'Absolutely. Unlike many other warranty providers, we\'re here to help you protect more vehicles, for longer:\n✅ Cover for vehicles up to 15 years old\n ✅ Cover for vehicles with up to 150,000 miles\n ✅ Flexible plans for 12, 24, or 36 months'
+        },
+        {
+          id: 'used-car-when-to-buy',
+          question: 'Can I buy a warranty for a used car, and when should I get it?',
+          answer: 'Yes, absolutely! We specialise in providing comprehensive extended warranties specifically for used cars. It is highly recommended that you buy a warranty as soon as your manufacturer\u2019s warranty expires, or immediately after purchasing a used vehicle privately or from a dealership. This ensures you avoid unexpected, costly mechanical or electrical repair bills from day one.'
         }
       ]
     },
