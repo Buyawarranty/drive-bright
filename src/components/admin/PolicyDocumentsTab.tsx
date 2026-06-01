@@ -78,6 +78,39 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<CustomerData>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isDvlaLoading, setIsDvlaLoading] = useState(false);
+
+  const lookupDvla = async (reg: string, { overwrite }: { overwrite: boolean }) => {
+    const clean = (reg || '').replace(/\s+/g, '').toUpperCase();
+    if (!clean) {
+      toast({ title: 'Enter registration', description: 'Add a registration number first.', variant: 'destructive' });
+      return;
+    }
+    setIsDvlaLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: clean, skipAgeCheck: true },
+      });
+      if (error) throw error;
+      if (!data?.found) {
+        toast({ title: 'Vehicle not found', description: data?.error || 'DVLA lookup returned no data.', variant: 'destructive' });
+        return;
+      }
+      setEditData(d => ({
+        ...d,
+        registration_plate: clean,
+        vehicle_make: overwrite || !d.vehicle_make ? (data.make || d.vehicle_make || '') : d.vehicle_make,
+        vehicle_model: overwrite || !d.vehicle_model ? (data.model || d.vehicle_model || '') : d.vehicle_model,
+        vehicle_year: overwrite || !d.vehicle_year ? (data.yearOfManufacture ? String(data.yearOfManufacture) : d.vehicle_year || '') : d.vehicle_year,
+      }));
+      toast({ title: 'Vehicle details updated', description: 'Populated from DVLA/DVSA.' });
+    } catch (err: any) {
+      toast({ title: 'DVLA lookup failed', description: err.message || 'Try again.', variant: 'destructive' });
+    } finally {
+      setIsDvlaLoading(false);
+    }
+  };
+
   const printRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
