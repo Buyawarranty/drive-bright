@@ -2578,7 +2578,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </span>
                 </label>
                 {declarationError && !declarationChecked && (
-                  <p className="text-xs text-[#0BA360] mt-2 ml-9 font-medium">Please tick the box above to activate your cover.</p>
+                  <p className="text-xs text-[#FF5A5F] mt-2 ml-9 font-medium">Please tick the box above to confirm the Terms & Conditions and activate your cover.</p>
                 )}
               </div>
             </div>
