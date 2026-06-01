@@ -744,6 +744,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData]);
 
+  // Auto-scroll to "Choose how you want to pay" once customer details + address are complete
+  const hasAutoScrolledToPayRef = React.useRef(false);
+  useEffect(() => {
+    if (hasAutoScrolledToPayRef.current) return;
+    if (personalDetailsComplete && addressComplete) {
+      hasAutoScrolledToPayRef.current = true;
+      setTimeout(() => {
+        const paySection = document.getElementById('how-to-pay-section');
+        if (paySection) {
+          paySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }, [personalDetailsComplete, addressComplete]);
+
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
   const [isPageRestored, setIsPageRestored] = useState(false);
