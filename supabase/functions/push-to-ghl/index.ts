@@ -146,6 +146,29 @@ async function upsertOpportunity(apiKey: string, input: any, contactId: string, 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false } }
+  );
+
+  const logSync = async (entry: {
+    email?: string;
+    contact_id?: string;
+    sync_type: "contact" | "opportunity";
+    status: "success" | "queued" | "failed";
+    http_status?: number;
+    payload?: any;
+    response?: string;
+    error?: string;
+  }) => {
+    try {
+      await supabase.from("ghl_sync_log").insert(entry);
+    } catch (e) {
+      console.error("ghl_sync_log insert error:", e);
+    }
+  };
+
   try {
     const apiKey = Deno.env.get("GHL_API_KEY");
     const locationId = Deno.env.get("GHL_LOCATION_ID");
@@ -169,18 +192,56 @@ serve(async (req) => {
 
     if (result.ok) {
       console.log(`✅ GHL contact upserted for ${input.email}: ${result.body}`);
+      await logSync({
+        email: input.email,
+        contact_id: result.contactId,
+        sync_type: "contact",
+        status: "success",
+        http_status: result.status,
+        payload,
+        response: result.body,
+      });
 
       // Best-effort opportunity upsert into pipeline
       if (result.contactId) {
         try {
           const opp = await upsertOpportunity(apiKey, input, result.contactId, locationId);
-          if (opp && !opp.ok) {
-            console.warn(`⚠️ GHL opportunity upsert failed (${opp.status}): ${opp.body.slice(0, 300)}`);
-          } else if (opp) {
-            console.log(`✅ GHL opportunity upserted for ${input.email}`);
+          if (opp) {
+            const oppPayload = { contactId: result.contactId, status: input.status, total_price: input.total_price };
+            if (!opp.ok) {
+              console.warn(`⚠️ GHL opportunity upsert failed (${opp.status}): ${opp.body.slice(0, 300)}`);
+              await logSync({
+                email: input.email,
+                contact_id: result.contactId,
+                sync_type: "opportunity",
+                status: "failed",
+                http_status: opp.status,
+                payload: oppPayload,
+                response: opp.body.slice(0, 1000),
+                error: `HTTP ${opp.status}`,
+              });
+            } else {
+              console.log(`✅ GHL opportunity upserted for ${input.email}`);
+              await logSync({
+                email: input.email,
+                contact_id: result.contactId,
+                sync_type: "opportunity",
+                status: "success",
+                http_status: opp.status,
+                payload: oppPayload,
+                response: opp.body.slice(0, 1000),
+              });
+            }
           }
         } catch (e: any) {
           console.warn(`⚠️ GHL opportunity upsert error: ${e?.message || e}`);
+          await logSync({
+            email: input.email,
+            contact_id: result.contactId,
+            sync_type: "opportunity",
+            status: "failed",
+            error: e?.message || String(e),
+          });
         }
       }
 
@@ -191,11 +252,6 @@ serve(async (req) => {
     }
 
     console.warn(`⚠️ GHL push failed (${result.status}) — queueing for retry: ${result.body}`);
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { auth: { persistSession: false } }
-    );
 
     await supabase.from("ghl_push_queue").insert({
       payload,
@@ -205,12 +261,27 @@ serve(async (req) => {
       next_attempt_at: new Date(Date.now() + 60_000).toISOString(),
     });
 
+    await logSync({
+      email: input.email,
+      sync_type: "contact",
+      status: "queued",
+      http_status: result.status,
+      payload,
+      response: result.body,
+      error: `HTTP ${result.status}: ${result.body}`,
+    });
+
     return new Response(JSON.stringify({ queued: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
     console.error("push-to-ghl fatal error (non-blocking):", error);
+    await logSync({
+      sync_type: "contact",
+      status: "failed",
+      error: error?.message || "unknown",
+    });
     return new Response(JSON.stringify({ error: error?.message || "unknown" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
