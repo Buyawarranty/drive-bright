@@ -15,39 +15,35 @@ interface CheckoutFAQProps {
 const FAQS: { q: string; a: React.ReactNode }[] = [
   {
     q: 'What does the warranty cover?',
-    a: 'Our plans cover mechanical and electrical components, including engine, gearbox, turbo, ECU and more.',
+    a: "Our comprehensive Platinum Warranty covers mechanical and electrical failures throughout your vehicle, including the engine, gearbox, turbo, ECU, sensors, infotainment system, and more. Unlike many warranty providers that limit cover, our Platinum Warranty is designed to provide extensive protection and greater peace of mind. See the Platinum Plan policy summary below for full coverage details.",
   },
   {
     q: 'Can I use my own garage?',
-    a: 'Yes — you can use any VAT-registered garage in the UK.',
+    a: "Yes, you can use any VAT-registered garage in the UK. If you don't already have a preferred garage, we're happy to help you find one.",
   },
   {
     q: 'Are labour costs included?',
-    a: 'Yes — labour is covered up to the labour rate you select with your plan.',
+    a: 'Yes, labour is covered up to the labour rate you select when purchasing your plan.',
   },
   {
     q: 'When can I make a claim?',
-    a: 'Claims can be made after the initial waiting period of 14 days.',
+    a: 'Your warranty starts immediately after purchase, giving you peace of mind from day one. Claims can be made after a standard 14-day waiting period.',
   },
   {
-    q: 'Are electrical faults covered?',
-    a: 'Yes — electrical components are covered, including ECUs, sensors and control modules.',
+    q: 'How do I make a claim?',
+    a: "Simply ask your garage to contact our claims team before any repairs are carried out. We'll guide them through the process and aim to keep everything moving smoothly.",
   },
   {
     q: 'Can I pay monthly?',
-    a: 'Yes — flexible monthly payment options are available.',
+    a: 'Yes, flexible monthly payment options are available. You can also choose to pay annually and save money compared to paying monthly.',
   },
   {
-    q: 'How quickly are claims paid?',
-    a: 'We aim to process claims the same day when all documents received and keep repairs moving with minimal hassle.',
-  },
-  {
-    q: 'What happens if my garage charges more?',
-    a: 'You can still use the garage — you’d simply pay the difference above your selected labour rate.',
+    q: 'Can I use a garage with a higher labour rate?',
+    a: 'Yes, you can still use your chosen garage. If their labour rate is higher than the rate selected on your plan, you would simply pay the difference.',
   },
   {
     q: 'Can I cancel my cover?',
-    a: 'Yes — all plans include a 14-day cooling-off period for peace of mind.',
+    a: 'Yes, if you change your mind within the first 14 days, you can cancel your warranty and receive a full refund, provided no claim has been made.',
   },
 ];
 
