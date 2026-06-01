@@ -210,6 +210,11 @@ const FAQ = () => {
           id: 'older-high-mileage',
           question: 'Do You Cover Older or High Mileage Vehicles?',
           answer: 'Absolutely. Unlike many other warranty providers, we\'re here to help you protect more vehicles, for longer:\n✅ Cover for vehicles up to 15 years old\n ✅ Cover for vehicles with up to 150,000 miles\n ✅ Flexible plans for 12, 24, or 36 months'
+        },
+        {
+          id: 'used-car-when-to-buy',
+          question: 'Can I buy a warranty for a used car, and when should I get it?',
+          answer: 'Yes, absolutely! We specialise in providing comprehensive extended warranties specifically for used cars. It is highly recommended that you buy a warranty as soon as your manufacturer\u2019s warranty expires, or immediately after purchasing a used vehicle privately or from a dealership. This ensures you avoid unexpected, costly mechanical or electrical repair bills from day one.'
         }
       ]
     },
@@ -412,6 +417,16 @@ const FAQ = () => {
           id: 'diagnostics-covered',
           question: 'Are diagnostics covered?',
           answer: 'Diagnostics are usually covered when the fault is approved.'
+        },
+        {
+          id: 'uk-wide-cover',
+          question: 'Is your car warranty cover valid across the entire UK?',
+          answer: 'Yes, all of our car warranty plans offer complete coverage across England, Scotland, Wales, and Northern Ireland. If your vehicle breaks down anywhere in the UK, you can take it to any VAT-registered garage nationwide, or utilise our network of approved repair specialists to get you back on the road quickly.'
+        },
+        {
+          id: 'limited-warranty-meaning',
+          question: 'What does a "limited warranty" actually cover?',
+          answer: 'A limited warranty means that coverage is restricted to specific parts, timeframes, or conditions listed in the policy, rather than covering "everything." For example, a manufacturer\u2019s limited warranty typically protects against factory defects in materials or workmanship but explicitly excludes everyday wear-and-tear items (like brake pads, tyres, and wiper blades), routine servicing, and damage from accidents or neglect. Our policies clearly define these limits upfront so you always know exactly what is protected.'
         }
       ]
     },
@@ -525,6 +540,109 @@ const FAQ = () => {
           id: 'cancel-warranty-detailed',
           question: 'Can I cancel my warranty?',
           answer: 'You have 14 days to cancel your warranty for a full refund for FREE (if no repairs have been made). After this period, our standard easy to follow cancellation policy applies. Simply visit https://buyawarranty.co.uk/cancel-warranty/'
+        },
+        {
+          id: 'cheapest-good-cover',
+          question: 'Where can I find the cheapest car warranty that still offers good coverage?',
+          answer: 'While it\u2019s tempting to look purely for the "cheapest" car warranty, the lowest price often means high hidden excesses or essential parts being excluded. At Buyawarranty.co.uk, we focus on providing the best value in the UK \u2014 combining highly competitive, affordable pricing with comprehensive cover that actually pays out when you need it. We offer flexible payment plans to break down the cost into manageable monthly payments.'
+        },
+        {
+          id: 'standard-vehicle-types',
+          question: 'What types of vehicles are covered under your standard vehicle warranty?',
+          answer: 'Our standard vehicle warranty options cover a vast range of makes and models across the UK. Whether you are looking to buy a car warranty for a family hatchback, a premium SUV (like a Range Rover), a performance saloon, or even alternative vehicles like motorbikes and vans, we have a plan for you. We cover everything from major engine and gearbox components to intricate electrical systems, depending on the tier of cover you select for your vehicle.'
+        }
+      ]
+     },
+    {
+      category: 'Brand-Specific Extended Cover',
+      id: 'brand-specific-cover',
+      questions: [
+        {
+          id: 'audi-extended-warranty',
+          question: 'Do you offer specialist cover like an Audi extended warranty?',
+          answer: 'Yes. We offer premium vehicle warranties tailored for high-end and German vehicles, including comprehensive Audi extended warranty coverage. Because parts and diagnostic labour rates for luxury brands like Audi can be incredibly expensive, our policies are designed to cover advanced electrical components, DSG/S-tronic gearboxes, and engine management systems to give you total peace of mind.'
+        },
+        {
+          id: 'mercedes-cost',
+          question: 'How much does a Mercedes extended warranty cost?',
+          answer: 'The cost of a Mercedes extended warranty depends entirely on your vehicle\'s age, mileage, and the level of cover you choose. Because Mercedes-Benz vehicles feature complex technology like AIRMATIC suspension, MBUX infotainment systems, and precision engineering, main dealer repairs can be incredibly expensive. At Buyawarranty.co.uk, we provide tailored, dealer-level cover for Mercedes models at a fraction of the cost of a manufacturer policy. Get a quick quote online today to see your exact price.'
+        },
+        {
+          id: 'used-mercedes',
+          question: 'Can I get an extended warranty for a used Mercedes-Benz?',
+          answer: 'Yes, we provide comprehensive extended warranty protection specifically tailored for used Mercedes-Benz vehicles. Buying a pre-owned Mercedes is exciting, but out-of-warranty repair costs for premium AMG lines, complex 4MATIC systems, or electrical command modules can be exceptionally high. Our used Mercedes policies are designed to pick up where the original manufacturer warranty left off, protecting your wallet from sudden mechanical or electrical failures at a fraction of the cost of main dealer prices.'
+        },
+        {
+          id: 'vw-extended-warranty',
+          question: 'Do you offer a VW extended warranty for Volkswagen vehicles?',
+          answer: 'Yes, we offer comprehensive component protection for all major Volkswagen models, including the Golf, Polo, Tiguan, and Passat. Our VW extended warranty covers major mechanical and electrical failures\u2014including common DSG gearbox issues, turbocharger faults, and advanced driver assistance systems (ADAS)\u2014ensuring your vehicle remains reliable without breaking the bank.'
+        },
+        {
+          id: 'vw-extended-covers',
+          question: 'What does a VW extended warranty cover?',
+          answer: 'Our Volkswagen extended warranty is designed to mimic factory-level protection for peace of mind. It covers sudden mechanical and electrical failures across major VW assemblies. This includes the engine, fuel injection systems, cooling system, and steering. Crucially for VW owners, our premium plans provide vital coverage for complex Volkswagen technologies, such as DSG/automatic gearboxes, turbochargers, and on-board infotainment systems, using any VAT-registered garage across the UK.'
+        },
+        {
+          id: 'land-rover-prices',
+          question: 'What are the Land Rover and Range Rover extended warranty prices in the UK?',
+          answer: 'Land Rover and Range Rover extended warranty prices vary depending on your vehicle\'s age, mileage, and specific model (such as a Sport, Evoque, or Defender). Because luxury SUVs feature highly advanced 4x4 drivetrains, air suspension setups, and premium electronics, main dealer repair costs are notoriously steep. At Buyawarranty.co.uk, we provide equivalent main-dealer level protection for Land Rovers at a significantly lower rate. Get an instant quote online to view our current tiered pricing packages.'
+        },
+        {
+          id: 'hyundai-cost',
+          question: 'How much does a Hyundai extended warranty cost?',
+          answer: 'Hyundai vehicles are known for their reliability, but as they age past their original 5-year manufacturer warranty, components like complex infotainment screens, fuel injection systems, and automatic transmissions can still fail. The cost of a Hyundai extended warranty with us is highly affordable and tailored to your vehicle\'s specific mileage. It is designed to offer maximum protection for a fraction of the cost of a single major garage repair.'
+        }
+      ]
+    },
+    {
+      category: 'Alternative Drivetrains & Vehicles',
+      id: 'alternative-drivetrains',
+      questions: [
+        {
+          id: 'ev-warranty',
+          question: 'Do you offer an EV warranty for electric and hybrid vehicles?',
+          answer: 'Yes, we offer specialised EV and hybrid car warranties. Electric vehicles have unique, highly advanced components that standard warranties often ignore. Our EV plans are specifically designed to cover high-voltage electrical systems, electric drive motors, power inverter modules, and onboard charging systems, protecting you from specialized repair costs.'
+        },
+        {
+          id: 'hybrid-options',
+          question: 'What are the warranty options for hybrid cars?',
+          answer: 'Hybrid vehicles use a blend of traditional combustion and high-voltage electric technology, requiring specialized protection. We offer comprehensive hybrid warranty plans that cover standard mechanical parts (like the petrol or diesel engine) alongside dedicated hybrid components. This includes the electric drive motors, power inverter modules, electronic control units (ECUs), and regenerative braking systems.'
+        },
+        {
+          id: 'van-motorbike-warranty',
+          question: 'Can I purchase a van warranty or motorbike warranty through your site?',
+          answer: 'Yes! We don\u2019t just cover cars. We provide comprehensive commercial van warranties to keep your business moving, as well as specialized motorbike and motorcycle warranties across the UK. Whether you use your van for daily deliveries or your bike for weekend touring, our plans cover major mechanical and electrical failures to minimize your downtime and keep repair bills at zero.'
+        }
+      ]
+    },
+    {
+      category: 'Choosing a Plan & Terminology',
+      id: 'choosing-plan-terminology',
+      questions: [
+        {
+          id: 'compare-providers',
+          question: 'How does Buyawarranty compare to other car warranty providers?',
+          answer: 'Unlike standard policies that hide behind strict exclusions, Buyawarranty.co.uk offers clear, transparent cover with market-leading claims payout rates. When comparing car warranties, look closely at the covered parts list, claim limits, and garage flexibility. We offer tailored plans, allow you to choose your own VAT-registered repairer, and provide an easy, digital claims process to save you money without the hassle.'
+        },
+        {
+          id: 'best-uk-provider',
+          question: 'What makes Buyawarranty the best car warranty provider in the UK?',
+          answer: 'We are consistently rated among the best car warranty providers in the UK because we eliminate the guesswork with clear terms and conditions. When you compare car warranties, many competitors lock you into restrictive networks or feature low claims limits. Buyawarranty.co.uk stands out by offering competitive pricing, high individual claim limits, ability to use any VAT-registered UK garage, and an entirely digital, hassle-free claims process.'
+        },
+        {
+          id: 'warranty-vs-insurance',
+          question: 'Is a car warranty the same as car warranty insurance?',
+          answer: 'While often used interchangeably, "car warranty insurance" (or mechanical breakdown insurance) specifically protects you from the sudden, unexpected financial shock of mechanical and electrical component failures. Unlike standard car insurance, which only covers accidents, theft, or fire, our auto warranty policies look after the internal health of your vehicle, covering parts and labour costs when components wear out or break down during normal driving conditions.'
+        },
+        {
+          id: 'comparison-checklist',
+          question: 'Car Warranty Comparison: What should I look out for?',
+          answer: 'When doing a car warranty comparison, the most important factors to look at are the individual claim limits, allowed garage hourly labour rates, and consequential damage rules (whether the failure of an uncovered part damaging a covered part is paid for). Many cheap policies feature low claim ceilings (e.g., £500 per claim), which won\'t cover a luxury engine or gearbox failure. At Buyawarranty.co.uk, we pride ourselves on high claim limits, transparent terms, and the freedom to choose your own trusted repairer.'
+        },
+        {
+          id: 'why-extended-used',
+          question: 'Why should I buy an extended warranty for a used car?',
+          answer: 'Buying an aftermarket warranty for a used car removes the financial gamble of pre-owned vehicle ownership. While a used car may run perfectly during a test drive, component degradation from previous owners is impossible to predict. An extended warranty acts as a safety net, ensuring that if an expensive component like an alternator, steering rack, or gearbox fails six months down the line, you aren\'t stuck with a potentially expensive repair bill.'
         }
       ]
      },
@@ -960,6 +1078,13 @@ const FAQ = () => {
                   </div>
                 </section>
               ))}
+
+              {!searchTerm && (
+                <p className="text-sm text-brand-dark-text/70 italic mt-6 text-center">
+                  Please refer to our <Link to="/terms" className="text-brand-orange hover:underline">terms and conditions</Link> for full details.
+                </p>
+              )}
+
 
               {/* AI-Generated Answer Section */}
               {showAIAnswer && (
