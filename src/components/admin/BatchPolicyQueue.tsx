@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save } from 'lucide-react';
+import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -77,6 +79,9 @@ export const BatchPolicyQueue: React.FC = () => {
     try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
   });
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Autosave queue to localStorage on every change
@@ -169,6 +174,45 @@ export const BatchPolicyQueue: React.FC = () => {
 
   const removeFromQueue = (id: string) => {
     setQueue(prev => prev.filter(q => q.id !== id));
+  };
+
+  const openEdit = (c: QueuedCustomer) => {
+    setEditingId(c.id);
+    setEditForm({
+      name: c.name || '',
+      flat_number: c.flat_number || '',
+      building_name: c.building_name || '',
+      building_number: c.building_number || '',
+      street: c.street || '',
+      town: c.town || '',
+      county: c.county || '',
+      postcode: c.postcode || '',
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setIsSavingEdit(true);
+    const updates = {
+      name: (editForm.name || '').trim() || null,
+      flat_number: editForm.flat_number?.trim() || null,
+      building_name: editForm.building_name?.trim() || null,
+      building_number: editForm.building_number?.trim() || null,
+      street: editForm.street?.trim() || null,
+      town: editForm.town?.trim() || null,
+      county: editForm.county?.trim() || null,
+      postcode: editForm.postcode?.trim() || null,
+    };
+    const { error } = await supabase.from('customers').update(updates).eq('id', editingId);
+    setIsSavingEdit(false);
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setQueue(prev => prev.map(q => (q.id === editingId ? { ...q, ...updates } as QueuedCustomer : q)));
+    toast({ title: 'Saved', description: 'Customer details updated.' });
+    setEditingId(null);
+    setEditForm({});
   };
 
   const clearQueue = () => {
@@ -554,9 +598,14 @@ ${rows}
                         )}
                       </td>
                       <td className="py-2 px-3 align-top">
-                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)}>
-                          <X className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => openEdit(c)} title="Edit name & address">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)} title="Remove from batch">
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -600,6 +649,54 @@ ${rows}
           </p>
         )}
       </CardContent>
+
+      <Dialog open={!!editingId} onOpenChange={(o) => { if (!o) { setEditingId(null); setEditForm({}); } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit customer details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Full name</Label>
+              <Input value={editForm.name || ''} onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Flat / Apt</Label>
+                <Input value={editForm.flat_number || ''} onChange={(e) => setEditForm(f => ({ ...f, flat_number: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Building name</Label>
+                <Input value={editForm.building_name || ''} onChange={(e) => setEditForm(f => ({ ...f, building_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Building number</Label>
+                <Input value={editForm.building_number || ''} onChange={(e) => setEditForm(f => ({ ...f, building_number: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Street</Label>
+                <Input value={editForm.street || ''} onChange={(e) => setEditForm(f => ({ ...f, street: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Town / City</Label>
+                <Input value={editForm.town || ''} onChange={(e) => setEditForm(f => ({ ...f, town: e.target.value }))} />
+              </div>
+              <div>
+                <Label>County</Label>
+                <Input value={editForm.county || ''} onChange={(e) => setEditForm(f => ({ ...f, county: e.target.value }))} />
+              </div>
+              <div className="col-span-2">
+                <Label>Postcode</Label>
+                <Input value={editForm.postcode || ''} onChange={(e) => setEditForm(f => ({ ...f, postcode: e.target.value.toUpperCase() }))} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setEditingId(null); setEditForm({}); }}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={isSavingEdit}>{isSavingEdit ? 'Saving...' : 'Save changes'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
