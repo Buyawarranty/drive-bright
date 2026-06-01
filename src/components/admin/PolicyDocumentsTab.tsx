@@ -767,10 +767,16 @@ export const PolicyDocumentsTab: React.FC = () => {
             <CardContent className="text-sm space-y-1">
               {isEditing ? (
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
+                  <div className="col-span-2">
                     <Label className="text-xs text-muted-foreground">Registration</Label>
-                    <Input value={editData.registration_plate || ''} onChange={e => setEditData(d => ({ ...d, registration_plate: e.target.value }))} className="h-8 text-sm font-mono uppercase" />
+                    <div className="flex gap-2">
+                      <Input value={editData.registration_plate || ''} onChange={e => setEditData(d => ({ ...d, registration_plate: e.target.value.toUpperCase() }))} className="h-8 text-sm font-mono uppercase flex-1" />
+                      <Button type="button" size="sm" variant="outline" disabled={isDvlaLoading || !editData.registration_plate} onClick={() => lookupDvla(editData.registration_plate || '', { overwrite: true })} className="h-8 text-xs whitespace-nowrap">
+                        {isDvlaLoading ? 'Looking up…' : 'Lookup DVLA'}
+                      </Button>
+                    </div>
                   </div>
+
                   <div>
                     <Label className="text-xs text-muted-foreground">Make</Label>
                     <Input value={editData.vehicle_make || ''} onChange={e => setEditData(d => ({ ...d, vehicle_make: e.target.value }))} className="h-8 text-sm" />
