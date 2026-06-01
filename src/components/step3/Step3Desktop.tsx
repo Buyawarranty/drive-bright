@@ -472,7 +472,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <div className="p-[22px] pb-[18px] border-b border-[#f3ece7]">
                 <div className="text-[#f36b21] text-[12px] font-extrabold tracking-[0.08em] uppercase mb-2.5">Live price</div>
                 <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] flex items-baseline gap-2">
-                  £{monthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
+                  £{displayedMonthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
                 </p>
                 <div className="mt-2.5 text-[#6c6c6c] text-sm font-semibold">
                   Equal to {dailyLabel} · 12 interest-free payments
