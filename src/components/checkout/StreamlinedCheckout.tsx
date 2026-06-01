@@ -1440,6 +1440,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setShowValidation(true);
     setPaymentError('');
 
+    // Hard block: vehicles over 150,000 miles are not eligible for cover
+    const enteredMileageNum = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
+    if (enteredMileageNum > 150000) {
+      const mileageEl = document.getElementById('mileage');
+      if (mileageEl) {
+        mileageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (mileageEl as HTMLInputElement).focus();
+      }
+      toast.error('Sorry, we only cover vehicles under 150,000 miles. Please adjust the mileage to continue.', {
+        duration: 7000,
+        className: 'border-2 border-red-500 shadow-2xl',
+      });
+      return;
+    }
+
+
     // Helper: scroll to an element accounting for sticky top nav and bottom bar
     const scrollToSection = (el: HTMLElement | null) => {
       if (!el) return;
