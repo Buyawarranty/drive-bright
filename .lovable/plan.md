@@ -1,31 +1,39 @@
-## Changes to `src/components/admin/PolicyDocumentsTab.tsx` (edit mode only)
+## Confirming current behaviour first
 
-### 1. Customer Details — add Surname field
-Replace the single "Full Name" input in edit mode with two inputs side-by-side:
-- **First Name** → bound to `editData.first_name`
-- **Surname** → bound to `editData.last_name`
+Looking at `src/components/admin/BatchPolicyQueue.tsx`:
 
-When entering edit mode, pre-populate from `selectedCustomer.first_name` / `last_name`, falling back to splitting `selectedCustomer.name` (first word = first name, remainder = surname) when those columns are empty.
+- The batch **already auto-saves** to `localStorage` on every change (line 83-90) and survives page reloads. A small "Autosaved 1 Jun 2026, 15:43 • N pending" indicator shows under the header.
+- **Printing** (letters, labels, Brother QL, Word addresses) logs each customer to `posted_letters_log` with `action_type = batch_print | batch_label | batch_word_addresses` and **keeps the queue intact** so you can keep adding more.
+- **"Mark All Posted"** (the "printed & done" button) inserts every queued customer into `posted_letters_log` with `action_type = batch_posted` and **then clears the queue**. `posted_letters_log` is what feeds the **Letter Log** tab — so yes, that's the archive.
 
-On Save:
-- Write `first_name` and `last_name` from the two inputs.
-- Write `name` = `${first_name} ${last_name}`.trim() so the existing display, letters, and labels keep working.
+So the underlying flow already works. What's missing is visibility/confidence. Plan adds the following UI-only improvements:
 
-Read-only view (`Name: …`) is unchanged.
+## Changes to `BatchPolicyQueue.tsx`
 
-### 2. Vehicle & Cover — auto-fill from DVLA
-Add a small **"Lookup DVLA"** button next to the Registration input in edit mode (only visible in edit mode). Behavior:
-- Calls existing edge function `dvla-vehicle-lookup` with the current `editData.registration_plate`.
-- On success, populates `editData.vehicle_make`, `vehicle_model`, `vehicle_year` (only fills blanks unless user confirms overwrite — simple approach: always overwrite and toast "Vehicle details updated from DVLA").
-- Also auto-trigger lookup once when entering edit mode IF Make/Model/Year are all empty and a registration is present (so existing records like the screenshot get filled automatically). A small spinner shows during fetch.
-- Errors → toast with the DVLA error message; no field changes.
+### 1. Explicit "Save batch" button
+Add a small `Save batch` button next to the autosave indicator that:
+- Re-writes the queue to `localStorage` and updates `savedAt` immediately.
+- Shows a toast "Batch saved — N customers".
+- Purely a manual confirmation; autosave still runs on every change.
 
-Note: DVLA Vehicle Enquiry returns make + year (yearOfManufacture). Model is not provided by the free DVLA API. We'll use MOT history (`fetch-mot-history`) as a secondary call to get `model` when missing — both functions already exist in the project.
+### 2. Clearer wording about persistence and the archive
+Update the helper paragraph under the header to read:
 
-### 3. Save logic
-Extend the existing Save handler to include the split names as above. No DB schema changes needed — `first_name` and `last_name` columns already exist on `customers`.
+> This batch is auto-saved — you can keep adding customers across sessions. Printing labels, letters or the Word address sheet does NOT clear the batch. Click **Mark All Posted** when every pack is in the post — the batch will then be archived to the **Letter Log** tab and cleared so you can start a new batch.
 
-### Out of scope
-- No changes to display mode, letters, labels, or other tabs.
-- No DB migration.
-- No changes to non-edit flows.
+### 3. Make "Mark All Posted" confirmation explicit
+Update the confirm dialog text to:
+
+> Mark all N pack(s) as posted? They will be archived in the Letter Log and removed from this batch.
+
+### 4. Optional: link to Letter Log after archiving
+After `Mark All Posted` succeeds, the toast becomes:
+
+> Batch archived to Letter Log — N entries cleared.
+
+(plus a "View Letter Log" action in the toast that switches to that tab — only added if the tab-switch handler already exists; otherwise skip.)
+
+## Out of scope
+- No DB changes — `posted_letters_log` already powers the Letter Log archive.
+- No change to print/label flows.
+- No change to autosave behaviour itself.

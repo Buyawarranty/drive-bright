@@ -177,9 +177,21 @@ export const BatchPolicyQueue: React.FC = () => {
     setQueue([]);
   };
 
+  const saveBatchNow = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+      const now = new Date().toISOString();
+      localStorage.setItem(SAVED_AT_KEY, now);
+      setSavedAt(now);
+      toast({ title: 'Batch saved', description: `${queue.length} customer${queue.length === 1 ? '' : 's'} saved. You can keep adding more.` });
+    } catch (e) {
+      toast({ title: 'Save failed', description: 'Browser storage is full.', variant: 'destructive' });
+    }
+  };
+
   const confirmAllPosted = async () => {
     if (queue.length === 0) return;
-    if (!window.confirm(`Confirm: have all ${queue.length} warranty pack(s) been posted out? This will clear the batch and log them as sent.`)) return;
+    if (!window.confirm(`Mark all ${queue.length} pack(s) as posted? They will be archived in the Letter Log and removed from this batch.`)) return;
     try {
       const inserts = queue.map(c => ({
         customer_id: c.id,
@@ -194,8 +206,9 @@ export const BatchPolicyQueue: React.FC = () => {
       }));
       await supabase.from('posted_letters_log').insert(inserts as any);
     } catch (e) { /* silent */ }
+    const count = queue.length;
     setQueue([]);
-    toast({ title: 'Batch marked as posted', description: `${queue.length} entries cleared and logged as sent.` });
+    toast({ title: 'Batch archived to Letter Log', description: `${count} entr${count === 1 ? 'y' : 'ies'} cleared and logged as sent.` });
   };
 
   const formatAddress = (c: QueuedCustomer) => {
@@ -421,17 +434,23 @@ ${rows}
           </div>
         </div>
         <p className="text-muted-foreground text-sm">
-          Search by name or registration plate to build a list of customers whose warranty packs need to be posted out.
-          Add each one and the section below populates with their address. When ready, print the labels and letters, or
-          download every address in a single Word document for printing in one go. Rows missing a name or address are
-          flagged so they can be fixed before sending. <strong>This batch is autosaved</strong> — it stays here across page reloads until you click <em>Mark All Posted</em>.
+          This batch is auto-saved — you can keep adding customers across sessions. Printing labels, letters or the Word
+          address sheet does <strong>not</strong> clear the batch. Click <em>Mark All Posted</em> when every pack is in the
+          post — the batch will then be archived to the <strong>Letter Log</strong> tab and cleared so you can start a new batch.
         </p>
-        {queue.length > 0 && savedAt && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Save className="h-3 w-3" />
-            Autosaved {format(new Date(savedAt), 'd MMM yyyy, HH:mm')} • {queue.length} pending
-          </div>
-        )}
+        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+          {queue.length > 0 && savedAt && (
+            <span className="flex items-center gap-1.5">
+              <Save className="h-3 w-3" />
+              Autosaved {format(new Date(savedAt), 'd MMM yyyy, HH:mm')} • {queue.length} pending
+            </span>
+          )}
+          {queue.length > 0 && (
+            <Button size="sm" variant="outline" onClick={saveBatchNow} className="h-7 text-xs gap-1">
+              <Save className="h-3 w-3" /> Save batch
+            </Button>
+          )}
+        </div>
         {incompleteCount > 0 && (
           <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
