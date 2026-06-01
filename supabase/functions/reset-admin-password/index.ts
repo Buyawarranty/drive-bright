@@ -45,12 +45,13 @@ serve(async (req) => {
     }
 
     // Verify the user exists in admin_users table
+    // userId from the client is the auth user id, which maps to admin_users.user_id
     const { data: adminUser, error: adminError } = await supabaseClient
       .from('admin_users')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
     if (adminError || !adminUser) {
       throw new Error(`Admin user not found: ${adminError?.message || 'No admin user data'}`);
