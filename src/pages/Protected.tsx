@@ -253,7 +253,7 @@ const Protected = () => {
         ? 'Full details available in our Platinum Plan document (PDF)'
         : variant === 'coverage'
           ? 'Download full Platinum coverage (PDF)'
-          : 'Platinum Cover Summary (PDF)';
+          : 'Platinum Warranty Cover (PDF)';
     const termsLabel =
       variant === 'exclusions'
         ? 'See full exclusions in our Terms & Conditions (PDF)'
