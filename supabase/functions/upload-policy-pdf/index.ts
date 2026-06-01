@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       plan_type,
       document_name,
       file_url: pub.publicUrl,
-      file_name: path.split("/").pop(),
+      file_size: bytes.byteLength,
     });
     if (insErr) throw new Error("db: " + (insErr.message || JSON.stringify(insErr)));
     return new Response(JSON.stringify({ ok: true, url: pub.publicUrl }), {
