@@ -240,8 +240,8 @@ serve(async (req) => {
     
     // Construct direct public URLs for documents in Storage
     // Always use Platinum warranty plan v3.3 for all purchases
-    const termsStoragePath = 'terms/terms-and-conditions-v3.3-2026-05.pdf';
-    const platinumPlanPath = 'platinum/platinum-warranty-plan-v3.3-2026-05.pdf';
+    const termsStoragePath = 'terms/terms-and-conditions-v3.4-2026-06.pdf';
+    const platinumPlanPath = 'platinum/platinum-warranty-plan-v3.4-2026-06.pdf';
     
     const termsDoc = {
       file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${termsStoragePath}`,

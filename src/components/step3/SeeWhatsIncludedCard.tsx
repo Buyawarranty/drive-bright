@@ -102,7 +102,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
             </ul>
             <div className="mt-4 pt-3 border-t border-[#D8E9DD] flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
               <a
-                href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.3-2026-05.pdf"
+                href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#3F8A5C] font-semibold underline underline-offset-2 hover:text-[#2f6b46]"
@@ -110,7 +110,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
                 See your platinum plan
               </a>
               <a
-                href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.3-2026-05.pdf"
+                href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#3F8A5C] font-semibold underline underline-offset-2 hover:text-[#2f6b46]"
