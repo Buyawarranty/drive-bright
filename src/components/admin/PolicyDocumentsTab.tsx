@@ -585,8 +585,13 @@ export const PolicyDocumentsTab: React.FC = () => {
                   {!isEditing ? (
                     <Button size="sm" variant="ghost" onClick={() => {
                       setIsEditing(true);
+                      const parts = (selectedCustomer.name || '').trim().split(/\s+/);
+                      const fnFallback = parts[0] || '';
+                      const lnFallback = parts.slice(1).join(' ') || '';
                       setEditData({
                         name: selectedCustomer.name,
+                        first_name: selectedCustomer.first_name || fnFallback,
+                        last_name: selectedCustomer.last_name || lnFallback,
                         email: selectedCustomer.email,
                         phone: selectedCustomer.phone || '',
                         flat_number: selectedCustomer.flat_number || '',
@@ -601,7 +606,13 @@ export const PolicyDocumentsTab: React.FC = () => {
                         vehicle_model: selectedCustomer.vehicle_model || '',
                         vehicle_year: selectedCustomer.vehicle_year || '',
                       });
+                      const hasReg = !!selectedCustomer.registration_plate;
+                      const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
+                      if (hasReg && missingVehicle) {
+                        lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
+                      }
                     }} className="gap-1 text-xs h-7">
+
                       <Pencil className="h-3 w-3" />
                       Edit
                     </Button>
