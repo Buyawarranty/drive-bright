@@ -649,6 +649,54 @@ ${rows}
           </p>
         )}
       </CardContent>
+
+      <Dialog open={!!editingId} onOpenChange={(o) => { if (!o) { setEditingId(null); setEditForm({}); } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit customer details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Full name</Label>
+              <Input value={editForm.name || ''} onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Flat / Apt</Label>
+                <Input value={editForm.flat_number || ''} onChange={(e) => setEditForm(f => ({ ...f, flat_number: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Building name</Label>
+                <Input value={editForm.building_name || ''} onChange={(e) => setEditForm(f => ({ ...f, building_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Building number</Label>
+                <Input value={editForm.building_number || ''} onChange={(e) => setEditForm(f => ({ ...f, building_number: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Street</Label>
+                <Input value={editForm.street || ''} onChange={(e) => setEditForm(f => ({ ...f, street: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Town / City</Label>
+                <Input value={editForm.town || ''} onChange={(e) => setEditForm(f => ({ ...f, town: e.target.value }))} />
+              </div>
+              <div>
+                <Label>County</Label>
+                <Input value={editForm.county || ''} onChange={(e) => setEditForm(f => ({ ...f, county: e.target.value }))} />
+              </div>
+              <div className="col-span-2">
+                <Label>Postcode</Label>
+                <Input value={editForm.postcode || ''} onChange={(e) => setEditForm(f => ({ ...f, postcode: e.target.value.toUpperCase() }))} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setEditingId(null); setEditForm({}); }}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={isSavingEdit}>{isSavingEdit ? 'Saving...' : 'Save changes'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
