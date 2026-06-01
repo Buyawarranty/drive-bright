@@ -564,7 +564,7 @@ ${rows}
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Plan</th>
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Warranty #</th>
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Address</th>
-                  <th className="py-2 px-3 w-10"></th>
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground w-32">Actions</th>
                 </tr>
               </thead>
               <tbody>
