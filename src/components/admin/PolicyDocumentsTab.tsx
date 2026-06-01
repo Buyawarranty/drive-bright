@@ -14,6 +14,8 @@ import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 interface CustomerData {
   id: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   phone?: string;
   flat_number?: string;
