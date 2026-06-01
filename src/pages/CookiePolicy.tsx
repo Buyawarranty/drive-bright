@@ -72,7 +72,7 @@ const CookiePolicy = () => {
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
                 <p className="text-blue-800 font-medium">
                   <strong>PDF Version:</strong> You can also download our complete Cookie Policy as a{' '}
-                  <a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.3-2026-05.pdf" target="_blank" className="text-[#eb4b00] hover:underline">
+                  <a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf" target="_blank" className="text-[#eb4b00] hover:underline">
                     PDF document
                   </a>.
                 </p>

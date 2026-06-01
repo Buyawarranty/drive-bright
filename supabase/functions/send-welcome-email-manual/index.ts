@@ -247,7 +247,7 @@ const handler = async (req: Request): Promise<Response> => {
       };
 
       // Load Terms and Conditions PDF v3.3
-      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.3-2026-05.pdf');
+      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf');
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         const termsBase64 = arrayBufferToBase64(termsBuffer);
@@ -265,7 +265,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Load Platinum Warranty Plan PDF v3.3 (used for all plan types)
-      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.3-2026-05.pdf');
+      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06.pdf');
       if (platinumResponse.ok) {
         const platinumBuffer = await platinumResponse.arrayBuffer();
         const platinumBase64 = arrayBufferToBase64(platinumBuffer);
@@ -544,8 +544,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Use v3.3 PDFs for all warranty types
-    const policyDocumentUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.3-2026-05.pdf';
-    const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.3-2026-05.pdf';
+    const policyDocumentUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06.pdf';
+    const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf';
 
     // Define login URL for customer portal
     const loginUrl = 'https://buyawarranty.co.uk/auth';

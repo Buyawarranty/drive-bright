@@ -28,9 +28,9 @@ import { cn } from '@/lib/utils';
 type Variant = 'desktop' | 'mobile';
 
 const PLATINUM_PDF =
-  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.3-2026-05.pdf';
+  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06.pdf';
 const TERMS_PDF =
-  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.3-2026-05.pdf';
+  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf';
 
 interface CoveredPart {
   title: string;
