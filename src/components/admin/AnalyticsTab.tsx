@@ -596,6 +596,47 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, selectedMonth, sourceFilter]);
 
+  // Current-month pace projection: extrapolate end-of-month revenue/sales from days elapsed
+  const monthProjection = useMemo(() => {
+    const now = new Date();
+    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const current = monthlyRevenue.find(m => m.monthKey === currentKey);
+    if (!current) return null;
+
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dayOfMonth = now.getDate();
+    // Treat partial day as full day so a single sale on day 1 doesn't divide by zero
+    const elapsed = Math.max(1, dayOfMonth);
+    const paceMultiplier = daysInMonth / elapsed;
+
+    const projectedRevenue = Math.round(current.revenue * paceMultiplier);
+    const projectedSales = Math.round(current.salesCount * paceMultiplier);
+    const projectedAov = projectedSales > 0 ? Math.round(projectedRevenue / projectedSales) : current.aov;
+
+    // Prior month for comparison
+    const prior = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const priorKey = `${prior.getFullYear()}-${String(prior.getMonth() + 1).padStart(2, '0')}`;
+    const priorMonth = monthlyRevenue.find(m => m.monthKey === priorKey);
+    const revenueDeltaPct = priorMonth && priorMonth.revenue > 0
+      ? Math.round(((projectedRevenue - priorMonth.revenue) / priorMonth.revenue) * 100)
+      : null;
+
+    return {
+      monthLabel: current.month,
+      daysInMonth,
+      dayOfMonth,
+      actualRevenue: current.revenue,
+      actualSales: current.salesCount,
+      actualAov: current.aov,
+      projectedRevenue,
+      projectedSales,
+      projectedAov,
+      priorRevenue: priorMonth?.revenue ?? null,
+      priorSales: priorMonth?.salesCount ?? null,
+      revenueDeltaPct,
+    };
+  }, [monthlyRevenue]);
+
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
   // Agent performance analytics
