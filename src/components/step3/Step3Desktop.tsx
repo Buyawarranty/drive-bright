@@ -190,7 +190,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
   // Pay in full = monthly × 12 (always 12 instalments) - matches Step 4 / StickyFooter
-  const monthlyTotal = monthlyPrice * 12;
+  const rawMonthlyTotal = monthlyPrice * 12;
+  // Apply persisted promo so the right-rail price matches Step 4 (was £50 here vs £42 in Step 4)
+  const appliedPromos = useAppliedPromos();
+  const promoDiscount = calcPromoDiscount(rawMonthlyTotal, appliedPromos);
+  const monthlyTotal = Math.max(12, rawMonthlyTotal - promoDiscount);
+  const displayedMonthlyPrice = promoDiscount > 0 ? Math.max(1, Math.floor(monthlyTotal / 12)) : monthlyPrice;
   // Match Step 4 formula exactly: total - Math.floor(total * 0.10)
   const savings = Math.floor(monthlyTotal * 0.10);
   const payInFull = monthlyTotal - savings;
