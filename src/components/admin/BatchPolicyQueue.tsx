@@ -178,7 +178,18 @@ export const BatchPolicyQueue: React.FC = () => {
 
   const openEdit = (c: QueuedCustomer) => {
     setEditingId(c.id);
+    const cAny = c as any;
+    const existingFirst = (cAny.first_name || '').trim();
+    const existingLast = (cAny.last_name || '').trim();
+    let first = existingFirst;
+    let last = existingLast;
+    if (!first && !last) {
+      const parts = (c.name || '').trim().split(/\s+/);
+      first = parts[0] || '';
+      last = parts.slice(1).join(' ');
+    }
     setEditForm({
+      ...(({ first_name: first, last_name: last } as any)),
       name: c.name || '',
       flat_number: c.flat_number || '',
       building_name: c.building_name || '',
@@ -187,14 +198,20 @@ export const BatchPolicyQueue: React.FC = () => {
       town: c.town || '',
       county: c.county || '',
       postcode: c.postcode || '',
-    });
+    } as any);
   };
 
   const saveEdit = async () => {
     if (!editingId) return;
     setIsSavingEdit(true);
-    const updates = {
-      name: (editForm.name || '').trim() || null,
+    const f = editForm as any;
+    const first = (f.first_name || '').trim();
+    const last = (f.last_name || '').trim();
+    const fullName = `${first} ${last}`.trim();
+    const updates: any = {
+      first_name: first || null,
+      last_name: last || null,
+      name: fullName || null,
       flat_number: editForm.flat_number?.trim() || null,
       building_name: editForm.building_name?.trim() || null,
       building_number: editForm.building_number?.trim() || null,
@@ -214,6 +231,7 @@ export const BatchPolicyQueue: React.FC = () => {
     setEditingId(null);
     setEditForm({});
   };
+
 
   const clearQueue = () => {
     if (queue.length === 0) return;
@@ -657,9 +675,15 @@ ${rows}
             <DialogTitle>Edit customer details</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div>
-              <Label>Full name</Label>
-              <Input value={editForm.name || ''} onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>First name</Label>
+                <Input value={(editForm as any).first_name || ''} onChange={(e) => setEditForm(f => ({ ...f, first_name: e.target.value } as any))} placeholder="John" />
+              </div>
+              <div>
+                <Label>Surname</Label>
+                <Input value={(editForm as any).last_name || ''} onChange={(e) => setEditForm(f => ({ ...f, last_name: e.target.value } as any))} placeholder="Smith" />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
