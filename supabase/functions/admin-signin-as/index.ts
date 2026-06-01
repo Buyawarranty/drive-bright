@@ -44,15 +44,16 @@ serve(async (req) => {
     const { targetEmail, redirectTo } = await req.json();
     if (!targetEmail) throw new Error("targetEmail required");
 
-    // Determine a safe default redirect (never localhost)
+    // Safe default redirect (never localhost)
     const originHeader = req.headers.get("origin") || "";
     const safeOrigin = originHeader && !originHeader.includes("localhost")
       ? originHeader
       : "https://buyawarranty.co.uk";
-    let finalRedirect = redirectTo && !redirectTo.includes("localhost")
+    const finalRedirect = redirectTo && !redirectTo.includes("localhost")
       ? redirectTo
       : `${safeOrigin}/admin-dashboard`;
 
+    // 1) Generate a magic link (we use its hashed_token to verify server-side)
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: targetEmail,
@@ -60,17 +61,26 @@ serve(async (req) => {
     });
     if (linkErr) throw linkErr;
 
-    // Supabase may override redirect_to if Site URL allow-list doesn't include ours.
-    // Rebuild the action link from the hashed_token so we control redirect_to.
     const hashedToken = (linkData.properties as any)?.hashed_token;
-    let actionLink = linkData.properties?.action_link;
-    if (hashedToken) {
-      const url = new URL(`${SUPABASE_URL}/auth/v1/verify`);
-      url.searchParams.set("token", hashedToken);
-      url.searchParams.set("type", "magiclink");
-      url.searchParams.set("redirect_to", finalRedirect);
-      actionLink = url.toString();
+    if (!hashedToken) throw new Error("No hashed_token returned");
+
+    // 2) Exchange the hashed token for a real session immediately, server-side.
+    //    This avoids the email-link being prefetched/expired by browsers or mail
+    //    scanners, and lets the client just call setSession with the tokens.
+    const verifyClient = createClient(SUPABASE_URL, ANON, { auth: { persistSession: false } });
+    const { data: verifyData, error: verifyErr } = await verifyClient.auth.verifyOtp({
+      type: "magiclink",
+      token_hash: hashedToken,
+    });
+    if (verifyErr || !verifyData.session) {
+      throw new Error(`Verify failed: ${verifyErr?.message || "no session"}`);
     }
+
+    // Fallback action link (kept for backward-compat / copy display)
+    const fallbackUrl = new URL(`${SUPABASE_URL}/auth/v1/verify`);
+    fallbackUrl.searchParams.set("token", hashedToken);
+    fallbackUrl.searchParams.set("type", "magiclink");
+    fallbackUrl.searchParams.set("redirect_to", finalRedirect);
 
     // Audit log
     await admin.from("admin_activity_log").insert({
@@ -80,7 +90,13 @@ serve(async (req) => {
     }).then(() => {}, () => {});
 
     return new Response(
-      JSON.stringify({ action_link: actionLink, target: targetEmail, redirect_to: finalRedirect }),
+      JSON.stringify({
+        access_token: verifyData.session.access_token,
+        refresh_token: verifyData.session.refresh_token,
+        target: targetEmail,
+        redirect_to: finalRedirect,
+        action_link: fallbackUrl.toString(),
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

@@ -217,8 +217,20 @@ export const UserPermissionsTab = () => {
         body: { targetEmail: u.email, redirectTo: `${window.location.origin}/admin-dashboard` }
       });
       if (error) throw error;
-      if (!data?.action_link) throw new Error('No link returned');
-      // Show in dialog so popup blockers don't break it & admin can copy/share
+
+      // Preferred path: edge function returns an already-verified session.
+      // Open the dashboard in a new tab and hand it the tokens via URL hash so
+      // it can call supabase.auth.setSession() — bypasses magic-link expiry.
+      if (data?.access_token && data?.refresh_token) {
+        const target = data.redirect_to || `${window.location.origin}/admin-dashboard`;
+        const url = `${target}#access_token=${encodeURIComponent(data.access_token)}&refresh_token=${encodeURIComponent(data.refresh_token)}&type=signin_as`;
+        setSignInLink({ email: u.email, link: url });
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      // Fallback: legacy magic-link action_link
+      if (!data?.action_link) throw new Error('No session or link returned');
       setSignInLink({ email: u.email, link: data.action_link });
       window.open(data.action_link, '_blank', 'noopener,noreferrer');
     } catch (err: any) {
