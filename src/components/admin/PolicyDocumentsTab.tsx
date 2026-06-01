@@ -621,12 +621,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                       <Button size="sm" variant="default" disabled={isSaving} onClick={async () => {
                         setIsSaving(true);
                         try {
-                          // Parse first/last name from full name for sync trigger
-                          const nameParts = (editData.name || '').trim().split(' ');
-                          const firstName = nameParts[0] || '';
-                          const lastName = nameParts.slice(1).join(' ') || '';
+                          const firstName = (editData.first_name || '').trim();
+                          const lastName = (editData.last_name || '').trim();
+                          const fullName = `${firstName} ${lastName}`.trim();
                           const { error } = await supabase.from('customers').update({
-                            name: editData.name,
+                            name: fullName,
                             first_name: firstName,
                             last_name: lastName,
                             email: editData.email,
@@ -644,7 +643,8 @@ export const PolicyDocumentsTab: React.FC = () => {
                             vehicle_year: editData.vehicle_year || null,
                           }).eq('id', selectedCustomer.id);
                           if (error) throw error;
-                          const updated = { ...selectedCustomer, ...editData };
+                          const updated = { ...selectedCustomer, ...editData, name: fullName, first_name: firstName, last_name: lastName };
+
                           setSelectedCustomer(updated as CustomerData);
                           setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updated as CustomerData : c));
                           setIsEditing(false);
