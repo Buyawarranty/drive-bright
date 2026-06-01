@@ -701,10 +701,15 @@ export const PolicyDocumentsTab: React.FC = () => {
             <CardContent className="text-sm space-y-1">
               {isEditing ? (
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="col-span-2">
-                    <Label className="text-xs text-muted-foreground">Full Name</Label>
-                    <Input value={editData.name || ''} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} className="h-8 text-sm" />
+                  <div>
+                    <Label className="text-xs text-muted-foreground">First Name</Label>
+                    <Input value={editData.first_name || ''} onChange={e => setEditData(d => ({ ...d, first_name: e.target.value }))} className="h-8 text-sm" />
                   </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Surname</Label>
+                    <Input value={editData.last_name || ''} onChange={e => setEditData(d => ({ ...d, last_name: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+
                   <div>
                     <Label className="text-xs text-muted-foreground">Email</Label>
                     <Input value={editData.email || ''} onChange={e => setEditData(d => ({ ...d, email: e.target.value }))} className="h-8 text-sm" />
