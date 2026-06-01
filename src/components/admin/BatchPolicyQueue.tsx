@@ -79,6 +79,9 @@ export const BatchPolicyQueue: React.FC = () => {
     try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
   });
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Autosave queue to localStorage on every change
