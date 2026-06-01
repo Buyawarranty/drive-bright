@@ -39,7 +39,7 @@ const SECTIONS: Section[] = [
   },
   {
     id: 'policy',
-    title: 'Policy summary',
+    title: 'T&Cs and your platinum plan',
     subtitle: 'Key terms and important information.',
     Icon: FileText,
     iconBg: 'bg-amber-100',
