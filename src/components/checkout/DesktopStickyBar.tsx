@@ -76,7 +76,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 
   return (
     <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white shadow-[0_-6px_22px_rgba(0,0,0,0.12)] border-t border-gray-200 z-50">
-      <div className="max-w-7xl mx-auto px-5 py-2">
+      <div className="max-w-7xl mx-auto px-5 py-3">
         {validationError && (
           <div
             role="alert"
@@ -86,27 +86,29 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
             <span>{validationError}</span>
           </div>
         )}
-        <div className="flex items-center gap-3 min-h-[58px]">
+        <div className="flex items-stretch gap-0 min-h-[64px]">
 
-          {/* LEFT: Trust + plan stacked tightly */}
-          <div className="flex flex-col justify-center gap-1 flex-shrink-0 pr-3 border-r border-gray-200">
+          {/* LEFT: Trustpilot rating */}
+          <div className="flex items-center flex-shrink-0 pr-5 border-r border-gray-200">
             <a
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity leading-none"
+              className="flex flex-col items-start hover:opacity-80 transition-opacity leading-tight"
             >
               <span className="text-sm font-bold text-gray-900">Excellent</span>
-              <img src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot" className="h-4 w-auto" />
+              <img src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot" className="h-4 w-auto mt-0.5" />
             </a>
-            <div className="flex items-center gap-1.5 leading-none">
-              <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Cover</span>
-              <span className="text-[13px] font-bold text-black">{planLabel}</span>
-            </div>
+          </div>
+
+          {/* COVER label */}
+          <div className="flex flex-col justify-center flex-shrink-0 px-5 border-r border-gray-200 leading-tight">
+            <span className="text-[10px] font-bold text-[#FF6B00] tracking-wider uppercase">Your cover</span>
+            <span className="text-[14px] font-bold text-gray-900 mt-0.5">{planLabel}</span>
           </div>
 
           {/* MIDDLE: Price block */}
-          <div className="flex flex-col justify-center leading-none flex-shrink-0 min-w-[180px]">
+          <div className="flex flex-col justify-center flex-shrink-0 px-5 border-r border-gray-200 min-w-[180px] leading-tight">
             {isMonthly ? (
               <>
                 <div className="flex items-baseline gap-1">
@@ -114,7 +116,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                   <span className="text-sm text-gray-600">/mo</span>
                   <span className="text-xs text-gray-500 ml-1">· {pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`}/day</span>
                 </div>
-                <span className="text-[11px] text-gray-500 mt-0.5">Paid over 12 months · 0% APR</span>
+                <span className="text-[11px] text-gray-500 mt-1">Paid over 12 months · 0% APR</span>
               </>
             ) : (
               <>
@@ -123,45 +125,49 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                   <span className="text-xs text-gray-500">one-off</span>
                 </div>
                 {savings > 0 && (
-                  <span className="text-[11px] font-semibold text-[#0BA360] mt-0.5">You save £{savings} vs monthly</span>
+                  <span className="text-[11px] font-semibold text-[#0BA360] mt-1">You save £{savings} vs monthly</span>
                 )}
               </>
             )}
           </div>
 
-          {/* OPTIONAL: Switch-to-full pill (only when on monthly with savings) */}
+          {/* OPTIONAL: Switch-to-full pill */}
           {isMonthly && savings > 0 && (
-            <button
-              type="button"
-              onClick={() => onPaymentChange?.('full')}
-              className="hidden xl:flex items-center gap-2 bg-[#E8F7EF] hover:bg-[#d6f0e2] border border-[#0BA360]/30 hover:border-[#0BA360] rounded-lg px-3 py-1.5 flex-shrink-0 transition-colors cursor-pointer"
-              aria-label={`Switch to one-off payment of £${fullPrice}`}
-            >
-              <Wallet className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-              <div className="flex flex-col leading-tight text-left">
-                <span className="text-[12px] font-bold text-gray-900">Pay £{fullPrice} upfront</span>
-                <span className="text-[11px] font-semibold text-[#0BA360]">Save £{savings}</span>
-              </div>
-            </button>
+            <div className="hidden xl:flex items-center flex-shrink-0 px-5 border-r border-gray-200">
+              <button
+                type="button"
+                onClick={() => onPaymentChange?.('full')}
+                className="flex items-center gap-2 bg-[#E8F7EF] hover:bg-[#d6f0e2] border border-[#0BA360]/30 hover:border-[#0BA360] rounded-lg px-3 py-2 transition-colors cursor-pointer"
+                aria-label={`Switch to one-off payment of £${fullPrice}`}
+              >
+                <Wallet className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                <div className="flex flex-col leading-tight text-left">
+                  <span className="text-[12px] font-bold text-gray-900">Pay £{fullPrice} upfront</span>
+                  <span className="text-[11px] font-semibold text-[#0BA360]">Save £{savings}</span>
+                </div>
+              </button>
+            </div>
           )}
           {!isMonthly && (
-            <button
-              type="button"
-              onClick={() => onPaymentChange?.('monthly')}
-              className="hidden xl:flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg px-3 py-1.5 flex-shrink-0 transition-colors cursor-pointer"
-              aria-label={`Switch to monthly payment of £${monthlyPrice}`}
-            >
-              <Wallet className="w-4 h-4 text-gray-700 flex-shrink-0" />
-              <div className="flex flex-col leading-tight text-left">
-                <span className="text-[12px] font-bold text-gray-900">Pay £{monthlyPrice}/mo</span>
-                <span className="text-[11px] font-semibold text-gray-600">12 months · 0% APR</span>
-              </div>
-            </button>
+            <div className="hidden xl:flex items-center flex-shrink-0 px-5 border-r border-gray-200">
+              <button
+                type="button"
+                onClick={() => onPaymentChange?.('monthly')}
+                className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 transition-colors cursor-pointer"
+                aria-label={`Switch to monthly payment of £${monthlyPrice}`}
+              >
+                <Wallet className="w-4 h-4 text-gray-700 flex-shrink-0" />
+                <div className="flex flex-col leading-tight text-left">
+                  <span className="text-[12px] font-bold text-gray-900">Pay £{monthlyPrice}/mo</span>
+                  <span className="text-[11px] font-semibold text-gray-600">12 months · 0% APR</span>
+                </div>
+              </button>
+            </div>
           )}
 
 
           {/* RIGHT: CTA fills remaining space */}
-          <div className="flex-1 flex items-center justify-end gap-3 min-w-0">
+          <div className="flex-1 flex items-center justify-end gap-3 min-w-0 pl-5">
             <span className="hidden md:flex items-center gap-1.5 text-[11px] text-gray-500 flex-shrink-0">
               <Lock className="w-3 h-3" />
               Secure checkout
