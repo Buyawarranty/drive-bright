@@ -28,6 +28,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
+import { useAppliedPromos, calcPromoDiscount } from '@/lib/promoStorage';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import SidebarQuickActions from './SidebarQuickActions';
 import PriceBeatBanner from './PriceBeatBanner';
