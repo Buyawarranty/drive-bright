@@ -176,6 +176,45 @@ export const BatchPolicyQueue: React.FC = () => {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
+  const openEdit = (c: QueuedCustomer) => {
+    setEditingId(c.id);
+    setEditForm({
+      name: c.name || '',
+      flat_number: c.flat_number || '',
+      building_name: c.building_name || '',
+      building_number: c.building_number || '',
+      street: c.street || '',
+      town: c.town || '',
+      county: c.county || '',
+      postcode: c.postcode || '',
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setIsSavingEdit(true);
+    const updates = {
+      name: (editForm.name || '').trim() || null,
+      flat_number: editForm.flat_number?.trim() || null,
+      building_name: editForm.building_name?.trim() || null,
+      building_number: editForm.building_number?.trim() || null,
+      street: editForm.street?.trim() || null,
+      town: editForm.town?.trim() || null,
+      county: editForm.county?.trim() || null,
+      postcode: editForm.postcode?.trim() || null,
+    };
+    const { error } = await supabase.from('customers').update(updates).eq('id', editingId);
+    setIsSavingEdit(false);
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setQueue(prev => prev.map(q => (q.id === editingId ? { ...q, ...updates } as QueuedCustomer : q)));
+    toast({ title: 'Saved', description: 'Customer details updated.' });
+    setEditingId(null);
+    setEditForm({});
+  };
+
   const clearQueue = () => {
     if (queue.length === 0) return;
     if (!window.confirm(`Clear all ${queue.length} entries from the batch without marking as posted?`)) return;
