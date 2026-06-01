@@ -16,6 +16,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMobileBackNavigation } from '@/hooks/useMobileBackNavigation';
 import { useQuoteRestoration } from '@/hooks/useQuoteRestoration';
 import { batchLocalStorageWrite, safeLocalStorageRemove, parseLocalStorageJSON, saveWithTimestamp, getWithTimestamp } from '@/utils/localStorage';
+import { migrateAutoApplyPromos } from '@/lib/autoApplyPromoMigration';
+
+// Run at module load so promos are in the shared store BEFORE Step 3 mounts.
+// Fixes the £50 (Step 3) → £42 (Step 4) jump caused by Step 4-only auto-applied promos.
+migrateAutoApplyPromos();
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';

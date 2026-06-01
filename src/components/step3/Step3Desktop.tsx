@@ -28,6 +28,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
+import { useAppliedPromos, calcPromoDiscount } from '@/lib/promoStorage';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import SidebarQuickActions from './SidebarQuickActions';
 import PriceBeatBanner from './PriceBeatBanner';
@@ -189,7 +190,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
   // Pay in full = monthly × 12 (always 12 instalments) - matches Step 4 / StickyFooter
-  const monthlyTotal = monthlyPrice * 12;
+  const rawMonthlyTotal = monthlyPrice * 12;
+  // Apply persisted promo so the right-rail price matches Step 4 (was £50 here vs £42 in Step 4)
+  const appliedPromos = useAppliedPromos();
+  const promoDiscount = calcPromoDiscount(rawMonthlyTotal, appliedPromos);
+  const monthlyTotal = Math.max(12, rawMonthlyTotal - promoDiscount);
+  const displayedMonthlyPrice = promoDiscount > 0 ? Math.max(1, Math.floor(monthlyTotal / 12)) : monthlyPrice;
   // Match Step 4 formula exactly: total - Math.floor(total * 0.10)
   const savings = Math.floor(monthlyTotal * 0.10);
   const payInFull = monthlyTotal - savings;
@@ -466,7 +472,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <div className="p-[22px] pb-[18px] border-b border-[#f3ece7]">
                 <div className="text-[#f36b21] text-[12px] font-extrabold tracking-[0.08em] uppercase mb-2.5">Live price</div>
                 <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] flex items-baseline gap-2">
-                  £{monthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
+                  £{displayedMonthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
                 </p>
                 <div className="mt-2.5 text-[#6c6c6c] text-sm font-semibold">
                   Equal to {dailyLabel} · 12 interest-free payments
@@ -557,7 +563,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           {/* Price */}
           <div className="px-6 leading-tight">
             <div className="text-[26px] font-extrabold tracking-[-0.04em] text-[#161616] leading-none">
-              £{monthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
+              £{displayedMonthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
             </div>
             <div className="text-[12px] text-[#6c6c6c] mt-1 font-semibold">Equal to {dailyLabel}</div>
             <div className="text-[11px] text-[#919191] font-semibold">Paid over 12 months</div>
