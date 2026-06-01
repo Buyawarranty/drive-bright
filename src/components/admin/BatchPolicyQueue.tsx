@@ -564,7 +564,7 @@ ${rows}
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Plan</th>
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Warranty #</th>
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Address</th>
-                  <th className="py-2 px-3 w-10"></th>
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground w-32">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -597,10 +597,11 @@ ${rows}
                           </div>
                         )}
                       </td>
-                      <td className="py-2 px-3 align-top">
-                        <div className="flex items-center gap-1">
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => openEdit(c)} title="Edit name & address">
+                      <td className="py-2 px-3 align-top text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button size="sm" variant="outline" className="h-7 px-2 gap-1" onClick={() => openEdit(c)} title="Edit name & address">
                             <Pencil className="h-3.5 w-3.5" />
+                            Edit
                           </Button>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => removeFromQueue(c.id)} title="Remove from batch">
                             <X className="h-3.5 w-3.5" />
