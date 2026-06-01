@@ -253,7 +253,7 @@ const Protected = () => {
         ? 'Full details available in our Platinum Plan document (PDF)'
         : variant === 'coverage'
           ? 'Download full Platinum coverage (PDF)'
-          : 'Platinum Cover Summary (PDF)';
+          : 'Platinum Warranty Cover (PDF)';
     const termsLabel =
       variant === 'exclusions'
         ? 'See full exclusions in our Terms & Conditions (PDF)'
@@ -346,7 +346,7 @@ const Protected = () => {
       <section className="py-12 bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Full coverage by vehicle type</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Full coverage with no small print</h2>
             <p className="text-sm text-muted-foreground">
               Select your vehicle type to view everything that's covered.
             </p>
