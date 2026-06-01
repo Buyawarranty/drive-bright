@@ -462,6 +462,16 @@ const AdminDashboard = () => {
         return <CancellationsTab />;
       case 'refunds-paid':
         return <RefundsPaidTab />;
+      case 'ghl-sync-log':
+        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin') {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">GHL sync log is restricted to administrators.</p>
+            </div>
+          );
+        }
+        return <GhlSyncLogTab />;
       case 'account':
         return <AccountSettings />;
       case 'attribution-settings':
