@@ -220,12 +220,35 @@ export const BatchPolicyQueue: React.FC = () => {
       county: editForm.county?.trim() || null,
       postcode: editForm.postcode?.trim() || null,
     };
-    const { error } = await supabase.from('customers').update(updates).eq('id', editingId);
-    setIsSavingEdit(false);
+    const { error } = await supabase.from('customers').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', editingId);
     if (error) {
+      setIsSavingEdit(false);
       toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
       return;
     }
+
+    // Mirror to customer_policies so the customer dashboard / portal show the same details
+    const composedAddress = [
+      updates.flat_number,
+      updates.building_name,
+      [updates.building_number, updates.street].filter(Boolean).join(' '),
+      updates.town,
+      updates.county,
+      updates.postcode,
+    ].filter(Boolean).join(', ');
+    const { error: polError } = await supabase
+      .from('customer_policies')
+      .update({
+        customer_full_name: fullName || null,
+        address: composedAddress || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('customer_id', editingId);
+    if (polError) {
+      console.error('customer_policies sync failed:', polError);
+    }
+    setIsSavingEdit(false);
+
     setQueue(prev => prev.map(q => (q.id === editingId ? { ...q, ...updates } as QueuedCustomer : q)));
     toast({ title: 'Saved', description: 'Customer details updated.' });
     setEditingId(null);
