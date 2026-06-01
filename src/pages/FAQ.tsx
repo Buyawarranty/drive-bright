@@ -417,6 +417,16 @@ const FAQ = () => {
           id: 'diagnostics-covered',
           question: 'Are diagnostics covered?',
           answer: 'Diagnostics are usually covered when the fault is approved.'
+        },
+        {
+          id: 'uk-wide-cover',
+          question: 'Is your car warranty cover valid across the entire UK?',
+          answer: 'Yes, all of our car warranty plans offer complete coverage across England, Scotland, Wales, and Northern Ireland. If your vehicle breaks down anywhere in the UK, you can take it to any VAT-registered garage nationwide, or utilise our network of approved repair specialists to get you back on the road quickly.'
+        },
+        {
+          id: 'limited-warranty-meaning',
+          question: 'What does a "limited warranty" actually cover?',
+          answer: 'A limited warranty means that coverage is restricted to specific parts, timeframes, or conditions listed in the policy, rather than covering "everything." For example, a manufacturer\u2019s limited warranty typically protects against factory defects in materials or workmanship but explicitly excludes everyday wear-and-tear items (like brake pads, tyres, and wiper blades), routine servicing, and damage from accidents or neglect. Our policies clearly define these limits upfront so you always know exactly what is protected.'
         }
       ]
     },
