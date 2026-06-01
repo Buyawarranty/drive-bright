@@ -177,9 +177,21 @@ export const BatchPolicyQueue: React.FC = () => {
     setQueue([]);
   };
 
+  const saveBatchNow = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+      const now = new Date().toISOString();
+      localStorage.setItem(SAVED_AT_KEY, now);
+      setSavedAt(now);
+      toast({ title: 'Batch saved', description: `${queue.length} customer${queue.length === 1 ? '' : 's'} saved. You can keep adding more.` });
+    } catch (e) {
+      toast({ title: 'Save failed', description: 'Browser storage is full.', variant: 'destructive' });
+    }
+  };
+
   const confirmAllPosted = async () => {
     if (queue.length === 0) return;
-    if (!window.confirm(`Confirm: have all ${queue.length} warranty pack(s) been posted out? This will clear the batch and log them as sent.`)) return;
+    if (!window.confirm(`Mark all ${queue.length} pack(s) as posted? They will be archived in the Letter Log and removed from this batch.`)) return;
     try {
       const inserts = queue.map(c => ({
         customer_id: c.id,
@@ -194,8 +206,9 @@ export const BatchPolicyQueue: React.FC = () => {
       }));
       await supabase.from('posted_letters_log').insert(inserts as any);
     } catch (e) { /* silent */ }
+    const count = queue.length;
     setQueue([]);
-    toast({ title: 'Batch marked as posted', description: `${queue.length} entries cleared and logged as sent.` });
+    toast({ title: 'Batch archived to Letter Log', description: `${count} entr${count === 1 ? 'y' : 'ies'} cleared and logged as sent.` });
   };
 
   const formatAddress = (c: QueuedCustomer) => {
