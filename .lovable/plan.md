@@ -1,70 +1,84 @@
-## Fake Leads Audit Process
 
-Adds an audit trail and review panel for leads marked as **Fake 404**, so managers can verify whether the agent was right to mark them fake (real number? actually tried to call? how many times? any call errors?), and review on a weekly or monthly cadence.
+## Goal
+Every lead captured on buyawarranty.co.uk should land in GoHighLevel (GHL) in addition to the admin dashboard, and the GHL "Leads" view should mirror the structure, fields, and status flow we use internally.
 
-### What you'll see (UI)
+## Current state
+- `push-to-ghl` edge function already exists (upserts a contact via the GHL v2 `/contacts/upsert` API, with a retry queue `ghl_push_queue` + `retry-ghl-pushes` cron worker).
+- It is currently only called from `track-abandoned-cart` (Step 2 abandons).
+- New full leads (`sales_leads` inserts from Step 1 reg lookup, Step 2 contact, completed checkouts) are NOT pushed to GHL.
+- Required secrets: `GHL_API_KEY` (Private Integration token `pit-...`) and `GHL_LOCATION_ID`.
 
-Inside `New Leads → Fake 404` tab, a new **"Audit"** toggle (visible to `super_admin`, `admin`, `sales_lead`, `accounts_manager`) that opens an audit table with:
+## Part 1 — GoHighLevel setup (done by you in GHL UI)
 
-- **Period selector** — This week / Last week / This month / Last month / Custom range, defaulting to current month. Grouped headers show counts per week and per month.
-- **Columns** per fake lead:
-  - Customer (name, email, phone, reg)
-  - **Phone validity** badge — green "Valid UK" / amber "Suspicious" / red "Invalid format" based on UK number regex (mobile `07xxx`, landline, international `+44`, length, repeating-digit pattern detection from existing `suspiciousLeadDetection.ts`)
-  - **Call attempts** — count + expandable list of every `lead_call_logs` row: attempt #, outcome (no_answer, voicemail, wrong_number, disconnected, busy, answered, call_error…), agent, timestamp, notes
-  - **Marked fake by** — agent name + date (relative + absolute)
-  - **Reason** — required free-text reason captured when marking fake
-  - **Audit status** — Pending / ✅ Confirmed fake / ↩️ Reinstated (with auditor + date)
-- **Sort** by: Date marked fake (default desc), call count asc (zero-call ones float to top as suspicious), phone validity (invalid first).
-- **Actions** per row: "Confirm fake", "Reinstate to Live", "Flag for review" (adds note + keeps pending).
-- **Header KPIs**: total marked fake in period, % with zero call attempts, % with invalid phone, % confirmed vs reinstated, top fake-markers leaderboard.
-- **Export** CSV (admin/super_admin only) of the current period.
+1. **Create a Private Integration token**
+   Settings → Private Integrations → Create. Scopes needed:
+   - `contacts.write`, `contacts.readonly`
+   - `opportunities.write`, `opportunities.readonly`
+   - `locations/customFields.write`, `locations/customFields.readonly`
+   - `locations/tags.write`
+   Copy the `pit-...` token and the Location ID (Settings → Business Profile).
 
-### Capture flow change
+2. **Create a Pipeline that mirrors our lead lifecycle**
+   Pipelines → New Pipeline → name it **"Website Leads"** with stages matching our internal statuses:
+   `New → Contacted → Quoted → Callback → Negotiating → Converted → Lost → Fake Lead`
+   (these match the values in `sales_leads.status`).
 
-When an agent picks status `Fake 404`, a small dialog now requires:
-- Reason (dropdown: `wrong_number`, `no_intent`, `competitor_test`, `spam_bot`, `duplicate_test`, `other`) + optional note.
+3. **Create Custom Fields on the Contact** (Settings → Custom Fields → Contact)
+   Mirror every column we surface in the admin Leads table. Use the exact field keys below so the edge function maps cleanly:
+   - `vehicle_reg` (text), `vehicle_make`, `vehicle_model`, `vehicle_year`, `mileage`
+   - `plan_id`, `plan_name`, `payment_type`, `total_price`, `voluntary_excess`
+   - `claim_limit`, `warranty_duration`
+   - `step_abandoned`, `lead_source`, `original_source`, `priority`
+   - `fbclid`, `gclid`, `utm_source`, `utm_medium`, `utm_campaign`
+   - `assigned_agent`, `last_activity_date`, `notes_summary`
 
-This is stored on the lead so the audit panel always has context.
+4. **Create Tags** the function will apply automatically:
+   `buyawarranty`, `step-1`, `step-2`, `paid`, `repeat-customer`, `suspicious`, plus a source tag (`source-google`, `source-facebook`, `source-organic`).
 
-### Schema additions (`sales_leads`)
+5. **Build the "Leads" Smart List view** (Contacts → Smart Lists → New)
+   - Filter: Tag contains `buyawarranty`
+   - Columns: Name, Phone, Email, `vehicle_reg`, `plan_name`, `total_price`, `step_abandoned`, Pipeline Stage, Assigned User, Last Activity
+   - Sort: Last Activity desc
+   This becomes the GHL equivalent of our admin Leads tab.
 
-- `fake_marked_by uuid` → `admin_users.id`
-- `fake_marked_at timestamptz`
-- `fake_reason text`
-- `fake_reason_note text`
-- `fake_audit_status text` — `pending` (default when fake_lead), `confirmed`, `reinstated`
-- `fake_audited_by uuid` → `admin_users.id`
-- `fake_audited_at timestamptz`
+## Part 2 — Wire every lead capture point to push-to-ghl
 
-Index on `(fake_marked_at)` for fast weekly/monthly grouping.
+Add a fire-and-forget call to `push-to-ghl` from each lead entry point. Existing function signature already accepts the right shape; we just need to extend it slightly and call it from more places.
 
-Backfill: for existing `status = 'fake_lead'` rows, set `fake_marked_at = COALESCE(lost_at, updated_at)` and `fake_audit_status = 'pending'` so they appear in the audit immediately.
+**Edge functions to update:**
 
-### Auto-population
+| Function | When it fires | Action |
+|---|---|---|
+| `track-abandoned-cart` | Already wired ✅ | No change |
+| `capture-step1-lead` (or wherever Step 1 reg + contact is saved to `sales_leads`) | On insert | Add `fetch(.../push-to-ghl)` with `step_abandoned: 1` + tag `step-1` |
+| `handle-successful-payment` | After Stripe success | Push with `step_abandoned: "paid"` + tag `paid`, include `total_price`, `plan_id`, `payment_type` |
+| `process-payment-assist-success` | After Bumper success | Same as above |
+| `capture-facebook-lead` | FB Lead Ads | Push with tag `source-facebook` |
 
-A small trigger on `sales_leads` sets `fake_marked_by/at` whenever status transitions to `fake_lead`, and clears them (sets `fake_audit_status = 'reinstated'` + auditor) when status moves away. Frontend additionally writes `fake_reason` from the dialog.
+**Enhance `push-to-ghl/index.ts`:**
+1. Map our internal `status` → GHL pipeline stage ID (env vars `GHL_PIPELINE_ID`, `GHL_STAGE_NEW_ID`, etc.) and create/update an Opportunity in the Website Leads pipeline alongside the contact upsert.
+2. Compute tags dynamically from payload (`paid`, `step-1/2`, `source-*`, `suspicious` if flagged).
+3. Add `assignedTo` if `assigned_agent` is provided (requires a GHL user ID lookup map kept in env or a small `ghl_user_map` table).
+4. Always set `last_activity_date` custom field.
 
-### Files
+## Part 3 — Keep GHL in sync with admin actions (optional but recommended)
 
-```text
-NEW  src/components/admin/leads/FakeLeadsAuditPanel.tsx
-NEW  src/components/admin/leads/MarkFakeReasonDialog.tsx
-NEW  src/hooks/useFakeLeadsAudit.ts
-EDIT src/components/admin/leads/NewLeadsTab.tsx         (mount Audit panel under fake filter)
-EDIT src/components/admin/leads/LeadTableRow.tsx        (open MarkFakeReasonDialog when picking Fake 404)
-EDIT src/hooks/useLeads.tsx                             (include new fake_* columns in SELECT)
-MIGRATION                                               (columns + index + trigger + backfill)
-```
+Add a Postgres trigger on `sales_leads` (AFTER UPDATE) that enqueues a row into `ghl_push_queue` whenever `status`, `assigned_agent`, or `notes` changes. The existing `retry-ghl-pushes` cron will drain it. This way: when an admin changes status in our dashboard, the GHL contact's pipeline stage / assigned user updates automatically.
 
-### Permissions
+## Part 4 — Secrets & deployment
 
-- **All agents**: can still mark fake (now via dialog with reason).
-- **Audit panel view & confirm/reinstate**: `super_admin`, `admin`, `sales_lead`, `accounts_manager`. Other roles don't see the Audit toggle.
-- **Export**: `super_admin`, `admin` only.
+1. Add `GHL_API_KEY`, `GHL_LOCATION_ID`, `GHL_PIPELINE_ID`, and one `GHL_STAGE_<NAME>_ID` per stage as Supabase secrets.
+2. Deploy the updated edge functions.
+3. Smoke test: submit a reg on the live site → confirm contact appears in GHL Smart List within ~10s, with custom fields populated and Opportunity in "New" stage.
+4. Verify retry queue: temporarily set a bad token, submit a lead, confirm row lands in `ghl_push_queue` and is retried.
 
-### Out of scope (call now if you want it)
+## Part 5 — Reverse sync (optional, future)
+If you also want GHL → admin sync (e.g. agent updates stage in GHL), set up a GHL Workflow → Webhook on "Opportunity Stage Changed" pointing at a new `ghl-webhook` edge function that updates `sales_leads.status`.
 
-- Real phone-number lookup against an external HLR/Twilio Lookup API (would catch disconnected numbers definitively but is a paid integration).
-- Scheduled email digest of the weekly/monthly audit summary.
-
-Approve and I'll ship the migration + UI.
+## What I need from you to start building
+1. Confirm Part 1 is done in GHL and share back:
+   - `GHL_API_KEY` (pit-…)
+   - `GHL_LOCATION_ID`
+   - `GHL_PIPELINE_ID` and each stage ID
+2. Confirm the lead entry points list above is complete (any other forms / quote flows I should hook into?).
+3. Confirm whether you want Part 3 (admin → GHL sync) and Part 5 (GHL → admin sync) included now or later.
