@@ -157,7 +157,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   // Payment toggle state
   const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
-  const [declarationChecked, setDeclarationChecked] = useState(false);
+  const [declarationChecked, setDeclarationChecked] = useState(true);
   const [declarationError, setDeclarationError] = useState(false);
   const [termsDocUrl, setTermsDocUrl] = useState('');
   const [platinumDocUrl, setPlatinumDocUrl] = useState('');
