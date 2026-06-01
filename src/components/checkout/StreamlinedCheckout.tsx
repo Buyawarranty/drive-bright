@@ -2531,73 +2531,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
           </div>
 
-          <section
-            id="vehicle-declaration"
-            className="mt-10 sm:mt-12 pt-2 scroll-mt-32"
-          >
-            <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-3">
-              🛡️ Activate your warranty
-            </h3>
-
-            {/* Combined declaration card */}
-            <div
-              data-highlight-target
-              className={`rounded-xl border transition-colors ${
-                declarationError && !declarationChecked
-                  ? 'bg-[#F4FBF6] border-[#0BA360]'
-                  : 'bg-white border-[#E5E5E5]'
-              }`}
-            >
-              {/* Intro copy */}
-              <div className="p-4 sm:p-5">
-                <p className="text-sm text-[#1a1a1a] leading-relaxed">
-                  Your cover will be activated as soon as your payment is confirmed. Your policy documents will be emailed to you immediately.
-                </p>
-              </div>
-
-              {/* Divider */}
-              <div className="h-px bg-[#E5E5E5] mx-4 sm:mx-5" />
-
-              {/* Vehicle declaration checkbox */}
-              <div className="px-4 py-4 sm:px-5">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={declarationChecked}
-                    onClick={() => {
-                      setDeclarationChecked(!declarationChecked);
-                      if (!declarationChecked) setDeclarationError(false);
-                    }}
-                    className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
-                      declarationChecked
-                        ? 'bg-[#0BA360] border-[#0BA360]'
-                        : 'bg-white border-[#cfcfcf] hover:border-[#888]'
-                    }`}
-                  >
-                    {declarationChecked && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
-                  </button>
-                  <span className="text-sm text-[#444] leading-relaxed">
-                    I confirm my vehicle is roadworthy and has no known faults or warning lights. I agree to the{' '}
-                    {termsDocUrl ? (
-                      <a href={termsDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Terms &amp; Conditions</a>
-                    ) : (
-                      <span className="text-[#FF6B00] font-semibold">Terms &amp; Conditions</span>
-                    )}{' '}
-                    and{' '}
-                    {platinumDocUrl ? (
-                      <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] font-semibold hover:underline">Policy Documents</a>
-                    ) : (
-                      <span className="text-[#FF6B00] font-semibold">Policy Documents</span>
-                    )}.
-                  </span>
-                </label>
-                {declarationError && !declarationChecked && (
-                  <p className="text-xs text-[#FF5A5F] mt-2 ml-9 font-medium">Please tick the box above to confirm the Terms & Conditions and activate your cover.</p>
-                )}
-              </div>
-            </div>
-          </section>
+          {/* Activate your warranty section removed per request — declaration auto-accepted */}
 
 
           {/* Customer reviews section removed — already shown below the CTA */}
