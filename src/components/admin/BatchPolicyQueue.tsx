@@ -434,9 +434,6 @@ ${rows}
           </div>
         </div>
         <p className="text-muted-foreground text-sm">
-          Search by name or registration plate to build a list of customers whose warranty packs need to be posted out.
-          Add each one and the section below populates with their address. When ready, print the labels and letters, or
-        <p className="text-muted-foreground text-sm">
           This batch is auto-saved — you can keep adding customers across sessions. Printing labels, letters or the Word
           address sheet does <strong>not</strong> clear the batch. Click <em>Mark All Posted</em> when every pack is in the
           post — the batch will then be archived to the <strong>Letter Log</strong> tab and cleared so you can start a new batch.
