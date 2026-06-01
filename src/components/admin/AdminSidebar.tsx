@@ -289,6 +289,12 @@ const defaultTabs: Tab[] = [
     description: 'Control how leads are tagged Organic / Google / Facebook'
   },
   {
+    id: 'ghl-sync-log',
+    label: 'GHL Sync Log',
+    icon: Database,
+    description: 'Success / Error log for every push to GoHighLevel'
+  },
+  {
     id: 'staff-hub',
     label: 'Staff Hub',
     icon: FolderOpen,

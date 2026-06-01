@@ -56,6 +56,7 @@ const LeadBackupRecoveryTab = lazy(() => import('@/components/admin/LeadBackupRe
 const DiscountsGivenTab = lazy(() => import('@/components/admin/DiscountsGivenTab'));
 const CancellationsTab = lazy(() => import('@/components/admin/CancellationsTab').then(m => ({ default: m.CancellationsTab })));
 const RefundsPaidTab = lazy(() => import('@/components/admin/RefundsPaidTab').then(m => ({ default: m.RefundsPaidTab })));
+const GhlSyncLogTab = lazy(() => import('@/components/admin/GhlSyncLogTab').then(m => ({ default: m.GhlSyncLogTab })));
 
 // Tab loading spinner
 const TabFallback = () => (
@@ -461,6 +462,16 @@ const AdminDashboard = () => {
         return <CancellationsTab />;
       case 'refunds-paid':
         return <RefundsPaidTab />;
+      case 'ghl-sync-log':
+        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin') {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">GHL sync log is restricted to administrators.</p>
+            </div>
+          );
+        }
+        return <GhlSyncLogTab />;
       case 'account':
         return <AccountSettings />;
       case 'attribution-settings':
