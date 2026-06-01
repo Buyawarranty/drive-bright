@@ -675,9 +675,15 @@ ${rows}
             <DialogTitle>Edit customer details</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div>
-              <Label>Full name</Label>
-              <Input value={editForm.name || ''} onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>First name</Label>
+                <Input value={(editForm as any).first_name || ''} onChange={(e) => setEditForm(f => ({ ...f, first_name: e.target.value } as any))} placeholder="John" />
+              </div>
+              <div>
+                <Label>Surname</Label>
+                <Input value={(editForm as any).last_name || ''} onChange={(e) => setEditForm(f => ({ ...f, last_name: e.target.value } as any))} placeholder="Smith" />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
