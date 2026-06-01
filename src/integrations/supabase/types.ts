@@ -5021,6 +5021,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ghl_sync_log: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          email: string | null
+          error: string | null
+          http_status: number | null
+          id: string
+          payload: Json | null
+          response: string | null
+          status: string
+          sync_type: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          email?: string | null
+          error?: string | null
+          http_status?: number | null
+          id?: string
+          payload?: Json | null
+          response?: string | null
+          status: string
+          sync_type?: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          email?: string | null
+          error?: string | null
+          http_status?: number | null
+          id?: string
+          payload?: Json | null
+          response?: string | null
+          status?: string
+          sync_type?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           brand_logo_url: string | null
