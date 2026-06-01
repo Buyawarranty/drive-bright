@@ -1079,6 +1079,13 @@ const FAQ = () => {
                 </section>
               ))}
 
+              {!searchTerm && (
+                <p className="text-sm text-brand-dark-text/70 italic mt-6 text-center">
+                  Please refer to our <Link to="/terms" className="text-brand-orange hover:underline">terms and conditions</Link> for full details.
+                </p>
+              )}
+
+
               {/* AI-Generated Answer Section */}
               {showAIAnswer && (
                 <section className="mt-8">
