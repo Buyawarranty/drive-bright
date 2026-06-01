@@ -2,14 +2,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "*",
+  "Access-Control-Expose-Headers": "*",
 };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
-    const { path, base64, plan_type, document_name } = await req.json();
-    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const path = req.headers.get("x-path")!;
+    const plan_type = req.headers.get("x-plan-type")!;
+    const document_name = req.headers.get("x-document-name")!;
+    const bytes = new Uint8Array(await req.arrayBuffer());
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -18,7 +21,7 @@ Deno.serve(async (req) => {
       contentType: "application/pdf",
       upsert: true,
     });
-    if (error) throw error;
+    if (error) throw new Error("storage: " + (error.message || JSON.stringify(error)));
     const { data: pub } = sb.storage.from("policy-documents").getPublicUrl(path);
     const { error: insErr } = await sb.from("customer_documents").insert({
       plan_type,
@@ -26,12 +29,12 @@ Deno.serve(async (req) => {
       file_url: pub.publicUrl,
       file_name: path.split("/").pop(),
     });
-    if (insErr) throw insErr;
+    if (insErr) throw new Error("db: " + (insErr.message || JSON.stringify(insErr)));
     return new Response(JSON.stringify({ ok: true, url: pub.publicUrl }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
       status: 500,
       headers: { ...cors, "Content-Type": "application/json" },
     });
