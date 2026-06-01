@@ -56,6 +56,7 @@ const LeadBackupRecoveryTab = lazy(() => import('@/components/admin/LeadBackupRe
 const DiscountsGivenTab = lazy(() => import('@/components/admin/DiscountsGivenTab'));
 const CancellationsTab = lazy(() => import('@/components/admin/CancellationsTab').then(m => ({ default: m.CancellationsTab })));
 const RefundsPaidTab = lazy(() => import('@/components/admin/RefundsPaidTab').then(m => ({ default: m.RefundsPaidTab })));
+const GhlSyncLogTab = lazy(() => import('@/components/admin/GhlSyncLogTab').then(m => ({ default: m.GhlSyncLogTab })));
 
 // Tab loading spinner
 const TabFallback = () => (
