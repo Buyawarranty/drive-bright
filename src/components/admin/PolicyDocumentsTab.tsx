@@ -14,6 +14,8 @@ import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 interface CustomerData {
   id: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   phone?: string;
   flat_number?: string;
@@ -76,6 +78,39 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<CustomerData>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isDvlaLoading, setIsDvlaLoading] = useState(false);
+
+  const lookupDvla = async (reg: string, { overwrite }: { overwrite: boolean }) => {
+    const clean = (reg || '').replace(/\s+/g, '').toUpperCase();
+    if (!clean) {
+      toast({ title: 'Enter registration', description: 'Add a registration number first.', variant: 'destructive' });
+      return;
+    }
+    setIsDvlaLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: clean, skipAgeCheck: true },
+      });
+      if (error) throw error;
+      if (!data?.found) {
+        toast({ title: 'Vehicle not found', description: data?.error || 'DVLA lookup returned no data.', variant: 'destructive' });
+        return;
+      }
+      setEditData(d => ({
+        ...d,
+        registration_plate: clean,
+        vehicle_make: overwrite || !d.vehicle_make ? (data.make || d.vehicle_make || '') : d.vehicle_make,
+        vehicle_model: overwrite || !d.vehicle_model ? (data.model || d.vehicle_model || '') : d.vehicle_model,
+        vehicle_year: overwrite || !d.vehicle_year ? (data.yearOfManufacture ? String(data.yearOfManufacture) : d.vehicle_year || '') : d.vehicle_year,
+      }));
+      toast({ title: 'Vehicle details updated', description: 'Populated from DVLA/DVSA.' });
+    } catch (err: any) {
+      toast({ title: 'DVLA lookup failed', description: err.message || 'Try again.', variant: 'destructive' });
+    } finally {
+      setIsDvlaLoading(false);
+    }
+  };
+
   const printRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -550,8 +585,13 @@ export const PolicyDocumentsTab: React.FC = () => {
                   {!isEditing ? (
                     <Button size="sm" variant="ghost" onClick={() => {
                       setIsEditing(true);
+                      const parts = (selectedCustomer.name || '').trim().split(/\s+/);
+                      const fnFallback = parts[0] || '';
+                      const lnFallback = parts.slice(1).join(' ') || '';
                       setEditData({
                         name: selectedCustomer.name,
+                        first_name: selectedCustomer.first_name || fnFallback,
+                        last_name: selectedCustomer.last_name || lnFallback,
                         email: selectedCustomer.email,
                         phone: selectedCustomer.phone || '',
                         flat_number: selectedCustomer.flat_number || '',
@@ -566,7 +606,13 @@ export const PolicyDocumentsTab: React.FC = () => {
                         vehicle_model: selectedCustomer.vehicle_model || '',
                         vehicle_year: selectedCustomer.vehicle_year || '',
                       });
+                      const hasReg = !!selectedCustomer.registration_plate;
+                      const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
+                      if (hasReg && missingVehicle) {
+                        lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
+                      }
                     }} className="gap-1 text-xs h-7">
+
                       <Pencil className="h-3 w-3" />
                       Edit
                     </Button>
@@ -575,12 +621,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                       <Button size="sm" variant="default" disabled={isSaving} onClick={async () => {
                         setIsSaving(true);
                         try {
-                          // Parse first/last name from full name for sync trigger
-                          const nameParts = (editData.name || '').trim().split(' ');
-                          const firstName = nameParts[0] || '';
-                          const lastName = nameParts.slice(1).join(' ') || '';
+                          const firstName = (editData.first_name || '').trim();
+                          const lastName = (editData.last_name || '').trim();
+                          const fullName = `${firstName} ${lastName}`.trim();
                           const { error } = await supabase.from('customers').update({
-                            name: editData.name,
+                            name: fullName,
                             first_name: firstName,
                             last_name: lastName,
                             email: editData.email,
@@ -598,7 +643,8 @@ export const PolicyDocumentsTab: React.FC = () => {
                             vehicle_year: editData.vehicle_year || null,
                           }).eq('id', selectedCustomer.id);
                           if (error) throw error;
-                          const updated = { ...selectedCustomer, ...editData };
+                          const updated = { ...selectedCustomer, ...editData, name: fullName, first_name: firstName, last_name: lastName };
+
                           setSelectedCustomer(updated as CustomerData);
                           setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updated as CustomerData : c));
                           setIsEditing(false);
@@ -655,10 +701,15 @@ export const PolicyDocumentsTab: React.FC = () => {
             <CardContent className="text-sm space-y-1">
               {isEditing ? (
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="col-span-2">
-                    <Label className="text-xs text-muted-foreground">Full Name</Label>
-                    <Input value={editData.name || ''} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} className="h-8 text-sm" />
+                  <div>
+                    <Label className="text-xs text-muted-foreground">First Name</Label>
+                    <Input value={editData.first_name || ''} onChange={e => setEditData(d => ({ ...d, first_name: e.target.value }))} className="h-8 text-sm" />
                   </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Surname</Label>
+                    <Input value={editData.last_name || ''} onChange={e => setEditData(d => ({ ...d, last_name: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+
                   <div>
                     <Label className="text-xs text-muted-foreground">Email</Label>
                     <Input value={editData.email || ''} onChange={e => setEditData(d => ({ ...d, email: e.target.value }))} className="h-8 text-sm" />
@@ -716,10 +767,16 @@ export const PolicyDocumentsTab: React.FC = () => {
             <CardContent className="text-sm space-y-1">
               {isEditing ? (
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
+                  <div className="col-span-2">
                     <Label className="text-xs text-muted-foreground">Registration</Label>
-                    <Input value={editData.registration_plate || ''} onChange={e => setEditData(d => ({ ...d, registration_plate: e.target.value }))} className="h-8 text-sm font-mono uppercase" />
+                    <div className="flex gap-2">
+                      <Input value={editData.registration_plate || ''} onChange={e => setEditData(d => ({ ...d, registration_plate: e.target.value.toUpperCase() }))} className="h-8 text-sm font-mono uppercase flex-1" />
+                      <Button type="button" size="sm" variant="outline" disabled={isDvlaLoading || !editData.registration_plate} onClick={() => lookupDvla(editData.registration_plate || '', { overwrite: true })} className="h-8 text-xs whitespace-nowrap">
+                        {isDvlaLoading ? 'Looking up…' : 'Lookup DVLA'}
+                      </Button>
+                    </div>
                   </div>
+
                   <div>
                     <Label className="text-xs text-muted-foreground">Make</Label>
                     <Input value={editData.vehicle_make || ''} onChange={e => setEditData(d => ({ ...d, vehicle_make: e.target.value }))} className="h-8 text-sm" />
