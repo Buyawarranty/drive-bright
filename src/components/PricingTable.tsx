@@ -1325,6 +1325,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     );
   }
 
+  const [editVehicleOpen, setEditVehicleOpen] = React.useState(false);
+  const handleEditVehicleClick = onUpdateVehicle ? () => setEditVehicleOpen(true) : onChangeVehicle;
+
   return (
     <>
       {/* New desktop/tablet layout (md+) */}
@@ -1332,7 +1335,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <Step3Desktop
           vehicleData={vehicleData}
           onBack={onBack}
-          onChangeVehicle={onChangeVehicle}
+          onChangeVehicle={handleEditVehicleClick}
           selectedClaimLimit={selectedClaimLimit}
           setSelectedClaimLimit={(v) => {
             setSelectedClaimLimit(v);
