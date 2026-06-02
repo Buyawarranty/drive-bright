@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall, Gauge, ChevronDown, ChevronUp, Info, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
@@ -33,15 +33,40 @@ interface QuoteDeliveryStepProps {
 }
 
 const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip, onUpdateVehicle }) => {
+  const MILEAGE_RANGES: { label: string; value: string; min: number; max: number; mid: number }[] = [
+    { label: 'Under 10,000 miles', value: '0-9999', min: 0, max: 9999, mid: 5000 },
+    { label: '10,000 – 29,999 miles', value: '10000-29999', min: 10000, max: 29999, mid: 20000 },
+    { label: '30,000 – 49,999 miles', value: '30000-49999', min: 30000, max: 49999, mid: 40000 },
+    { label: '50,000 – 69,999 miles', value: '50000-69999', min: 50000, max: 69999, mid: 60000 },
+    { label: '70,000 – 89,999 miles', value: '70000-89999', min: 70000, max: 89999, mid: 80000 },
+    { label: '90,000 – 99,999 miles', value: '90000-99999', min: 90000, max: 99999, mid: 95000 },
+    { label: '100,000 – 109,999 miles', value: '100000-109999', min: 100000, max: 109999, mid: 105000 },
+    { label: '110,000 – 119,999 miles', value: '110000-119999', min: 110000, max: 119999, mid: 115000 },
+    { label: '120,000 – 134,999 miles', value: '120000-134999', min: 120000, max: 134999, mid: 127000 },
+    { label: '135,000 – 150,000 miles', value: '135000-150000', min: 135000, max: 150000, mid: 142000 },
+  ];
+
+  const findRangeForMileage = (n: number) =>
+    MILEAGE_RANGES.find((r) => n >= r.min && n <= r.max)?.value || '';
+
   const [isEditingMileage, setIsEditingMileage] = useState(false);
+  const [approxRange, setApproxRange] = useState<string>(() =>
+    findRangeForMileage(parseInt(vehicleData.mileage || '0', 10) || (vehicleData.motMileage || 0))
+  );
   const [mileageInput, setMileageInput] = useState('');
   const [mileageEditError, setMileageEditError] = useState('');
 
   const handleSaveMileage = () => {
-    const raw = mileageInput.replace(/[^0-9]/g, '');
-    const n = parseInt(raw, 10);
-    if (!raw || isNaN(n) || n <= 0) {
-      setMileageEditError('Please enter a valid mileage');
+    let n: number | null = null;
+    const exactRaw = mileageInput.replace(/[^0-9]/g, '');
+    if (exactRaw) {
+      n = parseInt(exactRaw, 10);
+    } else if (approxRange) {
+      const range = MILEAGE_RANGES.find((r) => r.value === approxRange);
+      if (range) n = range.mid;
+    }
+    if (n === null || isNaN(n) || n <= 0) {
+      setMileageEditError('Please choose an approximate range or enter your exact mileage');
       return;
     }
     if (n > 150000) {
@@ -451,74 +476,130 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {vehicleData.motMileage && !vehicleData.blocked && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 mb-6 flex items-start gap-3">
-            <Zap className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              {!isEditingMileage ? (
-                <>
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">
-                    Last MOT mileage: {vehicleData.motMileage.toLocaleString()} miles
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                    Based on your latest MOT record. You can update this later.{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMileageInput(String(vehicleData.motMileage || ''));
-                        setMileageEditError('');
-                        setIsEditingMileage(true);
-                      }}
-                      className="text-primary font-medium hover:underline"
-                    >
-                      Not correct? Update mileage
-                    </button>
-                  </p>
-                </>
-              ) : (
+          <div className="bg-white border border-gray-200 rounded-xl mb-6 overflow-hidden">
+            {/* Header — always visible */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!isEditingMileage) {
+                  setMileageInput(String(vehicleData.motMileage || ''));
+                  setApproxRange(findRangeForMileage(vehicleData.motMileage || 0));
+                  setMileageEditError('');
+                }
+                setIsEditingMileage((v) => !v);
+              }}
+              className="w-full flex items-start gap-3 p-3 sm:p-4 text-left"
+              aria-expanded={isEditingMileage}
+            >
+              <Gauge className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                {!isEditingMileage ? (
+                  <>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900">
+                      Mileage from latest MOT: {vehicleData.motMileage.toLocaleString()} miles
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                      This updates pricing for your quote (under or over 120,000 miles).
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900">
+                      Update your mileage
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                      This updates pricing for your quote (under or over 120,000 miles).
+                    </p>
+                  </>
+                )}
+              </div>
+              <span className="flex items-center gap-1 text-primary text-sm font-medium flex-shrink-0">
+                {!isEditingMileage && <span className="hidden sm:inline">Update mileage</span>}
+                {isEditingMileage ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </span>
+            </button>
+
+            {isEditingMileage && (
+              <div className="border-t border-gray-200 p-3 sm:p-4 space-y-4">
+                {/* Approximate mileage dropdown */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Update current mileage
+                  <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 mb-1.5">
+                    Approximate mileage
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
                   </label>
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative">
+                    <select
+                      value={approxRange}
+                      onChange={(e) => {
+                        setApproxRange(e.target.value);
+                        setMileageInput('');
+                        if (mileageEditError) setMileageEditError('');
+                      }}
+                      className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-9 text-base text-gray-900 focus:outline-none focus:border-primary"
+                    >
+                      <option value="">Select a range</option>
+                      {MILEAGE_RANGES.map((r) => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Divider with "or" */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs text-gray-500">or</span>
+                  <div className="flex-1 h-px bg-gray-200" />
+                </div>
+
+                {/* Exact mileage input */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 mb-1.5">
+                    Exact mileage (if you have it)
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                  </label>
+                  <div className="relative">
                     <input
                       type="text"
                       inputMode="numeric"
-                      autoFocus
                       value={mileageInput}
                       onChange={(e) => {
-                        setMileageInput(e.target.value.replace(/[^0-9]/g, ''));
+                        const v = e.target.value.replace(/[^0-9]/g, '');
+                        setMileageInput(v);
+                        if (v) setApproxRange('');
                         if (mileageEditError) setMileageEditError('');
                       }}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleSaveMileage(); }}
-                      placeholder="e.g. 95000"
-                      className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-base font-semibold text-gray-900 focus:outline-none focus:border-primary"
+                      placeholder="e.g. 101,782"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-16 text-base text-gray-900 font-semibold focus:outline-none focus:border-primary"
                     />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={handleSaveMileage}
-                        className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">miles</span>
                   </div>
-                  {mileageEditError && (
-                    <p className="text-red-600 text-xs mt-1.5">{mileageEditError}</p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1.5">
-                    This updates pricing for your quote (under or over 120,000 miles).
-                  </p>
                 </div>
-              )}
-            </div>
+
+                {mileageEditError && (
+                  <p className="text-red-600 text-sm">{mileageEditError}</p>
+                )}
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleSaveMileage}
+                    className="px-4 py-2.5 bg-brand-orange text-white font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors"
+                  >
+                    Save mileage
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
+                    className="px-4 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
