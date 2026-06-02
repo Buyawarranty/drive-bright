@@ -55,21 +55,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [mileageEditError, setMileageEditError] = useState('');
   const [mileageBandSaved, setMileageBandSaved] = useState<'under' | 'over' | null>(null);
 
-  const handleSaveMileage = () => {
+  const handleSelectBand = (band: 'under' | 'over') => {
     const current = vehicleData.motMileage || parseInt(vehicleData.mileage || '0', 10) || 0;
-    let n: number;
-    if (mileageBand === 'under') {
-      n = current > 0 && current < 120000 ? current : 100000;
-    } else {
-      n = current >= 120000 && current <= 150000 ? current : 125000;
-    }
-    if (n > 150000) {
-      setMileageEditError('Sorry, we cover vehicles up to 150,000 miles');
-      return;
-    }
-    onUpdateVehicle?.({ mileage: String(n), motMileage: n });
-    setMileageBandSaved(mileageBand);
+    const n = band === 'under'
+      ? (current > 0 && current < 120000 ? current : 100000)
+      : (current >= 120000 && current <= 150000 ? current : 125000);
+    setMileageBand(band);
+    setMileageBandSaved(band);
     setMileageEditError('');
+    onUpdateVehicle?.({ mileage: String(n), motMileage: n });
     setIsEditingMileage(false);
   };
 
@@ -510,7 +504,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                       name="mileage-band"
                       value="under"
                       checked={mileageBand === 'under'}
-                      onChange={() => { setMileageBand('under'); if (mileageEditError) setMileageEditError(''); }}
+                      onChange={() => handleSelectBand('under')}
                       className="sr-only"
                     />
                     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${mileageBand === 'under' ? 'border-brand-orange bg-white' : 'border-gray-300 bg-white'}`}>
@@ -525,7 +519,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                       name="mileage-band"
                       value="over"
                       checked={mileageBand === 'over'}
-                      onChange={() => { setMileageBand('over'); if (mileageEditError) setMileageEditError(''); }}
+                      onChange={() => handleSelectBand('over')}
                       className="sr-only"
                     />
                     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${mileageBand === 'over' ? 'border-brand-orange bg-white' : 'border-gray-300 bg-white'}`}>
@@ -537,23 +531,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   {mileageEditError && (
                     <p className="text-red-600 text-sm">{mileageEditError}</p>
                   )}
-
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={handleSaveMileage}
-                      className="px-5 py-2.5 bg-brand-orange text-white font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors"
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
-                      className="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
                 </div>
               )}
 
