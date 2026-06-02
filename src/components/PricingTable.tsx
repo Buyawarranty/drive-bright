@@ -47,6 +47,7 @@ import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
 import PriceBeatBanner from '@/components/step3/PriceBeatBanner';
 import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
+import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos } from '@/lib/promoStorage';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
