@@ -32,7 +32,26 @@ interface QuoteDeliveryStepProps {
   onUpdateVehicle?: (partial: { mileage: string; motMileage: number }) => void;
 }
 
-const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip }) => {
+const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip, onUpdateVehicle }) => {
+  const [isEditingMileage, setIsEditingMileage] = useState(false);
+  const [mileageInput, setMileageInput] = useState('');
+  const [mileageEditError, setMileageEditError] = useState('');
+
+  const handleSaveMileage = () => {
+    const raw = mileageInput.replace(/[^0-9]/g, '');
+    const n = parseInt(raw, 10);
+    if (!raw || isNaN(n) || n <= 0) {
+      setMileageEditError('Please enter a valid mileage');
+      return;
+    }
+    if (n > 150000) {
+      setMileageEditError('Sorry, we cover vehicles up to 150,000 miles');
+      return;
+    }
+    onUpdateVehicle?.({ mileage: String(n), motMileage: n });
+    setMileageEditError('');
+    setIsEditingMileage(false);
+  };
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
