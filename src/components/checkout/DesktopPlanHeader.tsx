@@ -32,6 +32,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
   startDate,
   onStartDateChange,
   onEditPlan,
+  onChangeVehicle,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const vehicleDisplay = [vehicleYear, vehicleMake?.toUpperCase(), vehicleModel?.toUpperCase()].filter(Boolean).join(' ') || '';
