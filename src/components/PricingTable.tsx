@@ -2670,6 +2670,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
       onLabourRateChange={setSelectedLabourRate}
       currentMonthlyPrice={monthlyPrice}
     />
+    {onUpdateVehicle && (
+      <EditVehicleDialog
+        open={editVehicleOpen}
+        onOpenChange={setEditVehicleOpen}
+        initialReg={vehicleData.regNumber}
+        initialMileage={vehicleData.mileage}
+        onSave={(v) => onUpdateVehicle(v)}
+      />
+    )}
     </>
   );
 };
