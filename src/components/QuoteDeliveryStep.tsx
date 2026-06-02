@@ -494,23 +494,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <Gauge className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 {!isEditingMileage ? (
-                  <>
-                    <p className="text-sm sm:text-base font-semibold text-gray-900">
-                      Mileage from latest MOT: {vehicleData.motMileage.toLocaleString()} miles
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                      This updates pricing for your quote (under or over 120,000 miles).
-                    </p>
-                  </>
+                  <p className="text-sm sm:text-base font-semibold text-gray-900">
+                    Mileage from latest MOT: {vehicleData.motMileage.toLocaleString()} miles
+                  </p>
                 ) : (
-                  <>
-                    <p className="text-sm sm:text-base font-semibold text-gray-900">
-                      Update your mileage
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                      This updates pricing for your quote (under or over 120,000 miles).
-                    </p>
-                  </>
+                  <p className="text-sm sm:text-base font-semibold text-gray-900">
+                    Update your mileage
+                  </p>
                 )}
               </div>
               <span className="flex items-center gap-1 text-primary text-sm font-medium flex-shrink-0">
