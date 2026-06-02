@@ -12,7 +12,7 @@ interface Props {
  * Header + button both expand the same Collapsible containing PartsListContent.
  */
 const ComprehensiveCoverCard: React.FC<Props> = ({ variant = 'desktop' }) => {
-  const policyPdfUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf';
+  const policyPdfUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf';
 
   const isMobile = variant === 'mobile';
 
