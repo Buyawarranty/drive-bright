@@ -2039,6 +2039,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }
               }}
               onEditPlan={onBack}
+              onChangeVehicle={handleChangeVehicleClick}
             />
           </section>
 
