@@ -173,58 +173,49 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   };
 
   const handleGetQuote = async (mileageOverride?: string) => {
-    // Use the override mileage if provided (from auto-submit), otherwise use state
-    const effectiveMileage = mileageOverride || mileage;
-    const effectiveMileageSelection = mileageOverride ? (mileageOverride === '100000' ? 'under120k' : 'over120k') : mileageSelection;
-    
     console.log('🔘 GET QUOTE BUTTON CLICKED');
-    console.log('📋 Form values:', { regNumber, mileage: effectiveMileage, mileageSelection: effectiveMileageSelection });
-    
+
     // Track main CTA button click
     trackButtonClick('get_quote_main', {
       has_reg_number: !!regNumber.trim(),
-      has_mileage: !!effectiveMileage.trim(),
-      mileage_value: effectiveMileage
     });
-    
-    // Check if registration number is entered
+
+    // Check if registration number is entered → show inline red border + message (no toast)
     if (!regNumber.trim()) {
-      toast({
-        title: "Registration Required",
-        description: "Please enter your vehicle registration number.",
-        variant: "destructive",
-      });
+      setRegError('Please enter your registration number');
+      const el = document.getElementById('reg-input-field');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    
-    // Check if mileage is selected
-    if (!effectiveMileageSelection) {
-      toast({
-        title: "Mileage Required", 
-        description: "Please select your approximate mileage to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check if mileage is zero
-    const numericMileage = parseInt(effectiveMileage.replace(/,/g, ''));
-    if (numericMileage === 0) {
-      toast({
-        title: "Mileage Required",
-        description: "Please select a mileage greater than 0 to get your quote.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check mileage validation before proceeding
-    if (numericMileage > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-      return;
-    }
-    
+    setRegError('');
+
     setIsLookingUp(true);
+
+    // Pull latest MOT mileage in parallel with DVLA lookup. If none, default to under 120k.
+    const normalizedReg = regNumber.replace(/\s+/g, '').toUpperCase();
+    const motPromise = (async () => {
+      try {
+        const { data: motRow } = await supabase
+          .from('mot_history')
+          .select('mot_tests')
+          .or(`registration.eq.${normalizedReg},registration.ilike.%${normalizedReg}%`)
+          .limit(1)
+          .maybeSingle();
+        const rawTests = (motRow?.mot_tests as unknown) ?? [];
+        const tests: any[] = Array.isArray(rawTests) ? (rawTests as any[]) : [];
+        const latest = tests
+          .filter((t) => t && Number(t.odometerValue) > 0)
+          .sort((a, b) => new Date(b.completedDate || 0).getTime() - new Date(a.completedDate || 0).getTime())[0];
+        if (latest?.odometerValue) {
+          return { motMileage: Number(latest.odometerValue), motDate: latest.completedDate as string | undefined };
+        }
+      } catch (e) {
+        console.warn('MOT history lookup failed:', e);
+      }
+      return { motMileage: null as number | null, motDate: undefined as string | undefined };
+    })();
+
     
     try {
       console.log('Looking up vehicle:', regNumber);
