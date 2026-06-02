@@ -17,6 +17,7 @@ interface DesktopPlanHeaderProps {
   startDate?: Date;
   onStartDateChange?: (date: Date | undefined) => void;
   onEditPlan?: () => void;
+  onChangeVehicle?: () => void;
 }
 
 const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
