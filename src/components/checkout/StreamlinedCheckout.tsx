@@ -2763,6 +2763,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         ctaLabel="Pay securely"
         validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
+      {onUpdateVehicle && (
+        <EditVehicleDialog
+          open={editVehicleOpen}
+          onOpenChange={setEditVehicleOpen}
+          initialReg={vehicleData.regNumber}
+          initialMileage={vehicleData.mileage}
+          onSave={(v) => onUpdateVehicle(v)}
+        />
+      )}
     </div>
   );
 };
