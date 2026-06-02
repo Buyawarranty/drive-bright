@@ -96,6 +96,7 @@ const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
   onBack,
+  onChangeVehicle,
   selectedClaimLimit,
   onClaimLimitChange,
   selectedLabourRate,
