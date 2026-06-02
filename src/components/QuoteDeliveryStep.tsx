@@ -765,7 +765,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Spacer for sticky footer on desktop */}
-        <div className="hidden md:block h-20"></div>
+        <div className="hidden md:block h-4"></div>
       </div>
 
       {/* Mobile: Floating Action Button */}
