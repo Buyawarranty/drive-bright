@@ -59,6 +59,8 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string; // Full manufacture date for precise age calculation
+  motMileage?: number; // Latest MOT odometer reading (used to pre-fill mileage from hero)
+  motDate?: string; // Date of latest MOT test that provided the mileage
 }
 
 // Helper to parse stored data - handles both timestamped and raw formats

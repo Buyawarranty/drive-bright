@@ -46,6 +46,8 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string; // Full manufacture date for precise age calculation
+  motMileage?: number;
+  motDate?: string;
 }
 
 interface HomepageProps {
@@ -56,8 +58,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
+  const [regError, setRegError] = useState('');
   const [mileage, setMileage] = useState('');
-  const [mileageSelection, setMileageSelection] = useState<string>(''); // 'under120k' or 'over120k'
+  const [mileageSelection, setMileageSelection] = useState<string>('under120k'); // default; auto-derived from MOT
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
@@ -137,10 +140,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     const formatted = formatRegNumber(e.target.value);
     if (formatted.length <= 8) {
       setRegNumber(formatted);
-      // Clear vehicle age error when user changes reg number so they can try again
-      if (vehicleAgeError) {
-        setVehicleAgeError('');
-      }
+      if (regError) setRegError('');
+      if (vehicleAgeError) setVehicleAgeError('');
     }
   };
 
@@ -172,58 +173,49 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   };
 
   const handleGetQuote = async (mileageOverride?: string) => {
-    // Use the override mileage if provided (from auto-submit), otherwise use state
-    const effectiveMileage = mileageOverride || mileage;
-    const effectiveMileageSelection = mileageOverride ? (mileageOverride === '100000' ? 'under120k' : 'over120k') : mileageSelection;
-    
     console.log('🔘 GET QUOTE BUTTON CLICKED');
-    console.log('📋 Form values:', { regNumber, mileage: effectiveMileage, mileageSelection: effectiveMileageSelection });
-    
+
     // Track main CTA button click
     trackButtonClick('get_quote_main', {
       has_reg_number: !!regNumber.trim(),
-      has_mileage: !!effectiveMileage.trim(),
-      mileage_value: effectiveMileage
     });
-    
-    // Check if registration number is entered
+
+    // Check if registration number is entered → show inline red border + message (no toast)
     if (!regNumber.trim()) {
-      toast({
-        title: "Registration Required",
-        description: "Please enter your vehicle registration number.",
-        variant: "destructive",
-      });
+      setRegError('Please enter your registration number');
+      const el = document.getElementById('reg-input-field');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    
-    // Check if mileage is selected
-    if (!effectiveMileageSelection) {
-      toast({
-        title: "Mileage Required", 
-        description: "Please select your approximate mileage to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check if mileage is zero
-    const numericMileage = parseInt(effectiveMileage.replace(/,/g, ''));
-    if (numericMileage === 0) {
-      toast({
-        title: "Mileage Required",
-        description: "Please select a mileage greater than 0 to get your quote.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check mileage validation before proceeding
-    if (numericMileage > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-      return;
-    }
-    
+    setRegError('');
+
     setIsLookingUp(true);
+
+    // Pull latest MOT mileage in parallel with DVLA lookup. If none, default to under 120k.
+    const normalizedReg = regNumber.replace(/\s+/g, '').toUpperCase();
+    const motPromise = (async () => {
+      try {
+        const { data: motRow } = await supabase
+          .from('mot_history')
+          .select('mot_tests')
+          .or(`registration.eq.${normalizedReg},registration.ilike.%${normalizedReg}%`)
+          .limit(1)
+          .maybeSingle();
+        const rawTests = (motRow?.mot_tests as unknown) ?? [];
+        const tests: any[] = Array.isArray(rawTests) ? (rawTests as any[]) : [];
+        const latest = tests
+          .filter((t) => t && Number(t.odometerValue) > 0)
+          .sort((a, b) => new Date(b.completedDate || 0).getTime() - new Date(a.completedDate || 0).getTime())[0];
+        if (latest?.odometerValue) {
+          return { motMileage: Number(latest.odometerValue), motDate: latest.completedDate as string | undefined };
+        }
+      } catch (e) {
+        console.warn('MOT history lookup failed:', e);
+      }
+      return { motMileage: null as number | null, motDate: undefined as string | undefined };
+    })();
+
     
     try {
       console.log('Looking up vehicle:', regNumber);
@@ -335,11 +327,32 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setVehicleAgeError('');
       }
       
+      // Resolve MOT mileage (or default under 120k if no MOT data)
+      const motResult = await motPromise;
+      const effectiveMileage = motResult.motMileage != null ? String(motResult.motMileage) : '100000';
+
+      // Block over-150k vehicles flagged via MOT history
+      if (motResult.motMileage && motResult.motMileage > 150000) {
+        setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+        toast({
+          title: 'Vehicle Not Eligible',
+          description: 'Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.',
+          variant: 'destructive',
+        });
+        setIsLookingUp(false);
+        return;
+      }
+
       // Prepare vehicle data
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: effectiveMileage.replace(/,/g, ''), // Remove commas for storage
+        mileage: effectiveMileage,
       };
+
+      if (motResult.motMileage != null) {
+        vehicleData.motMileage = motResult.motMileage;
+        vehicleData.motDate = motResult.motDate;
+      }
 
       // Add DVLA data if found
       if (data?.found) {
@@ -349,20 +362,21 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         vehicleData.transmission = data.transmission;
         vehicleData.year = data.yearOfManufacture;
         vehicleData.vehicleType = data.vehicleType || 'car';
-        vehicleData.manufactureDate = data.manufactureDate; // Full manufacture date for precise age calculation
+        vehicleData.manufactureDate = data.manufactureDate;
         if (data.blocked) {
           vehicleData.blocked = true;
           vehicleData.blockReason = data.blockReason;
         }
       }
-      
+
       // Track quote request with enhanced data for Google Ads
       trackQuoteRequest(undefined, undefined, undefined);
 
       console.log('✅ Vehicle lookup complete, calling onRegistrationSubmit with:', vehicleData);
-      
+
       // Submit to parent component
       onRegistrationSubmit(vehicleData);
+
       
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
@@ -373,10 +387,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         variant: "destructive",
       });
       
-      // Continue with basic vehicle data even if lookup fails
+      // Continue with basic vehicle data even if lookup fails (default under 120k)
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: mileage.replace(/,/g, ''),
+        mileage: '100000',
       };
       
       onRegistrationSubmit(vehicleData);
@@ -509,41 +523,50 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   )}
                 </div>
                 
-                {/* Guidance text based on state - also highlight reg input when showing error */}
-                {mileageSelection && regNumber.replace(/\s/g, '').length < 5 ? (
+                {/* Inline registration error (red border + message) */}
+                {regError && (
                   <>
-                    <p className="text-sm text-red-500 font-semibold text-left animate-fade-in">
-                      ☝️ Enter your registration above to continue
+                    <p className="text-sm text-red-600 font-semibold text-left animate-fade-in flex items-center gap-1.5">
+                      <span aria-hidden>⚠️</span> {regError}
                     </p>
                     <style>{`
                       #reg-input-field {
-                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5) !important;
+                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6) !important;
                         animation: pulse-red 1.5s ease-in-out infinite;
                       }
                       @keyframes pulse-red {
-                        0%, 100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5); }
-                        50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.3); }
+                        0%, 100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6); }
+                        50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.35); }
                       }
                     `}</style>
                   </>
-                ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
-                  <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in flex items-center gap-1.5">
-                    <span className="text-brand-orange font-black text-base">▼</span> Select your mileage
-                  </p>
-                ) : null}
+                )}
 
-                {/* Mileage Quick Select */}
-                <div id="mileage-section">
-                  <MileageQuickSelect
-                    value={mileageSelection}
-                    onChange={handleMileageSelection}
-                    onAutoSubmit={handleGetQuote}
-                    error={eligibilityError}
-                    isLoading={isLookingUp}
-                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                    autoScrollOnValid
-                  />
-                </div>
+                {/* Get my instant quote CTA */}
+                <Button
+                  onClick={() => handleGetQuote()}
+                  disabled={isLookingUp}
+                  className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg disabled:opacity-70 disabled:cursor-not-allowed animate-breathing"
+                >
+                  <span className="flex items-center justify-center gap-3">
+                    {isLookingUp ? 'Preparing your instant price…' : 'Get my instant quote'}
+                    {!isLookingUp && <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />}
+                  </span>
+                </Button>
+
+                {/* Eligibility note */}
+                <p className="text-sm text-gray-500 text-center">
+                  Vehicles up to <span className="font-bold">150,000 miles</span> and <span className="font-bold">15 years old</span>. We'll pull your latest MOT mileage automatically.
+                </p>
+
+                {/* Eligibility / lookup error */}
+                {eligibilityError && (
+                  <div className="flex items-center gap-2 text-red-600 font-medium text-left bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    <span aria-hidden>⚠️</span>
+                    <span className="text-sm">{eligibilityError}</span>
+                  </div>
+                )}
+
                 
                 {/* Pricing Reassurance Panel - Premium Trust Block */}
                 <div className="mt-5 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
