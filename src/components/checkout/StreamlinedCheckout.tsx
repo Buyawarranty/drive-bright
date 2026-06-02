@@ -90,6 +90,7 @@ export interface StreamlinedCheckoutProps {
   };
   onBack: () => void;
   onNext: (customerData: any) => void;
+  onUpdateVehicle?: (vehicle: Partial<StreamlinedCheckoutProps['vehicleData']>) => void;
 }
 
 const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({ 
@@ -99,7 +100,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   planName, 
   pricingData, 
   onBack, 
-  onNext 
+  onNext,
+  onUpdateVehicle,
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
