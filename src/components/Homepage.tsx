@@ -523,41 +523,50 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   )}
                 </div>
                 
-                {/* Guidance text based on state - also highlight reg input when showing error */}
-                {mileageSelection && regNumber.replace(/\s/g, '').length < 5 ? (
+                {/* Inline registration error (red border + message) */}
+                {regError && (
                   <>
-                    <p className="text-sm text-red-500 font-semibold text-left animate-fade-in">
-                      ☝️ Enter your registration above to continue
+                    <p className="text-sm text-red-600 font-semibold text-left animate-fade-in flex items-center gap-1.5">
+                      <span aria-hidden>⚠️</span> {regError}
                     </p>
                     <style>{`
                       #reg-input-field {
-                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5) !important;
+                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6) !important;
                         animation: pulse-red 1.5s ease-in-out infinite;
                       }
                       @keyframes pulse-red {
-                        0%, 100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5); }
-                        50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.3); }
+                        0%, 100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6); }
+                        50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.35); }
                       }
                     `}</style>
                   </>
-                ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
-                  <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in flex items-center gap-1.5">
-                    <span className="text-brand-orange font-black text-base">▼</span> Select your mileage
-                  </p>
-                ) : null}
+                )}
 
-                {/* Mileage Quick Select */}
-                <div id="mileage-section">
-                  <MileageQuickSelect
-                    value={mileageSelection}
-                    onChange={handleMileageSelection}
-                    onAutoSubmit={handleGetQuote}
-                    error={eligibilityError}
-                    isLoading={isLookingUp}
-                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                    autoScrollOnValid
-                  />
-                </div>
+                {/* Get my instant quote CTA */}
+                <Button
+                  onClick={() => handleGetQuote()}
+                  disabled={isLookingUp}
+                  className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg disabled:opacity-70 disabled:cursor-not-allowed animate-breathing"
+                >
+                  <span className="flex items-center justify-center gap-3">
+                    {isLookingUp ? 'Preparing your instant price…' : 'Get my instant quote'}
+                    {!isLookingUp && <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />}
+                  </span>
+                </Button>
+
+                {/* Eligibility note */}
+                <p className="text-sm text-gray-500 text-center">
+                  Vehicles up to <span className="font-bold">150,000 miles</span> and <span className="font-bold">15 years old</span>. We'll pull your latest MOT mileage automatically.
+                </p>
+
+                {/* Eligibility / lookup error */}
+                {eligibilityError && (
+                  <div className="flex items-center gap-2 text-red-600 font-medium text-left bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    <span aria-hidden>⚠️</span>
+                    <span className="text-sm">{eligibilityError}</span>
+                  </div>
+                )}
+
                 
                 {/* Pricing Reassurance Panel - Premium Trust Block */}
                 <div className="mt-5 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
