@@ -454,19 +454,70 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 mb-6 flex items-start gap-3">
             <Zap className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm sm:text-base font-semibold text-gray-900">
-                Last MOT mileage: {vehicleData.motMileage.toLocaleString()} miles
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                Based on your latest MOT record. You can update this later.{' '}
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="text-primary font-medium hover:underline"
-                >
-                  Not correct? Update mileage
-                </button>
-              </p>
+              {!isEditingMileage ? (
+                <>
+                  <p className="text-sm sm:text-base font-semibold text-gray-900">
+                    Last MOT mileage: {vehicleData.motMileage.toLocaleString()} miles
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                    Based on your latest MOT record. You can update this later.{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMileageInput(String(vehicleData.motMileage || ''));
+                        setMileageEditError('');
+                        setIsEditingMileage(true);
+                      }}
+                      className="text-primary font-medium hover:underline"
+                    >
+                      Not correct? Update mileage
+                    </button>
+                  </p>
+                </>
+              ) : (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Update current mileage
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoFocus
+                      value={mileageInput}
+                      onChange={(e) => {
+                        setMileageInput(e.target.value.replace(/[^0-9]/g, ''));
+                        if (mileageEditError) setMileageEditError('');
+                      }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleSaveMileage(); }}
+                      placeholder="e.g. 95000"
+                      className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-base font-semibold text-gray-900 focus:outline-none focus:border-primary"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleSaveMileage}
+                        className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                  {mileageEditError && (
+                    <p className="text-red-600 text-xs mt-1.5">{mileageEditError}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    This updates pricing for your quote (under or over 120,000 miles).
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
