@@ -1563,6 +1563,7 @@ const Index = () => {
                 }}
                 onNext={handleCustomerDetailsComplete}
                 onBack={() => handleBackToStep(3)}
+                onUpdateVehicle={handleUpdateVehicleInline}
               />
             </PerformanceOptimizedSuspense>
           ) : (
