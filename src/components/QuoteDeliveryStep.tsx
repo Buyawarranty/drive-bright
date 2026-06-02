@@ -50,24 +50,17 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     MILEAGE_RANGES.find((r) => n >= r.min && n <= r.max)?.value || '';
 
   const [isEditingMileage, setIsEditingMileage] = useState(false);
-  const [approxRange, setApproxRange] = useState<string>(() =>
-    findRangeForMileage(parseInt(vehicleData.mileage || '0', 10) || (vehicleData.motMileage || 0))
-  );
-  const [mileageInput, setMileageInput] = useState('');
+  const initialMot = parseInt(vehicleData.mileage || '0', 10) || (vehicleData.motMileage || 0);
+  const [mileageBand, setMileageBand] = useState<'under' | 'over'>(initialMot >= 120000 ? 'over' : 'under');
   const [mileageEditError, setMileageEditError] = useState('');
 
   const handleSaveMileage = () => {
-    let n: number | null = null;
-    const exactRaw = mileageInput.replace(/[^0-9]/g, '');
-    if (exactRaw) {
-      n = parseInt(exactRaw, 10);
-    } else if (approxRange) {
-      const range = MILEAGE_RANGES.find((r) => r.value === approxRange);
-      if (range) n = range.mid;
-    }
-    if (n === null || isNaN(n) || n <= 0) {
-      setMileageEditError('Please choose an approximate range or enter your exact mileage');
-      return;
+    const current = vehicleData.motMileage || parseInt(vehicleData.mileage || '0', 10) || 0;
+    let n: number;
+    if (mileageBand === 'under') {
+      n = current > 0 && current < 120000 ? current : 100000;
+    } else {
+      n = current >= 120000 && current <= 150000 ? current : 125000;
     }
     if (n > 150000) {
       setMileageEditError('Sorry, we cover vehicles up to 150,000 miles');
@@ -77,6 +70,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     setMileageEditError('');
     setIsEditingMileage(false);
   };
+
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
