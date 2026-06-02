@@ -1511,6 +1511,7 @@ const Index = () => {
                   setSelectedPlan(null);
                   handleStepChange(1);
                 }}
+                onUpdateVehicle={handleUpdateVehicleInline}
                 onPlanSelected={handlePlanSelected}
                 previousPaymentType={selectedPlan?.paymentType as '12months' | '24months' | '36months' | undefined}
                 previousVoluntaryExcess={selectedPlan?.pricingData?.voluntaryExcess}
