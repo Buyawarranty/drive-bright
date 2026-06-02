@@ -107,6 +107,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   vehicleData,
   onBack,
   onChangeVehicle,
+  onUpdateVehicle,
   selectedClaimLimit,
   setSelectedClaimLimit,
   selectedLabourRate,
