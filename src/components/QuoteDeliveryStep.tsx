@@ -55,21 +55,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [mileageEditError, setMileageEditError] = useState('');
   const [mileageBandSaved, setMileageBandSaved] = useState<'under' | 'over' | null>(null);
 
-  const handleSaveMileage = () => {
+  const handleSelectBand = (band: 'under' | 'over') => {
     const current = vehicleData.motMileage || parseInt(vehicleData.mileage || '0', 10) || 0;
-    let n: number;
-    if (mileageBand === 'under') {
-      n = current > 0 && current < 120000 ? current : 100000;
-    } else {
-      n = current >= 120000 && current <= 150000 ? current : 125000;
-    }
-    if (n > 150000) {
-      setMileageEditError('Sorry, we cover vehicles up to 150,000 miles');
-      return;
-    }
-    onUpdateVehicle?.({ mileage: String(n), motMileage: n });
-    setMileageBandSaved(mileageBand);
+    const n = band === 'under'
+      ? (current > 0 && current < 120000 ? current : 100000)
+      : (current >= 120000 && current <= 150000 ? current : 125000);
+    setMileageBand(band);
+    setMileageBandSaved(band);
     setMileageEditError('');
+    onUpdateVehicle?.({ mileage: String(n), motMileage: n });
     setIsEditingMileage(false);
   };
 
