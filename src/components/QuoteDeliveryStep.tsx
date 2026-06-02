@@ -493,6 +493,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   {isEditingMileage ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </span>
               </button>
+
+              {isEditingMileage && (
+                <div className="border-t border-gray-200 p-3 sm:p-4 space-y-3 bg-gray-50">
+                  <p className="text-sm font-semibold text-gray-900">Current mileage</p>
+
                   <label className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${mileageBand === 'under' ? 'border-brand-orange bg-orange-50' : 'border-gray-200 bg-white'}`}>
                     <input
                       type="radio"
