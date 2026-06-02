@@ -387,10 +387,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         variant: "destructive",
       });
       
-      // Continue with basic vehicle data even if lookup fails
+      // Continue with basic vehicle data even if lookup fails (default under 120k)
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: mileage.replace(/,/g, ''),
+        mileage: '100000',
       };
       
       onRegistrationSubmit(vehicleData);
