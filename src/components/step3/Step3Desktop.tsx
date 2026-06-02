@@ -52,6 +52,7 @@ interface Step3DesktopProps {
   vehicleData: VehicleData;
   onBack: () => void;
   onChangeVehicle?: () => void;
+  onUpdateVehicle?: (vehicle: EditableVehicleData) => void;
 
   // Selections
   selectedClaimLimit: number | null;
