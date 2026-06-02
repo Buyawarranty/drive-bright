@@ -140,10 +140,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     const formatted = formatRegNumber(e.target.value);
     if (formatted.length <= 8) {
       setRegNumber(formatted);
-      // Clear vehicle age error when user changes reg number so they can try again
-      if (vehicleAgeError) {
-        setVehicleAgeError('');
-      }
+      if (regError) setRegError('');
+      if (vehicleAgeError) setVehicleAgeError('');
     }
   };
 
