@@ -123,6 +123,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   vehicleData, 
   onBack,
   onChangeVehicle,
+  onUpdateVehicle,
   onPlanSelected,
   previousPaymentType,
   previousVoluntaryExcess,
