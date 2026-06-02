@@ -1488,6 +1488,7 @@ const Index = () => {
                   onNext={handleQuoteDeliveryComplete}
                   onBack={() => handleBackToStep(1)}
                   onSkip={() => handleStepChange(3)}
+                  onUpdateVehicle={handleUpdateVehicleInline}
                 />
               ) : (
                 <div className="min-h-[60vh] flex items-center justify-center bg-white rounded-lg shadow-md">
