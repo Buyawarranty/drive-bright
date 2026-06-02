@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import InlineVehicleEdit from './InlineVehicleEdit';
+import type { EditableVehicleData } from '@/components/EditVehicleDialog';
 import { cn } from '@/lib/utils';
 import { Check, Info, Edit3, ArrowLeft, Star, ChevronDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
