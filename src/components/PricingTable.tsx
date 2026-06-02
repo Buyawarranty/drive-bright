@@ -1336,6 +1336,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           vehicleData={vehicleData}
           onBack={onBack}
           onChangeVehicle={handleEditVehicleClick}
+          onUpdateVehicle={onUpdateVehicle}
           selectedClaimLimit={selectedClaimLimit}
           setSelectedClaimLimit={(v) => {
             setSelectedClaimLimit(v);
