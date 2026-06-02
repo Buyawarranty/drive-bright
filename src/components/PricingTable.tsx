@@ -92,6 +92,7 @@ interface PricingTableProps {
   };
   onBack: () => void;
   onChangeVehicle?: () => void;
+  onUpdateVehicle?: (vehicle: Partial<PricingTableProps['vehicleData']>) => void;
   onPlanSelected?: (planId: string, paymentType: string, planName?: string, pricingData?: {
     totalPrice: number, 
     monthlyPrice: number, 
