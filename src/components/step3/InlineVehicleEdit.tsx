@@ -139,7 +139,7 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
         {/* Registration */}
         <div>
           <label className="block text-sm font-semibold text-[#161616] mb-2">
-            Registration
+            Enter Registration
           </label>
           <div className="flex items-stretch rounded-lg overflow-hidden shadow-sm border-2 border-black">
             <div className="bg-blue-600 text-white font-bold px-3 py-2 flex items-center justify-center min-w-[56px]">
