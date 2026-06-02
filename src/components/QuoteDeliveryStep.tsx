@@ -430,6 +430,27 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
+        {vehicleData.motMileage && !vehicleData.blocked && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 mb-6 flex items-start gap-3">
+            <Zap className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm sm:text-base font-semibold text-gray-900">
+                Last MOT mileage: {vehicleData.motMileage.toLocaleString()} miles
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                Based on your latest MOT record. You can update this later.{' '}
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Not correct? Update mileage
+                </button>
+              </p>
+            </div>
+          </div>
+        )}
+
         {vehicleData.blocked && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
             <p className="text-red-800 font-semibold mb-1">Warranty Coverage Not Available</p>
