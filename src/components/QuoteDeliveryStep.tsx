@@ -33,15 +33,40 @@ interface QuoteDeliveryStepProps {
 }
 
 const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip, onUpdateVehicle }) => {
+  const MILEAGE_RANGES: { label: string; value: string; min: number; max: number; mid: number }[] = [
+    { label: 'Under 10,000 miles', value: '0-9999', min: 0, max: 9999, mid: 5000 },
+    { label: '10,000 – 29,999 miles', value: '10000-29999', min: 10000, max: 29999, mid: 20000 },
+    { label: '30,000 – 49,999 miles', value: '30000-49999', min: 30000, max: 49999, mid: 40000 },
+    { label: '50,000 – 69,999 miles', value: '50000-69999', min: 50000, max: 69999, mid: 60000 },
+    { label: '70,000 – 89,999 miles', value: '70000-89999', min: 70000, max: 89999, mid: 80000 },
+    { label: '90,000 – 99,999 miles', value: '90000-99999', min: 90000, max: 99999, mid: 95000 },
+    { label: '100,000 – 109,999 miles', value: '100000-109999', min: 100000, max: 109999, mid: 105000 },
+    { label: '110,000 – 119,999 miles', value: '110000-119999', min: 110000, max: 119999, mid: 115000 },
+    { label: '120,000 – 134,999 miles', value: '120000-134999', min: 120000, max: 134999, mid: 127000 },
+    { label: '135,000 – 150,000 miles', value: '135000-150000', min: 135000, max: 150000, mid: 142000 },
+  ];
+
+  const findRangeForMileage = (n: number) =>
+    MILEAGE_RANGES.find((r) => n >= r.min && n <= r.max)?.value || '';
+
   const [isEditingMileage, setIsEditingMileage] = useState(false);
+  const [approxRange, setApproxRange] = useState<string>(() =>
+    findRangeForMileage(parseInt(vehicleData.mileage || '0', 10) || (vehicleData.motMileage || 0))
+  );
   const [mileageInput, setMileageInput] = useState('');
   const [mileageEditError, setMileageEditError] = useState('');
 
   const handleSaveMileage = () => {
-    const raw = mileageInput.replace(/[^0-9]/g, '');
-    const n = parseInt(raw, 10);
-    if (!raw || isNaN(n) || n <= 0) {
-      setMileageEditError('Please enter a valid mileage');
+    let n: number | null = null;
+    const exactRaw = mileageInput.replace(/[^0-9]/g, '');
+    if (exactRaw) {
+      n = parseInt(exactRaw, 10);
+    } else if (approxRange) {
+      const range = MILEAGE_RANGES.find((r) => r.value === approxRange);
+      if (range) n = range.mid;
+    }
+    if (n === null || isNaN(n) || n <= 0) {
+      setMileageEditError('Please choose an approximate range or enter your exact mileage');
       return;
     }
     if (n > 150000) {
