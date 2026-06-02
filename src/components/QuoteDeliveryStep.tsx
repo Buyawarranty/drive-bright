@@ -414,7 +414,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </p>
               )}
               <p className="text-xs sm:text-sm text-gray-500 truncate">
-                {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120,000 miles' : 'Over 120,000 miles'}
+                {vehicleData.motMileage
+                  ? `${vehicleData.motMileage.toLocaleString()} miles (from last MOT)`
+                  : parseInt(vehicleData.mileage) <= 120000 ? 'Under 120,000 miles' : 'Over 120,000 miles'}
                 {vehicleData.fuelType && ` • ${vehicleData.fuelType}`}
                 {vehicleData.transmission && ` • ${vehicleData.transmission}`}
               </p>
