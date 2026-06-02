@@ -113,6 +113,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const howToPayRef = useRef<HTMLDivElement>(null);
   // Ref to track if we've already scrolled to the Stripe payment section
   const hasScrolledToStripeRef = useRef(false);
+
+  // Inline "Change vehicle" dialog state (Step 4)
+  const [editVehicleOpen, setEditVehicleOpen] = useState(false);
+  const handleChangeVehicleClick = onUpdateVehicle ? () => setEditVehicleOpen(true) : undefined;
   
   // Pre-populate from Step 2 data in localStorage
   const [customerData, setCustomerData] = useState(() => {
