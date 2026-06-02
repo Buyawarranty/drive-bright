@@ -29,6 +29,7 @@ interface QuoteDeliveryStepProps {
   onNext: (data: { email: string; phone: string; firstName: string; lastName: string; sendQuoteEmail?: boolean }) => void;
   onBack: () => void;
   onSkip: () => void;
+  onUpdateVehicle?: (partial: { mileage: string; motMileage: number }) => void;
 }
 
 const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip }) => {
