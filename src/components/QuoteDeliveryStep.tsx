@@ -500,28 +500,28 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 <div className="border-t border-gray-200 p-3 sm:p-4 space-y-3 bg-gray-50">
                   <p className="text-sm font-semibold text-gray-900">Current mileage</p>
 
-                  <label className={`flex items-center gap-3 p-3 bg-white border rounded-lg cursor-pointer transition-colors ${mileageBand === 'under' ? 'border-brand-orange' : 'border-gray-300'}`}>
+                  <label className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${mileageBand === 'under' ? 'border-brand-orange bg-orange-50' : 'border-gray-200 bg-white'}`}>
                     <input
                       type="radio"
                       name="mileage-band"
                       value="under"
                       checked={mileageBand === 'under'}
                       onChange={() => { setMileageBand('under'); if (mileageEditError) setMileageEditError(''); }}
-                      className="w-4 h-4 accent-brand-orange"
+                      className="w-5 h-5 accent-brand-orange"
                     />
-                    <span className="text-base text-gray-900">Under 120,000 miles</span>
+                    <span className="text-base font-medium text-gray-900">Under 120,000 miles</span>
                   </label>
 
-                  <label className={`flex items-center gap-3 p-3 bg-white border rounded-lg cursor-pointer transition-colors ${mileageBand === 'over' ? 'border-brand-orange' : 'border-gray-300'}`}>
+                  <label className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${mileageBand === 'over' ? 'border-brand-orange bg-orange-50' : 'border-gray-200 bg-white'}`}>
                     <input
                       type="radio"
                       name="mileage-band"
                       value="over"
                       checked={mileageBand === 'over'}
                       onChange={() => { setMileageBand('over'); if (mileageEditError) setMileageEditError(''); }}
-                      className="w-4 h-4 accent-brand-orange"
+                      className="w-5 h-5 accent-brand-orange"
                     />
-                    <span className="text-base text-gray-900">Over 120,000 miles</span>
+                    <span className="text-base font-medium text-gray-900">Over 120,000 miles</span>
                   </label>
 
                   {mileageEditError && (
