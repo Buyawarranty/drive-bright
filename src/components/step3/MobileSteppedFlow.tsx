@@ -36,6 +36,7 @@ interface MobileSteppedFlowProps {
     mileage?: string;
   };
   onBack: () => void;
+  onChangeVehicle?: () => void;
   selectedClaimLimit: number | null;
   onClaimLimitChange: (v: number) => void;
   selectedLabourRate: number;
