@@ -752,7 +752,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Trust Line */}
-        <div className="text-center mt-3 text-gray-500 text-sm">
+        <div className="text-center mt-2 text-gray-500 text-sm">
           <p className="flex flex-col items-center justify-center gap-0.5">
             <span>🔒 We never share your details.</span>
             <span>100% privacy guaranteed</span>
@@ -765,16 +765,16 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Spacer for sticky footer on desktop */}
-        <div className="hidden md:block h-20"></div>
+        <div className="hidden md:block h-4"></div>
       </div>
 
       {/* Mobile: Floating Action Button */}
       <HelpFAB />
 
       {/* Desktop: Branded Help Footer (hidden on mobile) */}
-      <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-green-600/50 py-4 px-4 z-50">
+      <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-green-600/50 py-2 px-4 z-50">
         <div className="max-w-xl mx-auto">
-          <p className="text-center text-gray-800 font-semibold text-sm mb-3">
+          <p className="text-center text-gray-800 font-semibold text-sm mb-1">
             Need advice? We're here to help.
           </p>
           <div className="flex items-center justify-center gap-6 sm:gap-8">
