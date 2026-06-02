@@ -1372,6 +1372,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <MobileSteppedFlow
           vehicleData={vehicleData}
           onBack={onBack}
+          onChangeVehicle={handleEditVehicleClick}
           selectedClaimLimit={selectedClaimLimit}
           onClaimLimitChange={(v) => {
             setSelectedClaimLimit(v);
