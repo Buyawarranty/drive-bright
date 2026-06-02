@@ -46,6 +46,8 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string; // Full manufacture date for precise age calculation
+  motMileage?: number;
+  motDate?: string;
 }
 
 interface HomepageProps {
