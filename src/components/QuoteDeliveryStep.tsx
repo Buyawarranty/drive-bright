@@ -507,8 +507,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                       value="under"
                       checked={mileageBand === 'under'}
                       onChange={() => { setMileageBand('under'); if (mileageEditError) setMileageEditError(''); }}
-                      className="w-5 h-5 accent-brand-orange"
+                      className="sr-only"
                     />
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${mileageBand === 'under' ? 'border-brand-orange bg-white' : 'border-gray-300 bg-white'}`}>
+                      {mileageBand === 'under' && <span className="h-3 w-3 rounded-full bg-brand-orange" />}
+                    </span>
                     <span className="text-base font-medium text-gray-900">Under 120,000 miles</span>
                   </label>
 
@@ -519,8 +522,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                       value="over"
                       checked={mileageBand === 'over'}
                       onChange={() => { setMileageBand('over'); if (mileageEditError) setMileageEditError(''); }}
-                      className="w-5 h-5 accent-brand-orange"
+                      className="sr-only"
                     />
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${mileageBand === 'over' ? 'border-brand-orange bg-white' : 'border-gray-300 bg-white'}`}>
+                      {mileageBand === 'over' && <span className="h-3 w-3 rounded-full bg-brand-orange" />}
+                    </span>
                     <span className="text-base font-medium text-gray-900">Over 120,000 miles</span>
                   </label>
 
