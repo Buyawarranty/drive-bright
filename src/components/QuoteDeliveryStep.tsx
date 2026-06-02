@@ -446,152 +446,149 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
-        {/* Vehicle Card */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4 mb-6">
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-            <div className="bg-[#FFD700] text-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded font-bold text-xs sm:text-sm tracking-wide border-2 border-black">
-              {vehicleData.regNumber}
+        {/* Combined Vehicle + Mileage Card */}
+        <div className="bg-gray-50 border border-gray-200 rounded-xl mb-6 overflow-hidden">
+          {/* Vehicle row */}
+          <div className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+              <div className="bg-[#FFD700] text-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded font-bold text-xs sm:text-sm tracking-wide border-2 border-black">
+                {vehicleData.regNumber}
+              </div>
+              <div className="flex-1 min-w-0">
+                {(vehicleData.make || vehicleData.model) && (
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">
+                    {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
+                  </p>
+                )}
+                {(vehicleData.fuelType || vehicleData.transmission) && (
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">
+                    {[vehicleData.fuelType, vehicleData.transmission].filter(Boolean).join(' • ')}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={onBack}
+                className="text-primary text-xs sm:text-sm font-medium hover:underline flex-shrink-0"
+              >
+                Edit
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              {(vehicleData.make || vehicleData.model) && (
-                <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                  {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
-                </p>
-              )}
-              <p className="text-xs sm:text-sm text-gray-500 truncate">
-                {vehicleData.motMileage
-                  ? `${vehicleData.motMileage.toLocaleString()} miles (from last MOT)`
-                  : parseInt(vehicleData.mileage) <= 120000 ? 'Under 120,000 miles' : 'Over 120,000 miles'}
-                {vehicleData.fuelType && ` • ${vehicleData.fuelType}`}
-                {vehicleData.transmission && ` • ${vehicleData.transmission}`}
-              </p>
-            </div>
-            <button
-              onClick={onBack}
-              className="text-primary text-xs sm:text-sm font-medium hover:underline flex-shrink-0"
-            >
-              Edit
-            </button>
           </div>
+
+          {/* Mileage row — inside same card, divided */}
+          {vehicleData.motMileage && !vehicleData.blocked && (
+            <>
+              <div className="border-t border-gray-200" />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isEditingMileage) {
+                    setMileageInput(String(vehicleData.motMileage || ''));
+                    setApproxRange(findRangeForMileage(vehicleData.motMileage || 0));
+                    setMileageEditError('');
+                  }
+                  setIsEditingMileage((v) => !v);
+                }}
+                className="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-gray-100/60 transition-colors"
+                aria-expanded={isEditingMileage}
+              >
+                <Gauge className="w-5 h-5 text-brand-orange flex-shrink-0" />
+                <p className="flex-1 min-w-0 text-sm sm:text-base font-semibold text-gray-900">
+                  {!isEditingMileage
+                    ? <>Mileage from latest MOT: {vehicleData.motMileage.toLocaleString()} miles</>
+                    : 'Update your mileage'}
+                </p>
+                <span className="flex items-center gap-1 text-primary text-sm font-medium flex-shrink-0">
+                  {!isEditingMileage && <span className="hidden sm:inline">Update mileage</span>}
+                  {isEditingMileage ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </span>
+              </button>
+
+              {isEditingMileage && (
+                <div className="border-t border-gray-200 p-3 sm:p-4 space-y-4 bg-white">
+                  {/* Approximate mileage dropdown */}
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 mb-1.5">
+                      Approximate mileage
+                      <Info className="w-3.5 h-3.5 text-gray-400" />
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={approxRange}
+                        onChange={(e) => {
+                          setApproxRange(e.target.value);
+                          setMileageInput('');
+                          if (mileageEditError) setMileageEditError('');
+                        }}
+                        className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-9 text-base text-gray-900 focus:outline-none focus:border-primary"
+                      >
+                        <option value="">Select a range</option>
+                        {MILEAGE_RANGES.map((r) => (
+                          <option key={r.value} value={r.value}>{r.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Divider with "or" */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span className="text-xs text-gray-500">or</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+
+                  {/* Exact mileage input */}
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 mb-1.5">
+                      Exact mileage (if you have it)
+                      <Info className="w-3.5 h-3.5 text-gray-400" />
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={mileageInput}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^0-9]/g, '');
+                          setMileageInput(v);
+                          if (v) setApproxRange('');
+                          if (mileageEditError) setMileageEditError('');
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleSaveMileage(); }}
+                        placeholder="e.g. 101,782"
+                        className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-16 text-base text-gray-900 font-semibold focus:outline-none focus:border-primary"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">miles</span>
+                    </div>
+                  </div>
+
+                  {mileageEditError && (
+                    <p className="text-red-600 text-sm">{mileageEditError}</p>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleSaveMileage}
+                      className="px-4 py-2.5 bg-brand-orange text-white font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors"
+                    >
+                      Save mileage
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
+                      className="px-4 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        {vehicleData.motMileage && !vehicleData.blocked && (
-          <div className="bg-white border border-gray-200 rounded-xl mb-6 overflow-hidden">
-            {/* Header — always visible */}
-            <button
-              type="button"
-              onClick={() => {
-                if (!isEditingMileage) {
-                  setMileageInput(String(vehicleData.motMileage || ''));
-                  setApproxRange(findRangeForMileage(vehicleData.motMileage || 0));
-                  setMileageEditError('');
-                }
-                setIsEditingMileage((v) => !v);
-              }}
-              className="w-full flex items-start gap-3 p-3 sm:p-4 text-left"
-              aria-expanded={isEditingMileage}
-            >
-              <Gauge className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                {!isEditingMileage ? (
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">
-                    Mileage from latest MOT: {vehicleData.motMileage.toLocaleString()} miles
-                  </p>
-                ) : (
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">
-                    Update your mileage
-                  </p>
-                )}
-              </div>
-              <span className="flex items-center gap-1 text-primary text-sm font-medium flex-shrink-0">
-                {!isEditingMileage && <span className="hidden sm:inline">Update mileage</span>}
-                {isEditingMileage ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </span>
-            </button>
-
-            {isEditingMileage && (
-              <div className="border-t border-gray-200 p-3 sm:p-4 space-y-4">
-                {/* Approximate mileage dropdown */}
-                <div>
-                  <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 mb-1.5">
-                    Approximate mileage
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={approxRange}
-                      onChange={(e) => {
-                        setApproxRange(e.target.value);
-                        setMileageInput('');
-                        if (mileageEditError) setMileageEditError('');
-                      }}
-                      className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-9 text-base text-gray-900 focus:outline-none focus:border-primary"
-                    >
-                      <option value="">Select a range</option>
-                      {MILEAGE_RANGES.map((r) => (
-                        <option key={r.value} value={r.value}>{r.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Divider with "or" */}
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-xs text-gray-500">or</span>
-                  <div className="flex-1 h-px bg-gray-200" />
-                </div>
-
-                {/* Exact mileage input */}
-                <div>
-                  <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 mb-1.5">
-                    Exact mileage (if you have it)
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={mileageInput}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/[^0-9]/g, '');
-                        setMileageInput(v);
-                        if (v) setApproxRange('');
-                        if (mileageEditError) setMileageEditError('');
-                      }}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleSaveMileage(); }}
-                      placeholder="e.g. 101,782"
-                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-16 text-base text-gray-900 font-semibold focus:outline-none focus:border-primary"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">miles</span>
-                  </div>
-                </div>
-
-                {mileageEditError && (
-                  <p className="text-red-600 text-sm">{mileageEditError}</p>
-                )}
-
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleSaveMileage}
-                    className="px-4 py-2.5 bg-brand-orange text-white font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors"
-                  >
-                    Save mileage
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
-                    className="px-4 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {vehicleData.blocked && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
