@@ -327,11 +327,32 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setVehicleAgeError('');
       }
       
+      // Resolve MOT mileage (or default under 120k if no MOT data)
+      const motResult = await motPromise;
+      const effectiveMileage = motResult.motMileage != null ? String(motResult.motMileage) : '100000';
+
+      // Block over-150k vehicles flagged via MOT history
+      if (motResult.motMileage && motResult.motMileage > 150000) {
+        setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+        toast({
+          title: 'Vehicle Not Eligible',
+          description: 'Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.',
+          variant: 'destructive',
+        });
+        setIsLookingUp(false);
+        return;
+      }
+
       // Prepare vehicle data
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: effectiveMileage.replace(/,/g, ''), // Remove commas for storage
+        mileage: effectiveMileage,
       };
+
+      if (motResult.motMileage != null) {
+        vehicleData.motMileage = motResult.motMileage;
+        vehicleData.motDate = motResult.motDate;
+      }
 
       // Add DVLA data if found
       if (data?.found) {
@@ -341,20 +362,21 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         vehicleData.transmission = data.transmission;
         vehicleData.year = data.yearOfManufacture;
         vehicleData.vehicleType = data.vehicleType || 'car';
-        vehicleData.manufactureDate = data.manufactureDate; // Full manufacture date for precise age calculation
+        vehicleData.manufactureDate = data.manufactureDate;
         if (data.blocked) {
           vehicleData.blocked = true;
           vehicleData.blockReason = data.blockReason;
         }
       }
-      
+
       // Track quote request with enhanced data for Google Ads
       trackQuoteRequest(undefined, undefined, undefined);
 
       console.log('✅ Vehicle lookup complete, calling onRegistrationSubmit with:', vehicleData);
-      
+
       // Submit to parent component
       onRegistrationSubmit(vehicleData);
+
       
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
