@@ -18,12 +18,8 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
   onSave,
   onCancel,
 }) => {
-  const [regNumber, setRegNumber] = useState(initialReg.toUpperCase());
-  const [mileageSelection, setMileageSelection] = useState<string>(() => {
-    const n = parseInt((initialMileage || '').replace(/\D/g, ''), 10);
-    if (!n) return '';
-    return n >= 120000 ? 'over120k' : 'under120k';
-  });
+  const [regNumber, setRegNumber] = useState('');
+  const [mileageSelection, setMileageSelection] = useState<string>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
