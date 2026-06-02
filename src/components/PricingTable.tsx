@@ -47,6 +47,7 @@ import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
 import PriceBeatBanner from '@/components/step3/PriceBeatBanner';
 import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
+import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos } from '@/lib/promoStorage';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
@@ -92,6 +93,7 @@ interface PricingTableProps {
   };
   onBack: () => void;
   onChangeVehicle?: () => void;
+  onUpdateVehicle?: (vehicle: Partial<PricingTableProps['vehicleData']>) => void;
   onPlanSelected?: (planId: string, paymentType: string, planName?: string, pricingData?: {
     totalPrice: number, 
     monthlyPrice: number, 
@@ -122,6 +124,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   vehicleData, 
   onBack,
   onChangeVehicle,
+  onUpdateVehicle,
   onPlanSelected,
   previousPaymentType,
   previousVoluntaryExcess,
@@ -1322,6 +1325,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     );
   }
 
+  const [editVehicleOpen, setEditVehicleOpen] = React.useState(false);
+  const handleEditVehicleClick = onUpdateVehicle ? () => setEditVehicleOpen(true) : onChangeVehicle;
+
   return (
     <>
       {/* New desktop/tablet layout (md+) */}
@@ -1329,7 +1335,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <Step3Desktop
           vehicleData={vehicleData}
           onBack={onBack}
-          onChangeVehicle={onChangeVehicle}
+          onChangeVehicle={handleEditVehicleClick}
           selectedClaimLimit={selectedClaimLimit}
           setSelectedClaimLimit={(v) => {
             setSelectedClaimLimit(v);
@@ -1366,6 +1372,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <MobileSteppedFlow
           vehicleData={vehicleData}
           onBack={onBack}
+          onChangeVehicle={handleEditVehicleClick}
           selectedClaimLimit={selectedClaimLimit}
           onClaimLimitChange={(v) => {
             setSelectedClaimLimit(v);
@@ -2663,6 +2670,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
       onLabourRateChange={setSelectedLabourRate}
       currentMonthlyPrice={monthlyPrice}
     />
+    {onUpdateVehicle && (
+      <EditVehicleDialog
+        open={editVehicleOpen}
+        onOpenChange={setEditVehicleOpen}
+        initialReg={vehicleData.regNumber}
+        initialMileage={vehicleData.mileage}
+        onSave={(v) => onUpdateVehicle(v)}
+      />
+    )}
     </>
   );
 };

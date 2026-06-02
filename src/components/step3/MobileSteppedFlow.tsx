@@ -36,6 +36,7 @@ interface MobileSteppedFlowProps {
     mileage?: string;
   };
   onBack: () => void;
+  onChangeVehicle?: () => void;
   selectedClaimLimit: number | null;
   onClaimLimitChange: (v: number) => void;
   selectedLabourRate: number;
@@ -95,6 +96,7 @@ const CLAIM_COPY: Record<number, { title: string; sub: string }> = {
 const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   vehicleData,
   onBack,
+  onChangeVehicle,
   selectedClaimLimit,
   onClaimLimitChange,
   selectedLabourRate,
@@ -208,7 +210,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             {vehicleData.mileage && <> · Under {Math.ceil((parseInt(String(vehicleData.mileage).replace(/[^0-9]/g, '')) || 0) / 10000) * 10000} miles</>}
           </div>
         </div>
-        <button onClick={onBack} className="text-primary text-sm font-semibold">Edit</button>
+        <button onClick={onChangeVehicle ?? onBack} className="text-primary text-sm font-semibold">Edit</button>
       </div>
 
 

@@ -17,6 +17,7 @@ interface DesktopPlanHeaderProps {
   startDate?: Date;
   onStartDateChange?: (date: Date | undefined) => void;
   onEditPlan?: () => void;
+  onChangeVehicle?: () => void;
 }
 
 const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
@@ -31,6 +32,7 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
   startDate,
   onStartDateChange,
   onEditPlan,
+  onChangeVehicle,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const vehicleDisplay = [vehicleYear, vehicleMake?.toUpperCase(), vehicleModel?.toUpperCase()].filter(Boolean).join(' ') || '';
@@ -85,14 +87,24 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
             </span>
           )}
         </div>
-        {onEditPlan && (
-          <button
-            onClick={onEditPlan}
-            className="text-sm font-semibold text-[#0BA360] hover:text-[#098a51] underline underline-offset-2 transition-colors"
-          >
-            Edit cover
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {onChangeVehicle && (
+            <button
+              onClick={onChangeVehicle}
+              className="text-sm font-semibold text-[#0BA360] hover:text-[#098a51] underline underline-offset-2 transition-colors"
+            >
+              Change vehicle
+            </button>
+          )}
+          {onEditPlan && (
+            <button
+              onClick={onEditPlan}
+              className="text-sm font-semibold text-[#0BA360] hover:text-[#098a51] underline underline-offset-2 transition-colors"
+            >
+              Edit cover
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Cover Start Date */}

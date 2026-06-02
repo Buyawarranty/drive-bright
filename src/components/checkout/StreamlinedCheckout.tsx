@@ -40,6 +40,7 @@ import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
 import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
+import EditVehicleDialog from '@/components/EditVehicleDialog';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -90,6 +91,7 @@ export interface StreamlinedCheckoutProps {
   };
   onBack: () => void;
   onNext: (customerData: any) => void;
+  onUpdateVehicle?: (vehicle: Partial<StreamlinedCheckoutProps['vehicleData']>) => void;
 }
 
 const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({ 
@@ -99,7 +101,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   planName, 
   pricingData, 
   onBack, 
-  onNext 
+  onNext,
+  onUpdateVehicle,
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -110,6 +113,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const howToPayRef = useRef<HTMLDivElement>(null);
   // Ref to track if we've already scrolled to the Stripe payment section
   const hasScrolledToStripeRef = useRef(false);
+
+  // Inline "Change vehicle" dialog state (Step 4)
+  const [editVehicleOpen, setEditVehicleOpen] = useState(false);
+  const handleChangeVehicleClick = onUpdateVehicle ? () => setEditVehicleOpen(true) : undefined;
   
   // Pre-populate from Step 2 data in localStorage
   const [customerData, setCustomerData] = useState(() => {
@@ -2032,6 +2039,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }
               }}
               onEditPlan={onBack}
+              onChangeVehicle={handleChangeVehicleClick}
             />
           </section>
 
@@ -2755,6 +2763,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         ctaLabel="Pay securely"
         validationError={declarationError && !declarationChecked ? 'Please confirm the vehicle declaration to continue.' : undefined}
       />
+      {onUpdateVehicle && (
+        <EditVehicleDialog
+          open={editVehicleOpen}
+          onOpenChange={setEditVehicleOpen}
+          initialReg={vehicleData.regNumber}
+          initialMileage={vehicleData.mileage}
+          onSave={(v) => onUpdateVehicle(v)}
+        />
+      )}
     </div>
   );
 };

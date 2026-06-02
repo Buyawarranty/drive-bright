@@ -1223,6 +1223,17 @@ const Index = () => {
     console.log('✅ Navigation to step 2 complete, vehicleData:', newVehicleData);
   };
 
+  // Inline vehicle update from Step 3 / Step 4 (no nav back to homepage)
+  const handleUpdateVehicleInline = (partial: Partial<VehicleData>) => {
+    if (!vehicleData) return;
+    const merged: VehicleData = { ...vehicleData, ...partial };
+    const updatedFormData = { ...formData, ...partial };
+    setVehicleData(merged);
+    setFormData(updatedFormData);
+    saveStateToLocalStorage(currentStep, merged, updatedFormData);
+    console.log('🔄 handleUpdateVehicleInline applied:', partial);
+  };
+
   const handleBackToStep = (step: number) => {
     console.log('🔙 handleBackToStep called:', { from: currentStep, to: step });
     setCurrentStep(step);
@@ -1500,6 +1511,7 @@ const Index = () => {
                   setSelectedPlan(null);
                   handleStepChange(1);
                 }}
+                onUpdateVehicle={handleUpdateVehicleInline}
                 onPlanSelected={handlePlanSelected}
                 previousPaymentType={selectedPlan?.paymentType as '12months' | '24months' | '36months' | undefined}
                 previousVoluntaryExcess={selectedPlan?.pricingData?.voluntaryExcess}
@@ -1551,6 +1563,7 @@ const Index = () => {
                 }}
                 onNext={handleCustomerDetailsComplete}
                 onBack={() => handleBackToStep(3)}
+                onUpdateVehicle={handleUpdateVehicleInline}
               />
             </PerformanceOptimizedSuspense>
           ) : (
