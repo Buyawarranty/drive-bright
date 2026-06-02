@@ -23,6 +23,8 @@ interface QuoteDeliveryStepProps {
     vehicleType?: string;
     blocked?: boolean;
     blockReason?: string;
+    motMileage?: number;
+    motDate?: string;
   };
   onNext: (data: { email: string; phone: string; firstName: string; lastName: string; sendQuoteEmail?: boolean }) => void;
   onBack: () => void;
