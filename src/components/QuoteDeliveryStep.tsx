@@ -53,6 +53,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const initialMot = parseInt(vehicleData.mileage || '0', 10) || (vehicleData.motMileage || 0);
   const [mileageBand, setMileageBand] = useState<'under' | 'over'>(initialMot >= 120000 ? 'over' : 'under');
   const [mileageEditError, setMileageEditError] = useState('');
+  const [mileageBandSaved, setMileageBandSaved] = useState<'under' | 'over' | null>(null);
 
   const handleSaveMileage = () => {
     const current = vehicleData.motMileage || parseInt(vehicleData.mileage || '0', 10) || 0;
@@ -67,6 +68,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       return;
     }
     onUpdateVehicle?.({ mileage: String(n), motMileage: n });
+    setMileageBandSaved(mileageBand);
     setMileageEditError('');
     setIsEditingMileage(false);
   };
@@ -488,7 +490,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               >
                 <Gauge className="w-5 h-5 text-brand-orange flex-shrink-0" />
                 <p className="flex-1 min-w-0 text-sm sm:text-base font-semibold text-gray-900">
-                  Mileage from latest MOT: {vehicleData.motMileage.toLocaleString()} miles
+                  {mileageBandSaved
+                    ? `Mileage: ${mileageBandSaved === 'over' ? 'Over' : 'Under'} 120,000 miles`
+                    : `Mileage from latest MOT: ${vehicleData.motMileage.toLocaleString()} miles`}
                 </p>
                 <span className="flex items-center gap-1 text-primary text-sm font-medium flex-shrink-0">
                   <span className="hidden sm:inline">Change mileage</span>
