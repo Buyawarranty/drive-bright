@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import InlineVehicleEdit from './InlineVehicleEdit';
+import type { EditableVehicleData } from '@/components/EditVehicleDialog';
 import { cn } from '@/lib/utils';
 import { Check, Info, Edit3, ArrowLeft, Star, ChevronDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -50,6 +52,7 @@ interface Step3DesktopProps {
   vehicleData: VehicleData;
   onBack: () => void;
   onChangeVehicle?: () => void;
+  onUpdateVehicle?: (vehicle: EditableVehicleData) => void;
 
   // Selections
   selectedClaimLimit: number | null;
@@ -104,6 +107,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   vehicleData,
   onBack,
   onChangeVehicle,
+  onUpdateVehicle,
   selectedClaimLimit,
   setSelectedClaimLimit,
   selectedLabourRate,
@@ -127,6 +131,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const [claimLimitDetailsOpen, setClaimLimitDetailsOpen] = React.useState(false);
   const [labourRateDetailsOpen, setLabourRateDetailsOpen] = React.useState(false);
   const [excessDetailsOpen, setExcessDetailsOpen] = React.useState(false);
+  const [vehicleEditOpen, setVehicleEditOpen] = useState(false);
 
   const isPremium = isPremiumVehicle(vehicleData?.make);
   const visibleClaimTiers = isPremium
@@ -245,25 +250,48 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
         </section>
 
         {/* Vehicle bar */}
-        <section className="my-[26px] bg-white border border-[#e9e9e7] rounded-2xl px-[18px] py-[14px] flex items-center gap-4 justify-between shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
-          <div className="flex items-center gap-3.5 flex-wrap">
-            <strong className="text-[#161616]">Your vehicle</strong>
-            <div className="flex gap-3.5 text-[#6c6c6c] text-sm flex-wrap">
-              <span>{vehicleData?.year} {vehicleData?.make}</span>
-              <span>{vehicleData?.mileage && parseInt(vehicleData.mileage) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}</span>
-              {vehicleData?.fuelType && <span>{vehicleData.fuelType}</span>}
+        <section className="my-[26px]">
+          <div className="bg-white border border-[#e9e9e7] rounded-2xl px-[18px] py-[14px] flex items-center gap-4 justify-between shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+            <div className="flex items-center gap-3.5 flex-wrap">
+              <strong className="text-[#161616]">Your vehicle</strong>
+              <div className="flex gap-3.5 text-[#6c6c6c] text-sm flex-wrap">
+                <span>{vehicleData?.year} {vehicleData?.make}</span>
+                <span>{vehicleData?.mileage && parseInt(vehicleData.mileage) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}</span>
+                {vehicleData?.fuelType && <span>{vehicleData.fuelType}</span>}
+              </div>
+              <span className="bg-[#ffd84c] text-[#111] font-bold rounded-lg px-2.5 py-1 tracking-[0.05em] text-[13px]">
+                {vehicleData?.regNumber}
+              </span>
             </div>
-            <span className="bg-[#ffd84c] text-[#111] font-bold rounded-lg px-2.5 py-1 tracking-[0.05em] text-[13px]">
-              {vehicleData?.regNumber}
-            </span>
+            <button
+              onClick={() => {
+                if (onUpdateVehicle) {
+                  setVehicleEditOpen((v) => !v);
+                } else {
+                  onChangeVehicle?.();
+                }
+              }}
+              className="text-[#f36b21] text-sm font-bold flex items-center gap-1 hover:underline"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              {vehicleEditOpen ? 'Close' : 'Change'}
+              {onUpdateVehicle && (
+                <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', vehicleEditOpen && 'rotate-180')} />
+              )}
+            </button>
           </div>
-          <button
-            onClick={onChangeVehicle}
-            className="text-[#f36b21] text-sm font-bold flex items-center gap-1 hover:underline"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            Change
-          </button>
+
+          {onUpdateVehicle && vehicleEditOpen && (
+            <InlineVehicleEdit
+              initialReg={vehicleData?.regNumber || ''}
+              initialMileage={vehicleData?.mileage || ''}
+              onCancel={() => setVehicleEditOpen(false)}
+              onSave={(v) => {
+                onUpdateVehicle(v);
+                setVehicleEditOpen(false);
+              }}
+            />
+          )}
         </section>
 
         {/* Two-column grid */}
