@@ -246,14 +246,14 @@ const handler = async (req: Request): Promise<Response> => {
         return btoa(binary);
       };
 
-      // Load Terms and Conditions PDF v3.3
-      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf');
+      // Load Terms and Conditions PDF v3.4
+      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf');
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         const termsBase64 = arrayBufferToBase64(termsBuffer);
         
         attachments.push({
-          filename: 'Terms-and-Conditions-v3.3.pdf',
+          filename: 'Terms-and-Conditions-v3.4.pdf',
           content: termsBase64,
           type: 'application/pdf',
           disposition: 'attachment'
@@ -264,14 +264,14 @@ const handler = async (req: Request): Promise<Response> => {
         console.log(JSON.stringify({ evt: "terms.pdf.failed", rid, status: termsResponse.status }));
       }
 
-      // Load Platinum Warranty Plan PDF v3.3 (used for all plan types)
-      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06.pdf');
+      // Load Platinum Warranty Plan PDF v3.4 (used for all plan types)
+      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf');
       if (platinumResponse.ok) {
         const platinumBuffer = await platinumResponse.arrayBuffer();
         const platinumBase64 = arrayBufferToBase64(platinumBuffer);
         
         attachments.push({
-          filename: 'Platinum-Warranty-Plan-v3.3.pdf',
+          filename: 'Platinum-Warranty-Plan-v3.4.pdf',
           content: platinumBase64,
           type: 'application/pdf',
           disposition: 'attachment'
@@ -543,9 +543,9 @@ const handler = async (req: Request): Promise<Response> => {
       paymentMethod = 'Bumper';
     }
 
-    // Use v3.3 PDFs for all warranty types
-    const policyDocumentUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06.pdf';
-    const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06.pdf';
+    // Use v3.4 PDFs for all warranty types
+    const policyDocumentUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf';
+    const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf';
 
     // Define login URL for customer portal
     const loginUrl = 'https://buyawarranty.co.uk/auth';
