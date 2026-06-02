@@ -58,8 +58,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
+  const [regError, setRegError] = useState('');
   const [mileage, setMileage] = useState('');
-  const [mileageSelection, setMileageSelection] = useState<string>(''); // 'under120k' or 'over120k'
+  const [mileageSelection, setMileageSelection] = useState<string>('under120k'); // default; auto-derived from MOT
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
