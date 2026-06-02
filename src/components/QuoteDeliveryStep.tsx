@@ -493,18 +493,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   {isEditingMileage ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </span>
               </button>
-
-              {isEditingMileage && (
-                <div className="border-t border-gray-200 p-3 sm:p-4 space-y-3 bg-gray-50">
-                  <p className="text-sm font-semibold text-gray-900">Current mileage</p>
-
                   <label className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${mileageBand === 'under' ? 'border-brand-orange bg-orange-50' : 'border-gray-200 bg-white'}`}>
                     <input
                       type="radio"
                       name="mileage-band"
                       value="under"
                       checked={mileageBand === 'under'}
-                      onChange={() => { setMileageBand('under'); if (mileageEditError) setMileageEditError(''); }}
+                      onChange={() => handleSelectBand('under')}
                       className="sr-only"
                     />
                     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${mileageBand === 'under' ? 'border-brand-orange bg-white' : 'border-gray-300 bg-white'}`}>
@@ -519,7 +514,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                       name="mileage-band"
                       value="over"
                       checked={mileageBand === 'over'}
-                      onChange={() => { setMileageBand('over'); if (mileageEditError) setMileageEditError(''); }}
+                      onChange={() => handleSelectBand('over')}
                       className="sr-only"
                     />
                     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${mileageBand === 'over' ? 'border-brand-orange bg-white' : 'border-gray-300 bg-white'}`}>
@@ -531,23 +526,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   {mileageEditError && (
                     <p className="text-red-600 text-sm">{mileageEditError}</p>
                   )}
-
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={handleSaveMileage}
-                      className="px-5 py-2.5 bg-brand-orange text-white font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors"
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setIsEditingMileage(false); setMileageEditError(''); }}
-                      className="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
                 </div>
               )}
 
