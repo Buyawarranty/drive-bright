@@ -32,13 +32,37 @@ import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
 
 // Lazy load heavy components that are not immediately visible
-const RegistrationForm = lazy(() => import('@/components/RegistrationForm'));
-const PricingTable = lazy(() => import('@/components/PricingTable'));
+// Retry lazy imports once on failure (handles stale chunk hashes after deploys)
+const lazyWithRetry = <T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) =>
+  lazy(async () => {
+    try {
+      return await factory();
+    } catch (err) {
+      console.warn('Lazy import failed, retrying once...', err);
+      try {
+        return await factory();
+      } catch (err2) {
+        // Final fallback: force a hard reload to fetch the new chunk manifest
+        const key = '__lovable_chunk_reload__';
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, '1');
+          window.location.reload();
+        }
+        throw err2;
+      }
+    }
+  });
+
+const RegistrationForm = lazyWithRetry(() => import('@/components/RegistrationForm'));
+const PricingTable = lazyWithRetry(() => import('@/components/PricingTable'));
 // Step3Mobile removed - using PricingTable for now
-const CompactProgressBar = lazy(() => import('@/components/CompactProgressBar'));
-const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
-const CustomerDetailsStep = lazy(() => import('@/components/CustomerDetailsStep'));
-const MaintenanceBanner = lazy(() => import('@/components/MaintenanceBanner'));
+const CompactProgressBar = lazyWithRetry(() => import('@/components/CompactProgressBar'));
+const CarJourneyProgress = lazyWithRetry(() => import('@/components/CarJourneyProgress'));
+const CustomerDetailsStep = lazyWithRetry(() => import('@/components/CustomerDetailsStep'));
+const MaintenanceBanner = lazyWithRetry(() => import('@/components/MaintenanceBanner'));
+
 
 
 interface VehicleData {
