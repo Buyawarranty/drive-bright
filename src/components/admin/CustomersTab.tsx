@@ -3355,32 +3355,7 @@ export const CustomersTab = ({
                         }
                       }}
                     />
-                    {(isSuperAdmin || normalizedRole === 'admin') && (
-                      <>
-                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground ml-2">Quick month</span>
-                        <QuickMonthFilter
-                          dateRange={dateRange}
-                          onDateRangeChange={(range) => {
-                            setUnifiedScope('signup');
-                            setUnifiedPeriod('custom');
-                            setUnifiedCustomRange(range);
-                            setDateRange(range);
-                            setRevenueDateRange(range);
-                          }}
-                        />
-                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground ml-2">Quick week</span>
-                        <QuickWeekFilter
-                          dateRange={dateRange}
-                          onDateRangeChange={(range) => {
-                            setUnifiedScope('signup');
-                            setUnifiedPeriod('custom');
-                            setUnifiedCustomRange(range);
-                            setDateRange(range);
-                            setRevenueDateRange(range);
-                          }}
-                        />
-                      </>
-                    )}
+                    {/* Quick month/week navigators removed — use Custom range in the date filter above */}
                     {!isSalesAgent && (
                       <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
                         <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} results
