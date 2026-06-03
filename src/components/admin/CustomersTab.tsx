@@ -3543,25 +3543,40 @@ export const CustomersTab = ({
 
 
                 {/* Revenue stats badge — shown for any active date selection so admins always see the total for what they've filtered */}
-                {isSuperAdmin && filteredRevenueStats && (
-                  <div className="flex items-center gap-2 px-4 py-2 border-t bg-emerald-50/40 flex-wrap">
-                    <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                      <CalendarIcon className="h-3.5 w-3.5" />
-                      Total for {unifiedScope} ({unifiedPeriod === 'custom' ? 'custom range' : unifiedPeriod}):
-                    </span>
-                    <span className="text-emerald-600 font-bold text-base whitespace-nowrap">
-                      £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {filteredRevenueStats.count} {filteredRevenueStats.label}
-                    </Badge>
-                    {filteredRevenueStats.count > 0 && (
-                      <span className="text-xs text-muted-foreground ml-2">
-                        AOV £{(filteredRevenueStats.revenue / filteredRevenueStats.count).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {isSuperAdmin && filteredRevenueStats && (() => {
+                  const activeRange = revenueDateRange ?? dateRange;
+                  let rangeLabel = 'all time';
+                  if (activeRange?.from) {
+                    const fromD = new Date(activeRange.from);
+                    const toD = activeRange.to ? new Date(activeRange.to) : fromD;
+                    rangeLabel = format(fromD, 'd MMM yyyy') === format(toD, 'd MMM yyyy')
+                      ? format(fromD, 'd MMM yyyy')
+                      : `${format(fromD, 'd MMM')} – ${format(toD, 'd MMM yyyy')}`;
+                  }
+                  const avg = filteredRevenueStats.count > 0
+                    ? filteredRevenueStats.revenue / filteredRevenueStats.count
+                    : 0;
+                  const sourceSuffix = filterBySource && filterBySource !== 'all_view' ? ` per ${filteredRevenueStats.label.replace(/ sales$/, '')} sale` : ' per sale';
+                  return (
+                    <div className="flex items-center gap-2 px-4 py-2 border-t bg-emerald-50/40 flex-wrap">
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <CalendarIcon className="h-3.5 w-3.5" />
+                        Total for {unifiedScope} ({rangeLabel}):
                       </span>
-                    )}
-                  </div>
-                )}
+                      <span className="text-emerald-600 font-bold text-base whitespace-nowrap">
+                        £{filteredRevenueStats.revenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {filteredRevenueStats.count} {filteredRevenueStats.label}
+                      </Badge>
+                      {filteredRevenueStats.count > 0 && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          Avg price{sourceSuffix}: <span className="font-semibold text-foreground">£{avg.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })()}
