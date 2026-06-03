@@ -37,8 +37,8 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
   const { settings, logCallAttempt } = useLeadCallTracking();
 
   const callCount = lead.call_count || 0;
-  const isMaxReached = callCount >= settings.max_call_attempts;
-  const isNearMax = callCount === settings.max_call_attempts - 1;
+  const isMaxReached = false;
+  const isNearMax = false;
 
   const displayName = lead.first_name || lead.last_name 
     ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
