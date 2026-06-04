@@ -702,6 +702,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
           <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
+        </div>
 
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
