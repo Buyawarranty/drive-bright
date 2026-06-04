@@ -60,7 +60,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [regNumber, setRegNumber] = useState('');
   const [regError, setRegError] = useState('');
   const [mileage, setMileage] = useState('');
-  const [mileageSelection, setMileageSelection] = useState<string>('under120k'); // default; auto-derived from MOT
+  const [mileageSelection, setMileageSelection] = useState<string>('');
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
@@ -542,22 +542,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </>
                 )}
 
-                {/* Get my instant quote CTA */}
-                <Button
-                  onClick={() => handleGetQuote()}
-                  disabled={isLookingUp}
-                  className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg disabled:opacity-70 disabled:cursor-not-allowed animate-breathing"
-                >
-                  <span className="flex items-center justify-center gap-3">
-                    {isLookingUp ? 'Preparing your instant price…' : 'Get my instant quote'}
-                    {!isLookingUp && <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />}
-                  </span>
-                </Button>
-
-                {/* Eligibility note */}
-                <p className="text-sm text-gray-500 text-center">
-                  Vehicles up to <span className="font-bold">150,000 miles</span> and <span className="font-bold">15 years old</span>. We'll pull your latest MOT mileage automatically.
-                </p>
+                {/* Mileage Quick Select */}
+                <MileageQuickSelect
+                  value={mileageSelection}
+                  onChange={handleMileageSelection}
+                  onAutoSubmit={(m) => handleGetQuote(m)}
+                  error={mileageError || vehicleAgeError}
+                  isLoading={isLookingUp}
+                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                />
 
                 {/* Eligibility / lookup error */}
                 {eligibilityError && (
