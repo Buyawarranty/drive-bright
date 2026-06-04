@@ -72,6 +72,8 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
   }, [isAdmin, fetchActive]);
 
   const acknowledge = async (id: string) => {
+    // Optimistically remove from view so it disappears immediately
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
     const { data: { user } } = await supabase.auth.getUser();
     let adminId: string | null = null;
     if (user) {
@@ -82,17 +84,26 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
         .maybeSingle();
       adminId = au?.id || null;
     }
-    await supabase
+    const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'acknowledged', acknowledged_by: adminId, acknowledged_at: new Date().toISOString() })
       .eq('id', id);
+    if (error) {
+      console.error('[CheckoutStruggleAlertBar] acknowledge failed', error);
+      fetchActive();
+    }
   };
 
   const dismiss = async (id: string) => {
-    await supabase
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'resolved', resolved_at: new Date().toISOString() })
       .eq('id', id);
+    if (error) {
+      console.error('[CheckoutStruggleAlertBar] dismiss failed', error);
+      fetchActive();
+    }
   };
 
   if (!isAdmin || alerts.length === 0) return null;
@@ -111,7 +122,7 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <AlertTriangle className="h-5 w-5 shrink-0" />
-          <div className="text-sm font-medium truncate">
+          <div className="text-sm font-medium break-words">
             🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
             {top.customer_phone && (
               <span className="ml-2 opacity-90">· {top.customer_phone}</span>
