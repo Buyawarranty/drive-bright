@@ -295,9 +295,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
         </section>
 
         {/* Two-column grid */}
-        <section className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-[22px] items-start">
+        <section className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
           {/* LEFT - Stack of cards */}
-          <div className="grid gap-[18px]">
+          <div className="grid gap-3">
             {/* CARD 1 - Cover Level */}
             <Card step={1}>
               <SectionHead
