@@ -827,6 +827,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <Flame className="h-3 w-3" />x{lead.application_count > 9 ? '9+' : `${lead.application_count}`}
             </Badge>
           )}
+          {struggleAlert && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-red-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help animate-pulse">
+                  🚨
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[260px]">
+                Checkout struggle: {struggleAlert.signal_type.replace(/_/g, ' ')} — {formatDistanceToNow(new Date(struggleAlert.created_at), { addSuffix: true })}
+              </TooltipContent>
+            </Tooltip>
+          )}
           {displayName ? (
             <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>{displayName}</span>
           ) : (
