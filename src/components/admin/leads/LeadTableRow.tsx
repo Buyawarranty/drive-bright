@@ -72,6 +72,7 @@ interface LeadTableRowProps {
   isLeadGenView?: boolean;
   userRole?: string | null;
   reminderTime?: string;
+  struggleAlert?: { signal_type: string; created_at: string } | null;
 }
 
 const statusColors: Record<LeadStatus, string> = {
