@@ -2410,10 +2410,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                 </div>
                 {numericMotMileage > 0 && (
-                  <select
+                  <Select
                     value=""
-                    onChange={(e) => {
-                      const v = e.target.value;
+                    onValueChange={(v) => {
                       if (!v) return;
                       if (v === '__manual__') {
                         handleClearMileage();
@@ -2423,16 +2422,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       setValidatedFields(prev => ({ ...prev, mileage: true }));
                       setMileagePreFilled(Number(v) === numericMotMileage);
                     }}
-                    className="h-11 sm:h-12 w-full rounded-lg border border-brand-orange bg-background px-3 pr-8 text-sm font-semibold text-brand-orange cursor-pointer hover:bg-brand-orange/10 focus:outline-none focus:ring-2 focus:ring-brand-orange"
                   >
-                    <option value="">Quick-select mileage</option>
-                    {mileageQuickSelectOptions.map(option => (
-                      <option key={option.delta} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                    <option value="__manual__">Enter manually</option>
-                  </select>
+                    <SelectTrigger className="h-11 sm:h-12 w-full rounded-lg border-2 border-brand-orange bg-background px-3 text-sm font-semibold text-brand-orange hover:bg-brand-orange/5 focus:ring-2 focus:ring-brand-orange">
+                      <SelectValue placeholder="Quick-select mileage" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border shadow-lg">
+                      {mileageQuickSelectOptions.map(option => {
+                        const formatted = option.value.toLocaleString('en-GB');
+                        const suffix = option.delta === 0
+                          ? '(same as MOT)'
+                          : `(+${option.delta.toLocaleString('en-GB')})`;
+                        return (
+                          <SelectItem
+                            key={option.delta}
+                            value={String(option.value)}
+                            className="py-3 cursor-pointer focus:bg-muted"
+                          >
+                            <span className="text-base font-bold text-foreground">{formatted}</span>
+                            <span className="ml-2 text-sm font-normal text-muted-foreground">{suffix}</span>
+                          </SelectItem>
+                        );
+                      })}
+                      <SelectItem
+                        value="__manual__"
+                        className="py-3 cursor-pointer focus:bg-brand-orange/10 border-t border-border mt-1"
+                      >
+                        <span className="text-base font-bold text-brand-orange">Enter manually</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
 
