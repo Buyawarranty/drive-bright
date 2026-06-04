@@ -2383,47 +2383,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
             <div>
-              {/* Top bar: Current Mileage / Last MOT tabs + Not correct? */}
+              {/* Top row: Current Mileage label + Last MOT readout */}
               {motMileage ? (
-                <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-border">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleClearMileage();
-                      }}
-                      className={`text-sm font-medium px-2 py-1 rounded transition ${
-                        Number(customerData.mileage) !== motMileage
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Current Mileage
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleInputChange('mileage', String(motMileage));
-                        setValidatedFields(prev => ({ ...prev, mileage: true }));
-                        setMileagePreFilled(true);
-                        setMileagePrefillSource('mot');
-                      }}
-                      className={`text-sm font-semibold px-3 py-1.5 rounded-md transition ${
-                        Number(customerData.mileage) === motMileage
-                          ? 'bg-[#E6F0FB] text-[#1E40AF]'
-                          : 'text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      Last MOT: {motMileage.toLocaleString('en-GB')} miles
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleClearMileage}
-                    className="text-sm font-medium text-brand-orange hover:underline whitespace-nowrap"
-                  >
-                    Not correct?
-                  </button>
+                <div className="flex items-center gap-3 mb-3 flex-wrap">
+                  <span className="text-sm font-bold text-foreground">Current Mileage</span>
+                  <span className="text-sm font-semibold text-[#1E40AF]">
+                    Last MOT: {motMileage.toLocaleString('en-GB')} miles
+                  </span>
                 </div>
               ) : null}
 
@@ -2431,7 +2397,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 What's your approximate mileage today?
               </Label>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3 items-center">
                 <div className="relative flex-1">
                   {motLoading ? (
                     <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
@@ -2461,43 +2427,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                   )}
                 </div>
-                <select
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value === '__manual__') {
-                      handleClearMileage();
-                      return;
-                    }
-                    if (e.target.value) {
-                      handleInputChange('mileage', e.target.value);
-                      setValidatedFields(prev => ({ ...prev, mileage: true }));
-                      setMileagePreFilled(false);
-                    }
-                  }}
-                  className="h-11 sm:h-12 px-4 rounded-lg border border-border bg-muted/50 text-sm font-medium cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-                >
-                  <option value="">Quick-select</option>
-                  {motMileage ? (
-                    <>
-                      <option value={motMileage}>{motMileage.toLocaleString('en-GB')} (same as MOT)</option>
-                      {[1000, 2500, 5000, 10000].map(delta => {
-                        const v = motMileage + delta;
-                        if (v > 150000) return null;
-                        return (
-                          <option key={delta} value={v}>
-                            {v.toLocaleString('en-GB')} (+{delta.toLocaleString('en-GB')})
-                          </option>
-                        );
-                      })}
-                      <option value="__manual__">Enter manually</option>
-                    </>
-                  ) : (
-                    Array.from({ length: 131 }, (_, i) => {
-                      const value = 10000 + (i * 1000);
-                      return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
-                    })
-                  )}
-                </select>
+                {motMileage && (
+                  <button
+                    type="button"
+                    onClick={handleClearMileage}
+                    className="flex items-center gap-1 text-sm font-semibold text-brand-orange hover:underline whitespace-nowrap"
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    Not correct?
+                  </button>
+                )}
               </div>
 
               {/* Errors (required / over-limit) */}
@@ -2517,16 +2456,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
 
               {/* Helper text block */}
-              <div className="mt-3 space-y-2 text-sm">
+              <div className="mt-3 space-y-1.5 text-sm">
                 {motMileage && (
                   <p className="flex items-start gap-1.5 text-foreground/80">
                     <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
                     <span>Your last MOT recorded {motMileage.toLocaleString('en-GB')} miles.</span>
                   </p>
                 )}
-                <p className="text-foreground/80 pl-5">
-                  Please enter your best estimate of the vehicle's mileage today. An estimate is perfectly fine.
-                </p>
                 <p className="text-muted-foreground pl-5 text-xs">
                   Your mileage is used for policy records only — it doesn't affect your price.
                 </p>
