@@ -314,6 +314,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   isLeadGenView = false,
   userRole,
   reminderTime,
+  struggleAlert,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
