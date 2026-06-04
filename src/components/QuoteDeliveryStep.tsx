@@ -478,10 +478,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         )}
 
         {/* Form */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4 sm:space-y-2.5 mb-6 sm:mb-3">
           {/* First Name Input */}
-          <div className="pt-2">
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+          <div className="pt-2 sm:pt-0">
+            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
               Your first name
             </label>
             <div className="relative">
