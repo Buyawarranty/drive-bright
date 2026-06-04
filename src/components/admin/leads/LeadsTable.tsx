@@ -40,6 +40,7 @@ interface LeadsTableProps {
   isLeadGenView?: boolean;
   userRole?: string | null;
   reminderTimesMap?: Record<string, string>;
+  struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
