@@ -2368,34 +2368,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
             <div>
-              {/* Top row: Current Mileage label + Last MOT readout */}
-              {motMileage ? (
-                <div className="flex items-center gap-3 mb-3 flex-wrap">
-                  <span className="text-sm font-bold text-foreground">Current Mileage</span>
-                  <span className="text-sm font-semibold text-brand-orange">
-                    Last MOT: {motMileage.toLocaleString('en-GB')} miles
-                  </span>
-                </div>
-              ) : null}
-
-              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-2">
+              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
                 What's your approximate mileage today?
               </Label>
+              {motMileage ? (
+                <p className="text-sm text-muted-foreground mb-2">
+                  Last MOT Mileage: {motMileage.toLocaleString('en-GB')} miles
+                </p>
+              ) : null}
 
-              <div className="flex gap-3 items-start">
-                <div className="relative flex-1">
+              <div className="flex flex-col gap-2">
+                <div className="relative">
                   {motLoading ? (
                     <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
                       <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
                     </div>
                   ) : (
-                    <div className="relative">
+                    <>
                       <Input
                         id="mileage"
                         type="text"
                         inputMode="numeric"
-                        placeholder="Enter your current mileage"
+                        placeholder="Enter approximate mileage"
                         value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
                         onChange={(e) => {
                           const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -2409,7 +2404,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
                 {numericMotMileage > 0 && (
@@ -2426,9 +2421,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       setValidatedFields(prev => ({ ...prev, mileage: true }));
                       setMileagePreFilled(Number(v) === numericMotMileage);
                     }}
-                    className="h-11 sm:h-12 min-w-[148px] rounded-lg border border-brand-orange bg-background px-3 pr-8 text-sm font-semibold text-brand-orange cursor-pointer hover:bg-brand-orange/10 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                    className="h-11 sm:h-12 w-full rounded-lg border border-brand-orange bg-background px-3 pr-8 text-sm font-semibold text-brand-orange cursor-pointer hover:bg-brand-orange/10 focus:outline-none focus:ring-2 focus:ring-brand-orange"
                   >
-                    <option value="">Quick-select</option>
+                    <option value="">Quick-select mileage</option>
                     {mileageQuickSelectOptions.map(option => (
                       <option key={option.delta} value={option.value}>
                         {option.label}
@@ -2437,7 +2432,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <option value="__manual__">Enter manually</option>
                   </select>
                 )}
-
               </div>
 
               {/* Errors (required / over-limit) */}
