@@ -62,7 +62,36 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
     onChange(selection);
   };
 
+  const focusRegInput = () => {
+    if (typeof document === 'undefined') return;
+    const regInput = document.querySelector<HTMLInputElement>('input.bg-yellow-400');
+    if (regInput) {
+      regInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => regInput.focus({ preventScroll: true }), 250);
+      const plate = regInput.closest('div.border-2') as HTMLElement | null;
+      if (plate) {
+        plate.classList.add('ring-4', 'ring-brand-orange/60', 'animate-pulse');
+        setTimeout(() => {
+          plate.classList.remove('ring-4', 'ring-brand-orange/60', 'animate-pulse');
+        }, 2200);
+      }
+    }
+  };
+
   const handleGetQuote = () => {
+    if (!isRegValid) {
+      setHelperMessage('Enter your registration number to continue.');
+      focusRegInput();
+      return;
+    }
+    if (!hasSelection) {
+      setHelperMessage('Select your approximate mileage to continue.');
+      setPulseMileage(true);
+      mileageRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => setPulseMileage(false), 2200);
+      return;
+    }
+    setHelperMessage('');
     if (onAutoSubmit && hasSelection) {
       setShowLoadingMessage(true);
       const mileageValue = value === 'under120k' ? '100000' : '130000';
