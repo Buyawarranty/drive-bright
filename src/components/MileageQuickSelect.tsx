@@ -23,7 +23,10 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
 }) => {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const [highlight, setHighlight] = useState(false);
+  const [helperMessage, setHelperMessage] = useState('');
+  const [pulseMileage, setPulseMileage] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mileageRowRef = useRef<HTMLDivElement>(null);
   const prevRegValid = useRef(isRegValid);
   const isUnder120k = value === 'under120k';
   const isOver120k = value === 'over120k';
