@@ -556,7 +556,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           
           {/* Phone Input - Always visible */}
           <div>
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
               Your mobile number
             </label>
             <div className="relative">
