@@ -428,7 +428,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
             {/* Email quote link — placed below FAQ to keep sticky bar compact */}
-            <div className="pt-2 pb-6 text-center">
+            <div className="py-1 text-center">
               <button
                 type="button"
                 onClick={() => setEmailQuoteOpen(true)}
