@@ -1311,7 +1311,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
     }
     if (validatedFields[field]) {
-      return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
+      return 'border-green-500 bg-green-50/30 cursor-text focus:border-green-500 focus:ring-2 focus:ring-green-500/20';
     }
     return '';
   };
