@@ -2427,7 +2427,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       setMileagePreFilled(Number(v) === numericMotMileage);
                     }}
                   >
-                    <SelectTrigger className="h-11 sm:h-12 w-full rounded-lg border-2 border-brand-orange bg-background px-3 text-sm font-semibold text-brand-orange hover:bg-brand-orange/5 focus:ring-2 focus:ring-brand-orange">
+                    <SelectTrigger className="h-11 sm:h-12 w-full rounded-lg border bg-background px-3 text-sm font-semibold hover:bg-muted/40 focus:ring-2 focus:ring-ring [&>svg]:h-5 [&>svg]:w-5 [&>svg]:opacity-100 [&>svg]:[stroke-width:2.5]" style={{ borderColor: '#E2E5EA', color: '#1F2A44' }}>
                       <SelectValue placeholder="Quick-select mileage" />
                     </SelectTrigger>
                     <SelectContent className="bg-background border-border shadow-lg">
