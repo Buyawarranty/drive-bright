@@ -138,6 +138,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           ...parsed,
           first_name: firstName,
           last_name: lastName,
+          mileage: '',
         };
       }
     } catch (error) {
