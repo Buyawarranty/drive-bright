@@ -702,7 +702,54 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
           <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
-        </div>
+
+        {monthProjection && (
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                {monthProjection.monthLabel} Pace Projection
+              </CardTitle>
+              <CardDescription>
+                If the current run-rate continues, this is where {monthProjection.monthLabel} lands by month-end.
+                Based on day {monthProjection.dayOfMonth} of {monthProjection.daysInMonth}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">So far this month</span>
+                  <p className="text-2xl font-bold">£{monthProjection.actualRevenue.toLocaleString('en-GB')}</p>
+                  <p className="text-xs text-muted-foreground">{monthProjection.actualSales} warranties</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Projected revenue</span>
+                  <p className="text-2xl font-bold text-primary">£{monthProjection.projectedRevenue.toLocaleString('en-GB')}</p>
+                  {monthProjection.revenueDeltaPct !== null && (
+                    <p className={`text-xs flex items-center gap-1 ${monthProjection.revenueDeltaPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {monthProjection.revenueDeltaPct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {monthProjection.revenueDeltaPct >= 0 ? '+' : ''}{monthProjection.revenueDeltaPct}% vs last month
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Projected warranties</span>
+                  <p className="text-2xl font-bold text-primary">{monthProjection.projectedSales}</p>
+                  {monthProjection.priorSales !== null && (
+                    <p className="text-xs text-muted-foreground">Last month: {monthProjection.priorSales}</p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Projected AOV</span>
+                  <p className="text-2xl font-bold">£{monthProjection.projectedAov.toLocaleString('en-GB')}</p>
+                  <p className="text-xs text-muted-foreground">Current: £{monthProjection.actualAov.toLocaleString('en-GB')}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
 
         {/* Cost Efficiency (super-admin only) */}
         <CostEfficiencyPanel
