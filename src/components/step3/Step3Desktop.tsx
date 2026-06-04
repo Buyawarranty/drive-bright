@@ -408,12 +408,15 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                       </div>
                       {d.perks.length > 0 && (
                         <div className="mt-2.5 grid gap-1.5">
-                          {d.perks.map(p => (
-                            <div key={p} className="text-[12px] text-[#505050] flex gap-2 items-start">
-                              <span className="text-[#1ca36f] font-black">✓</span>
-                              {p}
-                            </div>
-                          ))}
+                          {d.perks.map(p => {
+                            const isFreeYear = p.includes('FREE — only 12 instalments');
+                            return (
+                              <div key={p} className={`text-[12px] text-[#505050] flex gap-2 items-start ${isFreeYear ? 'font-bold' : ''}`}>
+                                <span className="text-[#1ca36f] font-black">✓</span>
+                                {p}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </OptionCard>
