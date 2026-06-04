@@ -155,6 +155,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   isLeadGenView={isLeadGenView}
                   userRole={userRole}
                   reminderTime={reminderTimesMap[lead.id]}
+                  struggleAlert={struggleAlertsMap?.get(lead.id) || null}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
