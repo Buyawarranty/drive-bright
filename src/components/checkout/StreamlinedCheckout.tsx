@@ -2444,7 +2444,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               {formatted} <span className="font-semibold text-[#6c6c6c]">miles</span>
                             </span>
                             <span
-                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold ${
                                 option.delta === 0
                                   ? 'bg-[#0BA360]/10 text-[#0BA360]'
                                   : 'bg-[#1F2A44]/8 text-[#1F2A44]'
