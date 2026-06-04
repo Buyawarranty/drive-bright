@@ -410,10 +410,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   return (
     <section className="bg-white min-h-screen">
-      <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
+      <div className="max-w-xl mx-auto px-4 py-6 sm:py-4">
         {/* Main Heading */}
 
-        <div className="text-center mb-4">
+        <div className="text-center mb-4 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full mr-2">
               <Rocket className="w-4 h-4" />
