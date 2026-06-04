@@ -23,7 +23,10 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
 }) => {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const [highlight, setHighlight] = useState(false);
+  const [helperMessage, setHelperMessage] = useState('');
+  const [pulseMileage, setPulseMileage] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mileageRowRef = useRef<HTMLDivElement>(null);
   const prevRegValid = useRef(isRegValid);
   const isUnder120k = value === 'under120k';
   const isOver120k = value === 'over120k';
@@ -59,7 +62,36 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
     onChange(selection);
   };
 
+  const focusRegInput = () => {
+    if (typeof document === 'undefined') return;
+    const regInput = document.querySelector<HTMLInputElement>('input.bg-yellow-400');
+    if (regInput) {
+      regInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => regInput.focus({ preventScroll: true }), 250);
+      const plate = regInput.closest('div.border-2') as HTMLElement | null;
+      if (plate) {
+        plate.classList.add('ring-4', 'ring-brand-orange/60', 'animate-pulse');
+        setTimeout(() => {
+          plate.classList.remove('ring-4', 'ring-brand-orange/60', 'animate-pulse');
+        }, 2200);
+      }
+    }
+  };
+
   const handleGetQuote = () => {
+    if (!isRegValid) {
+      setHelperMessage('Enter your registration number to continue.');
+      focusRegInput();
+      return;
+    }
+    if (!hasSelection) {
+      setHelperMessage('Select your approximate mileage to continue.');
+      setPulseMileage(true);
+      mileageRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => setPulseMileage(false), 2200);
+      return;
+    }
+    setHelperMessage('');
     if (onAutoSubmit && hasSelection) {
       setShowLoadingMessage(true);
       const mileageValue = value === 'under120k' ? '100000' : '130000';
@@ -98,7 +130,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       </p>
       
       {/* Card-Style Radio Options */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div ref={mileageRowRef} className={`flex flex-col sm:flex-row gap-3 transition-all rounded-xl ${pulseMileage ? 'ring-4 ring-brand-orange/60 animate-pulse' : ''}`}>
         <label
           className={`relative flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
             isUnder120k 
@@ -160,12 +192,11 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         return (
           <Button
             onClick={handleGetQuote}
-            disabled={!isActive}
             style={!isActive ? { backgroundColor: '#FFD8C2', color: '#8A5A45' } : undefined}
             className={`w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl ${
               isActive
                 ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing'
-                : 'shadow-none disabled:opacity-100 disabled:cursor-not-allowed hover:bg-[#FFD8C2]'
+                : 'shadow-none hover:brightness-95'
             }`}
           >
             <span className="flex items-center justify-center gap-3">
@@ -175,6 +206,18 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           </Button>
         );
       })()}
+
+      {/* Helper Message (soft, non-error) */}
+      {helperMessage && !isRegValid && (
+        <p className="text-sm font-medium text-center" style={{ color: '#8A5A45' }}>
+          {helperMessage}
+        </p>
+      )}
+      {helperMessage && isRegValid && !hasSelection && (
+        <p className="text-sm font-medium text-center" style={{ color: '#8A5A45' }}>
+          {helperMessage}
+        </p>
+      )}
       
       {/* Microcopy */}
       <p className="text-sm text-gray-500 text-center">
