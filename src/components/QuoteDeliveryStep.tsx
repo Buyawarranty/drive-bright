@@ -437,7 +437,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Combined Vehicle + Mileage Card */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl mb-6 overflow-hidden">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl mb-6 sm:mb-3 overflow-hidden">
           {/* Vehicle row */}
           <div className="p-3 sm:p-4">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
