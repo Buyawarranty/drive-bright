@@ -2383,29 +2383,53 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
             <div>
-              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current mileage</Label>
-                {mileagePreFilled && mileagePrefillSource === 'mot' && motMileage && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#E6F4EA] text-[#1B7A3D] text-xs font-medium">
-                    Pre-filled from MOT
-                  </span>
-                )}
-                {mileagePreFilled && mileagePrefillSource === 'session' && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#EEF4FF] text-[#1E40AF] text-xs font-medium">
-                    Pre-filled from your last entry
-                  </span>
-                )}
-                {customerData.mileage && (
+              {/* Top bar: Current Mileage / Last MOT tabs + Not correct? */}
+              {motMileage ? (
+                <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-border">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleClearMileage();
+                      }}
+                      className={`text-sm font-medium px-2 py-1 rounded transition ${
+                        Number(customerData.mileage) !== motMileage
+                          ? 'text-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Current Mileage
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleInputChange('mileage', String(motMileage));
+                        setValidatedFields(prev => ({ ...prev, mileage: true }));
+                        setMileagePreFilled(true);
+                        setMileagePrefillSource('mot');
+                      }}
+                      className={`text-sm font-semibold px-3 py-1.5 rounded-md transition ${
+                        Number(customerData.mileage) === motMileage
+                          ? 'bg-[#E6F0FB] text-[#1E40AF]'
+                          : 'text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      Last MOT: {motMileage.toLocaleString('en-GB')} miles
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={handleClearMileage}
-                    className="text-xs font-medium text-muted-foreground hover:text-foreground underline underline-offset-2 ml-auto"
+                    className="text-sm font-medium text-brand-orange hover:underline whitespace-nowrap"
                   >
-                    Clear & adjust
+                    Not correct?
                   </button>
-                )}
-              </div>
-              
+                </div>
+              ) : null}
+
+              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-2">
+                What's your approximate mileage today?
+              </Label>
 
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -2420,7 +2444,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         id="mileage"
                         type="text"
                         inputMode="numeric"
-                        placeholder="Enter your current mileage — a rough estimate is fine"
+                        placeholder="Enter your current mileage"
                         value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
                         onChange={(e) => {
                           const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -2429,7 +2453,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }}
                         onBlur={() => handleFieldBlur('mileage')}
                         required
-                        className={`h-11 sm:h-12 text-base pr-10 ${mileagePreFilled ? 'border-[#0BA360] border-2 bg-[#F0FDF4]' : ''} ${getInputValidationClass('mileage')}`}
+                        className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
                       />
                       {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
@@ -2440,38 +2464,77 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 <select
                   value=""
                   onChange={(e) => {
+                    if (e.target.value === '__manual__') {
+                      handleClearMileage();
+                      return;
+                    }
                     if (e.target.value) {
                       handleInputChange('mileage', e.target.value);
                       setValidatedFields(prev => ({ ...prev, mileage: true }));
                       setMileagePreFilled(false);
                     }
                   }}
-                  className="h-11 sm:h-12 px-4 rounded-lg border border-border bg-muted/50 text-sm font-medium cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+                  className="h-11 sm:h-12 px-4 rounded-lg border border-border bg-muted/50 text-sm font-medium cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
                 >
-                  <option value="">Quick select</option>
-                  {Array.from({ length: 131 }, (_, i) => {
-                    const value = 10000 + (i * 1000);
-                    return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
-                  })}
+                  <option value="">Quick-select</option>
+                  {motMileage ? (
+                    <>
+                      <option value={motMileage}>{motMileage.toLocaleString('en-GB')} (same as MOT)</option>
+                      {[1000, 2500, 5000, 10000].map(delta => {
+                        const v = motMileage + delta;
+                        if (v > 150000) return null;
+                        return (
+                          <option key={delta} value={v}>
+                            {v.toLocaleString('en-GB')} (+{delta.toLocaleString('en-GB')})
+                          </option>
+                        );
+                      })}
+                      <option value="__manual__">Enter manually</option>
+                    </>
+                  ) : (
+                    Array.from({ length: 131 }, (_, i) => {
+                      const value = 10000 + (i * 1000);
+                      return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
+                    })
+                  )}
                 </select>
               </div>
-              
-              {/* Mileage info note */}
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                <Info className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>Your mileage is used for policy records only — it doesn't affect your price.</span>
-              </div>
-              
+
+              {/* Errors (required / over-limit) */}
               {customerData.mileage && Number(customerData.mileage) > 150000 && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
-                  <p className="text-destructive text-sm font-medium">
+                  <p className="text-destructive text-sm font-medium flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4" />
                     Sorry, we only cover vehicles under 150,000 miles.
                   </p>
                 </div>
               )}
+              {fieldErrors.mileage && (!customerData.mileage || Number(customerData.mileage) <= 150000) && (
+                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {fieldErrors.mileage}
+                </p>
+              )}
+
+              {/* Helper text block */}
+              <div className="mt-3 space-y-2 text-sm">
+                {motMileage && (
+                  <p className="flex items-start gap-1.5 text-foreground/80">
+                    <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <span>Your last MOT recorded {motMileage.toLocaleString('en-GB')} miles.</span>
+                  </p>
+                )}
+                <p className="text-foreground/80 pl-5">
+                  Please enter your best estimate of the vehicle's mileage today. An estimate is perfectly fine.
+                </p>
+                <p className="text-muted-foreground pl-5 text-xs">
+                  Your mileage is used for policy records only — it doesn't affect your price.
+                </p>
+              </div>
+
               {/* High Mileage Surcharge Banner */}
               {highMileageSurchargeApplied && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-3">
                   <div className="flex items-start gap-2 sm:gap-3">
                     <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
@@ -2484,12 +2547,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                   </div>
                 </div>
-              )}
-              {fieldErrors.mileage && (
-                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {fieldErrors.mileage}
-                </p>
               )}
             </div>
 
