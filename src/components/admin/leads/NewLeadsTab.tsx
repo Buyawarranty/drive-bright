@@ -312,6 +312,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [setFilter, sortOption]);
 
+  const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
+
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Handle reminders filter before the switch since it's not a LeadStatus
     if ((filter as string) === 'reminders') {
@@ -324,6 +326,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         const d = new Date(rt);
         return isToday(d) || isPast(d);
       });
+    }
+    if ((filter as string) === 'checkout_struggle') {
+      return inputLeads.filter(lead => struggleByLeadIdRef.current.has(lead.id));
     }
     switch (filter) {
       case 'all':
