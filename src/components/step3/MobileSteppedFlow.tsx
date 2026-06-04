@@ -207,7 +207,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
           <div className="text-xs text-muted-foreground mt-0.5">
             <span className="font-mono font-semibold text-foreground">{vehicleData.regNumber}</span>
             {vehicleData.fuelType && <> · {vehicleData.fuelType}</>}
-            {vehicleData.mileage && <> · Under {Math.ceil((parseInt(String(vehicleData.mileage).replace(/[^0-9]/g, '')) || 0) / 10000) * 10000} miles</>}
+            {vehicleData.mileage && <> · {(parseInt(String(vehicleData.mileage).replace(/[^0-9]/g, '')) || 0) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}</>}
           </div>
         </div>
         <button onClick={onChangeVehicle ?? onBack} className="text-primary text-sm font-semibold">Edit</button>
