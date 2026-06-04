@@ -1226,6 +1226,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     hideAssignedColumn={hideAssignedColumnForAgents}
                     userRole={userRole}
                     reminderTimesMap={reminderTimesMap}
+                    struggleAlertsMap={struggleByLeadId}
                   />
                   
                   {/* Lightweight Footer Pagination */}
