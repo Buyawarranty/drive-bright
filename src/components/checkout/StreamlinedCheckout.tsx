@@ -465,6 +465,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
   const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
+  const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
+  const mileageQuickSelectOptions = useMemo(() => {
+    if (!numericMotMileage) return [];
+    return [0, 1000, 2500, 5000, 10000]
+      .map(delta => ({
+        delta,
+        value: numericMotMileage + delta,
+        label: delta === 0
+          ? `${numericMotMileage.toLocaleString('en-GB')} (same as MOT)`
+          : `${(numericMotMileage + delta).toLocaleString('en-GB')} (+${delta.toLocaleString('en-GB')})`,
+      }))
+      .filter(option => option.value <= 150000);
+  }, [numericMotMileage]);
 
   // Track MOT match for UI state (do NOT auto-prefill)
   useEffect(() => {
@@ -2399,29 +2412,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                   )}
                 </div>
-                {motMileage && (
+                {numericMotMileage > 0 && (
                   <select
                     value=""
                     onChange={(e) => {
                       const v = e.target.value;
                       if (!v) return;
+                      if (v === '__manual__') {
+                        handleClearMileage();
+                        return;
+                      }
                       handleInputChange('mileage', v);
                       setValidatedFields(prev => ({ ...prev, mileage: true }));
-                      setMileagePreFilled(String(v) === String(motMileage));
+                      setMileagePreFilled(Number(v) === numericMotMileage);
                     }}
-                    className="h-11 sm:h-12 pl-2 pr-7 rounded-lg border border-brand-orange bg-white text-sm font-semibold text-brand-orange cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-brand-orange max-w-[140px]"
+                    className="h-11 sm:h-12 min-w-[148px] rounded-lg border border-brand-orange bg-background px-3 pr-8 text-sm font-semibold text-brand-orange cursor-pointer hover:bg-brand-orange/10 focus:outline-none focus:ring-2 focus:ring-brand-orange"
                   >
                     <option value="">Quick-select</option>
-                    <option value={motMileage}>{motMileage.toLocaleString('en-GB')} (same as MOT)</option>
-                    {[1000, 2500, 5000, 10000].map(delta => {
-                      const v = motMileage + delta;
-                      if (v > 150000) return null;
-                      return (
-                        <option key={delta} value={v}>
-                          {v.toLocaleString('en-GB')} (+{delta.toLocaleString('en-GB')})
-                        </option>
-                      );
-                    })}
+                    {mileageQuickSelectOptions.map(option => (
+                      <option key={option.delta} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                    <option value="__manual__">Enter manually</option>
                   </select>
                 )}
 
