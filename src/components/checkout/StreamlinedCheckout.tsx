@@ -2478,7 +2478,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Helper text */}
               <p className="text-muted-foreground mt-3 text-xs">
-                Your mileage is used for policy records only — it doesn't affect your price.
+                Your mileage helps us confirm the right cover for your vehicle.
               </p>
 
 
