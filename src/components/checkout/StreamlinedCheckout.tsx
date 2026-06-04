@@ -28,6 +28,7 @@ import { startOfDay, format, isToday } from 'date-fns';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { EmbeddedCheckoutModal } from '@/components/stripe';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { StripePaymentForm } from '@/components/stripe/StripePaymentForm';
 import PlanSummaryCard from '@/components/checkout/PlanSummaryCard';
