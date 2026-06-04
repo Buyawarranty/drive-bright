@@ -72,6 +72,8 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
   }, [isAdmin, fetchActive]);
 
   const acknowledge = async (id: string) => {
+    // Optimistically remove from view so it disappears immediately
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
     const { data: { user } } = await supabase.auth.getUser();
     let adminId: string | null = null;
     if (user) {
@@ -82,17 +84,26 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
         .maybeSingle();
       adminId = au?.id || null;
     }
-    await supabase
+    const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'acknowledged', acknowledged_by: adminId, acknowledged_at: new Date().toISOString() })
       .eq('id', id);
+    if (error) {
+      console.error('[CheckoutStruggleAlertBar] acknowledge failed', error);
+      fetchActive();
+    }
   };
 
   const dismiss = async (id: string) => {
-    await supabase
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'resolved', resolved_at: new Date().toISOString() })
       .eq('id', id);
+    if (error) {
+      console.error('[CheckoutStruggleAlertBar] dismiss failed', error);
+      fetchActive();
+    }
   };
 
   if (!isAdmin || alerts.length === 0) return null;
