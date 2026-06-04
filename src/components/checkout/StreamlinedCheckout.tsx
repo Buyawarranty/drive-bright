@@ -2396,7 +2396,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         id="mileage"
                         type="text"
                         inputMode="numeric"
-                        placeholder="Enter approximate mileage"
+                        placeholder="Enter exact mileage"
                         value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
                         onChange={(e) => {
                           const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -2414,48 +2414,50 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                 </div>
                 {numericMotMileage > 0 && (
-                  <Select
-                    value=""
-                    onValueChange={(v) => {
-                      if (!v) return;
-                      if (v === '__manual__') {
-                        handleClearMileage();
-                        return;
-                      }
-                      handleInputChange('mileage', v);
-                      setValidatedFields(prev => ({ ...prev, mileage: true }));
-                      setMileagePreFilled(Number(v) === numericMotMileage);
-                    }}
-                  >
-                    <SelectTrigger className="h-11 sm:h-12 w-full rounded-lg border bg-background px-3 text-sm font-semibold hover:bg-muted/40 focus:ring-2 focus:ring-ring [&>svg]:h-5 [&>svg]:w-5 [&>svg]:opacity-100 [&>svg]:[stroke-width:2.5]" style={{ borderColor: '#A8AEB7', color: '#1F2A44' }}>
-                      <SelectValue placeholder="Quick-select mileage" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border-border shadow-lg">
+                  <div className="mt-1">
+                    <p className="text-sm font-semibold mb-2" style={{ color: '#1F2A44' }}>
+                      Or use a quick estimate
+                    </p>
+                    <div className="grid gap-2">
                       {mileageQuickSelectOptions.map(option => {
                         const formatted = option.value.toLocaleString('en-GB');
-                        const suffix = option.delta === 0
-                          ? '(same as MOT)'
-                          : `(+${option.delta.toLocaleString('en-GB')})`;
+                        const pillLabel = option.delta === 0
+                          ? 'Same as MOT'
+                          : `+${option.delta.toLocaleString('en-GB')}`;
+                        const isSelected = String(customerData.mileage) === String(option.value);
                         return (
-                          <SelectItem
+                          <button
+                            type="button"
                             key={option.delta}
-                            value={String(option.value)}
-                            className="py-3 cursor-pointer focus:bg-muted"
+                            onClick={() => {
+                              handleInputChange('mileage', String(option.value));
+                              setValidatedFields(prev => ({ ...prev, mileage: true }));
+                              setMileagePreFilled(option.delta === 0);
+                            }}
+                            className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg border-2 text-left transition-all ${
+                              isSelected
+                                ? 'border-brand-orange bg-brand-orange/5'
+                                : 'border-[#A8AEB7] bg-white hover:border-[#1F2A44] hover:bg-muted/30'
+                            }`}
                           >
-                            <span className="text-base font-bold text-foreground">{formatted}</span>
-                            <span className="ml-2 text-sm font-normal" style={{ color: 'hsl(215 16% 38%)' }}>{suffix}</span>
-
-                          </SelectItem>
+                            <span className="text-base font-bold" style={{ color: '#1F2A44' }}>
+                              {formatted} <span className="font-semibold text-[#6c6c6c]">miles</span>
+                            </span>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                option.delta === 0
+                                  ? 'bg-[#0BA360]/10 text-[#0BA360]'
+                                  : 'bg-[#1F2A44]/8 text-[#1F2A44]'
+                              }`}
+                              style={option.delta === 0 ? undefined : { backgroundColor: 'rgba(31,42,68,0.08)' }}
+                            >
+                              {pillLabel}
+                            </span>
+                          </button>
                         );
                       })}
-                      <SelectItem
-                        value="__manual__"
-                        className="py-3 cursor-pointer focus:bg-brand-orange/10 border-t border-border mt-1"
-                      >
-                        <span className="text-base font-bold text-brand-orange">Enter manually</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    </div>
+                  </div>
                 )}
               </div>
 
