@@ -40,6 +40,7 @@ interface LeadsTableProps {
   isLeadGenView?: boolean;
   userRole?: string | null;
   reminderTimesMap?: Record<string, string>;
+  struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -73,6 +74,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   isLeadGenView = false,
   userRole,
   reminderTimesMap = {},
+  struggleAlertsMap,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -153,6 +155,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   isLeadGenView={isLeadGenView}
                   userRole={userRole}
                   reminderTime={reminderTimesMap[lead.id]}
+                  struggleAlert={struggleAlertsMap?.get(lead.id) || null}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}

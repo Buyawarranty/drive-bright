@@ -26,8 +26,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -52,6 +52,7 @@ interface LeadsFiltersProps {
     reminders: number;
     recovered: number;
     due_today: number;
+    checkout_struggle?: number;
     source_google?: number;
     source_facebook?: number;
     source_organic?: number;
@@ -93,6 +94,7 @@ const STATUS_PILLS: {
   { value: 'all_leads', label: 'Total Leads', colorClass: 'data-[state=active]:bg-foreground data-[state=active]:text-background', countKey: 'all_leads' },
   { value: 'live', label: 'Live Leads', icon: '🟢', colorClass: 'data-[state=active]:bg-emerald-700 data-[state=active]:text-white', countKey: 'live' },
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
+  { value: 'checkout_struggle', label: 'Checkout Struggle', icon: '🚨', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'checkout_struggle' },
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
   { value: 'new', label: 'New', colorClass: 'data-[state=active]:bg-blue-600 data-[state=active]:text-white', countKey: 'new' },
   { value: 'awaiting_contact', label: 'Awaiting', colorClass: 'data-[state=active]:bg-amber-500 data-[state=active]:text-white', countKey: 'all_leads', isAssignment: true },

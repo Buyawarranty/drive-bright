@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today';
+import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -311,6 +312,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [setFilter, sortOption]);
 
+  const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
+
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Handle reminders filter before the switch since it's not a LeadStatus
     if ((filter as string) === 'reminders') {
@@ -323,6 +326,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         const d = new Date(rt);
         return isToday(d) || isPast(d);
       });
+    }
+    if ((filter as string) === 'checkout_struggle') {
+      return inputLeads.filter(lead => struggleByLeadIdRef.current.has(lead.id));
     }
     switch (filter) {
       case 'all':
@@ -360,7 +366,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [leads]
   );
 
-  const statusFilteredLeads = useMemo(() => applyStatusFilter(visibleLeads), [visibleLeads, applyStatusFilter]);
+  // Live checkout struggle alerts (last 24h) joined to visible leads by email/phone/reg
+  const { struggles: activeStruggles } = useActiveCheckoutStruggles();
+  const struggleByLeadId = useMemo(
+    () => buildStruggleByLeadId(visibleLeads, activeStruggles),
+    [visibleLeads, activeStruggles]
+  );
+  useEffect(() => {
+    struggleByLeadIdRef.current = struggleByLeadId as Map<string, unknown>;
+  }, [struggleByLeadId]);
+
+  const statusFilteredLeads = useMemo(
+    () => applyStatusFilter(visibleLeads),
+    // Re-run when struggle map changes so the 'checkout_struggle' filter stays live
+    [visibleLeads, applyStatusFilter, struggleByLeadId]
+  );
 
   const getLeadSubmissionDate = useCallback(
     (lead: Lead) => new Date(lead.created_at),
@@ -588,6 +608,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return isToday(d) || isPast(d);
       }).length,
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
+      checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
       source_google: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredVisibleLeadsForFilters.filter(l => !l.lead_source || l.lead_source === 'website').length,
@@ -595,7 +616,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
       source_organic_live: dateFilteredVisibleLeadsForFilters.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
@@ -1205,6 +1226,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     hideAssignedColumn={hideAssignedColumnForAgents}
                     userRole={userRole}
                     reminderTimesMap={reminderTimesMap}
+                    struggleAlertsMap={struggleByLeadId}
                   />
                   
                   {/* Lightweight Footer Pagination */}
@@ -1261,6 +1283,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   hideAssignedColumn={hideAssignedColumnForAgents}
                   userRole={userRole}
                   reminderTimesMap={reminderTimesMap}
+                  struggleAlertsMap={struggleByLeadId}
                 />
 
                 <LeadsTableFooter
