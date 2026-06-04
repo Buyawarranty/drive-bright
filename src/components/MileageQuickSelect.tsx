@@ -130,7 +130,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       </p>
       
       {/* Card-Style Radio Options */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div ref={mileageRowRef} className={`flex flex-col sm:flex-row gap-3 transition-all rounded-xl ${pulseMileage ? 'ring-4 ring-brand-orange/60 animate-pulse' : ''}`}>
         <label
           className={`relative flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
             isUnder120k 
