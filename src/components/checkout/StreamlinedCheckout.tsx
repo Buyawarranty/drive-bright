@@ -2446,10 +2446,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             <span
                               className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold ${
                                 option.delta === 0
-                                  ? 'bg-[#0BA360]/10 text-[#0BA360]'
-                                  : 'bg-[#1F2A44]/8 text-[#1F2A44]'
+                                  ? 'bg-[#0BA360] text-white'
+                                  : 'bg-[#1F2A44] text-white'
                               }`}
-                              style={option.delta === 0 ? undefined : { backgroundColor: 'rgba(31,42,68,0.08)' }}
                             >
                               {pillLabel}
                             </span>
