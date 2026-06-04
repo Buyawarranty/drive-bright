@@ -2378,7 +2378,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 What's your approximate mileage today?
               </Label>
               {motMileage ? (
-                <p className="mb-2 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-3 py-1.5 inline-block">
+                <p className="mb-2 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
                   Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{motMileage.toLocaleString('en-GB')} miles</span>
                 </p>
               ) : null}
