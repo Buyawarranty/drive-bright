@@ -135,11 +135,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           lastName = parts.slice(1).join(' ') || '';
         }
         
+        // Restore typed mileage from sessionStorage (saved as user types)
+        // but don't carry forward MOT-prefilled mileage from previous sessions
+        let restoredMileage = '';
+        try {
+          const sessionMileage = sessionStorage.getItem('baw_last_mileage') || '';
+          if (sessionMileage && /^\d+$/.test(sessionMileage)) {
+            restoredMileage = sessionMileage;
+          }
+        } catch (e) { /* ignore */ }
+
         return {
           ...parsed,
           first_name: firstName,
           last_name: lastName,
-          mileage: '',
+          mileage: restoredMileage,
         };
       }
     } catch (error) {
@@ -958,7 +968,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           if (stateAge < 30 * 60 * 1000) {
             // Restore customer data if available
             if (parsed.customerData) {
-              setCustomerData({ ...parsed.customerData, mileage: '' });
+              let restoredMileage = '';
+              try {
+                const sessionMileage = sessionStorage.getItem('baw_last_mileage') || '';
+                if (sessionMileage && /^\d+$/.test(sessionMileage)) {
+                  restoredMileage = sessionMileage;
+                }
+              } catch (e) { /* ignore */ }
+              setCustomerData({ ...parsed.customerData, mileage: restoredMileage });
             }
             // Restore address data if available
             if (parsed.addressData) {
