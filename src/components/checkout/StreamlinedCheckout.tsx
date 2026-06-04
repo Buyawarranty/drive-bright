@@ -2405,15 +2405,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     onChange={(e) => {
                       const v = e.target.value;
                       if (!v) return;
-                      if (v === '__manual__') {
-                        handleClearMileage();
-                        return;
-                      }
                       handleInputChange('mileage', v);
                       setValidatedFields(prev => ({ ...prev, mileage: true }));
                       setMileagePreFilled(String(v) === String(motMileage));
                     }}
-                    className="h-11 sm:h-12 px-3 rounded-lg border border-brand-orange bg-white text-sm font-semibold text-brand-orange cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                    className="h-11 sm:h-12 pl-2 pr-7 rounded-lg border border-brand-orange bg-white text-sm font-semibold text-brand-orange cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-brand-orange max-w-[140px]"
                   >
                     <option value="">Quick-select</option>
                     <option value={motMileage}>{motMileage.toLocaleString('en-GB')} (same as MOT)</option>
@@ -2426,9 +2422,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         </option>
                       );
                     })}
-                    <option value="__manual__">Enter manually</option>
                   </select>
                 )}
+
               </div>
 
               {/* Errors (required / over-limit) */}
