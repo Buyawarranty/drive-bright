@@ -466,42 +466,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
   const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
 
-  // Pre-fill mileage from MOT data if customer hasn't entered one
+  // Track MOT match for UI state (do NOT auto-prefill)
   useEffect(() => {
-    if (motMileage && !mileagePreFilled) {
-      if (!customerData.mileage) {
-        console.log('✅ Pre-filling mileage from MOT:', motMileage);
-        setCustomerData(prev => ({
-          ...prev,
-          mileage: String(motMileage)
-        }));
-        setValidatedFields(prev => ({ ...prev, mileage: true }));
-        setMileagePreFilled(true);
-        setMileagePrefillSource('mot');
-      } else if (String(customerData.mileage) === String(motMileage)) {
-        // Mileage already matches MOT (e.g. restored from localStorage) — show pre-fill UI
-        setMileagePreFilled(true);
-        setMileagePrefillSource('mot');
-      }
+    if (motMileage && customerData.mileage && String(customerData.mileage) === String(motMileage)) {
+      setMileagePreFilled(true);
+      setMileagePrefillSource('mot');
     }
-  }, [motMileage, mileagePreFilled, customerData.mileage]);
+  }, [motMileage, customerData.mileage]);
 
-  // Pre-fill mileage from previous session entry (if no MOT data available)
-  useEffect(() => {
-    if (motLoading || mileagePreFilled || customerData.mileage) return;
-    try {
-      const sessionMileage = sessionStorage.getItem('baw_last_mileage');
-      if (sessionMileage && /^\d+$/.test(sessionMileage)) {
-        console.log('✅ Pre-filling mileage from session:', sessionMileage);
-        setCustomerData(prev => ({ ...prev, mileage: sessionMileage }));
-        setValidatedFields(prev => ({ ...prev, mileage: true }));
-        setMileagePreFilled(true);
-        setMileagePrefillSource('session');
-      }
-    } catch (e) {
-      // sessionStorage unavailable — ignore
-    }
-  }, [motLoading, motMileage, mileagePreFilled, customerData.mileage]);
 
   // Persist mileage to sessionStorage so it can be re-used in the same session
   useEffect(() => {
