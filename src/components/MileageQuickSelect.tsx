@@ -161,11 +161,11 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           <Button
             onClick={handleGetQuote}
             disabled={!isActive}
-            style={!isActive ? { backgroundColor: '#FFE1D2', color: '#9A5A3D' } : undefined}
-            className={`w-full font-bold rounded-xl transition-colors ${
+            style={!isActive ? { backgroundColor: '#FFD8C2', color: '#8A5A45' } : undefined}
+            className={`w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl ${
               isActive
-                ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing py-6 sm:py-8 text-lg sm:text-xl'
-                : 'py-5 sm:py-6 text-base sm:text-lg shadow-none disabled:opacity-100 disabled:cursor-not-allowed hover:bg-[#FFE1D2]'
+                ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing'
+                : 'shadow-none disabled:opacity-100 disabled:cursor-not-allowed hover:bg-[#FFD8C2]'
             }`}
           >
             <span className="flex items-center justify-center gap-3">
