@@ -150,16 +150,30 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       </p>
 
       {/* Get Quote CTA Button */}
-      <Button
-        onClick={handleGetQuote}
-        disabled={!isRegValid || !hasSelection}
-        className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:animate-none animate-breathing"
-      >
-        <span className="flex items-center justify-center gap-3">
-          Get my instant quote
-          <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
-        </span>
-      </Button>
+      {(() => {
+        const isActive = isRegValid && hasSelection;
+        const label = !isRegValid
+          ? 'Enter your reg to continue'
+          : !hasSelection
+          ? 'Select mileage to continue'
+          : 'Get my instant quote';
+        return (
+          <Button
+            onClick={handleGetQuote}
+            disabled={!isActive}
+            className={`w-full font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl transition-colors ${
+              isActive
+                ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing'
+                : 'bg-gray-200 hover:bg-gray-200 text-gray-500 shadow-none disabled:opacity-100 disabled:cursor-not-allowed'
+            }`}
+          >
+            <span className="flex items-center justify-center gap-3">
+              {label}
+              {isActive && <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />}
+            </span>
+          </Button>
+        );
+      })()}
       
       {/* Microcopy */}
       <p className="text-sm text-gray-500 text-center">
