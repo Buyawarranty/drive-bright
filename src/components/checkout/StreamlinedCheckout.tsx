@@ -472,7 +472,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
-    return [0, 1000, 2500, 5000, 10000]
+    return [0, 2500, 5000]
       .map(delta => ({
         delta,
         value: numericMotMileage + delta,
