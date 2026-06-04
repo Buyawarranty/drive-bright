@@ -138,6 +138,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           ...parsed,
           first_name: firstName,
           last_name: lastName,
+          mileage: '',
         };
       }
     } catch (error) {
@@ -956,7 +957,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           if (stateAge < 30 * 60 * 1000) {
             // Restore customer data if available
             if (parsed.customerData) {
-              setCustomerData(parsed.customerData);
+              setCustomerData({ ...parsed.customerData, mileage: '' });
             }
             // Restore address data if available
             if (parsed.addressData) {
