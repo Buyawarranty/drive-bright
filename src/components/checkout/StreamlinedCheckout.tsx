@@ -2359,7 +2359,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               {motMileage ? (
                 <div className="flex items-center gap-3 mb-3 flex-wrap">
                   <span className="text-sm font-bold text-foreground">Current Mileage</span>
-                  <span className="text-sm font-semibold text-[#1E40AF]">
+                  <span className="text-sm font-semibold text-brand-orange">
                     Last MOT: {motMileage.toLocaleString('en-GB')} miles
                   </span>
                 </div>
@@ -2369,7 +2369,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 What's your approximate mileage today?
               </Label>
 
-              <div className="flex gap-3 items-center">
+              <div className="flex gap-3 items-start">
                 <div className="relative flex-1">
                   {motLoading ? (
                     <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
@@ -2400,14 +2400,34 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                 </div>
                 {motMileage && (
-                  <button
-                    type="button"
-                    onClick={handleClearMileage}
-                    className="flex items-center gap-1 text-sm font-semibold text-brand-orange hover:underline whitespace-nowrap"
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (!v) return;
+                      if (v === '__manual__') {
+                        handleClearMileage();
+                        return;
+                      }
+                      handleInputChange('mileage', v);
+                      setValidatedFields(prev => ({ ...prev, mileage: true }));
+                      setMileagePreFilled(String(v) === String(motMileage));
+                    }}
+                    className="h-11 sm:h-12 px-3 rounded-lg border border-brand-orange bg-white text-sm font-semibold text-brand-orange cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-brand-orange"
                   >
-                    <AlertCircle className="w-4 h-4" />
-                    Not correct?
-                  </button>
+                    <option value="">Quick-select</option>
+                    <option value={motMileage}>{motMileage.toLocaleString('en-GB')} (same as MOT)</option>
+                    {[1000, 2500, 5000, 10000].map(delta => {
+                      const v = motMileage + delta;
+                      if (v > 150000) return null;
+                      return (
+                        <option key={delta} value={v}>
+                          {v.toLocaleString('en-GB')} (+{delta.toLocaleString('en-GB')})
+                        </option>
+                      );
+                    })}
+                    <option value="__manual__">Enter manually</option>
+                  </select>
                 )}
               </div>
 
@@ -2427,18 +2447,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </p>
               )}
 
-              {/* Helper text block */}
-              <div className="mt-3 space-y-1.5 text-sm">
-                {motMileage && (
-                  <p className="flex items-start gap-1.5 text-foreground/80">
-                    <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span>Your last MOT recorded {motMileage.toLocaleString('en-GB')} miles.</span>
-                  </p>
-                )}
-                <p className="text-muted-foreground pl-5 text-xs">
-                  Your mileage is used for policy records only — it doesn't affect your price.
-                </p>
-              </div>
+              {/* Helper text */}
+              <p className="text-muted-foreground mt-3 text-xs">
+                Your mileage is used for policy records only — it doesn't affect your price.
+              </p>
+
 
               {/* High Mileage Surcharge Banner */}
               {highMileageSurchargeApplied && (
