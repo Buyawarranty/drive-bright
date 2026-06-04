@@ -52,6 +52,7 @@ interface LeadsFiltersProps {
     reminders: number;
     recovered: number;
     due_today: number;
+    checkout_struggle?: number;
     source_google?: number;
     source_facebook?: number;
     source_organic?: number;
