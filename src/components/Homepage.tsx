@@ -190,6 +190,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
     setRegError('');
 
+    // Require mileage band selection (unless provided via auto-submit override)
+    const effectiveSelection = mileageOverride
+      ? (mileageOverride === '100000' ? 'under120k' : 'over120k')
+      : mileageSelection;
+    if (!effectiveSelection) {
+      setMileageError('Please select your approximate mileage to continue.');
+      return;
+    }
+    setMileageError('');
+
     setIsLookingUp(true);
 
     // Pull latest MOT mileage in parallel with DVLA lookup. If none, default to under 120k.
