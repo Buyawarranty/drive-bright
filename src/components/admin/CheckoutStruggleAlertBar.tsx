@@ -122,7 +122,7 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <AlertTriangle className="h-5 w-5 shrink-0" />
-          <div className="text-sm font-medium truncate">
+          <div className="text-sm font-medium break-words">
             🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
             {top.customer_phone && (
               <span className="ml-2 opacity-90">· {top.customer_phone}</span>
