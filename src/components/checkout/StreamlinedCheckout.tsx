@@ -472,7 +472,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
-    return [0, 1000, 2500, 5000, 10000]
+    return [0, 2500, 5000]
       .map(delta => ({
         delta,
         value: numericMotMileage + delta,
@@ -2378,17 +2378,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 What's your approximate mileage today?
               </Label>
               {motMileage ? (
-                <div className="mb-3 rounded-lg bg-[#EAF2FB] border border-[#CFE0F2] px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#3A6FA0]">
-                    Your last recorded MOT mileage
-                  </p>
-                  <p className="text-2xl font-bold text-[#0F1B3D] leading-tight mt-0.5">
-                    {motMileage.toLocaleString('en-GB')} miles
-                  </p>
-                  <p className="text-xs text-[#3A6FA0] mt-1">
-                    Enter your current mileage, or choose a quick estimate below.
-                  </p>
-                </div>
+                <p className="mb-2 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-3 py-1.5 inline-block">
+                  Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{motMileage.toLocaleString('en-GB')} miles</span>
+                </p>
               ) : null}
 
               <div className="flex flex-col gap-2">
@@ -2486,7 +2478,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Helper text */}
               <p className="text-muted-foreground mt-3 text-xs">
-                Your mileage is used for policy records only — it doesn't affect your price.
+                Your mileage helps us confirm the right cover for your vehicle.
               </p>
 
 
