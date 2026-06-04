@@ -608,6 +608,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return isToday(d) || isPast(d);
       }).length,
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
+      checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
       source_google: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad').length,
       source_organic: dateFilteredVisibleLeadsForFilters.filter(l => !l.lead_source || l.lead_source === 'website').length,
