@@ -614,7 +614,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </button>
 
         {/* Quick Benefits - Below CTA */}
-        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4">
+        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4 sm:mt-2">
           <span className="flex items-center gap-1.5">
             <Rocket className="w-4 h-4 text-brand-orange" />
             Instant quote
