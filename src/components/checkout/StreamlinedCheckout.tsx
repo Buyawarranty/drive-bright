@@ -2152,14 +2152,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       {fieldErrors.last_name}
                     </p>
                   )}
-                  {/* Postcode reminder when last name is completed but postcode is empty */}
-                  {validatedFields.last_name && customerData.last_name?.trim()?.length >= 2 && !addressData.postcode?.trim() && (
+                  {/* Auto-scroll to mileage once last name is valid */}
+                  {validatedFields.last_name && customerData.last_name?.trim()?.length >= 2 && !customerData.mileage && (
                     <span
                       ref={(el) => {
                         if (el) {
                           setTimeout(() => {
-                            document.getElementById('postcode-lookup')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            setTimeout(() => document.getElementById('postcode-lookup')?.focus(), 400);
+                            document.getElementById('mileage')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            setTimeout(() => document.getElementById('mileage')?.focus(), 400);
                           }, 300);
                         }
                       }}
