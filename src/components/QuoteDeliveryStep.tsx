@@ -410,10 +410,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   return (
     <section className="bg-white min-h-screen">
-      <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
+      <div className="max-w-xl mx-auto px-4 py-6 sm:py-4">
         {/* Main Heading */}
 
-        <div className="text-center mb-4">
+        <div className="text-center mb-4 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full mr-2">
               <Rocket className="w-4 h-4" />
@@ -437,7 +437,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Combined Vehicle + Mileage Card */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl mb-6 overflow-hidden">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl mb-6 sm:mb-3 overflow-hidden">
           {/* Vehicle row */}
           <div className="p-3 sm:p-4">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
@@ -478,10 +478,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         )}
 
         {/* Form */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4 sm:space-y-2.5 mb-6 sm:mb-3">
           {/* First Name Input */}
-          <div className="pt-2">
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+          <div className="pt-2 sm:pt-0">
+            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
               Your first name
             </label>
             <div className="relative">
@@ -496,7 +496,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -516,7 +516,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Email Input - Shown by default */}
           <div>
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
               Your email address
             </label>
             <div className="relative">
@@ -530,7 +530,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -556,7 +556,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           
           {/* Phone Input - Always visible */}
           <div>
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
               Your mobile number
             </label>
             <div className="relative">
@@ -570,7 +570,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -597,7 +597,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-lg text-lg transition-colors ${
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 sm:py-3.5 px-8 rounded-xl shadow-lg text-lg transition-colors ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-brand-orange hover:bg-black active:scale-[0.98] animate-cta-enhanced'
@@ -614,7 +614,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </button>
 
         {/* Quick Benefits - Below CTA */}
-        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4">
+        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4 sm:mt-2">
           <span className="flex items-center gap-1.5">
             <Rocket className="w-4 h-4 text-brand-orange" />
             Instant quote
