@@ -372,8 +372,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     () => buildStruggleByLeadId(visibleLeads, activeStruggles),
     [visibleLeads, activeStruggles]
   );
+  useEffect(() => {
+    struggleByLeadIdRef.current = struggleByLeadId as Map<string, unknown>;
+  }, [struggleByLeadId]);
 
-  const statusFilteredLeads = useMemo(() => applyStatusFilter(visibleLeads), [visibleLeads, applyStatusFilter]);
+  const statusFilteredLeads = useMemo(
+    () => applyStatusFilter(visibleLeads),
+    // Re-run when struggle map changes so the 'checkout_struggle' filter stays live
+    [visibleLeads, applyStatusFilter, struggleByLeadId]
+  );
 
   const getLeadSubmissionDate = useCallback(
     (lead: Lead) => new Date(lead.created_at),
