@@ -516,7 +516,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Email Input - Shown by default */}
           <div>
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
               Your email address
             </label>
             <div className="relative">
