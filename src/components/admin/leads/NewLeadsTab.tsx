@@ -361,6 +361,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [leads]
   );
 
+  // Live checkout struggle alerts (last 24h) joined to visible leads by email/phone/reg
+  const { struggles: activeStruggles } = useActiveCheckoutStruggles();
+  const struggleByLeadId = useMemo(
+    () => buildStruggleByLeadId(visibleLeads, activeStruggles),
+    [visibleLeads, activeStruggles]
+  );
+
   const statusFilteredLeads = useMemo(() => applyStatusFilter(visibleLeads), [visibleLeads, applyStatusFilter]);
 
   const getLeadSubmissionDate = useCallback(
