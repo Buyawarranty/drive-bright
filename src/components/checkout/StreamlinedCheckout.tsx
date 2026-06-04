@@ -960,14 +960,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           if (stateAge < 30 * 60 * 1000) {
             // Restore customer data if available
             if (parsed.customerData) {
-              let restoredMileage = '';
-              try {
-                const sessionMileage = sessionStorage.getItem('baw_last_mileage') || '';
-                if (sessionMileage && /^\d+$/.test(sessionMileage)) {
-                  restoredMileage = sessionMileage;
-                }
-              } catch (e) { /* ignore */ }
-              setCustomerData({ ...parsed.customerData, mileage: restoredMileage });
+              // Always start mileage empty — never prefill from previous sessions
+              setCustomerData({ ...parsed.customerData, mileage: '' });
+
             }
             // Restore address data if available
             if (parsed.addressData) {
