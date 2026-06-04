@@ -210,7 +210,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const selectedDuration = DURATION_OPTIONS.find(d => d.id === paymentType);
 
   return (
-    <div className="bg-[#f7f7f5] min-h-screen pb-[260px]">
+    <div className="bg-[#f7f7f5] min-h-screen pb-[140px]">
       {/* Top sub-header (back + vehicle) */}
       <div className="bg-white border-b border-[#e9e9e7]">
         <div className="max-w-[1180px] mx-auto px-7 py-4 flex items-center gap-4">
@@ -295,9 +295,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
         </section>
 
         {/* Two-column grid */}
-        <section className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-[22px] items-start">
+        <section className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
           {/* LEFT - Stack of cards */}
-          <div className="grid gap-[18px]">
+          <div className="grid gap-3">
             {/* CARD 1 - Cover Level */}
             <Card step={1}>
               <SectionHead
