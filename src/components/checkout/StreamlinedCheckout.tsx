@@ -483,6 +483,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       .filter(option => option.value <= 150000);
   }, [numericMotMileage]);
 
+  // Estimate today's mileage: MOT mileage + ~12,000 miles/year since MOT date, rounded to nearest 1,000
+  const estimatedMileagePlaceholder = useMemo(() => {
+    if (!numericMotMileage) return 'e.g. 50,000';
+    let estimated = numericMotMileage;
+    if (motDate) {
+      const motTime = new Date(motDate).getTime();
+      if (!isNaN(motTime)) {
+        const years = (Date.now() - motTime) / (365.25 * 24 * 60 * 60 * 1000);
+        if (years > 0) estimated = numericMotMileage + years * 12000;
+      }
+    }
+    const rounded = Math.round(estimated / 1000) * 1000;
+    return `e.g. ${rounded.toLocaleString('en-GB')}`;
+  }, [numericMotMileage, motDate]);
+
   // Track MOT match for UI state (do NOT auto-prefill)
   useEffect(() => {
     if (motMileage && customerData.mileage && String(customerData.mileage) === String(motMileage)) {
