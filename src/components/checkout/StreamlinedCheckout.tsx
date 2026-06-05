@@ -2415,12 +2415,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </div>
                 {numericMotMileage > 0 && (
                   <div className="mt-1">
-                    <p className="text-sm font-semibold mb-2" style={{ color: '#1F2A44' }}>
-                      Or use a quick estimate
+                    <p className="text-sm font-medium mb-2 text-[#1F2A44]">
+                      Or roughly how many miles since your MOT?
                     </p>
-                    <div className="grid gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {mileageQuickSelectOptions.map(option => {
-                        const formatted = option.value.toLocaleString('en-GB');
                         const pillLabel = option.delta === 0
                           ? 'Same as MOT'
                           : `+${option.delta.toLocaleString('en-GB')}`;
@@ -2434,28 +2433,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               setValidatedFields(prev => ({ ...prev, mileage: true }));
                               setMileagePreFilled(option.delta === 0);
                             }}
-                            className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg border-2 text-left transition-all ${
+                            className={`px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
                               isSelected
-                                ? 'border-brand-orange bg-brand-orange/5'
-                                : 'border-[#A8AEB7] bg-white hover:border-[#1F2A44] hover:bg-muted/30'
+                                ? 'border-brand-orange bg-brand-orange/10 text-[#1F2A44]'
+                                : 'border-[#CFD4DB] bg-white text-[#1F2A44] hover:border-[#1F2A44] hover:bg-muted/30'
                             }`}
                           >
-                            <span className="text-base font-bold" style={{ color: '#1F2A44' }}>
-                              {formatted} <span className="font-semibold text-[#6c6c6c]">miles</span>
-                            </span>
-                            <span
-                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold ${
-                                option.delta === 0
-                                  ? 'bg-[#0BA360] text-white'
-                                  : 'bg-[#1F2A44] text-white'
-                              }`}
-                            >
-                              {pillLabel}
-                            </span>
+                            {pillLabel}
                           </button>
                         );
                       })}
                     </div>
+                    {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && (
+                      <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
+                        <Check className="w-4 h-4" />
+                        We'll use approximately {Number(customerData.mileage).toLocaleString('en-GB')} miles.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
