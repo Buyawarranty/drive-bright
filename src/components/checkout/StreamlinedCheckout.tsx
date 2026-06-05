@@ -2388,17 +2388,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Mileage */}
-            <div>
-              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
+             <div>
+              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-3">
                 What's your approximate mileage today?
               </Label>
               {motMileage ? (
-                <p className="mb-2 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
-                  Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{motMileage.toLocaleString('en-GB')} miles</span>
+                <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
+                  Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{numericMotMileage.toLocaleString('en-GB')} miles</span>
                 </p>
               ) : null}
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
+
                 <div className="relative">
                   {motLoading ? (
                     <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
