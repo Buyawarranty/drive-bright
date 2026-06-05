@@ -397,11 +397,11 @@ const AdminDashboard = () => {
       case 'referrals':
         return <ReferralsTab />;
       case 'claims':
-        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin' && effectiveUserRole !== 'claims_manager') {
+        if (!isTabAllowedForRole('claims', effectiveUserRole, effectiveUserPermissions)) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
-              <p className="text-sm text-muted-foreground mt-1">The Claims tab is restricted to administrators.</p>
+              <p className="text-sm text-muted-foreground mt-1">The Claims tab is restricted to staff with claims access.</p>
             </div>
           );
         }
@@ -564,6 +564,12 @@ const AdminDashboardInner: React.FC<{
   // Use effective (impersonated) role for sidebar and content
   const displayRole = isImpersonating ? effectiveRole : userRole;
   const displayPermissions = isImpersonating ? effectivePermissions : userPermissions;
+
+  useEffect(() => {
+    if (!isTabAllowedForRole(activeTab, displayRole, displayPermissions)) {
+      handleTabChange(getFirstPermittedTab(displayRole, displayPermissions));
+    }
+  }, [activeTab, displayRole, displayPermissions, handleTabChange]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
