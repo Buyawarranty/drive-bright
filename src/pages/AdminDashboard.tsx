@@ -58,6 +58,45 @@ const CancellationsTab = lazy(() => import('@/components/admin/CancellationsTab'
 const RefundsPaidTab = lazy(() => import('@/components/admin/RefundsPaidTab').then(m => ({ default: m.RefundsPaidTab })));
 const GhlSyncLogTab = lazy(() => import('@/components/admin/GhlSyncLogTab').then(m => ({ default: m.GhlSyncLogTab })));
 
+const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
+const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
+const CLAIMS_AGENT_TABS = ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'staff-hub', 'account'];
+const SALES_TABS = ['new-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_LEAD_TABS = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+
+const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
+  const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
+    ? ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
+    : ['customers', 'new-leads', 'get-quote', 'claims', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+
+  if (role === 'blog_writer') return 'blog-writing';
+  if (role === 'sales' || role === 'sales_lead' || role === 'lead_gen') return 'new-leads';
+  if (role === 'claims_agent' || role === 'claims_manager') return 'claims';
+
+  if (permissions) {
+    const firstPreferred = preferredOrder.find(tab => permissions[`tab_${tab}`] === true);
+    if (firstPreferred) return firstPreferred;
+    const firstAllowed = Object.keys(permissions).find(key => key.startsWith('tab_') && permissions[key]);
+    if (firstAllowed) return firstAllowed.replace('tab_', '');
+  }
+
+  return 'customers';
+};
+
+const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
+  const permKey = `tab_${tab}`;
+  if (tab === 'account') return true;
+  if (role === 'super_admin' || role === 'dev_tester') return true;
+  if (role === 'admin') return permissions?.[permKey] !== false;
+  if (role === 'claims_agent') return permissions ? permissions[permKey] === true : CLAIMS_AGENT_TABS.includes(tab);
+  if (role === 'claims_manager') return permissions?.[permKey] === true || CLAIMS_MANAGER_TABS.includes(tab);
+  if (role === 'sales_lead') return SALES_LEAD_TABS.includes(tab);
+  if (role === 'sales') return SALES_TABS.includes(tab) || permissions?.[permKey] === true;
+  if (permissions && Object.keys(permissions).length > 0) return permissions[permKey] === true;
+  return true;
+};
+
 // Tab loading spinner
 const TabFallback = () => (
   <div className="flex items-center justify-center h-64">
@@ -279,8 +318,7 @@ const AdminDashboard = () => {
       const { data, error } = rolesResult;
       const adminUserData = permissionsResult.data;
 
-      const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts'];
-      const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
+      const userAdminRoles = data?.filter(r => ADMIN_ROLES.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
         hasCheckedAccessRef.current = true;
@@ -289,8 +327,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
-      const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
+      const primaryRole = ROLE_PRIORITY.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
       setUserRole(primaryRole);
       setHasAdminAccess(true);
@@ -308,22 +345,7 @@ const AdminDashboard = () => {
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
         
-        let defaultTab = 'customers';
-        if (primaryRole === 'blog_writer') {
-          defaultTab = 'blog-writing';
-        } else if (primaryRole === 'sales') {
-          defaultTab = 'new-leads';
-        } else if (primaryRole === 'sales_lead') {
-          defaultTab = 'new-leads';
-        } else if (primaryRole === 'lead_gen') {
-          defaultTab = 'new-leads';
-        } else if (!['super_admin', 'admin'].includes(primaryRole) && adminUserData?.permissions) {
-          const perms = adminUserData.permissions as Record<string, boolean>;
-          const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
-          if (firstAllowedTab) {
-            defaultTab = firstAllowedTab.replace('tab_', '');
-          }
-        }
+        const defaultTab = getFirstPermittedTab(primaryRole, adminUserData?.permissions as Record<string, boolean> | null);
         
         setActiveTab(defaultTab);
         setTabHistory([defaultTab]);
