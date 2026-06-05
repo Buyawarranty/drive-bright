@@ -42,6 +42,9 @@ interface SortableTabProps {
   onClick: () => void;
 }
 
+const CLAIMS_AGENT_TABS = ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'staff-hub', 'account'];
+
 const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => {
   const {
     attributes,
@@ -362,9 +365,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
-    if (userRole === 'claims_manager') {
-      const claimsManagerTabIds = ['claims', 'staff-hub', 'account'];
-      return defaultTabs.filter(tab => claimsManagerTabIds.includes(tab.id));
+    if (userRole === 'claims_agent' || userRole === 'claims_manager') {
+      const defaultClaimsTabIds = userRole === 'claims_agent' ? CLAIMS_AGENT_TABS : CLAIMS_MANAGER_TABS;
+      if (userPermissions && Object.keys(userPermissions).length > 0) {
+        const allowedIds = new Set(defaultClaimsTabIds);
+        defaultTabs.forEach(tab => {
+          const permKey = `tab_${tab.id}`;
+          if (userPermissions[permKey] === true) allowedIds.add(tab.id);
+          if (userPermissions[permKey] === false) allowedIds.delete(tab.id);
+        });
+        return defaultTabs.filter(tab => allowedIds.has(tab.id));
+      }
+
+      return defaultTabs.filter(tab => defaultClaimsTabIds.includes(tab.id));
     }
 
     if (userRole === 'accounts') {
@@ -422,7 +435,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = filterRestricted(getVisibleTabs());
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_manager') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_agent' || userRole === 'claims_manager') {
       setTabs(visibleTabs);
       return;
     }
