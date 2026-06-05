@@ -97,6 +97,26 @@ const GRANULAR_PERMISSIONS = {
   ],
 };
 
+const CLAIMS_AGENT_PERMISSIONS: Record<string, boolean> = {
+  'tab_claims': true,
+  'tab_customers': true,
+  'tab_customers_view': true,
+  'tab_discount-codes': true,
+  'tab_discounts-given': true,
+  'tab_cancellations': true,
+  'tab_refunds-paid': true,
+  'tab_staff-hub': true,
+  'tab_account': true,
+};
+
+const CLAIMS_MANAGER_PERMISSIONS: Record<string, boolean> = {
+  'tab_claims': true,
+  'tab_customers': true,
+  'tab_customers_view': true,
+  'tab_staff-hub': true,
+  'tab_account': true,
+};
+
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true, 'tab_new-leads_lead-routing': true },
@@ -170,10 +190,10 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_timesheets': true,
     'tab_customers_view': true,
   },
-  // Claims Agent: same tab access as admin (filtered) + full Claims access
-  claims_agent: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
-  // Claims Manager: dedicated Claims access only (incl. Vehicle Intelligence sub-tab)
-  claims_manager: { tab_claims: true, tab_account: true },
+  // Claims Agent: claims workflow access plus related customer/finance context
+  claims_agent: CLAIMS_AGENT_PERMISSIONS,
+  // Claims Manager: claims workspace plus customer context and vehicle intelligence
+  claims_manager: CLAIMS_MANAGER_PERMISSIONS,
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: {},
   guest: {},
