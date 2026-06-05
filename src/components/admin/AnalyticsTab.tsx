@@ -605,6 +605,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const dayOfMonth = now.getDate();
+    const daysRemaining = Math.max(0, daysInMonth - dayOfMonth);
     // Treat partial day as full day so a single sale on day 1 doesn't divide by zero
     const elapsed = Math.max(1, dayOfMonth);
     const paceMultiplier = daysInMonth / elapsed;
@@ -612,6 +613,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const projectedRevenue = Math.round(current.revenue * paceMultiplier);
     const projectedSales = Math.round(current.salesCount * paceMultiplier);
     const projectedAov = projectedSales > 0 ? Math.round(projectedRevenue / projectedSales) : current.aov;
+    const dailyRunRate = Math.round(current.revenue / elapsed);
+    const dailySalesRate = Math.round((current.salesCount / elapsed) * 10) / 10;
+    const remainingRevenue = Math.max(0, projectedRevenue - current.revenue);
+    const remainingSales = Math.max(0, projectedSales - current.salesCount);
 
     // Prior month for comparison
     const prior = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -621,21 +626,63 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       ? Math.round(((projectedRevenue - priorMonth.revenue) / priorMonth.revenue) * 100)
       : null;
 
+    // Year-over-year: same calendar month, prior year. Computed directly from customers
+    // because monthlyRevenue only covers the last 12 months.
+    const yoyYear = now.getFullYear() - 1;
+    const yoyMonth = now.getMonth();
+    let yoyRevenue = 0;
+    let yoySales = 0;
+    customers.forEach(c => {
+      if (sourceFilter !== 'all') {
+        const source = c.purchase_source?.toLowerCase() || '';
+        const isManual = c.is_manual_entry === true;
+        const warrantyNum = c.warranty_reference_number || '';
+        if (sourceFilter === 'website') {
+          const isBawS = warrantyNum.startsWith('BAW-S-');
+          if (!(!isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === ''))) return;
+        } else if (sourceFilter === 'staff_purchase') {
+          if (!warrantyNum.startsWith('BAW-S-')) return;
+        } else if (sourceFilter === 'sales_team') {
+          if (!(isManual || source === 'quote_link' || source === 'external' || source === 'admin_external')) return;
+        }
+      }
+      if (isRevenueLost(c.status)) return;
+      if (!c.final_amount || !c.signup_date) return;
+      const d = new Date(c.signup_date);
+      if (d.getFullYear() === yoyYear && d.getMonth() === yoyMonth) {
+        yoyRevenue += Number(c.final_amount) || 0;
+        yoySales += 1;
+      }
+    });
+    const hasYoY = yoySales > 0;
+    const yoyRevenueDeltaPct = hasYoY && yoyRevenue > 0
+      ? Math.round(((projectedRevenue - yoyRevenue) / yoyRevenue) * 100)
+      : null;
+
     return {
       monthLabel: current.month,
       daysInMonth,
       dayOfMonth,
+      daysRemaining,
       actualRevenue: current.revenue,
       actualSales: current.salesCount,
       actualAov: current.aov,
       projectedRevenue,
       projectedSales,
       projectedAov,
+      dailyRunRate,
+      dailySalesRate,
+      remainingRevenue,
+      remainingSales,
       priorRevenue: priorMonth?.revenue ?? null,
       priorSales: priorMonth?.salesCount ?? null,
       revenueDeltaPct,
+      hasYoY,
+      yoyRevenue: hasYoY ? Math.round(yoyRevenue) : null,
+      yoySales: hasYoY ? yoySales : null,
+      yoyRevenueDeltaPct,
     };
-  }, [monthlyRevenue]);
+  }, [monthlyRevenue, customers, sourceFilter]);
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
@@ -704,16 +751,116 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
         </div>
 
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Total Revenue & AOV by Month (Last 12 Months)</CardTitle>
+              <CardDescription className="mt-1">
+                Click on any bar to filter all data by that month
+              </CardDescription>
+            </div>
+            {selectedMonth && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSelectedMonth}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear selection
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <ComposedChart
+                data={monthlyRevenue}
+                onClick={handleBarClick}
+                style={{ cursor: 'pointer' }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis yAxisId="left" tickFormatter={(value) => `£${value.toLocaleString()}`} />
+                <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${value}`} />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    if (name === 'salesCount') {
+                      return [value.toLocaleString('en-GB'), 'Warranties Sold'];
+                    }
+                    const label = name === 'revenue' ? 'Revenue' : name === 'aov' ? 'Avg Order Value' : name;
+                    return [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, label];
+                  }}
+                  labelStyle={{ fontWeight: 'bold' }}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
+                <Bar
+                  yAxisId="left"
+                  dataKey="revenue"
+                  radius={[4, 4, 0, 0]}
+                  fill="#10b981"
+                >
+                  {monthlyRevenue.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.isSelected ? '#059669' : '#10b981'}
+                      stroke={entry.isSelected ? '#047857' : 'transparent'}
+                      strokeWidth={entry.isSelected ? 2 : 0}
+                      style={{
+                        cursor: 'pointer',
+                        filter: entry.isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' : 'none'
+                      }}
+                    />
+                  ))}
+                  <LabelList
+                    dataKey="salesCount"
+                    position="top"
+                    formatter={(value: number) => value > 0 ? `${value} ${value === 1 ? 'deal' : 'deals'}` : ''}
+                    style={{ fill: '#065f46', fontSize: 11, fontWeight: 600 }}
+                  />
+                </Bar>
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="aov"
+                  stroke="#f59e0b"
+                  strokeWidth={2.5}
+                  dot={{ fill: '#f59e0b', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="salesCount"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ fill: '#3b82f6', r: 4 }}
+                  activeDot={{ r: 6, fill: '#2563eb' }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                {monthProjection.monthLabel} Pace Projection
+                {monthProjection.monthLabel} — Current Pace Projection
               </CardTitle>
               <CardDescription>
-                If the current run-rate continues, this is where {monthProjection.monthLabel} lands by month-end.
-                Based on day {monthProjection.dayOfMonth} of {monthProjection.daysInMonth}.
+                You're on day {monthProjection.dayOfMonth} of {monthProjection.daysInMonth} with{' '}
+                <strong>{monthProjection.actualSales} {monthProjection.actualSales === 1 ? 'sale' : 'sales'}</strong>{' '}
+                (£{monthProjection.actualRevenue.toLocaleString('en-GB')}). At this rate
+                (~{monthProjection.dailySalesRate} sales / £{monthProjection.dailyRunRate.toLocaleString('en-GB')} per day),
+                you'll finish {monthProjection.monthLabel} at approximately{' '}
+                <strong className="text-primary">£{monthProjection.projectedRevenue.toLocaleString('en-GB')}</strong>{' '}
+                from <strong className="text-primary">{monthProjection.projectedSales} warranties</strong>.
+                {monthProjection.daysRemaining > 0 && (
+                  <> That's another £{monthProjection.remainingRevenue.toLocaleString('en-GB')} /{' '}
+                  {monthProjection.remainingSales} sales over the next {monthProjection.daysRemaining} day{monthProjection.daysRemaining === 1 ? '' : 's'}.</>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -732,12 +879,23 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                       {monthProjection.revenueDeltaPct >= 0 ? '+' : ''}{monthProjection.revenueDeltaPct}% vs last month
                     </p>
                   )}
+                  {monthProjection.hasYoY && monthProjection.yoyRevenueDeltaPct !== null && (
+                    <p className={`text-xs flex items-center gap-1 ${monthProjection.yoyRevenueDeltaPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {monthProjection.yoyRevenueDeltaPct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {monthProjection.yoyRevenueDeltaPct >= 0 ? '+' : ''}{monthProjection.yoyRevenueDeltaPct}% vs same month last year (£{monthProjection.yoyRevenue!.toLocaleString('en-GB')})
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <span className="text-sm text-muted-foreground">Projected warranties</span>
                   <p className="text-2xl font-bold text-primary">{monthProjection.projectedSales}</p>
                   {monthProjection.priorSales !== null && (
                     <p className="text-xs text-muted-foreground">Last month: {monthProjection.priorSales}</p>
+                  )}
+                  {monthProjection.hasYoY && (
+                    <p className="text-xs text-muted-foreground">
+                      Same month {new Date().getFullYear() - 1}: {monthProjection.yoySales}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-1">
@@ -1294,96 +1452,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       )}
 
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Total Revenue & AOV by Month (Last 12 Months)</CardTitle>
-            <CardDescription className="mt-1">
-              Click on any bar to filter all data by that month
-            </CardDescription>
-          </div>
-          {selectedMonth && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={clearSelectedMonth}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Clear selection
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <ComposedChart 
-              data={monthlyRevenue} 
-              onClick={handleBarClick}
-              style={{ cursor: 'pointer' }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis yAxisId="left" tickFormatter={(value) => `£${value.toLocaleString()}`} />
-              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${value}`} />
-              <Tooltip 
-                formatter={(value: number, name: string) => {
-                  if (name === 'salesCount') {
-                    return [value.toLocaleString('en-GB'), 'Warranties Sold'];
-                  }
-                  const label = name === 'revenue' ? 'Revenue' : name === 'aov' ? 'Avg Order Value' : name;
-                  return [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, label];
-                }}
-                labelStyle={{ fontWeight: 'bold' }}
-                contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-              />
-              <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
-              <Bar 
-                yAxisId="left"
-                dataKey="revenue" 
-                radius={[4, 4, 0, 0]}
-                fill="#10b981"
-              >
-                {monthlyRevenue.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.isSelected ? '#059669' : '#10b981'}
-                    stroke={entry.isSelected ? '#047857' : 'transparent'}
-                    strokeWidth={entry.isSelected ? 2 : 0}
-                    style={{ 
-                      cursor: 'pointer',
-                      filter: entry.isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' : 'none'
-                    }}
-                  />
-                ))}
-                <LabelList
-                  dataKey="salesCount"
-                  position="top"
-                  formatter={(value: number) => value > 0 ? `${value} ${value === 1 ? 'deal' : 'deals'}` : ''}
-                  style={{ fill: '#065f46', fontSize: 11, fontWeight: 600 }}
-                />
-              </Bar>
-              <Line 
-                yAxisId="right"
-                type="monotone" 
-                dataKey="aov" 
-                stroke="#f59e0b" 
-                strokeWidth={2.5}
-                dot={{ fill: '#f59e0b', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="salesCount"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 4 }}
-                activeDot={{ r: 6, fill: '#2563eb' }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+
 
       {!isSalesLead && (
       <>
