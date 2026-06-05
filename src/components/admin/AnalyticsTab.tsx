@@ -605,6 +605,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const dayOfMonth = now.getDate();
+    const daysRemaining = Math.max(0, daysInMonth - dayOfMonth);
     // Treat partial day as full day so a single sale on day 1 doesn't divide by zero
     const elapsed = Math.max(1, dayOfMonth);
     const paceMultiplier = daysInMonth / elapsed;
@@ -612,6 +613,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const projectedRevenue = Math.round(current.revenue * paceMultiplier);
     const projectedSales = Math.round(current.salesCount * paceMultiplier);
     const projectedAov = projectedSales > 0 ? Math.round(projectedRevenue / projectedSales) : current.aov;
+    const dailyRunRate = Math.round(current.revenue / elapsed);
+    const dailySalesRate = Math.round((current.salesCount / elapsed) * 10) / 10;
+    const remainingRevenue = Math.max(0, projectedRevenue - current.revenue);
+    const remainingSales = Math.max(0, projectedSales - current.salesCount);
 
     // Prior month for comparison
     const prior = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -621,21 +626,63 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       ? Math.round(((projectedRevenue - priorMonth.revenue) / priorMonth.revenue) * 100)
       : null;
 
+    // Year-over-year: same calendar month, prior year. Computed directly from customers
+    // because monthlyRevenue only covers the last 12 months.
+    const yoyYear = now.getFullYear() - 1;
+    const yoyMonth = now.getMonth();
+    let yoyRevenue = 0;
+    let yoySales = 0;
+    customers.forEach(c => {
+      if (sourceFilter !== 'all') {
+        const source = c.purchase_source?.toLowerCase() || '';
+        const isManual = c.is_manual_entry === true;
+        const warrantyNum = c.warranty_reference_number || '';
+        if (sourceFilter === 'website') {
+          const isBawS = warrantyNum.startsWith('BAW-S-');
+          if (!(!isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === ''))) return;
+        } else if (sourceFilter === 'staff_purchase') {
+          if (!warrantyNum.startsWith('BAW-S-')) return;
+        } else if (sourceFilter === 'sales_team') {
+          if (!(isManual || source === 'quote_link' || source === 'external' || source === 'admin_external')) return;
+        }
+      }
+      if (isRevenueLost(c.status)) return;
+      if (!c.final_amount || !c.signup_date) return;
+      const d = new Date(c.signup_date);
+      if (d.getFullYear() === yoyYear && d.getMonth() === yoyMonth) {
+        yoyRevenue += Number(c.final_amount) || 0;
+        yoySales += 1;
+      }
+    });
+    const hasYoY = yoySales > 0;
+    const yoyRevenueDeltaPct = hasYoY && yoyRevenue > 0
+      ? Math.round(((projectedRevenue - yoyRevenue) / yoyRevenue) * 100)
+      : null;
+
     return {
       monthLabel: current.month,
       daysInMonth,
       dayOfMonth,
+      daysRemaining,
       actualRevenue: current.revenue,
       actualSales: current.salesCount,
       actualAov: current.aov,
       projectedRevenue,
       projectedSales,
       projectedAov,
+      dailyRunRate,
+      dailySalesRate,
+      remainingRevenue,
+      remainingSales,
       priorRevenue: priorMonth?.revenue ?? null,
       priorSales: priorMonth?.salesCount ?? null,
       revenueDeltaPct,
+      hasYoY,
+      yoyRevenue: hasYoY ? Math.round(yoyRevenue) : null,
+      yoySales: hasYoY ? yoySales : null,
+      yoyRevenueDeltaPct,
     };
-  }, [monthlyRevenue]);
+  }, [monthlyRevenue, customers, sourceFilter]);
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
