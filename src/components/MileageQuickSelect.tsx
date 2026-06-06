@@ -95,9 +95,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
     if (onAutoSubmit && hasSelection) {
       setShowLoadingMessage(true);
       const mileageValue = value === 'under120k' ? '100000' : '130000';
-      setTimeout(() => {
-        onAutoSubmit(mileageValue);
-      }, 800);
+      onAutoSubmit(mileageValue);
     }
   };
 
