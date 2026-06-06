@@ -524,22 +524,28 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         <TableCell className="text-center">
           {(() => {
             const src = lead.lead_source;
-            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string } | null;
+            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_term?: string; utm_content?: string } | null;
+            const utmLines: string[] = [];
+            if (metadata?.utm_source)   utmLines.push(`UTM Source: ${metadata.utm_source}`);
+            if (metadata?.utm_medium)   utmLines.push(`UTM Medium: ${metadata.utm_medium}`);
+            if (metadata?.utm_campaign) utmLines.push(`UTM Campaign: ${metadata.utm_campaign}`);
+            if (metadata?.utm_term)     utmLines.push(`UTM Term: ${metadata.utm_term}`);
+            if (metadata?.utm_content)  utmLines.push(`UTM Content: ${metadata.utm_content}`);
+            const utmBlock = utmLines.length ? `\n${utmLines.join('\n')}` : '';
             if (src === 'google_ad') {
               const gclid = metadata?.gclid;
-              const tip = gclid ? `Google Ads\nGCLID: ${gclid}` : 'Google Ads (no GCLID captured)';
+              const tip = (gclid ? `Google Ads\nGCLID: ${gclid}` : 'Google Ads (no GCLID captured)') + utmBlock;
               return <span className="text-[11px] font-bold text-emerald-700 cursor-help" title={tip}>G</span>;
             }
             if (src === 'social_ad') {
               const fbclid = metadata?.fbclid;
-              const utmSrc = metadata?.utm_source;
               const parts = ['Facebook Ads'];
               if (fbclid) parts.push(`FBCLID: ${fbclid}`);
-              if (utmSrc) parts.push(`UTM Source: ${utmSrc}`);
-              if (!fbclid && !utmSrc) parts.push('(no FBCLID captured)');
-              return <span className="text-[11px] font-bold text-blue-700 cursor-help" title={parts.join('\n')}>F</span>;
+              if (!fbclid && !metadata?.utm_source) parts.push('(no FBCLID captured)');
+              return <span className="text-[11px] font-bold text-blue-700 cursor-help" title={parts.join('\n') + utmBlock}>F</span>;
             }
-            return <span className="text-[11px] font-medium text-muted-foreground cursor-help" title="Organic">O</span>;
+            const organicTip = 'Organic' + utmBlock;
+            return <span className={`text-[11px] font-medium cursor-help ${utmLines.length ? 'text-foreground' : 'text-muted-foreground'}`} title={organicTip}>O</span>;
           })()}
         </TableCell>
       )}
