@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Check, Info } from 'lucide-react';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 
 interface AddOnProtectionPackagesProps {
   selectedAddOns: {[key: string]: boolean};
