@@ -2247,7 +2247,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     placeholder="e.g. SW1A 1AA"
                     maxLength={8}
                     className={`h-11 sm:h-12 text-base font-medium uppercase tracking-wider pr-10 ${getAddressInputValidationClass('postcode')}`}
-                    disabled={isLookingUp}
                   />
                   {isLookingUp ? (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
