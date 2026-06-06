@@ -365,21 +365,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   );
                 })}
               </div>
-              <div className="mt-4">
-                <SeeWhatsIncludedCard
-                  variant="mobile"
-                  vehicleData={vehicleData}
-                  selectedPlan={{
-                    monthlyPrice: currentMonthlyPrice,
-                    paymentType,
-                    claimLimit: selectedClaimLimit,
-                    labourRate: selectedLabourRate,
-                    voluntaryExcess,
-                  }}
-                  selectedAddOns={selectedAddOns}
-                  onAddOnChange={onAddOnChange}
-                />
-              </div>
+
+
 
             </section>
 
