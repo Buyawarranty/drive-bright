@@ -32,8 +32,11 @@ const CONTENT: Record<HelperTopic, Content> = {
   'labour-rate': {
     title: 'How labour cover works',
     subtitle: 'A quick, plain-English summary.',
-    short: 'Your selected labour rate is the maximum we contribute per repair hour.',
-    takeaway: 'Use any VAT-registered garage — you only pay the difference if they charge more.',
+    short: '',
+    bullets: [
+      'Your selected labour rate is the maximum we contribute per repair hour.',
+      'Use any VAT-registered garage — you only pay the difference if they charge more.',
+    ],
   },
   excess: {
     title: 'How excess works',
