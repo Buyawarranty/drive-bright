@@ -31,6 +31,7 @@ import {
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
+import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
