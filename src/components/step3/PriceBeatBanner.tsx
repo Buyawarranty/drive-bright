@@ -198,13 +198,19 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
                 <>Get my better price <ArrowRight className="w-4 h-4 ml-1.5" /></>
               )}
             </Button>
-            <div className="flex items-center gap-2 text-[12px] text-[#4f4f4f]">
-              <Zap className="w-3.5 h-3.5 text-[#E8521A] flex-shrink-0" />
-              <span className="font-semibold text-[#161616]">Fast callback from our UK team</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#4f4f4f]">
+              <a
+                href="tel:+443302295040"
+                className="inline-flex items-center gap-1.5 font-semibold text-[#161616] hover:text-[#E8521A] underline-offset-2 hover:underline"
+              >
+                <Zap className="w-3.5 h-3.5 text-[#E8521A] flex-shrink-0" />
+                Prefer to talk? Call us on 0330 229 5040
+              </a>
               <span className="inline-flex items-center gap-1 text-[#666] font-normal">
                 <Lock className="w-3 h-3" /> We never share your details.
               </span>
             </div>
+
           </div>
         </form>
       )}
