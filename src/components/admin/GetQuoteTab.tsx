@@ -2784,7 +2784,39 @@ Questions? Call 0330 229 5040`;
                       </p>
                     </div>
                   </div>
-                  
+
+                  {/* 20% Discount Floor Warning */}
+                  {(() => {
+                    const monthlyVal = parseFloat(customMonthlyPrice);
+                    const fullVal = parseFloat(customFullPrice);
+                    const monthlyFloor = basePrice.monthlyPrice * 0.8;
+                    const fullFloor = basePrice.totalPrice * 0.8;
+                    const monthlyBelow = !isNaN(monthlyVal) && monthlyVal > 0 && monthlyVal < monthlyFloor;
+                    const fullBelow = !isNaN(fullVal) && fullVal > 0 && fullVal < fullFloor;
+                    if (!isPriceOverridden || (!monthlyBelow && !fullBelow)) return null;
+                    return (
+                      <div
+                        className="flex items-start gap-3 p-4 rounded-lg border-2"
+                        style={{ backgroundColor: '#FFF1F2', borderColor: '#FF5A5F' }}
+                      >
+                        <div
+                          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: '#FF5A5F' }}
+                        >
+                          <X className="w-5 h-5 text-white" strokeWidth={3} />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="font-semibold text-sm" style={{ color: '#FF5A5F' }}>
+                            This price is below the 20% discount allowed
+                          </p>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            Please double-check if this is a price match — make sure you have an email or evidence on file. If it has been authorised by your admin or manager you may proceed; otherwise please change the price.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Pay in Full Discount Toggle */}
                   <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="space-y-0.5">
