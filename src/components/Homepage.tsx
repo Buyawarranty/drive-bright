@@ -262,10 +262,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         console.log('Vehicle blocked: Over 15 years old');
         toast({
           title: "Vehicle Not Eligible",
-          description: "We cannot offer warranties for vehicles over 15 years of age.",
-          variant: "destructive",
+          description: "This vehicle is over 15 years old. Please try a different registration — we cover vehicles up to 15 years old and 150,000 miles.",
+          className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
         });
-        setVehicleAgeError('We cannot offer warranties for vehicles over 15 years old');
+        setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
         setIsLookingUp(false);
         return;
       }
@@ -275,10 +275,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         console.log('Vehicle blocked: Year information not available');
         toast({
           title: "Vehicle Not Eligible",
-          description: "We cannot verify the age of this vehicle. Please contact support for assistance.",
-          variant: "destructive",
+          description: "We couldn't verify this vehicle's age. Please try a different registration, or contact our support team for help.",
+          className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
         });
-        setVehicleAgeError('Cannot verify vehicle age');
+        setVehicleAgeError("We couldn't verify this vehicle's age. Please try a different registration.");
         setIsLookingUp(false);
         return;
       }
@@ -304,11 +304,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             
             // Block if over 15 years (15 years and 1 day or older)
             if (vehicleAgePrecise > 15) {
-              setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+              setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
               toast({
                 title: "Vehicle Not Eligible",
-                description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.",
-                variant: "destructive",
+                description: "This vehicle is over 15 years old. Please try a different registration — we cover vehicles up to 15 years old and 150,000 miles.",
+                className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
               });
               setIsLookingUp(false);
               return;
@@ -323,11 +323,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           const vehicleAge = currentYear - vehicleYear;
           
           if (vehicleAge > 15) {
-            setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+            setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
             toast({
               title: "Vehicle Not Eligible",
-              description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.",
-              variant: "destructive",
+              description: "This vehicle is over 15 years old. Please try a different registration — we cover vehicles up to 15 years old and 150,000 miles.",
+              className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
             });
             setIsLookingUp(false);
             return;
@@ -343,11 +343,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
-        setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+        setMileageError('This vehicle is over 150,000 miles. Please try a different registration.');
         toast({
           title: 'Vehicle Not Eligible',
-          description: 'Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.',
-          variant: 'destructive',
+          description: 'This vehicle is over 150,000 miles. Please try a different registration — we cover vehicles up to 150,000 miles and 15 years old.',
+          className: 'bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white',
         });
         setIsLookingUp(false);
         return;
@@ -564,7 +564,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 {/* Eligibility / lookup error */}
                 {eligibilityError && (
-                  <div className="flex items-center gap-2 text-red-600 font-medium text-left bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  <div className="flex items-start gap-2 text-white font-medium text-left bg-[#FF5A5F] border border-[#FF5A5F] rounded-lg px-3 py-2 shadow-sm">
                     <span aria-hidden>⚠️</span>
                     <span className="text-sm">{eligibilityError}</span>
                   </div>
