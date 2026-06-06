@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tag, ArrowRight, Loader2, Check, Zap, X } from 'lucide-react';
+import { Tag, ArrowRight, Loader2, Check, Zap, X, Lock, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
