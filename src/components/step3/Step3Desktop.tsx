@@ -446,22 +446,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {validationErrors.paymentType && (
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a warranty duration to continue.</p>
               )}
-              <div className="mt-5">
-                <SeeWhatsIncludedCard
-                  variant="desktop"
-                  vehicleData={vehicleData}
-                  selectedPlan={{
-                    monthlyPrice,
-                    paymentType,
-                    claimLimit: selectedClaimLimit,
-                    labourRate: selectedLabourRate,
-                    voluntaryExcess,
-                  }}
-                />
-              </div>
-
-
             </Card>
+
 
             {/* CARD 4 - Voluntary Excess */}
             <Card step={4}>
