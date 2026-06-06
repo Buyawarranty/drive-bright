@@ -2175,15 +2175,13 @@ Questions? Call 0330 229 5040`;
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="space-y-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <CardTitle>Step 2: Quote Details</CardTitle>
-                    <CardDescription>
-                      Vehicle: {vehicleData.make} {vehicleData.model} ({vehicleData.year}) - {vehicleData.regNumber}
-                    </CardDescription>
+                    <CardDescription>Configure cover options for this vehicle</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <LeadSearchPopover 
                       onSelectLead={handleLeadSelect} 
                       className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300"
@@ -2210,24 +2208,45 @@ Questions? Call 0330 229 5040`;
                     >
                       ← Back
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => {
-                        setVehicleData(null);
-                        setRegNumber('');
-                        setMileage('');
-                        setSliderMileage(0);
-                        setStep(1);
-                      }}
-                      className="text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-                    >
-                      <Pencil className="w-3 h-3 mr-1" />
-                      Edit Vehicle
-                    </Button>
                   </div>
                 </div>
+
+                {/* Vehicle summary card */}
+                <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-xl border border-gray-200 bg-gray-50/60">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="flex-shrink-0 rounded-md overflow-hidden border-2 border-black shadow-sm">
+                      <div className="bg-yellow-400 px-2.5 py-1.5 sm:px-3 sm:py-2">
+                        <span className="font-black text-black text-sm sm:text-base tracking-wider whitespace-nowrap">
+                          {vehicleData.regNumber}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-900 text-base sm:text-lg truncate">
+                        {[vehicleData.make, vehicleData.model].filter(Boolean).join(' ').toUpperCase() || 'Vehicle'}
+                        {vehicleData.year ? ` (${vehicleData.year})` : ''}
+                      </p>
+                      {vehicleData.fuelType && (
+                        <p className="text-sm text-gray-500 truncate">{vehicleData.fuelType}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVehicleData(null);
+                      setRegNumber('');
+                      setMileage('');
+                      setSliderMileage(0);
+                      setStep(1);
+                    }}
+                    className="flex-shrink-0 text-brand-orange hover:text-orange-700 font-semibold text-sm sm:text-base transition-colors"
+                  >
+                    Edit
+                  </button>
+                </div>
               </CardHeader>
+
               <CardContent className="space-y-6">
                 {/* Customer Info */}
                 <div ref={customerInfoRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
