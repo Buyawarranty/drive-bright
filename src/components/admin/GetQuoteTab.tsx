@@ -507,6 +507,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       return;
     }
 
+    const numericMileage = parseInt(mileage.replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(numericMileage) && numericMileage > 150000) {
+      toast({
+        title: "Vehicle Not Eligible",
+        description: "We cannot cover vehicles with over 150,000 miles. Please try a different vehicle.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+
     setIsLookingUp(true);
     try {
       // Add timeout to prevent infinite loading - 30s for cold starts
