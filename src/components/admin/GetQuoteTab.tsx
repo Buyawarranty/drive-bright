@@ -87,6 +87,7 @@ interface GetQuoteTabProps {
 
 export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) => {
   const { toast } = useToast();
+  const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
