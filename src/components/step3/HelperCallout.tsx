@@ -37,12 +37,11 @@ const CONTENT: Record<HelperTopic, Content> = {
   },
   excess: {
     title: 'How excess works',
-    subtitle: 'Plain-English explanation with a real example.',
-    short: 'You only pay the excess if you make a claim.',
-    example: 'Example: £150 excess means you pay the first £150 towards a claim.',
+    short: 'We cover the approved repair cost minus your excess.',
+    example: 'Example:\n£600 approved repair\n− £150 excess\n= £450 claim contribution',
     bullets: [
-      'Lower excess = higher monthly payments.',
-      'Higher excess = lower monthly payments.',
+      'Lower excess = higher monthly price.',
+      'Higher excess = lower monthly price.',
     ],
   },
 };
@@ -87,6 +86,13 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
       {open && (
         <div className="px-3 pb-3 pt-2 border-t border-border space-y-2">
           <p className="text-[13px] text-foreground/90 leading-snug">{c.short}</p>
+
+          {c.example && (
+            <pre className="text-[12.5px] text-foreground/85 leading-snug whitespace-pre-wrap font-sans bg-muted/40 rounded-md p-2">
+{c.example}
+            </pre>
+          )}
+
 
           {c.bullets && c.bullets.length > 0 && (
             <ul className="space-y-1.5">
