@@ -58,7 +58,7 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
         phone: phone.trim(),
         step_abandoned: 3,
         contact_status: 'new',
-        contact_notes: `PRICE MATCH REQUEST. ${competitorPrice ? `Price to beat: £${competitorPrice}.` : ''} Source: Price Beat Banner.`,
+        contact_notes: `PRICE MATCH REQUEST. ${competitorPrice ? `Price to beat: £${competitorPrice} (${priceMode}).` : ''} Source: Price Beat Banner.`,
         full_name: 'Price Match Request',
         vehicle_reg: vehicleData?.registration || null,
         vehicle_make: vehicleData?.make || null,
