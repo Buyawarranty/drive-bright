@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tag, ArrowRight, Loader2, Check, Zap, X } from 'lucide-react';
+import { Tag, ArrowRight, Loader2, Check, Zap, X, Lock, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
   const { toast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [competitorPrice, setCompetitorPrice] = useState('');
+  const [priceMode, setPriceMode] = useState<'monthly' | 'total'>('monthly');
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -57,7 +58,7 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
         phone: phone.trim(),
         step_abandoned: 3,
         contact_status: 'new',
-        contact_notes: `PRICE MATCH REQUEST. ${competitorPrice ? `Price to beat: £${competitorPrice}.` : ''} Source: Price Beat Banner.`,
+        contact_notes: `PRICE MATCH REQUEST. ${competitorPrice ? `Price to beat: £${competitorPrice} (${priceMode}).` : ''} Source: Price Beat Banner.`,
         full_name: 'Price Match Request',
         vehicle_reg: vehicleData?.registration || null,
         vehicle_make: vehicleData?.make || null,
@@ -65,6 +66,7 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
         vehicle_year: vehicleData?.year || null,
         cart_metadata: {
           competitorPrice: competitorPrice || null,
+          competitorPriceMode: priceMode,
           currentExcess, currentClaimLimit, currentLabourRate, currentMonthlyPrice,
           quoteReference: quoteRef,
           source: 'price_beat_banner',
@@ -130,25 +132,40 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
       {expanded && !success && (
         <form
           onSubmit={handleSubmit}
-          className="px-4 sm:px-5 pb-4 pt-1 border-t border-[#f5e4b0] bg-white/40 animate-fade-in"
+          className="px-4 sm:px-5 pb-4 pt-1 border-t border-[#f5e4b0] animate-fade-in"
         >
-          <div className="grid gap-3 sm:grid-cols-2 mt-3">
+          <div className="grid gap-4 sm:grid-cols-2 mt-3">
             <div>
               <label className="block text-[12px] font-semibold text-[#161616] mb-1">
-                Their monthly price
+                Competitor quote
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">£</span>
+              <div className="flex items-stretch rounded-lg border border-gray-200 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#E8521A]/30 focus-within:border-[#E8521A]">
+                <span className="flex items-center pl-3 pr-1 text-gray-500 font-bold">£</span>
                 <Input
                   type="text"
                   inputMode="numeric"
                   value={competitorPrice}
                   onChange={(e) => setCompetitorPrice(e.target.value.replace(/[^0-9.]/g, ''))}
                   placeholder="e.g. 45"
-                  className="h-11 pl-7 rounded-lg text-sm font-semibold bg-white"
+                  className="h-11 flex-1 border-0 rounded-none text-sm font-semibold bg-white focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
                   disabled={submitting}
                 />
+                <div className="relative border-l border-gray-200">
+                  <select
+                    value={priceMode}
+                    onChange={(e) => setPriceMode(e.target.value as 'monthly' | 'total')}
+                    disabled={submitting}
+                    className="h-11 appearance-none bg-gray-50 pl-3 pr-8 text-[13px] font-semibold text-[#161616] focus:outline-none cursor-pointer"
+                  >
+                    <option value="monthly">Monthly</option>
+                    <option value="total">Total</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                </div>
               </div>
+              <p className="text-[11.5px] text-[#666] mt-1.5">
+                Use the dropdown if the quote is a total policy price.
+              </p>
             </div>
             <div>
               <label className="block text-[12px] font-semibold text-[#161616] mb-1">
@@ -163,11 +180,11 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
                 autoComplete="tel"
                 disabled={submitting}
               />
+              {phoneError && <p className="text-xs text-red-600 mt-1.5">{phoneError}</p>}
             </div>
           </div>
-          {phoneError && <p className="text-xs text-red-600 mt-1.5">{phoneError}</p>}
 
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <Button
               type="submit"
               disabled={submitting}
@@ -179,9 +196,13 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
                 <>Get my better price <ArrowRight className="w-4 h-4 ml-1.5" /></>
               )}
             </Button>
-            <span className="text-[12px] text-[#4f4f4f] font-semibold flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-[#E8521A]" /> Fast callback from our UK team
-            </span>
+            <div className="flex items-center gap-2 text-[12px] text-[#4f4f4f]">
+              <Zap className="w-3.5 h-3.5 text-[#E8521A] flex-shrink-0" />
+              <span className="font-semibold text-[#161616]">Fast callback from our UK team</span>
+              <span className="inline-flex items-center gap-1 text-[#666] font-normal">
+                <Lock className="w-3 h-3" /> We never share your details.
+              </span>
+            </div>
           </div>
         </form>
       )}
