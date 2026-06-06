@@ -211,43 +211,41 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
   return (
     <div className="bg-[#f7f7f5] min-h-screen pb-[140px]">
-      {/* Top sub-header (back + vehicle) */}
-      <div className="bg-white border-b border-[#e9e9e7]">
-        <div className="max-w-[1180px] mx-auto px-7 py-4 flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <div className="ml-auto flex items-center gap-3">
+      <main className="max-w-[1180px] mx-auto px-7 pt-6">
+        {/* Hero with back + trustpilot inline */}
+        <section className="relative mb-6">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
             <TrustpilotHeader />
           </div>
-        </div>
-      </div>
 
-      <main className="max-w-[1180px] mx-auto px-7 pt-8">
-        {/* Hero */}
-        <section className="text-center mb-6">
-          <h1 className="text-[40px] leading-[1.05] tracking-[-0.04em] font-bold text-[#161616] mb-2">
-            One complete warranty.<br />Tailored to your car.
-          </h1>
-          <p className="text-[17px] text-[#6c6c6c] m-0">
-            All plans include full comprehensive cover — customise your protection below.
-          </p>
+          <div className="text-center">
+            <h1 className="text-[40px] leading-[1.05] tracking-[-0.04em] font-bold text-[#161616] mb-2">
+              One complete warranty.<br />Tailored to your car.
+            </h1>
+            <p className="text-[17px] text-[#6c6c6c] m-0">
+              All plans include full comprehensive cover — customise your protection below.
+            </p>
 
-          <div className="mt-[18px] flex justify-center gap-[18px] flex-wrap">
-            {['Easy claims, fast payouts', 'Excellent 4.8 out of 5', '14-day cooling off period'].map((t) => (
-              <div key={t} className="inline-flex items-center gap-2 border border-[#e9e9e7] bg-white rounded-full px-3.5 py-2.5 text-[13px] text-[#4f4f4f] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
-                <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0">
-                  <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
-                </span>
-                {t}
-              </div>
-            ))}
+            <div className="mt-[18px] flex justify-center gap-[18px] flex-wrap">
+              {['Easy claims, fast payouts', 'Excellent 4.8 out of 5', '14-day cooling off period'].map((t) => (
+                <div key={t} className="inline-flex items-center gap-2 border border-[#e9e9e7] bg-white rounded-full px-3.5 py-2.5 text-[13px] text-[#4f4f4f] shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+                  <span className="w-[18px] h-[18px] rounded-full bg-[#eaf8f2] relative flex-shrink-0">
+                    <Check className="w-3 h-3 text-[#1ca36f] absolute inset-0 m-auto" strokeWidth={3} />
+                  </span>
+                  {t}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
+
 
         {/* Vehicle bar */}
         <section className="my-[26px]">
