@@ -133,9 +133,14 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
     }
   };
 
+  const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
+  const visiblePackages = addOnPackages.filter(
+    (addon) => tyreCoverEnabled || addon.key !== 'tyre'
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {addOnPackages.map((addon) => {
+      {visiblePackages.map((addon) => {
         const isIncluded = isAutoIncluded(addon.key);
         const isSelected = selectedAddOns[addon.key] || isIncluded;
         
