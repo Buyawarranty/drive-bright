@@ -564,7 +564,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 {/* Eligibility / lookup error */}
                 {eligibilityError && (
-                  <div className="flex items-center gap-2 text-red-600 font-medium text-left bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  <div className="flex items-start gap-2 text-white font-medium text-left bg-[#FF5A5F] border border-[#FF5A5F] rounded-lg px-3 py-2 shadow-sm">
                     <span aria-hidden>⚠️</span>
                     <span className="text-sm">{eligibilityError}</span>
                   </div>
