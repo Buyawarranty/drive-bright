@@ -30,6 +30,7 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
   const { toast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [competitorPrice, setCompetitorPrice] = useState('');
+  const [priceMode, setPriceMode] = useState<'monthly' | 'total'>('monthly');
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [submitting, setSubmitting] = useState(false);
