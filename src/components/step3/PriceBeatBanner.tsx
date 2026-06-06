@@ -66,6 +66,7 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
         vehicle_year: vehicleData?.year || null,
         cart_metadata: {
           competitorPrice: competitorPrice || null,
+          competitorPriceMode: priceMode,
           currentExcess, currentClaimLimit, currentLabourRate, currentMonthlyPrice,
           quoteReference: quoteRef,
           source: 'price_beat_banner',
