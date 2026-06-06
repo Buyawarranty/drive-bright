@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lightbulb, ChevronDown, GraduationCap } from 'lucide-react';
+import { Lightbulb, ChevronDown, GraduationCap, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type HelperTopic = 'claim-limit' | 'labour-rate' | 'excess';
