@@ -285,8 +285,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <svg className="w-4 h-4 text-[#FF6B00] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.2a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg>
           <div>
             <div className="font-semibold">UK support</div>
-            <div className="text-[#FF6B00] text-xs font-semibold">0330 229 5040</div>
+            <a href="tel:03302295040" className="text-[#FF6B00] text-xs font-semibold hover:underline">0330 229 5040</a>
           </div>
+
         </div>
       </div>
 
