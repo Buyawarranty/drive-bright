@@ -18,6 +18,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
+import PriceBeatBanner from './PriceBeatBanner';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import EmailQuoteDialog from './EmailQuoteDialog';
