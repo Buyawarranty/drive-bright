@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { getSessionUtms, compactUtms } from '@/utils/utmCapture';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
@@ -234,7 +235,18 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // Long-lived getStoredFbclid / getStoredGclid remain for conversion uploads only.
       const storedFbclid = getSessionFbclid();
       const storedGclid = getSessionGclid();
-      const utmSource = new URLSearchParams(window.location.search).get('utm_source');
+      // Pull all 5 UTMs from session (utm_source/medium/campaign/term/content).
+      // Fallback: if session is empty but URL still has them, read live.
+      const sessionUtms = compactUtms(getSessionUtms());
+      const liveParams = new URLSearchParams(window.location.search);
+      const utms: Record<string, string> = { ...sessionUtms };
+      ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {
+        if (!utms[k]) {
+          const v = liveParams.get(k);
+          if (v) utms[k] = v;
+        }
+      });
+      const utmSource = utms.utm_source || null;
       
       let cartUpdated = false;
       
@@ -261,12 +273,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 const fb = storedFbclid || getSessionFbclid();
                 const gc = storedGclid || getSessionGclid();
                 const fbRef = !fb ? getSessionFbReferrer() : null;
-                if (fb || gc || utmSource || fbRef) {
+                const hasUtms = Object.keys(utms).length > 0;
+                if (fb || gc || hasUtms || fbRef) {
                   return {
                     cart_metadata: {
                       ...(fb ? { fbclid: fb } : {}),
                       ...(gc ? { gclid: gc } : {}),
-                      ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...utms,
                       ...(fbRef ? { fb_referrer: fbRef } : {}),
                     }
                   };
@@ -301,12 +314,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             step_abandoned: 2,
             ...((() => {
                 const fbRef = !storedFbclid ? getSessionFbReferrer() : null;
-                if (storedFbclid || storedGclid || utmSource || fbRef) {
+                const hasUtms = Object.keys(utms).length > 0;
+                if (storedFbclid || storedGclid || hasUtms || fbRef) {
                   return {
                     cart_metadata: {
                       ...(storedFbclid ? { fbclid: storedFbclid } : {}),
                       ...(storedGclid ? { gclid: storedGclid } : {}),
-                      ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...utms,
                       ...(fbRef ? { fb_referrer: fbRef } : {}),
                     }
                   };

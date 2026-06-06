@@ -213,6 +213,11 @@ interface Customer {
   // Acquisition source (marketing channel: google_ads / facebook_ads / website)
   acquisition_source?: string | null;
   gclid?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
   customer_dob?: string | null;
   admin_users?: {
     id: string;
@@ -5047,19 +5052,27 @@ Please log in and change your password after first login.`;
                       {(() => {
                         // Use acquisition_source (marketing channel from sales_leads), not purchase_source (payment method).
                         const channel = getCustomerAcquisitionChannel(customer);
+                        const utmLines: string[] = [];
+                        if (customer.utm_source)   utmLines.push(`UTM Source: ${customer.utm_source}`);
+                        if (customer.utm_medium)   utmLines.push(`UTM Medium: ${customer.utm_medium}`);
+                        if (customer.utm_campaign) utmLines.push(`UTM Campaign: ${customer.utm_campaign}`);
+                        if (customer.utm_term)     utmLines.push(`UTM Term: ${customer.utm_term}`);
+                        if (customer.utm_content)  utmLines.push(`UTM Content: ${customer.utm_content}`);
+                        const utmTip = utmLines.length ? `\n${utmLines.join('\n')}` : '';
+                        const cursor = utmLines.length ? 'cursor-help' : '';
                         if (channel === 'google_ads') {
-                          return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Google</Badge>;
+                          return <Badge title={`Google Ads${utmTip}`} className={`bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] ${cursor}`}>Google</Badge>;
                         }
                         if (channel === 'facebook_ads') {
-                          return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Facebook</Badge>;
+                          return <Badge title={`Facebook Ads${utmTip}`} className={`bg-blue-100 text-blue-700 border-blue-200 text-[10px] ${cursor}`}>Facebook</Badge>;
                         }
                         if (channel === 'website') {
-                          return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">Website</Badge>;
+                          return <Badge title={`Website${utmTip}`} className={`bg-gray-100 text-gray-700 border-gray-200 text-[10px] ${cursor}`}>Website</Badge>;
                         }
                         if (channel === 'manual') {
                           return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]" title="Manual back-office sale — no marketing source recorded">Manual</Badge>;
                         }
-                        return <Badge className="bg-gray-100 text-gray-500 border-gray-200 text-[10px]">Unknown</Badge>;
+                        return <Badge title={`Unknown${utmTip}`} className={`bg-gray-100 text-gray-500 border-gray-200 text-[10px] ${cursor}`}>Unknown</Badge>;
                       })()}
                     </TableCell>
                   )}
