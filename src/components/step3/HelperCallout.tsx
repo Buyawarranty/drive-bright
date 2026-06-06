@@ -60,7 +60,7 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
   return (
     <div
       className={cn(
-        'mt-3 rounded-xl border border-[#D8E9DD] bg-[#F6FBF8] overflow-hidden',
+        'mt-3 rounded-xl border border-border bg-background overflow-hidden',
         className
       )}
     >
@@ -68,42 +68,31 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[#F0F7F2] transition-colors"
+        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/40 transition-colors"
       >
-        <span className="w-8 h-8 rounded-lg bg-[#E4F0E8] text-[#4a7a5a] flex items-center justify-center flex-shrink-0">
-          <GraduationCap className="w-4 h-4" />
-        </span>
+        <GraduationCap className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         <span className="flex-1 min-w-0">
           <span className="block text-[13px] md:text-sm font-semibold text-foreground leading-tight">
             {c.title}
           </span>
-          <span className="block text-[11px] md:text-xs text-muted-foreground mt-0.5 truncate">
-            {c.subtitle || 'Plain-English explanation with a real example.'}
-          </span>
         </span>
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-[#4a7a5a] flex-shrink-0 transition-transform',
+            'w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform',
             open && 'rotate-180'
           )}
         />
       </button>
 
       {open && (
-        <div className="px-3 pb-3 pt-1 border-t border-[#D8E9DD] bg-white/70 space-y-2.5">
+        <div className="px-3 pb-3 pt-2 border-t border-border space-y-2">
           <p className="text-[13px] text-foreground/90 leading-snug">{c.short}</p>
-
-          {c.example && (
-            <div className="rounded-lg bg-[#F3FAF5] border border-[#DDEEE2] px-3 py-2 text-[12px] text-foreground leading-snug">
-              <span className="font-semibold">💡 {c.example}</span>
-            </div>
-          )}
 
           {c.bullets && c.bullets.length > 0 && (
             <ul className="space-y-1.5">
               {c.bullets.map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
-                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#7BA88A] flex-shrink-0" />
+                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-muted-foreground/60 flex-shrink-0" />
                   <span className="leading-snug">{b}</span>
                 </li>
               ))}
@@ -111,10 +100,9 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
           )}
 
           {c.takeaway && (
-            <div className="flex items-start gap-2 rounded-lg bg-[#F3FAF5] border border-[#D8E9DD] px-3 py-2">
-              <Lightbulb className="w-4 h-4 text-[#4a7a5a] flex-shrink-0 mt-0.5" />
-              <p className="text-[12px] leading-snug text-foreground font-medium">{c.takeaway}</p>
-            </div>
+            <p className="text-[12.5px] leading-snug text-foreground/80">
+              {c.takeaway}
+            </p>
           )}
         </div>
       )}
