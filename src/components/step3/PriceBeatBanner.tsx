@@ -99,21 +99,23 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
       )}
     >
       {/* Banner row */}
-      <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5">
-        <div className="w-9 h-9 rounded-full bg-[#FEF0EA] flex items-center justify-center flex-shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-4 px-3 sm:px-5 py-3">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#FEF0EA] flex items-center justify-center flex-shrink-0">
           <Tag className="w-4 h-4 text-[#E8521A]" />
         </div>
         <div className="flex-1 min-w-0 leading-tight">
-          <div className="text-sm font-bold text-[#161616]">Price Beat Guarantee</div>
-          <div className="text-[13px] text-[#666]">Found a cheaper quote? We'll beat it.</div>
+          <div className="text-[13px] sm:text-sm font-bold text-[#161616]">Price Beat Guarantee</div>
+          <div className="text-[11.5px] sm:text-[13px] text-[#666]">Found a cheaper quote? We'll beat it.</div>
         </div>
         {!expanded && !success && (
           <button
             type="button"
             onClick={open}
-            className="whitespace-nowrap rounded-lg bg-[#E8521A] hover:bg-[#d24717] text-white text-[13px] font-bold px-3.5 py-2 flex items-center gap-1.5"
+            className="whitespace-nowrap rounded-lg bg-[#E8521A] hover:bg-[#d24717] text-white text-[12px] sm:text-[13px] font-bold px-3 sm:px-3.5 py-2 flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
           >
-            Beat My Quote <ArrowRight className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Beat My Quote</span>
+            <span className="sm:hidden">Beat it</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         )}
         {expanded && !success && (
