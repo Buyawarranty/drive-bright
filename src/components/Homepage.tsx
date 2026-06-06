@@ -275,10 +275,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         console.log('Vehicle blocked: Year information not available');
         toast({
           title: "Vehicle Not Eligible",
-          description: "We cannot verify the age of this vehicle. Please contact support for assistance.",
-          variant: "destructive",
+          description: "We couldn't verify this vehicle's age. Please try a different registration, or contact our support team for help.",
+          className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
         });
-        setVehicleAgeError('Cannot verify vehicle age');
+        setVehicleAgeError("We couldn't verify this vehicle's age. Please try a different registration.");
         setIsLookingUp(false);
         return;
       }
