@@ -30,6 +30,7 @@ const AnalyticsTab = lazy(() => import('@/components/admin/AnalyticsTab').then(m
 const UnifiedEmailHub = lazy(() => import('@/components/admin/UnifiedEmailHub'));
 const AccountSettings = lazy(() => import('@/components/admin/AccountSettings'));
 const AttributionSettingsTab = lazy(() => import('@/components/admin/AttributionSettingsTab'));
+const FeatureFlagsTab = lazy(() => import('@/components/admin/FeatureFlagsTab'));
 const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
 const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
 const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
