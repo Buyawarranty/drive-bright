@@ -88,7 +88,7 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
 
       {open && (
         <div className="px-3 pb-3 pt-2 border-t border-border space-y-2">
-          <p className="text-[13px] text-foreground/90 leading-snug">{c.short}</p>
+          {c.short && <p className="text-[13px] text-foreground/90 leading-snug">{c.short}</p>}
 
           {c.example && (
             <pre className="text-[12.5px] text-foreground/85 leading-snug whitespace-pre-wrap font-sans bg-muted/40 rounded-md p-2">
