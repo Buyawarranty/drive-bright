@@ -111,6 +111,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - must opt-in to give 10% discount
+
+  // Auto vehicle preview (Step 1)
+  const [autoPreview, setAutoPreview] = useState<{
+    loading: boolean;
+    error: string | null;
+    data: { make?: string; model?: string; year?: string; fuelType?: string; ageYears?: number; motMileage?: number | null; blocked?: boolean; blockReason?: string } | null;
+  }>({ loading: false, error: null, data: null });
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
