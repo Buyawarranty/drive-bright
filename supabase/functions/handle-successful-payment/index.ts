@@ -406,26 +406,28 @@ serve(async (req) => {
       device_type: metadata?.device_type || customerData?.device_type || null
     };
 
-    // Detect Facebook Ads attribution from abandoned cart metadata
+    // Detect Facebook Ads attribution + capture UTMs from abandoned cart metadata
     let detectedAdSource: 'google' | 'facebook' | null = null;
     if (trackingData?.gclid || metadata?.gclid) {
       detectedAdSource = 'google';
-    } else {
-      // Check abandoned cart for fbclid / utm_source=facebook
-      try {
-        const { data: cartData } = await supabaseClient
-          .from('abandoned_carts')
-          .select('cart_metadata')
-          .ilike('email', userEmail)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (cartData?.cart_metadata) {
-          const meta = cartData.cart_metadata as Record<string, any>;
+    }
+    // Always pull cart metadata so UTMs can be persisted onto the customer
+    try {
+      const { data: cartData } = await supabaseClient
+        .from('abandoned_carts')
+        .select('cart_metadata')
+        .ilike('email', userEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (cartData?.cart_metadata) {
+        const meta = cartData.cart_metadata as Record<string, any>;
+
+        // Facebook detection (only if Google didn't already win)
+        if (!detectedAdSource) {
           if (meta.fbclid) {
             detectedAdSource = 'facebook';
-            // Also update purchase_source for Facebook attribution
             customerRecord.purchase_source = 'facebook_ads';
           } else {
             const utmSrc = (meta.utm_source || '').toLowerCase();
@@ -435,10 +437,25 @@ serve(async (req) => {
             }
           }
         }
-      } catch (e) {
-        logStep("Warning: Failed to check cart metadata for ad source", e);
+
+        // Persist UTM attribution onto the customer record (all 5 params)
+        ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {
+          const v = meta[k];
+          if (typeof v === 'string' && v.trim()) {
+            (customerRecord as Record<string, any>)[k] = v.trim();
+          }
+        });
       }
+    } catch (e) {
+      logStep("Warning: Failed to read cart metadata for ad source / UTMs", e);
     }
+    // Fallback: also accept UTMs sent directly via Stripe metadata
+    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {
+      const rec = customerRecord as Record<string, any>;
+      if (!rec[k] && metadata && typeof metadata[k] === 'string' && metadata[k].trim()) {
+        rec[k] = metadata[k].trim();
+      }
+    });
     logStep("Ad source detection", { detectedAdSource });
 
     // Debug addon metadata parsing
