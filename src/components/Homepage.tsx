@@ -295,11 +295,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             // Block if over 15 years (15 years and 1 day or older)
             if (vehicleAgePrecise > 15) {
               setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
-              toast({
-                title: "Vehicle Not Eligible",
-                description: "This vehicle is over 15 years old. Please try a different registration — we cover vehicles up to 15 years old and 150,000 miles.",
-                className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
-              });
               setIsLookingUp(false);
               return;
             }
