@@ -98,7 +98,9 @@ const HelperCallout: React.FC<Props> = ({ topic, className, defaultOpen = false 
             <ul className="space-y-1.5">
               {c.bullets.map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
-                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-muted-foreground/60 flex-shrink-0" />
+                  <span className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-green-100 flex-shrink-0">
+                    <Check className="h-3 w-3 text-green-600" strokeWidth={3} />
+                  </span>
                   <span className="leading-snug">{b}</span>
                 </li>
               ))}
