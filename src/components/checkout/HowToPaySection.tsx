@@ -127,9 +127,15 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           {/* Price + benefits row */}
           <div className="mt-4 flex flex-col gap-4">
             <div className="pl-7">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
-                £{fullPrice}
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
+                  £{fullPrice}
+                </span>
+                <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
+              <p className="text-sm text-[#0BA360] font-semibold mt-1">
+                Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} overall vs monthly payments
+              </p>
               <p className="text-sm text-[#0BA360] font-medium mt-1">
                 {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`} per day
               </p>
@@ -139,7 +145,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
-                <span>Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} today</span>
+                <span>10% cheaper than spreading the cost</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
@@ -167,11 +173,12 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Processing...
                   </span>
                 ) : (
-                  <span>Pay £{fullPrice}</span>
+                  <span>Pay £{fullPrice} today</span>
                 )}
               </Button>
             </div>
           )}
+
         </div>
 
         {/* Monthly / Spread the cost Card */}
@@ -214,7 +221,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
               <p className="text-sm text-[#1a1a1a] font-medium mt-1">
-                Then £{monthlyPrice} monthly
+                Then 11 monthly payments of £{monthlyPrice}
+              </p>
+              <p className="text-sm text-[#FF6B00] font-semibold mt-1">
+                £{monthlyPaidTotal} total payable
               </p>
               <p className="text-sm text-[#FF6B00] font-medium mt-1">
                 {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`} per day
@@ -253,11 +263,12 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Processing...
                   </span>
                 ) : (
-                  <span>Just £{monthlyPrice} today</span>
+                  <span>Pay £{monthlyPrice} today</span>
                 )}
               </Button>
             </div>
           )}
+
         </div>
       </div>
 
@@ -274,8 +285,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <svg className="w-4 h-4 text-[#FF6B00] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.2a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg>
           <div>
             <div className="font-semibold">UK support</div>
-            <div className="text-[#FF6B00] text-xs font-semibold">0330 229 5040</div>
+            <a href="tel:03302295040" className="text-[#FF6B00] text-xs font-semibold hover:underline">0330 229 5040</a>
           </div>
+
         </div>
       </div>
 
