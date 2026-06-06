@@ -324,11 +324,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
         setMileageError('This vehicle is over 150,000 miles. Please try a different registration.');
-        toast({
-          title: 'Vehicle Not Eligible',
-          description: 'This vehicle is over 150,000 miles. Please try a different registration — we cover vehicles up to 150,000 miles and 15 years old.',
-          className: 'bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white',
-        });
         setIsLookingUp(false);
         return;
       }
