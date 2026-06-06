@@ -292,6 +292,12 @@ const defaultTabs: Tab[] = [
     description: 'Control how leads are tagged Organic / Google / Facebook'
   },
   {
+    id: 'feature-flags',
+    label: 'Feature Flags',
+    icon: Settings,
+    description: 'Switch features on or off across the site (admin only)'
+  },
+  {
     id: 'ghl-sync-log',
     label: 'GHL Sync Log',
     icon: Database,

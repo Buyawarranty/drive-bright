@@ -31,6 +31,7 @@ import {
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
+import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
@@ -86,6 +87,7 @@ interface GetQuoteTabProps {
 
 export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) => {
   const { toast } = useToast();
+  const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
@@ -2562,6 +2564,7 @@ Questions? Call 0330 229 5040`;
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType])
                       .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair'].includes(addon.key))
+                      .filter((addon) => tyreCoverEnabled || addon.key !== 'tyre')
                       .map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
                       const isUnavailable = ['wearAndTear'].includes(addon.key);
