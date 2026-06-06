@@ -2092,6 +2092,66 @@ Questions? Call 0330 229 5040`;
                   />
                 </div>
 
+                {/* Auto Vehicle Identification Preview */}
+                {(autoPreview.loading || autoPreview.data || autoPreview.error) && (
+                  <div className="rounded-lg border p-3 bg-slate-50 text-sm">
+                    {autoPreview.loading && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Identifying vehicle…
+                      </div>
+                    )}
+                    {!autoPreview.loading && autoPreview.error && (
+                      <div className="text-amber-700">{autoPreview.error} — you can still continue and enter details manually.</div>
+                    )}
+                    {!autoPreview.loading && autoPreview.data && (() => {
+                      const d = autoPreview.data!;
+                      const numericMileage = parseInt((mileage || '').replace(/[^0-9]/g, ''), 10);
+                      const mileageOver = !isNaN(numericMileage) && numericMileage > 150000;
+                      const ageOver = typeof d.ageYears === 'number' && d.ageYears > 15;
+                      const eligible = !d.blocked && !mileageOver && (!ageOver || ageOverrideEnabled);
+                      return (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="font-semibold text-base">
+                              {d.make} {d.model} {d.year ? `(${d.year})` : ''}
+                              {d.fuelType ? <span className="text-muted-foreground font-normal"> · {d.fuelType}</span> : null}
+                            </div>
+                            <Badge variant={eligible ? 'default' : 'destructive'} className={eligible ? 'bg-green-600' : ''}>
+                              {eligible ? 'Eligible' : 'Not eligible'}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className={`rounded px-2 py-1 ${ageOver && !ageOverrideEnabled ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              Age: {typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : 'unknown'} {ageOver ? (ageOverrideEnabled ? '(override on)' : '— over 15-year limit') : ''}
+                            </div>
+                            <div className={`rounded px-2 py-1 ${mileageOver ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              Mileage: {!isNaN(numericMileage) ? numericMileage.toLocaleString() : '—'} {mileageOver ? '— over 150,000 limit' : ''}
+                            </div>
+                          </div>
+                          {d.motMileage ? (
+                            <button
+                              type="button"
+                              className="text-xs text-blue-600 hover:underline"
+                              onClick={() => {
+                                setMileage(String(d.motMileage));
+                                setSliderMileage(Number(d.motMileage));
+                              }}
+                            >
+                              Use latest MOT mileage: {Number(d.motMileage).toLocaleString()}
+                            </button>
+                          ) : null}
+                          {d.blocked && (
+                            <div className="text-xs text-red-700 font-medium">{d.blockReason || 'This make/model is on the excluded list.'}</div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+
+
                 <div className="space-y-2">
                   <Label>Mileage</Label>
                   <div className="flex gap-2">
