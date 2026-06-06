@@ -267,6 +267,52 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <HelperCallout topic="claim-limit" />
             </section>
 
+            <section className="relative">
+              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">02</span>
+              <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
+              <h2 className="text-lg font-bold text-foreground mt-1">Where do you usually repair your car?</h2>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
+                Pick the garage type that matches where you'd feel comfortable having repairs done
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {REPAIR_OPTIONS.map(opt => {
+                  const selected = selectedLabourRate === opt.value;
+                  const Icon = opt.icon;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => onLabourRateChange(opt.value)}
+                      className={cn(
+                        'relative text-left rounded-xl border-2 p-4 transition-all min-h-[140px] flex flex-col',
+                        selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
+                      )}
+                    >
+                      {opt.recommended && (
+                        <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
+                          Most popular
+                        </span>
+                      )}
+                      {opt.bestValue && (
+                        <span className="absolute -top-2 left-2 bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                          Best value
+                        </span>
+                      )}
+                      <Icon className={cn('w-6 h-6 mb-2', selected ? 'text-primary' : 'text-muted-foreground')} />
+                      <div className="text-lg font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-xs font-normal text-muted-foreground">/hour</span></div>
+                      <div className="text-sm font-bold text-foreground leading-tight mt-1">{opt.title}</div>
+                      <div className="text-xs text-muted-foreground mt-1 leading-snug">{opt.sub}</div>
+                      {LABOUR_RATE_SUITABILITY[opt.value] && (
+                        <div className="mt-auto pt-2 text-[11px] font-semibold text-emerald-700 leading-snug">
+                          {LABOUR_RATE_SUITABILITY[opt.value]}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <HelperCallout topic="labour-rate" />
+            </section>
+
             {/* Cover length */}
             <section className="relative">
               <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">03</span>
@@ -338,51 +384,6 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             </section>
 
 
-            <section className="relative">
-              <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">02</span>
-              <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
-              <h2 className="text-lg font-bold text-foreground mt-1">Where do you usually repair your car?</h2>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Pick the garage type that matches where you'd feel comfortable having repairs done
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {REPAIR_OPTIONS.map(opt => {
-                  const selected = selectedLabourRate === opt.value;
-                  const Icon = opt.icon;
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => onLabourRateChange(opt.value)}
-                      className={cn(
-                        'relative text-left rounded-xl border-2 p-4 transition-all min-h-[140px] flex flex-col',
-                        selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
-                      )}
-                    >
-                      {opt.recommended && (
-                        <span className="absolute -top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
-                          Most popular
-                        </span>
-                      )}
-                      {opt.bestValue && (
-                        <span className="absolute -top-2 left-2 bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                          Best value
-                        </span>
-                      )}
-                      <Icon className={cn('w-6 h-6 mb-2', selected ? 'text-primary' : 'text-muted-foreground')} />
-                      <div className="text-lg font-extrabold text-foreground leading-tight">£{opt.value}<span className="text-xs font-normal text-muted-foreground">/hour</span></div>
-                      <div className="text-sm font-bold text-foreground leading-tight mt-1">{opt.title}</div>
-                      <div className="text-xs text-muted-foreground mt-1 leading-snug">{opt.sub}</div>
-                      {LABOUR_RATE_SUITABILITY[opt.value] && (
-                        <div className="mt-auto pt-2 text-[11px] font-semibold text-emerald-700 leading-snug">
-                          {LABOUR_RATE_SUITABILITY[opt.value]}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              <HelperCallout topic="labour-rate" />
-            </section>
 
             <section className="relative">
               <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">04</span>
