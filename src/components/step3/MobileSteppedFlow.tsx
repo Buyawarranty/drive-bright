@@ -439,6 +439,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <TrustAndInfoAccordion variant="mobile" />
             </section>
 
+            {/* Price Beat Guarantee — near the live price box */}
+            <section>
+              <PriceBeatBanner
+                currentMonthlyPrice={currentMonthlyPrice}
+                currentExcess={voluntaryExcess}
+                currentClaimLimit={selectedClaimLimit}
+                currentLabourRate={selectedLabourRate}
+              />
+            </section>
+
             {/* Email quote link — placed below FAQ to keep sticky bar compact */}
             <div className="py-1 text-center">
               <button
