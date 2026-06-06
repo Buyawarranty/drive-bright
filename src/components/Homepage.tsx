@@ -262,10 +262,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         console.log('Vehicle blocked: Over 15 years old');
         toast({
           title: "Vehicle Not Eligible",
-          description: "We cannot offer warranties for vehicles over 15 years of age.",
-          variant: "destructive",
+          description: "This vehicle is over 15 years old. Please try a different registration — we cover vehicles up to 15 years old and 150,000 miles.",
+          className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
         });
-        setVehicleAgeError('We cannot offer warranties for vehicles over 15 years old');
+        setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
         setIsLookingUp(false);
         return;
       }
