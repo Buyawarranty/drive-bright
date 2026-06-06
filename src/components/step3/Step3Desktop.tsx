@@ -485,9 +485,10 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <TrustAndInfoAccordion variant="desktop" />
             </Card>
 
+          </div>
 
-
-            {/* PRICE BEAT */}
+          {/* RIGHT - Sticky summary (simplified) */}
+          <aside className="lg:sticky lg:top-6 grid gap-4">
             <PriceBeatBanner
               currentMonthlyPrice={monthlyPrice}
               currentExcess={voluntaryExcess}
@@ -495,10 +496,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               currentLabourRate={selectedLabourRate}
             />
 
-          </div>
-
-          {/* RIGHT - Sticky summary (simplified) */}
-          <aside className="lg:sticky lg:top-6 grid gap-4">
             <div className="bg-gradient-to-b from-[#fffaf7] to-white border border-[#ffe0cf] rounded-[22px] overflow-hidden shadow-[0_16px_36px_rgba(243,107,33,0.08),0_10px_30px_rgba(16,24,40,0.06)]">
               <div className="p-[22px] pb-[18px] border-b border-[#f3ece7]">
                 <div className="text-[#f36b21] text-[12px] font-extrabold tracking-[0.08em] uppercase mb-2.5">Live price</div>
