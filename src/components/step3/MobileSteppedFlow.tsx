@@ -267,6 +267,29 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
               <HelperCallout topic="claim-limit" />
             </section>
 
+            {/* Your cover details */}
+            <section className="rounded-2xl border border-border bg-white p-4">
+              <div className="mb-3">
+                <h3 className="text-base font-bold text-foreground">Your cover details</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Check what's included before you continue.</p>
+              </div>
+              <SeeWhatsIncludedCard
+                variant="mobile"
+                vehicleData={vehicleData}
+                selectedPlan={{
+                  monthlyPrice: currentMonthlyPrice,
+                  paymentType,
+                  claimLimit: selectedClaimLimit,
+                  labourRate: selectedLabourRate,
+                  voluntaryExcess,
+                }}
+                selectedAddOns={selectedAddOns}
+                onAddOnChange={onAddOnChange}
+              />
+            </section>
+
+
+
             <section className="relative">
               <span className="absolute top-0 right-0 text-[10px] font-semibold tracking-[0.12em] text-muted-foreground/60 tabular-nums select-none pointer-events-none">02</span>
               <p className="text-xs font-extrabold text-primary uppercase tracking-wider">Labour rate</p>
