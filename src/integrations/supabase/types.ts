@@ -2414,6 +2414,11 @@ export type Database = {
           trustpilot_review_requested_at: string | null
           tyre_cover: boolean | null
           updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
           vehicle_fuel_type: string | null
           vehicle_make: string | null
           vehicle_model: string | null
@@ -2503,6 +2508,11 @@ export type Database = {
           trustpilot_review_requested_at?: string | null
           tyre_cover?: boolean | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           vehicle_fuel_type?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
@@ -2592,6 +2602,11 @@ export type Database = {
           trustpilot_review_requested_at?: string | null
           tyre_cover?: boolean | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           vehicle_fuel_type?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
