@@ -268,11 +268,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Check for missing year information when vehicle is found
       if (data?.found && !data.yearOfManufacture) {
         console.log('Vehicle blocked: Year information not available');
-        toast({
-          title: "Vehicle Not Eligible",
-          description: "We couldn't verify this vehicle's age. Please try a different registration, or contact our support team for help.",
-          className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
-        });
         setVehicleAgeError("We couldn't verify this vehicle's age. Please try a different registration.");
         setIsLookingUp(false);
         return;
