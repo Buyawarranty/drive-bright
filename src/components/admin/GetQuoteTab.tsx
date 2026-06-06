@@ -111,6 +111,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - must opt-in to give 10% discount
+
+  // Auto vehicle preview (Step 1)
+  const [autoPreview, setAutoPreview] = useState<{
+    loading: boolean;
+    error: string | null;
+    data: { make?: string; model?: string; year?: string; fuelType?: string; ageYears?: number; motMileage?: number | null; blocked?: boolean; blockReason?: string } | null;
+  }>({ loading: false, error: null, data: null });
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
@@ -446,6 +453,49 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setCustomFullPrice(basePrice.totalPrice.toString());
     }
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns, isPriceOverridden]);
+
+  // Auto-identify vehicle when a complete reg is entered (Step 1 only)
+  useEffect(() => {
+    const clean = regNumber.replace(/\s/g, '').toUpperCase();
+    if (step !== 1 || clean.length < 5) {
+      setAutoPreview({ loading: false, error: null, data: null });
+      return;
+    }
+    let cancelled = false;
+    setAutoPreview((p) => ({ ...p, loading: true, error: null }));
+    const t = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+          body: { registrationNumber: clean, skipAgeCheck: true }, // preview only — no hard block here
+        });
+        if (cancelled) return;
+        if (error || !data || data.error || data.found === false || !data.make) {
+          setAutoPreview({ loading: false, error: 'Could not identify vehicle automatically', data: null });
+          return;
+        }
+        const currentYear = new Date().getFullYear();
+        const vYear = parseInt(data.yearOfManufacture || data.year || '0', 10);
+        const ageYears = vYear > 0 ? currentYear - vYear : undefined;
+        setAutoPreview({
+          loading: false,
+          error: null,
+          data: {
+            make: data.make,
+            model: data.model,
+            year: data.yearOfManufacture || data.year,
+            fuelType: data.fuelType,
+            ageYears,
+            motMileage: data.motMileage ?? data.mileage ?? null,
+            blocked: !!data.blocked,
+            blockReason: data.blockReason,
+          },
+        });
+      } catch (e: any) {
+        if (!cancelled) setAutoPreview({ loading: false, error: 'Lookup failed', data: null });
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [regNumber, step]);
 
   // Handle custom price field changes — fields are independent; agents can type any amount.
   // Only a warning is shown when below the 20% floor (see UI below); nothing is blocked.
@@ -2041,6 +2091,66 @@ Questions? Call 0330 229 5040`;
                     maxLength={8}
                   />
                 </div>
+
+                {/* Auto Vehicle Identification Preview */}
+                {(autoPreview.loading || autoPreview.data || autoPreview.error) && (
+                  <div className="rounded-lg border p-3 bg-slate-50 text-sm">
+                    {autoPreview.loading && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Identifying vehicle…
+                      </div>
+                    )}
+                    {!autoPreview.loading && autoPreview.error && (
+                      <div className="text-amber-700">{autoPreview.error} — you can still continue and enter details manually.</div>
+                    )}
+                    {!autoPreview.loading && autoPreview.data && (() => {
+                      const d = autoPreview.data!;
+                      const numericMileage = parseInt((mileage || '').replace(/[^0-9]/g, ''), 10);
+                      const mileageOver = !isNaN(numericMileage) && numericMileage > 150000;
+                      const ageOver = typeof d.ageYears === 'number' && d.ageYears > 15;
+                      const eligible = !d.blocked && !mileageOver && (!ageOver || ageOverrideEnabled);
+                      return (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="font-semibold text-base">
+                              {d.make} {d.model} {d.year ? `(${d.year})` : ''}
+                              {d.fuelType ? <span className="text-muted-foreground font-normal"> · {d.fuelType}</span> : null}
+                            </div>
+                            <Badge variant={eligible ? 'default' : 'destructive'} className={eligible ? 'bg-green-600' : ''}>
+                              {eligible ? 'Eligible' : 'Not eligible'}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className={`rounded px-2 py-1 ${ageOver && !ageOverrideEnabled ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              Age: {typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : 'unknown'} {ageOver ? (ageOverrideEnabled ? '(override on)' : '— over 15-year limit') : ''}
+                            </div>
+                            <div className={`rounded px-2 py-1 ${mileageOver ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              Mileage: {!isNaN(numericMileage) ? numericMileage.toLocaleString() : '—'} {mileageOver ? '— over 150,000 limit' : ''}
+                            </div>
+                          </div>
+                          {d.motMileage ? (
+                            <button
+                              type="button"
+                              className="text-xs text-blue-600 hover:underline"
+                              onClick={() => {
+                                setMileage(String(d.motMileage));
+                                setSliderMileage(Number(d.motMileage));
+                              }}
+                            >
+                              Use latest MOT mileage: {Number(d.motMileage).toLocaleString()}
+                            </button>
+                          ) : null}
+                          {d.blocked && (
+                            <div className="text-xs text-red-700 font-medium">{d.blockReason || 'This make/model is on the excluded list.'}</div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+
 
                 <div className="space-y-2">
                   <Label>Mileage</Label>
