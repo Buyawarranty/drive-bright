@@ -185,7 +185,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       {(() => {
         const isActive = isRegValid && hasSelection;
         const label = !isRegValid
-          ? 'Enter your reg to continue'
+          ? 'Enter reg for an instant price'
           : !hasSelection
           ? 'Select mileage to continue'
           : 'Get my instant quote';
