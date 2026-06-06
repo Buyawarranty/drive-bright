@@ -454,6 +454,49 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns, isPriceOverridden]);
 
+  // Auto-identify vehicle when a complete reg is entered (Step 1 only)
+  useEffect(() => {
+    const clean = regNumber.replace(/\s/g, '').toUpperCase();
+    if (step !== 1 || clean.length < 5) {
+      setAutoPreview({ loading: false, error: null, data: null });
+      return;
+    }
+    let cancelled = false;
+    setAutoPreview((p) => ({ ...p, loading: true, error: null }));
+    const t = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+          body: { registrationNumber: clean, skipAgeCheck: true }, // preview only — no hard block here
+        });
+        if (cancelled) return;
+        if (error || !data || data.error || data.found === false || !data.make) {
+          setAutoPreview({ loading: false, error: 'Could not identify vehicle automatically', data: null });
+          return;
+        }
+        const currentYear = new Date().getFullYear();
+        const vYear = parseInt(data.yearOfManufacture || data.year || '0', 10);
+        const ageYears = vYear > 0 ? currentYear - vYear : undefined;
+        setAutoPreview({
+          loading: false,
+          error: null,
+          data: {
+            make: data.make,
+            model: data.model,
+            year: data.yearOfManufacture || data.year,
+            fuelType: data.fuelType,
+            ageYears,
+            motMileage: data.motMileage ?? data.mileage ?? null,
+            blocked: !!data.blocked,
+            blockReason: data.blockReason,
+          },
+        });
+      } catch (e: any) {
+        if (!cancelled) setAutoPreview({ loading: false, error: 'Lookup failed', data: null });
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [regNumber, step]);
+
   // Handle custom price field changes — fields are independent; agents can type any amount.
   // Only a warning is shown when below the 20% floor (see UI below); nothing is blocked.
   const handleCustomMonthlyChange = (value: string) => {
