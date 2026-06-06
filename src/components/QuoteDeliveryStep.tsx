@@ -273,12 +273,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 const fb = storedFbclid || getSessionFbclid();
                 const gc = storedGclid || getSessionGclid();
                 const fbRef = !fb ? getSessionFbReferrer() : null;
-                if (fb || gc || utmSource || fbRef) {
+                const hasUtms = Object.keys(utms).length > 0;
+                if (fb || gc || hasUtms || fbRef) {
                   return {
                     cart_metadata: {
                       ...(fb ? { fbclid: fb } : {}),
                       ...(gc ? { gclid: gc } : {}),
-                      ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...utms,
                       ...(fbRef ? { fb_referrer: fbRef } : {}),
                     }
                   };
@@ -313,12 +314,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             step_abandoned: 2,
             ...((() => {
                 const fbRef = !storedFbclid ? getSessionFbReferrer() : null;
-                if (storedFbclid || storedGclid || utmSource || fbRef) {
+                const hasUtms = Object.keys(utms).length > 0;
+                if (storedFbclid || storedGclid || hasUtms || fbRef) {
                   return {
                     cart_metadata: {
                       ...(storedFbclid ? { fbclid: storedFbclid } : {}),
                       ...(storedGclid ? { gclid: storedGclid } : {}),
-                      ...(utmSource ? { utm_source: utmSource } : {}),
+                      ...utms,
                       ...(fbRef ? { fb_referrer: fbRef } : {}),
                     }
                   };
