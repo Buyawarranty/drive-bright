@@ -2259,9 +2259,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
       </div>
       {/* (Desktop sections moved into Step3Desktop) */}
       {/* Mobile-only original sections wrapper */}
-      <div className="md:hidden max-w-6xl mx-auto px-4">
+      <div className="md:hidden max-w-6xl mx-auto px-4 pb-4">
 
-        {/* Price Help Trigger - Above Comprehensive Cover */}
+        {/* Price Beat banner - mobile */}
         <div>
           <PriceBeatBanner
             currentMonthlyPrice={monthlyPrice}
@@ -2270,10 +2270,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
             currentLabourRate={selectedLabourRate}
           />
         </div>
-
-        {/* Comprehensive Cover section removed (mobile) */}
-
-        {/* Cover Details Section removed */}
 
       </div>
       {/* Resume mobile-only wrapper for original sticky bar etc. */}
