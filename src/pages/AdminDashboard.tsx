@@ -507,6 +507,16 @@ const AdminDashboard = () => {
           );
         }
         return <AttributionSettingsTab />;
+      case 'feature-flags':
+        if (effectiveUserRole !== 'super_admin' && effectiveUserRole !== 'admin') {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Feature Flags is restricted to administrators.</p>
+            </div>
+          );
+        }
+        return <FeatureFlagsTab userRole={effectiveUserRole} />;
       case 'staff-hub':
         return <StaffHubTab />;
       default:
