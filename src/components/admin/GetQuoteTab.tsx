@@ -2564,6 +2564,7 @@ Questions? Call 0330 229 5040`;
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType])
                       .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair'].includes(addon.key))
+                      .filter((addon) => tyreCoverEnabled || addon.key !== 'tyre')
                       .map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
                       const isUnavailable = ['wearAndTear'].includes(addon.key);
