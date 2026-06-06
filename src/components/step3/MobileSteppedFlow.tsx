@@ -18,6 +18,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import SeeWhatsIncludedCard from './SeeWhatsIncludedCard';
+import PriceBeatBanner from './PriceBeatBanner';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import EmailQuoteDialog from './EmailQuoteDialog';
@@ -436,6 +437,16 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
             {/* Combined trust + info accordions */}
             <section className="relative">
               <TrustAndInfoAccordion variant="mobile" />
+            </section>
+
+            {/* Price Beat Guarantee — near the live price box */}
+            <section>
+              <PriceBeatBanner
+                currentMonthlyPrice={currentMonthlyPrice}
+                currentExcess={voluntaryExcess}
+                currentClaimLimit={selectedClaimLimit}
+                currentLabourRate={selectedLabourRate}
+              />
             </section>
 
             {/* Email quote link — placed below FAQ to keep sticky bar compact */}
