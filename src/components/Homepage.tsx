@@ -260,11 +260,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Check for age-related blocking when vehicle is not found
       if (!data?.found && data?.error && data.error.includes('15 years')) {
         console.log('Vehicle blocked: Over 15 years old');
-        toast({
-          title: "Vehicle Not Eligible",
-          description: "This vehicle is over 15 years old. Please try a different registration — we cover vehicles up to 15 years old and 150,000 miles.",
-          className: "bg-[#FF5A5F] text-white border-[#FF5A5F] [&>div]:text-white",
-        });
         setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
         setIsLookingUp(false);
         return;
