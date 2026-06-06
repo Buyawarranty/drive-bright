@@ -557,7 +557,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   value={mileageSelection}
                   onChange={handleMileageSelection}
                   onAutoSubmit={(m) => handleGetQuote(m)}
-                  error={mileageError || vehicleAgeError}
                   isLoading={isLookingUp}
                   isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                 />
