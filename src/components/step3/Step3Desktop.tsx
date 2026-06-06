@@ -336,6 +336,26 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <HelperCallout topic="claim-limit" />
             </Card>
 
+            {/* Your cover details */}
+            <div className="rounded-2xl border border-border bg-white p-4 sm:p-5">
+              <div className="mb-3">
+                <h3 className="text-[15px] font-bold text-foreground">Your cover details</h3>
+                <p className="text-[13px] text-muted-foreground mt-0.5">Check what's included before you continue.</p>
+              </div>
+              <SeeWhatsIncludedCard
+                variant="desktop"
+                vehicleData={vehicleData}
+                selectedPlan={{
+                  monthlyPrice,
+                  paymentType,
+                  claimLimit: selectedClaimLimit,
+                  labourRate: selectedLabourRate,
+                  voluntaryExcess,
+                }}
+              />
+            </div>
+
+
             {/* CARD 2 - Labour Rate */}
             <Card step={2}>
               <SectionHead
@@ -426,22 +446,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               {validationErrors.paymentType && (
                 <p className="mt-3 text-sm text-red-600 font-medium">Please choose a warranty duration to continue.</p>
               )}
-              <div className="mt-5">
-                <SeeWhatsIncludedCard
-                  variant="desktop"
-                  vehicleData={vehicleData}
-                  selectedPlan={{
-                    monthlyPrice,
-                    paymentType,
-                    claimLimit: selectedClaimLimit,
-                    labourRate: selectedLabourRate,
-                    voluntaryExcess,
-                  }}
-                />
-              </div>
-
-
             </Card>
+
 
             {/* CARD 4 - Voluntary Excess */}
             <Card step={4}>
