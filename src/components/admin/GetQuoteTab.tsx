@@ -447,32 +447,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns, isPriceOverridden]);
 
-  // Handle custom price field changes
+  // Handle custom price field changes — fields are independent; agents can type any amount.
+  // Only a warning is shown when below the 20% floor (see UI below); nothing is blocked.
   const handleCustomMonthlyChange = (value: string) => {
-    // Allow empty or partial input for better UX
     const sanitized = value.replace(/[^0-9.]/g, '');
     setCustomMonthlyPrice(sanitized);
-    const parsed = parseFloat(sanitized);
-    if (sanitized && !isNaN(parsed) && parsed > 0) {
-      setIsPriceOverridden(true);
-      const fullPrice = parsed * 12;
-      setCustomFullPrice(fullPrice.toString());
-    } else if (!sanitized) {
-      setIsPriceOverridden(false);
-    }
+    setIsPriceOverridden(true);
   };
 
   const handleCustomFullChange = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');
     setCustomFullPrice(sanitized);
-    const parsed = parseFloat(sanitized);
-    if (sanitized && !isNaN(parsed) && parsed > 0) {
-      setIsPriceOverridden(true);
-      const monthly = Math.floor(parsed / 12);
-      setCustomMonthlyPrice(monthly.toString());
-    } else if (!sanitized) {
-      setIsPriceOverridden(false);
-    }
+    setIsPriceOverridden(true);
   };
 
   const resetToCalculatedPrice = () => {
