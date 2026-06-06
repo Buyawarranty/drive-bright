@@ -127,9 +127,15 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           {/* Price + benefits row */}
           <div className="mt-4 flex flex-col gap-4">
             <div className="pl-7">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
-                £{fullPrice}
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-extrabold text-[#0BA360] leading-none tracking-tight">
+                  £{fullPrice}
+                </span>
+                <span className="text-sm text-[#1a1a1a] font-medium">today</span>
               </div>
+              <p className="text-sm text-[#0BA360] font-semibold mt-1">
+                Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} overall vs monthly payments
+              </p>
               <p className="text-sm text-[#0BA360] font-medium mt-1">
                 {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`} per day
               </p>
@@ -139,7 +145,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             <div className="space-y-1.5 pl-7">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
-                <span>Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} today</span>
+                <span>10% cheaper than spreading the cost</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" strokeWidth={3} />
@@ -167,11 +173,12 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     Processing...
                   </span>
                 ) : (
-                  <span>Pay £{fullPrice}</span>
+                  <span>Pay £{fullPrice} today</span>
                 )}
               </Button>
             </div>
           )}
+
         </div>
 
         {/* Monthly / Spread the cost Card */}
