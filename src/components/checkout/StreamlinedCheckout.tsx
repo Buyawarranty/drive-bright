@@ -2244,6 +2244,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields) {
                         performPostcodeLookup(postcodeInput);
                       }
+                      setAddressTouched(prev => ({ ...prev, postcode: true }));
+                      validateAddressField('postcode');
                     }}
                     placeholder="e.g. SW1A 1AA"
                     maxLength={8}
@@ -2267,7 +2269,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 
                 
                 {/* Postcode validation error */}
-                {showValidation && addressErrors.postcode && (
+                {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {addressErrors.postcode}
