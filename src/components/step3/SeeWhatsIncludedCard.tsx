@@ -76,12 +76,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
   };
 
   return (
-    <div
-      className={
-        'rounded-xl border border-border bg-white space-y-2 ' +
-        (isMobile ? 'p-3' : 'p-4')
-      }
-    >
+    <div className="space-y-2">
 
       <Collapsible open={openId === 'features'} onOpenChange={() => toggle('features')}>
         <Trigger
