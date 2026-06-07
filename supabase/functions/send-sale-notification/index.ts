@@ -154,7 +154,7 @@ serve(async (req: Request) => {
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
     let subjectSource: string;
     if (isAgentSale) {
-      subjectSource = leadSource === 'google_ad' ? 'S-G' : leadSource === 'social_ad' ? 'S-F' : 'S';
+      subjectSource = leadSource === 'google_ad' ? 'S-G Ad' : leadSource === 'social_ad' ? 'S-F' : 'S';
     } else {
       subjectSource = saleType;
     }
