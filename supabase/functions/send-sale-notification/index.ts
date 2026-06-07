@@ -91,7 +91,7 @@ serve(async (req: Request) => {
     // Determine source prefix
     const leadSource = matchedLead?.lead_source || 'unknown';
     if (!saleSource) {
-      if (leadSource === 'google_ad') saleType = 'G';
+      if (leadSource === 'google_ad') saleType = 'G Ad';
       else if (leadSource === 'social_ad') saleType = 'F';
       else saleType = 'WEB';
     } else {
