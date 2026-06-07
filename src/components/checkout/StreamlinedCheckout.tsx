@@ -231,6 +231,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Address field errors
   const [addressErrors, setAddressErrors] = useState<{[key: string]: string}>({});
+  const [addressTouched, setAddressTouched] = useState<{[key: string]: boolean}>({});
   const [addressValidated, setAddressValidated] = useState<{[key: string]: boolean}>(() => {
     // Auto-validate pre-filled address fields from localStorage
     try {
@@ -2243,6 +2244,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields) {
                         performPostcodeLookup(postcodeInput);
                       }
+                      setAddressTouched(prev => ({ ...prev, postcode: true }));
+                      validateAddressField('postcode');
                     }}
                     placeholder="e.g. SW1A 1AA"
                     maxLength={8}
@@ -2266,7 +2269,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 
                 
                 {/* Postcode validation error */}
-                {showValidation && addressErrors.postcode && (
+                {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {addressErrors.postcode}
@@ -2316,14 +2319,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
                           }
                         }}
-                        onBlur={() => validateAddressField('address_line_1')}
+                        onBlur={() => {
+                          setAddressTouched(prev => ({ ...prev, address_line_1: true }));
+                          validateAddressField('address_line_1');
+                        }}
                         className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('address_line_1')}`}
                       />
                       {addressData.address_line_1?.trim() && !addressErrors.address_line_1 && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
-                    {showValidation && addressErrors.address_line_1 && (
+                    {(showValidation || addressTouched.address_line_1) && addressErrors.address_line_1 && (
                       <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {addressErrors.address_line_1}
@@ -2362,14 +2368,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             setAddressErrors(prev => ({ ...prev, town: '' }));
                           }
                         }}
-                        onBlur={() => validateAddressField('town')}
+                        onBlur={() => {
+                          setAddressTouched(prev => ({ ...prev, town: true }));
+                          validateAddressField('town');
+                        }}
                         className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('town')}`}
                       />
                       {addressData.town?.trim() && !addressErrors.town && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
-                    {showValidation && addressErrors.town && (
+                    {(showValidation || addressTouched.town) && addressErrors.town && (
                       <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {addressErrors.town}
