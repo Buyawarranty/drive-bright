@@ -231,6 +231,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Address field errors
   const [addressErrors, setAddressErrors] = useState<{[key: string]: string}>({});
+  const [addressTouched, setAddressTouched] = useState<{[key: string]: boolean}>({});
   const [addressValidated, setAddressValidated] = useState<{[key: string]: boolean}>(() => {
     // Auto-validate pre-filled address fields from localStorage
     try {
