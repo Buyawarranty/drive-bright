@@ -91,7 +91,7 @@ serve(async (req: Request) => {
     // Determine source prefix
     const leadSource = matchedLead?.lead_source || 'unknown';
     if (!saleSource) {
-      if (leadSource === 'google_ad') saleType = 'G';
+      if (leadSource === 'google_ad') saleType = 'G Ad';
       else if (leadSource === 'social_ad') saleType = 'F';
       else saleType = 'WEB';
     } else {
@@ -154,7 +154,7 @@ serve(async (req: Request) => {
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
     let subjectSource: string;
     if (isAgentSale) {
-      subjectSource = leadSource === 'google_ad' ? 'S-G' : leadSource === 'social_ad' ? 'S-F' : 'S';
+      subjectSource = leadSource === 'google_ad' ? 'S-G Ad' : leadSource === 'social_ad' ? 'S-F' : 'S';
     } else {
       subjectSource = saleType;
     }

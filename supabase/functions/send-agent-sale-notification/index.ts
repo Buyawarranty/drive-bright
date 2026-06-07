@@ -147,7 +147,7 @@ serve(async (req: Request) => {
     // Determine source prefix
     const leadSource = lead.lead_source || "unknown";
     let sourcePrefix = "S"; // S for Sales agent
-    if (leadSource === "google_ad") sourcePrefix = "S-G";
+    if (leadSource === "google_ad") sourcePrefix = "S-G Ad";
     else if (leadSource === "social_ad") sourcePrefix = "S-F";
 
     const resend = new Resend(resendApiKey);
