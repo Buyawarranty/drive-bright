@@ -2368,14 +2368,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             setAddressErrors(prev => ({ ...prev, town: '' }));
                           }
                         }}
-                        onBlur={() => validateAddressField('town')}
+                        onBlur={() => {
+                          setAddressTouched(prev => ({ ...prev, town: true }));
+                          validateAddressField('town');
+                        }}
                         className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('town')}`}
                       />
                       {addressData.town?.trim() && !addressErrors.town && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
-                    {showValidation && addressErrors.town && (
+                    {(showValidation || addressTouched.town) && addressErrors.town && (
                       <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {addressErrors.town}
