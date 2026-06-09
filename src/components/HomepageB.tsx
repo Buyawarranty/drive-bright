@@ -54,7 +54,7 @@ interface HomepageProps {
   onRegistrationSubmit: (vehicleData: VehicleData) => void;
 }
 
-const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
+const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
@@ -977,4 +977,4 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   );
 };
 
-export default Homepage;
+export default HomepageB;
