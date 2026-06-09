@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { getSessionUtms, compactUtms } from '@/utils/utmCapture';
+import { getAbVariant } from '@/utils/abVariant';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
@@ -98,7 +99,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const isValidFirstName = firstName.trim().length >= 2;
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9}|\+91[6-9]\d{9})$/.test(phone.replace(/\s/g, ''));
-  const isFormValid = isValidFirstName && isValidEmail && isValidPhone;
+  // A/B variant — in "B" the phone field is optional.
+  const isVariantB = getAbVariant() === 'b';
+  const phoneOkForSubmit = isVariantB
+    ? (phone.trim() === '' || isValidPhone)
+    : isValidPhone;
+  const isFormValid = isValidFirstName && isValidEmail && phoneOkForSubmit;
 
   const handleSkipClick = async () => {
     try {
@@ -152,7 +158,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     }
     
     if (!phone.trim()) {
-      setPhoneError('Please enter your phone number');
+      // In variant B the phone is optional, so don't block submission.
+      if (!isVariantB) setPhoneError('Please enter your phone number');
     } else if (!isValidPhone) {
       setPhoneError('Please enter a valid UK phone number');
     }
@@ -571,7 +578,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Phone Input - Always visible */}
           <div>
             <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
-              Your mobile number
+              Your mobile number{isVariantB && <span className="text-sm font-normal text-gray-500 ml-2">(optional)</span>}
             </label>
             <div className="relative">
               <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
