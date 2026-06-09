@@ -1,39 +1,48 @@
-## Confirming current behaviour first
+## Goal
 
-Looking at `src/components/admin/BatchPolicyQueue.tsx`:
+Add a parallel "B" variant of the customer journey reachable via `?step=2b`, `?step=3b`, `?step=4b`. Behaviour, APIs, Stripe, emails, lead capture — everything stays identical. The only functional difference: **on step 2b, phone number is optional** (field shown, no asterisk, form submits without it).
 
-- The batch **already auto-saves** to `localStorage` on every change (line 83-90) and survives page reloads. A small "Autosaved 1 Jun 2026, 15:43 • N pending" indicator shows under the header.
-- **Printing** (letters, labels, Brother QL, Word addresses) logs each customer to `posted_letters_log` with `action_type = batch_print | batch_label | batch_word_addresses` and **keeps the queue intact** so you can keep adding more.
-- **"Mark All Posted"** (the "printed & done" button) inserts every queued customer into `posted_letters_log` with `action_type = batch_posted` and **then clears the queue**. `posted_letters_log` is what feeds the **Letter Log** tab — so yes, that's the archive.
+## How the variant is detected & carried
 
-So the underlying flow already works. What's missing is visibility/confidence. Plan adds the following UI-only improvements:
+1. **Parse step param** — accept values like `2`, `2b`, `3b`, `4b`. Extract:
+   - `currentStep` = numeric portion (existing behaviour)
+   - `abVariant` = `'b'` if suffix present, otherwise `null`
+2. **Persist** `abVariant` in `sessionStorage` (`baw_ab_variant`) the first time it's seen, so reloads, deep-links from emails, and Stripe return URLs keep the user in B.
+3. **Rewrite every `set('step', …)`** call in `src/pages/Index.tsx` (and `StickyNavigation`, `useMobileBackNavigation`, `ThankYou`) through a small helper `formatStepParam(n)` that appends `b` when `abVariant === 'b'`. This guarantees Back/Next/redirects all stay on the B track.
+4. **Stripe success/cancel URLs** built in the checkout flow get the `b` suffix when the variant is active, so users returning from payment land on `?step=4b` (or thank-you with variant preserved).
 
-## Changes to `BatchPolicyQueue.tsx`
+## Phone-optional change (only difference)
 
-### 1. Explicit "Save batch" button
-Add a small `Save batch` button next to the autosave indicator that:
-- Re-writes the queue to `localStorage` and updates `savedAt` immediately.
-- Shows a toast "Batch saved — N customers".
-- Purely a manual confirmation; autosave still runs on every change.
+In `ContactDetailsStep.tsx` (the step-2 form):
+- Read variant from sessionStorage / URL.
+- When `abVariant === 'b'`:
+  - Remove `required` from the phone input.
+  - Drop "Phone Number" asterisk styling; label stays the same (no negative wording).
+  - `isFormValid` no longer requires `phone`.
+  - `onNext` still passes `phone` (empty string allowed) — downstream code already tolerates missing phone (abandoned-cart logic uses email as primary key).
 
-### 2. Clearer wording about persistence and the archive
-Update the helper paragraph under the header to read:
+No backend schema change required — `sales_leads.phone` and `customers.phone` are already nullable.
 
-> This batch is auto-saved — you can keep adding customers across sessions. Printing labels, letters or the Word address sheet does NOT clear the batch. Click **Mark All Posted** when every pack is in the post — the batch will then be archived to the **Letter Log** tab and cleared so you can start a new batch.
+## Files to edit
 
-### 3. Make "Mark All Posted" confirmation explicit
-Update the confirm dialog text to:
+- `src/pages/Index.tsx` — parser + `formatStepParam` helper, used everywhere `set('step', …)` is called today (lines ~588, 678, 688, 759, 766, 803, 897, 966, 1057).
+- `src/components/ContactDetailsStep.tsx` — conditional `required` and validation for B.
+- `src/components/StickyNavigation.tsx`, `src/hooks/useMobileBackNavigation.tsx`, `src/pages/ThankYou.tsx` — route through the same helper.
+- `src/components/checkout/StreamlinedCheckout.tsx` — append `b` to Stripe `success_url` / `cancel_url` when variant active (postcode error message added previously stays).
+- New tiny util `src/utils/abVariant.ts` exporting `getAbVariant()`, `setAbVariant()`, `formatStepParam(step)`, `parseStepParam(raw)`.
 
-> Mark all N pack(s) as posted? They will be archived in the Letter Log and removed from this batch.
+## What is intentionally NOT changed
 
-### 4. Optional: link to Letter Log after archiving
-After `Mark All Posted` succeeds, the toast becomes:
+- No new lead/customer columns, no admin badges, no analytics dimension (per your scope answer).
+- All APIs (quote, cart, Stripe, webhooks, Warranties 2000, emails) unchanged.
+- The default `?step=2` (A) flow is untouched.
 
-> Batch archived to Letter Log — N entries cleared.
+## QA checklist after build
 
-(plus a "View Letter Log" action in the toast that switches to that tab — only added if the tab-switch handler already exists; otherwise skip.)
+1. Visit `/?step=2b` → URL stays `2b` after submitting step 2 with **no phone** → lands on `?step=3b`.
+2. Pick a plan → `?step=4b` → complete Stripe → return URL keeps `b` → thank-you renders.
+3. `/?step=2` still requires phone exactly as today.
+4. Reload mid-journey on `?step=3b` → stays on B.
+5. Lead row appears in admin New Leads with empty phone column, no errors.
 
-## Out of scope
-- No DB changes — `posted_letters_log` already powers the Letter Log archive.
-- No change to print/label flows.
-- No change to autosave behaviour itself.
+Ready to switch to build mode when you approve.

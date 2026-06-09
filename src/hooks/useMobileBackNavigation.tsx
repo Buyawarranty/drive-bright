@@ -354,8 +354,10 @@ export const useMobileBackNavigation = ({
       if (url.origin !== window.location.origin) return;
 
       // Skip if it's a link back to the current funnel step (Back button etc.)
+      // Compare numeric portion only so "2" and "2b" are treated as the same step.
+      const linkStepNum = (url.searchParams.get('step') || '').match(/^\d+/)?.[0];
       const sameStep = url.pathname === window.location.pathname &&
-        url.searchParams.get('step') === String(currentStepRef.current);
+        linkStepNum === String(currentStepRef.current);
       if (sameStep) return;
 
       console.log('📱 Intentional internal link click — disarming guard for', url.pathname + url.search);

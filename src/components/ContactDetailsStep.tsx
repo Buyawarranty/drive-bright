@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { trackFormSubmission, trackStepCompletion } from '@/utils/analytics';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { getAbVariant } from '@/utils/abVariant';
 
 interface ContactDetailsStepProps {
   onNext: (data: { email: string; phone: string; firstName: string; lastName?: string; address: string }) => void;
@@ -23,6 +24,9 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
   const [phone, setPhone] = useState(initialData?.phone || '');
   const [firstName, setFirstName] = useState(initialData?.firstName || '');
   const [address, setAddress] = useState(initialData?.address || '');
+  // A/B variant — in "B" the phone field is optional.
+  const isVariantB = getAbVariant() === 'b';
+  const phoneRequired = !isVariantB;
 
   const handleAddressSelect = (addressData: AddressData) => {
     // Format the full address from components
@@ -38,7 +42,8 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && phone && firstName && address) {
+    const phoneOk = phoneRequired ? !!phone : true;
+    if (email && phoneOk && firstName && address) {
       // Track contact details form completion
       trackFormSubmission('contact_details', {
         has_email: !!email,
@@ -63,7 +68,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
     }
   };
 
-  const isFormValid = email && phone && firstName && address;
+  const isFormValid = email && firstName && address && (phoneRequired ? !!phone : true);
 
   return (
     <section className="bg-[#e8f4fb] py-10 min-h-screen">
@@ -179,7 +184,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
           {/* Phone Field */}
           <div className="mb-6">
             <div className="flex items-center mb-3">
-              <label className="block font-semibold mb-2 text-gray-700 text-xl">Phone Number</label>
+              <label className="block font-semibold mb-2 text-gray-700 text-xl">Phone Number{!phoneRequired && <span className="text-sm font-normal text-gray-500 ml-2">(optional)</span>}</label>
               <span 
                 className="cursor-pointer text-sm ml-1" 
                 style={{ color: '#224380' }} 
@@ -201,7 +206,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
                 onBlur={(e) => {
                   e.target.style.borderColor = '#d1d5db';
                 }}
-                required
+                required={phoneRequired}
               />
               {phone.trim() && /^(\+44|0)[0-9]{10}$/.test(phone.replace(/\s/g, '')) && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
