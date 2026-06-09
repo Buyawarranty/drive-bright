@@ -114,7 +114,7 @@ const parseStoredDataSync = (key: string): any => {
 };
 
 const shouldForceFreshStep4Data = (params: URLSearchParams) => {
-  if (params.get('step') !== '4') return false;
+  if (stepNumber(params.get('step')) !== 4) return false;
   return ['forceStep4Data', 'freshStep4Data'].some((key) => params.has(key));
 };
 
@@ -585,13 +585,14 @@ const Index = () => {
       }
     }
     
-    // Priority 2: Check URL step parameter
+    // Priority 2: Check URL step parameter (accepts "2", "2b", etc.)
     const stepParam = searchParams.get('step');
     console.log('getStepFromUrl - stepParam:', stepParam);
     if (stepParam) {
-      const step = parseInt(stepParam);
+      const step = stepNumber(stepParam);
       console.log('getStepFromUrl - parsed step:', step);
-      return step >= 1 && step <= 5 ? step : 1;
+      if (step && step >= 1 && step <= 5) return step;
+      return 1;
     }
     
     // Fresh visits to the homepage should always show the homepage, not a
@@ -674,9 +675,9 @@ const Index = () => {
         const restoredData = JSON.parse(atob(restoreParam));
         const targetStep = getNormalizedRestoreStep(restoredData);
         
-        // Update URL to remove restore param but keep step
+        // Update URL to remove restore param but keep step (with variant suffix)
         const newSearchParams = new URLSearchParams();
-        newSearchParams.set('step', targetStep.toString());
+        newSearchParams.set('step', formatStepParam(targetStep));
         
         // Use replace to avoid adding to browser history
         setSearchParams(newSearchParams, { replace: true });
@@ -686,7 +687,7 @@ const Index = () => {
         console.error('❌ Error cleaning up URL:', error);
         // If there's an error, keep current step
         const newSearchParams = new URLSearchParams();
-        newSearchParams.set('step', currentStep.toString());
+        newSearchParams.set('step', formatStepParam(currentStep));
         setSearchParams(newSearchParams, { replace: true });
       }
     }
@@ -732,10 +733,11 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Capture GCLID/FBCLID from ads on page load for server-side conversion tracking
+  // Capture GCLID/FBCLID from ads + A/B variant on page load
   useEffect(() => {
     captureGclid();
     captureFbclid();
+    captureAbVariantFromUrl();
   }, []);
   
   // Handle PayPal/redirect payment returns
@@ -755,16 +757,16 @@ const Index = () => {
       } else if (redirectStatus === 'failed') {
         // Payment failed - show error and let them retry
         console.log('❌ Redirect payment failed');
-        // Clean URL but stay on step 4
+        // Clean URL but stay on step 4 (keep variant suffix)
         const newParams = new URLSearchParams();
-        newParams.set('step', '4');
+        newParams.set('step', formatStepParam(4));
         setSearchParams(newParams, { replace: true });
         // Toast will be shown by StreamlinedCheckout
       } else if (redirectStatus === 'pending') {
         console.log('⏳ Redirect payment pending');
         // Clean URL but stay on step 4
         const newParams = new URLSearchParams();
-        newParams.set('step', '4');
+        newParams.set('step', formatStepParam(4));
         setSearchParams(newParams, { replace: true });
       }
     }
@@ -801,7 +803,7 @@ const Index = () => {
   // This MUST run synchronously to prevent RecoveryFallback from flashing
   useEffect(() => {
     const recoverStateFromStorage = () => {
-      const urlStep = parseInt(searchParams.get('step') || '1');
+      const urlStep = stepNumber(searchParams.get('step')) || 1;
       
       if (urlStep === 4) {
         console.log('📱 Index: Attempting state recovery for step 4');
@@ -897,8 +899,8 @@ const Index = () => {
     const vehicleTypeParam = searchParams.get('vehicleType');
     const stepParam = searchParams.get('step');
     
-    // Only process if we have reg and mileage params and we're on step 2
-    if (regParam && mileageParam && stepParam === '2' && !vehicleData) {
+    // Only process if we have reg and mileage params and we're on step 2 (or 2b)
+    if (regParam && mileageParam && stepNumber(stepParam) === 2 && !vehicleData) {
       console.log('📋 Processing URL parameters from van warranty page:', { regParam, mileageParam, makeParam, modelParam });
       
       const urlVehicleData: VehicleData = {
@@ -964,7 +966,7 @@ const Index = () => {
   const updateStepInUrl = (step: number) => {
     console.log('🔗 updateStepInUrl called:', { step, currentUrl: window.location.href });
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('step', step.toString());
+    newSearchParams.set('step', formatStepParam(step));
     
     // Push state to history (not replace) so each step creates a history entry
     // This allows proper back button navigation
