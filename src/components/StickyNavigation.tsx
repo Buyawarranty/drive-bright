@@ -26,7 +26,8 @@ const StickyNavigation: React.FC = () => {
   const hiddenPaths = ['/admin', '/sales-login', '/checkout', '/auth', '/widget', '/dealer-portal/dashboard', '/dealer-portal/quotes', '/dealer-portal/warranties'];
   const searchParams = new URLSearchParams(location.search);
   const currentStep = searchParams.get('step');
-  const isCheckoutStep = currentStep && ['2', '3', '4'].includes(currentStep);
+  // Match "2", "3", "4" AND their B-variant counterparts "2b", "3b", "4b"
+  const isCheckoutStep = currentStep && /^[234]b?$/i.test(currentStep);
   const showMobileStickyBar = isMobile && isScrolled && !hiddenPaths.some(p => location.pathname.startsWith(p)) && !isCheckoutStep;
 
   const handleLogoClick = (e: React.MouseEvent) => {
