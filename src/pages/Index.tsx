@@ -1502,7 +1502,9 @@ const Index = () => {
       )}
       
       {currentStep === 1 && (
-        <Homepage onRegistrationSubmit={handleHomepageRegistration} />
+        getAbVariant() === 'b'
+          ? <HomepageB onRegistrationSubmit={handleHomepageRegistration} />
+          : <Homepage onRegistrationSubmit={handleHomepageRegistration} />
       )}
 
       {currentStep === 2 && (
