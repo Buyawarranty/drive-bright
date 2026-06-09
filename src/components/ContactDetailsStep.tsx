@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { trackFormSubmission, trackStepCompletion } from '@/utils/analytics';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { getAbVariant } from '@/utils/abVariant';
 
 interface ContactDetailsStepProps {
   onNext: (data: { email: string; phone: string; firstName: string; lastName?: string; address: string }) => void;
@@ -23,6 +24,9 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
   const [phone, setPhone] = useState(initialData?.phone || '');
   const [firstName, setFirstName] = useState(initialData?.firstName || '');
   const [address, setAddress] = useState(initialData?.address || '');
+  // A/B variant — in "B" the phone field is optional.
+  const isVariantB = getAbVariant() === 'b';
+  const phoneRequired = !isVariantB;
 
   const handleAddressSelect = (addressData: AddressData) => {
     // Format the full address from components
@@ -38,7 +42,8 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && phone && firstName && address) {
+    const phoneOk = phoneRequired ? !!phone : true;
+    if (email && phoneOk && firstName && address) {
       // Track contact details form completion
       trackFormSubmission('contact_details', {
         has_email: !!email,
@@ -63,7 +68,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
     }
   };
 
-  const isFormValid = email && phone && firstName && address;
+  const isFormValid = email && firstName && address && (phoneRequired ? !!phone : true);
 
   return (
     <section className="bg-[#e8f4fb] py-10 min-h-screen">
