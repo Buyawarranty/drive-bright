@@ -29,7 +29,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
-import { captureAbVariantFromUrl, formatStepParam, stepNumber } from '@/utils/abVariant';
+import { captureAbVariantFromUrl, formatStepParam, stepNumber, getAbVariant } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
 
