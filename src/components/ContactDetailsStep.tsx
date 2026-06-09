@@ -184,7 +184,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
           {/* Phone Field */}
           <div className="mb-6">
             <div className="flex items-center mb-3">
-              <label className="block font-semibold mb-2 text-gray-700 text-xl">Phone Number</label>
+              <label className="block font-semibold mb-2 text-gray-700 text-xl">Phone Number{!phoneRequired && <span className="text-sm font-normal text-gray-500 ml-2">(optional)</span>}</label>
               <span 
                 className="cursor-pointer text-sm ml-1" 
                 style={{ color: '#224380' }} 
@@ -206,7 +206,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
                 onBlur={(e) => {
                   e.target.style.borderColor = '#d1d5db';
                 }}
-                required
+                required={phoneRequired}
               />
               {phone.trim() && /^(\+44|0)[0-9]{10}$/.test(phone.replace(/\s/g, '')) && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
