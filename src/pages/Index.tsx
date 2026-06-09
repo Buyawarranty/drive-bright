@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
+import HomepageB from '@/components/HomepageB';
 import { DiscountPopup } from '@/components/DiscountPopup';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
