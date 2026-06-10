@@ -36,6 +36,7 @@ const ConditionalSeasonalBanner = () => {
 const ConditionalStickyNavigation = () => {
   const location = useLocation();
   if (location.pathname.startsWith('/dealer-portal')) return null;
+  if (location.pathname.startsWith('/bmw-extended-warranty')) return null;
   return <StickyNavigation />;
 };
 
@@ -49,7 +50,8 @@ const ConditionalFooter = () => {
   const isDealerDashboard = location.pathname.startsWith('/dealer-portal/dashboard') || location.pathname.startsWith('/dealer-portal/quotes') || location.pathname.startsWith('/dealer-portal/warranties') || location.pathname.startsWith('/dealer-portal/quote/');
   
   // Hide footer on brand landing pages (Google Ads pages)
-  const isBrandLanding = location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/';
+  const isBrandLanding = (location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/')
+    || location.pathname.startsWith('/bmw-extended-warranty');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
