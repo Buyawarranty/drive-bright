@@ -1008,6 +1008,17 @@ export const UserPermissionsTab = () => {
                         </Button>
                         <Button
                           size="sm"
+                          variant="secondary"
+                          onClick={() => handleSendLoginDetails(u)}
+                          disabled={sendingLoginId === u.id}
+                          title="Reset password and email login details to this user"
+                          className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Mail className="h-3 w-3 mr-1" />
+                          {sendingLoginId === u.id ? 'Sending…' : 'Email Login'}
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="default"
                           onClick={() => handleSignInAs(u)}
                           disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
