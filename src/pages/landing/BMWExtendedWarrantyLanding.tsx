@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, Phone, MessageCircle, Star, Shield, Wrench, Zap, Cpu, ChevronDown, Car, Truck, Battery, Bike, Plane, RefreshCw, Settings2, MapPin, ArrowRight } from 'lucide-react';
+import { Check, Phone, MessageCircle, Star, Shield, Wrench, Zap, Cpu, ChevronDown, Car, Truck, Battery, Bike, Plane, RefreshCw, Settings2, MapPin, ArrowRight, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
@@ -15,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import bmwHero from '@/assets/Bmw-extended-used-car-warranty.png';
 import pandaMascot from '@/assets/panda-car-warranty-transparent.png';
 
 const PHONE = '0330 229 5040';
@@ -36,10 +35,15 @@ const faqs = [
   { q: 'Is there a 30-day wait for new customers?', a: 'A short initial waiting period applies to new policies. Full details are set out in your policy documents before you buy.' },
 ];
 
+const Stars = ({ size = 14 }: { size?: number }) => (
+  <div className="flex gap-0.5">
+    {[1,2,3,4,5].map(i => <Star key={i} className="fill-[#00b67a] text-[#00b67a]" style={{ width: size, height: size }} />)}
+  </div>
+);
+
 const BMWExtendedWarrantyLanding: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
   const [mileageSelection, setMileageSelection] = useState('');
@@ -49,8 +53,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
   const scrollToQuote = () => {
     trackButtonClick('bmw_ppc_cta');
-    const el = document.getElementById('quote-module');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('quote-module')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handleMileageSelection = (sel: string) => {
@@ -64,7 +67,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
     trackQuoteRequest();
     const effectiveMileage = mileageOverride || mileage;
     const effectiveSel = mileageOverride ? (mileageOverride === '100000' ? 'under120k' : 'over120k') : mileageSelection;
-
     if (!regNumber.trim()) {
       toast({ title: 'Registration required', description: 'Please enter your vehicle registration.', variant: 'destructive' });
       return;
@@ -73,35 +75,25 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
       toast({ title: 'Mileage required', description: 'Please select your approximate mileage.', variant: 'destructive' });
       return;
     }
-
-    setIsLooking(true);
-    setErrorMsg('');
+    setIsLooking(true); setErrorMsg('');
     try {
       const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registration: regNumber } });
       const vehicleData: any = {
         regNumber: regNumber.toUpperCase(),
         mileage: effectiveMileage,
         ...(data?.make ? {
-          make: data.make,
-          model: data.model,
-          fuelType: data.fuelType,
-          transmission: data.transmission,
-          year: data.yearOfManufacture || data.year,
-          vehicleType: data.vehicleType,
-          blocked: data.blocked || false,
-          blockReason: data.blockReason || '',
+          make: data.make, model: data.model, fuelType: data.fuelType, transmission: data.transmission,
+          year: data.yearOfManufacture || data.year, vehicleType: data.vehicleType,
+          blocked: data.blocked || false, blockReason: data.blockReason || '',
         } : {}),
       };
-
       if (data?.yearOfManufacture) {
         const age = new Date().getFullYear() - parseInt(data.yearOfManufacture, 10);
         if (age > 15) {
           setErrorMsg('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.');
-          setIsLooking(false);
-          return;
+          setIsLooking(false); return;
         }
       }
-
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -115,9 +107,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
       navigate('/?step=2');
-    } finally {
-      setIsLooking(false);
-    }
+    } finally { setIsLooking(false); }
   };
 
   return (
@@ -127,8 +117,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         description="Affordable BMW extended warranty from £19/month. Flexible plans, mechanical, electrical, tech and EV cover options. Get an instant quote in 60 seconds."
         keywords="BMW extended warranty, BMW warranty UK, used BMW warranty, BMW car warranty"
         canonical="https://buyawarranty.co.uk/bmw-extended-warranty/"
-        geoRegion="GB"
-        geoPlacename="United Kingdom"
+        geoRegion="GB" geoPlacename="United Kingdom"
       />
       <OrganizationSchema />
       <WebPageSchema name="BMW Extended Warranty" description="BMW extended warranty cover from £19/month." url="https://buyawarranty.co.uk/bmw-extended-warranty/" />
@@ -136,219 +125,227 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
       <ProductSchema name="BMW Extended Warranty" description="Flexible BMW warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/bmw-extended-warranty/' }]} />
 
-      <div className="min-h-screen bg-white text-slate-900 pb-24 md:pb-0">
-        {/* Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 md:pb-0 font-sans">
+        {/* Minimal PPC Header */}
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
+          <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <Link to="/" className="flex items-center">
-              <img src={buyawarrantyLogo} alt="BuyaWarranty" className="h-9 md:h-10 w-auto" loading="eager" />
+              <img src={buyawarrantyLogo} alt="BuyaWarranty" className="h-8 md:h-9 w-auto" loading="eager" />
             </Link>
-            <div className="hidden md:flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#00b67a]/10">
-                {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-[#00b67a] text-[#00b67a]" />)}
-                <span className="ml-1 font-semibold text-slate-800">Excellent</span>
-                <span className="text-slate-500">· Rated on Trustpilot</span>
-              </div>
+            <div className="hidden md:flex items-center gap-2">
+              <Stars />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">Excellent · Trustpilot</span>
             </div>
             <div className="flex items-center gap-2">
-              <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="hidden sm:flex items-center gap-1.5 text-slate-800 font-semibold text-sm hover:text-orange-600">
+              <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="hidden sm:flex items-center gap-1.5 text-slate-800 font-bold text-sm hover:text-orange-600">
                 <Phone className="w-4 h-4" /> {PHONE}
               </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#25D366] text-white text-sm font-semibold hover:opacity-90">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#25D366] text-white text-xs font-extrabold uppercase tracking-wider hover:opacity-90">
                 <MessageCircle className="w-4 h-4" /> WhatsApp
               </a>
-              <Button onClick={scrollToQuote} className="bg-orange-500 hover:bg-orange-600 text-white font-bold">Get my quote</Button>
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider text-xs">Get my quote</Button>
             </div>
           </div>
         </header>
 
-        {/* HERO */}
-        <section className="bg-gradient-to-b from-white to-slate-50">
-          <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-              {/* Left */}
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#00b67a] mb-3">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />)}
-                  <span className="ml-1 text-slate-700">Excellent · Rated on Trustpilot</span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight text-slate-900">
-                  Affordable <span className="text-orange-500">BMW warranty</span> you can trust in 60 seconds!
-                </h1>
-                <p className="mt-3 text-lg md:text-xl font-bold text-slate-900">From £19/month</p>
-                <p className="mt-3 text-base md:text-lg text-slate-700 max-w-xl">
-                  Get a fast quote for flexible BMW warranty cover designed to help protect you from unexpected repair bills.
-                </p>
+        {/* HERO — full-bleed navy with orange accent stripe */}
+        <section className="bg-[#0F172A] pt-14 md:pt-20 pb-32 md:pb-40 px-4 text-center border-b-4 border-[#F97316] relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-[#F97316]/10 blur-[140px] rounded-full pointer-events-none" />
+          <div className="max-w-4xl mx-auto relative">
+            <div className="flex justify-center items-center gap-2 mb-5">
+              <Stars size={18} />
+              <span className="text-white text-xs md:text-sm font-extrabold tracking-widest uppercase">Rated Excellent on Trustpilot</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] tracking-tight">
+              Specialist <span className="text-[#F97316]">BMW</span> Extended Warranty
+            </h1>
+            <p className="mt-5 text-slate-300 text-base md:text-xl max-w-2xl mx-auto">
+              Affordable BMW warranty you can trust in 60 seconds. Flexible cover designed to help protect you from unexpected repair bills — from <span className="text-white font-bold">£19/month</span>.
+            </p>
+          </div>
+        </section>
 
-                <ul className="mt-5 grid sm:grid-cols-2 gap-y-2.5 gap-x-4 text-sm md:text-base">
-                  {[
-                    'Fast quote in 60 seconds',
-                    'Flexible warranty plans',
-                    'Pay monthly or in full',
-                    '1, 2 or 3 year cover options',
-                    'Mechanical, electrical, tech & safety',
-                    'EV and hybrid cover options',
-                  ].map(t => (
-                    <li key={t} className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-slate-800">{t}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Quote module */}
-                <div id="quote-module" className="mt-7 bg-white rounded-2xl border border-slate-200 shadow-lg p-5 md:p-6">
-                  <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-3">Enter your vehicle registration</h2>
-                  <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black w-full max-w-md shadow-md">
-                    <div className="bg-blue-600 text-white font-bold px-3 py-3 flex flex-col items-center justify-center min-w-[64px]">
-                      <span className="text-base leading-none">🇬🇧</span>
-                      <span className="text-sm font-bold leading-none mt-1">UK</span>
-                    </div>
-                    <input
-                      type="text"
-                      value={regNumber}
-                      onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
-                      placeholder="ENTER REG"
-                      maxLength={8}
-                      aria-label="Vehicle registration"
-                      className="bg-yellow-400 outline-none text-2xl md:text-3xl text-black font-black flex-1 placeholder:text-black/60 px-4 py-3 uppercase tracking-wider min-w-0"
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-slate-600">Cover for vehicles up to 150,000 miles and 15 years.</p>
-                  <div className="mt-4">
-                    <p className="text-sm font-semibold text-slate-800 mb-2">What's your approximate mileage?</p>
-                    <MileageQuickSelect
-                      value={mileageSelection}
-                      onChange={handleMileageSelection}
-                      onAutoSubmit={handleGetQuote}
-                      error={errorMsg}
-                      isLoading={isLooking}
-                      isRegValid={regNumber.length >= 5}
-                    />
-                  </div>
-                  <Button onClick={() => handleGetQuote()} disabled={isLooking} className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-base md:text-lg py-6">
-                    {isLooking ? 'Checking…' : 'Enter reg for an instant price'}
-                    <ArrowRight className="ml-1 w-5 h-5" />
-                  </Button>
-                  <p className="mt-2 text-xs text-slate-500 text-center">No obligation · Quick online quote · Cover levels vary</p>
-                </div>
+        {/* Floating Quote Card — breaks the boundary */}
+        <div className="px-4 -mt-28 md:-mt-32 relative z-20">
+          <div id="quote-module" className="bg-white rounded-3xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.35)] p-5 md:p-8 max-w-xl mx-auto border border-slate-200">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full mb-5">
+              <span className="w-2 h-2 rounded-full bg-[#00b67a] animate-pulse" />
+              <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-widest">Live quotes available</span>
+            </div>
+            {/* UK Number Plate */}
+            <div className="flex h-[72px] md:h-20 bg-[#FBBF24] rounded-xl border-2 border-black overflow-hidden shadow-inner">
+              <div className="w-14 bg-[#0052B4] flex flex-col items-center justify-center text-white">
+                <span className="text-base leading-none">🇬🇧</span>
+                <span className="text-[10px] font-black leading-none mt-1 tracking-tight">UK</span>
               </div>
+              <input
+                type="text"
+                value={regNumber}
+                onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
+                placeholder="ENTER REG"
+                maxLength={8}
+                aria-label="Vehicle registration"
+                className="flex-1 bg-transparent text-center text-3xl md:text-4xl font-black uppercase tracking-[0.15em] placeholder:text-black/25 focus:outline-none min-w-0"
+              />
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500 text-center">Cover for vehicles up to 150,000 miles and 15 years.</p>
 
-              {/* Right */}
-              <div className="lg:pt-4">
-                <OptimizedImage src={bmwHero} alt="BMW extended warranty UK" className="w-full h-auto rounded-2xl" priority width={651} height={434} sizes="(max-width:768px) 100vw, 600px" />
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-slate-700">
-                  {[
-                    { I: Car, l: 'Cars' },
-                    { I: Truck, l: 'Vans' },
-                    { I: Zap, l: 'Hybrid' },
-                    { I: Battery, l: 'EV' },
-                    { I: Bike, l: 'Motorbikes' },
-                  ].map(({ I, l }) => (
-                    <div key={l} className="flex items-center gap-1.5">
-                      <I className="w-5 h-5 text-green-500" />
-                      <span className="font-medium">{l}</span>
-                    </div>
-                  ))}
+            <p className="mt-5 text-xs font-extrabold text-slate-600 uppercase tracking-widest text-center mb-3">What's your approximate mileage?</p>
+            <MileageQuickSelect
+              value={mileageSelection}
+              onChange={handleMileageSelection}
+              onAutoSubmit={handleGetQuote}
+              error={errorMsg}
+              isLoading={isLooking}
+              isRegValid={regNumber.length >= 5}
+            />
+
+            <Button onClick={() => handleGetQuote()} disabled={isLooking} className="w-full mt-5 bg-[#F97316] hover:bg-[#EA580C] text-white font-black text-base md:text-lg uppercase tracking-wider py-6 rounded-xl shadow-xl shadow-orange-500/30">
+              {isLooking ? 'Checking…' : 'Get my BMW price'}
+              <ArrowRight className="ml-1 w-5 h-5" />
+            </Button>
+            <div className="mt-4 flex justify-center gap-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> No obligation</span>
+              <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> Fast quote</span>
+              <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> Cover levels vary</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Data trust strip */}
+        <section className="bg-white pt-12 pb-10">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              {[
+                { v: 'From £19', l: 'Per month' },
+                { v: '1–3 yr', l: 'Cover options' },
+                { v: '150k', l: 'Mileage limit' },
+                { v: 'UK', l: 'Based support' },
+              ].map(s => (
+                <div key={s.l} className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center text-center">
+                  <span className="text-[#0F172A] font-black text-xl md:text-2xl tracking-tight">{s.v}</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{s.l}</span>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Trust strip */}
-        <section className="bg-slate-50 border-y border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 py-6 grid md:grid-cols-4 gap-4">
-            {[
-              'Easy to get a quote.',
-              'Helpful customer service.',
-              'Clear warranty options.',
-              'Simple and straightforward.',
-            ].map(snip => (
-              <div key={snip} className="bg-white rounded-lg p-4 shadow-sm border border-slate-100">
-                <div className="flex gap-0.5 mb-1.5">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />)}
-                </div>
-                <p className="text-sm text-slate-700">"{snip}"</p>
+        {/* Trust strip — review snippets */}
+        <section className="bg-white pb-10">
+          <div className="max-w-6xl mx-auto px-4 grid sm:grid-cols-2 md:grid-cols-4 gap-3">
+            {['Easy to get a quote.','Helpful customer service.','Clear warranty options.','Simple and straightforward.'].map(s => (
+              <div key={s} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <Stars />
+                <p className="text-sm text-slate-700 mt-2 font-medium">"{s}"</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Section 1: Everything you need, covered */}
-        <section className="py-12 md:py-16">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900">Everything You Need, Covered</h2>
-              <p className="mt-3 text-slate-600">Choose flexible warranty cover for your BMW, with plan levels and cover limits clearly explained.</p>
+        {/* Section 1: Everything you need covered */}
+        <section className="py-16 md:py-20 bg-white border-t border-slate-100">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+              <div className="max-w-xl">
+                <span className="inline-flex items-center gap-2 text-[10px] font-extrabold text-[#F97316] uppercase tracking-widest mb-2">
+                  <span className="w-6 h-px bg-[#F97316]" /> Section 01
+                </span>
+                <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight">Everything You Need, Covered</h2>
+                <p className="mt-3 text-slate-500 font-medium">Choose flexible warranty cover for your BMW, with plan levels and cover limits clearly explained.</p>
+              </div>
+              <div className="hidden md:flex gap-2">
+                <div className="w-10 h-1 bg-[#F97316] rounded-full" />
+                <div className="w-4 h-1 bg-slate-200 rounded-full" />
+              </div>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { I: Wrench, t: 'Mechanical & Electrical', items: ['Engine components','Gearbox components','Steering and suspension','Cooling and fuel system','Electrical components'] },
                 { I: Cpu, t: 'Tech & Safety', items: ['Sensors','Safety systems','Infotainment components','Convenience features','Plan limits apply'] },
                 { I: Shield, t: 'Plan Benefits', items: ['Flexible payment options','Monthly or annual payment','1, 2 or 3 year cover options','Clear terms','Support when you need help'] },
                 { I: Battery, t: 'EV & Hybrid', items: ['EV and hybrid options available','Electric components','Charging-related components where covered','Plan limits and exclusions apply'] },
               ].map(({ I, t, items }) => (
-                <div key={t} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-11 h-11 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
+                <div key={t} className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl transition-all group">
+                  <div className="w-12 h-12 rounded-xl bg-[#0F172A] group-hover:bg-[#F97316] text-white flex items-center justify-center mb-5 transition-colors">
                     <I className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-3">{t}</h3>
-                  <ul className="space-y-1.5 text-sm text-slate-700">
+                  <h3 className="font-black text-base text-[#0F172A] mb-3">{t}</h3>
+                  <ul className="space-y-2">
                     {items.map(x => (
-                      <li key={x} className="flex gap-2"><Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />{x}</li>
+                      <li key={x} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                        <span className="w-1 h-1 rounded-full bg-[#00b67a]" />{x}
+                      </li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
-            <div className="text-center mt-8">
-              <Button onClick={scrollToQuote} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6 text-base">Get my quote</Button>
+            <div className="text-center mt-10">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider px-8 py-6">Get my quote</Button>
             </div>
           </div>
         </section>
 
-        {/* Section 2: Flexible plans */}
-        <section className="py-12 md:py-16 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-10 items-center">
+        {/* Section 2: Flexible Plans */}
+        <section className="py-16 md:py-20 bg-slate-50 border-y border-slate-100">
+          <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-10 items-center">
             <div className="order-2 lg:order-1">
               <img src={pandaMascot} alt="BuyaWarranty mascot" className="w-full max-w-sm mx-auto h-auto" loading="lazy" />
             </div>
             <div className="order-1 lg:order-2">
-              <span className="text-sm font-semibold text-orange-600 uppercase tracking-wide">Easy options</span>
-              <h2 className="mt-2 text-3xl md:text-4xl font-black text-slate-900">Flexible Warranty Plans</h2>
-              <p className="mt-3 text-slate-700 text-lg">Choose warranty cover that works for your vehicle, budget and driving needs.</p>
+              <span className="inline-flex items-center gap-2 text-[10px] font-extrabold text-[#F97316] uppercase tracking-widest mb-2">
+                <span className="w-6 h-px bg-[#F97316]" /> Section 02 · Easy options
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight">Flexible Warranty Plans</h2>
+              <p className="mt-3 text-slate-600 text-lg">Choose warranty cover that works for your vehicle, budget and driving needs.</p>
               <ul className="mt-5 space-y-2.5">
-                {[
-                  'Pay monthly or in full',
-                  'Choose cover that works for you',
-                  '1, 2 or 3 year cover options',
-                  'Save with longer-term plans where available',
-                  'From just £19/month for eligible vehicles',
-                ].map(t => (
-                  <li key={t} className="flex items-start gap-2 text-slate-800"><Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />{t}</li>
-                ))}
+                {['Pay monthly or in full','Choose cover that works for you','1, 2 or 3 year cover options','Save with longer-term plans where available','From just £19/month for eligible vehicles']
+                  .map(t => (
+                    <li key={t} className="flex items-start gap-2 text-slate-800">
+                      <Check className="w-5 h-5 text-[#00b67a] mt-0.5 flex-shrink-0" />{t}
+                    </li>
+                  ))}
               </ul>
-              <Button onClick={scrollToQuote} className="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold px-7 py-5">Get your instant quote</Button>
+              <Button onClick={scrollToQuote} className="mt-6 bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider px-7 py-5">Get your instant quote</Button>
             </div>
           </div>
         </section>
 
         {/* Section 3: High mileage */}
-        <section className="py-12 md:py-16">
+        <section className="py-16 md:py-20 bg-white">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900">High mileage, no problem</h2>
-            <p className="mt-4 text-slate-700 text-lg">Own an older or higher-mileage BMW? Our warranty options can help you find suitable cover, subject to vehicle eligibility and plan terms.</p>
-            <Button onClick={scrollToQuote} className="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6">Get your instant quote</Button>
-            <p className="mt-3 text-xs text-slate-500">Eligibility, cover limits and exclusions apply.</p>
+            <span className="inline-flex items-center gap-2 text-[10px] font-extrabold text-[#F97316] uppercase tracking-widest mb-2">
+              <span className="w-6 h-px bg-[#F97316]" /> Section 03
+            </span>
+            <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight">High mileage, no problem</h2>
+            <p className="mt-4 text-slate-600 text-lg">Own an older or higher-mileage BMW? Our warranty options can help you find suitable cover, subject to vehicle eligibility and plan terms.</p>
+            <div className="mt-8 inline-flex gap-8 items-center">
+              <div className="text-center">
+                <div className="text-3xl font-black text-[#0F172A]">15 yrs</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Max age</div>
+              </div>
+              <div className="w-px h-10 bg-slate-200" />
+              <div className="text-center">
+                <div className="text-3xl font-black text-[#0F172A]">150k</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mileage limit</div>
+              </div>
+            </div>
+            <div className="mt-8">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider px-8 py-6">Get your instant quote</Button>
+              <p className="mt-3 text-[11px] text-slate-500">Eligibility, cover limits and exclusions apply.</p>
+            </div>
           </div>
         </section>
 
         {/* Section 4: What's included */}
-        <section className="py-12 md:py-16" style={{ background: 'linear-gradient(135deg, #e6f0ff 0%, #fff7e6 100%)' }}>
-          <div className="max-w-7xl mx-auto px-4">
+        <section className="py-16 md:py-20" style={{ background: 'linear-gradient(135deg, #e6f0ff 0%, #fff7e6 100%)' }}>
+          <div className="max-w-6xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-10">
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900">What's Included?</h2>
+              <span className="inline-flex items-center gap-2 text-[10px] font-extrabold text-[#F97316] uppercase tracking-widest mb-2">
+                <span className="w-6 h-px bg-[#F97316]" /> Section 04
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight">What's Included?</h2>
               <p className="mt-3 text-slate-700">Rest assured everything is covered if it breaks, where included in your selected plan and subject to policy terms.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-5">
@@ -357,29 +354,32 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 { I: Wrench, t: 'Instant Claims Support', d: 'Get support when something goes wrong.' },
                 { I: Check, t: 'Clear Terms', d: 'Simple cover options with clear limits and exclusions.' },
               ].map(({ I, t, d }) => (
-                <div key={t} className="bg-white/80 backdrop-blur rounded-2xl p-6 shadow-md border border-white">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500 text-white flex items-center justify-center mb-4">
+                <div key={t} className="bg-white/90 backdrop-blur rounded-2xl p-6 shadow-md border border-white">
+                  <div className="w-12 h-12 rounded-xl bg-[#F97316] text-white flex items-center justify-center mb-4">
                     <I className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">{t}</h3>
-                  <p className="text-slate-700 text-sm">{d}</p>
+                  <h3 className="font-black text-lg text-[#0F172A] mb-2">{t}</h3>
+                  <p className="text-slate-600 text-sm">{d}</p>
                 </div>
               ))}
             </div>
             <div className="text-center mt-8">
-              <Button onClick={scrollToQuote} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6">Secure your warranty</Button>
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider px-8 py-6">Secure your warranty</Button>
             </div>
           </div>
         </section>
 
         {/* Section 5: Additional cover */}
-        <section className="py-12 md:py-16">
-          <div className="max-w-7xl mx-auto px-4">
+        <section className="py-16 md:py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-10">
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900">Additional Cover Options</h2>
+              <span className="inline-flex items-center gap-2 text-[10px] font-extrabold text-[#F97316] uppercase tracking-widest mb-2">
+                <span className="w-6 h-px bg-[#F97316]" /> Section 05
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight">Additional Cover Options</h2>
               <p className="mt-3 text-slate-600">Tailor your warranty with optional extras, depending on your selected plan and vehicle eligibility.</p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
               {[
                 { I: MapPin, t: 'Vehicle Recovery', d: 'Help when your vehicle breaks down and you need recovery support.' },
                 { I: Plane, t: 'Europe Cover', d: 'Extend your protection when driving in selected European countries.' },
@@ -387,85 +387,85 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 { I: RefreshCw, t: 'Transfer Cover', d: 'Transfer your warranty to a new owner if you sell your vehicle, subject to terms.' },
                 { I: Settings2, t: 'Bespoke Warranty', d: 'Create a warranty plan that better suits your vehicle, mileage and driving needs.' },
               ].map(({ I, t, d }) => (
-                <div key={t} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                <div key={t} className="bg-slate-50 rounded-xl p-5 border border-slate-100 hover:border-[#F97316] hover:shadow-md transition-all">
+                  <div className="w-10 h-10 rounded-lg bg-[#0F172A] text-white flex items-center justify-center mb-3">
                     <I className="w-5 h-5" />
                   </div>
-                  <h3 className="font-bold text-slate-900 mb-1.5 text-sm">{t}</h3>
+                  <h3 className="font-black text-sm text-[#0F172A] mb-1.5">{t}</h3>
                   <p className="text-xs text-slate-600 leading-relaxed">{d}</p>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-500 text-center mt-6 max-w-2xl mx-auto">Additional cover options are subject to availability, selected plan, vehicle eligibility, cover limits and policy terms.</p>
+            <p className="text-[11px] text-slate-500 text-center mt-6 max-w-2xl mx-auto">Additional cover options are subject to availability, selected plan, vehicle eligibility, cover limits and policy terms.</p>
             <div className="text-center mt-6">
-              <Button onClick={scrollToQuote} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6">View cover options</Button>
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider px-8 py-6">View cover options</Button>
             </div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section className="py-12 md:py-16 bg-slate-50">
+        <section className="py-16 md:py-20 bg-slate-50 border-y border-slate-100">
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-10">
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900">FAQ's</h2>
+              <span className="inline-flex items-center gap-2 text-[10px] font-extrabold text-[#F97316] uppercase tracking-widest mb-2">
+                <span className="w-6 h-px bg-[#F97316]" /> Section 06
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight">FAQ's</h2>
               <p className="mt-3 text-slate-600">First answers to the most common questions about our warranty services.</p>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
               {faqs.map((f, i) => (
-                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="text-left bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all">
+                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="text-left bg-white rounded-xl border border-slate-200 p-5 hover:border-[#F97316] transition-all">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="font-semibold text-slate-900">{f.q}</span>
-                    <ChevronDown className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                    <span className="font-bold text-[#0F172A]">{f.q}</span>
+                    <ChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180 text-[#F97316]' : ''}`} />
                   </div>
-                  {openFaq === i && <p className="mt-3 text-slate-700 text-sm leading-relaxed">{f.a}</p>}
+                  {openFaq === i && <p className="mt-3 text-slate-600 text-sm leading-relaxed">{f.a}</p>}
                 </button>
               ))}
             </div>
             <div className="text-center mt-8">
-              <Link to="/faq/" className="inline-flex items-center gap-1 text-orange-600 font-semibold hover:underline">View all FAQs <ArrowRight className="w-4 h-4" /></Link>
+              <Link to="/faq/" className="inline-flex items-center gap-1 text-[#F97316] font-extrabold uppercase tracking-wider text-sm hover:underline">View all FAQs <ArrowRight className="w-4 h-4" /></Link>
             </div>
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="py-14 md:py-20 bg-slate-900 text-white">
-          <div className="max-w-5xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-5xl font-black">Ready to Protect Your BMW?</h2>
-            <p className="mt-3 text-slate-300 text-lg max-w-2xl mx-auto">Get a fast quote and choose the right warranty cover for your vehicle.</p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Button onClick={scrollToQuote} className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6 text-base">Get your free quote</Button>
-              <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="inline-flex items-center gap-2 px-6 py-4 rounded-md border-2 border-white text-white font-semibold hover:bg-white hover:text-slate-900 transition-colors">
+        {/* Final CTA — full-bleed navy */}
+        <section className="bg-[#0F172A] py-20 md:py-24 px-4 text-center overflow-hidden relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#F97316]/15 blur-[140px] rounded-full pointer-events-none" />
+          <div className="max-w-3xl mx-auto relative">
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Ready to Protect Your BMW?</h2>
+            <p className="mt-4 text-slate-400 text-base md:text-lg max-w-2xl mx-auto">Get a fast quote and choose the right warranty cover for your vehicle.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-black uppercase tracking-wider px-10 py-6 text-base">Get your free quote</Button>
+              <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="inline-flex items-center gap-2 px-6 py-4 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold">
                 <Phone className="w-5 h-5" /> {PHONE}
               </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-6 py-4 rounded-md bg-[#25D366] text-white font-semibold hover:opacity-90">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-6 py-4 rounded-md bg-[#25D366] text-white font-bold hover:opacity-90">
                 <MessageCircle className="w-5 h-5" /> WhatsApp us
               </a>
             </div>
-            <ul className="mt-10 grid sm:grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6 text-sm text-slate-200 max-w-3xl mx-auto">
-              {[
-                'Fast quote in 60 seconds',
-                'Flexible warranty plans',
-                'Pay monthly or in full',
-                '1, 2 or 3 year options',
-                'Mechanical & electrical cover',
-                'EV & hybrid cover options',
-              ].map(t => (
-                <li key={t} className="flex items-start gap-2 justify-center sm:justify-start"><Check className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />{t}</li>
-              ))}
+            <ul className="mt-12 grid sm:grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6 text-sm text-slate-300 max-w-3xl mx-auto">
+              {['Fast quote in 60 seconds','Flexible warranty plans','Pay monthly or in full','1, 2 or 3 year options','Mechanical & electrical cover','EV & hybrid cover options']
+                .map(t => (
+                  <li key={t} className="flex items-start gap-2 justify-center sm:justify-start">
+                    <Check className="w-4 h-4 text-[#00b67a] mt-1 flex-shrink-0" />{t}
+                  </li>
+                ))}
             </ul>
           </div>
         </section>
 
         {/* Footer */}
         <footer className="bg-slate-950 text-slate-300 py-12">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-6xl mx-auto px-4">
             <div className="grid md:grid-cols-4 gap-8">
               <div className="md:col-span-1">
                 <img src={buyawarrantyLogo} alt="BuyaWarranty" className="h-10 w-auto bg-white p-1.5 rounded" />
                 <p className="mt-4 text-sm text-slate-400">Helping UK drivers protect themselves from unexpected repair bills with flexible warranty cover.</p>
               </div>
               <div>
-                <h3 className="text-white font-bold mb-3">Quick Links</h3>
+                <h3 className="text-white font-extrabold uppercase tracking-wider text-xs mb-3">Quick Links</h3>
                 <ul className="space-y-2 text-sm">
                   {[
                     ['Home','/'],
@@ -485,7 +485,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </ul>
               </div>
               <div>
-                <h3 className="text-white font-bold mb-3">Legal</h3>
+                <h3 className="text-white font-extrabold uppercase tracking-wider text-xs mb-3">Legal</h3>
                 <ul className="space-y-2 text-sm">
                   {[
                     ['Privacy Policy','/privacy/'],
@@ -499,7 +499,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </ul>
               </div>
               <div>
-                <h3 className="text-white font-bold mb-3">Help</h3>
+                <h3 className="text-white font-extrabold uppercase tracking-wider text-xs mb-3">Help</h3>
                 <ul className="space-y-2 text-sm">
                   <li><Link to="/faq/" className="hover:text-white">FAQ's</Link></li>
                   <li>Sales Enquiries: <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="hover:text-white">{PHONE}</a></li>
@@ -508,7 +508,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </ul>
               </div>
             </div>
-            <div className="mt-10 pt-6 border-t border-slate-800 text-xs text-slate-500 leading-relaxed">
+            <div className="mt-10 pt-6 border-t border-slate-800 text-[11px] text-slate-500 leading-relaxed">
               BuyaWarranty is an independent warranty provider and is not affiliated with BMW. Cover levels, limits, exclusions and eligibility criteria apply. Please refer to the policy documents for full terms and conditions.
             </div>
           </div>
@@ -520,7 +520,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="flex items-center justify-center w-12 h-12 rounded-md border-2 border-slate-900 text-slate-900">
               <Phone className="w-5 h-5" />
             </a>
-            <Button onClick={scrollToQuote} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold h-12">Get quote</Button>
+            <Button onClick={scrollToQuote} className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white font-extrabold uppercase tracking-wider h-12">Get quote</Button>
           </div>
         </div>
       </div>
