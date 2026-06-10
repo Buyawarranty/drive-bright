@@ -186,6 +186,9 @@ verify_jwt = true
 [functions.resend-admin-invite]
 verify_jwt = true
 
+[functions.send-admin-login-details]
+verify_jwt = true
+
 [functions.send-step4-instant-email]
 verify_jwt = false
 
