@@ -147,6 +147,7 @@ const LandRoverWarranty = lazy(() => import("./pages/LandRoverWarranty"));
 const JaguarWarranty = lazy(() => import("./pages/JaguarWarranty"));
 const SkodaWarranty = lazy(() => import("./pages/SkodaWarranty"));
 const BMWWarranty = lazy(() => import("./pages/BMWWarranty"));
+const BMWExtendedWarrantyLanding = lazy(() => import("./pages/landing/BMWExtendedWarrantyLanding"));
 const UsedCarWarrantyUK = lazy(() => import("./pages/UsedCarWarrantyUK"));
 const DynamicLandingPage = lazy(() => import("./pages/DynamicLandingPage"));
 const WarrantyTransfer = lazy(() => import("./pages/WarrantyTransfer"));
