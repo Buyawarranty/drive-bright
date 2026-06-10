@@ -1321,6 +1321,73 @@ const CarExtendedWarranty: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Brand-specific cover pages */}
+      <section className="py-16 bg-gray-50" aria-label="Cover by car brand">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              Cover for your make and model
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Explore extended warranty cover tailored to your vehicle brand.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { name: 'Volkswagen', href: '/car-extended-warranty/volkswagen/', tagline: 'Reliable cover for your VW.' },
+              { name: 'Mercedes-Benz', href: '/car-extended-warranty/mercedes-benz/', tagline: 'Protect your Mercedes with confidence.' },
+              { name: 'BMW', href: '/car-extended-warranty/bmw/', tagline: 'Specialist cover for BMW owners.' },
+            ].map((b) => (
+              <Link
+                key={b.name}
+                to={b.href}
+                className="group block bg-white rounded-2xl border-2 border-gray-200 hover:border-primary hover:shadow-xl transition-all duration-300 p-8 text-center"
+              >
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Car className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">
+                  {b.name} Extended Warranty
+                </h3>
+                <p className="text-gray-600 mb-4">{b.tagline}</p>
+                <span className="inline-flex items-center gap-1 text-primary font-semibold">
+                  View cover <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-16 bg-white" aria-label="Ready to protect your vehicle">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Ready to Protect Your Vehicle?
+          </h2>
+          <p className="text-lg text-gray-700 mb-8">
+            Get an instant quote and find the perfect warranty for your vehicle today from 60p a day.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              onClick={navigateToQuoteForm}
+              className="bg-primary text-white hover:bg-primary/90"
+            >
+              Get your free quote <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => window.location.href = 'tel:03300539447'}
+              className="bg-black text-white hover:bg-black/90"
+            >
+              <Phone className="mr-2 h-5 w-5" /> 0330 053 9447
+            </Button>
+          </div>
+        </div>
+      </section>
       </main>
 
       {/* Floating Contact Buttons */}
