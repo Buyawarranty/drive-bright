@@ -229,6 +229,29 @@ export const UserPermissionsTab = () => {
   const [signInLink, setSignInLink] = useState<{ email: string; link: string } | null>(null);
   const [revealedCreds, setRevealedCreds] = useState<{ email: string; password: string } | null>(null);
   const [generatingCredsId, setGeneratingCredsId] = useState<string | null>(null);
+  const [sendingLoginId, setSendingLoginId] = useState<string | null>(null);
+
+  const handleSendLoginDetails = async (u: AdminUser) => {
+    if (!confirm(`Reset password for ${u.email} and email them the new login details?\n\nTheir current password will be replaced.`)) return;
+    setSendingLoginId(u.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-admin-login-details', {
+        body: {
+          userId: u.user_id || u.id,
+          email: u.email,
+          name: (u as any).first_name || (u as any).name || '',
+        }
+      });
+      if (error) throw error;
+      if (data?.success === false) throw new Error(data?.error || 'Failed to send');
+      toast.success(`Login details emailed to ${u.email}`);
+    } catch (err: any) {
+      console.error('Send login details error:', err);
+      toast.error(err.message || 'Failed to send login details');
+    } finally {
+      setSendingLoginId(null);
+    }
+  };
 
   const handleSignInAs = async (u: AdminUser) => {
     setSigningInAsId(u.id);
