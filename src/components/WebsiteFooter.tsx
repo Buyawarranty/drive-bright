@@ -134,6 +134,16 @@ const WebsiteFooter = () => {
               </div>
             </div>
 
+            {/* Cover by Brand */}
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Cover by Brand</h3>
+              <ul className="space-y-3 text-gray-600">
+                <li><a href="/car-extended-warranty/volkswagen/" className="hover:text-[#eb4b00] transition-colors">Volkswagen Warranty</a></li>
+                <li><a href="/car-extended-warranty/mercedes-benz/" className="hover:text-[#eb4b00] transition-colors">Mercedes-Benz Warranty</a></li>
+                <li><a href="/car-extended-warranty/bmw/" className="hover:text-[#eb4b00] transition-colors">BMW Warranty</a></li>
+              </ul>
+            </div>
+
             {/* About Our Service */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-6">Get fast, affordable cover tailored to your needs</h3>
