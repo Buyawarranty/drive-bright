@@ -1623,6 +1623,16 @@ export const UserPermissionsTab = () => {
                       >
                         <Key className="h-4 w-4" />
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleSendLoginDetails(user)}
+                        disabled={sendingLoginId === user.id}
+                        title="Reset password and email login details"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Mail className="h-4 w-4" />
+                      </Button>
                       {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                       <Button
                         size="sm"
