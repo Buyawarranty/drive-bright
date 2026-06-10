@@ -320,18 +320,16 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             step_abandoned: 2,
             ...((() => {
                 const fbRef = !storedFbclid ? getSessionFbReferrer() : null;
-                const hasUtms = Object.keys(utms).length > 0;
-                if (storedFbclid || storedGclid || hasUtms || fbRef) {
-                  return {
-                    cart_metadata: {
-                      ...(storedFbclid ? { fbclid: storedFbclid } : {}),
-                      ...(storedGclid ? { gclid: storedGclid } : {}),
-                      ...utms,
-                      ...(fbRef ? { fb_referrer: fbRef } : {}),
-                    }
-                  };
-                }
-                return {};
+                const abVariant: 'a' | 'b' = isVariantB ? 'b' : 'a';
+                return {
+                  cart_metadata: {
+                    ...(storedFbclid ? { fbclid: storedFbclid } : {}),
+                    ...(storedGclid ? { gclid: storedGclid } : {}),
+                    ...utms,
+                    ...(fbRef ? { fb_referrer: fbRef } : {}),
+                    ab_variant: abVariant,
+                  }
+                };
               })())
           });
 
