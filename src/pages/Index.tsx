@@ -592,7 +592,27 @@ const Index = () => {
     if (stepParam) {
       const step = stepNumber(stepParam);
       console.log('getStepFromUrl - parsed step:', step);
-      if (step && step >= 1 && step <= 5) return step;
+      if (step && step >= 1 && step <= 5) {
+        // Guard: if user lands directly on step >= 2 (e.g. PPC ad with ?step=2b)
+        // but has no vehicle data in storage AND no reg in the URL, send them
+        // to step 1 instead of an infinite "Finding your quote..." loader.
+        // The A/B variant is captured separately and persists in sessionStorage,
+        // so after step 1 they will arrive at the correct variant.
+        if (step >= 2) {
+          try {
+            captureAbVariantFromUrl();
+            const hasRegInUrl = !!searchParams.get('reg');
+            const hasSavedVehicle = !!localStorage.getItem('buyawarranty_vehicleData');
+            if (!hasRegInUrl && !hasSavedVehicle) {
+              console.log('⚠️ step >= 2 requested but no vehicle data — falling back to step 1');
+              return 1;
+            }
+          } catch (e) {
+            console.warn('step guard check failed', e);
+          }
+        }
+        return step;
+      }
       return 1;
     }
     
