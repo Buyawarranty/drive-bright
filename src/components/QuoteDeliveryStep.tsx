@@ -605,10 +605,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 <p className="text-xs text-gray-500">Our warranty experts are here for you.</p>
               </div>
             </div>
-            <a href="tel:03309128741" className="flex items-center gap-3 sm:justify-center">
+            <a href="tel:03302295040" className="flex items-center gap-3 sm:justify-center">
               <Phone className="w-5 h-5 text-brand-orange" />
               <div>
-                <p className="font-bold text-gray-900 text-sm">0330 912 8741</p>
+                <p className="font-bold text-gray-900 text-sm">0330 229 5040</p>
                 <p className="text-xs text-gray-500">Mon–Fri 9am – 6pm</p>
               </div>
             </a>

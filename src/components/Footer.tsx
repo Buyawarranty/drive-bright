@@ -16,11 +16,11 @@ const Footer = () => {
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
               <a 
-                href="tel:0300456576" 
+                href="tel:03302295040" 
                 className="flex items-center gap-2 text-[#eb4b00] hover:text-orange-400 transition-colors font-medium text-lg"
               >
                 <Phone size={20} />
-                Call us: 0300 456 576
+                Call us: 0330 229 5040
               </a>
               
               <a 

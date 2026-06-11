@@ -126,11 +126,11 @@ const PaymentReceived = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 text-sm">
                 <a 
-                  href="tel:01onal011234567890" 
+                  href="tel:03302295040" 
                   className="flex items-center gap-2 text-primary hover:underline"
                 >
                   <Phone className="w-4 h-4" />
-                  Call Us
+                  Call us: 0330 229 5040
                 </a>
                 <a 
                   href="mailto:info@buyawarranty.co.uk" 

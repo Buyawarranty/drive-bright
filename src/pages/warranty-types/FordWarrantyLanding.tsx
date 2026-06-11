@@ -1311,7 +1311,7 @@ const FordWarrantyLanding: React.FC = () => {
               <img src={whatsappIconNew} alt="WhatsApp" className="w-7 h-7" />
             </a>
             <a
-              href="tel:08009179270"
+              href="tel:03302295040"
               className="w-14 h-14 bg-brand-orange rounded-full flex items-center justify-center shadow-lg hover:bg-brand-orange/90 transition-colors"
             >
               <Phone className="w-7 h-7 text-white" />

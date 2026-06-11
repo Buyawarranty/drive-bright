@@ -1380,10 +1380,10 @@ const CarExtendedWarranty: React.FC = () => {
             </Button>
             <Button
               size="lg"
-              onClick={() => window.location.href = 'tel:03300539447'}
+              onClick={() => window.location.href = 'tel:03302295040'}
               className="bg-black text-white hover:bg-black/90"
             >
-              <Phone className="mr-2 h-5 w-5" /> 0330 053 9447
+              <Phone className="mr-2 h-5 w-5" /> 0330 229 5040
             </Button>
           </div>
         </div>

@@ -729,7 +729,7 @@ const EVWarranty = () => {
             <OptimizedImage src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
           </a>
           <a 
-            href="tel:+442045380742"
+            href="tel:03302295040"
             className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-4 shadow-lg transition-all hover:scale-110"
           >
             <Phone className="w-8 h-8" />

@@ -610,7 +610,7 @@ const MotorbikeWarranty = () => {
               <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
             </a>
             <a
-              href="tel:02033228888"
+              href="tel:03302295040"
               className="fixed bottom-24 right-6 z-50 bg-primary hover:bg-primary/90 text-primary-foreground p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
               onClick={() => trackButtonClick('motorbike_phone_float')}
             >
