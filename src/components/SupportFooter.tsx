@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
 
 const SupportFooter = () => {
   return (
@@ -30,10 +31,10 @@ const SupportFooter = () => {
               Need help or have a question?
             </span>
             <a 
-              href="tel:03302295040" 
+              href={SALES_PHONE_TEL}
               className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold hover:text-orange-200 transition-colors"
             >
-              0330 229 5040
+              {SALES_PHONE}
             </a>
           </div>
         </div>

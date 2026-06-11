@@ -2,6 +2,7 @@
 import React from 'react';
 import { Phone, Mail, Facebook, Instagram } from 'lucide-react';
 import { X } from 'lucide-react';
+import { SALES_PHONE, SALES_PHONE_TEL, SUPPORT_EMAIL } from '@/constants/contact';
 
 const Footer = () => {
   return (
@@ -16,19 +17,19 @@ const Footer = () => {
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
               <a 
-                href="tel:03302295040" 
+                href={SALES_PHONE_TEL}
                 className="flex items-center gap-2 text-[#eb4b00] hover:text-orange-400 transition-colors font-medium text-lg"
               >
                 <Phone size={20} />
-                Call us: 0330 229 5040
+                Call us: {SALES_PHONE}
               </a>
               
               <a 
-                href="mailto:info@buyawarranty.co.uk" 
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="flex items-center gap-2 text-[#eb4b00] hover:text-orange-400 transition-colors font-medium text-lg"
               >
                 <Mail size={20} />
-                Email us: info@buyawarranty.co.uk
+                Email us: {SUPPORT_EMAIL}
               </a>
             </div>
           </div>
