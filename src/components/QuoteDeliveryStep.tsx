@@ -9,6 +9,7 @@ import { getAbVariant } from '@/utils/abVariant';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
 
 import trustpilotLogo from '/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -605,10 +606,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 <p className="text-xs text-gray-500">Our warranty experts are here for you.</p>
               </div>
             </div>
-            <a href="tel:03302295040" className="flex items-center gap-3 sm:justify-center">
+            <a href={SALES_PHONE_TEL} className="flex items-center gap-3 sm:justify-center">
               <Phone className="w-5 h-5 text-brand-orange" />
               <div>
-                <p className="font-bold text-gray-900 text-sm">0330 229 5040</p>
+                <p className="font-bold text-gray-900 text-sm">{SALES_PHONE}</p>
                 <p className="text-xs text-gray-500">Mon–Fri 9am – 6pm</p>
               </div>
             </a>
