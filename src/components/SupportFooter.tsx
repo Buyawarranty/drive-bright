@@ -30,10 +30,10 @@ const SupportFooter = () => {
               Need help or have a question?
             </span>
             <a 
-              href="tel:03302291111" 
+              href="tel:03302295040" 
               className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold hover:text-orange-200 transition-colors"
             >
-              0330 229 1111
+              0330 229 5040
             </a>
           </div>
         </div>
