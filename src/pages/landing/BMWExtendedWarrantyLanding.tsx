@@ -23,6 +23,8 @@ import pandaMascot from '@/assets/panda-car-warranty-transparent.png';
 import pandaLaptop from '@/assets/404-panda.png';
 import bmwHero from '@/assets/bmw-used-car-extended-warranty-uk.webp';
 import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
+import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
+import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
 
 const PHONE = '0330 229 5040';
 const WHATSAPP_URL = 'https://wa.me/443302295040';
@@ -209,7 +211,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               </ul>
 
               {/* Quote module */}
-              <div id="quote-module" className="mt-6 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(15,23,42,0.18)] border border-slate-200 p-5 md:p-6">
+              <div id="quote-module" className="mt-6">
                 {/* Stepper */}
                 <div className="flex items-center justify-between mb-5">
                   {stepLabels.map((s, i) => {
@@ -335,7 +337,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     <p className="text-[9px] text-slate-500 mt-0.5">subject to eligibility</p>
                   </div>
                 </div>
-                <img src={pandaMascot} alt="" aria-hidden="true" className="absolute bottom-0 right-0 w-24 md:w-36 h-auto translate-x-2 translate-y-2" loading="lazy" />
+                
               </div>
               <div className="mt-6 grid grid-cols-5 gap-2 md:gap-3 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm">
                 {[
@@ -356,25 +358,13 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Dark navy trust strip */}
-        <section className="bg-[#0F172A] py-4 px-4">
-          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {['Easy to get a quote.','Helpful customer service.','Clear warranty options.','Simple and straightforward.'].map((s, i) => (
-              <React.Fragment key={s}>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-0.5 bg-[#00b67a] px-1 py-0.5">
-                    {[1,2,3,4,5].map(j => <Star key={j} className="w-2.5 h-2.5 fill-white text-white" />)}
-                  </div>
-                  <span className="text-white text-xs md:text-sm font-medium">"{s}"</span>
-                </div>
-                {i === 3 && (
-                  <div className="flex items-center gap-1.5 text-white text-sm font-bold">
-                    <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" /> Trustpilot
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+        {/* Trustpilot reviews — same widget as homepage */}
+        <section className="bg-white py-8 md:py-10 px-4 border-y border-slate-100">
+          <div className="max-w-7xl mx-auto">
+            <TrustpilotSliderWidget />
           </div>
         </section>
+
 
         {/* What does BMW warranty cover */}
         <section className="py-12 md:py-16 bg-white">
@@ -402,7 +392,13 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               ))}
             </div>
             <div className="mt-5 bg-orange-50/50 border border-orange-100 rounded-lg py-3 px-4 max-w-2xl mx-auto text-center">
-              <p className="text-xs text-slate-700"><span className="inline-block w-3.5 h-3.5 rounded-full bg-slate-300 text-white text-[9px] font-black leading-[14px] mr-1">i</span>Policy levels and cover limits vary. Full terms and conditions apply.</p>
+              <p className="text-xs text-slate-700">
+                <span className="inline-block w-3.5 h-3.5 rounded-full bg-slate-300 text-white text-[9px] font-black leading-[14px] mr-1">i</span>
+                For full inclusions, limits and exclusions, see our{' '}
+                <Link to="/terms/" className="text-[#F97316] font-bold underline">Terms &amp; Conditions</Link>
+                {' '}and{' '}
+                <Link to="/warranty-plan/" className="text-[#F97316] font-bold underline">warranty plan documents</Link>.
+              </p>
             </div>
           </div>
         </section>
