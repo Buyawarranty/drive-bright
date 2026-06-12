@@ -958,6 +958,13 @@ export const CustomersTab = ({
           // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'google_ads';
+        } else if (filterBySource === 'google_leads_sales') {
+          // Agent-closed sales (BAW-S- staff or ADM- quote/order) where lead originated from Google Ads
+          const isAgent = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          return isAgent && getCustomerAcquisitionChannel(customer) === 'google_ads';
+        } else if (filterBySource === 'google_all') {
+          // Google Ads pure (website) + Google Leads sales (agent-closed) combined
+          return getCustomerAcquisitionChannel(customer) === 'google_ads';
         } else if (filterBySource === 'website_facebook') {
           // Website sale with Facebook Ads attribution
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
