@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Calendar, User, Clock, Share2 } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
