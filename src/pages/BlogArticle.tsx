@@ -303,6 +303,12 @@ const BlogArticle = () => {
           </div>
         </article>
 
+        {/* Google Preferred Source CTA — only on article pages */}
+        <div className="mt-12">
+          <GooglePreferredSourceCTA />
+        </div>
+
+
         {/* Author bio */}
         {post.blog_authors?.bio && (
           <Card className="mt-12 p-6 bg-muted/50">
