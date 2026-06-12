@@ -5,20 +5,30 @@ const MinimalLandingFooter: React.FC = () => {
   return (
     <footer className="bg-gray-100 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-4">
-            <a href="tel:03302295040" className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors font-medium">
-              <Phone className="w-4 h-4" />
-              0330 229 5040
-            </a>
-            <a href="mailto:support@buyawarranty.co.uk" className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors">
-              <Mail className="w-4 h-4" />
-              support@buyawarranty.co.uk
-            </a>
+        <div className="flex flex-col items-center gap-4 text-sm">
+          <a
+            href="https://www.google.com/preferences/source?q=buyawarranty.co.uk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-5 py-2.5 rounded-lg transition-colors"
+          >
+            Add Buyawarranty as a Preferred Source on Google
+          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+            <div className="flex items-center gap-4">
+              <a href="tel:03302295040" className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors font-medium">
+                <Phone className="w-4 h-4" />
+                0330 229 5040
+              </a>
+              <a href="mailto:support@buyawarranty.co.uk" className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors">
+                <Mail className="w-4 h-4" />
+                support@buyawarranty.co.uk
+              </a>
+            </div>
+            <p className="text-gray-500 text-xs">
+              © {new Date().getFullYear()} Buy A Warranty. All rights reserved.
+            </p>
           </div>
-          <p className="text-gray-500 text-xs">
-            © {new Date().getFullYear()} Buy A Warranty. All rights reserved.
-          </p>
         </div>
       </div>
     </footer>
