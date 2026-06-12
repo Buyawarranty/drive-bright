@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { SeasonalOfferBanner } from '@/components/SeasonalOfferBanner';
+import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
 import pandaHeroImage from '@/assets/blog-hero-panda-mechanic.png';
 import warrantyCarImage from '@/assets/blog-hero-warranty-car.png';
 
@@ -583,8 +584,16 @@ const Blog = () => {
           </div>
         </section>
 
+        {/* Google Preferred Source CTA — content hub only */}
+        <section className="py-12 bg-white">
+          <div className="container mx-auto px-4">
+            <GooglePreferredSourceCTA />
+          </div>
+        </section>
+
         {/* Final CTA Section */}
         <section className="py-20 bg-gray-50 border-t border-gray-200">
+
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <Card className="bg-gradient-to-r from-primary to-orange-600 border-0 overflow-hidden">
