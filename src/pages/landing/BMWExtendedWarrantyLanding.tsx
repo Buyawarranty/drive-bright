@@ -209,7 +209,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               </ul>
 
               {/* Quote module */}
-              <div id="quote-module" className="mt-6 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(15,23,42,0.18)] border border-slate-200 p-5 md:p-6">
+              <div id="quote-module" className="mt-6">
                 {/* Stepper */}
                 <div className="flex items-center justify-between mb-5">
                   {stepLabels.map((s, i) => {
