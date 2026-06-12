@@ -3401,7 +3401,9 @@ export const CustomersTab = ({
                       <SelectContent className="max-w-[420px]">
                         <SelectItem value="all_view"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400" /><span>All Sources</span></div></SelectItem>
                         <SelectItem value="website"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /><span>Website (BAW)</span></div></SelectItem>
-                        <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Website G (Google)</span></div></SelectItem>
+                        <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Google Ads (pure web sales)</span></div></SelectItem>
+                        <SelectItem value="google_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-600" /><span>Google Ads + Google Leads sales</span></div></SelectItem>
+                        <SelectItem value="google_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-700" /><span>Google Leads sales (agent-closed)</span></div></SelectItem>
                         <SelectItem value="website_facebook"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span>Website F (Facebook)</span></div></SelectItem>
                         <SelectItem value="website_organic"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Website O (Organic)</span></div></SelectItem>
                         <SelectItem value="staff_purchase"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500" /><span>Staff (BAW-S)</span></div></SelectItem>
