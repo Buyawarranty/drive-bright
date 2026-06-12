@@ -335,7 +335,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     <p className="text-[9px] text-slate-500 mt-0.5">subject to eligibility</p>
                   </div>
                 </div>
-                <img src={pandaMascot} alt="" aria-hidden="true" className="absolute bottom-0 right-0 w-24 md:w-36 h-auto translate-x-2 translate-y-2" loading="lazy" />
+                
               </div>
               <div className="mt-6 grid grid-cols-5 gap-2 md:gap-3 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm">
                 {[
