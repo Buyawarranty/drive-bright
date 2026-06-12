@@ -25,6 +25,23 @@ import bmwHero from '@/assets/bmw-used-car-extended-warranty-uk.webp';
 import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import bmw1Series from '@/assets/bmw-models/bmw-1-series-extended-warranty.jpg';
+import bmw3Series from '@/assets/bmw-models/bmw-3-series-extended-warranty.jpg';
+import bmw5Series from '@/assets/bmw-models/bmw-5-series-extended-warranty.jpg';
+import bmwXSeries from '@/assets/bmw-models/bmw-x-series-suv-extended-warranty.jpg';
+import bmw7Series from '@/assets/bmw-models/bmw-7-series-extended-warranty.jpg';
+import bmwMSeries from '@/assets/bmw-models/bmw-m-series-extended-warranty.jpg';
+import bmwISeries from '@/assets/bmw-models/bmw-i-series-ev-hybrid-extended-warranty.jpg';
+
+const bmwModels = [
+  { label: '1 Series', examples: '118i, 120d, M135i', img: bmw1Series, alt: 'BMW 1 Series extended warranty cover — 118i, 120d, M135i hatchback' },
+  { label: '3 Series', examples: '320i, 330e, 330d', img: bmw3Series, alt: 'BMW 3 Series extended warranty cover — 320i, 330e, 330d saloon and Touring' },
+  { label: '5 Series', examples: '520d, 530e, 540i', img: bmw5Series, alt: 'BMW 5 Series extended warranty cover — 520d, 530e, 540i executive saloon' },
+  { label: 'X1 / X3 / X5', examples: 'sDrive, xDrive SUVs', img: bmwXSeries, alt: 'BMW X1, X3 and X5 SUV extended warranty cover — sDrive and xDrive variants' },
+  { label: '7 Series', examples: '730d, 740i, 750e', img: bmw7Series, alt: 'BMW 7 Series luxury saloon extended warranty cover — 730d, 740i, 750e' },
+  { label: 'M Series', examples: 'M2, M3, M4, M5', img: bmwMSeries, alt: 'BMW M Series performance extended warranty cover — M2, M3, M4 and M5' },
+  { label: 'i Series / Hybrid / EV', examples: 'i4, iX, i7, 330e', img: bmwISeries, alt: 'BMW i Series, hybrid and EV extended warranty cover — i4, iX, i7 electric and 330e plug-in hybrid' },
+];
 
 const PHONE = '0330 229 5040';
 const WHATSAPP_URL = 'https://wa.me/443302295040';
