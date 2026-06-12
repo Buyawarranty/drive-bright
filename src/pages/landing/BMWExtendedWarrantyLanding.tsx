@@ -358,25 +358,13 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Dark navy trust strip */}
-        <section className="bg-[#0F172A] py-4 px-4">
-          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {['Easy to get a quote.','Helpful customer service.','Clear warranty options.','Simple and straightforward.'].map((s, i) => (
-              <React.Fragment key={s}>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-0.5 bg-[#00b67a] px-1 py-0.5">
-                    {[1,2,3,4,5].map(j => <Star key={j} className="w-2.5 h-2.5 fill-white text-white" />)}
-                  </div>
-                  <span className="text-white text-xs md:text-sm font-medium">"{s}"</span>
-                </div>
-                {i === 3 && (
-                  <div className="flex items-center gap-1.5 text-white text-sm font-bold">
-                    <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" /> Trustpilot
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+        {/* Trustpilot reviews — same widget as homepage */}
+        <section className="bg-white py-8 md:py-10 px-4 border-y border-slate-100">
+          <div className="max-w-7xl mx-auto">
+            <TrustpilotSliderWidget />
           </div>
         </section>
+
 
         {/* What does BMW warranty cover */}
         <section className="py-12 md:py-16 bg-white">
