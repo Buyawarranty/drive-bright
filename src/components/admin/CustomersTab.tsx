@@ -3298,7 +3298,9 @@ export const CustomersTab = ({
             }
             if (canSeeSourceColumn && filterBySource !== 'all_view') {
               const srcLabels: Record<string, string> = {
-                website: 'Website (BAW)', website_google: 'Website G', website_facebook: 'Website F',
+                website: 'Website (BAW)', website_google: 'Google Ads (pure)',
+                google_all: 'Google Ads + Leads', google_leads_sales: 'Google Leads sales',
+                website_facebook: 'Website F',
                 website_organic: 'Website O', staff_purchase: 'Staff', quote_order: 'Quote & Orders',
                 agent_sales: 'Agent Sales', cancelled_refunded: 'Cancelled / Refunded',
               };
