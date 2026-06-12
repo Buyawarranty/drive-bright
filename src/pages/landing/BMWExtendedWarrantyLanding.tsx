@@ -23,6 +23,8 @@ import pandaMascot from '@/assets/panda-car-warranty-transparent.png';
 import pandaLaptop from '@/assets/404-panda.png';
 import bmwHero from '@/assets/bmw-used-car-extended-warranty-uk.webp';
 import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
+import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
+import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
 
 const PHONE = '0330 229 5040';
 const WHATSAPP_URL = 'https://wa.me/443302295040';
