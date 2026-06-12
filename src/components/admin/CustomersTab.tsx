@@ -506,6 +506,10 @@ export const CustomersTab = ({
       statusLabel = 'website sales';
     } else if (filterBySource === 'website_google') {
       statusLabel = 'Google Ads sales';
+    } else if (filterBySource === 'google_all') {
+      statusLabel = 'Google Ads + Google Leads sales';
+    } else if (filterBySource === 'google_leads_sales') {
+      statusLabel = 'Google Leads sales';
     } else if (filterBySource === 'website_facebook') {
       statusLabel = 'Facebook Ads sales';
     } else if (filterBySource === 'website_organic') {
