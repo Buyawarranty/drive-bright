@@ -55,6 +55,17 @@ const NewFooter = () => {
               <span className="text-white">Login</span>
             </Link>
           </div>
+
+          <div className="mt-8">
+            <a
+              href="https://www.google.com/preferences/source?q=buyawarranty.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+            >
+              Add Buyawarranty as a Preferred Source on Google
+            </a>
+          </div>
         </div>
       </div>
     </div>
