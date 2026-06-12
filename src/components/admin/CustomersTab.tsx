@@ -506,6 +506,10 @@ export const CustomersTab = ({
       statusLabel = 'website sales';
     } else if (filterBySource === 'website_google') {
       statusLabel = 'Google Ads sales';
+    } else if (filterBySource === 'google_all') {
+      statusLabel = 'Google Ads + Google Leads sales';
+    } else if (filterBySource === 'google_leads_sales') {
+      statusLabel = 'Google Leads sales';
     } else if (filterBySource === 'website_facebook') {
       statusLabel = 'Facebook Ads sales';
     } else if (filterBySource === 'website_organic') {
@@ -954,6 +958,13 @@ export const CustomersTab = ({
           // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'google_ads';
+        } else if (filterBySource === 'google_leads_sales') {
+          // Agent-closed sales (BAW-S- staff or ADM- quote/order) where lead originated from Google Ads
+          const isAgent = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          return isAgent && getCustomerAcquisitionChannel(customer) === 'google_ads';
+        } else if (filterBySource === 'google_all') {
+          // Google Ads pure (website) + Google Leads sales (agent-closed) combined
+          return getCustomerAcquisitionChannel(customer) === 'google_ads';
         } else if (filterBySource === 'website_facebook') {
           // Website sale with Facebook Ads attribution
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
@@ -3287,7 +3298,9 @@ export const CustomersTab = ({
             }
             if (canSeeSourceColumn && filterBySource !== 'all_view') {
               const srcLabels: Record<string, string> = {
-                website: 'Website (BAW)', website_google: 'Website G', website_facebook: 'Website F',
+                website: 'Website (BAW)', website_google: 'Google Ads (pure)',
+                google_all: 'Google Ads + Leads', google_leads_sales: 'Google Leads sales',
+                website_facebook: 'Website F',
                 website_organic: 'Website O', staff_purchase: 'Staff', quote_order: 'Quote & Orders',
                 agent_sales: 'Agent Sales', cancelled_refunded: 'Cancelled / Refunded',
               };
@@ -3388,7 +3401,9 @@ export const CustomersTab = ({
                       <SelectContent className="max-w-[420px]">
                         <SelectItem value="all_view"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400" /><span>All Sources</span></div></SelectItem>
                         <SelectItem value="website"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /><span>Website (BAW)</span></div></SelectItem>
-                        <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Website G (Google)</span></div></SelectItem>
+                        <SelectItem value="website_google"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span>Google Ads (pure web sales)</span></div></SelectItem>
+                        <SelectItem value="google_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-600" /><span>Google Ads + Google Leads sales</span></div></SelectItem>
+                        <SelectItem value="google_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-700" /><span>Google Leads sales (agent-closed)</span></div></SelectItem>
                         <SelectItem value="website_facebook"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span>Website F (Facebook)</span></div></SelectItem>
                         <SelectItem value="website_organic"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Website O (Organic)</span></div></SelectItem>
                         <SelectItem value="staff_purchase"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500" /><span>Staff (BAW-S)</span></div></SelectItem>
