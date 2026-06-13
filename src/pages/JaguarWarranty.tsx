@@ -91,7 +91,7 @@ const JaguarWarranty = () => {
       <ProductSchema
         name="Jaguar Extended Warranty"
         description="Comprehensive extended warranty cover for Jaguar vehicles including F-Type, F-Pace, XE, XF, and I-Pace models"
-        price="From £30"
+        price="30.00"
         brand="Buy A Warranty"
         category="Car Warranty"
         image={jaguarHeroImage}
