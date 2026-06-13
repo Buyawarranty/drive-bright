@@ -551,8 +551,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 <svg className="w-5 h-5 text-green-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg>
               </span>
               <div>
-                <p className="font-bold text-green-900">Want us to check for extra discounts?</p>
-                <p className="text-sm text-green-800/80 mt-0.5">You can add your mobile number after you see your price.</p>
+                <p className="font-bold text-green-900">Mobile number is optional here</p>
+                <p className="text-sm text-green-800/80 mt-0.5">You'll add it at checkout — it's needed for your policy documents and claim updates.</p>
               </div>
             </div>
 
