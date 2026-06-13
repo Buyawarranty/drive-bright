@@ -14,6 +14,7 @@ import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
+import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
@@ -904,6 +905,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      <MissedCallAlertBar userRole={userRole} />
       {/* Header — compact, action-dense */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

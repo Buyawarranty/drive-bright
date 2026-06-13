@@ -264,3 +264,6 @@ verify_jwt = false
 [functions.seed-staff-hub-doc]
 verify_jwt = false
 
+
+[functions.callrail-webhook]
+verify_jwt = false

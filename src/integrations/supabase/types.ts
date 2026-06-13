@@ -6081,6 +6081,69 @@ export type Database = {
         }
         Relationships: []
       }
+      missed_calls: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          call_duration: number | null
+          call_started_at: string | null
+          call_status: string | null
+          caller_name: string | null
+          caller_phone: string | null
+          created_at: string
+          id: string
+          matched_customer_id: string | null
+          matched_lead_id: string | null
+          provider: string
+          raw_payload: Json | null
+          recording_url: string | null
+          resolved_at: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          call_duration?: number | null
+          call_started_at?: string | null
+          call_status?: string | null
+          caller_name?: string | null
+          caller_phone?: string | null
+          created_at?: string
+          id?: string
+          matched_customer_id?: string | null
+          matched_lead_id?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          recording_url?: string | null
+          resolved_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          call_duration?: number | null
+          call_started_at?: string | null
+          call_status?: string | null
+          caller_name?: string | null
+          caller_phone?: string | null
+          created_at?: string
+          id?: string
+          matched_customer_id?: string | null
+          matched_lead_id?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          recording_url?: string | null
+          resolved_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null
