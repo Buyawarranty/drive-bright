@@ -118,6 +118,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // GLOBAL KILL SWITCH: Warranties Register integration disabled.
+  // We no longer send any warranties to the Warranties 2000 register.
+  console.log('[WARRANTIES-2000] Submissions are disabled — skipping.');
+  return new Response(
+    JSON.stringify({
+      success: false,
+      disabled: true,
+      skipped: true,
+      message: 'Warranties Register (Warranties 2000) submissions are disabled.',
+    }),
+    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+
   const body: Warranties2000Request = await req.json();
   const { policyId, customerId, force = false, additionalNotes, notes, email } = body;
   

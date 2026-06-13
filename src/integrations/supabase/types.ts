@@ -7953,6 +7953,54 @@ export type Database = {
           },
         ]
       }
+      trade_warranty_signups: {
+        Row: {
+          additional_information: string | null
+          contact_name: string | null
+          created_at: string
+          current_warranty_provider: string | null
+          dealership_name: string | null
+          email_address: string
+          heard_about_us: string | null
+          id: string
+          interested_in: string | null
+          monthly_vehicle_sales: string | null
+          phone_number: string
+          status: Database["public"]["Enums"]["trade_warranty_signup_status"]
+          updated_at: string
+        }
+        Insert: {
+          additional_information?: string | null
+          contact_name?: string | null
+          created_at?: string
+          current_warranty_provider?: string | null
+          dealership_name?: string | null
+          email_address: string
+          heard_about_us?: string | null
+          id?: string
+          interested_in?: string | null
+          monthly_vehicle_sales?: string | null
+          phone_number: string
+          status?: Database["public"]["Enums"]["trade_warranty_signup_status"]
+          updated_at?: string
+        }
+        Update: {
+          additional_information?: string | null
+          contact_name?: string | null
+          created_at?: string
+          current_warranty_provider?: string | null
+          dealership_name?: string | null
+          email_address?: string
+          heard_about_us?: string | null
+          id?: string
+          interested_in?: string | null
+          monthly_vehicle_sales?: string | null
+          phone_number?: string
+          status?: Database["public"]["Enums"]["trade_warranty_signup_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       trader_pricing_config: {
         Row: {
           active: boolean
@@ -8889,6 +8937,7 @@ export type Database = {
         | "unpaid_leave"
         | "training"
         | "wfh"
+      trade_warranty_signup_status: "new" | "contacted" | "qualified" | "closed"
       user_role:
         | "admin"
         | "customer"
@@ -9093,6 +9142,7 @@ export const Constants = {
         "training",
         "wfh",
       ],
+      trade_warranty_signup_status: ["new", "contacted", "qualified", "closed"],
       user_role: [
         "admin",
         "customer",

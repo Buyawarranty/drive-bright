@@ -16,6 +16,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // GLOBAL KILL SWITCH: Scheduled Warranties Register processing disabled.
+  console.log('[PROCESS-SCHEDULED-W2000] Disabled — no scheduled submissions will be processed.');
+  return new Response(
+    JSON.stringify({
+      success: true,
+      disabled: true,
+      processedCount: 0,
+      message: 'Scheduled Warranties Register (Warranties 2000) processing is disabled.',
+    }),
+    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",

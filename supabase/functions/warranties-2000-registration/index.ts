@@ -51,6 +51,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // GLOBAL KILL SWITCH: Warranties Register integration disabled.
+  console.log('[WARRANTIES-2000-REG] Submissions are disabled — skipping.');
+  return new Response(
+    JSON.stringify({
+      success: false,
+      disabled: true,
+      skipped: true,
+      message: 'Warranties Register (Warranties 2000) submissions are disabled.',
+    }),
+    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
