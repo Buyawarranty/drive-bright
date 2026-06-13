@@ -905,6 +905,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      <MissedCallAlertBar userRole={userRole} />
       {/* Header — compact, action-dense */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
