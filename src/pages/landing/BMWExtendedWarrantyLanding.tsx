@@ -389,7 +389,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">What does BMW warranty cover?</h2>
               <p className="mt-2 text-slate-600 text-sm md:text-base">Flexible cover options for the parts and systems that matter most. Cover levels and limits vary by plan.</p>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 md:gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-3">
               {[
                 { I: Cog, t: 'Engine' },
                 { I: Settings2, t: 'Gearbox' },
@@ -399,7 +399,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 { I: Gauge, t: 'Steering System' },
                 { I: Fuel, t: 'Fuel System' },
                 { I: Battery, t: 'Hybrid / EV Components' },
-                { I: MoreHorizontal, t: 'And more' },
               ].map(({ I, t }) => (
                 <div key={t} className="bg-white border border-slate-200 rounded-xl p-3 md:p-4 hover:border-[#F97316] hover:shadow transition-all flex flex-col items-center text-center">
                   <I className="w-7 h-7 md:w-8 md:h-8 text-[#0F172A] mb-2" />
