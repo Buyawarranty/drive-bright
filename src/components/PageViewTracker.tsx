@@ -17,17 +17,24 @@ export const PageViewTracker = () => {
 
     // Check if gtag is available
     if (typeof window !== 'undefined' && window.gtag) {
-      // Send page_view event to Google Ads
+      const page_path = location.pathname + location.search;
+      const page_location = window.location.href;
+      const page_title = document.title;
+
+      // GA4 — send explicit page_view event (recommended for SPAs)
+      window.gtag('event', 'page_view', {
+        send_to: 'G-T5P06P67GM',
+        page_path,
+        page_location,
+        page_title,
+      });
+
+      // Google Ads — re-config so remarketing/conversion context updates with the new URL
       window.gtag('config', 'AW-17325228149', {
-        page_path: location.pathname + location.search,
+        page_path,
       });
 
-      // Also send to Google Analytics
-      window.gtag('config', 'G-T5P06P67GM', {
-        page_path: location.pathname + location.search,
-      });
-
-      console.log('Page view tracked:', location.pathname);
+      console.log('Page view tracked:', page_path);
     }
   }, [location]);
 
