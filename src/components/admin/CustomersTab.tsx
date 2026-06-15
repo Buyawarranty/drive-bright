@@ -3813,6 +3813,7 @@ export const CustomersTab = ({
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
+              <TableHead>Price</TableHead>
               {showPaymentColumn && <TableHead>Payment</TableHead>}
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
@@ -5047,6 +5048,15 @@ Please log in and change your password after first login.`;
                         </button>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {customer.final_amount != null ? (
+                      <span className="text-sm font-semibold text-emerald-700 whitespace-nowrap">
+                        £{Number(customer.final_amount).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   {canSeeSourceColumn && showPurchaseSource && (
                     <TableCell>
