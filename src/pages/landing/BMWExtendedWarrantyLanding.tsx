@@ -422,7 +422,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         <section className="py-12 md:py-16 bg-slate-50 border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] text-center mb-8">
-              Why BMW owners choose <span className="text-[#F97316]">BuyaWarranty</span>
+              Why choose <span className="text-[#F97316]">Buyawarranty</span>?
             </h2>
             <div className="grid md:grid-cols-3 gap-4 md:gap-5">
               {[
