@@ -574,46 +574,47 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
         {/* FAQ */}
         <section className="py-12 md:py-16 bg-white border-t border-slate-100">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-8">
-              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">FAQ's</h2>
-              <p className="mt-2 text-slate-600 text-sm">First answers to the most common questions about our warranty services.</p>
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Frequently asked questions</h2>
             </div>
-            <div className="grid lg:grid-cols-[1fr_1fr_280px] gap-4 items-start">
-              <div className="space-y-2">
-                {faqs.slice(0, 6).map((f, i) => (
-                  <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-white rounded-lg border border-slate-200 p-3.5 hover:border-[#F97316] transition-all">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-semibold text-sm text-[#0F172A]">{f.q}</span>
-                      <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180 text-[#F97316]' : ''}`} />
-                    </div>
-                    {openFaq === i && <p className="mt-2 text-slate-600 text-xs leading-relaxed">{f.a}</p>}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-2">
-                {faqs.slice(6).map((f, idx) => {
-                  const i = idx + 6;
-                  return (
-                    <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-white rounded-lg border border-slate-200 p-3.5 hover:border-[#F97316] transition-all">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="font-semibold text-sm text-[#0F172A]">{f.q}</span>
-                        <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180 text-[#F97316]' : ''}`} />
-                      </div>
-                      {openFaq === i && <p className="mt-2 text-slate-600 text-xs leading-relaxed">{f.a}</p>}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="hidden lg:flex flex-col items-center bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                <Link to="/faq/" className="inline-flex items-center gap-1 px-4 py-2 rounded-md border-2 border-[#F97316] text-[#F97316] font-bold text-sm hover:bg-orange-50">
-                  View all FAQs <ArrowRight className="w-4 h-4" />
-                </Link>
-                <img src={pandaLaptop} alt="" className="w-40 mt-4" loading="lazy" />
-              </div>
+            <div className="space-y-2">
+              {faqs.slice(0, 6).map((f, i) => (
+                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-white rounded-lg border border-slate-200 p-4 hover:border-[#F97316] transition-all">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold text-sm text-[#0F172A]">{f.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180 text-[#F97316]' : ''}`} />
+                  </div>
+                  {openFaq === i && <p className="mt-2 text-slate-600 text-xs leading-relaxed">{f.a}</p>}
+                </button>
+              ))}
             </div>
-            <div className="lg:hidden text-center mt-5">
+            <div className="text-center mt-5">
               <Link to="/faq/" className="inline-flex items-center gap-1 text-[#F97316] font-bold text-sm hover:underline">View all FAQs <ArrowRight className="w-4 h-4" /></Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Final dark CTA bar */}
+        <section className="bg-[#0F1B3D] py-6 md:py-7">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
+            <div className="flex items-center gap-3 text-white">
+              <Shield className="w-8 h-8 text-white flex-shrink-0" />
+              <div>
+                <p className="font-black text-base md:text-lg leading-tight">Ready to protect your BMW?</p>
+                <p className="text-xs md:text-sm text-white/70 mt-0.5">Get your instant quote in 60 seconds and drive with confidence.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 h-11">
+                Get your free quote <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+              <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="inline-flex items-center gap-2 text-white font-bold text-sm">
+                <Phone className="w-4 h-4 text-[#F97316]" /> {PHONE}
+              </a>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 px-3 h-11 rounded-md bg-[#25D366] text-white text-xs font-bold hover:opacity-90">
+                <MessageCircle className="w-4 h-4" /> WhatsApp us
+              </a>
             </div>
           </div>
         </section>
