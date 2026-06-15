@@ -340,6 +340,10 @@ export const CancellationsTab: React.FC<{
   const totalCancelled = filteredRecords.filter(r => r.status?.toLowerCase() === 'cancelled').length;
   const totalRefunded = filteredRecords.filter(r => r.status?.toLowerCase() === 'refunded').length;
   const totalValue = isFinancialRole ? filteredRecords.reduce((sum, r) => sum + (r.final_amount || 0), 0) : 0;
+  const daysBetween = (r: CancellationRecord) =>
+    Math.floor((new Date(r.updated_at).getTime() - new Date(r.created_at).getTime()) / 86400000);
+  const within30 = filteredRecords.filter(r => daysBetween(r) <= 30).length;
+  const within60 = filteredRecords.filter(r => { const d = daysBetween(r); return d > 30 && d <= 60; }).length;
 
   const displayDateLabel = useMemo(() => {
     if (!dateRange?.from) return 'All time';
