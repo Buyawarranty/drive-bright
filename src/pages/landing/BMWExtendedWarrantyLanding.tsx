@@ -457,7 +457,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">BMW models we cover</h2>
               <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most BMW models and engine types, subject to eligibility.</p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {bmwModels.map(m => (
                 <div key={m.label} className="flex flex-col items-center text-center">
                   <div className="w-full aspect-[4/3] bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center overflow-hidden">
