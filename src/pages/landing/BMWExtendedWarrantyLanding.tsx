@@ -269,8 +269,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     <p className="mt-4 text-center text-sm font-bold text-[#0F172A] mb-3">What's your approximate mileage?</p>
                     <div className="grid grid-cols-2 gap-3">
                       {([
-                        { id: 'under', label: 'Under 120,000 miles' },
-                        { id: 'over', label: 'Over 120,000 miles' },
+                        { id: 'under', label: 'Under 100,000 miles' },
+                        { id: 'over', label: 'Over 100,000 miles' },
                       ] as const).map(o => (
                         <button key={o.id} onClick={() => setMileageBand(o.id)}
                           className={`p-3 rounded-lg border-2 text-sm font-bold transition-all ${
