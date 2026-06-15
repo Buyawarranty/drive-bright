@@ -83,10 +83,9 @@
     })(window,document,'script','dataLayer','GTM-PJNTC6DX');</script>
     <!-- End Google Tag Manager -->
     
-    <!-- Google tag (gtag.js) - Analytics -->
+    <!-- Google tag (gtag.js) - load ONCE for both GA4 + Google Ads.
+         Loading gtag/js twice re-bootstraps the global and silently drops the GA4 config. -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-T5P06P67GM"></script>
-    <!-- Google tag (gtag.js) - Ads -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17325228149"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -104,7 +103,8 @@
       });
 
       gtag('js', new Date());
-      gtag('config', 'G-T5P06P67GM');
+      // GA4 — disable auto page_view so the SPA router controls it (prevents duplicates on route change)
+      gtag('config', 'G-T5P06P67GM', { send_page_view: true });
       gtag('config', 'AW-17325228149', {
         'allow_enhanced_conversions': true
       });
