@@ -517,113 +517,57 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Everything You Need + Flexible Plans + High Mileage (3-col mosaic) */}
-        <section className="py-10 md:py-14 bg-white">
-          <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-3 gap-4">
-            {/* Everything you need */}
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5">
-              <h3 className="text-lg font-black text-[#0F172A] text-center">Everything You Need, Covered</h3>
-              <p className="text-xs text-slate-600 text-center mt-1">Choose flexible warranty cover for your BMW.</p>
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                {[
-                  { I: Wrench, t: 'Mechanical & Electrical', items: ['Engine components','Gearbox components','Steering & suspension','Cooling & fuel system','Electrical components'] },
-                  { I: Cpu, t: 'Tech & Safety', items: ['Sensors','Safety systems','Infotainment components','Convenience features','Plan limits apply'] },
-                  { I: ListChecks, t: 'Plan Benefits', items: ['Flexible payment options','Monthly or annual payment','1, 2 or 3 year cover options','Clear terms','Support when you need help'] },
-                  { I: Battery, t: 'EV & Hybrid', items: ['EV & hybrid options available','Electric components','Charging-related components where covered','Plan limits & exclusions apply'] },
-                ].map(({ I, t, items }) => (
-                  <div key={t}>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <I className="w-4 h-4 text-[#F97316]" />
-                      <p className="font-bold text-[11px] text-[#0F172A]">{t}</p>
-                    </div>
-                    <ul className="space-y-1">
-                      {items.map(x => (
-                        <li key={x} className="flex items-start gap-1 text-[10px] text-slate-600">
-                          <Check className="w-2.5 h-2.5 text-[#00b67a] mt-0.5 flex-shrink-0" />{x}
-                        </li>
-                      ))}
-                    </ul>
+        {/* Cover options / what's included */}
+        <section className="py-12 md:py-16 bg-white border-t border-slate-100">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto mb-8">
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Cover options / what's included</h2>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Choose flexible warranty cover for your BMW. Inclusions and limits vary by plan.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { I: Wrench, t: 'Mechanical & Electrical', items: ['Engine components', 'Transmission & gearbox', 'Electrical systems', 'Cooling system & more'] },
+                { I: Cpu, t: 'Tech & Safety', items: ['Sensors & ECU', 'Infotainment systems', 'Air conditioning', 'Driver assistance'] },
+                { I: ListChecks, t: 'Plan Benefits', items: ['Flexible cover levels', 'UK-wide garage network', 'Genuine or quality parts', 'Claim policy extras'] },
+                { I: Zap, t: 'EV & Hybrid', items: ['Hybrid components', 'High-voltage battery*', 'EV power electronics', 'Electric drive units', '*Subject to plan and eligibility.'] },
+              ].map(({ I, t, items }) => (
+                <div key={t} className="bg-white border border-slate-200 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <I className="w-5 h-5 text-[#0F172A]" />
+                    <p className="font-black text-sm text-[#0F172A]">{t}</p>
                   </div>
-                ))}
-              </div>
-              <Button onClick={scrollToQuote} className="w-full mt-4 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs">Get my quote <ArrowRight className="ml-1 w-3 h-3" /></Button>
-            </div>
-
-            {/* Flexible Plans */}
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 flex flex-col">
-              <p className="text-[10px] font-bold text-[#F97316] uppercase tracking-widest text-center">Easy options</p>
-              <h3 className="text-lg font-black text-[#0F172A] text-center mt-1">Flexible Warranty Plans</h3>
-              <img src={pandaMascot} alt="" className="w-32 mx-auto my-3" loading="lazy" />
-              <p className="text-xs text-slate-600 text-center">Choose warranty cover that works for your vehicle, budget and driving needs.</p>
-              <ul className="mt-3 space-y-1.5 flex-1">
-                {['Pay monthly or in full','Choose cover that works for you','1, 2 or 3 year cover options','Save with longer-term plans where available','From just £19/month for eligible vehicles'].map(t => (
-                  <li key={t} className="flex items-start gap-1.5 text-xs text-slate-700">
-                    <Check className="w-3.5 h-3.5 text-[#00b67a] mt-0.5 flex-shrink-0" />{t}
-                  </li>
-                ))}
-              </ul>
-              <Button onClick={scrollToQuote} className="w-full mt-4 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs">Get your instant quote <ArrowRight className="ml-1 w-3 h-3" /></Button>
-            </div>
-
-            {/* High mileage */}
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 flex flex-col">
-              <h3 className="text-lg font-black text-[#0F172A] text-center">High mileage, no problem</h3>
-              <p className="text-xs text-slate-600 text-center mt-1">Own an older or higher-mileage BMW? Our warranty options can help you find suitable cover, subject to vehicle eligibility and plan terms.</p>
-              <img src={bmwHighMileage} alt="" className="w-full max-w-[260px] mx-auto my-3" loading="lazy" />
-              <div className="flex-1" />
-              <Button onClick={scrollToQuote} className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs">Get your instant quote <ArrowRight className="ml-1 w-3 h-3" /></Button>
-              <p className="text-[10px] text-slate-500 text-center mt-2">Eligibility, cover limits and exclusions apply.</p>
+                  <ul className="space-y-2">
+                    {items.map(x => (
+                      <li key={x} className={`flex items-start gap-1.5 text-xs ${x.startsWith('*') ? 'text-slate-400 italic' : 'text-slate-600'}`}>
+                        {!x.startsWith('*') && <Check className="w-3.5 h-3.5 text-[#00b67a] mt-0.5 flex-shrink-0" />}{x}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* What's Included + Additional Cover side by side */}
-        <section className="py-10 md:py-14 bg-white">
-          <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-4">
-            {/* What's included */}
-            <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, #fde9d4 0%, #d4e6fa 100%)' }}>
-              <div className="text-center mb-5">
-                <h3 className="text-2xl font-black text-[#0F172A]">What's Included?</h3>
-                <p className="mt-2 text-xs text-slate-700 max-w-md mx-auto">Rest assured everything is covered if it breaks, where included in your selected plan and subject to policy terms.</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { I: Shield, t: 'Complete Protection', d: 'Cover options designed to help protect against unexpected repair costs.' },
-                  { I: Headphones, t: 'Instant Claims Support', d: 'Get support when something goes wrong.' },
-                  { I: ListChecks, t: 'Clear Terms', d: 'Simple cover options with clear limits and exclusions.' },
-                ].map(({ I, t, d }) => (
-                  <div key={t} className="text-center">
-                    <I className="w-7 h-7 text-[#F97316] mx-auto mb-2" />
-                    <p className="font-black text-xs text-[#0F172A]">{t}</p>
-                    <p className="text-[10px] text-slate-600 mt-1">{d}</p>
-                  </div>
-                ))}
-              </div>
-              <Button onClick={scrollToQuote} className="w-full mt-5 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs">Secure your warranty <ArrowRight className="ml-1 w-3 h-3" /></Button>
+        {/* Additional cover options */}
+        <section className="py-12 md:py-14 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto mb-6">
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Additional cover options</h2>
             </div>
-
-            {/* Additional cover */}
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
-              <div className="text-center mb-5">
-                <h3 className="text-2xl font-black text-[#0F172A]">Additional Cover Options</h3>
-                <p className="mt-2 text-xs text-slate-600 max-w-md mx-auto">Tailor your warranty with optional extras, depending on your plan.</p>
-              </div>
-              <div className="grid grid-cols-5 gap-2">
-                {[
-                  { I: Truck, t: 'Vehicle Recovery' },
-                  { I: Globe, t: 'Europe Cover' },
-                  { I: Car, t: 'Vehicle Rental' },
-                  { I: Shield, t: 'Transfer Cover' },
-                  { I: Settings2, t: 'Bespoke Warranty' },
-                ].map(({ I, t }) => (
-                  <div key={t} className="flex flex-col items-center text-center">
-                    <I className="w-7 h-7 text-[#0F172A] mb-1.5" />
-                    <p className="text-[10px] font-bold text-[#0F172A] leading-tight">{t}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] text-slate-500 text-center mt-4">Additional cover options are subject to availability, selected plan, vehicle eligibility, cover limits and policy terms.</p>
-              <Button onClick={scrollToQuote} className="w-full mt-3 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs">View cover options <ArrowRight className="ml-1 w-3 h-3" /></Button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto">
+              {[
+                { I: Truck, t: 'Vehicle Recovery' },
+                { I: Globe, t: 'Europe Cover' },
+                { I: Car, t: 'Vehicle Rental' },
+                { I: RefreshCw, t: 'Transfer Cover' },
+                { I: Shield, t: 'Bespoke Warranty' },
+              ].map(({ I, t }) => (
+                <div key={t} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-2 justify-center hover:border-[#F97316] transition-all">
+                  <I className="w-5 h-5 text-[#0F172A] flex-shrink-0" />
+                  <p className="text-xs md:text-sm font-bold text-[#0F172A] leading-tight">{t}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
