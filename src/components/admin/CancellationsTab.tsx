@@ -424,7 +424,7 @@ export const CancellationsTab: React.FC<{
       </div>
 
       {/* Summary Cards */}
-      <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3')}>
+      <div className={cn('grid gap-3', isFinancialRole ? 'grid-cols-2 md:grid-cols-6' : 'grid-cols-2 md:grid-cols-5')}>
 
         <Card className="p-3">
           <p className="text-xs text-muted-foreground">Total</p>
@@ -437,6 +437,14 @@ export const CancellationsTab: React.FC<{
         <Card className="p-3 border-red-200">
           <p className="text-xs text-muted-foreground">Refunded</p>
           <p className="text-2xl font-bold text-destructive">{totalRefunded}</p>
+        </Card>
+        <Card className="p-3 border-yellow-300 bg-yellow-50">
+          <p className="text-xs text-muted-foreground">Within 30 days</p>
+          <p className="text-2xl font-bold text-yellow-700">{within30}</p>
+        </Card>
+        <Card className="p-3 border-pink-300 bg-pink-50">
+          <p className="text-xs text-muted-foreground">Within 60 days</p>
+          <p className="text-2xl font-bold text-pink-700">{within60}</p>
         </Card>
         {isFinancialRole && (
           <Card className="p-3 border-red-200">
