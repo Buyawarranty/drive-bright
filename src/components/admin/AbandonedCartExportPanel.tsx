@@ -311,7 +311,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
             <Label className="text-xs">Platform</Label>
             <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
@@ -319,6 +319,18 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
               <SelectContent>
                 <SelectItem value="google">Google Customer Match</SelectItem>
                 <SelectItem value="facebook">Facebook Custom Audience</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Traffic Source</Label>
+            <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(v as SourceFilter)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All sources ({sourceCounts.all})</SelectItem>
+                <SelectItem value="google_ad">Google Ads ({sourceCounts.google_ad})</SelectItem>
+                <SelectItem value="social_ad">Facebook / Social ({sourceCounts.social_ad})</SelectItem>
+                <SelectItem value="organic">Organic / Direct ({sourceCounts.organic})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -346,6 +358,15 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
             </Button>
           </div>
         </div>
+
+        {/* Per-source breakdown chips */}
+        <div className="flex flex-wrap gap-2 text-xs">
+          <Badge variant="outline">Google Ads: {sourceCounts.google_ad}</Badge>
+          <Badge variant="outline">Facebook / Social: {sourceCounts.social_ad}</Badge>
+          <Badge variant="outline">Organic / Direct: {sourceCounts.organic}</Badge>
+          <Badge variant="secondary">Total in range: {sourceCounts.all}</Badge>
+        </div>
+
 
         {preset === 'custom' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
