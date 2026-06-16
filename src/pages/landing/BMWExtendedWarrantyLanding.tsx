@@ -299,7 +299,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <p className="mt-3 text-xs text-red-600 font-semibold text-center">{errorMsg}</p>
                 )}
 
-                {step !== 4 && (
+                {step !== 4 && step !== 1 && (
                   <div className="mt-4 flex items-center gap-3">
                     {step > 1 && (
                       <button onClick={() => { setErrorMsg(''); setStep((step - 1) as Step); }} className="text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center gap-1">
@@ -313,6 +313,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     </Button>
                   </div>
                 )}
+
 
                 <div className="mt-3 flex justify-center gap-4 text-[10px] text-slate-400 font-bold">
                   <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> No obligation</span>
