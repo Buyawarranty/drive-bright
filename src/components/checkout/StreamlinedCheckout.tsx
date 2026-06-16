@@ -2457,7 +2457,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               setValidatedFields(prev => ({ ...prev, mileage: true }));
                               setMileagePreFilled(option.delta === 0);
                             }}
-                            className={`px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
+                            className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
                               isSelected
                                 ? 'border-brand-orange bg-brand-orange/10 text-[#1F2A44]'
                                 : 'border-[#CFD4DB] bg-white text-[#1F2A44] hover:border-[#1F2A44] hover:bg-muted/30'
