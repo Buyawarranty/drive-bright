@@ -30,11 +30,10 @@ import bmw3Series from '@/assets/bmw-models/bmw-3-series-extended-warranty.jpg';
 import bmw5Series from '@/assets/bmw-models/bmw-5-series-extended-warranty.jpg';
 import bmwXSeries from '@/assets/bmw-models/bmw-x-series-suv-extended-warranty.jpg';
 import bmw7Series from '@/assets/bmw-models/bmw-7-series-extended-warranty.jpg';
-import bmwMSeries from '@/assets/bmw-models/bmw-m-series-extended-warranty.jpg';
 import bmwISeries from '@/assets/bmw-models/bmw-i-series-ev-hybrid-extended-warranty.jpg';
 
 const bmwModels = [
-  { label: '1 Series', examples: '118i, 120d, M135i', img: bmw1Series, alt: 'BMW 1 Series extended warranty cover — 118i, 120d, M135i hatchback' },
+  { label: '1 Series', examples: '118i, 120d, 116d', img: bmw1Series, alt: 'BMW 1 Series extended warranty cover — 118i, 120d hatchback' },
   { label: '3 Series', examples: '320i, 330e, 330d', img: bmw3Series, alt: 'BMW 3 Series extended warranty cover — 320i, 330e, 330d saloon and Touring' },
   { label: '5 Series', examples: '520d, 530e, 540i', img: bmw5Series, alt: 'BMW 5 Series extended warranty cover — 520d, 530e, 540i executive saloon' },
   { label: 'X1 / X3 / X5', examples: 'sDrive, xDrive SUVs', img: bmwXSeries, alt: 'BMW X1, X3 and X5 SUV extended warranty cover — sDrive and xDrive variants' },
