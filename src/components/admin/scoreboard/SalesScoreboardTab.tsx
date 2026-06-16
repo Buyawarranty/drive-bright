@@ -191,7 +191,41 @@ export const SalesScoreboardTab: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <ScoreboardKPICards agents={agents} period={period} currentAdminUserId={currentAdminUserId} />
+      {/* Team Filter (Team Red, Team Blue, …) */}
+      {teams.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
+          <Button
+            variant={selectedTeamId === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedTeamId('all')}
+          >
+            🌐 All teams
+          </Button>
+          {teams.map(t => {
+            const active = selectedTeamId === t.id;
+            return (
+              <Button
+                key={t.id}
+                variant={active ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedTeamId(t.id)}
+                style={
+                  active
+                    ? { backgroundColor: t.color, borderColor: t.color, color: '#fff' }
+                    : { borderColor: t.color, color: t.color }
+                }
+              >
+                {t.emoji ? `${t.emoji} ` : ''}{t.name}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* KPI Cards */}
+      <ScoreboardKPICards agents={visibleAgents} period={period} currentAdminUserId={currentAdminUserId} />
+
 
 
       {/* Main Content */}
