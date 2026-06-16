@@ -95,12 +95,19 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
   const [showAllExtras, setShowAllExtras] = useState(false);
   const [openDetails, setOpenDetails] = useState<string | null>(null);
   const autoIncluded = getAutoIncludedAddOns(paymentType);
-  
+  const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
+
+  // Filter out add-ons that are disabled via feature flags
+  const enabledExtras = useMemo(
+    () => allExtras.filter((e) => tyreCoverEnabled || e.key !== 'tyre'),
+    [tyreCoverEnabled]
+  );
+
   // Popular extras shown first
-  const popularExtras = allExtras.filter(e => ['breakdown', 'wearAndTear'].includes(e.key));
-  const otherExtras = allExtras.filter(e => !['breakdown', 'wearAndTear'].includes(e.key));
-  
-  const visibleExtras = showAllExtras ? allExtras : popularExtras;
+  const popularExtras = enabledExtras.filter(e => ['breakdown', 'wearAndTear'].includes(e.key));
+  const otherExtras = enabledExtras.filter(e => !['breakdown', 'wearAndTear'].includes(e.key));
+
+  const visibleExtras = showAllExtras ? enabledExtras : popularExtras;
 
   const renderExtra = (extra: ExtraWithBadge) => {
     const isAutoIncluded = autoIncluded.includes(extra.key);
