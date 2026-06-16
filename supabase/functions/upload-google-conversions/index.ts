@@ -336,11 +336,6 @@ Deno.serve(async (req) => {
       logStep('Warning: Failed to query bumper transactions', bumperError.message);
     }
 
-
-    if (bumperError) {
-      logStep('Warning: Failed to query bumper transactions', bumperError.message);
-    }
-
     // Try to enrich bumper rows with email/phone from the matching customer record (by gclid)
     const bumperGclids = (pendingBumper || []).map((b) => b.gclid).filter(Boolean) as string[];
     let bumperContactByGclid = new Map<string, { email: string | null; phone: string | null }>();
