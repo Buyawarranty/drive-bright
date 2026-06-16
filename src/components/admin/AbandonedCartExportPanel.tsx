@@ -146,8 +146,10 @@ interface Props {
 export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) => {
   const [platform, setPlatform] = useState<Platform>('google');
   const [preset, setPreset] = useState<DatePreset>('last7');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [customFrom, setCustomFrom] = useState(format(startOfDay(subDays(new Date(), 7)), 'yyyy-MM-dd'));
   const [customTo, setCustomTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+
   const [excludePrevious, setExcludePrevious] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [exportLogs, setExportLogs] = useState<ExportLog[]>([]);
