@@ -217,36 +217,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 Get a fast quote for flexible BMW warranty cover designed to help protect you from unexpected repair bills.
               </p>
 
-              <ul className="mt-5 grid sm:grid-cols-2 gap-y-2 gap-x-6">
-                {heroBullets.map(b => (
-                  <li key={b} className="flex items-start gap-2 text-sm text-slate-700 font-medium">
-                    <Check className="w-4 h-4 text-[#00b67a] mt-0.5 flex-shrink-0" />{b}
-                  </li>
-                ))}
-              </ul>
-
               {/* Quote module */}
               <div id="quote-module" className="mt-6">
-                {/* Stepper */}
-                <div className="flex items-center justify-between mb-5">
-                  {stepLabels.map((s, i) => {
-                    const active = visualStep === s.id;
-                    const done = visualStep > s.id;
-                    return (
-                      <React.Fragment key={s.id}>
-                        <div className="flex flex-col items-center min-w-0">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${
-                            active ? 'bg-[#0F172A] text-white' : done ? 'bg-[#00b67a] text-white' : 'bg-slate-100 text-slate-400'
-                          }`}>{done ? <Check className="w-4 h-4" /> : s.id}</div>
-                          <span className={`mt-1.5 text-[10px] font-bold ${active ? 'text-[#0F172A]' : 'text-slate-400'}`}>{s.label}</span>
-                        </div>
-                        {i < stepLabels.length - 1 && (
-                          <div className={`flex-1 h-px mx-1 md:mx-2 border-t-2 border-dashed ${visualStep > s.id ? 'border-[#00b67a]' : 'border-slate-200'}`} />
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+
 
                 {step === 1 && (
                   <>
