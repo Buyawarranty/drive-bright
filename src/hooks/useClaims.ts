@@ -255,9 +255,10 @@ export const useClaims = (): UseClaimsResult => {
             : (customerMileageByReg[normReg(reg)] ?? null),
         claimMileage: r.mileage_at_claim != null ? Number(r.mileage_at_claim) : null,
         attachments: buildAttachments(r),
+        hasCancellation: cancelledRegs.has(normReg(reg)),
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
