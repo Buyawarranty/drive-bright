@@ -31,9 +31,46 @@ export const SalesScoreboardTab: React.FC = () => {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   useEffect(() => { if (!loading) setHasLoadedOnce(true); }, [loading]);
 
+  // Teams (Team Red, Team Blue, …) — readable by every authenticated admin
+  const [teams, setTeams] = useState<{ id: string; name: string; color: string; emoji: string | null; sort_order: number }[]>([]);
+  const [teamMembers, setTeamMembers] = useState<{ team_id: string; admin_user_id: string }[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | 'all'>('all');
+
+  useEffect(() => {
+    const loadTeams = async () => {
+      const [{ data: t }, { data: m }] = await Promise.all([
+        supabase.from('lead_teams').select('id, name, color, emoji, sort_order, is_active').eq('is_active', true).order('sort_order'),
+        supabase.from('lead_team_members').select('team_id, admin_user_id'),
+      ]);
+      setTeams((t || []) as any);
+      setTeamMembers((m || []) as any);
+    };
+    loadTeams();
+  }, []);
+
+  // Default selection to the current user's team (if any) on first load
+  const didDefaultTeamRef = React.useRef(false);
+  useEffect(() => {
+    if (didDefaultTeamRef.current) return;
+    if (!currentAdminUserId || teamMembers.length === 0) return;
+    const mine = teamMembers.find(m => m.admin_user_id === currentAdminUserId);
+    if (mine) setSelectedTeamId(mine.team_id);
+    didDefaultTeamRef.current = true;
+  }, [currentAdminUserId, teamMembers]);
+
+  const visibleAgents = React.useMemo(() => {
+    if (selectedTeamId === 'all') return agents;
+    const memberIds = new Set(teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.admin_user_id));
+    const filtered = agents.filter(a => memberIds.has(a.id));
+    return filtered
+      .slice()
+      .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .map((a, i) => ({ ...a, rank: i + 1 }));
+  }, [agents, teamMembers, selectedTeamId]);
+
   const selectedAgent = selectedAgentId
-    ? agents.find(a => a.id === selectedAgentId) || null
-    : agents.find(a => a.id === currentAdminUserId) || null;
+    ? visibleAgents.find(a => a.id === selectedAgentId) || null
+    : visibleAgents.find(a => a.id === currentAdminUserId) || visibleAgents[0] || null;
 
   const canManageTargets = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_lead';
 
@@ -153,8 +190,41 @@ export const SalesScoreboardTab: React.FC = () => {
         />
       </div>
 
+      {/* Team Filter (Team Red, Team Blue, …) */}
+      {teams.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
+          <Button
+            variant={selectedTeamId === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedTeamId('all')}
+          >
+            🌐 All teams
+          </Button>
+          {teams.map(t => {
+            const active = selectedTeamId === t.id;
+            return (
+              <Button
+                key={t.id}
+                variant={active ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedTeamId(t.id)}
+                style={
+                  active
+                    ? { backgroundColor: t.color, borderColor: t.color, color: '#fff' }
+                    : { borderColor: t.color, color: t.color }
+                }
+              >
+                {t.emoji ? `${t.emoji} ` : ''}{t.name}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
       {/* KPI Cards */}
-      <ScoreboardKPICards agents={agents} period={period} currentAdminUserId={currentAdminUserId} />
+      <ScoreboardKPICards agents={visibleAgents} period={period} currentAdminUserId={currentAdminUserId} />
+
 
 
       {/* Main Content */}
@@ -188,13 +258,13 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <ScoreboardRankingTable agents={agents} currentAdminUserId={currentAdminUserId} period={period} currentUserRole={currentUserRole} onTargetSaved={refresh} />
+          <ScoreboardRankingTable agents={visibleAgents} currentAdminUserId={currentAdminUserId} period={period} currentUserRole={currentUserRole} onTargetSaved={refresh} />
         </TabsContent>
 
         <TabsContent value="profile">
-          {agents.length > 1 && (
+          {visibleAgents.length > 1 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {agents.map(a => (
+              {visibleAgents.map(a => (
                 <Button
                   key={a.id}
                   variant={selectedAgent?.id === a.id ? 'default' : 'outline'}
@@ -211,7 +281,7 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="awards">
-          <ScoreboardAwards agents={agents} currentAdminUserId={currentAdminUserId} />
+          <ScoreboardAwards agents={visibleAgents} currentAdminUserId={currentAdminUserId} />
         </TabsContent>
 
         <TabsContent value="compare">
