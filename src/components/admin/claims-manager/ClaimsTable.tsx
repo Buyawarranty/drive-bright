@@ -323,7 +323,19 @@ export const ClaimsTable: React.FC<ClaimsTableProps> = ({
                   </td>
                   <td className="px-3 align-middle h-[52px]"><PriorityBadge priority={c.priority} /></td>
                   <td className="px-3 align-middle h-[52px] text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>
-                  <td className="px-3 align-middle h-[52px] whitespace-nowrap"><NumberPlate reg={c.reg} /></td>
+                  <td className="px-3 align-middle h-[52px] whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1.5">
+                      <NumberPlate reg={c.reg} />
+                      {c.hasCancellation && (
+                        <span
+                          title="This customer's warranty has been cancelled or refunded"
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200"
+                        >
+                          <Ban className="h-3 w-3" /> Cancelled
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-3 align-middle h-[52px]">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="shrink-0 h-8 w-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-semibold">
