@@ -331,7 +331,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
                   <span className="text-sm font-bold text-slate-800">Instant activation</span>
                 </div>
-                <p className="text-[11px] text-slate-500 text-center">Protection for vehicles up to 150,000 miles and 15 years.</p>
+                
               </div>
             </div>
         </section>
