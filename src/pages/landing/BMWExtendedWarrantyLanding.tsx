@@ -500,8 +500,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-
-
+        <BMWPPCFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">
