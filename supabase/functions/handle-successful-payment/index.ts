@@ -935,62 +935,9 @@ serve(async (req) => {
       logStep("WARNING: No customer ID available for welcome email");
     }
 
-    // Register warranty with Warranties 2000 if vehicle data is available and customer/policy created
-    if (vehicleData && vehicleData.regNumber && customerData2?.id) {
-      logStep("Attempting warranty registration with Warranties 2000");
-      
-      try {
-        // Get the policy ID that was just created
-        const { data: policyData } = await supabaseClient
-          .from('customer_policies')
-          .select('id')
-          .eq('customer_id', customerData2.id)
-          .eq('policy_number', warrantyReference)
-          .single();
-          
-        if (policyData?.id) {
-          logStep("Found policy for warranty registration", { policyId: policyData.id });
+    // Warranties Register (Warranties 2000) integration permanently removed.
+    logStep("Skipping Warranties Register registration (integration removed)");
 
-          // Check if warranty has already been sent to W2000 or is scheduled for future
-          const { data: existingPolicy } = await supabaseClient
-            .from('customer_policies')
-            .select('warranties_2000_status, warranties_2000_scheduled_for')
-            .eq('id', policyData.id)
-            .single();
-
-          if (existingPolicy?.warranties_2000_status === 'sent') {
-            logStep("Warranty already sent to W2000, skipping duplicate call", { policyId: policyData.id });
-          } else if (existingPolicy?.warranties_2000_status === 'scheduled') {
-            logStep("Warranty scheduled for future start date, skipping W2000 call", { 
-              policyId: policyData.id,
-              scheduledFor: existingPolicy.warranties_2000_scheduled_for 
-            });
-          } else {
-            // Send to W2000 immediately (start date is today or not specified)
-            const { data: warrantyData, error: warrantyError } = await supabaseClient.functions.invoke('send-to-warranties-2000', {
-              body: { policyId: policyData.id, customerId: customerData2.id }
-            });
-
-            if (warrantyError) {
-              logStep("Warning: Warranty registration failed", warrantyError);
-            } else {
-              logStep("Warranty registration successful", warrantyData);
-            }
-          }
-        } else {
-          logStep("Warning: Could not find policy ID for warranty registration");
-        }
-      } catch (warrantyRegError) {
-        logStep("Warning: Warranty registration error", { error: warrantyRegError });
-        // Don't fail the payment process if warranty registration fails
-      }
-    } else {
-      logStep("Skipping warranty registration", { 
-        hasVehicleData: !!vehicleData,
-        hasRegNumber: !!vehicleData?.regNumber,
-        hasCustomerId: !!customerData2?.id
-      });
-    }
 
     // Send sales notification to sales manager
     if (customerData2?.id && policy?.id) {
