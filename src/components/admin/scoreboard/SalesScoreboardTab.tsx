@@ -31,9 +31,46 @@ export const SalesScoreboardTab: React.FC = () => {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   useEffect(() => { if (!loading) setHasLoadedOnce(true); }, [loading]);
 
+  // Teams (Team Red, Team Blue, …) — readable by every authenticated admin
+  const [teams, setTeams] = useState<{ id: string; name: string; color: string; emoji: string | null; sort_order: number }[]>([]);
+  const [teamMembers, setTeamMembers] = useState<{ team_id: string; admin_user_id: string }[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | 'all'>('all');
+
+  useEffect(() => {
+    const loadTeams = async () => {
+      const [{ data: t }, { data: m }] = await Promise.all([
+        supabase.from('lead_teams').select('id, name, color, emoji, sort_order, is_active').eq('is_active', true).order('sort_order'),
+        supabase.from('lead_team_members').select('team_id, admin_user_id'),
+      ]);
+      setTeams((t || []) as any);
+      setTeamMembers((m || []) as any);
+    };
+    loadTeams();
+  }, []);
+
+  // Default selection to the current user's team (if any) on first load
+  const didDefaultTeamRef = React.useRef(false);
+  useEffect(() => {
+    if (didDefaultTeamRef.current) return;
+    if (!currentAdminUserId || teamMembers.length === 0) return;
+    const mine = teamMembers.find(m => m.admin_user_id === currentAdminUserId);
+    if (mine) setSelectedTeamId(mine.team_id);
+    didDefaultTeamRef.current = true;
+  }, [currentAdminUserId, teamMembers]);
+
+  const visibleAgents = React.useMemo(() => {
+    if (selectedTeamId === 'all') return agents;
+    const memberIds = new Set(teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.admin_user_id));
+    const filtered = agents.filter(a => memberIds.has(a.id));
+    return filtered
+      .slice()
+      .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .map((a, i) => ({ ...a, rank: i + 1 }));
+  }, [agents, teamMembers, selectedTeamId]);
+
   const selectedAgent = selectedAgentId
-    ? agents.find(a => a.id === selectedAgentId) || null
-    : agents.find(a => a.id === currentAdminUserId) || null;
+    ? visibleAgents.find(a => a.id === selectedAgentId) || null
+    : visibleAgents.find(a => a.id === currentAdminUserId) || visibleAgents[0] || null;
 
   const canManageTargets = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_lead';
 
