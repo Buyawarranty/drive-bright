@@ -313,19 +313,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     </Button>
                   </div>
                 )}
-
-
-                <div className="mt-3 flex justify-center gap-4 text-[10px] text-slate-400 font-bold">
-                  <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> No obligation</span>
-                  <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> Quick online quote</span>
-                  <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> Cover levels vary</span>
-                </div>
               </div>
 
-              <div className="mt-4 bg-slate-50 border border-slate-100 rounded-xl p-4 text-center">
-                <p className="text-sm font-bold text-[#0F172A]">Fair price. Fast quote. No surprises.</p>
-                <p className="text-sm text-slate-600 mt-1">Speak to an expert: <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="text-[#F97316] font-bold">{PHONE}</a></p>
-              </div>
             </div>
 
             {/* RIGHT */}
