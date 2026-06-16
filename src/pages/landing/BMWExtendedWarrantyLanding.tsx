@@ -421,8 +421,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* BMW coverage details (mirrors homepage Every Part Covered) */}
-        <VehicleCoverageSection headingPrefix="BMW" />
+
 
         {/* What does BMW warranty cover? */}
         <section className="py-12 md:py-16 bg-gradient-to-b from-white to-slate-50 border-t border-slate-100">
