@@ -96,42 +96,34 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
     if (step === 1) {
       if (!regNumber.trim()) { setErrorMsg('Please enter your vehicle registration to continue.'); return; }
       if (!mileageBand) { setErrorMsg('Please select your approximate mileage.'); return; }
-      setStep(2);
-    } else if (step === 2) {
-      if (!name.trim() || !email.trim() || !phone.trim()) { setErrorMsg('Please complete your name, email and phone.'); return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrorMsg('Please enter a valid email address.'); return; }
-      submit();
+      submitToMainJourney();
     }
   };
 
-  const submit = async () => {
+  const submitToMainJourney = async () => {
     setIsSubmitting(true);
     trackQuoteRequest();
     try {
       const mileage = mileageBand === 'under' ? '100000' : '130000';
-      let extra: any = {};
+      let extra: any = { vehicleType: 'car' };
       try {
-        const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registration: regNumber } });
-        if (data?.make) {
-          extra = { make: data.make, model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture || data.year, vehicleType: data.vehicleType };
+        const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
+        if (data?.found) {
+          extra = { make: data.make || 'BMW', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate };
         }
       } catch { /* ok */ }
-      const vehicleData = {
-        regNumber: regNumber.toUpperCase(), mileage,
-        firstName: name.split(' ')[0] || name, lastName: name.split(' ').slice(1).join(' '),
-        email, phone, postcode, ...extra,
-      };
+      const vehicleData = { regNumber: regNumber.toUpperCase(), mileage, ...extra };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
-      saveWithTimestamp('warrantyJourneyState', JSON.stringify({ vehicleData, formData: vehicleData, currentStep: 2, selectedPlan: null }));
       sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
-      setStep(4);
+      navigate('/?step=2');
     } catch (e) {
       console.error(e);
       toast({ title: 'Something went wrong', description: 'Please try again or call us.', variant: 'destructive' });
     } finally { setIsSubmitting(false); }
   };
+
 
   const goToQuoteOptions = () => { navigate('/?step=2'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
@@ -246,7 +238,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                       <MileageQuickSelect
                         value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
                         onChange={(v) => setMileageBand(v === 'under120k' ? 'under' : v === 'over120k' ? 'over' : '')}
-                        onAutoSubmit={() => { setErrorMsg(''); setStep(2); }}
+                        onAutoSubmit={() => { setErrorMsg(''); submitToMainJourney(); }}
                         isLoading={isSubmitting}
                         isRegValid={regNumber.replace(/\s/g,'').length >= 5}
                       />
@@ -270,50 +262,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 )}
 
 
-                {step === 2 && (
-                  <>
-                    <p className="text-sm font-bold text-[#0F172A] mb-3">Where should we send your quote?</p>
-                    <div className="grid gap-3">
-                      <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="px-4 py-3 rounded-lg border border-slate-200 focus:border-[#F97316] focus:outline-none text-sm" />
-                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" className="px-4 py-3 rounded-lg border border-slate-200 focus:border-[#F97316] focus:outline-none text-sm" />
-                      <input type="tel" value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9+\s]/g,''))} placeholder="Phone number" className="px-4 py-3 rounded-lg border border-slate-200 focus:border-[#F97316] focus:outline-none text-sm" />
-                      <input value={postcode} onChange={e => setPostcode(e.target.value.toUpperCase())} placeholder="Postcode (optional)" className="px-4 py-3 rounded-lg border border-slate-200 focus:border-[#F97316] focus:outline-none text-sm" />
-                    </div>
-                  </>
-                )}
-
-                {step === 4 && (
-                  <div className="text-center py-2">
-                    <div className="w-14 h-14 rounded-full bg-[#00b67a] text-white flex items-center justify-center mx-auto mb-3">
-                      <Check className="w-7 h-7" />
-                    </div>
-                    <p className="text-base font-black text-[#0F172A]">Your BMW quote request is ready</p>
-                    <p className="mt-2 text-sm text-slate-600">Thanks. We'll use your details to show suitable warranty options for your BMW.</p>
-                    <Button onClick={goToQuoteOptions} className="w-full mt-5 bg-[#F97316] hover:bg-[#EA580C] text-white font-black uppercase tracking-wider py-5 rounded-xl">
-                      View my cover options <ArrowRight className="ml-1 w-5 h-5" />
-                    </Button>
-                    <p className="mt-3 text-xs text-slate-500">Or speak to an expert: <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="text-[#F97316] font-bold">{PHONE}</a></p>
-                  </div>
-                )}
-
-                {errorMsg && step !== 4 && (
+                {step === 1 && errorMsg && (
                   <p className="mt-3 text-xs text-red-600 font-semibold text-center">{errorMsg}</p>
                 )}
 
-                {step !== 4 && step !== 1 && (
-                  <div className="mt-4 flex items-center gap-3">
-                    {step > 1 && (
-                      <button onClick={() => { setErrorMsg(''); setStep((step - 1) as Step); }} className="text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center gap-1">
-                        <ChevronLeft className="w-4 h-4" /> Back
-                      </button>
-                    )}
-                    <Button onClick={goNext} disabled={isSubmitting}
-                      className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold py-5 rounded-lg">
-                      {isSubmitting ? 'Working…' : step === 2 ? 'Get my instant price' : 'Continue'}
-                      <ArrowRight className="ml-1 w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+
               </div>
 
             </div>
