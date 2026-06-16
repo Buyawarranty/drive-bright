@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X } from 'lucide-react';
+import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X, FileWarning } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
@@ -99,6 +99,7 @@ export const CancellationsTab: React.FC<{
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
   const [records, setRecords] = useState<CancellationRecord[]>([]);
+  const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -232,6 +233,25 @@ export const CancellationsTab: React.FC<{
 
   useEffect(() => {
     fetchCancellations();
+    // Load registrations that have submitted claims, to flag in this table
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('claims_submissions')
+          .select('vehicle_registration')
+          .neq('status', 'fake_test')
+          .not('vehicle_registration', 'is', null)
+          .limit(5000);
+        const set = new Set<string>();
+        (data || []).forEach((r: any) => {
+          const reg = (r.vehicle_registration || '').toString().toUpperCase().replace(/\s+/g, '').trim();
+          if (reg) set.add(reg);
+        });
+        setClaimRegs(set);
+      } catch (e) {
+        console.error('Error fetching claim regs:', e);
+      }
+    })();
   }, []);
 
   const handleMonthSelect = (monthIdx: string) => {
@@ -664,13 +684,23 @@ export const CancellationsTab: React.FC<{
                         </div>
                       </TableCell>
                       <TableCell>
-                        {record.registration_plate ? (
-                          <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
-                            {record.registration_plate.toUpperCase()}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
-                        )}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {record.registration_plate ? (
+                            <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
+                              {record.registration_plate.toUpperCase()}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">N/A</span>
+                          )}
+                          {record.registration_plate && claimRegs.has(record.registration_plate.toUpperCase().replace(/\s+/g, '').trim()) && (
+                            <span
+                              title="This customer has also submitted a claim"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-orange-100 text-orange-700 border border-orange-200"
+                            >
+                              <FileWarning className="h-3 w-3" /> Has claim
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-sm">
                         {[record.vehicle_make, record.vehicle_model].filter(Boolean).join(' ') || 'N/A'}

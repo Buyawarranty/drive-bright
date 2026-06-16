@@ -109,6 +109,7 @@ export const useClaims = (): UseClaimsResult => {
   const [staffById, setStaffById] = useState<Record<string, string>>({});
   const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
+  const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +130,7 @@ export const useClaims = (): UseClaimsResult => {
           .eq('is_active', true),
         supabase
           .from('customers')
-          .select('id, registration_plate, mileage')
+          .select('id, registration_plate, mileage, status, is_deleted')
           .not('registration_plate', 'is', null)
           .limit(5000),
         supabase
@@ -156,6 +157,7 @@ export const useClaims = (): UseClaimsResult => {
         }
       });
       const startByReg: Record<string, string> = {};
+      const cancelled = new Set<string>();
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
         if (!reg) return;
@@ -167,11 +169,16 @@ export const useClaims = (): UseClaimsResult => {
         if (start && !startByReg[reg]) {
           startByReg[reg] = start;
         }
+        const st = (c.status || '').toLowerCase();
+        if (st === 'cancelled' || st === 'refunded' || c.is_deleted) {
+          cancelled.add(reg);
+        }
       });
 
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
+      setCancelledRegs(cancelled);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
@@ -248,9 +255,10 @@ export const useClaims = (): UseClaimsResult => {
             : (customerMileageByReg[normReg(reg)] ?? null),
         claimMileage: r.mileage_at_claim != null ? Number(r.mileage_at_claim) : null,
         attachments: buildAttachments(r),
+        hasCancellation: cancelledRegs.has(normReg(reg)),
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs]);
 
   return { claims, loading, error, refetch: fetchAll };
 };

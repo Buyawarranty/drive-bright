@@ -32,4 +32,6 @@ export interface Claim {
   claimMileage?: number | null;
   // Attachments uploaded by the customer on /make-a-claim
   attachments?: ClaimAttachment[];
+  // True if this registration also exists in customers as cancelled/refunded/soft-deleted
+  hasCancellation?: boolean;
 }
