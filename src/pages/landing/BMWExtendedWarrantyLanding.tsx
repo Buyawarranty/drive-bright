@@ -460,10 +460,13 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               ))}
             </div>
 
-            <div className="mt-10 max-w-2xl mx-auto flex items-center justify-center gap-2 bg-[#F0F6FF] border border-[#DBEAFE] rounded-xl px-4 py-3">
-              <Info className="w-4 h-4 text-[#2563EB] flex-shrink-0" />
-              <span className="text-[13.5px] text-slate-700">
-                Claims are subject to your policy terms, limits and exclusions.
+            <div className="mt-10 max-w-2xl mx-auto flex items-start justify-center gap-2 bg-[#F0F6FF] border border-[#DBEAFE] rounded-xl px-4 py-3">
+              <Info className="w-4 h-4 text-[#2563EB] flex-shrink-0 mt-0.5" />
+              <span className="text-[13.5px] text-slate-700 leading-relaxed text-center">
+                All claims are reviewed in line with your{' '}
+                <a href="/warranty-plan/" target="_blank" rel="noopener noreferrer" className="text-slate-700 underline underline-offset-2 decoration-slate-400 hover:decoration-slate-700">chosen warranty plan</a>
+                , including any limits and exclusions. Please also read our{' '}
+                <a href="/terms/" target="_blank" rel="noopener noreferrer" className="text-slate-700 underline underline-offset-2 decoration-slate-400 hover:decoration-slate-700">Terms &amp; Conditions</a>.
               </span>
             </div>
 
