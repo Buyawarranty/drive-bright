@@ -17,7 +17,7 @@ const AdditionalCoverSection: React.FC = () => {
                   <Truck className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-brand-dark-text">24/7 Vehicle Recovery</h3>
+                  <h3 className="text-lg font-bold text-brand-dark-text">Vehicle Recovery</h3>
                   <p className="text-brand-dark-text">Help whenever you need it.</p>
                 </div>
               </div>
