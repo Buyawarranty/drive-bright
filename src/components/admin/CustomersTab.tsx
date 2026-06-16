@@ -3818,7 +3818,7 @@ export const CustomersTab = ({
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
-              <TableHead>Warranties Register</TableHead>
+              
               <TableHead>Status</TableHead>
               <TableHead>Assigned To</TableHead>
               <TableHead>Make</TableHead>
@@ -5141,43 +5141,6 @@ Please log in and change your password after first login.`;
                          >
                            {emailSendingLoading[customer.id]?.email ? (
                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                           ) : (
-                             <Send className="h-3 w-3" />
-                           )}
-                         </Button>
-                       )}
-                     </div>
-                   </TableCell>
-                   <TableCell>
-                     <div className="flex items-center gap-2">
-                       {customer.customer_policies?.[0]?.warranties_2000_status === 'sent' ? (
-                         <Badge variant="secondary" className="bg-green-100 text-green-800">
-                           <CheckCircle className="w-3 h-3 mr-1" />
-                           Sent
-                         </Badge>
-                       ) : customer.customer_policies?.[0]?.warranties_2000_status === 'failed' ? (
-                         <Badge variant="destructive" className="bg-red-100 text-red-800">
-                           <AlertCircle className="w-3 h-3 mr-1" />
-                           Failed
-                         </Badge>
-                       ) : (
-                         <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                           <Clock className="w-3 h-3 mr-1" />
-                           Not Sent
-                         </Badge>
-                       )}
-                       
-                       {customer.customer_policies?.[0]?.id && (
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleSendToWarranties2000(customer.customer_policies[0].id, customer.id)}
-                           disabled={emailSendingLoading[customer.id]?.warranties2000}
-                           title="Send to Warranties Register"
-                           className="hover:bg-purple-50 hover:text-purple-600"
-                         >
-                           {emailSendingLoading[customer.id]?.warranties2000 ? (
-                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
                            ) : (
                              <Send className="h-3 w-3" />
                            )}
