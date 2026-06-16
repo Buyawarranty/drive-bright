@@ -154,23 +154,23 @@ const StickyNavigation: React.FC = () => {
       {/* Global Mobile Sticky CTA Bar */}
       {showMobileStickyBar && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-2.5 pb-[env(safe-area-inset-bottom,10px)] lg:hidden animate-in slide-in-from-bottom-4 duration-300">
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate('/?step=1')}
-              className="flex-1 bg-[#1B2A4A] hover:bg-[#152238] text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
-              aria-label="Get instant quote"
-            >
-              Get Instant Quote
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          <div className="flex gap-2 items-stretch">
             <a
               href="tel:03302295040"
-              className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
-              aria-label="Call now"
+              className="flex-[0_0_38%] bg-white border-2 border-[#16A34A] text-[#16A34A] font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+              aria-label="Call us"
             >
               <Phone className="w-4 h-4" />
-              Call Now
+              Call us
             </a>
+            <button
+              onClick={() => navigate('/?step=1')}
+              className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
+              aria-label="Get my quote"
+            >
+              Get my quote
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
