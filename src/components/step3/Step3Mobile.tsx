@@ -210,7 +210,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const effectiveAddOns = useMemo(() => {
     if (!paymentType) return selectedProtectionAddOns;
     const autoIncluded = getAutoIncludedAddOns(paymentType);
-    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
     const normalized = { ...selectedProtectionAddOns };
     
     autoIncluded.forEach(key => { normalized[key] = true; });
@@ -244,7 +244,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     
     // Compute effective add-ons for THIS specific term (not relying on async state)
     const termAutoIncluded = getAutoIncludedAddOns(term);
-    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
     const termAddOns = { ...selectedProtectionAddOns };
     termAutoIncluded.forEach(key => { termAddOns[key] = true; });
     allPossibleAutoIncluded.forEach(key => {
