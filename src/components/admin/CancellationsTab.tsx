@@ -99,6 +99,7 @@ export const CancellationsTab: React.FC<{
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
   const [records, setRecords] = useState<CancellationRecord[]>([]);
+  const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
