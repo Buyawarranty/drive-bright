@@ -479,15 +479,12 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             <a
               href={`tel:${PHONE.replace(/\s/g,'')}`}
               aria-label={`Call us on ${PHONE}`}
-              className="relative flex flex-col items-center justify-center h-12 px-3 rounded-md bg-[#16A34A] text-white font-bold shadow-md active:scale-95 transition"
+              className="flex items-center justify-center gap-1.5 h-12 px-4 rounded-md border-2 border-[#16A34A] text-[#16A34A] font-bold bg-white"
             >
-              <span className="absolute inset-0 rounded-md bg-[#16A34A] opacity-60 animate-ping" aria-hidden="true" />
-              <span className="relative flex items-center gap-1.5">
-                <Phone className="w-4 h-4 fill-white" />
-                <span className="text-xs leading-none">Call</span>
-              </span>
+              <Phone className="w-4 h-4" />
+              <span className="text-sm">Call us</span>
             </a>
-            <Button onClick={scrollToQuote} className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold h-12">Get quote</Button>
+            <Button onClick={scrollToQuote} className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold h-12">Get instant quote</Button>
           </div>
         </div>
       </div>
