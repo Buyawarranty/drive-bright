@@ -242,17 +242,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
                 {step === 1 && (
                   <>
-                    {/* Tick reassurance lines */}
-                    <div className="mb-3 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <Check className="w-5 h-5 text-[#00b67a] flex-shrink-0" strokeWidth={3} />
-                        <span className="text-sm md:text-[15px] text-slate-800">From just 60p a day • Easy claims • Fast payouts</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="w-5 h-5 text-[#00b67a] flex-shrink-0" strokeWidth={3} />
-                        <span className="text-sm md:text-[15px] text-slate-800">Unlimited claims • Parts and Labour • No excess</span>
-                      </div>
-                    </div>
+                    {/* Tick reassurance lines removed */}
+
+
 
                     <div className="flex h-[68px] md:h-[76px] bg-[#FBBF24] rounded-xl border-2 border-black overflow-hidden shadow-inner">
                       <div className="w-12 md:w-14 bg-[#0052B4] flex flex-col items-center justify-center text-white">
