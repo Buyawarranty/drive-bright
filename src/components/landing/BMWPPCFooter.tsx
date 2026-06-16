@@ -106,7 +106,7 @@ const BMWPPCFooter: React.FC = () => {
 
         {/* Trust line */}
         <p className="text-center text-sm text-gray-600 max-w-3xl mx-auto mb-6">
-          Fast online quotes for flexible vehicle warranty cover. Cover levels and eligibility criteria apply.
+          Fast online quotes for BMW extended warranty cover. Trusted BMW warranty protection for 1 Series, 3 Series, 5 Series, 7 Series, X Series SUVs and i Series EVs. Cover levels and eligibility criteria apply.
         </p>
 
         {/* Bottom: company registration + BMW disclaimer */}
