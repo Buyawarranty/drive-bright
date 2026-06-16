@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -129,12 +130,22 @@ interface Props {
 export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) => {
   const [platform, setPlatform] = useState<Platform>('google');
   const [preset, setPreset] = useState<DatePreset>('last7');
+  const [customFrom, setCustomFrom] = useState(format(startOfDay(subDays(new Date(), 7)), 'yyyy-MM-dd'));
+  const [customTo, setCustomTo] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [excludePrevious, setExcludePrevious] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [exportLogs, setExportLogs] = useState<ExportLog[]>([]);
   const [previousIds, setPreviousIds] = useState<Set<string>>(new Set());
 
-  const { from, to } = useMemo(() => getPresetRange(preset), [preset]);
+  const { from, to } = useMemo(() => {
+    if (preset === 'custom') {
+      return {
+        from: startOfDay(new Date(`${customFrom}T00:00:00`)),
+        to: endOfDay(new Date(`${customTo}T00:00:00`)),
+      };
+    }
+    return getPresetRange(preset);
+  }, [preset, customFrom, customTo]);
 
   useEffect(() => {
     void loadLogs();
@@ -287,6 +298,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
                 <SelectItem value="this_month">This month</SelectItem>
                 <SelectItem value="last_month">Last month</SelectItem>
                 <SelectItem value="last90">Last 90 days</SelectItem>
+                <SelectItem value="custom">Custom dates</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -297,6 +309,19 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
             </Button>
           </div>
         </div>
+
+        {preset === 'custom' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">From</Label>
+              <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">To</Label>
+              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
