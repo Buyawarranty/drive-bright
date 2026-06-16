@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { FollowUpEmailDialog } from './FollowUpEmailDialog';
-import { AbandonedCartExportPanel } from './AbandonedCartExportPanel';
+import { AbandonedCartExportPanel, buildAbandonedCartCsv, downloadAbandonedCartCsv } from './AbandonedCartExportPanel';
 import { 
   ShoppingCart, 
   Mail, 
@@ -22,7 +22,8 @@ import {
   Clock,
   AlertCircle,
   MapPin,
-  Shield
+  Shield,
+  Download
 } from 'lucide-react';
 
 interface AbandonedCart {
@@ -84,8 +85,13 @@ interface CartEmail {
   price_amount: number | null;
 }
 
+const normalizeEmail = (email: string | null | undefined) => (email || '').trim().toLowerCase();
+const normalizeReg = (reg: string | null | undefined) => (reg || '').replace(/\s+/g, '').toUpperCase();
+
 export const AbandonedCartsTab: React.FC = () => {
   const [carts, setCarts] = useState<AbandonedCart[]>([]);
+  const [rawCartCount, setRawCartCount] = useState(0);
+  const [removedConvertedCount, setRemovedConvertedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCart, setSelectedCart] = useState<AbandonedCart | null>(null);
