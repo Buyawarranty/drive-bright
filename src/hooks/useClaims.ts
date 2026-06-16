@@ -157,6 +157,7 @@ export const useClaims = (): UseClaimsResult => {
         }
       });
       const startByReg: Record<string, string> = {};
+      const cancelled = new Set<string>();
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
         if (!reg) return;
@@ -168,11 +169,16 @@ export const useClaims = (): UseClaimsResult => {
         if (start && !startByReg[reg]) {
           startByReg[reg] = start;
         }
+        const st = (c.status || '').toLowerCase();
+        if (st === 'cancelled' || st === 'refunded' || c.is_deleted) {
+          cancelled.add(reg);
+        }
       });
 
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
+      setCancelledRegs(cancelled);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
