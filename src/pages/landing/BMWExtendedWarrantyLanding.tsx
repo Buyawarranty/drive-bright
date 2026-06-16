@@ -287,7 +287,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             </div>
 
             {/* RIGHT */}
-            <div className="order-first lg:order-last">
+            <div className="lg:order-last">
               <div className="relative">
                 <img src={bmwHero} alt="Premium BMW with extended warranty cover" className="w-full h-auto rounded-2xl" loading="eager" />
               </div>
