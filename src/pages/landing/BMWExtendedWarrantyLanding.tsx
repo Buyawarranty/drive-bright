@@ -291,8 +291,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <div className="relative">
                 <img src={bmwHero} alt="Premium BMW with extended warranty cover" className="w-full h-auto rounded-2xl" loading="eager" />
               </div>
-                
-              </div>
               <div className="mt-6 flex flex-col items-center gap-3">
                 <div className="flex items-center justify-center gap-5 md:gap-7 flex-wrap">
                   {[
