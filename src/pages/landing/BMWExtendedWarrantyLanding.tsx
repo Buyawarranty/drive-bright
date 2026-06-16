@@ -82,7 +82,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   const [postcode, setPostcode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
 
 
@@ -534,12 +534,12 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             </div>
             <div className="space-y-2">
               {faqs.slice(0, 6).map((f, i) => (
-                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-white rounded-lg border border-slate-200 p-4 hover:border-[#F97316] transition-all">
+                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-[#F97316] hover:bg-[#EA580C] rounded-lg border border-[#F97316] p-4 transition-all">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold text-sm text-[#0F172A]">{f.q}</span>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180 text-[#F97316]' : ''}`} />
+                    <span className="font-semibold text-sm text-white">{f.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-white flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
                   </div>
-                  {openFaq === i && <p className="mt-2 text-slate-600 text-xs leading-relaxed">{f.a}</p>}
+                  {openFaq === i && <p className="mt-2 text-white/90 text-xs leading-relaxed">{f.a}</p>}
                 </button>
               ))}
             </div>
@@ -556,7 +556,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <Shield className="w-8 h-8 text-white flex-shrink-0" />
               <div>
                 <p className="font-black text-base md:text-lg leading-tight">Ready to protect your BMW?</p>
-                <p className="text-xs md:text-sm text-white/70 mt-0.5">Get your instant quote in 60 seconds and drive with confidence.</p>
+                <p className="text-xs md:text-sm text-white mt-0.5">Get your instant quote in 60 seconds and drive with confidence.</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 md:gap-3">
