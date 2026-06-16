@@ -333,41 +333,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         </section>
 
 
-        {/* What does BMW warranty cover */}
-        <section className="py-12 md:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto mb-8">
-              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">What does BMW warranty cover?</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Flexible cover options for the parts and systems that matter most. Cover levels and limits vary by plan.</p>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-3">
-              {[
-                { I: Cog, t: 'Engine' },
-                { I: Settings2, t: 'Gearbox' },
-                { I: Zap, t: 'Electrical Systems' },
-                { I: Thermometer, t: 'Cooling System' },
-                { I: CircleDot, t: 'Braking System' },
-                { I: Gauge, t: 'Steering System' },
-                { I: Fuel, t: 'Fuel System' },
-                { I: Battery, t: 'Hybrid / EV Components' },
-              ].map(({ I, t }) => (
-                <div key={t} className="bg-white border border-slate-200 rounded-xl p-3 md:p-4 hover:border-[#F97316] hover:shadow transition-all flex flex-col items-center text-center">
-                  <I className="w-7 h-7 md:w-8 md:h-8 text-[#0F172A] mb-2" />
-                  <p className="font-bold text-[11px] md:text-xs text-[#0F172A] leading-tight">{t}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 bg-orange-50/50 border border-orange-100 rounded-lg py-3 px-4 max-w-2xl mx-auto text-center">
-              <p className="text-xs text-slate-700">
-                <span className="inline-block w-3.5 h-3.5 rounded-full bg-slate-300 text-white text-[9px] font-black leading-[14px] mr-1">i</span>
-                For full inclusions, limits and exclusions, see our{' '}
-                <Link to="/terms/" className="text-[#F97316] font-bold underline">Terms &amp; Conditions</Link>
-                {' '}and{' '}
-                <Link to="/warranty-plan/" className="text-[#F97316] font-bold underline">warranty plan documents</Link>.
-              </p>
-            </div>
-          </div>
-        </section>
 
         {/* Why BMW owners choose BuyaWarranty */}
         <section className="py-12 md:py-16 bg-slate-50 border-y border-slate-100">
