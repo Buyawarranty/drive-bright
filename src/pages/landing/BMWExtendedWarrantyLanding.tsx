@@ -221,19 +221,32 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
                 {step === 1 && (
                   <>
-                    <div className="flex h-[68px] md:h-[76px] bg-[#FBBF24] rounded-xl border-2 border-black overflow-hidden shadow-inner">
-                      <div className="w-12 md:w-14 bg-[#0052B4] flex flex-col items-center justify-center text-white">
-                        <span className="text-base leading-none">🇬🇧</span>
-                        <span className="text-[10px] font-black leading-none mt-1 tracking-tight">UK</span>
+                    <div className="relative">
+                      <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full">
+                        {/* UK Section with flag */}
+                        <div className="bg-blue-600 text-white font-bold px-2 sm:px-3 md:px-4 py-2 sm:py-4 flex items-center justify-center min-w-[45px] sm:min-w-[70px] md:min-w-[80px] h-[48px] sm:h-[60px] md:h-[66px]">
+                          <div className="flex flex-col items-center">
+                            <div className="text-xs sm:text-base md:text-lg leading-tight mb-1">🇬🇧</div>
+                            <div className="text-xs sm:text-sm md:text-base font-bold leading-none">UK</div>
+                          </div>
+                        </div>
+                        {/* Registration Input */}
+                        <input
+                          type="text"
+                          value={regNumber}
+                          onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
+                          placeholder="ENTER REG"
+                          aria-label="Vehicle registration"
+                          className="bg-yellow-400 border-none outline-none text-lg sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-2 sm:py-4 uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] min-w-0"
+                          maxLength={8}
+                        />
                       </div>
-                      <input
-                        type="text" value={regNumber}
-                        onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
-                        placeholder="ENTER REG" maxLength={8} aria-label="Vehicle registration"
-                        className="bg-yellow-400 flex-1 bg-transparent text-center text-2xl md:text-3xl font-black uppercase tracking-[0.15em] placeholder:text-black/25 focus:outline-none min-w-0"
-                      />
+                      {regNumber.replace(/\s/g, '').length >= 5 && (
+                        <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
+                          <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                        </span>
+                      )}
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-500 text-center">Protection for vehicles up to 150,000 miles and 15 years.</p>
 
                     <div className="mt-4">
                       <MileageQuickSelect
