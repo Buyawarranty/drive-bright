@@ -753,7 +753,7 @@ export const UserPermissionsTab = () => {
         Select which admin panel tabs this user can access
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto border rounded-lg p-4">
-        {ADMIN_TABS.map((tab) => {
+        {[...ADMIN_TABS].sort((a, b) => a.label.localeCompare(b.label)).map((tab) => {
           const permKey = `tab_${tab.id}`;
           // Admin role: default ON unless explicitly set to false
           const isChecked = role === 'admin'
@@ -1662,7 +1662,7 @@ export const UserPermissionsTab = () => {
                           <p className="text-xs text-muted-foreground italic">This role automatically has access to all tabs and cannot be restricted here.</p>
                         ) : (
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[360px] overflow-y-auto">
-                            {ADMIN_TABS.map((tab) => {
+                            {[...ADMIN_TABS].sort((a, b) => a.label.localeCompare(b.label)).map((tab) => {
                               const permKey = `tab_${tab.id}`;
                               const perms = (user.permissions || {}) as Record<string, boolean>;
                               // For 'admin' role: default ON unless explicitly false
