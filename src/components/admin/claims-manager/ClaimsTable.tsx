@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Pencil, Phone, AlertTriangle, ChevronDown, Circle, Gauge, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { Check, Pencil, Phone, AlertTriangle, ChevronDown, Circle, Gauge, ArrowUpDown, ArrowDown, ArrowUp, Ban } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
