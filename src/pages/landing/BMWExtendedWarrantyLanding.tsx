@@ -476,8 +476,16 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">
           <div className="flex gap-2">
-            <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="flex items-center justify-center w-12 h-12 rounded-md border-2 border-slate-900 text-slate-900">
-              <Phone className="w-5 h-5" />
+            <a
+              href={`tel:${PHONE.replace(/\s/g,'')}`}
+              aria-label={`Call us on ${PHONE}`}
+              className="relative flex flex-col items-center justify-center h-12 px-3 rounded-md bg-[#16A34A] text-white font-bold shadow-md active:scale-95 transition"
+            >
+              <span className="absolute inset-0 rounded-md bg-[#16A34A] opacity-60 animate-ping" aria-hidden="true" />
+              <span className="relative flex items-center gap-1.5">
+                <Phone className="w-4 h-4 fill-white" />
+                <span className="text-xs leading-none">Call</span>
+              </span>
             </a>
             <Button onClick={scrollToQuote} className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold h-12">Get quote</Button>
           </div>
