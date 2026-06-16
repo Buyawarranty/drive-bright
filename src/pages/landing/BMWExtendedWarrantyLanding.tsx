@@ -267,20 +267,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 )}
 
 
-                {step !== 4 && step !== 1 && (
-                  <div className="mt-4 flex items-center gap-3">
-                    {step > 1 && (
-                      <button onClick={() => { setErrorMsg(''); setStep((step - 1) as Step); }} className="text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center gap-1">
-                        <ChevronLeft className="w-4 h-4" /> Back
-                      </button>
-                    )}
-                    <Button onClick={goNext} disabled={isSubmitting}
-                      className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold py-5 rounded-lg">
-                      {isSubmitting ? 'Working…' : step === 2 ? 'Get my instant price' : 'Continue'}
-                      <ArrowRight className="ml-1 w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
               </div>
 
             </div>
