@@ -553,7 +553,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             <div className="flex items-center gap-3 text-white">
               <Shield className="w-8 h-8 text-white flex-shrink-0" />
               <div>
-                <p className="font-black text-base md:text-lg leading-tight">Ready to protect your BMW?</p>
+                <p className="font-black text-base md:text-lg leading-tight text-white">Ready to protect your BMW?</p>
                 <p className="text-xs md:text-sm text-white mt-0.5">Get your instant quote in 60 seconds and drive with confidence.</p>
               </div>
             </div>
