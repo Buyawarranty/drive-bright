@@ -157,7 +157,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
 
     const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
-    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
     const cardAddOns = { ...selectedProtectionAddOns };
     allPossibleAutoIncluded.forEach(k => { cardAddOns[k] = thisCardAutoIncluded.includes(k); });
     const durationAddOnPrice = calculateAddOnPrice(cardAddOns, durationId, durationMonths);
