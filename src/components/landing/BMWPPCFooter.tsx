@@ -42,12 +42,14 @@ const BMWPPCFooter: React.FC = () => {
         {/* 4 columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           {/* Column 1: Buyawarranty */}
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Buyawarranty</h3>
-            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+          <div className="text-left">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 text-left">Buyawarranty</h3>
+            <p className="text-sm text-gray-600 leading-relaxed mb-4 text-left">
               Helping UK BMW owners protect their car from unexpected repair bills with flexible extended warranty cover designed for BMW models.
             </p>
-            <TrustpilotMicroWidget />
+            <div className="flex justify-start [&_*]:!justify-start [&_*]:!text-left">
+              <TrustpilotMicroWidget />
+            </div>
           </div>
 
           {/* Column 2: Help */}
