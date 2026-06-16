@@ -25,6 +25,8 @@ import bmwHero from '@/assets/bmw-used-car-extended-warranty-uk.webp';
 import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import MileageQuickSelect from '@/components/MileageQuickSelect';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import bmw1Series from '@/assets/bmw-models/bmw-1-series-extended-warranty.jpg';
 import bmw3Series from '@/assets/bmw-models/bmw-3-series-extended-warranty.jpg';
 import bmw5Series from '@/assets/bmw-models/bmw-5-series-extended-warranty.jpg';
@@ -80,6 +82,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
+
 
   const scrollToQuote = () => {
     trackButtonClick('bmw_ppc_cta');
@@ -223,7 +227,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
                 {step === 1 && (
                   <>
-                    <p className="text-center text-sm font-bold text-[#0F172A] mb-3">Enter your vehicle registration</p>
                     <div className="flex h-[68px] md:h-[76px] bg-[#FBBF24] rounded-xl border-2 border-black overflow-hidden shadow-inner">
                       <div className="w-12 md:w-14 bg-[#0052B4] flex flex-col items-center justify-center text-white">
                         <span className="text-base leading-none">🇬🇧</span>
@@ -233,28 +236,38 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                         type="text" value={regNumber}
                         onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
                         placeholder="ENTER REG" maxLength={8} aria-label="Vehicle registration"
-                        className="flex-1 bg-transparent text-center text-2xl md:text-3xl font-black uppercase tracking-[0.15em] placeholder:text-black/25 focus:outline-none min-w-0"
+                        className="bg-yellow-400 flex-1 bg-transparent text-center text-2xl md:text-3xl font-black uppercase tracking-[0.15em] placeholder:text-black/25 focus:outline-none min-w-0"
                       />
                     </div>
                     <p className="mt-2 text-[11px] text-slate-500 text-center">Protection for vehicles up to 150,000 miles and 15 years.</p>
 
-                    <p className="mt-4 text-center text-sm font-bold text-[#0F172A] mb-3">What's your approximate mileage?</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {([
-                        { id: 'under', label: 'Under 100,000 miles' },
-                        { id: 'over', label: 'Over 100,000 miles' },
-                      ] as const).map(o => (
-                        <button key={o.id} onClick={() => setMileageBand(o.id)}
-                          className={`p-3 rounded-lg border-2 text-sm font-bold transition-all ${
-                            mileageBand === o.id ? 'border-[#F97316] bg-orange-50 text-[#0F172A]' : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                          }`}>
-                          {o.label}
-                        </button>
-                      ))}
+                    <div className="mt-4">
+                      <MileageQuickSelect
+                        value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
+                        onChange={(v) => setMileageBand(v === 'under120k' ? 'under' : v === 'over120k' ? 'over' : '')}
+                        onAutoSubmit={() => { setErrorMsg(''); setStep(2); }}
+                        isLoading={isSubmitting}
+                        isRegValid={regNumber.replace(/\s/g,'').length >= 5}
+                      />
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-500 text-center">Vehicles may be eligible up to 150,000 miles and 15 years old, subject to plan terms.</p>
+
+                    {/* Pricing Reassurance Panel */}
+                    <div className="mt-5 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
+                      <h2 className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
+                        Fair price. Fast quote. No surprises.
+                      </h2>
+                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
+                        <span className="text-gray-600">Speak to an expert:</span>
+                        <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="font-semibold text-gray-900 hover:underline">{PHONE}</a>
+                        <span className="text-gray-400">or</span>
+                        <button onClick={() => setShowCallbackModal(true)} className="text-[#F97316] hover:underline font-medium">
+                          Request a callback
+                        </button>
+                      </div>
+                    </div>
                   </>
                 )}
+
 
                 {step === 2 && (
                   <>
@@ -286,7 +299,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <p className="mt-3 text-xs text-red-600 font-semibold text-center">{errorMsg}</p>
                 )}
 
-                {step !== 4 && (
+                {step !== 4 && step !== 1 && (
                   <div className="mt-4 flex items-center gap-3">
                     {step > 1 && (
                       <button onClick={() => { setErrorMsg(''); setStep((step - 1) as Step); }} className="text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center gap-1">
@@ -300,6 +313,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     </Button>
                   </div>
                 )}
+
 
                 <div className="mt-3 flex justify-center gap-4 text-[10px] text-slate-400 font-bold">
                   <span className="flex items-center gap-1"><Check className="w-3 h-3 text-[#00b67a]" /> No obligation</span>
@@ -662,6 +676,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </div>
       </div>
+      <RequestCallbackModal isOpen={showCallbackModal} onClose={() => setShowCallbackModal(false)} />
     </>
   );
 };
