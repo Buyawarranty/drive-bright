@@ -151,38 +151,17 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="BMW Extended Warranty UK from £19/month | Used BMW Warranty Cover | BuyaWarranty"
-        description="Affordable BMW extended warranty cover from £19/month. Used BMW warranty for 1 Series, 3 Series, 5 Series, 7 Series, X1, X3, X5, X7 and i Series EV. Unlimited claims, parts & labour, no excess. Instant online quote in 60 seconds."
-        keywords="BMW extended warranty, BMW warranty UK, used BMW warranty, BMW car warranty, BMW 1 Series warranty, BMW 3 Series warranty, BMW 5 Series warranty, BMW X3 warranty, BMW X5 warranty, BMW i3 warranty, BMW i4 warranty, BMW EV warranty, BMW warranty quote, cheap BMW warranty"
-        canonical="https://buyawarranty.co.uk/car-extended-warranty/bmw/"
-        ogTitle="BMW Extended Warranty UK from £19/month — BuyaWarranty"
-        ogDescription="Used BMW extended warranty cover. Unlimited claims, parts & labour, no excess. Get an instant online BMW warranty quote in 60 seconds."
-        geoRegion="GB"
-        geoPlacename="United Kingdom"
+        title="BMW Extended Warranty from £19/month | Instant Quote | BuyaWarranty"
+        description="Affordable BMW extended warranty from £19/month. Flexible plans covering mechanical, electrical, tech and EV components. Instant online quote in 60 seconds."
+        keywords="BMW extended warranty, BMW warranty UK, used BMW warranty, BMW car warranty"
+        canonical="https://buyawarranty.co.uk/bmw-extended-warranty/"
+        geoRegion="GB" geoPlacename="United Kingdom"
       />
       <OrganizationSchema />
-      <WebPageSchema
-        name="BMW Extended Warranty UK"
-        description="BMW extended warranty cover from £19/month. Used BMW warranty for petrol, diesel, hybrid and i Series EV models."
-        url="https://buyawarranty.co.uk/car-extended-warranty/bmw/"
-      />
+      <WebPageSchema name="BMW Extended Warranty" description="BMW extended warranty cover from £19/month." url="https://buyawarranty.co.uk/bmw-extended-warranty/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
-      <ProductSchema
-        name="BMW Extended Warranty"
-        description="Flexible BMW extended warranty cover for used BMW cars including 1 Series, 3 Series, 5 Series, 7 Series, X Series SUVs and i Series EVs. Unlimited claims, parts & labour, no excess."
-        price="19"
-        brand="BuyaWarranty"
-        category="Vehicle Extended Warranty"
-        image="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
-        availability="https://schema.org/InStock"
-        areaServed="GB"
-      />
-      <BreadcrumbSchema items={[
-        { name: 'Home', url: 'https://buyawarranty.co.uk/' },
-        { name: 'Car Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/' },
-        { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/bmw/' },
-      ]} />
-
+      <ProductSchema name="BMW Extended Warranty" description="Flexible BMW warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/bmw-extended-warranty/' }]} />
 
       <div className="min-h-screen bg-white text-slate-900 pb-24 md:pb-0 font-sans">
         {/* PPC Header */}
@@ -242,10 +221,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
                 {step === 1 && (
                   <>
-                    {/* Tick reassurance lines removed */}
-
-
-
                     <div className="flex h-[68px] md:h-[76px] bg-[#FBBF24] rounded-xl border-2 border-black overflow-hidden shadow-inner">
                       <div className="w-12 md:w-14 bg-[#0052B4] flex flex-col items-center justify-center text-white">
                         <span className="text-base leading-none">🇬🇧</span>
@@ -258,8 +233,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                         className="bg-yellow-400 flex-1 bg-transparent text-center text-2xl md:text-3xl font-black uppercase tracking-[0.15em] placeholder:text-black/25 focus:outline-none min-w-0"
                       />
                     </div>
-
-
+                    <p className="mt-2 text-[11px] text-slate-500 text-center">Protection for vehicles up to 150,000 miles and 15 years.</p>
 
                     <div className="mt-4">
                       <MileageQuickSelect
@@ -311,7 +285,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </div>
                 
               </div>
-              </div>
               <div className="mt-6 flex flex-col items-center gap-3">
                 <div className="flex items-center justify-center gap-5 md:gap-7 flex-wrap">
                   {[
@@ -331,11 +304,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
                   <span className="text-sm font-bold text-slate-800">Instant activation</span>
                 </div>
-                
               </div>
-            </div>
-        </section>
 
+            </div>
+          </div>
+        </section>
 
         {/* Dark navy trust strip */}
         {/* Trustpilot reviews — same widget as homepage */}
