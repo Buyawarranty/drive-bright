@@ -196,23 +196,35 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         </header>
 
         {/* HERO */}
-        <section className="bg-white pt-6 md:pt-10 pb-8 md:pb-10 px-4">
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-12 items-start">
+        <section className="bg-white pt-5 md:pt-8 pb-6 md:pb-8 px-4">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_1fr] gap-6 lg:gap-10 items-start">
             {/* LEFT */}
             <div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0F172A] leading-[1.02] tracking-tight">
-                BMW Extended Warranty<br/>
+              <h1 className="text-[28px] sm:text-4xl md:text-5xl lg:text-[52px] font-black text-[#0F172A] leading-[1.05] tracking-tight">
+                BMW Extended Warranty Cover<br className="hidden sm:block"/>{' '}
                 <span className="text-slate-900">from </span><span className="text-[#F97316]">£19/month</span>
               </h1>
-              <p className="mt-5 text-slate-700 font-semibold text-base">
-                Affordable BMW warranty cover you can trust in 60 seconds.
-              </p>
-              <p className="mt-2 text-slate-500 text-sm">
-                Get a fast quote for flexible BMW warranty cover designed to help protect you from unexpected repair bills.
+              <p className="mt-3 md:mt-4 text-slate-700 text-[15px] md:text-base leading-snug">
+                Protect your BMW from unexpected repair bills with flexible UK warranty cover. Get an instant quote in under 60 seconds.
               </p>
 
+              {/* Trust bullets — reassurance before the form */}
+              <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                {[
+                  'Covers major mechanical and electrical faults',
+                  'UK-based support team',
+                  'Use your own VAT-registered garage',
+                  'Instant activation available',
+                ].map(b => (
+                  <li key={b} className="flex items-start gap-2 text-[13.5px] text-slate-800">
+                    <Check className="w-4 h-4 text-[#16A34A] flex-shrink-0 mt-0.5" strokeWidth={3} />
+                    <span className="font-medium">{b}</span>
+                  </li>
+                ))}
+              </ul>
+
               {/* Quote module */}
-              <div id="quote-module" className="mt-6">
+              <div id="quote-module" className="mt-5">
 
 
                 {step === 1 && (
@@ -244,6 +256,10 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                       )}
                     </div>
 
+                    <p className="mt-2 text-xs text-slate-500 text-center">
+                      No payment required to view your quote. Takes less than 60 seconds.
+                    </p>
+
                     <div className="mt-4">
                       <MileageQuickSelect
                         value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
@@ -255,11 +271,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     </div>
 
                     {/* Pricing Reassurance Panel */}
-                    <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
-                      <h2 className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
+                    <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-3 text-center">
+                      <h2 className="text-sm sm:text-[15px] font-bold text-[#1B2A4A]">
                         Fair price. Fast quote. No surprises.
                       </h2>
-                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
+                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[14px] mt-1">
                         <span className="text-gray-600">Speak to an expert:</span>
                         <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="font-semibold text-gray-900 hover:underline">{PHONE}</a>
                         <span className="text-gray-400">or</span>
@@ -277,17 +293,21 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <p className="mt-3 text-xs text-red-600 font-semibold text-center">{errorMsg}</p>
                 )}
 
+                {/* Independence disclosure — earlier than the footer for trust */}
+                <p className="mt-4 text-[11.5px] text-slate-500 leading-snug">
+                  Buyawarranty is an independent UK warranty provider and is not affiliated with BMW.
+                </p>
 
               </div>
 
             </div>
 
-            {/* RIGHT */}
-            <div className="lg:order-last">
+            {/* RIGHT — hidden on mobile so the quote form leads above the fold */}
+            <div className="hidden md:block lg:order-last">
               <div className="relative">
                 <img src={bmwHero} alt="Premium BMW with extended warranty cover" className="w-full h-auto rounded-2xl" loading="eager" />
               </div>
-              <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="mt-5 flex flex-col items-center gap-3">
                 <div className="flex items-center justify-center gap-5 md:gap-7 flex-wrap">
                   {[
                     { I: Car, l: 'Cars' },
@@ -303,8 +323,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   ))}
                 </div>
                 <div className="inline-flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full px-4 py-1.5">
-                  <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
-                  <span className="text-sm font-bold text-slate-800">Instant activation</span>
+                  <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
+                  <span className="text-sm font-bold text-slate-800">Rated Excellent on Trustpilot</span>
                 </div>
               </div>
 
