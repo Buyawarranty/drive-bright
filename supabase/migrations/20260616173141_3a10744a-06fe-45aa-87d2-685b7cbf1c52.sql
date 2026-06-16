@@ -1,0 +1,1 @@
+SELECT cron.schedule('process-scheduled-w2000-daily', '0 0 31 2 *', $$SELECT 1;$$);

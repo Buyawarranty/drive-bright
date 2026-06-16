@@ -109,33 +109,9 @@ serve(async (req) => {
       logStep("Failed to generate warranty reference", { error: errorMessage });
     }
 
-    // Register with Warranties 2000
-    if (warrantyRef) {
-      try {
-        logStep("Sending to Warranties 2000 via send-to-warranties-2000 function");
-        
-        // Use the send-to-warranties-2000 function which has proper data mapping
-        const { data: w2kData, error: w2kError } = await supabaseClient.functions.invoke(
-          'send-to-warranties-2000',
-          {
-            body: {
-              customerId: customer.id,
-              policyId: policy.id,
-              force: true
-            }
-          }
-        );
+    // Warranties Register (Warranties 2000) integration permanently removed.
+    logStep("Skipping Warranties Register registration (integration removed)");
 
-        if (w2kError) {
-          throw w2kError;
-        }
-
-        logStep("Successfully registered with Warranties 2000", { response: w2kData });
-      } catch (warrantiesError) {
-        const errorMessage = warrantiesError instanceof Error ? warrantiesError.message : String(warrantiesError);
-        logStep("Error during Warranties 2000 registration", { error: errorMessage });
-      }
-    }
 
     // Send welcome email using manual function
     try {
