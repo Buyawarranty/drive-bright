@@ -5,7 +5,7 @@ import {
   Car, Truck, Battery, Bike, Plane, RefreshCw, Settings2, MapPin, ArrowRight,
   Gauge, ChevronLeft, FileText, Users, Headphones, Cog, Thermometer, CircleDot,
   Fuel, ListChecks, ChevronRight, User, Globe, MoreHorizontal, Leaf, LifeBuoy, Droplets,
-  Facebook, Instagram, Youtube,
+  Facebook, Instagram, Youtube, Home, ClipboardCheck, Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEOHead } from '@/components/SEOHead';
