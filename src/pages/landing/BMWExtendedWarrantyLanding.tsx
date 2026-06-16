@@ -322,11 +322,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 
               </div>
             </div>
-
-
-            </div>
           </div>
         </section>
+
 
         {/* Dark navy trust strip */}
         {/* Trustpilot reviews — same widget as homepage */}
