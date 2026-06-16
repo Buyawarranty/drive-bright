@@ -5,7 +5,7 @@ import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
 
 const BMWPPCFooter: React.FC = () => {
   return (
-    <footer className="bg-white border-t border-gray-200 pt-12 pb-10">
+    <footer className="bg-white border-t border-gray-200 pt-12 pb-4 md:pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Contact / reassurance row */}
         <div className="text-center mb-10">
