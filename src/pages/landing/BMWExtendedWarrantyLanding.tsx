@@ -395,8 +395,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               ))}
             </div>
             <div className="text-center mt-7">
-              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-6 h-12">
-                Get my BMW quote <ArrowRight className="w-4 h-4 ml-1.5" />
+              <Button onClick={scrollToQuote} className="animate-breathing bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
+                Get my BMW quote <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
           </div>
