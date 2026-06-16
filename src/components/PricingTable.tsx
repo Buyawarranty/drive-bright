@@ -660,7 +660,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     
     setSelectedProtectionAddOns(prev => {
       // Get all possible auto-included add-ons from all plans (complete list)
-      const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+      const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
       
       // Start with current selections but preserve manually selected add-ons
       const updated = { ...prev };
@@ -861,7 +861,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // This memo normalizes add-ons inline, eliminating the price fluctuation.
   const effectiveAddOns = useMemo(() => {
     const autoIncluded = getAutoIncludedAddOns(paymentType);
-    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
     const normalized = { ...selectedProtectionAddOns };
     
     // Ensure auto-included add-ons for current paymentType are always true
@@ -1272,7 +1272,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     const termAutoIncluded = getAutoIncludedAddOns(term);
-    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+    const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
     const termAddOns = { ...selectedProtectionAddOns };
 
     termAutoIncluded.forEach(key => { termAddOns[key] = true; });
@@ -1746,7 +1746,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // For plan card display, only include add-ons that:
               // 1. Are auto-included for THIS card's duration, OR
               // 2. Are manually selected AND not auto-included for any duration (truly manual selections)
-              const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+              const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
               const cardAddOns = { ...selectedProtectionAddOns };
               
               // Reset auto-included add-ons for card display - each card shows its own auto-included
