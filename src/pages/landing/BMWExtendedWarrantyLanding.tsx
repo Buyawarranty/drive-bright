@@ -39,7 +39,7 @@ const bmwModels = [
   { label: '5 Series', examples: '520d, 530e, 540i', img: bmw5Series, alt: 'BMW 5 Series extended warranty cover — 520d, 530e, 540i executive saloon' },
   { label: 'X1 / X3 / X5', examples: 'sDrive, xDrive SUVs', img: bmwXSeries, alt: 'BMW X1, X3 and X5 SUV extended warranty cover — sDrive and xDrive variants' },
   { label: '7 Series', examples: '730d, 740i, 750e', img: bmw7Series, alt: 'BMW 7 Series luxury saloon extended warranty cover — 730d, 740i, 750e' },
-  { label: 'M Series', examples: 'M2, M3, M4, M5', img: bmwMSeries, alt: 'BMW M Series performance extended warranty cover — M2, M3, M4 and M5' },
+  { label: 'i Series (EV)', examples: 'i3, i4, iX, iX3', img: bmwISeries, alt: 'BMW i Series electric vehicle extended warranty cover — i3, i4, iX and iX3' },
 ];
 
 const PHONE = '0330 229 5040';
