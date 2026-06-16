@@ -251,8 +251,9 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     setExporting(true);
     try {
       const csv = buildAbandonedCartCsv(uniqueByEmail, platform);
-      const fname = `abandoned-carts-${platform}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
+      const fname = `abandoned-carts-${platform}-${sourceFilter}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
       downloadAbandonedCartCsv(csv, fname);
+
 
       // Log the export
       const { data: auth } = await supabase.auth.getUser();
