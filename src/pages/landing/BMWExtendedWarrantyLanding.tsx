@@ -293,10 +293,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <p className="mt-3 text-xs text-red-600 font-semibold text-center">{errorMsg}</p>
                 )}
 
-                {/* Independence disclosure — earlier than the footer for trust */}
-                <p className="mt-4 text-[11.5px] text-slate-500 leading-snug">
-                  Buyawarranty is an independent UK warranty provider and is not affiliated with BMW.
-                </p>
 
               </div>
 
@@ -326,6 +322,10 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
                   <span className="text-sm font-bold text-slate-800">Rated Excellent on Trustpilot</span>
                 </div>
+                <p className="text-center text-[12.5px] text-slate-600 leading-snug max-w-xs">
+                  <span className="font-semibold text-slate-800">Independent UK warranty provider</span><br />
+                  Not affiliated with BMW. Flexible cover from 60p a day.
+                </p>
               </div>
 
             </div>
