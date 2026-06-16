@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Check, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 
 interface Extra {
   key: string;
