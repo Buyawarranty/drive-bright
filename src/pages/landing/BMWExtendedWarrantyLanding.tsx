@@ -343,64 +343,142 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
 
         {/* Why BMW owners choose BuyaWarranty */}
-        <section className="py-12 md:py-16 bg-slate-50 border-y border-slate-100">
+        <section className="py-14 md:py-20 bg-gradient-to-b from-[#EFF4FB] via-[#F1F5FB] to-[#E8EEF7] border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-black text-[#0F172A] text-center mb-8">
-              Why choose <span className="text-[#F97316]">Buyawarranty</span>?
-            </h2>
-            <div className="grid md:grid-cols-3 gap-4 md:gap-5">
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <h2 className="text-3xl md:text-[40px] font-black text-[#0F172A] leading-tight">
+                Why BMW owners choose <span className="text-[#F97316]">Buyawarranty</span>
+              </h2>
+              <p className="mt-3 text-slate-600 text-[15px] md:text-base">
+                BMW repairs can be expensive. We help make unexpected costs easier to manage with simple warranty cover and UK-based support.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-5 md:gap-6">
               {[
-                { I: Shield, t: 'Protect against expensive BMW repair bills', d: 'Cover for major mechanical and electrical components, depending on your plan.' },
-                { I: Wrench, t: 'Choose your own garage', d: 'Repairs can be carried out by your preferred VAT-registered garage, subject to claim approval.' },
-                { I: Headphones, t: 'UK support when you need it', d: 'Our team is here to help with quotes, claims and questions before you buy.' },
-              ].map(({ I, t, d }) => (
-                <div key={t} className="bg-white border border-slate-200 rounded-2xl p-6">
-                  <div className="w-12 h-12 rounded-xl bg-[#0F172A] text-white flex items-center justify-center mb-4">
-                    <I className="w-6 h-6" />
+                {
+                  I: Shield,
+                  badge: 'Peace of mind',
+                  badgeBg: 'bg-[#FFF1E6] text-[#EA580C]',
+                  iconBg: 'bg-[#FFEDD5]',
+                  iconColor: 'text-[#F97316]',
+                  topBar: 'bg-[#F97316]',
+                  t: 'Avoid unexpected repair bills',
+                  d: 'Cover available for major mechanical and electrical faults, depending on your plan.',
+                },
+                {
+                  I: Wrench,
+                  badge: 'More choice',
+                  badgeBg: 'bg-[#E7F8EF] text-[#16A34A]',
+                  iconBg: 'bg-[#DCFCE7]',
+                  iconColor: 'text-[#16A34A]',
+                  topBar: 'bg-[#16A34A]',
+                  t: 'Use your own trusted garage',
+                  d: 'Repairs can be carried out by a VAT-registered garage, subject to claim approval.',
+                },
+                {
+                  I: Headphones,
+                  badge: 'Real support',
+                  badgeBg: 'bg-[#E6EEFB] text-[#2563EB]',
+                  iconBg: 'bg-[#DBEAFE]',
+                  iconColor: 'text-[#2563EB]',
+                  topBar: 'bg-[#2563EB]',
+                  t: 'Speak to a real UK team',
+                  d: 'Get help with quotes, claims and questions before and after you buy.',
+                },
+              ].map(({ I, badge, badgeBg, iconBg, iconColor, topBar, t, d }) => (
+                <div
+                  key={t}
+                  className="group relative bg-white rounded-2xl p-6 md:p-7 shadow-[0_2px_8px_rgba(15,23,42,0.04)] hover:shadow-[0_12px_28px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                >
+                  <div className={`absolute top-0 left-0 right-0 h-1.5 ${topBar}`} />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-14 h-14 rounded-full ${iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
+                      <I className={`w-7 h-7 ${iconColor}`} strokeWidth={2.25} />
+                    </div>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${badgeBg}`}>
+                      {badge}
+                    </span>
                   </div>
-                  <h3 className="font-black text-base text-[#0F172A] mb-2">{t}</h3>
-                  <p className="text-sm text-slate-600">{d}</p>
+                  <h3 className="font-black text-lg text-[#0F172A] mb-2 leading-snug">{t}</h3>
+                  <p className="text-[14.5px] text-slate-600 leading-relaxed">{d}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-7 flex items-center justify-center gap-2">
-              <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
-              <span className="text-sm font-bold text-slate-700">Rated Excellent</span>
-              <div className="flex items-center gap-0.5 bg-[#00b67a] px-1.5 py-0.5">
-                {[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 fill-white text-white" />)}
+
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <div className="inline-flex items-center gap-2 bg-white border border-[#BBF7D0] rounded-full px-5 py-2 shadow-sm">
+                <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
+                <span className="text-sm font-bold text-slate-800">Rated Excellent</span>
+                <div className="flex items-center gap-0.5 bg-[#00b67a] px-1.5 py-0.5 rounded-sm">
+                  {[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 fill-white text-white" />)}
+                </div>
+                <span className="text-sm font-bold text-slate-800">on Trustpilot</span>
               </div>
-              <span className="text-sm font-bold text-slate-700">on Trustpilot</span>
+              <p className="text-center text-[13px] text-slate-600 leading-snug max-w-md">
+                Independent UK warranty provider. Not affiliated with BMW.<br />
+                Flexible cover from <span className="font-semibold text-slate-800">60p a day</span>.
+              </p>
             </div>
           </div>
         </section>
 
         {/* How claims work */}
-        <section className="py-12 md:py-14 bg-white border-b border-slate-100">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="text-center max-w-2xl mx-auto mb-8">
-              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">How claims work</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Simple, transparent and designed to get you back on the road.</p>
+        <section className="py-14 md:py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-[40px] font-black text-[#0F172A] leading-tight">Making a claim is simple</h2>
+              <p className="mt-3 text-slate-600 text-[15px] md:text-base">
+                Call us before repair work begins and we'll guide you through the next steps.
+              </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-4 md:gap-5">
+
+            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4">
+              {/* Dashed connector — desktop only */}
+              <div className="hidden md:block absolute top-[44px] left-[16.66%] right-[16.66%] border-t-2 border-dashed border-slate-300 -z-0" />
+
               {[
-                { n: '1', t: 'Call our claims team', d: 'Get in touch with us before any repair work begins.' },
-                { n: '2', t: 'Use a VAT-registered garage', d: 'Your garage diagnoses the fault and provides the repair details we need.' },
-                { n: '3', t: 'We review the claim', d: 'If approved, the repair can go ahead in line with your policy terms.' },
-              ].map(({ n, t, d }) => (
-                <div key={n} className="bg-white border border-slate-200 rounded-2xl p-6">
-                  <div className="w-9 h-9 rounded-full bg-[#F97316] text-white flex items-center justify-center font-black mb-3">{n}</div>
-                  <h3 className="font-black text-base text-[#0F172A] mb-1.5">{t}</h3>
-                  <p className="text-sm text-slate-600 leading-snug">{d}</p>
+                { I: Phone, n: '1', t: 'Call our claims team', d: "Get in touch before any repair work starts.",
+                  iconBg: 'bg-[#FFEDD5]', iconColor: 'text-[#F97316]', numBg: 'bg-[#F97316]' },
+                { I: Home, n: '2', t: 'Visit a VAT-registered garage', d: 'Your garage diagnoses the fault and provides the repair details.',
+                  iconBg: 'bg-[#DCFCE7]', iconColor: 'text-[#16A34A]', numBg: 'bg-[#16A34A]' },
+                { I: ClipboardCheck, n: '3', t: 'We confirm the next steps', d: 'We review the repair details against your policy and let you and the garage know what happens next.',
+                  iconBg: 'bg-[#DBEAFE]', iconColor: 'text-[#2563EB]', numBg: 'bg-[#2563EB]' },
+              ].map(({ I, n, t, d, iconBg, iconColor, numBg }) => (
+                <div key={n} className="relative flex flex-col items-center text-center px-2">
+                  <div className="relative mb-5">
+                    <div className={`w-[88px] h-[88px] rounded-full ${iconBg} flex items-center justify-center shadow-sm`}>
+                      <I className={`w-10 h-10 ${iconColor}`} strokeWidth={2} />
+                    </div>
+                    <div className={`absolute -right-2 -bottom-1 w-9 h-9 rounded-full ${numBg} text-white flex items-center justify-center font-black text-sm shadow-md ring-4 ring-white`}>
+                      {n}
+                    </div>
+                  </div>
+                  <h3 className="font-black text-lg text-[#0F172A] mb-2">{t}</h3>
+                  <p className="text-[14.5px] text-slate-600 leading-relaxed max-w-[280px]">{d}</p>
                 </div>
               ))}
             </div>
-            <div className="text-center mt-7">
+
+            <div className="mt-10 max-w-2xl mx-auto flex items-center justify-center gap-2 bg-[#F0F6FF] border border-[#DBEAFE] rounded-xl px-4 py-3">
+              <Info className="w-4 h-4 text-[#2563EB] flex-shrink-0" />
+              <span className="text-[13.5px] text-slate-700">
+                Claims are subject to your policy terms, limits and exclusions.
+              </span>
+            </div>
+
+            <div className="text-center mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button onClick={scrollToQuote} className="animate-breathing bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
                 Get my BMW quote <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
+              <div className="inline-flex items-center gap-2 text-sm text-slate-600">
+                <Shield className="w-4 h-4 text-slate-500" />
+                <span className="font-semibold">No payment required</span>
+              </div>
             </div>
           </div>
         </section>
+
 
         {/* BMW models we cover */}
         <section className="py-12 md:py-16 bg-white">
