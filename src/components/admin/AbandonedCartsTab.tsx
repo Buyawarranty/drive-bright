@@ -128,14 +128,52 @@ export const AbandonedCartsTab: React.FC = () => {
 
   const fetchAbandonedCarts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('abandoned_carts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Paginate to bypass Supabase 1000-row default limit
+      const pageSize = 1000;
+      let offset = 0;
+      const all: AbandonedCart[] = [];
+      while (true) {
+        const { data, error } = await supabase
+          .from('abandoned_carts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        if (error) throw error;
+        const rows = (data || []) as AbandonedCart[];
+        all.push(...rows);
+        if (rows.length < pageSize) break;
+        offset += pageSize;
+        if (offset > 50000) break; // hard safety cap
+      }
 
-      if (error) throw error;
+      // Exclude carts whose email has become a paying customer (active, not cancelled/refunded)
+      const purchased = new Set<string>();
+      let cOffset = 0;
+      while (true) {
+        const { data: cust, error: cErr } = await supabase
+          .from('customers')
+          .select('email,status,is_deleted')
+          .eq('is_deleted', false)
+          .range(cOffset, cOffset + pageSize - 1);
+        if (cErr) break;
+        const crows = (cust || []) as { email: string | null; status: string | null }[];
+        crows.forEach(c => {
+          const s = (c.status || '').toLowerCase();
+          if (c.email && !s.includes('cancelled') && !s.includes('refunded')) {
+            purchased.add(c.email.trim().toLowerCase());
+          }
+        });
+        if (crows.length < pageSize) break;
+        cOffset += pageSize;
+        if (cOffset > 100000) break;
+      }
 
-      setCarts((data || []) as AbandonedCart[]);
+      const remarketable = all.filter(c => {
+        const e = (c.email || '').trim().toLowerCase();
+        return e && !purchased.has(e);
+      });
+
+      setCarts(remarketable);
       setNewCartsCount(0);
     } catch (error) {
       console.error('Error fetching abandoned carts:', error);
