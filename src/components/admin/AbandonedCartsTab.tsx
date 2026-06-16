@@ -378,9 +378,9 @@ export const AbandonedCartsTab: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Remarketable Carts</p>
-                <p className="text-2xl font-bold">{carts.length}</p>
-                <p className="text-xs text-gray-500 mt-1">excludes converted customers</p>
+                <p className="text-sm text-gray-600">Total captured carts</p>
+                <p className="text-2xl font-bold">{rawCartCount.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-1">full database count, not capped at 1000</p>
               </div>
               <ShoppingCart className="w-8 h-8 text-gray-400" />
             </div>
@@ -391,10 +391,9 @@ export const AbandonedCartsTab: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Last 7 days</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {carts.filter(c => new Date(c.created_at).getTime() > Date.now() - 7*24*60*60*1000).length}
-                </p>
+                <p className="text-sm text-gray-600">Remarketable carts</p>
+                <p className="text-2xl font-bold text-blue-600">{carts.length.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-1">ready for Google / Facebook export</p>
               </div>
               <Clock className="w-8 h-8 text-blue-400" />
             </div>
@@ -405,10 +404,9 @@ export const AbandonedCartsTab: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Last 30 days</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {carts.filter(c => new Date(c.created_at).getTime() > Date.now() - 30*24*60*60*1000).length}
-                </p>
+                <p className="text-sm text-gray-600">Removed purchasers</p>
+                <p className="text-2xl font-bold text-purple-600">{removedConvertedCount.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-1">matched by email, reg, quote payment, or cart conversion</p>
               </div>
               <Calendar className="w-8 h-8 text-purple-400" />
             </div>
@@ -433,6 +431,23 @@ export const AbandonedCartsTab: React.FC = () => {
         </div>
         <Button onClick={fetchAbandonedCarts} variant="outline">
           Refresh
+        </Button>
+        <Button
+          onClick={() => downloadAbandonedCartCsv(buildAbandonedCartCsv(carts as any, 'google'), `abandoned-carts-google-all-${new Date().toISOString().slice(0, 10)}.csv`)}
+          disabled={carts.length === 0}
+          className="gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Google CSV
+        </Button>
+        <Button
+          onClick={() => downloadAbandonedCartCsv(buildAbandonedCartCsv(carts as any, 'facebook'), `abandoned-carts-facebook-all-${new Date().toISOString().slice(0, 10)}.csv`)}
+          disabled={carts.length === 0}
+          variant="outline"
+          className="gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Facebook CSV
         </Button>
       </div>
 
