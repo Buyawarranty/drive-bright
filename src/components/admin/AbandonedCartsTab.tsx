@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { FollowUpEmailDialog } from './FollowUpEmailDialog';
+import { AbandonedCartExportPanel } from './AbandonedCartExportPanel';
 import { 
   ShoppingCart, 
   Mail, 
@@ -127,14 +128,52 @@ export const AbandonedCartsTab: React.FC = () => {
 
   const fetchAbandonedCarts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('abandoned_carts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Paginate to bypass Supabase 1000-row default limit
+      const pageSize = 1000;
+      let offset = 0;
+      const all: AbandonedCart[] = [];
+      while (true) {
+        const { data, error } = await supabase
+          .from('abandoned_carts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        if (error) throw error;
+        const rows = (data || []) as AbandonedCart[];
+        all.push(...rows);
+        if (rows.length < pageSize) break;
+        offset += pageSize;
+        if (offset > 50000) break; // hard safety cap
+      }
 
-      if (error) throw error;
+      // Exclude carts whose email has become a paying customer (active, not cancelled/refunded)
+      const purchased = new Set<string>();
+      let cOffset = 0;
+      while (true) {
+        const { data: cust, error: cErr } = await supabase
+          .from('customers')
+          .select('email,status,is_deleted')
+          .eq('is_deleted', false)
+          .range(cOffset, cOffset + pageSize - 1);
+        if (cErr) break;
+        const crows = (cust || []) as { email: string | null; status: string | null }[];
+        crows.forEach(c => {
+          const s = (c.status || '').toLowerCase();
+          if (c.email && !s.includes('cancelled') && !s.includes('refunded')) {
+            purchased.add(c.email.trim().toLowerCase());
+          }
+        });
+        if (crows.length < pageSize) break;
+        cOffset += pageSize;
+        if (cOffset > 100000) break;
+      }
 
-      setCarts((data || []) as AbandonedCart[]);
+      const remarketable = all.filter(c => {
+        const e = (c.email || '').trim().toLowerCase();
+        return e && !purchased.has(e);
+      });
+
+      setCarts(remarketable);
       setNewCartsCount(0);
     } catch (error) {
       console.error('Error fetching abandoned carts:', error);
@@ -273,12 +312,13 @@ export const AbandonedCartsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Stats */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Abandoned Carts</h1>
           <p className="text-gray-600 mt-2">
-            Track and follow up with customers who didn't complete their purchase
+            Customers who started but did not finish checkout. Anyone who has since purchased is automatically removed.
+            Used for remarketing exports to Google and Facebook. Live outreach is handled in the Leads section.
           </p>
         </div>
         {newCartsCount > 0 && (
@@ -289,13 +329,14 @@ export const AbandonedCartsTab: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Carts</p>
+                <p className="text-sm text-gray-600">Remarketable Carts</p>
                 <p className="text-2xl font-bold">{carts.length}</p>
+                <p className="text-xs text-gray-500 mt-1">excludes converted customers</p>
               </div>
               <ShoppingCart className="w-8 h-8 text-gray-400" />
             </div>
@@ -306,12 +347,12 @@ export const AbandonedCartsTab: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Not Contacted</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {carts.filter(c => c.contact_status === 'not_contacted').length}
+                <p className="text-sm text-gray-600">Last 7 days</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {carts.filter(c => new Date(c.created_at).getTime() > Date.now() - 7*24*60*60*1000).length}
                 </p>
               </div>
-              <AlertCircle className="w-8 h-8 text-red-400" />
+              <Clock className="w-8 h-8 text-blue-400" />
             </div>
           </CardContent>
         </Card>
@@ -320,30 +361,20 @@ export const AbandonedCartsTab: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Contacted</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {carts.filter(c => c.contact_status === 'contacted').length}
+                <p className="text-sm text-gray-600">Last 30 days</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {carts.filter(c => new Date(c.created_at).getTime() > Date.now() - 30*24*60*60*1000).length}
                 </p>
               </div>
-              <Clock className="w-8 h-8 text-yellow-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Converted</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {carts.filter(c => c.contact_status === 'converted').length}
-                </p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-400" />
+              <Calendar className="w-8 h-8 text-purple-400" />
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Remarketing Export Panel */}
+      <AbandonedCartExportPanel candidateCarts={carts as any} />
+
 
       {/* Search */}
       <div className="flex items-center gap-2">

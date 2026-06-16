@@ -103,6 +103,77 @@ export type Database = {
           },
         ]
       }
+      abandoned_cart_export_items: {
+        Row: {
+          abandoned_cart_id: string
+          created_at: string
+          email: string | null
+          export_id: string
+          id: string
+          platform: string
+        }
+        Insert: {
+          abandoned_cart_id: string
+          created_at?: string
+          email?: string | null
+          export_id: string
+          id?: string
+          platform: string
+        }
+        Update: {
+          abandoned_cart_id?: string
+          created_at?: string
+          email?: string | null
+          export_id?: string
+          id?: string
+          platform?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_cart_export_items_export_id_fkey"
+            columns: ["export_id"]
+            isOneToOne: false
+            referencedRelation: "abandoned_cart_exports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      abandoned_cart_exports: {
+        Row: {
+          cart_count: number
+          created_at: string
+          date_from: string
+          date_to: string
+          exported_by: string | null
+          exported_by_email: string | null
+          id: string
+          notes: string | null
+          platform: string
+        }
+        Insert: {
+          cart_count?: number
+          created_at?: string
+          date_from: string
+          date_to: string
+          exported_by?: string | null
+          exported_by_email?: string | null
+          id?: string
+          notes?: string | null
+          platform: string
+        }
+        Update: {
+          cart_count?: number
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          exported_by?: string | null
+          exported_by_email?: string | null
+          id?: string
+          notes?: string | null
+          platform?: string
+        }
+        Relationships: []
+      }
       abandoned_carts: {
         Row: {
           address: Json | null
