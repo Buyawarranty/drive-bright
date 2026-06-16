@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { FollowUpEmailDialog } from './FollowUpEmailDialog';
+import { AbandonedCartExportPanel } from './AbandonedCartExportPanel';
 import { 
   ShoppingCart, 
   Mail, 
