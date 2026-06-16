@@ -350,9 +350,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             </h2>
             <div className="grid md:grid-cols-3 gap-4 md:gap-5">
               {[
-                { I: Shield, t: 'Specialists in Extended Warranty Cover', d: 'We focus on what matters most — helping you protect your BMW from unexpected repair bills.' },
-                { I: Users, t: 'Independent & Customer Focused', d: 'We work for you, not the manufacturers or garages.' },
-                { I: Headphones, t: 'UK-Based Support You Can Rely On', d: 'Friendly experts ready to help whenever you need us.' },
+                { I: Shield, t: 'Protect against expensive BMW repair bills', d: 'Cover for major mechanical and electrical components, depending on your plan.' },
+                { I: Wrench, t: 'Choose your own garage', d: 'Repairs can be carried out by your preferred VAT-registered garage, subject to claim approval.' },
+                { I: Headphones, t: 'UK support when you need it', d: 'Our team is here to help with quotes, claims and questions before you buy.' },
               ].map(({ I, t, d }) => (
                 <div key={t} className="bg-white border border-slate-200 rounded-2xl p-6">
                   <div className="w-12 h-12 rounded-xl bg-[#0F172A] text-white flex items-center justify-center mb-4">
