@@ -71,8 +71,12 @@ const ADMIN_TABS = [
   { id: 'refunds-paid', label: 'Refunds Paid', description: 'Refunds issued to customers (commission reconciliation)' },
   { id: 'attribution-settings', label: 'Attribution Settings', description: 'Configure lead source attribution rules' },
   { id: 'staff-hub', label: 'Staff Hub', description: 'Internal staff resources and tools' },
+  { id: 'feature-flags', label: 'Feature Flags', description: 'Toggle experimental features on/off' },
+  { id: 'ghl-sync-log', label: 'GHL Sync Log', description: 'GoHighLevel synchronisation audit log' },
+  { id: 'security', label: 'Security', description: 'Security scans, blocked IPs and audit logs' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
+
 
 // Granular permissions for specific tabs
 const GRANULAR_PERMISSIONS = {
