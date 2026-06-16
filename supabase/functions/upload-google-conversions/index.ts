@@ -208,6 +208,99 @@ Deno.serve(async (req) => {
     // older than 60 days so we never get "Identifiers or iOS URL parameters are too old".
     const cutoffISO = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
+    // ─── RECONCILIATION / BACKFILL ────────────────────────────────────────────
+    // Sales completed via Bumper Portal, Stripe dashboard, or Payment Assist
+    // sometimes lose customers.gclid even though the visitor originally clicked
+    // a Google ad and had a cart with a gclid stored in cart_metadata. Copy that
+    // gclid onto the customer/bumper record so the normal upload path picks it up.
+    let backfilledCustomers = 0;
+    let backfilledBumper = 0;
+    try {
+      const { data: noGclidCustomers } = await supabase
+        .from('customers')
+        .select('id, email, registration_plate')
+        .is('gclid', null)
+        .eq('is_deleted', false)
+        .in('status', ['active', 'Active'])
+        .gte('created_at', cutoffISO)
+        .limit(500);
+
+      for (const c of (noGclidCustomers || []) as any[]) {
+        if (!c.email && !c.registration_plate) continue;
+        let cartGclid: string | null = null;
+
+        if (c.email) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .ilike('email', c.email)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+        if (!cartGclid && c.registration_plate) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .eq('vehicle_reg', c.registration_plate)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+
+        if (cartGclid) {
+          await supabase.from('customers').update({ gclid: cartGclid }).eq('id', c.id);
+          backfilledCustomers++;
+        }
+      }
+
+      const { data: noGclidBumper } = await supabase
+        .from('bumper_transactions')
+        .select('id, customer_email, vehicle_reg')
+        .is('gclid', null)
+        .eq('status', 'completed')
+        .gte('updated_at', cutoffISO)
+        .limit(500);
+
+      for (const b of (noGclidBumper || []) as any[]) {
+        let cartGclid: string | null = null;
+        if (b.customer_email) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .ilike('email', b.customer_email)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+        if (!cartGclid && b.vehicle_reg) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .eq('vehicle_reg', b.vehicle_reg)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+        if (cartGclid) {
+          await supabase.from('bumper_transactions').update({ gclid: cartGclid }).eq('id', b.id);
+          backfilledBumper++;
+        }
+      }
+      logStep('Backfill complete', { backfilledCustomers, backfilledBumper });
+    } catch (e) {
+      logStep('Warning: backfill failed', (e as Error).message);
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
     // Query customers with Google click IDs that haven't been uploaded yet.
     // Prefer signup_date for the conversion timestamp: it represents the actual purchase/sign-up
     // moment more reliably than created_at on restored/reconciled records.
