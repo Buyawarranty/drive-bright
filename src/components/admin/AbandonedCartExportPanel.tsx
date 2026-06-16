@@ -199,7 +199,23 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     setPreviousIds(ids);
   };
 
-  // Filter candidates: in date range, with an email, optionally exclude previously-exported
+  // Per-source counts for the chosen date range (before source filter)
+  const sourceCounts = useMemo(() => {
+    const fromMs = from.getTime();
+    const toMs = to.getTime();
+    const counts = { google_ad: 0, social_ad: 0, organic: 0, all: 0 };
+    for (const c of candidateCarts) {
+      if (!c.email) continue;
+      const t = new Date(c.created_at).getTime();
+      if (t < fromMs || t > toMs) continue;
+      const s = classifyCartSource(c);
+      counts[s] += 1;
+      counts.all += 1;
+    }
+    return counts;
+  }, [candidateCarts, from, to]);
+
+  // Filter candidates: in date range, with email, source match, optionally exclude previously-exported
   const filtered = useMemo(() => {
     const fromMs = from.getTime();
     const toMs = to.getTime();
@@ -208,9 +224,11 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
       const t = new Date(c.created_at).getTime();
       if (t < fromMs || t > toMs) return false;
       if (excludePrevious && previousIds.has(c.id)) return false;
+      if (sourceFilter !== 'all' && classifyCartSource(c) !== sourceFilter) return false;
       return true;
     });
-  }, [candidateCarts, from, to, excludePrevious, previousIds]);
+  }, [candidateCarts, from, to, excludePrevious, previousIds, sourceFilter]);
+
 
   // Deduplicate by email within the export
   const uniqueByEmail = useMemo(() => {
