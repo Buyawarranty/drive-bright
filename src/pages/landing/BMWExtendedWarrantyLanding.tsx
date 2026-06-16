@@ -221,6 +221,18 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
 
                 {step === 1 && (
                   <>
+                    {/* Tick reassurance lines */}
+                    <div className="mb-3 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-[#00b67a] flex-shrink-0" strokeWidth={3} />
+                        <span className="text-sm md:text-[15px] text-slate-800">From just 60p a day • Easy claims • Fast payouts</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-[#00b67a] flex-shrink-0" strokeWidth={3} />
+                        <span className="text-sm md:text-[15px] text-slate-800">Unlimited claims • Parts and Labour • No excess</span>
+                      </div>
+                    </div>
+
                     <div className="flex h-[68px] md:h-[76px] bg-[#FBBF24] rounded-xl border-2 border-black overflow-hidden shadow-inner">
                       <div className="w-12 md:w-14 bg-[#0052B4] flex flex-col items-center justify-center text-white">
                         <span className="text-base leading-none">🇬🇧</span>
@@ -233,7 +245,31 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                         className="bg-yellow-400 flex-1 bg-transparent text-center text-2xl md:text-3xl font-black uppercase tracking-[0.15em] placeholder:text-black/25 focus:outline-none min-w-0"
                       />
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-500 text-center">Protection for vehicles up to 150,000 miles and 15 years.</p>
+
+                    {/* Vehicle types row — moved below the plate */}
+                    <div className="mt-4 flex flex-col items-center gap-3">
+                      <div className="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
+                        {[
+                          { I: Car, l: 'Cars' },
+                          { I: Truck, l: 'Vans' },
+                          { I: Zap, l: 'Hybrid' },
+                          { I: Battery, l: 'EV' },
+                          { I: Bike, l: 'Motorbikes' },
+                        ].map(({ I, l }) => (
+                          <div key={l} className="flex items-center gap-1.5">
+                            <I className="w-5 h-5 text-[#00b67a]" strokeWidth={2} />
+                            <span className="text-sm font-semibold text-slate-800">{l}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="inline-flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full px-4 py-1.5">
+                        <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
+                        <span className="text-sm font-bold text-slate-800">Instant activation</span>
+                      </div>
+                    </div>
+
+                    <p className="mt-3 text-[11px] text-slate-500 text-center">Protection for vehicles up to 150,000 miles and 15 years.</p>
+
 
                     <div className="mt-4">
                       <MileageQuickSelect
