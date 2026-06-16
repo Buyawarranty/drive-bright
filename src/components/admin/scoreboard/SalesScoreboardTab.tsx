@@ -258,13 +258,13 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <ScoreboardRankingTable agents={agents} currentAdminUserId={currentAdminUserId} period={period} currentUserRole={currentUserRole} onTargetSaved={refresh} />
+          <ScoreboardRankingTable agents={visibleAgents} currentAdminUserId={currentAdminUserId} period={period} currentUserRole={currentUserRole} onTargetSaved={refresh} />
         </TabsContent>
 
         <TabsContent value="profile">
-          {agents.length > 1 && (
+          {visibleAgents.length > 1 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {agents.map(a => (
+              {visibleAgents.map(a => (
                 <Button
                   key={a.id}
                   variant={selectedAgent?.id === a.id ? 'default' : 'outline'}
