@@ -500,66 +500,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         </section>
 
 
-        {/* Footer */}
-        <footer className="bg-white border-t border-slate-100 pt-10 pb-6">
-          <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1.1fr] gap-6">
-            <div>
-              <img src={buyawarrantyLogo} alt="BuyaWarranty" className="h-9 w-auto" />
-              <p className="mt-3 text-xs text-slate-600">Helping UK drivers protect themselves from unexpected repair bills with flexible warranty cover.</p>
-              <div className="mt-3 flex items-center gap-2">
-                <Star className="w-3.5 h-3.5 fill-[#00b67a] text-[#00b67a]" />
-                <span className="text-[11px] font-bold text-slate-700">Rated Excellent</span>
-                <div className="flex items-center gap-0.5 bg-[#00b67a] px-1 py-0.5">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-white text-white" />)}
-                </div>
-                <span className="text-[10px] font-bold text-slate-600">on Trustpilot</span>
-              </div>
-              <div className="mt-4 flex gap-2">
-                {[
-                  { I: Facebook, url: 'https://facebook.com/buyawarranty', bg: 'bg-[#1877F2]' },
-                  { I: Instagram, url: 'https://instagram.com/buyawarranty', bg: 'bg-gradient-to-br from-pink-500 to-orange-500' },
-                  { I: Youtube, url: 'https://youtube.com/@buyawarranty', bg: 'bg-[#FF0000]' },
-                ].map(({ I, url, bg }, i) => (
-                  <a key={i} href={url} target="_blank" rel="noopener" className={`w-8 h-8 rounded-full ${bg} flex items-center justify-center text-white`}>
-                    <I className="w-4 h-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {[
-              { h: 'Quick Links', items: [['Home','/'],['Discounts & Offers','/discounts-offers/'],['Customer Login','/auth/'],['Make a Claim','/make-a-claim/'],['Contact Us','/contact-us/'],['Car Warranty','/car-extended-warranty/'],['Van Warranty','/van-warranty/']] },
-              { h: '', items: [['EV Warranty','/ev-warranty/'],['Motorbike Warranty','/motorcycle-warranty/'],['Extended Warranty','/car-extended-warranty/'],['Warranty Types','/warranty-types/']] },
-              { h: 'Legal', items: [['Privacy Policy','/privacy/'],['Terms & Conditions','/terms/'],['Cookie Policy','/cookies/'],['Complaints Procedure','/complaints/'],['Modern Slavery Statement','/terms/']] },
-            ].map((col, ci) => (
-              <div key={ci}>
-                {col.h && <h3 className="text-[#0F172A] font-black text-xs mb-3">{col.h}</h3>}
-                {!col.h && <div className="h-7" />}
-                <ul className="space-y-1.5 text-xs">
-                  {col.items.map(([l, h]) => (
-                    <li key={l}><Link to={h} className="text-slate-600 hover:text-[#F97316]">{l}</Link></li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h3 className="text-[#0F172A] font-black text-xs mb-3">Help</h3>
-              <ul className="space-y-1.5 text-xs text-slate-600">
-                <li><Link to="/faq/" className="hover:text-[#F97316]">FAQ's</Link></li>
-                <li className="pt-1"><span className="font-bold text-[#0F172A]">Sales Enquiries</span><br/><a href={`tel:${PHONE.replace(/\s/g,'')}`} className="hover:text-[#F97316]">{PHONE}</a></li>
-                <li className="pt-1"><span className="font-bold text-[#0F172A]">Claims Hotline</span><br/><a href="tel:03302295045" className="hover:text-[#F97316]">0330 229 5045</a></li>
-                <li className="pt-1"><span className="font-bold text-[#0F172A]">Email Support</span><br/><a href="mailto:info@buyawarranty.co.uk" className="hover:text-[#F97316] break-all">info@buyawarranty.co.uk</a></li>
-              </ul>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 h-fit">
-              <h3 className="text-[#0F172A] font-black text-sm mb-2">Get a Quote</h3>
-              <p className="text-xs text-slate-600">It only takes 60 seconds to get your free quote.</p>
-              <Button onClick={scrollToQuote} className="w-full mt-3 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs">Get my quote <ArrowRight className="ml-1 w-3 h-3" /></Button>
-            </div>
-          </div>
-          <div className="max-w-7xl mx-auto px-4 mt-8 pt-5 border-t border-slate-100 text-[11px] text-slate-500 leading-relaxed">
-            BuyaWarranty is an independent warranty provider and is not affiliated with BMW. Cover levels, limits, exclusions and eligibility criteria apply. Please refer to the policy documents for full terms and conditions.
-          </div>
-        </footer>
+
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">
