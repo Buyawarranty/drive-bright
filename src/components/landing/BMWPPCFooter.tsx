@@ -45,7 +45,7 @@ const BMWPPCFooter: React.FC = () => {
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-4">Buyawarranty</h3>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
-              Helping UK drivers protect themselves from unexpected repair bills with flexible warranty cover.
+              Helping UK BMW owners protect their car from unexpected repair bills with flexible extended warranty cover designed for BMW models.
             </p>
             <TrustpilotMicroWidget />
           </div>
