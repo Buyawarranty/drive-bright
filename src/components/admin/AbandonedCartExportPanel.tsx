@@ -13,6 +13,7 @@ import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfM
 
 type Platform = 'google' | 'facebook';
 type DatePreset = 'today' | 'yesterday' | 'last7' | 'last30' | 'this_week' | 'this_month' | 'last_month' | 'last90' | 'custom';
+type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'organic';
 
 interface AbandonedCart {
   id: string;
@@ -22,6 +23,21 @@ interface AbandonedCart {
   created_at: string;
   cart_metadata?: any;
 }
+
+// Mirror of public.derive_lead_source SQL function - keeps client/server in sync
+export function classifyCartSource(c: { cart_metadata?: any }): 'google_ad' | 'social_ad' | 'organic' {
+  const m = c.cart_metadata || {};
+  if (m.gclid && String(m.gclid).trim()) return 'google_ad';
+  if (m.fbclid && String(m.fbclid).trim()) return 'social_ad';
+  return 'organic';
+}
+
+const SOURCE_LABELS: Record<Exclude<SourceFilter, 'all'>, string> = {
+  google_ad: 'Google Ads',
+  social_ad: 'Facebook / Social Ads',
+  organic: 'Organic / Direct',
+};
+
 
 interface ExportLog {
   id: string;
@@ -130,8 +146,10 @@ interface Props {
 export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) => {
   const [platform, setPlatform] = useState<Platform>('google');
   const [preset, setPreset] = useState<DatePreset>('last7');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [customFrom, setCustomFrom] = useState(format(startOfDay(subDays(new Date(), 7)), 'yyyy-MM-dd'));
   const [customTo, setCustomTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+
   const [excludePrevious, setExcludePrevious] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [exportLogs, setExportLogs] = useState<ExportLog[]>([]);
@@ -181,7 +199,23 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     setPreviousIds(ids);
   };
 
-  // Filter candidates: in date range, with an email, optionally exclude previously-exported
+  // Per-source counts for the chosen date range (before source filter)
+  const sourceCounts = useMemo(() => {
+    const fromMs = from.getTime();
+    const toMs = to.getTime();
+    const counts = { google_ad: 0, social_ad: 0, organic: 0, all: 0 };
+    for (const c of candidateCarts) {
+      if (!c.email) continue;
+      const t = new Date(c.created_at).getTime();
+      if (t < fromMs || t > toMs) continue;
+      const s = classifyCartSource(c);
+      counts[s] += 1;
+      counts.all += 1;
+    }
+    return counts;
+  }, [candidateCarts, from, to]);
+
+  // Filter candidates: in date range, with email, source match, optionally exclude previously-exported
   const filtered = useMemo(() => {
     const fromMs = from.getTime();
     const toMs = to.getTime();
@@ -190,9 +224,11 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
       const t = new Date(c.created_at).getTime();
       if (t < fromMs || t > toMs) return false;
       if (excludePrevious && previousIds.has(c.id)) return false;
+      if (sourceFilter !== 'all' && classifyCartSource(c) !== sourceFilter) return false;
       return true;
     });
-  }, [candidateCarts, from, to, excludePrevious, previousIds]);
+  }, [candidateCarts, from, to, excludePrevious, previousIds, sourceFilter]);
+
 
   // Deduplicate by email within the export
   const uniqueByEmail = useMemo(() => {
@@ -215,8 +251,9 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     setExporting(true);
     try {
       const csv = buildAbandonedCartCsv(uniqueByEmail, platform);
-      const fname = `abandoned-carts-${platform}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
+      const fname = `abandoned-carts-${platform}-${sourceFilter}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
       downloadAbandonedCartCsv(csv, fname);
+
 
       // Log the export
       const { data: auth } = await supabase.auth.getUser();
@@ -274,7 +311,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
             <Label className="text-xs">Platform</Label>
             <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
@@ -282,6 +319,18 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
               <SelectContent>
                 <SelectItem value="google">Google Customer Match</SelectItem>
                 <SelectItem value="facebook">Facebook Custom Audience</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Traffic Source</Label>
+            <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(v as SourceFilter)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All sources ({sourceCounts.all})</SelectItem>
+                <SelectItem value="google_ad">Google Ads ({sourceCounts.google_ad})</SelectItem>
+                <SelectItem value="social_ad">Facebook / Social ({sourceCounts.social_ad})</SelectItem>
+                <SelectItem value="organic">Organic / Direct ({sourceCounts.organic})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -309,6 +358,15 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
             </Button>
           </div>
         </div>
+
+        {/* Per-source breakdown chips */}
+        <div className="flex flex-wrap gap-2 text-xs">
+          <Badge variant="outline">Google Ads: {sourceCounts.google_ad}</Badge>
+          <Badge variant="outline">Facebook / Social: {sourceCounts.social_ad}</Badge>
+          <Badge variant="outline">Organic / Direct: {sourceCounts.organic}</Badge>
+          <Badge variant="secondary">Total in range: {sourceCounts.all}</Badge>
+        </div>
+
 
         {preset === 'custom' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
