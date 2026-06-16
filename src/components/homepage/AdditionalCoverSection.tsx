@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Globe, Key, ArrowRightLeft, SlidersHorizontal, ShieldPlus } from 'lucide-react';
+import { Truck, Globe, Key, ArrowRightLeft, SlidersHorizontal } from 'lucide-react';
 
 const AdditionalCoverSection: React.FC = () => {
   return (
@@ -17,7 +17,7 @@ const AdditionalCoverSection: React.FC = () => {
                   <Truck className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-brand-dark-text">24/7 Vehicle Recovery</h3>
+                  <h3 className="text-lg font-bold text-brand-dark-text">Vehicle Recovery</h3>
                   <p className="text-brand-dark-text">Help whenever you need it.</p>
                 </div>
               </div>
@@ -71,17 +71,6 @@ const AdditionalCoverSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-4 text-left">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
-                  <ShieldPlus className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-brand-dark-text">Tyre Cover</h3>
-                  <p className="text-brand-dark-text">Protection against unexpected tyre damage.</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
