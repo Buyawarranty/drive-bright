@@ -49,18 +49,14 @@ const PHONE = '0330 229 5040';
 const WHATSAPP_URL = 'https://wa.me/443302295040';
 
 const faqs = [
-  { q: 'How much does a BMW extended warranty cost?', a: 'BMW cover starts from £19/month for eligible vehicles. Final pricing depends on model, mileage, claim limit and plan length.' },
-  { q: 'What BMW models and ages are covered?', a: 'Cover is available for most BMW petrol, diesel, hybrid and EV models up to 15 years old and 150,000 miles, subject to eligibility.' },
-  { q: 'Is my car too old or has too many miles?', a: 'We cover vehicles up to 15 years old and up to 150,000 miles. Higher-mileage BMWs may still be eligible for selected plans — enter your reg for an instant check.' },
-  { q: 'Can I use my own garage?', a: 'Yes. You can choose any VAT-registered garage in the UK for repairs, subject to our claims process and policy terms.' },
-  { q: 'What\u2019s covered in my warranty?', a: 'Cover varies by plan and may include mechanical, electrical, tech and safety components. Full inclusions, limits and exclusions are detailed in your policy documents.' },
-  { q: 'How do I make a claim?', a: 'Contact our claims team, share the diagnostic report from your chosen garage, and we\u2019ll review the claim against your plan terms and respond quickly.' },
-  { q: 'What should I do if my car has an issue?', a: 'Stop driving if it\u2019s unsafe, take the car to a VAT-registered garage for diagnosis, then contact our claims team before any repair work starts.' },
-  { q: 'What about modified vehicles?', a: 'Standard manufacturer options are fine. Performance modifications or non-standard parts may not be eligible — please check before purchasing.' },
+  { q: 'How much does BMW extended warranty cover cost?', a: 'Prices start from £19/month. Your exact price depends on your BMW model, age, mileage and the level of cover you choose.' },
+  { q: 'What BMW models can you cover?', a: 'We can provide cover for many BMW models, subject to age, mileage, vehicle condition and eligibility checks. Vehicles up to 15 years old and 150,000 miles are typically eligible.' },
+  { q: 'Can I use my own garage?', a: 'Yes, repairs can usually be carried out by a VAT-registered garage of your choice, subject to claim approval and policy terms.' },
+  { q: 'What is not covered?', a: 'Like all warranty products, exclusions apply. Wear and tear, pre-existing faults, routine servicing and maintenance items may not be covered unless included in your chosen plan.' },
+  { q: 'How do I make a claim?', a: 'Contact our claims team before any repair work starts. We will explain the next steps and tell your garage what information we need to assess the claim.' },
+  { q: 'Is Buyawarranty part of BMW?', a: 'No. Buyawarranty is an independent UK warranty provider and is not affiliated with BMW.' },
   { q: 'Do I need a full service history?', a: 'A documented service history is recommended and helps support any future claim, but it is not always required to start cover.' },
-  { q: 'What claim limit is right for me?', a: 'Higher claim limits suit higher-value or more complex BMWs. We\u2019ll help you pick a sensible limit during the quote journey.' },
-  { q: 'Are diagnostics covered?', a: 'Diagnostic costs can be included where they identify a covered fault, subject to your selected plan and policy terms.' },
-  { q: 'Is there a 30-day wait for new customers?', a: 'A short initial waiting period applies to new policies. Full details are set out in your policy documents before you buy.' },
+  { q: 'Is there a waiting period for new policies?', a: 'A short initial waiting period applies to new policies. Full details are set out in your policy documents before you buy.' },
 ];
 
 const Stars = ({ size = 14 }: { size?: number }) => (
