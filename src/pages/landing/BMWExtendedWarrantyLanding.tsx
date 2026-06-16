@@ -547,29 +547,6 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Final dark CTA bar */}
-        <section className="bg-[#0F1B3D] py-6 md:py-7">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
-            <div className="flex items-center gap-3 text-white">
-              <Shield className="w-8 h-8 text-white flex-shrink-0" />
-              <div>
-                <p className="font-black text-base md:text-lg leading-tight text-white">Ready to protect your BMW?</p>
-                <p className="text-xs md:text-sm text-white mt-0.5">Get your instant quote in 60 seconds and drive with confidence.</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3">
-              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 h-11">
-                Get your free quote <ArrowRight className="ml-1 w-4 h-4" />
-              </Button>
-              <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="inline-flex items-center gap-2 text-white font-bold text-sm">
-                <Phone className="w-4 h-4 text-[#F97316]" /> {PHONE}
-              </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 px-3 h-11 rounded-md bg-[#25D366] text-white text-xs font-bold hover:opacity-90">
-                <MessageCircle className="w-4 h-4" /> WhatsApp us
-              </a>
-            </div>
-          </div>
-        </section>
 
         {/* Footer */}
         <footer className="bg-white border-t border-slate-100 pt-10 pb-6">
