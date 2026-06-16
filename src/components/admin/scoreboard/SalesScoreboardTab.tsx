@@ -281,7 +281,7 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="awards">
-          <ScoreboardAwards agents={agents} currentAdminUserId={currentAdminUserId} />
+          <ScoreboardAwards agents={visibleAgents} currentAdminUserId={currentAdminUserId} />
         </TabsContent>
 
         <TabsContent value="compare">
