@@ -1,0 +1,342 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { Download, FileSpreadsheet, History, Calendar } from 'lucide-react';
+import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+
+type Platform = 'google' | 'facebook';
+type DatePreset = 'today' | 'yesterday' | 'last7' | 'last30' | 'this_week' | 'this_month' | 'last_month' | 'last90' | 'custom';
+
+interface AbandonedCart {
+  id: string;
+  full_name: string | null;
+  email: string;
+  phone: string | null;
+  created_at: string;
+  cart_metadata?: any;
+}
+
+interface ExportLog {
+  id: string;
+  platform: string;
+  date_from: string;
+  date_to: string;
+  cart_count: number;
+  exported_by_email: string | null;
+  created_at: string;
+}
+
+function getPresetRange(preset: DatePreset): { from: Date; to: Date } {
+  const now = new Date();
+  switch (preset) {
+    case 'today': return { from: startOfDay(now), to: endOfDay(now) };
+    case 'yesterday': return { from: startOfDay(subDays(now, 1)), to: endOfDay(subDays(now, 1)) };
+    case 'last7': return { from: startOfDay(subDays(now, 7)), to: endOfDay(now) };
+    case 'last30': return { from: startOfDay(subDays(now, 30)), to: endOfDay(now) };
+    case 'last90': return { from: startOfDay(subDays(now, 90)), to: endOfDay(now) };
+    case 'this_week': return { from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfWeek(now, { weekStartsOn: 1 }) };
+    case 'this_month': return { from: startOfMonth(now), to: endOfMonth(now) };
+    case 'last_month': { const lm = subMonths(now, 1); return { from: startOfMonth(lm), to: endOfMonth(lm) }; }
+    default: return { from: startOfDay(subDays(now, 7)), to: endOfDay(now) };
+  }
+}
+
+// Split UK-style full_name into first/last
+function splitName(full: string | null): { first: string; last: string } {
+  if (!full) return { first: '', last: '' };
+  const parts = full.trim().split(/\s+/);
+  if (parts.length === 1) return { first: parts[0], last: '' };
+  return { first: parts[0], last: parts.slice(1).join(' ') };
+}
+
+// Normalise UK phone to E.164 (+44...)
+function normalisePhone(p: string | null): string {
+  if (!p) return '';
+  const digits = p.replace(/[^\d+]/g, '');
+  if (digits.startsWith('+')) return digits;
+  if (digits.startsWith('44')) return '+' + digits;
+  if (digits.startsWith('0')) return '+44' + digits.slice(1);
+  return digits ? '+44' + digits : '';
+}
+
+function csvEscape(v: string): string {
+  if (v == null) return '';
+  const s = String(v);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function buildCsv(carts: AbandonedCart[], platform: Platform): string {
+  if (platform === 'google') {
+    // Google Customer Match CSV format
+    const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Country', 'Zip'];
+    const rows = carts.map(c => {
+      const { first, last } = splitName(c.full_name);
+      const zip = c.cart_metadata?.address?.postcode || '';
+      return [
+        (c.email || '').trim().toLowerCase(),
+        normalisePhone(c.phone),
+        first,
+        last,
+        'GB',
+        zip,
+      ].map(csvEscape).join(',');
+    });
+    return [header.join(','), ...rows].join('\n');
+  }
+  // Facebook Custom Audience CSV format
+  const header = ['email', 'phone', 'fn', 'ln', 'country', 'zip'];
+  const rows = carts.map(c => {
+    const { first, last } = splitName(c.full_name);
+    const zip = c.cart_metadata?.address?.postcode || '';
+    return [
+      (c.email || '').trim().toLowerCase(),
+      normalisePhone(c.phone),
+      first.toLowerCase(),
+      last.toLowerCase(),
+      'gb',
+      zip.toLowerCase().replace(/\s+/g, ''),
+    ].map(csvEscape).join(',');
+  });
+  return [header.join(','), ...rows].join('\n');
+}
+
+function downloadCsv(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+interface Props {
+  // Carts already filtered to "remarketable" (non-converted) - used as the candidate pool
+  candidateCarts: AbandonedCart[];
+}
+
+export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) => {
+  const [platform, setPlatform] = useState<Platform>('google');
+  const [preset, setPreset] = useState<DatePreset>('last7');
+  const [excludePrevious, setExcludePrevious] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [exportLogs, setExportLogs] = useState<ExportLog[]>([]);
+  const [previousIds, setPreviousIds] = useState<Set<string>>(new Set());
+
+  const { from, to } = useMemo(() => getPresetRange(preset), [preset]);
+
+  useEffect(() => {
+    void loadLogs();
+    void loadPreviouslyExportedIds(platform);
+  }, [platform]);
+
+  const loadLogs = async () => {
+    const { data } = await supabase
+      .from('abandoned_cart_exports')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    setExportLogs((data || []) as ExportLog[]);
+  };
+
+  const loadPreviouslyExportedIds = async (p: Platform) => {
+    const ids = new Set<string>();
+    let offset = 0;
+    const pageSize = 1000;
+    // Paginate to bypass 1000-row limit
+    while (true) {
+      const { data, error } = await supabase
+        .from('abandoned_cart_export_items')
+        .select('abandoned_cart_id')
+        .eq('platform', p)
+        .range(offset, offset + pageSize - 1);
+      if (error) break;
+      const rows = (data || []) as { abandoned_cart_id: string }[];
+      rows.forEach(r => ids.add(r.abandoned_cart_id));
+      if (rows.length < pageSize) break;
+      offset += pageSize;
+    }
+    setPreviousIds(ids);
+  };
+
+  // Filter candidates: in date range, with an email, optionally exclude previously-exported
+  const filtered = useMemo(() => {
+    const fromMs = from.getTime();
+    const toMs = to.getTime();
+    return candidateCarts.filter(c => {
+      if (!c.email) return false;
+      const t = new Date(c.created_at).getTime();
+      if (t < fromMs || t > toMs) return false;
+      if (excludePrevious && previousIds.has(c.id)) return false;
+      return true;
+    });
+  }, [candidateCarts, from, to, excludePrevious, previousIds]);
+
+  // Deduplicate by email within the export
+  const uniqueByEmail = useMemo(() => {
+    const seen = new Set<string>();
+    const out: AbandonedCart[] = [];
+    for (const c of filtered) {
+      const key = (c.email || '').trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(c);
+    }
+    return out;
+  }, [filtered]);
+
+  const handleExport = async () => {
+    if (uniqueByEmail.length === 0) {
+      toast.error('No carts to export in this date range');
+      return;
+    }
+    setExporting(true);
+    try {
+      const csv = buildCsv(uniqueByEmail, platform);
+      const fname = `abandoned-carts-${platform}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
+      downloadCsv(csv, fname);
+
+      // Log the export
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id;
+      const userEmail = auth?.user?.email || null;
+
+      const { data: exportRow, error: exportErr } = await supabase
+        .from('abandoned_cart_exports')
+        .insert({
+          platform,
+          date_from: from.toISOString(),
+          date_to: to.toISOString(),
+          cart_count: uniqueByEmail.length,
+          exported_by: userId,
+          exported_by_email: userEmail,
+        })
+        .select()
+        .single();
+
+      if (exportErr) throw exportErr;
+
+      // Insert items in chunks of 500
+      const items = uniqueByEmail.map(c => ({
+        export_id: exportRow.id,
+        abandoned_cart_id: c.id,
+        platform,
+        email: (c.email || '').trim().toLowerCase(),
+      }));
+      for (let i = 0; i < items.length; i += 500) {
+        const chunk = items.slice(i, i + 500);
+        await supabase.from('abandoned_cart_export_items').insert(chunk);
+      }
+
+      toast.success(`Exported ${uniqueByEmail.length} carts for ${platform === 'google' ? 'Google' : 'Facebook'} and logged.`);
+      await loadLogs();
+      await loadPreviouslyExportedIds(platform);
+    } catch (e: any) {
+      console.error(e);
+      toast.error('Export failed: ' + (e.message || 'unknown error'));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  return (
+    <Card className="border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileSpreadsheet className="w-5 h-5" />
+          Remarketing Export (Google / Facebook)
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Export abandoned carts as a CSV ready to upload to Google Customer Match or Facebook Custom Audience.
+          Customers who have already purchased are automatically excluded.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <Label className="text-xs">Platform</Label>
+            <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="google">Google Customer Match</SelectItem>
+                <SelectItem value="facebook">Facebook Custom Audience</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Date Range</Label>
+            <Select value={preset} onValueChange={(v) => setPreset(v as DatePreset)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
+                <SelectItem value="last7">Last 7 days (weekly)</SelectItem>
+                <SelectItem value="this_week">This week</SelectItem>
+                <SelectItem value="last30">Last 30 days (monthly)</SelectItem>
+                <SelectItem value="this_month">This month</SelectItem>
+                <SelectItem value="last_month">Last month</SelectItem>
+                <SelectItem value="last90">Last 90 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end">
+            <Button onClick={handleExport} disabled={exporting || uniqueByEmail.length === 0} className="w-full">
+              <Download className="w-4 h-4 mr-2" />
+              {exporting ? 'Exporting...' : `Export ${uniqueByEmail.length} carts`}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {format(from, 'd MMM yyyy')} – {format(to, 'd MMM yyyy')}
+            </span>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox checked={excludePrevious} onCheckedChange={(v) => setExcludePrevious(!!v)} />
+            <span>Exclude carts already uploaded to {platform === 'google' ? 'Google' : 'Facebook'} ({previousIds.size} on file)</span>
+          </label>
+        </div>
+
+        {exportLogs.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <History className="w-4 h-4" />
+              <h4 className="font-medium text-sm">Recent exports</h4>
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto border rounded-md p-2">
+              {exportLogs.map(log => (
+                <div key={log.id} className="flex items-center justify-between text-xs py-1 border-b last:border-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={log.platform === 'google' ? 'default' : 'secondary'}>
+                      {log.platform === 'google' ? 'Google' : 'Facebook'}
+                    </Badge>
+                    <span>{format(new Date(log.date_from), 'd MMM')} – {format(new Date(log.date_to), 'd MMM yyyy')}</span>
+                    <span className="text-muted-foreground">· {log.cart_count} carts</span>
+                  </div>
+                  <div className="text-muted-foreground">
+                    {format(new Date(log.created_at), 'd MMM HH:mm')}
+                    {log.exported_by_email ? ` · ${log.exported_by_email}` : ''}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
