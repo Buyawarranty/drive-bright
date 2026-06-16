@@ -205,7 +205,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             {/* LEFT */}
             <div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0F172A] leading-[1.02] tracking-tight">
-                BMW Extended<br/>Warranty<br/>
+                BMW Extended Warranty<br/>
                 <span className="text-slate-900">from </span><span className="text-[#F97316]">£19/month</span>
               </h1>
               <p className="mt-5 text-slate-700 font-semibold text-base">
