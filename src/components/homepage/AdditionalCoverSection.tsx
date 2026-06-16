@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Globe, Key, ArrowRightLeft, SlidersHorizontal, ShieldPlus } from 'lucide-react';
+import { Truck, Globe, Key, ArrowRightLeft, SlidersHorizontal } from 'lucide-react';
 
 const AdditionalCoverSection: React.FC = () => {
   return (
