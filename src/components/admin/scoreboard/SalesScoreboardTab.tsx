@@ -190,7 +190,6 @@ export const SalesScoreboardTab: React.FC = () => {
         />
       </div>
 
-      {/* KPI Cards */}
       {/* Team Filter (Team Red, Team Blue, …) */}
       {teams.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
