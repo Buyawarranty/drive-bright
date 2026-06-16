@@ -46,6 +46,8 @@ interface AbandonedCart {
   updated_at: string;
   last_contacted_at: string | null;
   contacted_by: string | null;
+  is_converted?: boolean | null;
+  converted_at?: string | null;
   cart_metadata?: {
     total_price?: number;
     voluntary_excess?: number;
@@ -152,21 +154,27 @@ export const AbandonedCartsTab: React.FC = () => {
         if (offset > 50000) break; // hard safety cap
       }
 
-      // Exclude carts whose email has become a paying customer (active, not cancelled/refunded)
-      const purchased = new Set<string>();
+      setRawCartCount(all.length);
+
+      // Exclude carts that converted here, in customer orders, or in website quote payments.
+      const purchasedEmails = new Set<string>();
+      const purchasedRegs = new Set<string>();
       let cOffset = 0;
       while (true) {
         const { data: cust, error: cErr } = await supabase
           .from('customers')
-          .select('email,status,is_deleted')
+          .select('email,status,is_deleted,registration_plate')
           .eq('is_deleted', false)
           .range(cOffset, cOffset + pageSize - 1);
         if (cErr) break;
-        const crows = (cust || []) as { email: string | null; status: string | null }[];
+        const crows = (cust || []) as { email: string | null; status: string | null; registration_plate: string | null }[];
         crows.forEach(c => {
           const s = (c.status || '').toLowerCase();
-          if (c.email && !s.includes('cancelled') && !s.includes('refunded')) {
-            purchased.add(c.email.trim().toLowerCase());
+          if (!s.includes('cancelled') && !s.includes('refunded')) {
+            const email = normalizeEmail(c.email);
+            const reg = normalizeReg(c.registration_plate);
+            if (email) purchasedEmails.add(email);
+            if (reg) purchasedRegs.add(reg);
           }
         });
         if (crows.length < pageSize) break;
@@ -174,11 +182,41 @@ export const AbandonedCartsTab: React.FC = () => {
         if (cOffset > 100000) break;
       }
 
+      cOffset = 0;
+      while (true) {
+        const { data: quotes, error: qErr } = await supabase
+          .from('live_quotes')
+          .select('customer_email,vehicle_reg')
+          .eq('status', 'paid')
+          .range(cOffset, cOffset + pageSize - 1);
+        if (qErr) break;
+        const qrows = (quotes || []) as { customer_email: string | null; vehicle_reg: string | null }[];
+        qrows.forEach(q => {
+          const email = normalizeEmail(q.customer_email);
+          const reg = normalizeReg(q.vehicle_reg);
+          if (email) purchasedEmails.add(email);
+          if (reg) purchasedRegs.add(reg);
+        });
+        if (qrows.length < pageSize) break;
+        cOffset += pageSize;
+        if (cOffset > 100000) break;
+      }
+
       const remarketable = all.filter(c => {
-        const e = (c.email || '').trim().toLowerCase();
-        return e && !purchased.has(e);
+        const e = normalizeEmail(c.email);
+        const reg = normalizeReg(c.vehicle_reg);
+        const cartStatus = (c.contact_status || '').toLowerCase();
+        return (
+          e &&
+          !c.is_converted &&
+          !c.converted_at &&
+          cartStatus !== 'converted' &&
+          !purchasedEmails.has(e) &&
+          (!reg || !purchasedRegs.has(reg))
+        );
       });
 
+      setRemovedConvertedCount(all.length - remarketable.length);
       setCarts(remarketable);
       setNewCartsCount(0);
     } catch (error) {
