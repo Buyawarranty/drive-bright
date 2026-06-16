@@ -96,42 +96,34 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
     if (step === 1) {
       if (!regNumber.trim()) { setErrorMsg('Please enter your vehicle registration to continue.'); return; }
       if (!mileageBand) { setErrorMsg('Please select your approximate mileage.'); return; }
-      setStep(2);
-    } else if (step === 2) {
-      if (!name.trim() || !email.trim() || !phone.trim()) { setErrorMsg('Please complete your name, email and phone.'); return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrorMsg('Please enter a valid email address.'); return; }
-      submit();
+      submitToMainJourney();
     }
   };
 
-  const submit = async () => {
+  const submitToMainJourney = async () => {
     setIsSubmitting(true);
     trackQuoteRequest();
     try {
       const mileage = mileageBand === 'under' ? '100000' : '130000';
-      let extra: any = {};
+      let extra: any = { vehicleType: 'car' };
       try {
-        const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registration: regNumber } });
-        if (data?.make) {
-          extra = { make: data.make, model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture || data.year, vehicleType: data.vehicleType };
+        const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
+        if (data?.found) {
+          extra = { make: data.make || 'BMW', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate };
         }
       } catch { /* ok */ }
-      const vehicleData = {
-        regNumber: regNumber.toUpperCase(), mileage,
-        firstName: name.split(' ')[0] || name, lastName: name.split(' ').slice(1).join(' '),
-        email, phone, postcode, ...extra,
-      };
+      const vehicleData = { regNumber: regNumber.toUpperCase(), mileage, ...extra };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
-      saveWithTimestamp('warrantyJourneyState', JSON.stringify({ vehicleData, formData: vehicleData, currentStep: 2, selectedPlan: null }));
       sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
-      setStep(4);
+      navigate('/?step=2');
     } catch (e) {
       console.error(e);
       toast({ title: 'Something went wrong', description: 'Please try again or call us.', variant: 'destructive' });
     } finally { setIsSubmitting(false); }
   };
+
 
   const goToQuoteOptions = () => { navigate('/?step=2'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
