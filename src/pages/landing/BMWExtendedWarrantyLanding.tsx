@@ -28,6 +28,7 @@ import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import BMWPPCFooter from '@/components/landing/BMWPPCFooter';
 import bmw1Series from '@/assets/bmw-models/bmw-1-series-extended-warranty.jpg';
 import bmw3Series from '@/assets/bmw-models/bmw-3-series-extended-warranty.jpg';
 import bmw5Series from '@/assets/bmw-models/bmw-5-series-extended-warranty.jpg';
@@ -499,8 +500,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-
-
+        <BMWPPCFooter />
 
         {/* Sticky mobile CTA */}
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3">

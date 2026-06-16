@@ -51,7 +51,8 @@ const ConditionalFooter = () => {
   
   // Hide footer on brand landing pages (Google Ads pages)
   const isBrandLanding = (location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/')
-    || location.pathname.startsWith('/bmw-extended-warranty');
+    || location.pathname.startsWith('/bmw-extended-warranty')
+    || location.pathname.startsWith('/car-extended-warranty/bmw');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
