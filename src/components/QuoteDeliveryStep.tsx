@@ -110,6 +110,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const handleSkipClick = async () => {
     try {
       if (email.trim()) {
+        const skipFbclid = getSessionFbclid();
+        const skipGclid = getSessionGclid();
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
             full_name: firstName.trim() || null,
@@ -120,7 +122,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_model: vehicleData?.model,
             vehicle_year: vehicleData?.year,
             mileage: vehicleData?.mileage,
-            step_abandoned: 2
+            step_abandoned: 2,
+            ...(skipFbclid ? { fbclid: skipFbclid } : {}),
+            ...(skipGclid ? { gclid: skipGclid } : {}),
           }
         });
       }

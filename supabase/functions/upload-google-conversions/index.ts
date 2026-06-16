@@ -208,6 +208,102 @@ Deno.serve(async (req) => {
     // older than 60 days so we never get "Identifiers or iOS URL parameters are too old".
     const cutoffISO = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
+    // ─── RECONCILIATION / BACKFILL ────────────────────────────────────────────
+    // Sales completed via Bumper Portal, Stripe dashboard, or Payment Assist
+    // sometimes lose customers.gclid even though the visitor originally clicked
+    // a Google ad and had a cart with a gclid stored in cart_metadata. Copy that
+    // gclid onto the customer/bumper record so the normal upload path picks it up.
+    let backfilledCustomers = 0;
+    let backfilledBumper = 0;
+    try {
+      const { data: noGclidCustomers } = await supabase
+        .from('customers')
+        .select('id, email, registration_plate')
+        .is('gclid', null)
+        .eq('is_deleted', false)
+        .in('status', ['active', 'Active'])
+        .gte('created_at', cutoffISO)
+        .limit(500);
+
+      for (const c of (noGclidCustomers || []) as any[]) {
+        if (!c.email && !c.registration_plate) continue;
+        let cartGclid: string | null = null;
+
+        if (c.email) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .ilike('email', c.email)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+        if (!cartGclid && c.registration_plate) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .eq('vehicle_reg', c.registration_plate)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+
+        if (cartGclid) {
+          await supabase.from('customers').update({ gclid: cartGclid }).eq('id', c.id);
+          backfilledCustomers++;
+        }
+      }
+
+      const { data: noGclidBumper } = await supabase
+        .from('bumper_transactions')
+        .select('id, customer_data, vehicle_data')
+        .is('gclid', null)
+        .eq('status', 'completed')
+        .gte('updated_at', cutoffISO)
+        .limit(500);
+
+      for (const b of (noGclidBumper || []) as any[]) {
+        const bEmail: string | null = b.customer_data?.email || b.customer_data?.first_name_email || null;
+        const bReg: string | null = b.vehicle_data?.registration_plate || b.vehicle_data?.regNumber || null;
+        let cartGclid: string | null = null;
+        if (bEmail) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .ilike('email', bEmail)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+        if (!cartGclid && bReg) {
+          const { data: cart } = await supabase
+            .from('abandoned_carts')
+            .select('cart_metadata')
+            .eq('vehicle_reg', bReg)
+            .not('cart_metadata->>gclid', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+        }
+        if (cartGclid) {
+          await supabase.from('bumper_transactions').update({ gclid: cartGclid }).eq('id', b.id);
+          backfilledBumper++;
+        }
+      }
+
+      logStep('Backfill complete', { backfilledCustomers, backfilledBumper });
+    } catch (e) {
+      logStep('Warning: backfill failed', (e as Error).message);
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
     // Query customers with Google click IDs that haven't been uploaded yet.
     // Prefer signup_date for the conversion timestamp: it represents the actual purchase/sign-up
     // moment more reliably than created_at on restored/reconciled records.
@@ -238,11 +334,6 @@ Deno.serve(async (req) => {
       .gte('updated_at', cutoffISO)
       .order('created_at', { ascending: true })
       .limit(200);
-
-    if (bumperError) {
-      logStep('Warning: Failed to query bumper transactions', bumperError.message);
-    }
-
 
     if (bumperError) {
       logStep('Warning: Failed to query bumper transactions', bumperError.message);
@@ -380,6 +471,8 @@ Deno.serve(async (req) => {
       uploaded,
       failed,
       withIdentifiers,
+      backfilledCustomers,
+      backfilledBumper,
       errors: errors.slice(0, 10), // Only first 10 errors
     };
 
