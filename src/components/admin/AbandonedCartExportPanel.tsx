@@ -13,6 +13,7 @@ import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfM
 
 type Platform = 'google' | 'facebook';
 type DatePreset = 'today' | 'yesterday' | 'last7' | 'last30' | 'this_week' | 'this_month' | 'last_month' | 'last90' | 'custom';
+type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'organic';
 
 interface AbandonedCart {
   id: string;
@@ -22,6 +23,21 @@ interface AbandonedCart {
   created_at: string;
   cart_metadata?: any;
 }
+
+// Mirror of public.derive_lead_source SQL function - keeps client/server in sync
+export function classifyCartSource(c: { cart_metadata?: any }): 'google_ad' | 'social_ad' | 'organic' {
+  const m = c.cart_metadata || {};
+  if (m.gclid && String(m.gclid).trim()) return 'google_ad';
+  if (m.fbclid && String(m.fbclid).trim()) return 'social_ad';
+  return 'organic';
+}
+
+const SOURCE_LABELS: Record<Exclude<SourceFilter, 'all'>, string> = {
+  google_ad: 'Google Ads',
+  social_ad: 'Facebook / Social Ads',
+  organic: 'Organic / Direct',
+};
+
 
 interface ExportLog {
   id: string;
