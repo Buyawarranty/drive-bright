@@ -25,6 +25,8 @@ import bmwHero from '@/assets/bmw-used-car-extended-warranty-uk.webp';
 import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import MileageQuickSelect from '@/components/MileageQuickSelect';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import bmw1Series from '@/assets/bmw-models/bmw-1-series-extended-warranty.jpg';
 import bmw3Series from '@/assets/bmw-models/bmw-3-series-extended-warranty.jpg';
 import bmw5Series from '@/assets/bmw-models/bmw-5-series-extended-warranty.jpg';
