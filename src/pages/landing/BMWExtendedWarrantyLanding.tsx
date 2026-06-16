@@ -238,7 +238,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                       <MileageQuickSelect
                         value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
                         onChange={(v) => setMileageBand(v === 'under120k' ? 'under' : v === 'over120k' ? 'over' : '')}
-                        onAutoSubmit={() => { setErrorMsg(''); setStep(2); }}
+                        onAutoSubmit={() => { setErrorMsg(''); submitToMainJourney(); }}
                         isLoading={isSubmitting}
                         isRegValid={regNumber.replace(/\s/g,'').length >= 5}
                       />
