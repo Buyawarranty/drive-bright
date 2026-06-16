@@ -104,20 +104,11 @@ const BMWPPCFooter: React.FC = () => {
           </div>
         </div>
 
-        {/* Trust line */}
-        <p className="text-center text-sm text-gray-600 max-w-3xl mx-auto mb-6">
-          Fast online quotes for BMW extended warranty cover. Trusted BMW warranty protection for 1 Series, 3 Series, 5 Series, 7 Series, X Series SUVs and i Series EVs. Cover levels and eligibility criteria apply.
-        </p>
-
-        {/* Bottom: company registration + BMW disclaimer */}
-        <div className="text-center pt-6 border-t border-gray-200 space-y-3">
-          <p className="text-xs text-gray-600 max-w-4xl mx-auto">
-            Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863. Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.
+        {/* Combined trust + legal section */}
+        <div className="text-center pt-6 border-t border-gray-200 max-w-4xl mx-auto">
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Fast online quotes for BMW extended warranty cover and used BMW car warranties. Trusted BMW vehicle warranty protection for BMW 1 Series, 3 Series, 5 Series, 7 Series, X Series SUVs (X1, X3, X5, X7) and i Series EVs and hybrids (i3, i4, i7, iX). Cover levels and eligibility criteria apply. Buyawarranty.co.uk is a trading name of Buy A Warranty Limited, established 2016, registered in the United Kingdom under Company number 10314863, registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. Buyawarranty is an independent warranty provider and is not affiliated with BMW. Cover levels, limits, exclusions and eligibility criteria apply — please refer to your selected policy documents for full terms and conditions. © Buy a Warranty. All rights reserved.
           </p>
-          <p className="text-xs text-gray-500 max-w-4xl mx-auto italic">
-            Buyawarranty is an independent warranty provider and is not affiliated with BMW. Cover levels, limits, exclusions and eligibility criteria apply. Please refer to your selected policy documents for full terms and conditions.
-          </p>
-          <p className="text-xs text-gray-500">© Buy a Warranty. All rights reserved.</p>
         </div>
       </div>
     </footer>
