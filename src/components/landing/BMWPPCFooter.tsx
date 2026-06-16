@@ -85,21 +85,6 @@ const BMWPPCFooter: React.FC = () => {
                 <p className="font-semibold text-gray-900">Claims:</p>
                 <a href="tel:03302295045" className="text-[#eb4b00] font-bold hover:underline">0330 229 5045</a>
               </div>
-              <div>
-                <p className="font-semibold text-gray-900">Email:</p>
-                <a href="mailto:support@buyawarranty.co.uk" className="text-[#eb4b00] font-bold hover:underline break-all">support@buyawarranty.co.uk</a>
-              </div>
-              <div>
-                <a
-                  href="https://wa.me/message/SPQPJ6O3UBF5B1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-[#25D366] font-semibold hover:underline"
-                >
-                  <MessageCircle className="w-4 h-4 mr-1.5" />
-                  WhatsApp Us
-                </a>
-              </div>
             </div>
           </div>
         </div>
