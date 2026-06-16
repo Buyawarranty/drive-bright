@@ -91,6 +91,14 @@ function csvEscape(v: string): string {
   return s;
 }
 
+// Force Excel/Sheets to treat a value as text (prevents +447... → 4.47E+11)
+function csvText(v: string): string {
+  if (!v) return '';
+  // ="value" with internal quotes doubled — Excel parses the formula and stores the literal string
+  return '="' + String(v).replace(/"/g, '""') + '"';
+}
+
+
 export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform): string {
   if (platform === 'google') {
     // Google Customer Match CSV format
