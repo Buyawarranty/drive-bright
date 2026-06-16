@@ -290,6 +290,21 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
                   <span className="text-sm font-bold text-slate-800">Instant activation</span>
                 </div>
+
+                {/* Pricing Reassurance Panel */}
+                <div className="w-full mt-2 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
+                  <h2 className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
+                    Fair price. Fast quote. No surprises.
+                  </h2>
+                  <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
+                    <span className="text-gray-600">Speak to an expert:</span>
+                    <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="font-semibold text-gray-900 hover:underline">{PHONE}</a>
+                    <span className="text-gray-400">or</span>
+                    <button onClick={() => setShowCallbackModal(true)} className="text-[#F97316] hover:underline font-medium">
+                      Request a callback
+                    </button>
+                  </div>
+                </div>
               </div>
 
             </div>
