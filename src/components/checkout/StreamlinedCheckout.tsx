@@ -988,7 +988,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             }
             // Restore payment type if available
             if (parsed.paymentType) {
-              const restoredPayment = parsed.paymentType === 'monthly' ? 'monthly' : 'full';
+              const restoredPayment = parsed.paymentType === 'full' ? 'full' : 'monthly';
               setSelectedPayment(restoredPayment);
               selectedPaymentRef.current = restoredPayment;
             }
