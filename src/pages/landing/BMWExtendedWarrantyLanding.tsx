@@ -321,26 +321,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </div>
                 
               </div>
-              <div className="mt-6 flex flex-col items-center gap-3">
-                <div className="flex items-center justify-center gap-5 md:gap-7 flex-wrap">
-                  {[
-                    { I: Car, l: 'Cars' },
-                    { I: Truck, l: 'Vans' },
-                    { I: Zap, l: 'Hybrid' },
-                    { I: Battery, l: 'EV' },
-                    { I: Bike, l: 'Motorbikes' },
-                  ].map(({ I, l }) => (
-                    <div key={l} className="flex items-center gap-1.5">
-                      <I className="w-5 h-5 text-[#00b67a]" strokeWidth={2} />
-                      <span className="text-sm font-semibold text-slate-800">{l}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="inline-flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full px-4 py-1.5">
-                  <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
-                  <span className="text-sm font-bold text-slate-800">Instant activation</span>
-                </div>
-              </div>
+            </div>
+
 
             </div>
           </div>
