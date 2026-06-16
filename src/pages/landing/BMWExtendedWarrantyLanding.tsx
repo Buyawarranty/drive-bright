@@ -374,6 +374,34 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
+        {/* How claims work */}
+        <section className="py-12 md:py-14 bg-white border-b border-slate-100">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">How claims work</h2>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Simple, transparent and designed to get you back on the road.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4 md:gap-5">
+              {[
+                { n: '1', t: 'Call our claims team', d: 'Get in touch with us before any repair work begins.' },
+                { n: '2', t: 'Use a VAT-registered garage', d: 'Your garage diagnoses the fault and provides the repair details we need.' },
+                { n: '3', t: 'We review the claim', d: 'If approved, the repair can go ahead in line with your policy terms.' },
+              ].map(({ n, t, d }) => (
+                <div key={n} className="bg-white border border-slate-200 rounded-2xl p-6">
+                  <div className="w-9 h-9 rounded-full bg-[#F97316] text-white flex items-center justify-center font-black mb-3">{n}</div>
+                  <h3 className="font-black text-base text-[#0F172A] mb-1.5">{t}</h3>
+                  <p className="text-sm text-slate-600 leading-snug">{d}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-7">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-6 h-12">
+                Get my BMW quote <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
         {/* BMW models we cover */}
         <section className="py-12 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4">
