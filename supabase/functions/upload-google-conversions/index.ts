@@ -468,6 +468,8 @@ Deno.serve(async (req) => {
       uploaded,
       failed,
       withIdentifiers,
+      backfilledCustomers,
+      backfilledBumper,
       errors: errors.slice(0, 10), // Only first 10 errors
     };
 
