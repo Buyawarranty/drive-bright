@@ -37,6 +37,7 @@ const ConditionalStickyNavigation = () => {
   const location = useLocation();
   if (location.pathname.startsWith('/dealer-portal')) return null;
   if (location.pathname.startsWith('/bmw-extended-warranty')) return null;
+  if (location.pathname.startsWith('/car-extended-warranty/bmw')) return null;
   return <StickyNavigation />;
 };
 
