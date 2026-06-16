@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
+import VehicleCoverageSection from '@/components/homepage/VehicleCoverageSection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import pandaMascot from '@/assets/panda-car-warranty-transparent.png';
 import pandaLaptop from '@/assets/404-panda.png';
@@ -467,38 +468,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="py-12 md:py-16 bg-white border-t border-slate-100">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto mb-8">
-              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">How it works</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Protection in 4 simple steps.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] gap-3 md:gap-4 items-stretch">
-              {[
-                { I: FileText, t: 'Enter your reg', d: 'Tell us your BMW registration so we can start your quote.' },
-                { I: Gauge, t: 'Confirm mileage', d: 'Choose your approximate mileage so we can check suitable options.' },
-                { I: User, t: 'Add your details', d: 'Tell us where to send your quote and cover information.' },
-                { I: Shield, t: 'Choose your cover', d: 'Review available options and choose the plan that works for you.' },
-              ].map((s, i, arr) => (
-                <React.Fragment key={s.t}>
-                  <div className="bg-white border border-slate-200 rounded-2xl p-5 text-left">
-                    <div className="w-11 h-11 rounded-lg bg-slate-50 text-[#F97316] flex items-center justify-center mb-3">
-                      <s.I className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-black text-base text-[#0F172A]">{s.t}</h3>
-                    <p className="mt-1.5 text-sm text-slate-600">{s.d}</p>
-                  </div>
-                  {i < arr.length - 1 && (
-                    <div className="hidden md:flex items-center justify-center">
-                      <ChevronRight className="w-6 h-6 text-slate-300" />
-                    </div>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* BMW coverage details (mirrors homepage Every Part Covered) */}
+        <VehicleCoverageSection headingPrefix="BMW" />
 
         {/* Cover options / what's included */}
         <section className="py-12 md:py-16 bg-white border-t border-slate-100">
