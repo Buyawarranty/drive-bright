@@ -260,30 +260,32 @@ Deno.serve(async (req) => {
 
       const { data: noGclidBumper } = await supabase
         .from('bumper_transactions')
-        .select('id, customer_email, vehicle_reg')
+        .select('id, customer_data, vehicle_data')
         .is('gclid', null)
         .eq('status', 'completed')
         .gte('updated_at', cutoffISO)
         .limit(500);
 
       for (const b of (noGclidBumper || []) as any[]) {
+        const bEmail: string | null = b.customer_data?.email || b.customer_data?.first_name_email || null;
+        const bReg: string | null = b.vehicle_data?.registration_plate || b.vehicle_data?.regNumber || null;
         let cartGclid: string | null = null;
-        if (b.customer_email) {
+        if (bEmail) {
           const { data: cart } = await supabase
             .from('abandoned_carts')
             .select('cart_metadata')
-            .ilike('email', b.customer_email)
+            .ilike('email', bEmail)
             .not('cart_metadata->>gclid', 'is', null)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
           cartGclid = (cart?.cart_metadata as any)?.gclid || null;
         }
-        if (!cartGclid && b.vehicle_reg) {
+        if (!cartGclid && bReg) {
           const { data: cart } = await supabase
             .from('abandoned_carts')
             .select('cart_metadata')
-            .eq('vehicle_reg', b.vehicle_reg)
+            .eq('vehicle_reg', bReg)
             .not('cart_metadata->>gclid', 'is', null)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -295,6 +297,7 @@ Deno.serve(async (req) => {
           backfilledBumper++;
         }
       }
+
       logStep('Backfill complete', { backfilledCustomers, backfilledBumper });
     } catch (e) {
       logStep('Warning: backfill failed', (e as Error).message);
