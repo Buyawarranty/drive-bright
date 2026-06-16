@@ -684,13 +684,23 @@ export const CancellationsTab: React.FC<{
                         </div>
                       </TableCell>
                       <TableCell>
-                        {record.registration_plate ? (
-                          <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
-                            {record.registration_plate.toUpperCase()}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
-                        )}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {record.registration_plate ? (
+                            <span className="inline-flex items-center bg-yellow-400 text-black font-bold px-2 py-0.5 rounded text-sm font-mono tracking-wider border border-yellow-500">
+                              {record.registration_plate.toUpperCase()}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">N/A</span>
+                          )}
+                          {record.registration_plate && claimRegs.has(record.registration_plate.toUpperCase().replace(/\s+/g, '').trim()) && (
+                            <span
+                              title="This customer has also submitted a claim"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-orange-100 text-orange-700 border border-orange-200"
+                            >
+                              <FileWarning className="h-3 w-3" /> Has claim
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-sm">
                         {[record.vehicle_make, record.vehicle_model].filter(Boolean).join(' ') || 'N/A'}
