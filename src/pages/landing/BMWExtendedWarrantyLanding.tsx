@@ -4,7 +4,7 @@ import {
   Check, Phone, MessageCircle, Star, Shield, Wrench, Zap, Cpu, ChevronDown,
   Car, Truck, Battery, Bike, Plane, RefreshCw, Settings2, MapPin, ArrowRight,
   Gauge, ChevronLeft, FileText, Users, Headphones, Cog, Thermometer, CircleDot,
-  Fuel, ListChecks, ChevronRight, User, Globe, MoreHorizontal, Leaf,
+  Fuel, ListChecks, ChevronRight, User, Globe, MoreHorizontal, Leaf, LifeBuoy, Droplets,
   Facebook, Instagram, Youtube,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -471,35 +471,33 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         {/* BMW coverage details (mirrors homepage Every Part Covered) */}
         <VehicleCoverageSection headingPrefix="BMW" />
 
-        {/* Cover options / what's included */}
-        <section className="py-12 md:py-16 bg-white border-t border-slate-100">
+        {/* What does BMW warranty cover? */}
+        <section className="py-12 md:py-16 bg-gradient-to-b from-white to-slate-50 border-t border-slate-100">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-8">
-              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Cover options / what's included</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Choose flexible warranty cover for your BMW. Inclusions and limits vary by plan.</p>
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">What does BMW warranty cover?</h2>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Eight major systems protected, so you can drive your BMW with confidence.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-                { I: Wrench, t: 'Mechanical & Electrical', items: ['Engine components', 'Transmission & gearbox', 'Electrical systems', 'Cooling system & more'] },
-                { I: Cpu, t: 'Tech & Safety', items: ['Sensors & ECU', 'Infotainment systems', 'Air conditioning', 'Driver assistance'] },
-                { I: ListChecks, t: 'Plan Benefits', items: ['Flexible cover levels', 'UK-wide garage network', 'Genuine or quality parts', 'Claim policy extras'] },
-                { I: Zap, t: 'EV & Hybrid', items: ['Hybrid components', 'High-voltage battery*', 'EV power electronics', 'Electric drive units', '*Subject to plan and eligibility.'] },
-              ].map(({ I, t, items }) => (
-                <div key={t} className="bg-white border border-slate-200 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <I className="w-5 h-5 text-[#0F172A]" />
-                    <p className="font-black text-sm text-[#0F172A]">{t}</p>
+                { I: Cog,        t: 'Engine',                bg: 'bg-orange-50',  ring: 'border-orange-200',  ic: 'text-orange-600',  hoverRing: 'hover:border-orange-400' },
+                { I: Settings2,  t: 'Gearbox',               bg: 'bg-blue-50',    ring: 'border-blue-200',    ic: 'text-blue-600',    hoverRing: 'hover:border-blue-400' },
+                { I: Zap,        t: 'Electrical systems',    bg: 'bg-amber-50',   ring: 'border-amber-200',   ic: 'text-amber-600',   hoverRing: 'hover:border-amber-400' },
+                { I: Thermometer,t: 'Cooling system',        bg: 'bg-cyan-50',    ring: 'border-cyan-200',    ic: 'text-cyan-600',    hoverRing: 'hover:border-cyan-400' },
+                { I: CircleDot,  t: 'Braking system',        bg: 'bg-red-50',     ring: 'border-red-200',     ic: 'text-red-600',     hoverRing: 'hover:border-red-400' },
+                { I: LifeBuoy,   t: 'Steering system',       bg: 'bg-indigo-50',  ring: 'border-indigo-200',  ic: 'text-indigo-600',  hoverRing: 'hover:border-indigo-400' },
+                { I: Fuel,       t: 'Fuel system',           bg: 'bg-emerald-50', ring: 'border-emerald-200', ic: 'text-emerald-600', hoverRing: 'hover:border-emerald-400' },
+                { I: Battery,    t: 'Hybrid / EV components',bg: 'bg-lime-50',    ring: 'border-lime-200',    ic: 'text-lime-700',    hoverRing: 'hover:border-lime-400' },
+              ].map(({ I, t, bg, ring, ic, hoverRing }) => (
+                <div key={t} className={`${bg} border-2 ${ring} ${hoverRing} rounded-2xl p-5 flex flex-col items-center text-center transition-all hover:-translate-y-0.5 hover:shadow-md`}>
+                  <div className={`w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-3 ${ic}`}>
+                    <I className="w-6 h-6" />
                   </div>
-                  <ul className="space-y-2">
-                    {items.map(x => (
-                      <li key={x} className={`flex items-start gap-1.5 text-xs ${x.startsWith('*') ? 'text-slate-400 italic' : 'text-slate-600'}`}>
-                        {!x.startsWith('*') && <Check className="w-3.5 h-3.5 text-[#00b67a] mt-0.5 flex-shrink-0" />}{x}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="font-black text-sm md:text-base text-[#0F172A] leading-tight">{t}</p>
                 </div>
               ))}
             </div>
+            <p className="text-center mt-5 text-xs text-slate-500">Inclusions and limits vary by plan. Hybrid &amp; EV components subject to plan and eligibility.</p>
           </div>
         </section>
 
