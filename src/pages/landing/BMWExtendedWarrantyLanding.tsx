@@ -676,6 +676,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
           </div>
         </div>
       </div>
+      <RequestCallbackModal isOpen={showCallbackModal} onClose={() => setShowCallbackModal(false)} />
     </>
   );
 };
