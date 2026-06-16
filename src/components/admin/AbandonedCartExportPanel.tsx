@@ -91,6 +91,14 @@ function csvEscape(v: string): string {
   return s;
 }
 
+// Force Excel/Sheets to treat a value as text (prevents +447... → 4.47E+11)
+function csvText(v: string): string {
+  if (!v) return '';
+  // ="value" with internal quotes doubled — Excel parses the formula and stores the literal string
+  return '="' + String(v).replace(/"/g, '""') + '"';
+}
+
+
 export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform): string {
   if (platform === 'google') {
     // Google Customer Match CSV format
@@ -98,14 +106,15 @@ export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform
     const rows = carts.map(c => {
       const { first, last } = splitName(c.full_name);
       const zip = c.cart_metadata?.address?.postcode || '';
+      const phone = normalisePhone(c.phone);
       return [
-        (c.email || '').trim().toLowerCase(),
-        normalisePhone(c.phone),
-        first,
-        last,
-        'GB',
-        zip,
-      ].map(csvEscape).join(',');
+        csvEscape((c.email || '').trim().toLowerCase()),
+        csvText(phone), // forces Excel to keep +44... as text
+        csvEscape(first),
+        csvEscape(last),
+        csvEscape('GB'),
+        csvEscape(zip),
+      ].join(',');
     });
     return [header.join(','), ...rows].join('\n');
   }
@@ -114,17 +123,19 @@ export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform
   const rows = carts.map(c => {
     const { first, last } = splitName(c.full_name);
     const zip = c.cart_metadata?.address?.postcode || '';
+    const phone = normalisePhone(c.phone);
     return [
-      (c.email || '').trim().toLowerCase(),
-      normalisePhone(c.phone),
-      first.toLowerCase(),
-      last.toLowerCase(),
-      'gb',
-      zip.toLowerCase().replace(/\s+/g, ''),
-    ].map(csvEscape).join(',');
+      csvEscape((c.email || '').trim().toLowerCase()),
+      csvText(phone),
+      csvEscape(first.toLowerCase()),
+      csvEscape(last.toLowerCase()),
+      csvEscape('gb'),
+      csvEscape(zip.toLowerCase().replace(/\s+/g, '')),
+    ].join(',');
   });
   return [header.join(','), ...rows].join('\n');
 }
+
 
 export function downloadAbandonedCartCsv(content: string, filename: string) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
