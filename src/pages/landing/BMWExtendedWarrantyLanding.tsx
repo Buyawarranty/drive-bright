@@ -49,18 +49,14 @@ const PHONE = '0330 229 5040';
 const WHATSAPP_URL = 'https://wa.me/443302295040';
 
 const faqs = [
-  { q: 'How much does a BMW extended warranty cost?', a: 'BMW cover starts from £19/month for eligible vehicles. Final pricing depends on model, mileage, claim limit and plan length.' },
-  { q: 'What BMW models and ages are covered?', a: 'Cover is available for most BMW petrol, diesel, hybrid and EV models up to 15 years old and 150,000 miles, subject to eligibility.' },
-  { q: 'Is my car too old or has too many miles?', a: 'We cover vehicles up to 15 years old and up to 150,000 miles. Higher-mileage BMWs may still be eligible for selected plans — enter your reg for an instant check.' },
-  { q: 'Can I use my own garage?', a: 'Yes. You can choose any VAT-registered garage in the UK for repairs, subject to our claims process and policy terms.' },
-  { q: 'What\u2019s covered in my warranty?', a: 'Cover varies by plan and may include mechanical, electrical, tech and safety components. Full inclusions, limits and exclusions are detailed in your policy documents.' },
-  { q: 'How do I make a claim?', a: 'Contact our claims team, share the diagnostic report from your chosen garage, and we\u2019ll review the claim against your plan terms and respond quickly.' },
-  { q: 'What should I do if my car has an issue?', a: 'Stop driving if it\u2019s unsafe, take the car to a VAT-registered garage for diagnosis, then contact our claims team before any repair work starts.' },
-  { q: 'What about modified vehicles?', a: 'Standard manufacturer options are fine. Performance modifications or non-standard parts may not be eligible — please check before purchasing.' },
+  { q: 'How much does BMW extended warranty cover cost?', a: 'Prices start from £19/month. Your exact price depends on your BMW model, age, mileage and the level of cover you choose.' },
+  { q: 'What BMW models can you cover?', a: 'We can provide cover for many BMW models, subject to age, mileage, vehicle condition and eligibility checks. Vehicles up to 15 years old and 150,000 miles are typically eligible.' },
+  { q: 'Can I use my own garage?', a: 'Yes, repairs can usually be carried out by a VAT-registered garage of your choice, subject to claim approval and policy terms.' },
+  { q: 'What is not covered?', a: 'Like all warranty products, exclusions apply. Wear and tear, pre-existing faults, routine servicing and maintenance items may not be covered unless included in your chosen plan.' },
+  { q: 'How do I make a claim?', a: 'Contact our claims team before any repair work starts. We will explain the next steps and tell your garage what information we need to assess the claim.' },
+  { q: 'Is Buyawarranty part of BMW?', a: 'No. Buyawarranty is an independent UK warranty provider and is not affiliated with BMW.' },
   { q: 'Do I need a full service history?', a: 'A documented service history is recommended and helps support any future claim, but it is not always required to start cover.' },
-  { q: 'What claim limit is right for me?', a: 'Higher claim limits suit higher-value or more complex BMWs. We\u2019ll help you pick a sensible limit during the quote journey.' },
-  { q: 'Are diagnostics covered?', a: 'Diagnostic costs can be included where they identify a covered fault, subject to your selected plan and policy terms.' },
-  { q: 'Is there a 30-day wait for new customers?', a: 'A short initial waiting period applies to new policies. Full details are set out in your policy documents before you buy.' },
+  { q: 'Is there a waiting period for new policies?', a: 'A short initial waiting period applies to new policies. Full details are set out in your policy documents before you buy.' },
 ];
 
 const Stars = ({ size = 14 }: { size?: number }) => (
@@ -151,9 +147,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="BMW Extended Warranty from £19/month | Instant Quote | BuyaWarranty"
-        description="Affordable BMW extended warranty from £19/month. Flexible plans covering mechanical, electrical, tech and EV components. Instant online quote in 60 seconds."
-        keywords="BMW extended warranty, BMW warranty UK, used BMW warranty, BMW car warranty"
+        title="BMW Extended Warranty Cover from £19/month | Instant Quote"
+        description="Protect your BMW from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds."
+        keywords="BMW extended warranty, BMW warranty quote, BMW warranty UK, used BMW warranty, BMW repair cover, BMW warranty cost"
         canonical="https://buyawarranty.co.uk/bmw-extended-warranty/"
         geoRegion="GB" geoPlacename="United Kingdom"
       />
@@ -200,23 +196,35 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         </header>
 
         {/* HERO */}
-        <section className="bg-white pt-6 md:pt-10 pb-8 md:pb-10 px-4">
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-12 items-start">
+        <section className="bg-white pt-5 md:pt-8 pb-6 md:pb-8 px-4">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_1fr] gap-6 lg:gap-10 items-start">
             {/* LEFT */}
             <div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0F172A] leading-[1.02] tracking-tight">
-                BMW Extended Warranty<br/>
+              <h1 className="text-[28px] sm:text-4xl md:text-5xl lg:text-[52px] font-black text-[#0F172A] leading-[1.05] tracking-tight">
+                BMW Extended Warranty Cover<br className="hidden sm:block"/>{' '}
                 <span className="text-slate-900">from </span><span className="text-[#F97316]">£19/month</span>
               </h1>
-              <p className="mt-5 text-slate-700 font-semibold text-base">
-                Affordable BMW warranty cover you can trust in 60 seconds.
-              </p>
-              <p className="mt-2 text-slate-500 text-sm">
-                Get a fast quote for flexible BMW warranty cover designed to help protect you from unexpected repair bills.
+              <p className="mt-3 md:mt-4 text-slate-700 text-[15px] md:text-base leading-snug">
+                Protect your BMW from unexpected repair bills with flexible UK warranty cover. Get an instant quote in under 60 seconds.
               </p>
 
+              {/* Trust bullets — reassurance before the form */}
+              <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                {[
+                  'Covers major mechanical and electrical faults',
+                  'UK-based support team',
+                  'Use your own VAT-registered garage',
+                  'Instant activation available',
+                ].map(b => (
+                  <li key={b} className="flex items-start gap-2 text-[13.5px] text-slate-800">
+                    <Check className="w-4 h-4 text-[#16A34A] flex-shrink-0 mt-0.5" strokeWidth={3} />
+                    <span className="font-medium">{b}</span>
+                  </li>
+                ))}
+              </ul>
+
               {/* Quote module */}
-              <div id="quote-module" className="mt-6">
+              <div id="quote-module" className="mt-5">
 
 
                 {step === 1 && (
@@ -248,6 +256,10 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                       )}
                     </div>
 
+                    <p className="mt-2 text-xs text-slate-500 text-center">
+                      No payment required to view your quote. Takes less than 60 seconds.
+                    </p>
+
                     <div className="mt-4">
                       <MileageQuickSelect
                         value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
@@ -259,11 +271,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                     </div>
 
                     {/* Pricing Reassurance Panel */}
-                    <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
-                      <h2 className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
+                    <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-3 text-center">
+                      <h2 className="text-sm sm:text-[15px] font-bold text-[#1B2A4A]">
                         Fair price. Fast quote. No surprises.
                       </h2>
-                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
+                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[14px] mt-1">
                         <span className="text-gray-600">Speak to an expert:</span>
                         <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="font-semibold text-gray-900 hover:underline">{PHONE}</a>
                         <span className="text-gray-400">or</span>
@@ -281,17 +293,21 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <p className="mt-3 text-xs text-red-600 font-semibold text-center">{errorMsg}</p>
                 )}
 
+                {/* Independence disclosure — earlier than the footer for trust */}
+                <p className="mt-4 text-[11.5px] text-slate-500 leading-snug">
+                  Buyawarranty is an independent UK warranty provider and is not affiliated with BMW.
+                </p>
 
               </div>
 
             </div>
 
-            {/* RIGHT */}
-            <div className="lg:order-last">
+            {/* RIGHT — hidden on mobile so the quote form leads above the fold */}
+            <div className="hidden md:block lg:order-last">
               <div className="relative">
                 <img src={bmwHero} alt="Premium BMW with extended warranty cover" className="w-full h-auto rounded-2xl" loading="eager" />
               </div>
-              <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="mt-5 flex flex-col items-center gap-3">
                 <div className="flex items-center justify-center gap-5 md:gap-7 flex-wrap">
                   {[
                     { I: Car, l: 'Cars' },
@@ -307,8 +323,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   ))}
                 </div>
                 <div className="inline-flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full px-4 py-1.5">
-                  <Zap className="w-4 h-4 text-[#FBBF24] fill-[#FBBF24]" />
-                  <span className="text-sm font-bold text-slate-800">Instant activation</span>
+                  <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
+                  <span className="text-sm font-bold text-slate-800">Rated Excellent on Trustpilot</span>
                 </div>
               </div>
 
@@ -334,9 +350,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             </h2>
             <div className="grid md:grid-cols-3 gap-4 md:gap-5">
               {[
-                { I: Shield, t: 'Specialists in Extended Warranty Cover', d: 'We focus on what matters most — helping you protect your BMW from unexpected repair bills.' },
-                { I: Users, t: 'Independent & Customer Focused', d: 'We work for you, not the manufacturers or garages.' },
-                { I: Headphones, t: 'UK-Based Support You Can Rely On', d: 'Friendly experts ready to help whenever you need us.' },
+                { I: Shield, t: 'Protect against expensive BMW repair bills', d: 'Cover for major mechanical and electrical components, depending on your plan.' },
+                { I: Wrench, t: 'Choose your own garage', d: 'Repairs can be carried out by your preferred VAT-registered garage, subject to claim approval.' },
+                { I: Headphones, t: 'UK support when you need it', d: 'Our team is here to help with quotes, claims and questions before you buy.' },
               ].map(({ I, t, d }) => (
                 <div key={t} className="bg-white border border-slate-200 rounded-2xl p-6">
                   <div className="w-12 h-12 rounded-xl bg-[#0F172A] text-white flex items-center justify-center mb-4">
@@ -354,6 +370,34 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 {[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 fill-white text-white" />)}
               </div>
               <span className="text-sm font-bold text-slate-700">on Trustpilot</span>
+            </div>
+          </div>
+        </section>
+
+        {/* How claims work */}
+        <section className="py-12 md:py-14 bg-white border-b border-slate-100">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">How claims work</h2>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Simple, transparent and designed to get you back on the road.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4 md:gap-5">
+              {[
+                { n: '1', t: 'Call our claims team', d: 'Get in touch with us before any repair work begins.' },
+                { n: '2', t: 'Use a VAT-registered garage', d: 'Your garage diagnoses the fault and provides the repair details we need.' },
+                { n: '3', t: 'We review the claim', d: 'If approved, the repair can go ahead in line with your policy terms.' },
+              ].map(({ n, t, d }) => (
+                <div key={n} className="bg-white border border-slate-200 rounded-2xl p-6">
+                  <div className="w-9 h-9 rounded-full bg-[#F97316] text-white flex items-center justify-center font-black mb-3">{n}</div>
+                  <h3 className="font-black text-base text-[#0F172A] mb-1.5">{t}</h3>
+                  <p className="text-sm text-slate-600 leading-snug">{d}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-7">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-6 h-12">
+                Get my BMW quote <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
             </div>
           </div>
         </section>
