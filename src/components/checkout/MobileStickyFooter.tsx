@@ -213,8 +213,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
                 <div className="leading-tight">
-                  <p className="text-[13px] font-bold text-gray-900">14-day</p>
-                  <p className="text-[11px] text-gray-600">cooling off</p>
+                  <p className="text-[13px] font-bold text-gray-900">Easy</p>
+                  <p className="text-[11px] text-gray-600">claims</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
