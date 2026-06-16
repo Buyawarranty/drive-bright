@@ -211,10 +211,10 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               {/* Trust bullets — reassurance before the form */}
               <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
-                  'Covers major mechanical and electrical faults',
+                  'Covers mechanical and electrical faults',
                   'UK-based support team',
                   'Use your own VAT-registered garage',
-                  'Instant activation available',
+                  'Easy Claims, Fast Payouts',
                 ].map(b => (
                   <li key={b} className="flex items-start gap-2 text-[13.5px] text-slate-800">
                     <Check className="w-4 h-4 text-[#16A34A] flex-shrink-0 mt-0.5" strokeWidth={3} />
