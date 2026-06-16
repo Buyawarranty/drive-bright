@@ -151,17 +151,38 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="BMW Extended Warranty from £19/month | Instant Quote | BuyaWarranty"
-        description="Affordable BMW extended warranty from £19/month. Flexible plans covering mechanical, electrical, tech and EV components. Instant online quote in 60 seconds."
-        keywords="BMW extended warranty, BMW warranty UK, used BMW warranty, BMW car warranty"
-        canonical="https://buyawarranty.co.uk/bmw-extended-warranty/"
-        geoRegion="GB" geoPlacename="United Kingdom"
+        title="BMW Extended Warranty UK from £19/month | Used BMW Warranty Cover | BuyaWarranty"
+        description="Affordable BMW extended warranty cover from £19/month. Used BMW warranty for 1 Series, 3 Series, 5 Series, 7 Series, X1, X3, X5, X7 and i Series EV. Unlimited claims, parts & labour, no excess. Instant online quote in 60 seconds."
+        keywords="BMW extended warranty, BMW warranty UK, used BMW warranty, BMW car warranty, BMW 1 Series warranty, BMW 3 Series warranty, BMW 5 Series warranty, BMW X3 warranty, BMW X5 warranty, BMW i3 warranty, BMW i4 warranty, BMW EV warranty, BMW warranty quote, cheap BMW warranty"
+        canonical="https://buyawarranty.co.uk/car-extended-warranty/bmw/"
+        ogTitle="BMW Extended Warranty UK from £19/month — BuyaWarranty"
+        ogDescription="Used BMW extended warranty cover. Unlimited claims, parts & labour, no excess. Get an instant online BMW warranty quote in 60 seconds."
+        geoRegion="GB"
+        geoPlacename="United Kingdom"
       />
       <OrganizationSchema />
-      <WebPageSchema name="BMW Extended Warranty" description="BMW extended warranty cover from £19/month." url="https://buyawarranty.co.uk/bmw-extended-warranty/" />
+      <WebPageSchema
+        name="BMW Extended Warranty UK"
+        description="BMW extended warranty cover from £19/month. Used BMW warranty for petrol, diesel, hybrid and i Series EV models."
+        url="https://buyawarranty.co.uk/car-extended-warranty/bmw/"
+      />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
-      <ProductSchema name="BMW Extended Warranty" description="Flexible BMW warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
-      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/bmw-extended-warranty/' }]} />
+      <ProductSchema
+        name="BMW Extended Warranty"
+        description="Flexible BMW extended warranty cover for used BMW cars including 1 Series, 3 Series, 5 Series, 7 Series, X Series SUVs and i Series EVs. Unlimited claims, parts & labour, no excess."
+        price="19"
+        brand="BuyaWarranty"
+        category="Vehicle Extended Warranty"
+        image="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
+        availability="https://schema.org/InStock"
+        areaServed="GB"
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: 'https://buyawarranty.co.uk/' },
+        { name: 'Car Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/' },
+        { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/bmw/' },
+      ]} />
+
 
       <div className="min-h-screen bg-white text-slate-900 pb-24 md:pb-0 font-sans">
         {/* PPC Header */}
