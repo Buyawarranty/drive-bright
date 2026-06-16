@@ -75,7 +75,7 @@ function csvEscape(v: string): string {
   return s;
 }
 
-function buildCsv(carts: AbandonedCart[], platform: Platform): string {
+export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform): string {
   if (platform === 'google') {
     // Google Customer Match CSV format
     const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Country', 'Zip'];
@@ -110,7 +110,7 @@ function buildCsv(carts: AbandonedCart[], platform: Platform): string {
   return [header.join(','), ...rows].join('\n');
 }
 
-function downloadCsv(content: string, filename: string) {
+export function downloadAbandonedCartCsv(content: string, filename: string) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -214,9 +214,9 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     }
     setExporting(true);
     try {
-      const csv = buildCsv(uniqueByEmail, platform);
+      const csv = buildAbandonedCartCsv(uniqueByEmail, platform);
       const fname = `abandoned-carts-${platform}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
-      downloadCsv(csv, fname);
+      downloadAbandonedCartCsv(csv, fname);
 
       // Log the export
       const { data: auth } = await supabase.auth.getUser();
