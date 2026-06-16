@@ -233,6 +233,25 @@ export const CancellationsTab: React.FC<{
 
   useEffect(() => {
     fetchCancellations();
+    // Load registrations that have submitted claims, to flag in this table
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('claims_submissions')
+          .select('vehicle_registration')
+          .neq('status', 'fake_test')
+          .not('vehicle_registration', 'is', null)
+          .limit(5000);
+        const set = new Set<string>();
+        (data || []).forEach((r: any) => {
+          const reg = (r.vehicle_registration || '').toString().toUpperCase().replace(/\s+/g, '').trim();
+          if (reg) set.add(reg);
+        });
+        setClaimRegs(set);
+      } catch (e) {
+        console.error('Error fetching claim regs:', e);
+      }
+    })();
   }, []);
 
   const handleMonthSelect = (monthIdx: string) => {
