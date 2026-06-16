@@ -442,7 +442,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   iconBg: 'bg-[#FFEDD5]', iconColor: 'text-[#F97316]', numBg: 'bg-[#F97316]' },
                 { I: Home, n: '2', t: 'Visit a VAT-registered garage', d: 'Your garage diagnoses the fault and provides the repair details.',
                   iconBg: 'bg-[#DCFCE7]', iconColor: 'text-[#16A34A]', numBg: 'bg-[#16A34A]' },
-                { I: ClipboardCheck, n: '3', t: 'We confirm the next steps', d: 'We review the repair details against your policy and let you and the garage know what happens next.',
+                { I: ClipboardCheck, n: '3', t: 'We review the repair details', d: 'Our claims team checks the information from your garage and confirms the next steps with you.',
                   iconBg: 'bg-[#DBEAFE]', iconColor: 'text-[#2563EB]', numBg: 'bg-[#2563EB]' },
               ].map(({ I, n, t, d, iconBg, iconColor, numBg }) => (
                 <div key={n} className="relative flex flex-col items-center text-center px-2">
