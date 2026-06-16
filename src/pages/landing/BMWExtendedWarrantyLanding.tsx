@@ -82,6 +82,8 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
+
 
   const scrollToQuote = () => {
     trackButtonClick('bmw_ppc_cta');
