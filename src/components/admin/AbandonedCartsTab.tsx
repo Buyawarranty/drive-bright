@@ -156,21 +156,27 @@ export const AbandonedCartsTab: React.FC = () => {
 
       setRawCartCount(all.length);
 
-      // Exclude carts that converted here, in customer orders, or in website quote payments.
+      // Only exclude carts that match a real completed warranty purchase in the
+      // customers table (paid + not cancelled/refunded/pending/failed). This
+      // matches what's visible in the Customers dashboard and prevents the
+      // count being inflated by quote payments or unconverted cart records.
       const purchasedEmails = new Set<string>();
       const purchasedRegs = new Set<string>();
       let cOffset = 0;
       while (true) {
         const { data: cust, error: cErr } = await supabase
           .from('customers')
-          .select('email,status,is_deleted,registration_plate')
+          .select('email,status,is_deleted,registration_plate,payment_status')
           .eq('is_deleted', false)
           .range(cOffset, cOffset + pageSize - 1);
         if (cErr) break;
-        const crows = (cust || []) as { email: string | null; status: string | null; registration_plate: string | null }[];
+        const crows = (cust || []) as { email: string | null; status: string | null; registration_plate: string | null; payment_status: string | null }[];
         crows.forEach(c => {
           const s = (c.status || '').toLowerCase();
-          if (!s.includes('cancelled') && !s.includes('refunded')) {
+          const ps = (c.payment_status || '').toLowerCase();
+          const isPaid = ps === 'paid' || ps === 'completed' || ps === 'succeeded' || ps === 'active';
+          const isBad = s.includes('cancelled') || s.includes('refunded') || s.includes('pending') || s.includes('failed');
+          if (isPaid && !isBad) {
             const email = normalizeEmail(c.email);
             const reg = normalizeReg(c.registration_plate);
             if (email) purchasedEmails.add(email);
@@ -178,26 +184,6 @@ export const AbandonedCartsTab: React.FC = () => {
           }
         });
         if (crows.length < pageSize) break;
-        cOffset += pageSize;
-        if (cOffset > 100000) break;
-      }
-
-      cOffset = 0;
-      while (true) {
-        const { data: quotes, error: qErr } = await supabase
-          .from('live_quotes')
-          .select('customer_email,vehicle_reg')
-          .eq('status', 'paid')
-          .range(cOffset, cOffset + pageSize - 1);
-        if (qErr) break;
-        const qrows = (quotes || []) as { customer_email: string | null; vehicle_reg: string | null }[];
-        qrows.forEach(q => {
-          const email = normalizeEmail(q.customer_email);
-          const reg = normalizeReg(q.vehicle_reg);
-          if (email) purchasedEmails.add(email);
-          if (reg) purchasedRegs.add(reg);
-        });
-        if (qrows.length < pageSize) break;
         cOffset += pageSize;
         if (cOffset > 100000) break;
       }
@@ -406,7 +392,7 @@ export const AbandonedCartsTab: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600">Removed purchasers</p>
                 <p className="text-2xl font-bold text-purple-600">{removedConvertedCount.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">matched by email, reg, quote payment, or cart conversion</p>
+                <p className="text-xs text-gray-500 mt-1">matched to a paid customer (excludes cancelled & refunded)</p>
               </div>
               <Calendar className="w-8 h-8 text-purple-400" />
             </div>
