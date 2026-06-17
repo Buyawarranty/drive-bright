@@ -23,6 +23,7 @@ import { ReturnDiscountBanner } from '@/components/ReturnDiscountBanner';
 import { useImpersonation } from '@/hooks/useImpersonation';
 import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/components/ui/address-autocomplete';
+import PolicyDocumentsNotice from '@/components/PolicyDocumentsNotice';
 
 
 interface CustomerPolicy {
