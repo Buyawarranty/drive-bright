@@ -22,7 +22,8 @@ import VehicleCoverageSection from '@/components/homepage/VehicleCoverageSection
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import pandaMascot from '@/assets/panda-car-warranty-transparent.png';
 import pandaLaptop from '@/assets/404-panda.png';
-import bmwHero from '@/assets/bmw-used-car-extended-warranty-uk.webp';
+import bmwHeroAsset from '@/assets/bmw-panda-hero.png.asset.json';
+const bmwHero = bmwHeroAsset.url;
 import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
