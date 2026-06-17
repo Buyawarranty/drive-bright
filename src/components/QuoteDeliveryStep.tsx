@@ -441,7 +441,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
             </span>
-            <h1 className="text-xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
               Only 3 quick details to see your quote
             </h1>
           </div>
