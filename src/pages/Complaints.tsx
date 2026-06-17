@@ -153,6 +153,11 @@ const Complaints = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
+    if (regStatus !== 'valid') {
+      setErrors((prev) => ({ ...prev, registrationPlate: regStatus === 'checking' ? 'Checking your registration — one moment…' : "We couldn't find that registration on a customer record. Please check and try again." }));
+      toast({ title: 'Registration not recognised', description: 'Please enter the vehicle registration linked to your warranty.', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke('submit-complaint', { body: form });
