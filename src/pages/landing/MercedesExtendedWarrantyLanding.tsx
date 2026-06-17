@@ -62,7 +62,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
   const [mileageBand, setMileageBand] = useState<'under' | 'over' | ''>('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
 
   const scrollToQuote = () => {
