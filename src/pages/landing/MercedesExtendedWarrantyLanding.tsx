@@ -158,6 +158,16 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
                 Protect your Mercedes-Benz from unexpected repair bills with flexible UK warranty cover. Get an instant quote in under 60 seconds.
               </p>
 
+              {/* Mobile-only hero image */}
+              <div className="md:hidden mt-4 -mx-4">
+                <img
+                  src={mercHero}
+                  alt="Premium Mercedes-Benz with extended warranty cover"
+                  className="w-full h-auto"
+                  loading="eager"
+                />
+              </div>
+
               <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
                   'Covers mechanical and electrical faults',
