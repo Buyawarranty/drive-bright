@@ -1994,6 +1994,7 @@ export type Database = {
           internal_notes: string | null
           last_name: string
           phone: string | null
+          preferred_contact_method: string | null
           reference: string
           registration_plate: string | null
           resolution: string | null
@@ -2016,6 +2017,7 @@ export type Database = {
           internal_notes?: string | null
           last_name: string
           phone?: string | null
+          preferred_contact_method?: string | null
           reference: string
           registration_plate?: string | null
           resolution?: string | null
@@ -2038,6 +2040,7 @@ export type Database = {
           internal_notes?: string | null
           last_name?: string
           phone?: string | null
+          preferred_contact_method?: string | null
           reference?: string
           registration_plate?: string | null
           resolution?: string | null
