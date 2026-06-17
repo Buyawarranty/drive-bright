@@ -77,6 +77,36 @@ const Complaints = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [regStatus, setRegStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid' | 'error'>('idle');
+  const [regCustomerName, setRegCustomerName] = useState<string | null>(null);
+  const regTimer = useRef<number | null>(null);
+
+  // Debounced lookup: confirm the registration matches an existing customer record.
+  useEffect(() => {
+    const raw = form.registrationPlate.trim();
+    if (!raw) { setRegStatus('idle'); setRegCustomerName(null); return; }
+    setRegStatus('checking');
+    if (regTimer.current) window.clearTimeout(regTimer.current);
+    regTimer.current = window.setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-customer-reg', {
+          body: { registrationPlate: raw },
+        });
+        if (error) { setRegStatus('error'); return; }
+        if (data?.valid) {
+          setRegStatus('valid');
+          setRegCustomerName(data.customerName || null);
+        } else {
+          setRegStatus('invalid');
+          setRegCustomerName(null);
+        }
+      } catch {
+        setRegStatus('error');
+      }
+    }, 500);
+    return () => { if (regTimer.current) window.clearTimeout(regTimer.current); };
+  }, [form.registrationPlate]);
+
 
   const change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
