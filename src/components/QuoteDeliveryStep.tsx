@@ -434,8 +434,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   // ===== Variant B redesigned layout =====
   if (isVariantB) {
     return (
-      <section className="bg-white min-h-screen pb-4">
-        <div className="max-w-xl mx-auto px-4 pt-3 sm:pt-8">
+      <section className="bg-white min-h-[100dvh] pb-4 mobile-quote-page">
+        <div className="max-w-xl mx-auto mobile-quote-card pt-3 sm:pt-8">
           {/* Headline */}
           <div className="flex items-start gap-2.5 mb-2 sm:mb-4">
             <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
