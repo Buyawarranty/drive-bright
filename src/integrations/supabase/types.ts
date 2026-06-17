@@ -1979,6 +1979,83 @@ export type Database = {
           },
         ]
       }
+      complaints: {
+        Row: {
+          acknowledged_at: string | null
+          assigned_to: string | null
+          category: string
+          closed_at: string | null
+          created_at: string
+          description: string
+          desired_outcome: string | null
+          email: string
+          first_name: string
+          id: string
+          internal_notes: string | null
+          last_name: string
+          phone: string | null
+          reference: string
+          registration_plate: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["complaint_status"]
+          updated_at: string
+          warranty_ref: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          assigned_to?: string | null
+          category: string
+          closed_at?: string | null
+          created_at?: string
+          description: string
+          desired_outcome?: string | null
+          email: string
+          first_name: string
+          id?: string
+          internal_notes?: string | null
+          last_name: string
+          phone?: string | null
+          reference: string
+          registration_plate?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["complaint_status"]
+          updated_at?: string
+          warranty_ref?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          assigned_to?: string | null
+          category?: string
+          closed_at?: string | null
+          created_at?: string
+          description?: string
+          desired_outcome?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          internal_notes?: string | null
+          last_name?: string
+          phone?: string | null
+          reference?: string
+          registration_plate?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["complaint_status"]
+          updated_at?: string
+          warranty_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
           assigned_to: string | null
@@ -9053,6 +9130,12 @@ export type Database = {
     }
     Enums: {
       action_scope: "none" | "own" | "team" | "department" | "global"
+      complaint_status:
+        | "new"
+        | "acknowledged"
+        | "in_progress"
+        | "resolved"
+        | "closed"
       finance_application_status:
         | "draft"
         | "submitted"
@@ -9253,6 +9336,13 @@ export const Constants = {
   public: {
     Enums: {
       action_scope: ["none", "own", "team", "department", "global"],
+      complaint_status: [
+        "new",
+        "acknowledged",
+        "in_progress",
+        "resolved",
+        "closed",
+      ],
       finance_application_status: [
         "draft",
         "submitted",
