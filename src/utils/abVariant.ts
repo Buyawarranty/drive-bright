@@ -107,7 +107,7 @@ export const stepNumber = (raw: string | null | undefined): number | null =>
  */
 export const trackAbVariantVisit = async (
   experimentKey: string,
-  variant: AbVariant
+  variant: 'a' | 'b'
 ): Promise<void> => {
   if (typeof window === 'undefined' || !variant) return;
   const s = safeSession();
