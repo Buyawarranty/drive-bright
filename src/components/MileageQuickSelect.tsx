@@ -189,10 +189,10 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       {(() => {
         const isActive = isRegValid && hasSelection;
         const label = !isRegValid
-          ? 'Enter reg for an instant price'
+          ? (ctaLabels?.enterReg ?? 'Enter reg for an instant price')
           : !hasSelection
-          ? 'Select mileage to see your price'
-          : 'Get my instant quote';
+          ? (ctaLabels?.selectMileage ?? 'Select mileage to see your price')
+          : (ctaLabels?.submit ?? 'Get my instant quote');
         return (
           <Button
             onClick={handleGetQuote}
