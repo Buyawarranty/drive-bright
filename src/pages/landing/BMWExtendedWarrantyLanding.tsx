@@ -243,7 +243,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                           type="text"
                           value={regNumber}
                           onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
-                          placeholder="ENTER REG"
+                          placeholder="ENTER BMW REG"
                           aria-label="Vehicle registration"
                           className="bg-yellow-400 border-none outline-none text-lg sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-2 sm:py-4 uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] min-w-0"
                           maxLength={8}
