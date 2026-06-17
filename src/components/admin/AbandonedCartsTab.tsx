@@ -297,16 +297,30 @@ export const AbandonedCartsTab: React.FC = () => {
     }
   };
 
-  const filteredCarts = carts.filter(cart => {
+  const filteredCarts = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    if (!searchLower) return carts;
+    return carts.filter(cart =>
       cart.email?.toLowerCase().includes(searchLower) ||
       cart.full_name?.toLowerCase().includes(searchLower) ||
       cart.vehicle_reg?.toLowerCase().includes(searchLower) ||
       cart.vehicle_make?.toLowerCase().includes(searchLower) ||
       cart.vehicle_model?.toLowerCase().includes(searchLower)
     );
-  });
+  }, [carts, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCarts.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedCarts = useMemo(
+    () => filteredCarts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filteredCarts, safePage]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
