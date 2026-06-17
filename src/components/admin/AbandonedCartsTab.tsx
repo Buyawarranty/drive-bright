@@ -392,7 +392,7 @@ export const AbandonedCartsTab: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600">Removed purchasers</p>
                 <p className="text-2xl font-bold text-purple-600">{removedConvertedCount.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">matched by email, reg, quote payment, or cart conversion</p>
+                <p className="text-xs text-gray-500 mt-1">matched to a paid customer (excludes cancelled & refunded)</p>
               </div>
               <Calendar className="w-8 h-8 text-purple-400" />
             </div>
