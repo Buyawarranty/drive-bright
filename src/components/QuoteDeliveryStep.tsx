@@ -578,10 +578,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             onClick={handleSubmit}
             disabled={vehicleData.blocked || sendingEmail}
             data-ga4-event="step2_show_price_click"
-            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-md text-lg transition-colors mt-6 ${
+            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-md text-lg mt-6 ${
               vehicleData.blocked || sendingEmail
                 ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-brand-orange hover:bg-brand-orange/90 active:scale-[0.99]'
+                : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
             }`}
           >
             {sendingEmail ? 'Sending...' : (
@@ -819,10 +819,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 sm:py-3.5 px-8 rounded-xl shadow-lg text-lg transition-colors ${
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 sm:py-3.5 px-8 rounded-xl shadow-lg text-lg ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
-              : 'bg-brand-orange hover:bg-black active:scale-[0.98] animate-cta-enhanced'
+              : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
           }`}
         >
           {sendingEmail ? (
