@@ -101,6 +101,8 @@ export const AbandonedCartsTab: React.FC = () => {
   const [savingNotes, setSavingNotes] = useState(false);
   const [newCartsCount, setNewCartsCount] = useState(0);
   const [cartEmails, setCartEmails] = useState<Record<string, CartEmail[]>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 50;
 
   useEffect(() => {
     fetchAbandonedCarts();
