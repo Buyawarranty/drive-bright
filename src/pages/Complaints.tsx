@@ -451,31 +451,32 @@ const Complaints = () => {
 
       {/* Support CTA banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="bg-gradient-to-r from-[#0f2b5b] to-[#1A2B4A] text-white rounded-2xl p-6 sm:p-8 shadow-lg">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-8 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6 text-orange-300" />
+              <div className="w-12 h-12 rounded-xl bg-[#FEF0E8] flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-6 h-6 text-[#E8541A]" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold mb-1">Still need help?</h2>
-                <p className="text-blue-100 text-sm">Our team is here to support you every step of the way.</p>
+                <h2 className="text-xl sm:text-2xl font-bold mb-1 text-[#1A2B4A]">Still need help?</h2>
+                <p className="text-[#5A6B82] text-sm">Our team is here to support you every step of the way.</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a href={CLAIMS_PHONE_TEL} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-[#1A2B4A] rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+              <a href={CLAIMS_PHONE_TEL} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A2B4A] text-white rounded-lg text-sm font-semibold hover:bg-[#152340] transition">
                 <Phone className="w-4 h-4" /> Call {CLAIMS_PHONE}
               </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#1da851] text-white rounded-lg text-sm font-semibold transition">
                 <MessageCircle className="w-4 h-4" /> WhatsApp us
               </a>
-              <a href={`mailto:${CLAIMS_EMAIL}`} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#eb4b00] hover:bg-[#d54300] text-white rounded-lg text-sm font-semibold transition">
+              <a href={`mailto:${CLAIMS_EMAIL}`} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E8541A] hover:bg-[#cf471a] text-white rounded-lg text-sm font-semibold transition">
                 <Mail className="w-4 h-4" /> Email us
               </a>
             </div>
           </div>
         </div>
       </section>
+
 
       <WebsiteFooter />
 
