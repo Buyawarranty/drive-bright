@@ -121,10 +121,18 @@ export const AbandonedCartsTab: React.FC = () => {
           setNewCartsCount(prev => prev + 1);
           toast.info('New abandoned cart detected!', {
             description: `Customer: ${(payload.new as AbandonedCart).email}`,
-            duration: 5000
+            duration: 5000,
+            action: {
+              label: 'Refresh',
+              onClick: () => {
+                fetchAbandonedCarts();
+                fetchAllCartEmails();
+              },
+            },
           });
-          fetchAbandonedCarts();
-          fetchAllCartEmails();
+          // Don't auto-refetch on every insert — it re-renders the whole page
+          // (including the export panel) and makes dropdowns/buttons unresponsive
+          // under live traffic. The user can click Refresh when ready.
         }
       )
       .subscribe();
