@@ -185,7 +185,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         Vehicles up to <span className="font-bold">150,000 miles</span> and <span className="font-bold">15 years old</span>.
       </p>
 
-      {/* Get Quote CTA Button */}
+      {/* Get Quote CTA Button / Inactive Info Card */}
       {(() => {
         const isActive = isRegValid && hasSelection;
         const label = !isRegValid
@@ -193,19 +193,37 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           : !hasSelection
           ? (ctaLabels?.selectMileage ?? 'Select mileage to see your price')
           : (ctaLabels?.submit ?? 'Get my instant quote');
+
+        if (!isActive) {
+          return (
+            <button
+              type="button"
+              onClick={handleGetQuote}
+              className="w-full text-left rounded-2xl border border-[#F2C9B3] bg-[#FBE4D6] hover:bg-[#F8D9C5] transition-colors px-4 py-4 sm:px-5 sm:py-5 flex items-center gap-4"
+            >
+              <span className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/70 ring-1 ring-[#E8B89A] flex-shrink-0">
+                <ShieldCheck className="w-6 h-6" style={{ color: '#8A5A45' }} strokeWidth={2.25} />
+              </span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-[15px] sm:text-base font-bold" style={{ color: '#6B3F2A' }}>
+                  {label}
+                </span>
+                <span className="text-[13px] sm:text-sm mt-0.5" style={{ color: '#8A5A45' }}>
+                  Don't worry, we'll confirm your exact mileage later.
+                </span>
+              </span>
+            </button>
+          );
+        }
+
         return (
           <Button
             onClick={handleGetQuote}
-            style={!isActive ? { backgroundColor: '#FFD8C2', color: '#8A5A45' } : undefined}
-            className={`w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl ${
-              isActive
-                ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing'
-                : 'shadow-none hover:brightness-95'
-            }`}
+            className="w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing"
           >
             <span className="flex items-center justify-center gap-3">
               {label}
-              {isActive && <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />}
+              <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
             </span>
           </Button>
         );
@@ -222,11 +240,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           {helperMessage}
         </p>
       )}
-      
-      {/* Microcopy */}
-      <p className="text-sm text-gray-500 text-center">
-        Don't worry, we'll confirm your exact mileage later.
-      </p>
+
       
       {/* Error Message */}
       {error && (
