@@ -23,6 +23,7 @@ interface ComplaintRequest {
   category: string;
   description: string;
   desiredOutcome?: string;
+  preferredContactMethod?: string;
 }
 
 function generateReference(): string {
