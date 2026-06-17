@@ -622,10 +622,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Reassurance block – appears on tall screens to fill empty space */}
           <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-5 text-sm text-gray-700">
             <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-[#00B67A]" fill="#00B67A" /> Rated Excellent on Trustpilot</span>
-            <span className="flex items-center gap-1.5"><BellOff className="w-4 h-4 text-brand-orange" /> No cold calling</span>
-            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-orange" /> Your details are secure</span>
-            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Quote in seconds</span>
-          </div>
+            </div>
 
           {/* Help footer – desktop only */}
           <div className="hidden sm:block bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
@@ -884,9 +881,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Reassurance block – appears on tall screens to fill empty space */}
         <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4 text-sm text-gray-700">
           <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-[#00B67A]" fill="#00B67A" /> Rated Excellent on Trustpilot</span>
-          <span className="flex items-center gap-1.5"><BellOff className="w-4 h-4 text-brand-orange" /> No cold calling</span>
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-orange" /> Your details are secure</span>
-          <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Quote in seconds</span>
+          
         </div>
 
         {/* Trustpilot Badge - Mobile only */}
