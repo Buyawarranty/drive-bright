@@ -23,6 +23,7 @@ interface ComplaintRequest {
   category: string;
   description: string;
   desiredOutcome?: string;
+  preferredContactMethod?: string;
 }
 
 function generateReference(): string {
@@ -50,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       category,
       description,
       desiredOutcome,
+      preferredContactMethod,
     } = body;
 
     if (!firstName || !lastName || !email || !warrantyRef || !category || !description) {
@@ -77,6 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
       category,
       description,
       desired_outcome: desiredOutcome || null,
+      preferred_contact_method: preferredContactMethod || null,
       status: "new",
     });
     if (dbError) {
@@ -103,6 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
             <tr><td style="padding:6px 0;color:#666;">Registration plate</td><td style="padding:6px 0;"><strong>${esc(registrationPlate?.toUpperCase() || "—")}</strong></td></tr>
             <tr><td style="padding:6px 0;color:#666;">Warranty reference</td><td style="padding:6px 0;"><strong>${esc(warrantyRef)}</strong></td></tr>
             <tr><td style="padding:6px 0;color:#666;">Category</td><td style="padding:6px 0;">${esc(category)}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Preferred contact</td><td style="padding:6px 0;">${esc(preferredContactMethod || "—")}</td></tr>
           </table>
           <div style="margin-top:18px;padding:14px;background:#fff;border-left:3px solid #E8541A;border-radius:6px;">
             <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">What happened</div>
