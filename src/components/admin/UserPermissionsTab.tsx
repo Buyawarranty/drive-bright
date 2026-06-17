@@ -56,6 +56,7 @@ const ADMIN_TABS = [
   { id: 'analytics', label: 'Analytics', description: 'View reports and analytics' },
   { id: 'page-analytics', label: 'Page Analytics', description: 'Track page visits, traffic sources & Google Ads' },
   { id: 'google-ads', label: 'Marketing Analytics', description: 'Google Ads, Facebook Ads, conversions & ROAS' },
+  { id: 'ab-testing', label: 'A/B Testing', description: 'Compare A vs B variants: visits, submissions, conversions' },
   { id: 'vehicle-stats', label: 'Vehicle Stats', description: 'Analyse which vehicles sell the most warranties' },
   { id: 'lead-backup', label: 'Lead Backup & Recovery', description: 'Backup all contacts, export & sync to marketing' },
   { id: 'user-permissions', label: 'User Permissions', description: 'Manage admin user access and permissions' },
