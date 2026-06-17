@@ -519,8 +519,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
 
           {/* Email */}
-          <div className="mb-5">
-            <label className="block font-bold text-gray-900 mb-2">Your email address</label>
+          <div className="mb-2 sm:mb-5">
+            <label className="block font-bold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Your email address</label>
             <div className="relative">
               <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
@@ -529,7 +529,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
