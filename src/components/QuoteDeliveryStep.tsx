@@ -434,14 +434,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   // ===== Variant B redesigned layout =====
   if (isVariantB) {
     return (
-      <section className="bg-white min-h-screen pb-4">
-        <div className="max-w-xl mx-auto px-4 pt-3 sm:pt-8">
+      <section className="bg-white min-h-[100dvh] pb-4 mobile-quote-page">
+        <div className="max-w-xl mx-auto mobile-quote-card pt-3 sm:pt-8">
           {/* Headline */}
           <div className="flex items-start gap-2.5 mb-2 sm:mb-4">
             <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
             </span>
-            <h1 className="text-xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
               Only 3 quick details to see your quote
             </h1>
           </div>
@@ -505,7 +505,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 onChange={(e) => { setFirstName(e.target.value); setFirstNameError(''); }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -529,7 +529,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -558,7 +558,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 value={phone}
                 onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -578,7 +578,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             onClick={handleSubmit}
             disabled={vehicleData.blocked || sendingEmail}
             data-ga4-event="step2_show_price_click"
-            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 sm:py-5 px-8 rounded-xl shadow-md text-base sm:text-lg mt-3 sm:mt-6 ${
+            className={`mq-cta w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 sm:py-5 px-8 rounded-xl shadow-md text-base sm:text-lg mt-3 sm:mt-6 ${
               vehicleData.blocked || sendingEmail
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -605,17 +605,33 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
           </div>
 
-          {/* Privacy */}
-          <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 flex items-center justify-center gap-1.5">
-            <Lock className="w-4 h-4" />
-            We never share your details.
-          </p>
+          {/* Privacy + call CTA */}
+          <div className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 mq-trust-row">
+            <p className="flex items-center justify-center gap-1.5">
+              <Lock className="w-4 h-4" />
+              We never share your details.
+            </p>
+            <p className="mt-1.5">
+              Prefer to speak to someone?{' '}
+              <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline whitespace-nowrap">
+                Call {SALES_PHONE}
+              </a>
+            </p>
+          </div>
 
-          {/* Help footer */}
+          {/* Reassurance block – appears on tall screens to fill empty space */}
+          <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-5 text-sm text-gray-700">
+            <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-brand-orange" fill="currentColor" /> Rated Excellent on Trustpilot</span>
+            <span className="flex items-center gap-1.5"><BellOff className="w-4 h-4 text-brand-orange" /> No cold calling</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-orange" /> Your details are secure</span>
+            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Quote in seconds</span>
+          </div>
+
+          {/* Help footer – desktop only */}
           <div className="hidden sm:block bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
-            <p className="font-bold text-gray-900 mb-1">Need advice? We're here to help.</p>
+            <p className="font-bold text-gray-900 mb-1">15+ years experience helping UK drivers</p>
             <div className="flex items-center justify-center gap-3 text-sm">
-              <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900">
+              <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900 hover:underline">
                 <Phone className="w-4 h-4 text-brand-orange" />
                 {SALES_PHONE}
               </a>
@@ -631,8 +647,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   }
 
   return (
-    <section className="bg-white min-h-screen">
-      <div className="max-w-xl mx-auto px-4 py-6 sm:py-4">
+    <section className="bg-white min-h-[100dvh] mobile-quote-page">
+      <div className="max-w-xl mx-auto mobile-quote-card py-3 sm:py-4">
         {/* Main Heading */}
 
         <div className="text-center mb-4 sm:mb-3">
@@ -718,7 +734,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -752,7 +768,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -792,7 +808,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -819,7 +835,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg text-base sm:text-lg ${
+          className={`mq-cta w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg text-base sm:text-lg ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -835,7 +851,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           )}
         </button>
 
-        {/* Quick Benefits - Below CTA */}
+        {/* Quick Benefits - Below CTA (desktop) */}
         <div className="hidden sm:flex items-center justify-center gap-6 text-sm text-gray-600 mt-2">
           <span className="flex items-center gap-1.5">
             <Rocket className="w-4 h-4 text-brand-orange" />
@@ -851,11 +867,26 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </span>
         </div>
 
-        {/* Trust Line */}
-        <div className="text-center mt-2 text-gray-500 text-xs sm:text-sm">
+        {/* Trust Line + Call CTA */}
+        <div className="text-center mt-2 text-gray-600 text-xs sm:text-sm mq-trust-row">
           <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details.</span>
           </p>
+          <p className="mt-1">
+            <span className="text-gray-600">Prefer to speak to someone? </span>
+            <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline whitespace-nowrap">
+              Call {SALES_PHONE}
+            </a>
+          </p>
+          <p className="mt-1 text-gray-500">15+ years experience helping UK drivers</p>
+        </div>
+
+        {/* Reassurance block – appears on tall screens to fill empty space */}
+        <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4 text-sm text-gray-700">
+          <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-brand-orange" fill="currentColor" /> Rated Excellent on Trustpilot</span>
+          <span className="flex items-center gap-1.5"><BellOff className="w-4 h-4 text-brand-orange" /> No cold calling</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-orange" /> Your details are secure</span>
+          <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Quote in seconds</span>
         </div>
 
         {/* Trustpilot Badge - Mobile only */}
