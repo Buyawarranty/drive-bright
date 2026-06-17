@@ -614,7 +614,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <Phone className="w-4 h-4" />
               <span className="text-sm">Call us</span>
             </a>
-            <Button onClick={scrollToQuote} className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold h-12">Get my quote</Button>
+            <Button onClick={scrollToQuote} className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold h-12">Get my BMW quote</Button>
           </div>
         </div>
       </div>
