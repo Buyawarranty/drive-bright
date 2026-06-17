@@ -486,6 +486,8 @@ const AdminDashboard = () => {
         return <SalesScoreboardTab />;
       case 'testing':
         return <TestingTabContent />;
+      case 'ab-testing':
+        return <AbTestingTab />;
       case 'discounts-given':
         return <DiscountsGivenTab />;
       case 'cancellations':
