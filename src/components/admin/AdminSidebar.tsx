@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog, FlaskConical } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog, FlaskConical, AlertTriangle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
@@ -42,8 +42,8 @@ interface SortableTabProps {
   onClick: () => void;
 }
 
-const CLAIMS_AGENT_TABS = ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'staff-hub', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
 
 const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => {
   const {
@@ -152,6 +152,12 @@ const defaultTabs: Tab[] = [
     label: 'Claims',
     icon: MessageSquare,
     description: 'Manage customer claim submissions'
+  },
+  {
+    id: 'complaints',
+    label: 'Complaints',
+    icon: AlertTriangle,
+    description: 'Manage customer complaints and resolutions'
   },
   {
     id: 'reviews',

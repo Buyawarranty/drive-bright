@@ -19,6 +19,7 @@ import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAle
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
+const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
 const GetQuoteTab = lazy(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
 const CustomersTab = lazy(() => import('@/components/admin/CustomersTab').then(m => ({ default: m.CustomersTab })));
@@ -62,8 +63,8 @@ const AbTestingTab = lazy(() => import('@/components/admin/AbTestingTab'));
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
-const CLAIMS_AGENT_TABS = ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'staff-hub', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
 const SALES_TABS = ['new-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 const SALES_LEAD_TABS = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 
@@ -421,6 +422,16 @@ const AdminDashboard = () => {
         return <ReviewsTab />;
       case 'contact':
         return <ContactSubmissionsTab />;
+      case 'complaints':
+        if (!isTabAllowedForRole('complaints', effectiveUserRole, effectiveUserPermissions)) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">The Complaints tab is restricted to admins and claims agents.</p>
+            </div>
+          );
+        }
+        return <ComplaintsTab />;
       case 'abandoned-carts':
         return <AbandonedCartsTab />;
       case 'pending-w2000':

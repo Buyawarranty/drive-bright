@@ -13,6 +13,7 @@ const initialForm = {
   email: '',
   phone: '',
   warrantyRef: '',
+  registrationPlate: '',
   category: '',
   description: '',
   desiredOutcome: '',
@@ -115,6 +116,7 @@ const Complaints = () => {
             <Field name="email" type="email" label="Email address *" value={form.email} onChange={change} placeholder="e.g. sarah@email.com" error={errors.email} hint="Your confirmation will be sent here" />
             <Field name="phone" type="tel" label="Phone number" value={form.phone} onChange={change} placeholder="e.g. 07700 900000" />
             <Field name="warrantyRef" label="Warranty reference number *" value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} />
+            <Field name="registrationPlate" label="Vehicle registration plate" value={form.registrationPlate} onChange={change} placeholder="e.g. AB12 CDE" />
 
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-1.5">What is your complaint about? *</label>
