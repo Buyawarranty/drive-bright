@@ -154,6 +154,12 @@ const defaultTabs: Tab[] = [
     description: 'Manage customer claim submissions'
   },
   {
+    id: 'complaints',
+    label: 'Complaints',
+    icon: AlertTriangle,
+    description: 'Manage customer complaints and resolutions'
+  },
+  {
     id: 'reviews',
     label: 'Reviews',
     icon: Star,
