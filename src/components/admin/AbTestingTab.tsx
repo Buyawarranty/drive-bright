@@ -335,10 +335,11 @@ const AbTestingTab: React.FC = () => {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="aVisits" name="A visits" stroke="hsl(var(--primary))" />
-                  <Line type="monotone" dataKey="bVisits" name="B visits" stroke="#eb4b00" />
-                  <Line type="monotone" dataKey="aSubs" name="A submits" stroke="hsl(var(--primary))" strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="aVisits" name="A visits" stroke="#2563eb" strokeWidth={2} />
+                  <Line type="monotone" dataKey="bVisits" name="B visits" stroke="#eb4b00" strokeWidth={2} />
+                  <Line type="monotone" dataKey="aSubs" name="A submits" stroke="#2563eb" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="bSubs" name="B submits" stroke="#eb4b00" strokeDasharray="4 4" />
+
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
