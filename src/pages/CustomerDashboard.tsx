@@ -1675,7 +1675,8 @@ const CustomerDashboard = () => {
                           </div>
 
                           {/* Document Actions - View T&Cs and Warranty Plan */}
-                          <div className="pt-4 border-t">
+                          <div className="pt-4 border-t space-y-4">
+                            <PolicyDocumentsNotice />
                             <div className="flex flex-wrap gap-3">
                               <Button 
                                 size="sm"
