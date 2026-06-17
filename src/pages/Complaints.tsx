@@ -164,6 +164,10 @@ const Complaints = () => {
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
       setForm(initialForm);
+      setRegStatus('idle');
+      setRegCustomerName(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       setTouched({});
       setErrors({});
     } catch (err: any) {
