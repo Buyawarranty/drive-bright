@@ -19,6 +19,7 @@ import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAle
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
+const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
 const GetQuoteTab = lazy(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
 const CustomersTab = lazy(() => import('@/components/admin/CustomersTab').then(m => ({ default: m.CustomersTab })));
