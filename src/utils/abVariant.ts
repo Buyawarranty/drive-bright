@@ -99,3 +99,67 @@ export const formatStepParam = (step: number | string): string => {
 /** Numeric step from a raw param value, ignoring variant suffix. */
 export const stepNumber = (raw: string | null | undefined): number | null =>
   parseStepParam(raw).step;
+
+/**
+ * Record a single A/B variant landing in `ab_variant_visits`. Deduped per
+ * (experiment, session) on both the client (sessionStorage flag) and the
+ * server (unique index). Safe to call repeatedly.
+ */
+export const trackAbVariantVisit = async (
+  experimentKey: string,
+  variant: AbVariant
+): Promise<void> => {
+  if (typeof window === 'undefined' || !variant) return;
+  const s = safeSession();
+  if (!s) return;
+  const flagKey = `baw_ab_visit_${experimentKey}`;
+  try {
+    if (s.getItem(flagKey)) return;
+    s.setItem(flagKey, '1');
+  } catch {
+    /* still try to record */
+  }
+
+  const sessionId = (() => {
+    try {
+      let id = s.getItem('baw_session_id');
+      if (!id) {
+        id = (crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
+        s.setItem('baw_session_id', id);
+      }
+      return id;
+    } catch {
+      return null;
+    }
+  })();
+
+  const visitorId = (() => {
+    try {
+      let id = localStorage.getItem('baw_visitor_id');
+      if (!id) {
+        id = (crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
+        localStorage.setItem('baw_visitor_id', id);
+      }
+      return id;
+    } catch {
+      return null;
+    }
+  })();
+
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    await supabase.from('ab_variant_visits').insert({
+      experiment_key: experimentKey,
+      variant,
+      session_id: sessionId,
+      visitor_id: visitorId,
+      page_path: window.location.pathname + window.location.search,
+      source: document.referrer || null,
+    });
+  } catch (e) {
+    // Non-blocking — analytics only.
+    // eslint-disable-next-line no-console
+    console.warn('[ab] visit insert failed', e);
+  }
+};
+
