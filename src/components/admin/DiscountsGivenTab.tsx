@@ -474,7 +474,31 @@ export const DiscountsGivenTab: React.FC = () => {
                   <TableHead>Discount Code</TableHead>
                   <TableHead className="bg-blue-50">Payment (Paid)</TableHead>
                   <TableHead className="bg-amber-50">Retail Price</TableHead>
-                  <TableHead className="bg-purple-50">Retail Sold +-</TableHead>
+                  <TableHead className="bg-purple-50">
+                    <div className="flex items-center gap-1">
+                      <span>Retail Sold +-</span>
+                      <div className="flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() => setDiscountSort(discountSort === 'desc' ? 'none' : 'desc')}
+                          className={`p-0.5 rounded hover:bg-muted ${discountSort === 'desc' ? 'text-primary' : 'text-muted-foreground'}`}
+                          title="Sort highest discount first"
+                          aria-label="Sort highest discount first"
+                        >
+                          <ArrowUp className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDiscountSort(discountSort === 'asc' ? 'none' : 'asc')}
+                          className={`p-0.5 rounded hover:bg-muted ${discountSort === 'asc' ? 'text-primary' : 'text-muted-foreground'}`}
+                          title="Sort lowest discount first"
+                          aria-label="Sort lowest discount first"
+                        >
+                          <ArrowDown className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </TableHead>
                   <TableHead>Limit</TableHead>
                   <TableHead>Agent</TableHead>
                 </TableRow>
