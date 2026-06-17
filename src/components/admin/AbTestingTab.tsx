@@ -89,12 +89,16 @@ const AbTestingTab: React.FC = () => {
           .gte('landed_at', from)
           .lte('landed_at', to);
 
-        // 2. Step-2 submissions per variant (abandoned_carts.cart_metadata.ab_variant)
+        // 2. Step-2 submissions per variant — ONLY carts tagged with this experiment's
+        //    ab_variant in cart_metadata. Without this filter, every historical
+        //    abandoned_cart gets counted as A (and Supabase caps the response,
+        //    producing the bogus "1000 submissions" reading).
         const { data: carts } = await supabase
           .from('abandoned_carts')
           .select('id, email, phone, vehicle_reg, cart_metadata, created_at, is_converted')
           .gte('created_at', from)
           .lte('created_at', to)
+          .in('cart_metadata->>ab_variant', ['a', 'b'])
           .limit(10000);
 
         // 3. Conversions: paid customers in window, matched back to carts to read variant
@@ -133,11 +137,12 @@ const AbTestingTab: React.FC = () => {
           }
         });
 
-        // Carts (submissions). Variant is read from cart_metadata; absent = 'a'.
+        // Carts (submissions). Only carts with an explicit experiment tag are counted.
         const cartsByEmailReg = new Map<string, 'a' | 'b'>();
         (carts || []).forEach((c: any) => {
-          const variant: 'a' | 'b' =
-            (c.cart_metadata?.ab_variant === 'b' ? 'b' : 'a');
+          const tag = c.cart_metadata?.ab_variant;
+          if (tag !== 'a' && tag !== 'b') return; // safety net for client-side
+          const variant: 'a' | 'b' = tag;
           const target = variant === 'b' ? b : a;
           target.submissions++;
           if (c.phone && String(c.phone).trim()) target.submissionsWithPhone++;
@@ -149,9 +154,7 @@ const AbTestingTab: React.FC = () => {
           else row.aSubs++;
 
           const key = `${normalizeEmail(c.email)}|${normalizeReg(c.vehicle_reg)}`;
-          // Latest variant per email/reg wins (overwrites earlier).
           cartsByEmailReg.set(key, variant);
-          // Also index by email alone for matches without reg.
           const emailKey = `${normalizeEmail(c.email)}|`;
           if (!cartsByEmailReg.has(emailKey)) cartsByEmailReg.set(emailKey, variant);
         });
@@ -312,8 +315,9 @@ const AbTestingTab: React.FC = () => {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="A" fill="hsl(var(--primary))" />
+                  <Bar dataKey="A" fill="#2563eb" />
                   <Bar dataKey="B" fill="#eb4b00" />
+
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -331,10 +335,11 @@ const AbTestingTab: React.FC = () => {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="aVisits" name="A visits" stroke="hsl(var(--primary))" />
-                  <Line type="monotone" dataKey="bVisits" name="B visits" stroke="#eb4b00" />
-                  <Line type="monotone" dataKey="aSubs" name="A submits" stroke="hsl(var(--primary))" strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="aVisits" name="A visits" stroke="#2563eb" strokeWidth={2} />
+                  <Line type="monotone" dataKey="bVisits" name="B visits" stroke="#eb4b00" strokeWidth={2} />
+                  <Line type="monotone" dataKey="aSubs" name="A submits" stroke="#2563eb" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="bSubs" name="B submits" stroke="#eb4b00" strokeDasharray="4 4" />
+
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
