@@ -434,20 +434,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   // ===== Variant B redesigned layout =====
   if (isVariantB) {
     return (
-      <section className="bg-white min-h-screen pb-8">
-        <div className="max-w-xl mx-auto px-4 pt-6 sm:pt-8">
+      <section className="bg-white min-h-screen pb-4">
+        <div className="max-w-xl mx-auto px-4 pt-3 sm:pt-8">
           {/* Headline */}
-          <div className="flex items-start gap-3 mb-4">
-            <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
-              <Zap className="w-5 h-5" fill="currentColor" />
+          <div className="flex items-start gap-2.5 mb-2 sm:mb-4">
+            <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            <h1 className="text-xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
               Only 3 quick details to see your quote
             </h1>
           </div>
 
           {/* Back + sub headline */}
-          <div className="flex items-center justify-center gap-4 mb-5">
+          <div className="flex items-center justify-center gap-4 mb-3 sm:mb-5">
             <button
               type="button"
               onClick={onBack}
@@ -458,21 +458,21 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </button>
             <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
               <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
-              See your quote in a few seconds
+              Your price is seconds away
             </p>
           </div>
 
           {/* Vehicle summary card */}
-          <div className="border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
-            <div className="bg-[#FFD11A] text-black px-3 py-2 rounded-md font-extrabold text-base tracking-wider border-2 border-black flex-shrink-0">
+          <div className="border border-gray-200 rounded-xl p-2.5 sm:p-4 mb-3 sm:mb-6 flex items-center gap-3 sm:gap-4">
+            <div className="bg-[#FFD11A] text-black px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-md font-extrabold text-sm sm:text-base tracking-wider border-2 border-black flex-shrink-0">
               {vehicleData.regNumber}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-gray-900 text-base sm:text-lg uppercase truncate">
+              <p className="font-bold text-gray-900 text-sm sm:text-lg uppercase truncate">
                 {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
               </p>
               {vehicleData.fuelType && (
-                <p className="text-sm text-gray-500 capitalize">{vehicleData.fuelType.toLowerCase()}</p>
+                <p className="text-xs sm:text-sm text-gray-500 capitalize">{vehicleData.fuelType.toLowerCase()}</p>
               )}
             </div>
             <button
@@ -494,8 +494,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           )}
 
           {/* First name */}
-          <div className="mb-5">
-            <label className="block font-bold text-gray-900 mb-2">Your first name</label>
+          <div className="mb-2 sm:mb-5">
+            <label className="block font-bold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Your first name</label>
             <div className="relative">
               <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${firstName && isValidFirstName ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
@@ -505,7 +505,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 onChange={(e) => { setFirstName(e.target.value); setFirstNameError(''); }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -519,8 +519,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
 
           {/* Email */}
-          <div className="mb-5">
-            <label className="block font-bold text-gray-900 mb-2">Your email address</label>
+          <div className="mb-2 sm:mb-5">
+            <label className="block font-bold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Your email address</label>
             <div className="relative">
               <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
@@ -529,7 +529,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -547,7 +547,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Mobile number (optional) */}
           <div className="mb-2">
-            <label className="block font-bold text-gray-900 mb-2">
+            <label className="block font-bold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">
               Your mobile number <span className="font-normal text-gray-500">(optional)</span>
             </label>
             <div className="relative">
@@ -558,7 +558,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 value={phone}
                 onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -568,7 +568,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="hidden sm:block text-sm text-gray-500 mt-2">
               Add your number if you'd like help with your quote. No cold calling.
             </p>
           </div>
@@ -578,7 +578,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             onClick={handleSubmit}
             disabled={vehicleData.blocked || sendingEmail}
             data-ga4-event="step2_show_price_click"
-            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-md text-lg mt-6 ${
+            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 sm:py-5 px-8 rounded-xl shadow-md text-base sm:text-lg mt-3 sm:mt-6 ${
               vehicleData.blocked || sendingEmail
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -593,7 +593,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </button>
 
           {/* Trust pills */}
-          <div className="flex items-center justify-center divide-x divide-gray-200 mt-5 text-sm text-gray-700">
+          <div className="hidden sm:flex items-center justify-center divide-x divide-gray-200 mt-5 text-sm text-gray-700">
             <div className="flex items-center gap-1.5 px-3">
               <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Instant quote
             </div>
@@ -606,13 +606,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
 
           {/* Privacy */}
-          <p className="text-center text-sm text-gray-600 mt-4 flex items-center justify-center gap-1.5">
+          <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 flex items-center justify-center gap-1.5">
             <Lock className="w-4 h-4" />
             We never share your details.
           </p>
 
           {/* Help footer */}
-          <div className="bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
+          <div className="hidden sm:block bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
             <p className="font-bold text-gray-900 mb-1">Need advice? We're here to help.</p>
             <div className="flex items-center justify-center gap-3 text-sm">
               <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900">
@@ -653,7 +653,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </button>
             <p className="text-gray-700 flex items-center gap-2">
               <Zap className="w-4 h-4 text-brand-orange" />
-              See your quote in a few seconds
+              Your price is seconds away
             </p>
           </div>
         </div>
@@ -700,10 +700,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         )}
 
         {/* Form */}
-        <div className="space-y-4 sm:space-y-2.5 mb-6 sm:mb-3">
+        <div className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-3">
           {/* First Name Input */}
-          <div className="pt-2 sm:pt-0">
-            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
+          <div className="pt-1 sm:pt-0">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
               Your first name
             </label>
             <div className="relative">
@@ -718,7 +718,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -738,7 +738,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Email Input - Shown by default */}
           <div>
-            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
               Your email address
             </label>
             <div className="relative">
@@ -752,7 +752,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -778,7 +778,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           
           {/* Phone Input - Always visible */}
           <div>
-            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
               Your mobile number{isVariantB && <span className="text-sm font-normal text-gray-500 ml-2">(optional)</span>}
             </label>
             <div className="relative">
@@ -792,7 +792,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -807,7 +807,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {phoneError || 'Please enter a valid UK phone number'}
               </p>
             ) : (
-              <p className="text-gray-500 mt-1.5 text-sm">
+              <p className="hidden sm:block text-gray-500 mt-1.5 text-sm">
                 Unlock exclusive discounts and get expert advice
               </p>
             )}
@@ -819,7 +819,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 sm:py-3.5 px-8 rounded-xl shadow-lg text-lg ${
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg text-base sm:text-lg ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -836,7 +836,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </button>
 
         {/* Quick Benefits - Below CTA */}
-        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4 sm:mt-2">
+        <div className="hidden sm:flex items-center justify-center gap-6 text-sm text-gray-600 mt-2">
           <span className="flex items-center gap-1.5">
             <Rocket className="w-4 h-4 text-brand-orange" />
             Instant quote
@@ -852,16 +852,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Trust Line */}
-        <div className="text-center mt-2 text-gray-500 text-sm">
-          <p className="flex flex-col items-center justify-center gap-0.5">
+        <div className="text-center mt-2 text-gray-500 text-xs sm:text-sm">
+          <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details.</span>
-            <span>100% privacy guaranteed</span>
           </p>
         </div>
 
         {/* Trustpilot Badge - Mobile only */}
-        <div className="md:hidden mt-3 flex justify-center">
-          <img src={trustpilotLogo} alt="Trustpilot 5 stars" className="h-auto w-20 object-contain" />
+        <div className="md:hidden mt-2 flex justify-center">
+          <img src={trustpilotLogo} alt="Trustpilot 5 stars" className="h-auto w-16 object-contain" />
         </div>
 
       </div>
