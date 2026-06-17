@@ -578,7 +578,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             onClick={handleSubmit}
             disabled={vehicleData.blocked || sendingEmail}
             data-ga4-event="step2_show_price_click"
-            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 sm:py-5 px-8 rounded-xl shadow-md text-base sm:text-lg mt-3 sm:mt-6 ${
+            className={`mq-cta w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 sm:py-5 px-8 rounded-xl shadow-md text-base sm:text-lg mt-3 sm:mt-6 ${
               vehicleData.blocked || sendingEmail
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
