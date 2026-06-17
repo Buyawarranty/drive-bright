@@ -497,7 +497,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <div className="mb-5">
             <label className="block font-bold text-gray-900 mb-2">Your first name</label>
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${firstName && isValidFirstName ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="text"
                 placeholder="e.g. John"
@@ -505,7 +505,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 onChange={(e) => { setFirstName(e.target.value); setFirstNameError(''); }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
+                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -522,14 +522,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <div className="mb-5">
             <label className="block font-bold text-gray-900 mb-2">Your email address</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="email"
                 placeholder="e.g. john@example.com"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
+                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -548,18 +548,18 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Mobile number (optional) */}
           <div className="mb-2">
             <label className="block font-bold text-gray-900 mb-2">
-              Mobile number <span className="font-normal text-gray-500">optional</span>
+              Your mobile number <span className="font-normal text-gray-500">(optional)</span>
             </label>
             <div className="relative">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="tel"
-                placeholder="07XXX XXXXXX"
+                placeholder="UK mobile number"
                 value={phone}
                 onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
-                  phone && !isValidPhone ? 'border-red-500' : 'border-gray-300'
+                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                  phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {phone && isValidPhone && (
