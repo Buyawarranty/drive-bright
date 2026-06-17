@@ -239,7 +239,18 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
                         </button>
                       </div>
                     </div>
+
+                    {/* Mobile-only hero image — placed below the CTA card */}
+                    <div className="md:hidden mt-5 flex justify-center">
+                      <img
+                        src={vwHero}
+                        alt="Volkswagen with extended warranty cover"
+                        className="w-full max-w-[360px] h-auto"
+                        loading="lazy"
+                      />
+                    </div>
                   </>
+
                 )}
 
                 {errorMsg && (
