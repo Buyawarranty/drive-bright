@@ -24,9 +24,8 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
   const [phone, setPhone] = useState(initialData?.phone || '');
   const [firstName, setFirstName] = useState(initialData?.firstName || '');
   const [address, setAddress] = useState(initialData?.address || '');
-  // A/B variant — in "B" the phone field is optional.
-  const isVariantB = getAbVariant() === 'b';
-  const phoneRequired = !isVariantB;
+  // Phone is always required — leads without a phone number cannot be called back.
+  const phoneRequired = true;
 
   const handleAddressSelect = (addressData: AddressData) => {
     // Format the full address from components
