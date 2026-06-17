@@ -13,6 +13,7 @@ const initialForm = {
   email: '',
   phone: '',
   warrantyRef: '',
+  registrationPlate: '',
   category: '',
   description: '',
   desiredOutcome: '',
