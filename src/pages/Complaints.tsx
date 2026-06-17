@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Phone, Mail, Clock, CheckCircle, ArrowLeft, MessageSquare, ShieldCheck, Lock, MessageCircle, Loader2, ClipboardList, HeadphonesIcon, AlertCircle } from 'lucide-react';
+import { Phone, Mail, Clock, CheckCircle, ArrowLeft, MessageSquare, ShieldCheck, Lock, MessageCircle, Loader2, ClipboardList, HeadphonesIcon, AlertCircle, Check } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -33,40 +33,91 @@ const CATEGORIES = [
   'Other',
 ];
 
+type FormState = typeof initialForm;
+
+// Per-field validators — return error string or '' when valid.
+const validators: Record<string, (v: any, f: FormState) => string> = {
+  firstName: (v) => (!String(v).trim() ? 'Please enter your first name' : ''),
+  lastName: (v) => (!String(v).trim() ? 'Please enter your last name' : ''),
+  email: (v) => {
+    const s = String(v).trim();
+    if (!s) return 'Please enter your email address';
+    if (!/^\S+@\S+\.\S+$/.test(s)) return 'Please enter a valid email address';
+    return '';
+  },
+  phone: (v) => {
+    const s = String(v).trim();
+    if (!s) return ''; // optional
+    return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
+  },
+  warrantyRef: (v) => (!String(v).trim() ? 'Please enter your warranty reference' : ''),
+  registrationPlate: () => '',
+  category: (v) => (!v ? 'Please select a category' : ''),
+  description: (v) => {
+    const s = String(v).trim();
+    if (!s) return 'Please describe the issue';
+    if (s.length < 10) return 'Please provide a little more detail (10+ characters)';
+    return '';
+  },
+  desiredOutcome: () => '',
+  preferredContactMethod: (v) => (!v ? 'Please choose a contact method' : ''),
+  confirmAccurate: (v) => (!v ? 'Please confirm your information is accurate' : ''),
+};
+
+// Which fields are required (drives the green tick logic — optional fields don't get a tick when empty).
+const requiredFields = new Set(['firstName', 'lastName', 'email', 'warrantyRef', 'category', 'description', 'preferredContactMethod', 'confirmAccurate']);
+
 const Complaints = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
 
   const change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const v = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    setForm({ ...form, [name]: v });
-    if (errors[name]) setErrors({ ...errors, [name]: '' });
+    const next = { ...form, [name]: v };
+    setForm(next);
+    setTouched((t) => ({ ...t, [name]: true }));
+    // Live-validate as the user types — no need to click outside the field.
+    const validate = validators[name];
+    if (validate) {
+      const msg = validate(v, next);
+      setErrors((prev) => ({ ...prev, [name]: msg }));
+    }
   };
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!form.firstName.trim()) e.firstName = 'Please enter your first name';
-    if (!form.lastName.trim()) e.lastName = 'Please enter your last name';
-    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Please enter a valid email address';
-    if (form.phone.trim() && !/^[+0][\d\s()-]{8,}$/.test(form.phone.trim())) e.phone = 'Enter a valid UK phone number';
-    if (!form.warrantyRef.trim()) e.warrantyRef = 'Please enter your warranty reference';
-    if (!form.category) e.category = 'Please select a category';
-    if (!form.description.trim() || form.description.trim().length < 10) e.description = 'Please describe the issue (minimum 10 characters)';
-    if (!form.preferredContactMethod) e.preferredContactMethod = 'Please choose a contact method';
-    if (!form.confirmAccurate) e.confirmAccurate = 'Please confirm your information is accurate';
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  // Live valid/invalid maps used to render green ticks and red borders inline.
+  const fieldStatus = useMemo(() => {
+    const status: Record<string, { valid: boolean; error: string }> = {};
+    for (const key of Object.keys(validators)) {
+      const error = validators[key]((form as any)[key], form);
+      const filled = key === 'confirmAccurate' ? !!(form as any)[key] : String((form as any)[key] ?? '').trim().length > 0;
+      const valid = !error && (requiredFields.has(key) ? filled : filled);
+      status[key] = { valid, error };
+    }
+    return status;
+  }, [form]);
+
+  const validateAll = () => {
+    const next: Record<string, string> = {};
+    const allTouched: Record<string, boolean> = {};
+    for (const key of Object.keys(validators)) {
+      next[key] = validators[key]((form as any)[key], form);
+      allTouched[key] = true;
+    }
+    setErrors(next);
+    setTouched(allTouched);
+    return Object.values(next).every((m) => !m);
   };
 
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (submitting) return;
-    if (!validate()) {
+    if (!validateAll()) {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
@@ -76,12 +127,16 @@ const Complaints = () => {
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
       setForm(initialForm);
+      setTouched({});
+      setErrors({});
     } catch (err: any) {
       toast({ title: 'Submission failed', description: err.message || `Please try again or email ${CLAIMS_EMAIL}`, variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
   };
+
+  const showStatus = (name: string) => touched[name] || !!(form as any)[name];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -174,16 +229,16 @@ const Complaints = () => {
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {/* Names */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="firstName" label="First name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah" error={errors.firstName} />
-                <Field name="lastName" label="Last name" required value={form.lastName} onChange={change} placeholder="e.g. Johnson" error={errors.lastName} />
+                <Field name="firstName" label="First name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} />
+                <Field name="lastName" label="Last name" required value={form.lastName} onChange={change} placeholder="e.g. Johnson" error={errors.lastName} valid={fieldStatus.lastName.valid && showStatus('lastName')} />
               </div>
 
-              <Field name="email" type="email" label="Email address" required value={form.email} onChange={change} placeholder="e.g. sarah@email.com" error={errors.email} hint="We'll send updates to this email" />
-              <Field name="phone" type="tel" label="Phone number" value={form.phone} onChange={change} placeholder="e.g. 07700 900000" error={errors.phone} />
+              <Field name="email" type="email" label="Email address" required value={form.email} onChange={change} placeholder="e.g. sarah@email.com" error={errors.email} hint="We'll send your confirmation here" valid={fieldStatus.email.valid && showStatus('email')} />
+              <Field name="phone" type="tel" label="Phone number" value={form.phone} onChange={change} placeholder="e.g. 07700 900000" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone') && !!form.phone} />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="warrantyRef" label="Warranty reference" required value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} hint="Found on your policy documents" />
-                <Field name="registrationPlate" label="Vehicle registration" value={form.registrationPlate} onChange={change} placeholder="e.g. AB12 CDE" />
+                <Field name="warrantyRef" label="Warranty reference" required value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} hint="Found on your policy documents" valid={fieldStatus.warrantyRef.valid && showStatus('warrantyRef')} />
+                <Field name="registrationPlate" label="Vehicle registration" value={form.registrationPlate} onChange={change} placeholder="e.g. AB12 CDE" valid={!!form.registrationPlate && showStatus('registrationPlate')} />
               </div>
 
               {/* Category */}
@@ -191,16 +246,21 @@ const Complaints = () => {
                 <label htmlFor="category" className="block text-sm font-medium text-slate-900 mb-1.5">
                   What is your complaint about? <span className="text-[#eb4b00]">*</span>
                 </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={form.category}
-                  onChange={change}
-                  className={`w-full px-3 py-2.5 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.category ? 'border-red-400' : 'border-slate-300'}`}
-                >
-                  <option value="">Select a category</option>
-                  {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-                </select>
+                <div className="relative">
+                  <select
+                    id="category"
+                    name="category"
+                    value={form.category}
+                    onChange={change}
+                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.category ? 'border-red-400' : fieldStatus.category.valid && showStatus('category') ? 'border-green-500' : 'border-slate-300'}`}
+                  >
+                    <option value="">Select a category</option>
+                    {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                  {fieldStatus.category.valid && showStatus('category') && !errors.category && (
+                    <Check className="w-4 h-4 text-green-600 absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  )}
+                </div>
                 {errors.category && <FieldError msg={errors.category} />}
               </div>
 
@@ -212,16 +272,21 @@ const Complaints = () => {
                   </label>
                   <span className="text-xs text-slate-500">{form.description.length}/2000</span>
                 </div>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={form.description}
-                  onChange={change}
-                  rows={4}
-                  maxLength={2000}
-                  placeholder="Please describe the issue clearly, including relevant dates and any previous correspondence…"
-                  className={`w-full px-3 py-2.5 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.description ? 'border-red-400' : 'border-slate-300'}`}
-                />
+                <div className="relative">
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={form.description}
+                    onChange={change}
+                    rows={4}
+                    maxLength={2000}
+                    placeholder="Please describe the issue clearly, including relevant dates and any previous correspondence…"
+                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.description ? 'border-red-400' : fieldStatus.description.valid && showStatus('description') ? 'border-green-500' : 'border-slate-300'}`}
+                  />
+                  {fieldStatus.description.valid && showStatus('description') && !errors.description && (
+                    <Check className="w-4 h-4 text-green-600 absolute right-3 top-3 pointer-events-none" />
+                  )}
+                </div>
                 {errors.description && <FieldError msg={errors.description} />}
               </div>
 
@@ -277,7 +342,7 @@ const Complaints = () => {
 
               {/* Confirmation checkbox */}
               <div>
-                <label className={`flex items-start gap-3 p-3 rounded-lg border ${errors.confirmAccurate ? 'border-red-300 bg-red-50/40' : 'border-slate-200 bg-slate-50/50'}`}>
+                <label className={`flex items-start gap-3 p-3 rounded-lg border ${errors.confirmAccurate ? 'border-red-300 bg-red-50/40' : form.confirmAccurate ? 'border-green-300 bg-green-50/40' : 'border-slate-200 bg-slate-50/50'}`}>
                   <input
                     type="checkbox"
                     name="confirmAccurate"
@@ -285,9 +350,10 @@ const Complaints = () => {
                     onChange={change}
                     className="mt-0.5 w-4 h-4 rounded border-slate-400 text-[#1A2B4A] focus:ring-[#1A2B4A]"
                   />
-                  <span className="text-sm text-slate-700 leading-relaxed">
+                  <span className="text-sm text-slate-700 leading-relaxed flex-1">
                     I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#eb4b00]">*</span>
                   </span>
+                  {form.confirmAccurate && <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />}
                 </label>
                 {errors.confirmAccurate && <FieldError msg={errors.confirmAccurate} />}
               </div>
@@ -310,7 +376,6 @@ const Complaints = () => {
 
           {/* Side panels */}
           <aside className="space-y-5">
-            {/* What happens next */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-base font-semibold text-[#1A2B4A] mb-4">What happens next?</h3>
               <ol className="space-y-4">
@@ -330,7 +395,6 @@ const Complaints = () => {
               </ol>
             </div>
 
-            {/* Need help */}
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-sm border border-blue-100 p-6">
               <h3 className="text-base font-semibold text-[#1A2B4A] mb-1">Need help before you submit?</h3>
               <p className="text-xs text-slate-600 mb-4">Our claims team is here to support you.</p>
@@ -366,7 +430,6 @@ const Complaints = () => {
               </div>
             </div>
 
-            {/* Before you submit */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-base font-semibold text-[#1A2B4A] mb-3">Before you submit</h3>
               <ul className="space-y-2">
@@ -419,26 +482,41 @@ const Complaints = () => {
 
       {/* Confirmation popup */}
       <Dialog open={!!reference} onOpenChange={(o) => !o && setReference(null)}>
-        <DialogContent className="max-w-sm rounded-2xl text-center p-6">
-          <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-            <CheckCircle className="w-7 h-7 text-green-700" />
+        <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden">
+          <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 pt-7 pb-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-lg">
+              <CheckCircle className="w-9 h-9 text-green-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-1">Thank you!</h3>
+            <p className="text-sm text-green-50 leading-relaxed">
+              Your complaint has been submitted successfully.
+            </p>
           </div>
-          <h3 className="text-lg font-semibold text-slate-900 mb-1">Thank you</h3>
-          <p className="text-sm text-slate-600 mb-3 leading-relaxed">
-            We've received your complaint and will acknowledge it within 2 working days.
-          </p>
-          <div className="inline-block text-xs bg-slate-100 rounded-md px-3 py-1.5 text-slate-700 mb-3">
-            Reference: <span className="font-semibold text-slate-900">{reference}</span>
+          <div className="px-6 py-6 text-center">
+            <div className="inline-block text-xs bg-slate-100 rounded-md px-3 py-1.5 text-slate-700 mb-4">
+              Reference: <span className="font-semibold text-slate-900">{reference}</span>
+            </div>
+            <ul className="text-left space-y-2.5 mb-5 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                <span>A confirmation email has been sent to your inbox.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                <span>Our complaints team will acknowledge within <strong>2 working days</strong>.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                <span>We aim to resolve complaints within <strong>10 working days</strong>.</span>
+              </li>
+            </ul>
+            <button
+              onClick={() => { setReference(null); navigate('/'); }}
+              className="w-full py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
+            >
+              Back to home
+            </button>
           </div>
-          <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-            A confirmation has been sent to your email address. We aim to resolve complaints within <strong>10 working days</strong>.
-          </p>
-          <button
-            onClick={() => { setReference(null); navigate('/'); }}
-            className="w-full py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
-          >
-            Back to home
-          </button>
         </DialogContent>
       </Dialog>
     </div>
@@ -455,24 +533,30 @@ interface FieldProps {
   error?: string;
   hint?: string;
   required?: boolean;
+  valid?: boolean;
 }
 
-const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required }) => (
+const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
       {label}{required && <span className="text-[#eb4b00]"> *</span>}
     </label>
-    <input
-      id={name}
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      aria-invalid={!!error}
-      aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
-      className={`w-full px-3 py-2.5 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : 'border-slate-300'}`}
-    />
+    <div className="relative">
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
+        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'}`}
+      />
+      {valid && !error && (
+        <Check className="w-4 h-4 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      )}
+    </div>
     {error ? <FieldError msg={error} id={`${name}-error`} /> : hint ? <p id={`${name}-hint`} className="mt-1 text-xs text-slate-500">{hint}</p> : null}
   </div>
 );
