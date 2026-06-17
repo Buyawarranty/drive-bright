@@ -66,7 +66,8 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
 };
 
 // Which fields are required (drives the green tick logic — optional fields don't get a tick when empty).
-const requiredFields = new Set(['firstName', 'lastName', 'email', 'warrantyRef', 'category', 'description', 'preferredContactMethod', 'confirmAccurate']);
+const requiredFields = new Set(['firstName', 'lastName', 'email', 'warrantyRef', 'registrationPlate', 'category', 'description', 'preferredContactMethod', 'confirmAccurate']);
+
 
 const Complaints = () => {
   const navigate = useNavigate();
