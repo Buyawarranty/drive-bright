@@ -1018,16 +1018,18 @@ export const CustomersTab = ({
     // Apply Payment Source filter (Bumper / Stripe / Payment Assist / PayPal / Other)
     if (filterByPaymentSource !== 'all') {
       filtered = filtered.filter(customer => {
-        const hasBumper = !!customer.bumper_order_id;
-        const hasStripe = !!customer.stripe_session_id;
+        const purchaseSrc = ((customer as any).purchase_source || '').toLowerCase();
+        const hasBumper = !!customer.bumper_order_id || purchaseSrc.includes('bumper');
+        const hasStripe = !!customer.stripe_session_id || purchaseSrc.includes('stripe');
         const sessionId = (customer.stripe_session_id || '').toLowerCase();
         const paymentTypeStr = (customer.payment_type || '').toLowerCase();
-        const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal');
+        const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal') || purchaseSrc.includes('paypal');
+        const isPaymentAssist = purchaseSrc.includes('payment_assist') || purchaseSrc.includes('payment assist');
         if (filterByPaymentSource === 'bumper') return hasBumper;
-        if (filterByPaymentSource === 'stripe') return hasStripe && !isPaypal;
+        if (filterByPaymentSource === 'stripe') return hasStripe && !isPaypal && !hasBumper;
         if (filterByPaymentSource === 'paypal') return isPaypal;
-        if (filterByPaymentSource === 'payment_assist') return !hasBumper && !hasStripe && !isPaypal;
-        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal;
+        if (filterByPaymentSource === 'payment_assist') return isPaymentAssist || (!hasBumper && !hasStripe && !isPaypal && purchaseSrc === '');
+        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal && !isPaymentAssist;
         return true;
       });
     }
