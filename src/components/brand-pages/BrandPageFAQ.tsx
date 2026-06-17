@@ -77,18 +77,18 @@ const BrandPageFAQ: React.FC = () => {
   };
 
   const FAQItem = ({ faq }: { faq: { id: string; question: string; answer: string } }) => (
-    <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
+    <div className="bg-gray-50 border-l-4 border-brand-orange rounded-lg overflow-hidden shadow-sm">
       <button
         onClick={() => toggleItem(faq.id)}
-        className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
+        className="w-full px-6 py-5 text-left flex items-center justify-between text-brand-dark-text hover:bg-gray-100 transition-colors"
       >
         <span className="font-bold text-lg pr-4">{faq.question}</span>
         <ChevronDown
-          className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${openItems[faq.id] ? 'rotate-180' : ''}`}
+          className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-brand-orange ${openItems[faq.id] ? 'rotate-180' : ''}`}
         />
       </button>
       <div className={`overflow-hidden transition-all duration-200 ease-out ${openItems[faq.id] ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-6 pb-5 bg-white border-t border-orange-200">
+        <div className="px-6 pb-5 bg-white border-t border-gray-200">
           <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
         </div>
       </div>
