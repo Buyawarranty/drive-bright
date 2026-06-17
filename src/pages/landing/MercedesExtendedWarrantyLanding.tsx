@@ -159,7 +159,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
               </p>
 
               {/* Mobile-only hero image */}
-              <div className="md:hidden mt-4 -mx-4">
+              <div className="md:hidden mt-1 -mx-4">
                 <img
                   src={mercHero}
                   alt="Premium Mercedes-Benz with extended warranty cover"
@@ -168,7 +168,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
                 />
               </div>
 
-              <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+              <ul className="mt-1 md:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
                   'Covers mechanical and electrical faults',
                   'UK-based support team',
