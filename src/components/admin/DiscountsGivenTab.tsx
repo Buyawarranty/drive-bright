@@ -11,7 +11,7 @@ import { DateRange } from 'react-day-picker';
 import { calculateTotalWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
-import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search } from 'lucide-react';
+import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 
@@ -59,9 +59,9 @@ interface AdminUser {
 
 // Maximum allowed discount % per duration
 const MAX_DISCOUNT_PCT: Record<string, number> = {
-  '12months': 5,
-  '24months': 7,
-  '36months': 10,
+  '12months': 20,
+  '24months': 20,
+  '36months': 20,
 };
 
 const DURATION_LABELS: Record<string, string> = {
@@ -186,6 +186,7 @@ export const DiscountsGivenTab: React.FC = () => {
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(computeRange('this_month'));
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [discountSort, setDiscountSort] = useState<'none' | 'desc' | 'asc'>('none');
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
@@ -278,8 +279,16 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return true;
       })
-      .sort((a, b) => new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime());
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm]);
+      .sort((a, b) => {
+        if (discountSort === 'desc') {
+          return (b.discountPct ?? -Infinity) - (a.discountPct ?? -Infinity);
+        }
+        if (discountSort === 'asc') {
+          return (a.discountPct ?? Infinity) - (b.discountPct ?? Infinity);
+        }
+        return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
+      });
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -344,34 +353,8 @@ export const DiscountsGivenTab: React.FC = () => {
         </p>
       </div>
 
-      {/* Discount Limits Guide */}
-      <Card className="border-2 border-primary/20 bg-primary/5">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold mb-2">Maximum Discount Guide</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-background rounded-md p-3 border">
-                  <p className="text-xs text-muted-foreground">1 Year Warranty</p>
-                  <p className="text-xl font-bold text-primary">5% max</p>
-                </div>
-                <div className="bg-background rounded-md p-3 border">
-                  <p className="text-xs text-muted-foreground">2 Year Warranty</p>
-                  <p className="text-xl font-bold text-primary">7% max</p>
-                </div>
-                <div className="bg-background rounded-md p-3 border">
-                  <p className="text-xs text-muted-foreground">3 Year Warranty</p>
-                  <p className="text-xl font-bold text-primary">10% max</p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Sales above these thresholds are highlighted in red below.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
+
 
       {/* Quick Date Tabs */}
       <div className="flex flex-wrap gap-2">
@@ -491,7 +474,31 @@ export const DiscountsGivenTab: React.FC = () => {
                   <TableHead>Discount Code</TableHead>
                   <TableHead className="bg-blue-50">Payment (Paid)</TableHead>
                   <TableHead className="bg-amber-50">Retail Price</TableHead>
-                  <TableHead className="bg-purple-50">Retail Sold +-</TableHead>
+                  <TableHead className="bg-purple-50">
+                    <div className="flex items-center gap-1">
+                      <span>Retail Sold +-</span>
+                      <div className="flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() => setDiscountSort(discountSort === 'desc' ? 'none' : 'desc')}
+                          className={`p-0.5 rounded hover:bg-muted ${discountSort === 'desc' ? 'text-primary' : 'text-muted-foreground'}`}
+                          title="Sort highest discount first"
+                          aria-label="Sort highest discount first"
+                        >
+                          <ArrowUp className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDiscountSort(discountSort === 'asc' ? 'none' : 'asc')}
+                          className={`p-0.5 rounded hover:bg-muted ${discountSort === 'asc' ? 'text-primary' : 'text-muted-foreground'}`}
+                          title="Sort lowest discount first"
+                          aria-label="Sort lowest discount first"
+                        >
+                          <ArrowDown className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </TableHead>
                   <TableHead>Limit</TableHead>
                   <TableHead>Agent</TableHead>
                 </TableRow>
