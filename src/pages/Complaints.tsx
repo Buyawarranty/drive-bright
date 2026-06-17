@@ -594,45 +594,8 @@ const Complaints = () => {
 
       <WebsiteFooter />
 
-      {/* Confirmation popup */}
-      <Dialog open={!!reference} onOpenChange={(o) => !o && setReference(null)}>
-        <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden">
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 pt-7 pb-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <CheckCircle className="w-9 h-9 text-green-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-1">Thank you!</h3>
-            <p className="text-sm text-green-50 leading-relaxed">
-              Your complaint has been submitted successfully.
-            </p>
-          </div>
-          <div className="px-6 py-6 text-center">
-            <div className="inline-block text-xs bg-slate-100 rounded-md px-3 py-1.5 text-slate-700 mb-4">
-              Reference: <span className="font-semibold text-slate-900">{reference}</span>
-            </div>
-            <ul className="text-left space-y-2.5 mb-5 text-sm text-slate-700">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <span>A confirmation email has been sent to your inbox.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <span>Our complaints team will acknowledge within <strong>2 working days</strong>.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <span>We aim to resolve complaints within <strong>10 working days</strong>.</span>
-              </li>
-            </ul>
-            <button
-              onClick={() => { setReference(null); navigate('/'); }}
-              className="w-full py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
-            >
-              Back to home
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Confirmation now renders inline above; no popup. */}
+
     </div>
   );
 };
