@@ -23,12 +23,12 @@ import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import VolkswagenPPCFooter from '@/components/landing/VolkswagenPPCFooter';
-import vwGolf from '@/assets/volkswagen-models/vw-golf-extended-warranty.jpg';
-import vwPolo from '@/assets/volkswagen-models/vw-polo-extended-warranty.jpg';
-import vwPassat from '@/assets/volkswagen-models/vw-passat-extended-warranty.jpg';
-import vwTiguan from '@/assets/volkswagen-models/vw-tiguan-extended-warranty.jpg';
-import vwTransporter from '@/assets/volkswagen-models/vw-transporter-extended-warranty.jpg';
-import vwIdSeries from '@/assets/volkswagen-models/vw-id-series-ev-extended-warranty.jpg';
+import vwGolf from '@/assets/volkswagen-models/vw-golf-extended-warranty.png';
+import vwPolo from '@/assets/volkswagen-models/vw-polo-extended-warranty.png';
+import vwPassat from '@/assets/volkswagen-models/vw-passat-extended-warranty.png';
+import vwTiguan from '@/assets/volkswagen-models/vw-tiguan-extended-warranty.png';
+import vwTransporter from '@/assets/volkswagen-models/vw-transporter-extended-warranty.png';
+import vwIdSeries from '@/assets/volkswagen-models/vw-id-series-ev-extended-warranty.png';
 
 const vwModels = [
   { label: 'Golf', examples: 'Golf, GTI, GTD, R', img: vwGolf, alt: 'Volkswagen Golf extended warranty cover — Golf, GTI, GTD and R hatchback' },
