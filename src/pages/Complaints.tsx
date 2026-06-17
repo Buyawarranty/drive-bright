@@ -249,7 +249,56 @@ const Complaints = () => {
 
       {/* Main grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {reference ? (
+          <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 sm:px-10 py-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-md">
+                <CheckCircle className="w-9 h-9 text-green-600" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">Thank you!</h2>
+              <p className="text-sm sm:text-base text-green-50 leading-relaxed">
+                Your complaint has been submitted successfully.
+              </p>
+            </div>
+            <div className="px-6 sm:px-10 py-7">
+              <div className="text-center mb-5">
+                <div className="inline-block text-xs sm:text-sm bg-[#F4F6F8] rounded-md px-3 py-1.5 text-[#1A2B4A]">
+                  Reference: <span className="font-semibold">{reference}</span>
+                </div>
+              </div>
+              <ul className="space-y-2.5 mb-6 text-sm text-[#1A2B4A]">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>A confirmation email has been sent to your inbox.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>Our complaints team will acknowledge within <strong>2 working days</strong>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>We aim to resolve complaints within <strong>10 working days</strong>.</span>
+                </li>
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
+                  className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
+                >
+                  Submit another complaint
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="flex-1 py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
+                >
+                  Back to home
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+
           {/* Form */}
           <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-1">
