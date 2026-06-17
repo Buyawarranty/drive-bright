@@ -156,25 +156,23 @@ export const AbandonedCartsTab: React.FC = () => {
 
       setRawCartCount(all.length);
 
-      // Only exclude carts that match a real completed warranty purchase in the
-      // customers table (paid + not cancelled/refunded/pending/failed). This
-      // matches what's visible in the Customers dashboard and prevents the
-      // count being inflated by quote payments or unconverted cart records.
+      // Only exclude carts that match a real active warranty customer
+      // (status = 'Active'). This matches what's visible in the Customers
+      // dashboard and prevents the count being inflated by quote payments,
+      // unconverted records, or cancelled/refunded customers.
       const purchasedEmails = new Set<string>();
       const purchasedRegs = new Set<string>();
       let cOffset = 0;
       while (true) {
         const { data: cust, error: cErr } = await supabase
           .from('customers')
-          .select('email,status,registration_plate,payment_status')
+          .select('email,registration_plate')
           .eq('is_deleted', false)
-          .in('payment_status', ['paid', 'completed', 'succeeded', 'active'])
+          .ilike('status', 'active')
           .range(cOffset, cOffset + pageSize - 1);
         if (cErr) break;
-        const crows = (cust || []) as { email: string | null; status: string | null; registration_plate: string | null; payment_status: string | null }[];
+        const crows = (cust || []) as { email: string | null; registration_plate: string | null }[];
         crows.forEach(c => {
-          const s = (c.status || '').toLowerCase();
-          if (s.includes('cancelled') || s.includes('refunded') || s.includes('pending') || s.includes('failed')) return;
           const email = normalizeEmail(c.email);
           const reg = normalizeReg(c.registration_plate);
           if (email) purchasedEmails.add(email);
