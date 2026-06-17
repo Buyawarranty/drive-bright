@@ -718,7 +718,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -752,7 +752,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -792,7 +792,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`mq-input w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
