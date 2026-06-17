@@ -51,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       category,
       description,
       desiredOutcome,
+      preferredContactMethod,
     } = body;
 
     if (!firstName || !lastName || !email || !warrantyRef || !category || !description) {
@@ -78,6 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
       category,
       description,
       desired_outcome: desiredOutcome || null,
+      preferred_contact_method: preferredContactMethod || null,
       status: "new",
     });
     if (dbError) {
