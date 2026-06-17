@@ -216,13 +216,13 @@ const Complaints = () => {
           {/* Form */}
           <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-[#eb4b00]/10 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-[#eb4b00]" />
+              <div className="w-9 h-9 rounded-lg bg-[#E8541A]/10 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-[#E8541A]" />
               </div>
               <h2 className="text-xl font-semibold text-slate-900">Submit a complaint</h2>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-              Please fill in the form below. All fields marked <span className="text-[#eb4b00]">*</span> are required.
+              Please fill in the form below. All fields marked <span className="text-[#E8541A]">*</span> are required.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -243,7 +243,7 @@ const Complaints = () => {
               {/* Category */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-slate-900 mb-1.5">
-                  What is your complaint about? <span className="text-[#eb4b00]">*</span>
+                  What is your complaint about? <span className="text-[#E8541A]">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -267,7 +267,7 @@ const Complaints = () => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="description" className="block text-sm font-medium text-slate-900">
-                    Tell us what happened <span className="text-[#eb4b00]">*</span>
+                    Tell us what happened <span className="text-[#E8541A]">*</span>
                   </label>
                   <span className="text-xs text-slate-500">{form.description.length}/2000</span>
                 </div>
@@ -310,7 +310,7 @@ const Complaints = () => {
               {/* Preferred contact method */}
               <div>
                 <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Preferred contact method <span className="text-[#eb4b00]">*</span>
+                  Preferred contact method <span className="text-[#E8541A]">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {['Email', 'Phone', 'WhatsApp'].map(method => {
@@ -350,7 +350,7 @@ const Complaints = () => {
                     className="mt-0.5 w-4 h-4 rounded border-slate-400 text-[#1A2B4A] focus:ring-[#1A2B4A]"
                   />
                   <span className="text-sm text-slate-700 leading-relaxed flex-1">
-                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#eb4b00]">*</span>
+                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#E8541A]">*</span>
                   </span>
                   {form.confirmAccurate && <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />}
                 </label>
@@ -361,7 +361,7 @@ const Complaints = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#eb4b00] hover:bg-[#d54300] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
               >
                 {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>) : 'Submit complaint'}
               </button>
@@ -418,12 +418,12 @@ const Complaints = () => {
                   </div>
                 </a>
                 <a href={`mailto:${CLAIMS_EMAIL}`} className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#eb4b00] transition">
-                    <Mail className="w-4 h-4 text-[#eb4b00]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#E8541A] transition">
+                    <Mail className="w-4 h-4 text-[#E8541A]" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Email</p>
-                    <p className="text-sm font-semibold text-[#eb4b00] group-hover:underline break-all">{CLAIMS_EMAIL}</p>
+                    <p className="text-sm font-semibold text-[#E8541A] group-hover:underline break-all">{CLAIMS_EMAIL}</p>
                   </div>
                 </a>
               </div>
@@ -539,7 +539,7 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
-      {label}{required && <span className="text-[#eb4b00]"> *</span>}
+      {label}{required && <span className="text-[#E8541A]"> *</span>}
     </label>
     <div className="relative">
       <input
