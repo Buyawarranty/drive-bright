@@ -864,37 +864,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <img src={trustpilotLogo} alt="Trustpilot 5 stars" className="h-auto w-20 object-contain" />
         </div>
 
-        {/* Spacer for sticky footer on desktop */}
-        <div className="hidden md:block h-4"></div>
       </div>
 
       {/* Mobile: Floating Action Button */}
       <HelpFAB />
 
-      {/* Desktop: Branded Help Footer (hidden on mobile) */}
-      <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-green-600/50 py-2 px-4 z-50">
-        <div className="max-w-xl mx-auto">
-          <p className="text-center text-gray-800 font-semibold text-sm mb-1">
-            Need advice? We're here to help.
-          </p>
-          <div className="flex items-center justify-center gap-6 sm:gap-8">
-            <a 
-              href="tel:03302295040"
-              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-brand-orange transition-colors"
-            >
-              <Phone className="w-5 h-5 text-brand-orange" />
-              <span>0330 229 5040</span>
-            </a>
-            <button 
-              onClick={() => setShowCallbackModal(true)}
-              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-brand-orange transition-colors"
-            >
-              <PhoneCall className="w-5 h-5 text-brand-orange" />
-              <span>Request Call-Back</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <RequestCallbackModal 
         isOpen={showCallbackModal} 
