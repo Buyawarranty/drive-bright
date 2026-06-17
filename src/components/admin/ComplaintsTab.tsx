@@ -30,6 +30,7 @@ interface Complaint {
   assigned_to: string | null;
   internal_notes: string | null;
   resolution: string | null;
+  preferred_contact_method: string | null;
   acknowledged_at: string | null;
   resolved_at: string | null;
   closed_at: string | null;
