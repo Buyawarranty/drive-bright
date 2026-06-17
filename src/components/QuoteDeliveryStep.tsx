@@ -653,7 +653,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </button>
             <p className="text-gray-700 flex items-center gap-2">
               <Zap className="w-4 h-4 text-brand-orange" />
-              See your quote in a few seconds
+              Your price is seconds away
             </p>
           </div>
         </div>
