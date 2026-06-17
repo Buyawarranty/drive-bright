@@ -424,6 +424,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 Independent UK warranty provider. Not affiliated with BMW.<br />
                 Flexible cover from <span className="font-semibold text-slate-800">60p a day</span>.
               </p>
+              <Button onClick={scrollToQuote} className="mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
+                Check my BMW price <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
           </div>
         </section>
