@@ -258,9 +258,13 @@ export const ComplaintsTab: React.FC = () => {
                     <div className="text-xs text-muted-foreground">Warranty ref</div>
                     <div className="font-mono text-xs">{selected.warranty_ref || '—'}</div>
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <div className="text-xs text-muted-foreground">Category</div>
                     <div>{selected.category}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Preferred contact</div>
+                    <div>{selected.preferred_contact_method || '—'}</div>
                   </div>
                 </div>
 
