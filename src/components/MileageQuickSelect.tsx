@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, Zap, ChevronRight, ArrowRight, AlertCircle } from 'lucide-react';
+import { Check, Zap, ChevronRight, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MileageQuickSelectProps {
