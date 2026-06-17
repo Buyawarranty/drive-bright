@@ -202,12 +202,12 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
             <button
               type="button"
               onClick={handleGetQuote}
-              className="w-full text-left rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center gap-3"
+              className="w-full text-center rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center justify-center gap-3"
             >
               <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/70 ring-1 ring-[#EBC9B0] flex-shrink-0">
                 <ShieldCheck className="w-4 h-4" style={{ color: '#B07A5C' }} strokeWidth={2} />
               </span>
-              <span className="flex flex-col leading-tight">
+              <span className="flex flex-col leading-tight text-center">
                 <span className="text-sm font-semibold" style={{ color: '#8A5A45' }}>
                   {label}
                 </span>
