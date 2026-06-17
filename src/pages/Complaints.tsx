@@ -394,7 +394,7 @@ const Complaints = () => {
               </ol>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-sm border border-blue-100 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-6">
               <h3 className="text-base font-semibold text-[#1A2B4A] mb-1">Need help before you submit?</h3>
               <p className="text-xs text-slate-600 mb-4">Our claims team is here to support you.</p>
               <div className="space-y-3">
