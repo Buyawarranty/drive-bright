@@ -461,8 +461,13 @@ export const AbandonedCartsTab: React.FC = () => {
       </div>
 
       {/* Carts List */}
+      <div className="text-sm text-gray-600">
+        Showing {filteredCarts.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}
+        –{Math.min(safePage * PAGE_SIZE, filteredCarts.length)} of {filteredCarts.length.toLocaleString()}
+        {searchTerm && ` (filtered from ${carts.length.toLocaleString()})`}
+      </div>
       <div className="grid gap-4">
-        {filteredCarts.map((cart) => (
+        {pagedCarts.map((cart) => (
           <Card key={cart.id} className="hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
