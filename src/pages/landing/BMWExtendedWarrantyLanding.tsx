@@ -267,6 +267,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                         onAutoSubmit={() => { setErrorMsg(''); submitToMainJourney(); }}
                         isLoading={isSubmitting}
                         isRegValid={regNumber.replace(/\s/g,'').length >= 5}
+                        ctaLabels={{
+                          enterReg: 'Enter your BMW reg above',
+                          selectMileage: 'Select mileage to see your price',
+                          submit: 'Get my BMW quote',
+                        }}
                       />
                     </div>
 
