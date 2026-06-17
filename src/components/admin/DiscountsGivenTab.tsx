@@ -279,8 +279,16 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return true;
       })
-      .sort((a, b) => new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime());
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm]);
+      .sort((a, b) => {
+        if (discountSort === 'desc') {
+          return (b.discountPct ?? -Infinity) - (a.discountPct ?? -Infinity);
+        }
+        if (discountSort === 'asc') {
+          return (a.discountPct ?? Infinity) - (b.discountPct ?? Infinity);
+        }
+        return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
+      });
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
