@@ -102,6 +102,8 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
         description="Protect your Mercedes-Benz from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds."
         keywords="Mercedes extended warranty, Mercedes-Benz warranty quote, Mercedes warranty UK, used Mercedes warranty, Mercedes repair cover, Mercedes-Benz warranty cost"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/"
+        ogImage={`https://buyawarranty.co.uk${mercHero}`}
+        ogImageAlt="Mercedes-Benz Extended Warranty Cover from £19/month"
         geoRegion="GB" geoPlacename="United Kingdom"
       />
       <OrganizationSchema />
