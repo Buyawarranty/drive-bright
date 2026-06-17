@@ -151,7 +151,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
         title="BMW Extended Warranty Cover from £19/month | Instant Quote"
         description="Protect your BMW from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds."
         keywords="BMW extended warranty, BMW warranty quote, BMW warranty UK, used BMW warranty, BMW repair cover, BMW warranty cost"
-        canonical="https://buyawarranty.co.uk/bmw-extended-warranty/"
+        canonical="https://buyawarranty.co.uk/car-extended-warranty/bmw/"
+        ogImage={`https://buyawarranty.co.uk${bmwHero}`}
+        ogImageAlt="BMW Extended Warranty Cover from £19/month"
         geoRegion="GB" geoPlacename="United Kingdom"
       />
       <OrganizationSchema />
