@@ -647,8 +647,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   }
 
   return (
-    <section className="bg-white min-h-screen">
-      <div className="max-w-xl mx-auto px-4 py-6 sm:py-4">
+    <section className="bg-white min-h-[100dvh] mobile-quote-page">
+      <div className="max-w-xl mx-auto mobile-quote-card py-3 sm:py-4">
         {/* Main Heading */}
 
         <div className="text-center mb-4 sm:mb-3">
