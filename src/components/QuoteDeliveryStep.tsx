@@ -547,7 +547,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Mobile number (optional) */}
           <div className="mb-2">
-            <label className="block font-bold text-gray-900 mb-2">
+            <label className="block font-bold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">
               Your mobile number <span className="font-normal text-gray-500">(optional)</span>
             </label>
             <div className="relative">
@@ -558,7 +558,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 value={phone}
                 onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 sm:py-3.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -568,7 +568,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="hidden sm:block text-sm text-gray-500 mt-2">
               Add your number if you'd like help with your quote. No cold calling.
             </p>
           </div>
@@ -578,7 +578,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             onClick={handleSubmit}
             disabled={vehicleData.blocked || sendingEmail}
             data-ga4-event="step2_show_price_click"
-            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-md text-lg mt-6 ${
+            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 sm:py-5 px-8 rounded-xl shadow-md text-base sm:text-lg mt-3 sm:mt-6 ${
               vehicleData.blocked || sendingEmail
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -593,7 +593,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </button>
 
           {/* Trust pills */}
-          <div className="flex items-center justify-center divide-x divide-gray-200 mt-5 text-sm text-gray-700">
+          <div className="hidden sm:flex items-center justify-center divide-x divide-gray-200 mt-5 text-sm text-gray-700">
             <div className="flex items-center gap-1.5 px-3">
               <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Instant quote
             </div>
@@ -606,13 +606,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
 
           {/* Privacy */}
-          <p className="text-center text-sm text-gray-600 mt-4 flex items-center justify-center gap-1.5">
+          <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 flex items-center justify-center gap-1.5">
             <Lock className="w-4 h-4" />
             We never share your details.
           </p>
 
           {/* Help footer */}
-          <div className="bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
+          <div className="hidden sm:block bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
             <p className="font-bold text-gray-900 mb-1">Need advice? We're here to help.</p>
             <div className="flex items-center justify-center gap-3 text-sm">
               <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900">
