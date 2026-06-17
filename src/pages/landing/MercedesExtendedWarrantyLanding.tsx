@@ -155,18 +155,19 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
                 <span className="text-slate-900">from </span><span className="text-[#F97316]">£19/month</span>
               </h1>
               <p className="mt-3 md:mt-4 text-slate-700 text-[15px] md:text-base leading-snug">
-                Protect your Mercedes-Benz from unexpected repair bills with flexible UK warranty cover. Get an instant quote in under 60 seconds.
+                Flexible UK warranty cover. Instant quote in 60 seconds.
               </p>
 
               {/* Mobile-only hero image */}
-              <div className="md:hidden mt-1 -mx-4">
+              <div className="md:hidden mt-2 flex justify-center">
                 <img
                   src={mercHero}
                   alt="Premium Mercedes-Benz with extended warranty cover"
-                  className="w-full h-auto"
+                  className="w-3/4 max-w-[280px] h-auto"
                   loading="eager"
                 />
               </div>
+
 
               <ul className="mt-1 md:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
