@@ -819,7 +819,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 sm:py-3.5 px-8 rounded-xl shadow-lg text-lg ${
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg text-base sm:text-lg ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -836,7 +836,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </button>
 
         {/* Quick Benefits - Below CTA */}
-        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4 sm:mt-2">
+        <div className="hidden sm:flex items-center justify-center gap-6 text-sm text-gray-600 mt-2">
           <span className="flex items-center gap-1.5">
             <Rocket className="w-4 h-4 text-brand-orange" />
             Instant quote
@@ -852,16 +852,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Trust Line */}
-        <div className="text-center mt-2 text-gray-500 text-sm">
-          <p className="flex flex-col items-center justify-center gap-0.5">
+        <div className="text-center mt-2 text-gray-500 text-xs sm:text-sm">
+          <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details.</span>
-            <span>100% privacy guaranteed</span>
           </p>
         </div>
 
         {/* Trustpilot Badge - Mobile only */}
-        <div className="md:hidden mt-3 flex justify-center">
-          <img src={trustpilotLogo} alt="Trustpilot 5 stars" className="h-auto w-20 object-contain" />
+        <div className="md:hidden mt-2 flex justify-center">
+          <img src={trustpilotLogo} alt="Trustpilot 5 stars" className="h-auto w-16 object-contain" />
         </div>
 
       </div>
