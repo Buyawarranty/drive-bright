@@ -419,7 +419,7 @@ export const AbandonedCartsTab: React.FC = () => {
           className="gap-2"
         >
           <Download className="w-4 h-4" />
-          Google CSV
+          Full Google CSV
         </Button>
         <Button
           onClick={() => downloadAbandonedCartCsv(buildAbandonedCartCsv(carts as any, 'facebook'), `abandoned-carts-facebook-all-${new Date().toISOString().slice(0, 10)}.csv`)}
@@ -428,7 +428,7 @@ export const AbandonedCartsTab: React.FC = () => {
           className="gap-2"
         >
           <Download className="w-4 h-4" />
-          Facebook CSV
+          Full Facebook CSV
         </Button>
       </div>
 
