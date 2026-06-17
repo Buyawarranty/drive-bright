@@ -81,11 +81,58 @@ export const captureAbVariantFromUrl = (): void => {
     const { variant } = parseStepParam(
       new URLSearchParams(window.location.search).get('step')
     );
-    if (variant === 'b') setAbVariant('b');
+    if (variant === 'b') {
+      setAbVariant('b');
+      try { localStorage.setItem('baw_ab_step2_phone_optional', 'b'); } catch { /* noop */ }
+    }
   } catch {
     /* noop */
   }
 };
+
+/**
+ * Ensure the visitor is assigned to an A/B bucket for the given experiment.
+ * Sticky across sessions via localStorage. URL variant always wins.
+ *
+ * Rollout: `bWeight` of all NEW visitors get 'b' (default 25%), the rest get 'a'.
+ * Returns the resolved variant ('a' or 'b').
+ */
+export const ensureAbVariantAssigned = (
+  experimentKey: string,
+  bWeight = 0.25
+): 'a' | 'b' => {
+  if (typeof window === 'undefined') return 'a';
+  const storageKey = `baw_ab_${experimentKey}`;
+
+  // 1. URL wins (so manual ?step=2 / ?step=2b links always work for testing).
+  try {
+    const urlVariant = parseStepParam(
+      new URLSearchParams(window.location.search).get('step')
+    ).variant;
+    if (urlVariant === 'b') {
+      setAbVariant('b');
+      try { localStorage.setItem(storageKey, 'b'); } catch { /* noop */ }
+      return 'b';
+    }
+  } catch { /* noop */ }
+
+  // 2. Existing assignment.
+  let stored: string | null = null;
+  try { stored = localStorage.getItem(storageKey); } catch { /* noop */ }
+  if (stored === 'a' || stored === 'b') {
+    if (stored === 'b') setAbVariant('b');
+    else setAbVariant(null);
+    return stored;
+  }
+
+  // 3. Roll a new assignment.
+  const assigned: 'a' | 'b' = Math.random() < bWeight ? 'b' : 'a';
+  try { localStorage.setItem(storageKey, assigned); } catch { /* noop */ }
+  if (assigned === 'b') setAbVariant('b');
+  else setAbVariant(null);
+  return assigned;
+};
+
 
 /**
  * Format a step number for the URL, appending the variant suffix when active.

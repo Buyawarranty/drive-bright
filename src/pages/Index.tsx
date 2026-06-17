@@ -29,7 +29,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
-import { captureAbVariantFromUrl, formatStepParam, stepNumber, getAbVariant, trackAbVariantVisit } from '@/utils/abVariant';
+import { captureAbVariantFromUrl, formatStepParam, stepNumber, getAbVariant, trackAbVariantVisit, ensureAbVariantAssigned } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
 
@@ -754,21 +754,24 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Capture GCLID/FBCLID from ads + A/B variant on page load
+  // Capture GCLID/FBCLID from ads + A/B variant on page load.
+  // Also auto-assign step2_phone_optional: 75% variant A, 25% variant B.
+  // URL ?step=2b always forces B (for manual testing / direct links).
   useEffect(() => {
     captureGclid();
     captureFbclid();
     captureAbVariantFromUrl();
+    ensureAbVariantAssigned('step2_phone_optional', 0.25);
   }, []);
 
   // Record an A/B visit when the user reaches step 2 of the funnel.
-  // A = ?step=2 (phone required), B = ?step=2b (phone optional).
-  // Deduped per session by trackAbVariantVisit.
+  // A = phone required, B = phone optional. Deduped per session.
   useEffect(() => {
     if (currentStep !== 2) return;
-    const variant = getAbVariant() === 'b' ? 'b' : 'a';
+    const variant = ensureAbVariantAssigned('step2_phone_optional', 0.25);
     trackAbVariantVisit('step2_phone_optional', variant);
   }, [currentStep]);
+
 
   
   // Handle PayPal/redirect payment returns
