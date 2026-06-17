@@ -422,6 +422,16 @@ const AdminDashboard = () => {
         return <ReviewsTab />;
       case 'contact':
         return <ContactSubmissionsTab />;
+      case 'complaints':
+        if (!isTabAllowedForRole('complaints', effectiveUserRole, effectiveUserPermissions)) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">The Complaints tab is restricted to admins and claims agents.</p>
+            </div>
+          );
+        }
+        return <ComplaintsTab />;
       case 'abandoned-carts':
         return <AbandonedCartsTab />;
       case 'pending-w2000':
