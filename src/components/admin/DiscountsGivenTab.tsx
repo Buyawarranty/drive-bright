@@ -353,34 +353,8 @@ export const DiscountsGivenTab: React.FC = () => {
         </p>
       </div>
 
-      {/* Discount Limits Guide */}
-      <Card className="border-2 border-primary/20 bg-primary/5">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold mb-2">Maximum Discount Guide</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-background rounded-md p-3 border">
-                  <p className="text-xs text-muted-foreground">1 Year Warranty</p>
-                  <p className="text-xl font-bold text-primary">5% max</p>
-                </div>
-                <div className="bg-background rounded-md p-3 border">
-                  <p className="text-xs text-muted-foreground">2 Year Warranty</p>
-                  <p className="text-xl font-bold text-primary">7% max</p>
-                </div>
-                <div className="bg-background rounded-md p-3 border">
-                  <p className="text-xs text-muted-foreground">3 Year Warranty</p>
-                  <p className="text-xl font-bold text-primary">10% max</p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Sales above these thresholds are highlighted in red below.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
+
 
       {/* Quick Date Tabs */}
       <div className="flex flex-wrap gap-2">
