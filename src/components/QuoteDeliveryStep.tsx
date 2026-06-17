@@ -433,197 +433,195 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   // ===== Variant B redesigned layout =====
   if (isVariantB) {
-    const vehicleTitle = [vehicleData.make, vehicleData.model].filter(Boolean).join(' ').trim() || 'vehicle';
     return (
-      <section className="bg-[#f3f6fb] min-h-screen pb-8">
-        <div className="max-w-2xl mx-auto px-4 pt-6 sm:pt-8">
-          {/* Main card */}
-          <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-gray-100 p-6 sm:p-10">
-            {/* Headline */}
-            <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-brand-orange text-white shadow-md">
-                  <Rocket className="w-5 h-5" />
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight text-left">
-                  Your {vehicleTitle} warranty price<br className="hidden sm:block" /> is almost ready
-                </h1>
-              </div>
-              <p className="text-gray-500 text-base">
-                Enter your details to see your personalised quote in seconds.
-              </p>
-            </div>
+      <section className="bg-white min-h-screen pb-8">
+        <div className="max-w-xl mx-auto px-4 pt-6 sm:pt-8">
+          {/* Headline */}
+          <div className="flex items-start gap-3 mb-4">
+            <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
+              <Zap className="w-5 h-5" fill="currentColor" />
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+              Only 3 quick details to see your quote
+            </h1>
+          </div>
 
-            {/* Back link */}
+          {/* Back + sub headline */}
+          <div className="flex items-center justify-center gap-4 mb-5">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 text-sm font-medium mb-4"
+              className="flex items-center gap-1 text-primary text-sm font-semibold hover:underline"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to vehicle details
+              Back
             </button>
-
-            {/* Vehicle summary card */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
-              <div className="bg-[#FFD11A] text-black px-3 py-2 rounded-md font-extrabold text-base tracking-wider border-2 border-black flex-shrink-0">
-                {vehicleData.regNumber}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-900 text-base sm:text-lg uppercase truncate">
-                  {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
-                </p>
-                {vehicleData.fuelType && (
-                  <p className="text-sm text-gray-500 capitalize">{vehicleData.fuelType.toLowerCase()}</p>
-                )}
-              </div>
-              <button
-                onClick={onBack}
-                className="text-brand-orange text-sm font-semibold hover:underline flex items-center gap-1 flex-shrink-0"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                Edit vehicle
-              </button>
-            </div>
-
-            {vehicleData.blocked && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                <p className="text-red-800 font-semibold mb-1">Warranty Coverage Not Available</p>
-                <p className="text-red-600 text-sm">
-                  {vehicleData.blockReason || "This vehicle isn't eligible due to specialist parts and a limited repair network."}
-                </p>
-              </div>
-            )}
-
-            {/* First name */}
-            <div className="mb-4">
-              <label className="block font-bold text-gray-900 mb-2">Your first name</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="e.g. John"
-                  value={firstName}
-                  onChange={(e) => { setFirstName(e.target.value); setFirstNameError(''); }}
-                  autoComplete="given-name"
-                  data-ga4-event="step2_firstname_input"
-                  className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border-2 rounded-xl text-gray-900 focus:outline-none transition-all ${
-                    firstName && isValidFirstName
-                      ? 'border-primary ring-2 ring-primary/20'
-                      : hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-200 focus:border-primary'
-                  }`}
-                />
-                {firstName && isValidFirstName && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
-                  </div>
-                )}
-              </div>
-              {firstNameError && <p className="text-red-500 text-sm mt-1.5">{firstNameError}</p>}
-            </div>
-
-            {/* Email */}
-            <div className="mb-5">
-              <label className="block font-bold text-gray-900 mb-2">Your email address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="e.g. john@example.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
-                  data-ga4-event="step2_email_input"
-                  className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border-2 rounded-xl text-gray-900 focus:outline-none transition-all ${
-                    emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-200 focus:border-primary'
-                  }`}
-                />
-                {email && isValidEmail && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
-                  </div>
-                )}
-              </div>
-              {emailError && <p className="text-red-500 text-sm mt-1.5">{emailError}</p>}
-              {!emailError && email && !isValidEmail && (
-                <p className="text-red-500 text-sm mt-1.5">Please enter a valid email address</p>
-              )}
-            </div>
-
-            {/* Discount notice */}
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-100 flex-shrink-0">
-                <svg className="w-5 h-5 text-green-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg>
-              </span>
-              <div>
-                <p className="font-bold text-green-900">Mobile number is optional here</p>
-                <p className="text-sm text-green-800/80 mt-0.5">You'll add it at checkout — it's needed for your policy documents and claim updates.</p>
-              </div>
-            </div>
-
-            {/* CTA */}
-            <button
-              onClick={handleSubmit}
-              disabled={vehicleData.blocked || sendingEmail}
-              data-ga4-event="step2_show_price_click"
-              className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-lg text-lg transition-colors ${
-                vehicleData.blocked || sendingEmail
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-brand-orange hover:bg-brand-orange/90 active:scale-[0.99]'
-              }`}
-            >
-              {sendingEmail ? 'Sending...' : (
-                <>
-                  Show my warranty prices
-                  <ArrowRight className="w-6 h-6" strokeWidth={3} />
-                </>
-              )}
-            </button>
-
-            {/* Privacy line */}
-            <p className="text-center text-sm text-gray-600 mt-4 flex items-center justify-center gap-1.5">
-              <Lock className="w-4 h-4" />
-              We'll only use your details to show and save your quote. No spam.
+            <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+              <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
+              See your quote in a few seconds
             </p>
+          </div>
 
-            {/* Trust pills */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-5">
-              <div className="flex items-center justify-center gap-2 border border-gray-200 rounded-lg py-2.5 px-2 text-xs sm:text-sm text-gray-700 font-medium">
-                <Zap className="w-4 h-4 text-brand-orange" /> Instant quote
-              </div>
-              <div className="flex items-center justify-center gap-2 border border-gray-200 rounded-lg py-2.5 px-2 text-xs sm:text-sm text-gray-700 font-medium">
-                <ShieldCheck className="w-4 h-4 text-brand-orange" /> No payment required
-              </div>
-              <div className="flex items-center justify-center gap-2 border border-gray-200 rounded-lg py-2.5 px-2 text-xs sm:text-sm text-gray-700 font-medium">
-                <Star className="w-4 h-4 text-brand-orange" /> No obligation
-              </div>
+          {/* Vehicle summary card */}
+          <div className="border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
+            <div className="bg-[#FFD11A] text-black px-3 py-2 rounded-md font-extrabold text-base tracking-wider border-2 border-black flex-shrink-0">
+              {vehicleData.regNumber}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-gray-900 text-base sm:text-lg uppercase truncate">
+                {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
+              </p>
+              {vehicleData.fuelType && (
+                <p className="text-sm text-gray-500 capitalize">{vehicleData.fuelType.toLowerCase()}</p>
+              )}
+            </div>
+            <button
+              onClick={onBack}
+              className="text-brand-orange text-sm font-semibold hover:underline flex items-center gap-1 flex-shrink-0"
+            >
+              Edit
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+          </div>
+
+          {vehicleData.blocked && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <p className="text-red-800 font-semibold mb-1">Warranty Coverage Not Available</p>
+              <p className="text-red-600 text-sm">
+                {vehicleData.blockReason || "This vehicle isn't eligible due to specialist parts and a limited repair network."}
+              </p>
+            </div>
+          )}
+
+          {/* First name */}
+          <div className="mb-5">
+            <label className="block font-bold text-gray-900 mb-2">Your first name</label>
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="e.g. John"
+                value={firstName}
+                onChange={(e) => { setFirstName(e.target.value); setFirstNameError(''); }}
+                autoComplete="given-name"
+                data-ga4-event="step2_firstname_input"
+                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
+                  hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {firstName && isValidFirstName && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+                </div>
+              )}
+            </div>
+            {firstNameError && <p className="text-red-500 text-sm mt-1.5">{firstNameError}</p>}
+          </div>
+
+          {/* Email */}
+          <div className="mb-5">
+            <label className="block font-bold text-gray-900 mb-2">Your email address</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="email"
+                placeholder="e.g. john@example.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
+                data-ga4-event="step2_email_input"
+                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
+                  emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {email && isValidEmail && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+                </div>
+              )}
+            </div>
+            {emailError && <p className="text-red-500 text-sm mt-1.5">{emailError}</p>}
+            {!emailError && email && !isValidEmail && (
+              <p className="text-red-500 text-sm mt-1.5">Please enter a valid email address</p>
+            )}
+          </div>
+
+          {/* Mobile number (optional) */}
+          <div className="mb-2">
+            <label className="block font-bold text-gray-900 mb-2">
+              Mobile number <span className="font-normal text-gray-500">optional</span>
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="tel"
+                placeholder="07XXX XXXXXX"
+                value={phone}
+                onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
+                data-ga4-event="step2_phone_input"
+                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
+                  phone && !isValidPhone ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {phone && isValidPhone && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Add your number if you'd like help with your quote. No cold calling.
+            </p>
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={handleSubmit}
+            disabled={vehicleData.blocked || sendingEmail}
+            data-ga4-event="step2_show_price_click"
+            className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-md text-lg transition-colors mt-6 ${
+              vehicleData.blocked || sendingEmail
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-brand-orange hover:bg-brand-orange/90 active:scale-[0.99]'
+            }`}
+          >
+            {sendingEmail ? 'Sending...' : (
+              <>
+                Show my price now
+                <ArrowRight className="w-6 h-6" strokeWidth={3} />
+              </>
+            )}
+          </button>
+
+          {/* Trust pills */}
+          <div className="flex items-center justify-center divide-x divide-gray-200 mt-5 text-sm text-gray-700">
+            <div className="flex items-center gap-1.5 px-3">
+              <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Instant quote
+            </div>
+            <div className="flex items-center gap-1.5 px-3">
+              <Car className="w-4 h-4 text-brand-orange" /> Tailored to your vehicle
+            </div>
+            <div className="flex items-center gap-1.5 px-3">
+              <ShieldCheck className="w-4 h-4 text-brand-orange" /> No obligation
             </div>
           </div>
 
-          {/* Help footer card */}
-          <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-gray-100 mt-4 p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-2 items-center">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-7h3v5ZM3 19a2 2 0 0 0 2 2h1v-7H3v5Z"/></svg>
-              </span>
-              <div>
-                <p className="font-bold text-gray-900 text-sm">Need help?</p>
-                <p className="text-xs text-gray-500">Our warranty experts are here for you.</p>
-              </div>
+          {/* Privacy */}
+          <p className="text-center text-sm text-gray-600 mt-4 flex items-center justify-center gap-1.5">
+            <Lock className="w-4 h-4" />
+            We never share your details.
+          </p>
+
+          {/* Help footer */}
+          <div className="bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
+            <p className="font-bold text-gray-900 mb-1">Need advice? We're here to help.</p>
+            <div className="flex items-center justify-center gap-3 text-sm">
+              <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900">
+                <Phone className="w-4 h-4 text-brand-orange" />
+                {SALES_PHONE}
+              </a>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-600">Mon–Fri 9am–6pm</span>
             </div>
-            <a href={SALES_PHONE_TEL} className="flex items-center gap-3 sm:justify-center">
-              <Phone className="w-5 h-5 text-brand-orange" />
-              <div>
-                <p className="font-bold text-gray-900 text-sm">{SALES_PHONE}</p>
-                <p className="text-xs text-gray-500">Mon–Fri 9am – 6pm</p>
-              </div>
-            </a>
-            <button onClick={() => setShowCallbackModal(true)} className="flex items-center gap-3 sm:justify-end text-left">
-              <MessageCircle className="w-5 h-5 text-brand-orange" />
-              <div>
-                <p className="font-bold text-gray-900 text-sm">Request Call-Back</p>
-                <p className="text-xs text-gray-500">We'll call you</p>
-              </div>
-            </button>
           </div>
         </div>
 
