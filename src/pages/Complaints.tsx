@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Phone, Mail, Clock, CheckCircle, ArrowLeft, MessageSquare, ShieldCheck, Lock, MessageCircle, Loader2, ClipboardList, HeadphonesIcon, AlertCircle, Check } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import WebsiteFooter from '@/components/WebsiteFooter';
 import { CLAIMS_PHONE, CLAIMS_PHONE_TEL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
+
 
 const initialForm = {
   firstName: '',
@@ -51,7 +51,8 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
     return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
   },
   warrantyRef: (v) => (!String(v).trim() ? 'Please enter your warranty reference' : ''),
-  registrationPlate: () => '',
+  registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
+
   category: (v) => (!v ? 'Please select a category' : ''),
   description: (v) => {
     const s = String(v).trim();
@@ -65,7 +66,8 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
 };
 
 // Which fields are required (drives the green tick logic — optional fields don't get a tick when empty).
-const requiredFields = new Set(['firstName', 'lastName', 'email', 'warrantyRef', 'category', 'description', 'preferredContactMethod', 'confirmAccurate']);
+const requiredFields = new Set(['firstName', 'lastName', 'email', 'warrantyRef', 'registrationPlate', 'category', 'description', 'preferredContactMethod', 'confirmAccurate']);
+
 
 const Complaints = () => {
   const navigate = useNavigate();
@@ -75,6 +77,36 @@ const Complaints = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [regStatus, setRegStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid' | 'error'>('idle');
+  const [regCustomerName, setRegCustomerName] = useState<string | null>(null);
+  const regTimer = useRef<number | null>(null);
+
+  // Debounced lookup: confirm the registration matches an existing customer record.
+  useEffect(() => {
+    const raw = form.registrationPlate.trim();
+    if (!raw) { setRegStatus('idle'); setRegCustomerName(null); return; }
+    setRegStatus('checking');
+    if (regTimer.current) window.clearTimeout(regTimer.current);
+    regTimer.current = window.setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-customer-reg', {
+          body: { registrationPlate: raw },
+        });
+        if (error) { setRegStatus('error'); return; }
+        if (data?.valid) {
+          setRegStatus('valid');
+          setRegCustomerName(data.customerName || null);
+        } else {
+          setRegStatus('invalid');
+          setRegCustomerName(null);
+        }
+      } catch {
+        setRegStatus('error');
+      }
+    }, 500);
+    return () => { if (regTimer.current) window.clearTimeout(regTimer.current); };
+  }, [form.registrationPlate]);
+
 
   const change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -121,12 +153,21 @@ const Complaints = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
+    if (regStatus !== 'valid') {
+      setErrors((prev) => ({ ...prev, registrationPlate: regStatus === 'checking' ? 'Checking your registration — one moment…' : "We couldn't find that registration on a customer record. Please check and try again." }));
+      toast({ title: 'Registration not recognised', description: 'Please enter the vehicle registration linked to your warranty.', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke('submit-complaint', { body: form });
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
       setForm(initialForm);
+      setRegStatus('idle');
+      setRegCustomerName(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       setTouched({});
       setErrors({});
     } catch (err: any) {
@@ -212,7 +253,56 @@ const Complaints = () => {
 
       {/* Main grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {reference ? (
+          <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 sm:px-10 py-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-md">
+                <CheckCircle className="w-9 h-9 text-green-600" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">Thank you!</h2>
+              <p className="text-sm sm:text-base text-green-50 leading-relaxed">
+                Your complaint has been submitted successfully.
+              </p>
+            </div>
+            <div className="px-6 sm:px-10 py-7">
+              <div className="text-center mb-5">
+                <div className="inline-block text-xs sm:text-sm bg-[#F4F6F8] rounded-md px-3 py-1.5 text-[#1A2B4A]">
+                  Reference: <span className="font-semibold">{reference}</span>
+                </div>
+              </div>
+              <ul className="space-y-2.5 mb-6 text-sm text-[#1A2B4A]">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>A confirmation email has been sent to your inbox.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>Our complaints team will acknowledge within <strong>2 working days</strong>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>We aim to resolve complaints within <strong>10 working days</strong>.</span>
+                </li>
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
+                  className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
+                >
+                  Submit another complaint
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="flex-1 py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
+                >
+                  Back to home
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+
           {/* Form */}
           <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-1">
@@ -237,7 +327,33 @@ const Complaints = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field name="warrantyRef" label="Warranty reference" required value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} hint="Found on your policy documents" valid={fieldStatus.warrantyRef.valid && showStatus('warrantyRef')} />
-                <Field name="registrationPlate" label="Vehicle registration" value={form.registrationPlate} onChange={change} placeholder="e.g. AB12 CDE" valid={!!form.registrationPlate && showStatus('registrationPlate')} />
+                <Field
+                  name="registrationPlate"
+                  label="Vehicle registration"
+                  required
+                  value={form.registrationPlate}
+                  onChange={change}
+                  placeholder="e.g. AB12 CDE"
+                  inputClassName="uppercase tracking-wider"
+                  error={
+                    errors.registrationPlate ||
+                    (showStatus('registrationPlate') && regStatus === 'invalid'
+                      ? "We couldn't find that registration on a customer record."
+                      : '')
+                  }
+                  hint={
+                    regStatus === 'checking'
+                      ? 'Checking your registration…'
+                      : regStatus === 'valid' && regCustomerName
+                      ? `Matched: ${regCustomerName}`
+                      : regStatus === 'valid'
+                      ? 'Registration confirmed'
+                      : 'We use this to match your warranty record'
+                  }
+                  valid={regStatus === 'valid'}
+                  loading={regStatus === 'checking'}
+                />
+
               </div>
 
               {/* Category */}
@@ -447,7 +563,9 @@ const Complaints = () => {
             </div>
           </aside>
         </div>
+        )}
       </main>
+
 
       {/* Support CTA banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -480,45 +598,8 @@ const Complaints = () => {
 
       <WebsiteFooter />
 
-      {/* Confirmation popup */}
-      <Dialog open={!!reference} onOpenChange={(o) => !o && setReference(null)}>
-        <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden">
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 pt-7 pb-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <CheckCircle className="w-9 h-9 text-green-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-1">Thank you!</h3>
-            <p className="text-sm text-green-50 leading-relaxed">
-              Your complaint has been submitted successfully.
-            </p>
-          </div>
-          <div className="px-6 py-6 text-center">
-            <div className="inline-block text-xs bg-slate-100 rounded-md px-3 py-1.5 text-slate-700 mb-4">
-              Reference: <span className="font-semibold text-slate-900">{reference}</span>
-            </div>
-            <ul className="text-left space-y-2.5 mb-5 text-sm text-slate-700">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <span>A confirmation email has been sent to your inbox.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <span>Our complaints team will acknowledge within <strong>2 working days</strong>.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <span>We aim to resolve complaints within <strong>10 working days</strong>.</span>
-              </li>
-            </ul>
-            <button
-              onClick={() => { setReference(null); navigate('/'); }}
-              className="w-full py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
-            >
-              Back to home
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Confirmation now renders inline above; no popup. */}
+
     </div>
   );
 };
@@ -534,9 +615,11 @@ interface FieldProps {
   hint?: string;
   required?: boolean;
   valid?: boolean;
+  loading?: boolean;
+  inputClassName?: string;
 }
 
-const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid }) => (
+const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid, loading, inputClassName = '' }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
       {label}{required && <span className="text-[#E8541A]"> *</span>}
@@ -551,15 +634,18 @@ const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder
         placeholder={placeholder}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
-        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'}`}
+        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'} ${inputClassName}`}
       />
-      {valid && !error && (
+      {loading ? (
+        <Loader2 className="w-4 h-4 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      ) : valid && !error ? (
         <Check className="w-4 h-4 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-      )}
+      ) : null}
     </div>
-    {error ? <FieldError msg={error} id={`${name}-error`} /> : hint ? <p id={`${name}-hint`} className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+    {error ? <FieldError msg={error} id={`${name}-error`} /> : hint ? <p id={`${name}-hint`} className={`mt-1 text-xs ${valid ? 'text-green-700' : 'text-slate-500'}`}>{hint}</p> : null}
   </div>
 );
+
 
 const FieldError: React.FC<{ msg: string; id?: string }> = ({ msg, id }) => (
   <p id={id} className="mt-1 text-xs text-red-600 flex items-center gap-1">
