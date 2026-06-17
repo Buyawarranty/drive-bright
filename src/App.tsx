@@ -38,6 +38,7 @@ const ConditionalStickyNavigation = () => {
   if (location.pathname.startsWith('/dealer-portal')) return null;
   if (location.pathname.startsWith('/bmw-extended-warranty')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/bmw')) return null;
+  if (location.pathname.startsWith('/car-extended-warranty/mercedes-benz')) return null;
   return <StickyNavigation />;
 };
 
@@ -53,7 +54,8 @@ const ConditionalFooter = () => {
   // Hide footer on brand landing pages (Google Ads pages)
   const isBrandLanding = (location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/')
     || location.pathname.startsWith('/bmw-extended-warranty')
-    || location.pathname.startsWith('/car-extended-warranty/bmw');
+    || location.pathname.startsWith('/car-extended-warranty/bmw')
+    || location.pathname.startsWith('/car-extended-warranty/mercedes-benz');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
