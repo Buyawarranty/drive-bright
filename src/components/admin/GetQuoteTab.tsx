@@ -497,19 +497,33 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     return () => { cancelled = true; clearTimeout(t); };
   }, [regNumber, step]);
 
-  // Handle custom price field changes — fields are independent; agents can type any amount.
-  // Only a warning is shown when below the 20% floor (see UI below); nothing is blocked.
+  // Handle custom price field changes — editing one side auto-updates the other
+  // (monthly ↔ total uses ×12 / ÷12). Agents can still type any amount; the 20%
+  // floor warning below is informational, not blocking.
   const handleCustomMonthlyChange = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');
     setCustomMonthlyPrice(sanitized);
+    const n = parseFloat(sanitized);
+    if (!isNaN(n) && n > 0) {
+      setCustomFullPrice((n * 12).toFixed(2).replace(/\.00$/, ''));
+    } else if (sanitized === '') {
+      setCustomFullPrice('');
+    }
     setIsPriceOverridden(true);
   };
 
   const handleCustomFullChange = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');
     setCustomFullPrice(sanitized);
+    const n = parseFloat(sanitized);
+    if (!isNaN(n) && n > 0) {
+      setCustomMonthlyPrice((n / 12).toFixed(2).replace(/\.00$/, ''));
+    } else if (sanitized === '') {
+      setCustomMonthlyPrice('');
+    }
     setIsPriceOverridden(true);
   };
+
 
   const resetToCalculatedPrice = () => {
     setIsPriceOverridden(false);
