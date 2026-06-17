@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,6 +101,8 @@ export const AbandonedCartsTab: React.FC = () => {
   const [savingNotes, setSavingNotes] = useState(false);
   const [newCartsCount, setNewCartsCount] = useState(0);
   const [cartEmails, setCartEmails] = useState<Record<string, CartEmail[]>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 50;
 
   useEffect(() => {
     fetchAbandonedCarts();
@@ -218,10 +220,14 @@ export const AbandonedCartsTab: React.FC = () => {
 
   const fetchAllCartEmails = async () => {
     try {
+      // Limit to the last 90 days to avoid pulling 15k+ rows and freezing the page.
+      const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('abandoned_cart_emails')
         .select('*')
-        .order('sent_at', { ascending: false });
+        .gte('sent_at', since)
+        .order('sent_at', { ascending: false })
+        .limit(5000);
 
       if (error) throw error;
 
@@ -291,16 +297,30 @@ export const AbandonedCartsTab: React.FC = () => {
     }
   };
 
-  const filteredCarts = carts.filter(cart => {
+  const filteredCarts = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    if (!searchLower) return carts;
+    return carts.filter(cart =>
       cart.email?.toLowerCase().includes(searchLower) ||
       cart.full_name?.toLowerCase().includes(searchLower) ||
       cart.vehicle_reg?.toLowerCase().includes(searchLower) ||
       cart.vehicle_make?.toLowerCase().includes(searchLower) ||
       cart.vehicle_model?.toLowerCase().includes(searchLower)
     );
-  });
+  }, [carts, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCarts.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedCarts = useMemo(
+    () => filteredCarts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filteredCarts, safePage]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -441,8 +461,13 @@ export const AbandonedCartsTab: React.FC = () => {
       </div>
 
       {/* Carts List */}
+      <div className="text-sm text-gray-600">
+        Showing {filteredCarts.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}
+        –{Math.min(safePage * PAGE_SIZE, filteredCarts.length)} of {filteredCarts.length.toLocaleString()}
+        {searchTerm && ` (filtered from ${carts.length.toLocaleString()})`}
+      </div>
       <div className="grid gap-4">
-        {filteredCarts.map((cart) => (
+        {pagedCarts.map((cart) => (
           <Card key={cart.id} className="hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -712,6 +737,31 @@ export const AbandonedCartsTab: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={safePage <= 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-gray-600">
+            Page {safePage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={safePage >= totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       {/* Contact Notes Modal */}
       {selectedCart && (
