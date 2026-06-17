@@ -22,12 +22,12 @@ import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import MercedesPPCFooter from '@/components/landing/MercedesPPCFooter';
-import mercA from '@/assets/mercedes-models/mercedes-a-class-extended-warranty.jpg';
-import mercC from '@/assets/mercedes-models/mercedes-c-class-extended-warranty.jpg';
-import mercE from '@/assets/mercedes-models/mercedes-e-class-extended-warranty.jpg';
-import mercGLC from '@/assets/mercedes-models/mercedes-glc-suv-extended-warranty.jpg';
-import mercS from '@/assets/mercedes-models/mercedes-s-class-extended-warranty.jpg';
-import mercEQ from '@/assets/mercedes-models/mercedes-eq-ev-extended-warranty.jpg';
+import mercA from '@/assets/mercedes-models/mercedes-a-class-extended-warranty.png';
+import mercC from '@/assets/mercedes-models/mercedes-c-class-extended-warranty.png';
+import mercE from '@/assets/mercedes-models/mercedes-e-class-extended-warranty.png';
+import mercGLC from '@/assets/mercedes-models/mercedes-glc-suv-extended-warranty.png';
+import mercS from '@/assets/mercedes-models/mercedes-s-class-extended-warranty.png';
+import mercEQ from '@/assets/mercedes-models/mercedes-eq-ev-extended-warranty.png';
 
 const mercedesModels = [
   { label: 'A-Class', examples: 'A180, A200, A220d', img: mercA, alt: 'Mercedes-Benz A-Class extended warranty cover — A180, A200 hatchback' },
