@@ -79,7 +79,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
   const [postcode, setPostcode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
 
 
