@@ -835,7 +835,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg text-base sm:text-lg ${
+          className={`mq-cta w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg text-base sm:text-lg ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-brand-orange hover:bg-brand-orange/90 animate-breathing'
@@ -851,7 +851,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           )}
         </button>
 
-        {/* Quick Benefits - Below CTA */}
+        {/* Quick Benefits - Below CTA (desktop) */}
         <div className="hidden sm:flex items-center justify-center gap-6 text-sm text-gray-600 mt-2">
           <span className="flex items-center gap-1.5">
             <Rocket className="w-4 h-4 text-brand-orange" />
@@ -867,11 +867,26 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </span>
         </div>
 
-        {/* Trust Line */}
-        <div className="text-center mt-2 text-gray-500 text-xs sm:text-sm">
+        {/* Trust Line + Call CTA */}
+        <div className="text-center mt-2 text-gray-600 text-xs sm:text-sm mq-trust-row">
           <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details.</span>
           </p>
+          <p className="mt-1">
+            <span className="text-gray-600">Prefer to speak to someone? </span>
+            <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline whitespace-nowrap">
+              Call {SALES_PHONE}
+            </a>
+          </p>
+          <p className="mt-1 text-gray-500">15+ years experience helping UK drivers</p>
+        </div>
+
+        {/* Reassurance block – appears on tall screens to fill empty space */}
+        <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4 text-sm text-gray-700">
+          <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-brand-orange" fill="currentColor" /> Rated Excellent on Trustpilot</span>
+          <span className="flex items-center gap-1.5"><BellOff className="w-4 h-4 text-brand-orange" /> No cold calling</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-orange" /> Your details are secure</span>
+          <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Quote in seconds</span>
         </div>
 
         {/* Trustpilot Badge - Mobile only */}
