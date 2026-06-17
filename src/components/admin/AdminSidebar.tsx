@@ -208,6 +208,12 @@ const defaultTabs: Tab[] = [
     description: 'Google Ads, Facebook Ads, conversions & ROAS'
   },
   {
+    id: 'ab-testing',
+    label: 'A/B Testing',
+    icon: FlaskConical,
+    description: 'Compare A vs B variants: visits, submissions, conversions'
+  },
+  {
     id: 'vehicle-stats',
     label: 'Vehicle Stats',
     icon: Car,
