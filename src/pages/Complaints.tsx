@@ -139,7 +139,7 @@ const Complaints = () => {
   const showStatus = (name: string) => touched[name] || !!(form as any)[name];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-[#F4F6F8]">
       <SEOHead
         title="Complaints Procedure | Buy A Warranty UK"
         description="Submit a complaint to Buy A Warranty. We acknowledge complaints within 2 working days and aim to resolve within 10 working days."
@@ -151,7 +151,7 @@ const Complaints = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-[#1A2B4A] transition-colors"
+          className="inline-flex items-center gap-2 text-[13px] font-medium text-[#5A6B82] hover:text-[#1A2B4A] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Help Centre
@@ -160,28 +160,26 @@ const Complaints = () => {
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#0f2b5b] via-[#13366f] to-[#1A2B4A] text-white rounded-2xl shadow-xl">
-          <div className="absolute -top-16 -right-16 w-72 h-72 bg-white/5 rounded-full blur-3xl" aria-hidden />
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-[#eb4b00]/10 rounded-full blur-3xl" aria-hidden />
+        <div className="relative overflow-hidden bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
           <div className="relative grid md:grid-cols-[1fr_auto] items-center gap-6 p-8 sm:p-12">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-medium tracking-wide mb-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A] mb-4">
                 <HeadphonesIcon className="w-3.5 h-3.5" /> CUSTOMER COMPLAINTS
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight">We're here to help</h1>
-              <p className="text-blue-100 text-base sm:text-lg max-w-2xl leading-relaxed">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">We're here to help</h1>
+              <p className="text-[#5A6B82] text-base sm:text-lg max-w-2xl leading-relaxed">
                 We take every complaint seriously and aim to resolve it fairly, clearly, and as quickly as possible.
               </p>
-              <ul className="mt-5 space-y-2 text-sm text-blue-50">
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-orange-300 shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-orange-300 shrink-0" /> Resolved within <strong>10 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-orange-300 shrink-0" /> Handled privately and securely</li>
+              <ul className="mt-5 space-y-2 text-sm text-[#1A2B4A]">
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Resolved within <strong>10 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Handled privately and securely</li>
               </ul>
             </div>
             <div className="hidden md:flex items-center justify-center">
-              <div className="relative w-44 h-44 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center">
-                <ClipboardList className="w-20 h-20 text-orange-300" strokeWidth={1.4} />
-                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-[#eb4b00] flex items-center justify-center shadow-lg">
+              <div className="relative w-44 h-44 rounded-2xl bg-[#FEF0E8] border border-[#E8541A]/15 flex items-center justify-center">
+                <ClipboardList className="w-20 h-20 text-[#E8541A]" strokeWidth={1.4} />
+                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-[#E8541A] flex items-center justify-center shadow-md">
                   <MessageSquare className="w-7 h-7 text-white" />
                 </div>
               </div>
@@ -192,24 +190,25 @@ const Complaints = () => {
 
       {/* Trust cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white rounded-2xl border border-slate-200 p-2 sm:p-2 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white rounded-2xl border border-[#E2E8F0] p-2 sm:p-2 shadow-sm">
           {[
             { Icon: ShieldCheck, title: "We're on your side", desc: 'Our team is here to listen and help put things right.' },
             { Icon: Clock, title: 'Clear response times', desc: "We'll keep you informed at every stage." },
             { Icon: Lock, title: 'Private & secure', desc: 'Your details are handled carefully and confidentially.' },
           ].map(({ Icon, title, desc }) => (
-            <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-[#1A2B4A]" />
+            <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-[#F4F6F8] transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-[#FEF0E8] flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-[#E8541A]" />
               </div>
               <div>
-                <p className="font-semibold text-slate-900 text-sm">{title}</p>
-                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{desc}</p>
+                <p className="font-semibold text-[#1A2B4A] text-sm">{title}</p>
+                <p className="text-xs text-[#5A6B82] mt-0.5 leading-relaxed">{desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
+
 
       {/* Main grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
