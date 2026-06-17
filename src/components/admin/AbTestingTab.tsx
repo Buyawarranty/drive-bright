@@ -315,8 +315,9 @@ const AbTestingTab: React.FC = () => {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="A" fill="hsl(var(--primary))" />
+                  <Bar dataKey="A" fill="#2563eb" />
                   <Bar dataKey="B" fill="#eb4b00" />
+
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
