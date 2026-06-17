@@ -274,7 +274,33 @@ const Complaints = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field name="warrantyRef" label="Warranty reference" required value={form.warrantyRef} onChange={change} placeholder="e.g. BAW-2025-XXXXX" error={errors.warrantyRef} hint="Found on your policy documents" valid={fieldStatus.warrantyRef.valid && showStatus('warrantyRef')} />
-                <Field name="registrationPlate" label="Vehicle registration" value={form.registrationPlate} onChange={change} placeholder="e.g. AB12 CDE" valid={!!form.registrationPlate && showStatus('registrationPlate')} />
+                <Field
+                  name="registrationPlate"
+                  label="Vehicle registration"
+                  required
+                  value={form.registrationPlate}
+                  onChange={change}
+                  placeholder="e.g. AB12 CDE"
+                  inputClassName="uppercase tracking-wider"
+                  error={
+                    errors.registrationPlate ||
+                    (showStatus('registrationPlate') && regStatus === 'invalid'
+                      ? "We couldn't find that registration on a customer record."
+                      : '')
+                  }
+                  hint={
+                    regStatus === 'checking'
+                      ? 'Checking your registration…'
+                      : regStatus === 'valid' && regCustomerName
+                      ? `Matched: ${regCustomerName}`
+                      : regStatus === 'valid'
+                      ? 'Registration confirmed'
+                      : 'We use this to match your warranty record'
+                  }
+                  valid={regStatus === 'valid'}
+                  loading={regStatus === 'checking'}
+                />
+
               </div>
 
               {/* Category */}
