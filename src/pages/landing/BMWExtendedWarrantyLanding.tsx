@@ -603,8 +603,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="text-center mt-5">
+            <div className="text-center mt-5 flex flex-col items-center gap-4">
               <Link to="/faq/" className="inline-flex items-center gap-1 text-[#F97316] font-bold text-sm hover:underline">View all FAQs <ArrowRight className="w-4 h-4" /></Link>
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
+                Get my BMW quote <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
           </div>
         </section>
