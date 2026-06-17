@@ -51,7 +51,8 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
     return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
   },
   warrantyRef: (v) => (!String(v).trim() ? 'Please enter your warranty reference' : ''),
-  registrationPlate: () => '',
+  registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
+
   category: (v) => (!v ? 'Please select a category' : ''),
   description: (v) => {
     const s = String(v).trim();
