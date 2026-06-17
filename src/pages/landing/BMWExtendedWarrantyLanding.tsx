@@ -594,12 +594,12 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
             </div>
             <div className="space-y-2">
               {faqs.slice(0, 6).map((f, i) => (
-                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-[#F97316] hover:bg-[#EA580C] rounded-lg border border-[#F97316] p-4 transition-all">
+                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-gray-50 hover:bg-gray-100 rounded-lg border-l-4 border-[#F97316] border-y border-r border-y-gray-200 border-r-gray-200 p-4 transition-all">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold text-sm text-white">{f.q}</span>
-                    <ChevronDown className={`w-4 h-4 text-white flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                    <span className="font-semibold text-sm text-gray-900">{f.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-[#F97316] flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
                   </div>
-                  {openFaq === i && <p className="mt-2 text-white/90 text-xs leading-relaxed">{f.a}</p>}
+                  {openFaq === i && <p className="mt-2 text-gray-700 text-xs leading-relaxed">{f.a}</p>}
                 </button>
               ))}
             </div>
