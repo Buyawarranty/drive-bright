@@ -463,16 +463,16 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
 
           {/* Vehicle summary card */}
-          <div className="border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
-            <div className="bg-[#FFD11A] text-black px-3 py-2 rounded-md font-extrabold text-base tracking-wider border-2 border-black flex-shrink-0">
+          <div className="border border-gray-200 rounded-xl p-2.5 sm:p-4 mb-3 sm:mb-6 flex items-center gap-3 sm:gap-4">
+            <div className="bg-[#FFD11A] text-black px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-md font-extrabold text-sm sm:text-base tracking-wider border-2 border-black flex-shrink-0">
               {vehicleData.regNumber}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-gray-900 text-base sm:text-lg uppercase truncate">
+              <p className="font-bold text-gray-900 text-sm sm:text-lg uppercase truncate">
                 {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
               </p>
               {vehicleData.fuelType && (
-                <p className="text-sm text-gray-500 capitalize">{vehicleData.fuelType.toLowerCase()}</p>
+                <p className="text-xs sm:text-sm text-gray-500 capitalize">{vehicleData.fuelType.toLowerCase()}</p>
               )}
             </div>
             <button
