@@ -59,9 +59,9 @@ interface AdminUser {
 
 // Maximum allowed discount % per duration
 const MAX_DISCOUNT_PCT: Record<string, number> = {
-  '12months': 5,
-  '24months': 7,
-  '36months': 10,
+  '12months': 20,
+  '24months': 20,
+  '36months': 20,
 };
 
 const DURATION_LABELS: Record<string, string> = {
