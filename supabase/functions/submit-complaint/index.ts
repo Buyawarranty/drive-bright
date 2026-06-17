@@ -156,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "BuyaWarranty Complaints <noreply@buyawarranty.co.uk>",
-        to: ["claims@buyawarranty.co.uk", "complaints@buyawarranty.co.uk"],
+        to: ["complaints@buyawarranty.co.uk", "support@buyawarranty.co.uk", "claims@buyawarranty.co.uk"],
         reply_to: email,
         subject,
         html: internalHtml,
