@@ -25,12 +25,19 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Check customers table — match normalized reg (strip spaces, upper).
+    // Build common stored variants (no-space, and space at typical UK positions)
+    const variants = new Set<string>([reg]);
+    if (reg.length >= 5) variants.add(reg.slice(0, reg.length - 3) + " " + reg.slice(-3));
+    if (reg.length >= 5) variants.add(reg.slice(0, 4) + " " + reg.slice(4));
+    // Lowercase / mixed are handled with ilike, but plates are usually upper. Use in() with both cases.
+    const all: string[] = [];
+    for (const v of variants) { all.push(v); all.push(v.toLowerCase()); }
+
     const { data, error } = await supabase
       .from("customers")
       .select("id, first_name, last_name, registration_plate")
-      .not("registration_plate", "is", null)
-      .limit(2000);
+      .in("registration_plate", all)
+      .limit(5);
 
     if (error) {
       console.error("DB error:", error);
