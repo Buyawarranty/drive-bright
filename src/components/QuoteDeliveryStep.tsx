@@ -434,20 +434,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   // ===== Variant B redesigned layout =====
   if (isVariantB) {
     return (
-      <section className="bg-white min-h-screen pb-8">
-        <div className="max-w-xl mx-auto px-4 pt-6 sm:pt-8">
+      <section className="bg-white min-h-screen pb-4">
+        <div className="max-w-xl mx-auto px-4 pt-3 sm:pt-8">
           {/* Headline */}
-          <div className="flex items-start gap-3 mb-4">
-            <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
-              <Zap className="w-5 h-5" fill="currentColor" />
+          <div className="flex items-start gap-2.5 mb-2 sm:mb-4">
+            <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            <h1 className="text-xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
               Only 3 quick details to see your quote
             </h1>
           </div>
 
           {/* Back + sub headline */}
-          <div className="flex items-center justify-center gap-4 mb-5">
+          <div className="flex items-center justify-center gap-4 mb-3 sm:mb-5">
             <button
               type="button"
               onClick={onBack}
@@ -458,7 +458,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </button>
             <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
               <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
-              See your quote in a few seconds
+              Your price is seconds away
             </p>
           </div>
 
