@@ -149,4 +149,28 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     description:
       "Trusted UK used car warranty provider. 5-star reviews, instant online quotes from 60p a day.",
   },
+
+  // ---------------- Brand-specific PPC landing pages ----------------
+  {
+    path: "/car-extended-warranty/mercedes-benz/",
+    title: "Mercedes-Benz Extended Warranty Cover from £19/month | Buy A Warranty",
+    description:
+      "Protect your Mercedes-Benz from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+    ogImage: `${SITE}/__l5e/assets-v1/207b7a00-2fce-48b8-9893-e9deb63e4a0d/mercedes-panda-hero.png`,
+  },
+  {
+    path: "/car-extended-warranty/volkswagen/",
+    title: "Volkswagen Extended Warranty Cover from £19/month | Buy A Warranty",
+    description:
+      "Protect your Volkswagen from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+    ogImage: `${SITE}/__l5e/assets-v1/a8654212-2d11-434d-84c0-7ac213730b6d/vw-panda-hero.png`,
+  },
+  {
+    path: "/car-extended-warranty/bmw/",
+    title: "BMW Extended Warranty Cover from £19/month | Buy A Warranty",
+    description:
+      "Protect your BMW from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+    ogImage: `${SITE}/__l5e/assets-v1/c5a3804c-e712-43cb-aaf7-d8e1dff42533/bmw-panda-hero.png`,
+  },
 ];
+
