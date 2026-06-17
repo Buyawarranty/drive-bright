@@ -220,10 +220,14 @@ export const AbandonedCartsTab: React.FC = () => {
 
   const fetchAllCartEmails = async () => {
     try {
+      // Limit to the last 90 days to avoid pulling 15k+ rows and freezing the page.
+      const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('abandoned_cart_emails')
         .select('*')
-        .order('sent_at', { ascending: false });
+        .gte('sent_at', since)
+        .order('sent_at', { ascending: false })
+        .limit(5000);
 
       if (error) throw error;
 
