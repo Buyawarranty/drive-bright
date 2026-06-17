@@ -195,21 +195,24 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           : (ctaLabels?.submit ?? 'Get my instant quote');
 
         if (!isActive) {
+          const subtext = !isRegValid
+            ? "We'll instantly find your car details."
+            : "Don't worry, we'll confirm your exact mileage later.";
           return (
             <button
               type="button"
               onClick={handleGetQuote}
-              className="w-full text-left rounded-2xl border border-[#F2C9B3] bg-[#FBE4D6] hover:bg-[#F8D9C5] transition-colors px-4 py-4 sm:px-5 sm:py-5 flex items-center gap-4"
+              className="w-full text-left rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center gap-3"
             >
-              <span className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/70 ring-1 ring-[#E8B89A] flex-shrink-0">
-                <ShieldCheck className="w-6 h-6" style={{ color: '#8A5A45' }} strokeWidth={2.25} />
+              <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/70 ring-1 ring-[#EBC9B0] flex-shrink-0">
+                <ShieldCheck className="w-4 h-4" style={{ color: '#B07A5C' }} strokeWidth={2} />
               </span>
               <span className="flex flex-col leading-tight">
-                <span className="text-[15px] sm:text-base font-bold" style={{ color: '#6B3F2A' }}>
+                <span className="text-sm font-semibold" style={{ color: '#8A5A45' }}>
                   {label}
                 </span>
-                <span className="text-[13px] sm:text-sm mt-0.5" style={{ color: '#8A5A45' }}>
-                  Don't worry, we'll confirm your exact mileage later.
+                <span className="text-xs mt-0.5" style={{ color: '#B07A5C' }}>
+                  {subtext}
                 </span>
               </span>
             </button>
