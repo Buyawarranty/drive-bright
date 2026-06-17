@@ -600,7 +600,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                   <button
                     key={i}
                     onClick={() => setOpenFaq(open ? null : i)}
-                    className={`group w-full text-left bg-white rounded-[14px] border border-[#DCE3EC] border-l-4 border-l-[#FF6B00] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:bg-[#FFF9F4] hover:border-[#FFB278] hover:border-l-[#FF6B00] hover:shadow-[0_8px_22px_rgba(15,23,42,0.07)] transition-all px-6 py-6 md:px-[30px] ${open ? 'bg-[#FFF9F4] border-[#FFB278] border-l-[#FF6B00] shadow-[0_8px_22px_rgba(15,23,42,0.07)]' : ''}`}
+                    className={`group w-full text-left bg-white rounded-[14px] border border-[#DCE3EC] border-l-4 border-l-[#FFB580] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:bg-[#FFF9F4] hover:border-[#FFB278] hover:border-l-[#FFB580] hover:shadow-[0_8px_22px_rgba(15,23,42,0.07)] transition-all px-6 py-6 md:px-[30px] ${open ? 'bg-[#FFF9F4] border-[#FFB278] border-l-[#FFB580] shadow-[0_8px_22px_rgba(15,23,42,0.07)]' : ''}`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-semibold text-sm md:text-base text-gray-900">{f.q}</span>
