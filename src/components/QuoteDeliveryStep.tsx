@@ -605,17 +605,33 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
           </div>
 
-          {/* Privacy */}
-          <p className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 flex items-center justify-center gap-1.5">
-            <Lock className="w-4 h-4" />
-            We never share your details.
-          </p>
+          {/* Privacy + call CTA */}
+          <div className="text-center text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 mq-trust-row">
+            <p className="flex items-center justify-center gap-1.5">
+              <Lock className="w-4 h-4" />
+              We never share your details.
+            </p>
+            <p className="mt-1.5">
+              Prefer to speak to someone?{' '}
+              <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline whitespace-nowrap">
+                Call {SALES_PHONE}
+              </a>
+            </p>
+          </div>
 
-          {/* Help footer */}
+          {/* Reassurance block – appears on tall screens to fill empty space */}
+          <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-5 text-sm text-gray-700">
+            <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-brand-orange" fill="currentColor" /> Rated Excellent on Trustpilot</span>
+            <span className="flex items-center gap-1.5"><BellOff className="w-4 h-4 text-brand-orange" /> No cold calling</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-orange" /> Your details are secure</span>
+            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-brand-orange" fill="currentColor" /> Quote in seconds</span>
+          </div>
+
+          {/* Help footer – desktop only */}
           <div className="hidden sm:block bg-gray-50 rounded-xl mt-6 px-5 py-4 text-center">
-            <p className="font-bold text-gray-900 mb-1">Need advice? We're here to help.</p>
+            <p className="font-bold text-gray-900 mb-1">15+ years experience helping UK drivers</p>
             <div className="flex items-center justify-center gap-3 text-sm">
-              <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900">
+              <a href={SALES_PHONE_TEL} className="flex items-center gap-1.5 font-bold text-gray-900 hover:underline">
                 <Phone className="w-4 h-4 text-brand-orange" />
                 {SALES_PHONE}
               </a>
