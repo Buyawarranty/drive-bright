@@ -593,14 +593,14 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Frequently asked questions</h2>
               <p className="mt-3 text-sm md:text-base text-slate-600">Got questions before you get a quote? Here are the answers BMW owners ask us most.</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {faqs.slice(0, 6).map((f, i) => {
                 const open = openFaq === i;
                 return (
                   <button
                     key={i}
                     onClick={() => setOpenFaq(open ? null : i)}
-                    className={`group w-full text-left bg-white hover:bg-[#FFF8F3] rounded-lg border border-[#E5EAF1] hover:border-[#FFB278] transition-all px-5 py-[18px] md:px-7 md:py-[22px] border-l-[3px] ${open ? 'border-l-[#F97316] bg-[#FFF8F3] border-[#FFB278]' : 'border-l-transparent hover:border-l-[#F97316]'}`}
+                    className={`group w-full text-left bg-white rounded-[14px] border border-[#DCE3EC] border-l-4 border-l-[#FF6B00] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:bg-[#FFF9F4] hover:border-[#FFB278] hover:border-l-[#FF6B00] hover:shadow-[0_8px_22px_rgba(15,23,42,0.07)] transition-all px-6 py-6 md:px-[30px] ${open ? 'bg-[#FFF9F4] border-[#FFB278] border-l-[#FF6B00] shadow-[0_8px_22px_rgba(15,23,42,0.07)]' : ''}`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-semibold text-sm md:text-base text-gray-900">{f.q}</span>
