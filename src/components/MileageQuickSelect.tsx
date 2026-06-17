@@ -10,6 +10,11 @@ interface MileageQuickSelectProps {
   isLoading?: boolean;
   isRegValid?: boolean;
   autoScrollOnValid?: boolean;
+  ctaLabels?: {
+    enterReg?: string;
+    selectMileage?: string;
+    submit?: string;
+  };
 }
 
 const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({ 
@@ -19,7 +24,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   error,
   isLoading = false,
   isRegValid = false,
-  autoScrollOnValid = false
+  autoScrollOnValid = false,
+  ctaLabels
 }) => {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const [highlight, setHighlight] = useState(false);
