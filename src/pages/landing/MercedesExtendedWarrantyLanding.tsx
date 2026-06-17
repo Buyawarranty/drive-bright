@@ -115,7 +115,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
         <header className="sticky top-0 z-40 bg-white border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <Link to="/" className="flex items-center">
-              <img src={buyawarrantyLogo} alt="BuyaWarranty" className="h-8 md:h-10 w-auto" loading="eager" />
+              <img src={buyawarrantyLogo} alt="BuyaWarranty" width={1600} height={254} className="h-7 md:h-10 w-auto object-contain shrink-0" loading="eager" />
             </Link>
             <div className="hidden lg:flex items-center gap-2">
               <Star className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
