@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ab_variant_visits: {
+        Row: {
+          created_at: string
+          experiment_key: string
+          id: string
+          landed_at: string
+          page_path: string | null
+          session_id: string | null
+          source: string | null
+          variant: string
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          experiment_key: string
+          id?: string
+          landed_at?: string
+          page_path?: string | null
+          session_id?: string | null
+          source?: string | null
+          variant: string
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          experiment_key?: string
+          id?: string
+          landed_at?: string
+          page_path?: string | null
+          session_id?: string | null
+          source?: string | null
+          variant?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       abandoned_cart_email_templates: {
         Row: {
           created_at: string | null

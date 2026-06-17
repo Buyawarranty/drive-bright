@@ -29,7 +29,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
-import { captureAbVariantFromUrl, formatStepParam, stepNumber, getAbVariant } from '@/utils/abVariant';
+import { captureAbVariantFromUrl, formatStepParam, stepNumber, getAbVariant, trackAbVariantVisit } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
 
@@ -760,6 +760,16 @@ const Index = () => {
     captureFbclid();
     captureAbVariantFromUrl();
   }, []);
+
+  // Record an A/B visit when the user reaches step 2 of the funnel.
+  // A = ?step=2 (phone required), B = ?step=2b (phone optional).
+  // Deduped per session by trackAbVariantVisit.
+  useEffect(() => {
+    if (currentStep !== 2) return;
+    const variant = getAbVariant() === 'b' ? 'b' : 'a';
+    trackAbVariantVisit('step2_phone_optional', variant);
+  }, [currentStep]);
+
   
   // Handle PayPal/redirect payment returns
   // When users return from PayPal, Stripe redirects to /?step=4&payment_return=true&redirect_status=...
