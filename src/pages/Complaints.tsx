@@ -597,9 +597,11 @@ interface FieldProps {
   hint?: string;
   required?: boolean;
   valid?: boolean;
+  loading?: boolean;
+  inputClassName?: string;
 }
 
-const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid }) => (
+const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid, loading, inputClassName = '' }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
       {label}{required && <span className="text-[#E8541A]"> *</span>}
@@ -614,15 +616,18 @@ const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder
         placeholder={placeholder}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
-        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'}`}
+        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'} ${inputClassName}`}
       />
-      {valid && !error && (
+      {loading ? (
+        <Loader2 className="w-4 h-4 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      ) : valid && !error ? (
         <Check className="w-4 h-4 text-green-600 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-      )}
+      ) : null}
     </div>
-    {error ? <FieldError msg={error} id={`${name}-error`} /> : hint ? <p id={`${name}-hint`} className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+    {error ? <FieldError msg={error} id={`${name}-error`} /> : hint ? <p id={`${name}-hint`} className={`mt-1 text-xs ${valid ? 'text-green-700' : 'text-slate-500'}`}>{hint}</p> : null}
   </div>
 );
+
 
 const FieldError: React.FC<{ msg: string; id?: string }> = ({ msg, id }) => (
   <p id={id} className="mt-1 text-xs text-red-600 flex items-center gap-1">
