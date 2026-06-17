@@ -568,17 +568,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               )}
             </div>
-
-                className={`w-full pl-12 pr-12 py-3.5 text-base bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all ${
-                  phone && !isValidPhone ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {phone && isValidPhone && (
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
-                </div>
-              )}
-            </div>
             <p className="text-sm text-gray-500 mt-2">
               Add your number if you'd like help with your quote. No cold calling.
             </p>
