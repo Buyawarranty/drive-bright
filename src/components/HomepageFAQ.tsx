@@ -104,31 +104,43 @@ const HomepageFAQ = () => {
     }
   ];
 
-  const FAQItem = ({ faq }: { faq: { id: string; question: string; answer: string } }) => (
-    <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
-      <button
-        onClick={() => toggleItem(faq.id)}
-        className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
+  const FAQItem = ({ faq }: { faq: { id: string; question: string; answer: string } }) => {
+    const open = !!openItems[faq.id];
+    return (
+      <div
+        className={`bg-white rounded-[14px] overflow-hidden border border-[#DCE3EC] border-l-4 border-l-[#FFB580] shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition-all ${
+          open
+            ? 'bg-[#FFF9F4] border-[#FFB278] shadow-[0_8px_22px_rgba(15,23,42,0.07)]'
+            : 'hover:bg-[#FFF9F4] hover:border-[#FFB278] hover:shadow-[0_8px_22px_rgba(15,23,42,0.07)]'
+        }`}
       >
-        <span className="font-bold text-lg pr-4">{faq.question}</span>
-        <ChevronDown 
-          className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${
-            openItems[faq.id] ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
-      
-      <div className={`overflow-hidden transition-all duration-200 ease-out ${
-        openItems[faq.id] 
-          ? 'max-h-screen opacity-100 animate-accordion-down' 
-          : 'max-h-0 opacity-0'
-      }`}>
-        <div className="px-6 pb-5 bg-white border-t border-orange-200">
-          <p className="text-base leading-relaxed pt-4 transform translate-y-0 whitespace-pre-line text-brand-dark-text">{renderAnswerWithLinks(faq.answer)}</p>
+        <button
+          onClick={() => toggleItem(faq.id)}
+          className="group w-full px-6 md:px-[30px] py-6 text-left flex items-center justify-between gap-3"
+        >
+          <span className="font-semibold text-base md:text-lg text-gray-900 pr-2">{faq.question}</span>
+          <span
+            className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors flex-shrink-0 ${
+              open ? 'bg-[#FFE8D6]' : 'bg-transparent group-hover:bg-[#FFE8D6]'
+            }`}
+          >
+            <ChevronDown
+              className={`w-4 h-4 text-[#F97316] transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+            />
+          </span>
+        </button>
+
+        <div className={`overflow-hidden transition-all duration-200 ease-out ${open ? 'max-h-screen opacity-100 animate-accordion-down' : 'max-h-0 opacity-0'}`}>
+          <div className="px-6 md:px-[30px] pb-6">
+            <div className="pt-2 border-t border-[#DCE3EC]">
+              <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-gray-700">{renderAnswerWithLinks(faq.answer)}</p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
 
   return (
     <section className="pt-16 sm:pt-20 pb-8 bg-white">
