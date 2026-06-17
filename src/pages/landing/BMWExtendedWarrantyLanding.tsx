@@ -187,7 +187,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <a href={WHATSAPP_URL} target="_blank" rel="noopener" className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#25D366] text-white text-xs font-bold hover:opacity-90">
                 <MessageCircle className="w-4 h-4" /> WhatsApp us
               </a>
-              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs px-4">Get my quote</Button>
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs px-4">Get my BMW quote</Button>
               <Link to="/auth/" className="hidden md:inline-flex items-center gap-1 text-slate-600 text-xs font-semibold hover:text-slate-900">
                 <User className="w-4 h-4" /> Login
               </Link>
@@ -243,7 +243,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                           type="text"
                           value={regNumber}
                           onChange={e => setRegNumber(e.target.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase())}
-                          placeholder="ENTER REG"
+                          placeholder="ENTER BMW REG"
                           aria-label="Vehicle registration"
                           className="bg-yellow-400 border-none outline-none text-lg sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-2 sm:py-4 uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] min-w-0"
                           maxLength={8}
@@ -267,6 +267,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                         onAutoSubmit={() => { setErrorMsg(''); submitToMainJourney(); }}
                         isLoading={isSubmitting}
                         isRegValid={regNumber.replace(/\s/g,'').length >= 5}
+                        ctaLabels={{
+                          enterReg: 'Enter your BMW reg above',
+                          selectMileage: 'Select mileage to see your price',
+                          submit: 'Get my BMW quote',
+                        }}
                       />
                     </div>
 
@@ -419,6 +424,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 Independent UK warranty provider. Not affiliated with BMW.<br />
                 Flexible cover from <span className="font-semibold text-slate-800">60p a day</span>.
               </p>
+              <Button onClick={scrollToQuote} className="mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
+                Check my BMW price <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
           </div>
         </section>
@@ -547,6 +555,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               ))}
             </div>
             <p className="text-center mt-5 text-xs text-slate-500">Inclusions and limits vary by plan. Hybrid &amp; EV components subject to plan and eligibility.</p>
+            <div className="text-center mt-6">
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
+                See my BMW cover options <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
           </div>
         </section>
 
@@ -590,8 +603,11 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="text-center mt-5">
+            <div className="text-center mt-5 flex flex-col items-center gap-4">
               <Link to="/faq/" className="inline-flex items-center gap-1 text-[#F97316] font-bold text-sm hover:underline">View all FAQs <ArrowRight className="w-4 h-4" /></Link>
+              <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
+                Get my BMW quote <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
           </div>
         </section>
@@ -609,7 +625,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
               <Phone className="w-4 h-4" />
               <span className="text-sm">Call us</span>
             </a>
-            <Button onClick={scrollToQuote} className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold h-12">Get my quote</Button>
+            <Button onClick={scrollToQuote} className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold h-12">Get my BMW quote</Button>
           </div>
         </div>
       </div>
