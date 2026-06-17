@@ -474,20 +474,43 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-8">
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Frequently asked questions</h2>
+              <p className="mt-3 text-sm md:text-base text-slate-600">Got questions before you get a quote? Here are the answers Mercedes owners ask us most.</p>
             </div>
             <div className="space-y-2">
-              {faqs.slice(0, 6).map((f, i) => (
-                <button key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full text-left bg-[#F97316] hover:bg-[#EA580C] rounded-lg border border-[#F97316] p-4 transition-all">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold text-sm text-white">{f.q}</span>
-                    <ChevronDown className={`w-4 h-4 text-white flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
-                  </div>
-                  {openFaq === i && <p className="mt-2 text-white/90 text-xs leading-relaxed">{f.a}</p>}
-                </button>
-              ))}
+              {faqs.slice(0, 6).map((f, i) => {
+                const open = openFaq === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className={`group w-full text-left bg-white hover:bg-[#FFF8F3] rounded-lg border border-[#E5EAF1] hover:border-[#FFB278] transition-all px-5 py-[18px] md:px-7 md:py-[22px] border-l-[3px] ${open ? 'border-l-[#F97316] bg-[#FFF8F3] border-[#FFB278]' : 'border-l-transparent hover:border-l-[#F97316]'}`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-semibold text-sm md:text-base text-gray-900">{f.q}</span>
+                      <span className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors flex-shrink-0 ${open ? 'bg-[#FFE8D6]' : 'bg-transparent group-hover:bg-[#FFE8D6]'}`}>
+                        <ChevronDown className={`w-4 h-4 text-[#F97316] transition-transform ${open ? 'rotate-180' : ''}`} />
+                      </span>
+                    </div>
+                    {open && (
+                      <div className="mt-2">
+                        <p className="text-gray-700 text-sm leading-relaxed">{f.a}</p>
+                        {i === 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); scrollToQuote(); }}
+                            className="mt-3 inline-flex items-center gap-1 text-[#F97316] font-bold text-sm hover:underline"
+                          >
+                            Check my Mercedes price <ArrowRight className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            <div className="text-center mt-5 flex flex-col items-center gap-4">
-              <Link to="/faq/" className="inline-flex items-center gap-1 text-[#F97316] font-bold text-sm hover:underline">View all FAQs <ArrowRight className="w-4 h-4" /></Link>
+            <div className="text-center mt-6 flex flex-col items-center gap-4">
+              <Link to="/faq/" className="text-[#F97316] font-bold text-base hover:underline">View all FAQs →</Link>
               <Button onClick={scrollToQuote} className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-base px-8 py-3 h-auto min-h-[52px] inline-flex items-center justify-center rounded-md shadow-md">
                 Get my Mercedes quote <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
