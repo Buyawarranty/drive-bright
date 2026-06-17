@@ -700,10 +700,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         )}
 
         {/* Form */}
-        <div className="space-y-4 sm:space-y-2.5 mb-6 sm:mb-3">
+        <div className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-3">
           {/* First Name Input */}
-          <div className="pt-2 sm:pt-0">
-            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
+          <div className="pt-1 sm:pt-0">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
               Your first name
             </label>
             <div className="relative">
@@ -718,7 +718,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -738,7 +738,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
           {/* Email Input - Shown by default */}
           <div>
-            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
               Your email address
             </label>
             <div className="relative">
@@ -752,7 +752,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -778,7 +778,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           
           {/* Phone Input - Always visible */}
           <div>
-            <label className="block text-lg sm:text-base font-semibold text-gray-800 mb-2 sm:mb-1">
+            <label className="block text-sm sm:text-base font-semibold text-gray-800 mb-1">
               Your mobile number{isVariantB && <span className="text-sm font-normal text-gray-500 ml-2">(optional)</span>}
             </label>
             <div className="relative">
@@ -792,7 +792,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-4 sm:py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-2.5 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -807,7 +807,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {phoneError || 'Please enter a valid UK phone number'}
               </p>
             ) : (
-              <p className="text-gray-500 mt-1.5 text-sm">
+              <p className="hidden sm:block text-gray-500 mt-1.5 text-sm">
                 Unlock exclusive discounts and get expert advice
               </p>
             )}
