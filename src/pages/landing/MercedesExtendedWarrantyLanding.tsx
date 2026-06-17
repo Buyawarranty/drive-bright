@@ -236,6 +236,26 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
                         </button>
                       </div>
                     </div>
+
+                    {/* Mobile-only hero image — placed below the CTA card */}
+                    <div className="md:hidden mt-5 flex justify-center">
+                      <img
+                        src={mercHero}
+                        alt="Premium Mercedes-Benz with extended warranty cover"
+                        className="w-full max-w-[360px] h-auto"
+                        loading="lazy"
+                      />
+                    </div>
+
+                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[14px] mt-1">
+                        <span className="text-gray-600">Speak to an expert:</span>
+                        <a href={`tel:${PHONE.replace(/\s/g,'')}`} className="font-semibold text-gray-900 hover:underline">{PHONE}</a>
+                        <span className="text-gray-400">or</span>
+                        <button onClick={() => setShowCallbackModal(true)} className="text-[#F97316] hover:underline font-medium">
+                          Request a callback
+                        </button>
+                      </div>
+                    </div>
                   </>
                 )}
 
