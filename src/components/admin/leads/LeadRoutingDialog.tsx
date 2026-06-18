@@ -485,9 +485,18 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                 {teamRules(activeTeam.id).map(({ source, rule }) => (
                   <Card key={source.value} className={!rule?.allowed ? 'opacity-60' : ''}>
                     <CardContent className="flex flex-wrap items-center gap-4 p-3">
-                      <div className="flex items-center gap-2 min-w-[170px]">
+                      <div className="flex items-center gap-2 min-w-[200px]">
                         <span className="text-lg">{source.icon}</span>
                         <span className="font-medium">{source.label}</span>
+                        {rule ? (
+                          <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5" title="This rule is saved in the database">
+                            Saved
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-slate-100 text-slate-500 px-1.5 py-0.5" title="No rule saved yet — toggle the switch to save">
+                            Not saved
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch
