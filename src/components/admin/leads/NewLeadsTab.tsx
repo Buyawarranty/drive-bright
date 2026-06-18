@@ -953,48 +953,108 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               {loading ? 'Refreshing...' : 'Refresh Page'}
             </Button>
             {userRole === 'super_admin' && (
-            <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRestoreAllLeads}
-              disabled={isRestoring}
-              className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:border-amber-300"
-            >
-              <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
-              {isRestoring ? 'Restoring...' : 'Restore All Leads'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                try {
-                  toast.loading('Recovering missing lead data...', { id: 'recover-leads' });
-                  const { data, error } = await supabase.rpc('recover_leads_from_step2', { p_lookback_hours: 48 });
-                  if (error) throw error;
-                  const result = data as any;
-                  const parts = [];
-                  if (result.updated_leads) parts.push(`${result.updated_leads} leads fixed`);
-                  if (result.created_new) parts.push(`${result.created_new} new leads created`);
-                  if (result.duplicates_merged) parts.push(`${result.duplicates_merged} duplicates merged`);
-                  if (result.updated_carts) parts.push(`${result.updated_carts} carts updated`);
-                  toast.success(
-                    `Recovery complete: ${parts.length ? parts.join(', ') : 'no changes needed'}`,
-                    { id: 'recover-leads', duration: 8000 }
-                  );
-                  fetchLeads();
-                } catch (err: any) {
-                  toast.error(`Recovery failed: ${err.message}`, { id: 'recover-leads' });
-                }
-              }}
-              className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300"
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Recover Missing Data
-            </Button>
-            </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                    title="More actions"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem
+                    onClick={handleRestoreAllLeads}
+                    disabled={isRestoring}
+                  >
+                    <RotateCcw className={cn("h-4 w-4 mr-2", isRestoring && "animate-spin")} />
+                    {isRestoring ? 'Restoring...' : 'Restore All Leads'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        toast.loading('Recovering missing lead data...', { id: 'recover-leads' });
+                        const { data, error } = await supabase.rpc('recover_leads_from_step2', { p_lookback_hours: 48 });
+                        if (error) throw error;
+                        const result = data as any;
+                        const parts = [];
+                        if (result.updated_leads) parts.push(`${result.updated_leads} leads fixed`);
+                        if (result.created_new) parts.push(`${result.created_new} new leads created`);
+                        if (result.duplicates_merged) parts.push(`${result.duplicates_merged} duplicates merged`);
+                        if (result.updated_carts) parts.push(`${result.updated_carts} carts updated`);
+                        toast.success(
+                          `Recovery complete: ${parts.length ? parts.join(', ') : 'no changes needed'}`,
+                          { id: 'recover-leads', duration: 8000 }
+                        );
+                        fetchLeads();
+                      } catch (err: any) {
+                        toast.error(`Recovery failed: ${err.message}`, { id: 'recover-leads' });
+                      }
+                    }}
+                  >
+                    <ShieldCheck className="h-4 w-4 mr-2" />
+                    Recover Missing Data
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
+          {/* Team filter chips — inline in header to save a row. Managers only, leads view only. */}
+          {activeView === 'leads' && (isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
+            <>
+              <div className="h-6 w-px bg-border" aria-hidden />
+              <div className={cn(
+                "flex items-center gap-2 rounded-md border px-2 py-1 transition-colors",
+                teamFilter
+                  ? {
+                      red: 'border-red-200 bg-red-50/60',
+                      blue: 'border-blue-200 bg-blue-50/60',
+                      green: 'border-emerald-200 bg-emerald-50/60',
+                      slate: 'border-slate-200 bg-slate-50/60',
+                    }[allTeams.find(t => t.id === teamFilter)?.color || 'slate']
+                  : "border-border bg-muted/30"
+              )}>
+                <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+                {isSuperAdmin && (
+                  <Button
+                    type="button"
+                    variant={superAdminHideSource ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={toggleSuperAdminHideSource}
+                    title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+                    className="h-6 px-1.5 text-[10px] font-semibold gap-1"
+                  >
+                    {superAdminHideSource ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                    H
+                  </Button>
+                )}
+              </div>
+              {teamFilter && (
+                <span className={cn(
+                  "text-[11px] font-medium",
+                  TEAM_COLOR_CLASSES[allTeams.find(t => t.id === teamFilter)?.color || 'slate'].text
+                )}>
+                  Scoped to <span className="font-bold">{allTeams.find(t => t.id === teamFilter)?.name}</span>
+                </span>
+              )}
+            </>
+          )}
+          {/* H button fallback when no teams exist (super admin only) */}
+          {activeView === 'leads' && isSuperAdmin && allTeams.length === 0 && (
+            <Button
+              type="button"
+              variant={superAdminHideSource ? 'default' : 'outline'}
+              size="sm"
+              onClick={toggleSuperAdminHideSource}
+              title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+              className="h-7 px-2 text-[11px] font-semibold gap-1.5"
+            >
+              {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              H
+            </Button>
+          )}
         </div>
 
         
