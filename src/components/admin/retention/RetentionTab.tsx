@@ -120,8 +120,8 @@ export const RetentionTab: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [totalActive, setTotalActive] = useState<number | null>(null);
   const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
-
-  useEffect(() => {
+  const [touches, setTouches] = useState<Record<string, CampaignTouch[]>>({});
+  const [runningCron, setRunningCron] = useState(false);
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
   }, []);
 
