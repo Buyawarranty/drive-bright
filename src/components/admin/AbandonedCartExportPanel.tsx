@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Download, FileSpreadsheet, History, Calendar } from 'lucide-react';
 import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
-type Platform = 'google' | 'facebook';
+type Platform = 'google' | 'google_offline' | 'facebook';
 type DatePreset = 'today' | 'yesterday' | 'last7' | 'last30' | 'this_week' | 'this_month' | 'last_month' | 'last90' | 'custom';
 type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'organic';
 
@@ -99,7 +99,40 @@ function csvText(v: string): string {
 }
 
 
-export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform): string {
+export function buildAbandonedCartCsv(
+  carts: AbandonedCart[],
+  platform: Platform,
+  options?: { conversionName?: string; defaultValue?: number; timeZone?: string }
+): string {
+  if (platform === 'google_offline') {
+    // Google Ads Offline Conversion Import (gclid-based)
+    // https://support.google.com/google-ads/answer/7014069
+    const tz = options?.timeZone || 'Europe/London';
+    const conversionName = options?.conversionName || 'Abandoned Cart';
+    const defaultValue = options?.defaultValue ?? 1;
+    const lines: string[] = [];
+    lines.push(`Parameters:TimeZone=${tz}`);
+    lines.push(['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency', 'Ad User Data', 'Ad Personalization'].join(','));
+    for (const c of carts) {
+      const gclid = c.cart_metadata?.gclid ? String(c.cart_metadata.gclid).trim() : '';
+      if (!gclid) continue;
+      const d = new Date(c.created_at);
+      // Format: YYYY-MM-DD HH:MM:SS+HH:MM (use +00:00; TimeZone parameter handles offset)
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const convTime = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}+00:00`;
+      const value = Number(c.cart_metadata?.total_price) || defaultValue;
+      lines.push([
+        csvEscape(gclid),
+        csvEscape(conversionName),
+        csvEscape(convTime),
+        csvEscape(String(value)),
+        csvEscape('GBP'),
+        csvEscape('GRANTED'),
+        csvEscape('GRANTED'),
+      ].join(','));
+    }
+    return lines.join('\n');
+  }
   if (platform === 'google') {
     // Google Customer Match CSV format
     const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Country', 'Zip'];
@@ -160,6 +193,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [customFrom, setCustomFrom] = useState(format(startOfDay(subDays(new Date(), 7)), 'yyyy-MM-dd'));
   const [customTo, setCustomTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [conversionName, setConversionName] = useState('Abandoned Cart');
 
   const [excludePrevious, setExcludePrevious] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -241,18 +275,26 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
   }, [candidateCarts, from, to, excludePrevious, previousIds, sourceFilter]);
 
 
-  // Deduplicate by email within the export
+  // Deduplicate within the export. For Google Offline Conversions we dedupe by gclid
+  // (and require one to exist); for other formats we dedupe by email.
   const uniqueByEmail = useMemo(() => {
     const seen = new Set<string>();
     const out: AbandonedCart[] = [];
     for (const c of filtered) {
+      if (platform === 'google_offline') {
+        const gclid = c.cart_metadata?.gclid ? String(c.cart_metadata.gclid).trim() : '';
+        if (!gclid || seen.has(gclid)) continue;
+        seen.add(gclid);
+        out.push(c);
+        continue;
+      }
       const key = (c.email || '').trim().toLowerCase();
       if (!key || seen.has(key)) continue;
       seen.add(key);
       out.push(c);
     }
     return out;
-  }, [filtered]);
+  }, [filtered, platform]);
 
   const handleExport = async () => {
     if (uniqueByEmail.length === 0) {
@@ -261,7 +303,10 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
     }
     setExporting(true);
     try {
-      const csv = buildAbandonedCartCsv(uniqueByEmail, platform);
+      const csv = buildAbandonedCartCsv(uniqueByEmail, platform, {
+        conversionName,
+        timeZone: 'Europe/London',
+      });
       const fname = `abandoned-carts-${platform}-${sourceFilter}-${format(from, 'yyyyMMdd')}-${format(to, 'yyyyMMdd')}.csv`;
       downloadAbandonedCartCsv(csv, fname);
 
@@ -317,7 +362,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
           Remarketing Export (Google / Facebook)
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Export abandoned carts as a CSV ready to upload to Google Customer Match or Facebook Custom Audience.
+          Export abandoned carts as a CSV ready to upload to Google Customer Match, Google Ads Offline Conversions, or Facebook Custom Audience.
           Customers who have already purchased are automatically excluded.
         </p>
       </CardHeader>
@@ -328,7 +373,8 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
             <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="google">Google Customer Match</SelectItem>
+                <SelectItem value="google">Google Customer Match (audience)</SelectItem>
+                <SelectItem value="google_offline">Google Offline Conversions (gclid)</SelectItem>
                 <SelectItem value="facebook">Facebook Custom Audience</SelectItem>
               </SelectContent>
             </Select>
@@ -389,6 +435,24 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
               <Label className="text-xs">To</Label>
               <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
             </div>
+          </div>
+        )}
+
+        {platform === 'google_offline' && (
+          <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+            <div>
+              <Label className="text-xs">Conversion Name (must match a conversion action in Google Ads)</Label>
+              <Input
+                value={conversionName}
+                onChange={(e) => setConversionName(e.target.value)}
+                placeholder="Abandoned Cart"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Only carts that arrived via a Google ad click (have a stored <code>gclid</code>) will be included.
+              Conversion value uses each cart's total price when available, otherwise £1. Time zone: Europe/London.
+              Upload at: Google Ads → Tools → Conversions → Uploads.
+            </p>
           </div>
         )}
 
