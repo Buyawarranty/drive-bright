@@ -137,7 +137,7 @@ export const LeadRecoveryTab: React.FC = () => {
         try {
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
-            .not('status', 'in', '(lost,converted,fake_lead,cancelled,refunded,paid,completed)')
+            .not('status', 'in', '(lost,converted,fake_lead,archived)')
             .or('is_paid.is.null,is_paid.eq.false');
           q = applySegment(q, s.id);
           const { count } = await q;
