@@ -401,24 +401,64 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
           </div>
         )}
 
-        {/* Teams as pills */}
-        <div className="flex flex-wrap gap-2">
-          {teams.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTeamId(t.id)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition ${
-                activeTeamId === t.id ? 'ring-2 ring-offset-1 ring-foreground' : ''
-              }`}
-              style={{
-                backgroundColor: t.color,
-                color: '#fff',
-                borderColor: t.color,
-              }}
-            >
-              <span className="mr-1">{t.emoji}</span>{t.name}
-            </button>
-          ))}
+        {/* Teams as pills (with inline rename) */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {teams.map(t => {
+            const isRenaming = renamingId === t.id;
+            const isActive = activeTeamId === t.id;
+            if (isRenaming) {
+              return (
+                <div key={t.id} className="flex items-center gap-1 rounded-full border-2 pl-2 pr-1 py-0.5" style={{ borderColor: t.color, backgroundColor: t.color }}>
+                  <span className="text-sm">{t.emoji}</span>
+                  <Input
+                    autoFocus
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') renameTeam(t.id, renameValue);
+                      if (e.key === 'Escape') setRenamingId(null);
+                    }}
+                    onBlur={() => renameTeam(t.id, renameValue)}
+                    className="h-7 w-36 text-sm bg-white/90 border-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => renameTeam(t.id, renameValue)}
+                    className="p-1 text-white hover:bg-white/20 rounded-full"
+                    title="Save"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <div
+                key={t.id}
+                className={`group flex items-center rounded-full text-sm font-medium border-2 transition ${
+                  isActive ? 'ring-2 ring-offset-1 ring-foreground' : ''
+                }`}
+                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
+              >
+                <button
+                  onClick={() => setActiveTeamId(t.id)}
+                  className="pl-3 pr-2 py-1.5"
+                >
+                  <span className="mr-1">{t.emoji}</span>{t.name}
+                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameValue(t.name); }}
+                    className="pr-2 py-1.5 opacity-70 hover:opacity-100"
+                    title="Rename team"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {!teams.length && !loading && (
             <p className="text-sm text-muted-foreground">No teams yet — add your first team above.</p>
           )}
