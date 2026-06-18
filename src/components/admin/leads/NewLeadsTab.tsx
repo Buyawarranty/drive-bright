@@ -567,6 +567,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return freshLeads.filter(l => l.assigned_to && agentTeamMap.get(l.assigned_to)?.id === teamFilter);
   }, [freshLeads, teamFilter, agentTeamMap]);
 
+  // Scope sales agents to the selected team so Reassign, agent filter, and the Agents view
+  // only act on that team. When no team is selected, behaviour is unchanged.
+  const teamScopedSalesUsers = useMemo(() => {
+    if (!teamFilter) return salesUsers;
+    return salesUsers.filter(u => agentTeamMap.get(u.id)?.id === teamFilter);
+  }, [salesUsers, teamFilter, agentTeamMap]);
+
   // Pagination for leads table (fresh only)
   const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
 
