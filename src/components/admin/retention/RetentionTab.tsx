@@ -17,10 +17,10 @@ import { formatDistanceToNow, format } from 'date-fns';
 type SegmentId = 'due_soon' | 'renewal_window' | 'upsell' | 'lapsed';
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
-  { id: 'due_soon', label: 'Renewal Due Soon', description: 'Policy expires in the next 0–30 days' },
-  { id: 'renewal_window', label: 'Renewal Window', description: 'Expires in 31–60 days — warm-up calls' },
+  { id: 'due_soon', label: 'Renewal Due Soon', description: 'Policy expires in the next 0–60 days — priority calls' },
+  { id: 'renewal_window', label: 'Renewal Window', description: 'Expires in 61–180 days — warm-up calls' },
   { id: 'upsell', label: 'Upsell Opportunities', description: 'Active policy with room to upgrade claim limit or add-ons' },
-  { id: 'lapsed', label: 'Lapsed (Win-Back)', description: 'Expired 0–90 days ago, not yet renewed' },
+  { id: 'lapsed', label: 'Lapsed (Win-Back)', description: 'Expired 0–180 days ago, not yet renewed' },
 ];
 
 const OUTCOMES = [
