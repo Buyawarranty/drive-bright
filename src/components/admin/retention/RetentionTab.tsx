@@ -397,6 +397,7 @@ export const RetentionTab: React.FC = () => {
                       <th className="text-left p-3">Plan</th>
                       <th className="text-left p-3">Expiry</th>
                       <th className="text-left p-3">Upsell ideas</th>
+                      <th className="text-left p-3">Campaign</th>
                       <th className="text-left p-3">Last worked</th>
                       <th className="text-right p-3">Actions</th>
                     </tr>
