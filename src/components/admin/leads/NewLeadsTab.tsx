@@ -31,7 +31,7 @@ import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { LeadRoutingDialog } from './LeadRoutingDialog';
 import { TeamFilterChips } from './TeamFilterChips';
-import { useAgentTeams } from '@/hooks/useAgentTeams';
+import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -1132,19 +1132,42 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <div className={cn(
               "flex items-center justify-between gap-3 flex-wrap rounded-lg border px-3 py-2 transition-colors",
               teamFilter
-                ? "border-blue-200 bg-blue-50/60"
+                ? {
+                    red: 'border-red-200 bg-red-50/60',
+                    blue: 'border-blue-200 bg-blue-50/60',
+                    green: 'border-emerald-200 bg-emerald-50/60',
+                    slate: 'border-slate-200 bg-slate-50/60',
+                  }[allTeams.find(t => t.id === teamFilter)?.color || 'slate']
                 : "border-border bg-muted/30"
             )}>
               <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
-              {teamFilter && (
-                <span className="text-[11px] font-medium text-blue-700">
-                  Scoped to <span className="font-bold">{allTeams.find(t => t.id === teamFilter)?.name}</span> — leads, reassign, exports, and the Agents panel only show this team.
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {teamFilter && (
+                  <span className={cn(
+                    "text-[11px] font-medium",
+                    TEAM_COLOR_CLASSES[allTeams.find(t => t.id === teamFilter)?.color || 'slate'].text
+                  )}>
+                    Scoped to <span className="font-bold">{allTeams.find(t => t.id === teamFilter)?.name}</span> — leads, reassign, exports, and the Agents panel only show this team.
+                  </span>
+                )}
+                {isSuperAdmin && (
+                  <Button
+                    type="button"
+                    variant={superAdminHideSource ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={toggleSuperAdminHideSource}
+                    title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+                    className="h-7 px-2 text-[11px] font-semibold gap-1.5"
+                  >
+                    {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    H
+                  </Button>
+                )}
+              </div>
             </div>
           )}
-          {/* Sales Executive Header removed - agents focus on leads only */}
-          {isSuperAdmin && (
+          {/* H button fallback when no teams exist */}
+          {isSuperAdmin && allTeams.length === 0 && (
             <div className="flex items-center justify-end">
               <Button
                 type="button"
@@ -1159,6 +1182,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </Button>
             </div>
           )}
+          {/* Sales Executive Header removed - agents focus on leads only */}
           {/* Failed-payment / struggling-checkout claimable leads */}
           <PaymentFailedLeadsPanel userRole={userRole} />
           {/* Search & Filters — full width, search is hero */}
