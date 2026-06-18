@@ -33,6 +33,8 @@ interface LeadsFiltersProps {
   onRefresh: () => void;
   onMigrate: () => void;
   onExport: (format: 'csv' | 'xlsx') => void;
+  onManageRouting?: () => void;
+  canManageRouting?: boolean;
   leadCounts: {
     all_leads: number;
     all: number;
