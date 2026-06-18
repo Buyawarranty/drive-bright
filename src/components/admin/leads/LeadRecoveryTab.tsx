@@ -268,6 +268,34 @@ export const LeadRecoveryTab: React.FC = () => {
     [currentUserId]
   );
 
+  const updateCallCount = useCallback(async (leadId: string, increment: number) => {
+    const lead = leads.find((l) => l.id === leadId);
+    const newCount = Math.max(0, (lead?.call_count || 0) + increment);
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ call_count: newCount, last_contacted_at: new Date().toISOString() })
+      .eq('id', leadId);
+    if (error) { toast.error('Could not update calls', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, call_count: newCount, last_contacted_at: new Date().toISOString() } as any : l)));
+  }, [leads]);
+
+  const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ status })
+      .eq('id', leadId);
+    if (error) { toast.error('Could not update status', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status } as any : l)));
+  }, []);
+
+  const scheduleFollowUp = useCallback(async (leadId: string, actionType: string, actionDate: string) => {
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ next_action_type: actionType, next_action_date: actionDate, follow_up_status: 'scheduled' })
+      .eq('id', leadId);
+    if (error) { toast.error('Could not schedule follow-up', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, next_action_type: actionType, next_action_date: actionDate } as any : l)));
+    toast.success('Follow-up scheduled');
+  }, []);
+
+
   const canReassign = useCallback(
     (lead: Lead) => canReassignAny || lead.assigned_to === currentUserId || !lead.assigned_to,
     [canReassignAny, currentUserId]
