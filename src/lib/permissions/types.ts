@@ -65,7 +65,7 @@ export const ADMIN_TAB_DEFINITIONS = [
   { id: 'new-leads', key: 'new_leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', category: 'Sales' },
   { id: 'get-quote', key: 'get_quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders', category: 'Sales' },
   { id: 'customers', key: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', category: 'Sales' },
-  { id: 'plans', key: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans', category: 'Products' },
+  { id: 'plans', key: 'plans', label: 'Terms & Conditions', description: 'Upload Terms & Conditions and Platinum Plan PDFs (super admin by default)', category: 'Products' },
   { id: 'bulk-pricing', key: 'bulk_pricing', label: 'Bulk Pricing', description: 'Update pricing using CSV files', category: 'Products' },
   { id: 'special-plans', key: 'special_plans', label: 'Special Vehicle Plans', description: 'Manage EV, PHEV, and Motorbike plans', category: 'Products' },
   { id: 'discount-codes', key: 'discount_codes', label: 'Discount Codes', description: 'Manage discount codes and promotions', category: 'Marketing' },
