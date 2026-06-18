@@ -38,6 +38,8 @@ type VariantStats = {
   submissionsWithPhone: number;
   submissionsNoPhone: number;
   conversions: number;
+  conversionsWithPhone: number;
+  conversionsNoPhone: number;
 };
 
 const emptyStats = (): VariantStats => ({
@@ -46,6 +48,8 @@ const emptyStats = (): VariantStats => ({
   submissionsWithPhone: 0,
   submissionsNoPhone: 0,
   conversions: 0,
+  conversionsWithPhone: 0,
+  conversionsNoPhone: 0,
 });
 
 const pct = (numer: number, denom: number): string =>
@@ -138,14 +142,15 @@ const AbTestingTab: React.FC = () => {
         });
 
         // Carts (submissions). Only carts with an explicit experiment tag are counted.
-        const cartsByEmailReg = new Map<string, 'a' | 'b'>();
+        const cartsByEmailReg = new Map<string, { variant: 'a' | 'b'; hasPhone: boolean }>();
         (carts || []).forEach((c: any) => {
           const tag = c.cart_metadata?.ab_variant;
           if (tag !== 'a' && tag !== 'b') return; // safety net for client-side
           const variant: 'a' | 'b' = tag;
           const target = variant === 'b' ? b : a;
+          const hasPhone = !!(c.phone && String(c.phone).trim());
           target.submissions++;
-          if (c.phone && String(c.phone).trim()) target.submissionsWithPhone++;
+          if (hasPhone) target.submissionsWithPhone++;
           else target.submissionsNoPhone++;
 
           const day = format(new Date(c.created_at), 'yyyy-MM-dd');
@@ -154,9 +159,9 @@ const AbTestingTab: React.FC = () => {
           else row.aSubs++;
 
           const key = `${normalizeEmail(c.email)}|${normalizeReg(c.vehicle_reg)}`;
-          cartsByEmailReg.set(key, variant);
+          cartsByEmailReg.set(key, { variant, hasPhone });
           const emailKey = `${normalizeEmail(c.email)}|`;
-          if (!cartsByEmailReg.has(emailKey)) cartsByEmailReg.set(emailKey, variant);
+          if (!cartsByEmailReg.has(emailKey)) cartsByEmailReg.set(emailKey, { variant, hasPhone });
         });
 
         // Conversions
@@ -168,12 +173,14 @@ const AbTestingTab: React.FC = () => {
             return;
           const email = normalizeEmail(cust.email);
           const reg = normalizeReg(cust.registration_plate);
-          const variant =
+          const match =
             cartsByEmailReg.get(`${email}|${reg}`) ??
             cartsByEmailReg.get(`${email}|`);
-          if (!variant) return;
-          if (variant === 'b') b.conversions++;
-          else a.conversions++;
+          if (!match) return;
+          const target = match.variant === 'b' ? b : a;
+          target.conversions++;
+          if (match.hasPhone) target.conversionsWithPhone++;
+          else target.conversionsNoPhone++;
         });
 
         setStats({ a, b });
@@ -278,6 +285,84 @@ const AbTestingTab: React.FC = () => {
         </div>
       ) : (
         <>
+          {/* Decision panel — is the optional phone field worth keeping? */}
+          {(() => {
+            const bSubs = stats.b.submissions;
+            const withP = stats.b.submissionsWithPhone;
+            const noP = stats.b.submissionsNoPhone;
+            const withPct = bSubs > 0 ? (withP / bSubs) * 100 : 0;
+            const noPct = bSubs > 0 ? (noP / bSubs) * 100 : 0;
+            const cvrWith = withP > 0 ? (stats.b.conversionsWithPhone / withP) * 100 : 0;
+            const cvrNo = noP > 0 ? (stats.b.conversionsNoPhone / noP) * 100 : 0;
+            const cvrDelta = cvrWith - cvrNo;
+
+            let verdict = 'Not enough data yet — keep the test running.';
+            let verdictTone = 'bg-muted text-foreground';
+            if (bSubs >= 50) {
+              if (noPct >= 20 && Math.abs(cvrDelta) < 5) {
+                verdict = `${noPct.toFixed(0)}% of B users skip the phone field and their conversion rate is similar (${cvrNo.toFixed(1)}% vs ${cvrWith.toFixed(1)}%). Keeping phone optional captures leads you'd otherwise lose. Recommendation: keep optional.`;
+                verdictTone = 'bg-green-50 text-green-900 border-green-200';
+              } else if (noPct < 10) {
+                verdict = `Only ${noPct.toFixed(0)}% of B users skip the phone field — almost everyone fills it in anyway. Making it compulsory likely costs nothing. Recommendation: make phone required.`;
+                verdictTone = 'bg-amber-50 text-amber-900 border-amber-200';
+              } else if (cvrDelta > 5) {
+                verdict = `Users who give a phone convert ${cvrDelta.toFixed(1)} pts higher (${cvrWith.toFixed(1)}% vs ${cvrNo.toFixed(1)}%). The phone-skippers are low-quality. Recommendation: make phone required.`;
+                verdictTone = 'bg-amber-50 text-amber-900 border-amber-200';
+              } else {
+                verdict = `${noPct.toFixed(0)}% skip the phone field. With-phone converts ${cvrWith.toFixed(1)}%, without-phone ${cvrNo.toFixed(1)}%. Decide based on whether the extra leads outweigh the conversion gap.`;
+              }
+            }
+
+            return (
+              <Card className="border-2 border-primary/40">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    Variant B — should the phone field stay optional?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border p-4">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">B submissions</div>
+                      <div className="text-3xl font-bold mt-1">{bSubs.toLocaleString()}</div>
+                    </div>
+                    <div className="rounded-lg border p-4 bg-blue-50/50">
+                      <div className="text-xs text-blue-900/70 uppercase tracking-wide">Entered phone</div>
+                      <div className="text-3xl font-bold mt-1 text-blue-900">{withP.toLocaleString()}</div>
+                      <div className="text-sm text-blue-900/80 mt-1">{withPct.toFixed(1)}% of B</div>
+                      <div className="text-xs text-blue-900/70 mt-2">Converted: <b>{stats.b.conversionsWithPhone}</b> ({cvrWith.toFixed(1)}%)</div>
+                    </div>
+                    <div className="rounded-lg border p-4 bg-orange-50/60">
+                      <div className="text-xs text-orange-900/70 uppercase tracking-wide">Skipped phone</div>
+                      <div className="text-3xl font-bold mt-1 text-orange-900">{noP.toLocaleString()}</div>
+                      <div className="text-sm text-orange-900/80 mt-1">{noPct.toFixed(1)}% of B</div>
+                      <div className="text-xs text-orange-900/70 mt-2">Converted: <b>{stats.b.conversionsNoPhone}</b> ({cvrNo.toFixed(1)}%)</div>
+                    </div>
+                  </div>
+
+                  {/* Visual split bar */}
+                  {bSubs > 0 && (
+                    <div>
+                      <div className="flex h-3 w-full overflow-hidden rounded-full border">
+                        <div className="bg-blue-500" style={{ width: `${withPct}%` }} />
+                        <div className="bg-orange-500" style={{ width: `${noPct}%` }} />
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                        <span>Entered phone {withPct.toFixed(1)}%</span>
+                        <span>Skipped {noPct.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={`rounded-lg border p-4 text-sm ${verdictTone}`}>
+                    <div className="font-semibold mb-1">Recommendation</div>
+                    {verdict}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
