@@ -258,6 +258,33 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     });
   };
 
+  const bulkSetAllAllowed = async (teamId: string, allowed: boolean) => {
+    const payload = LEAD_SOURCES.map(s => {
+      const existing = rules.find(r => r.team_id === teamId && r.source === s.value);
+      return {
+        team_id: teamId,
+        source: s.value,
+        allowed,
+        conversion_threshold_pct: existing?.conversion_threshold_pct ?? null,
+        priority: existing?.priority ?? 0,
+        notes: existing?.notes ?? null,
+      };
+    });
+    const { data, error } = await supabase
+      .from('lead_team_source_rules')
+      .upsert(payload, { onConflict: 'team_id,source' })
+      .select();
+    if (error) {
+      toast({ title: 'Bulk update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRules(prev => {
+      const others = prev.filter(r => r.team_id !== teamId);
+      return [...others, ...((data || []) as SourceRule[])];
+    });
+    toast({ title: allowed ? 'All sources allowed' : 'All sources blocked' });
+  };
+
   const addMember = async (teamId: string, adminUserId: string) => {
     const { data, error } = await supabase
       .from('lead_team_members')
