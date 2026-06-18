@@ -9161,6 +9161,7 @@ export type Database = {
         Returns: Json
       }
       set_user_offline: { Args: never; Returns: undefined }
+      simulate_lead_routing: { Args: { p_source: string }; Returns: Json }
       soft_delete_customer: {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
