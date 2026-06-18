@@ -1123,11 +1123,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="space-y-3">
           {/* Team filter chips — only visible to managers; defaults to All so the live view is unchanged. */}
           {(isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
               <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
               {teamFilter && (
                 <span className="text-[11px] text-muted-foreground">
-                  Showing leads assigned to {allTeams.find(t => t.id === teamFilter)?.name} agents only
+                  Scoped to {allTeams.find(t => t.id === teamFilter)?.name} — leads, reassign, exports, and the Agents panel only show this team.
                 </span>
               )}
             </div>
