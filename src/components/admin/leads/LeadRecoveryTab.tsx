@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, Gem, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2 } from 'lucide-react';
+import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -22,26 +22,38 @@ import { RemindMePopover } from './RemindMePopover';
 import type { LeadStatus } from '@/hooks/useLeads';
 
 type SegmentId =
-  | 'never_contacted'
-  | 'quote_cold'
-  | 'stalled'
-  | 'abandoned_cart'
-  | 'all_aged';
+  | 'due_today'
+  | 'new_to_recontact'
+  | 'no_answer'
+  | 'interested'
+  | 'quote_sent'
+  | 'abandoned_checkout'
+  | 'not_interested'
+  | 'all_leads';
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
-  { id: 'never_contacted', label: 'Never Contacted', description: 'Created >30 days ago, 0 calls, 0 notes' },
-  { id: 'quote_cold', label: 'Quote Sent, Cold', description: 'Quote sent but no reply in 14+ days' },
-  { id: 'stalled', label: 'Contacted, Stalled', description: 'Last contact >30 days, status still active' },
-  { id: 'abandoned_cart', label: 'Abandoned Cart', description: 'Cart >7 days old, no order' },
-  { id: 'all_aged', label: 'All Aged', description: 'Master list, oldest first' },
+  { id: 'due_today',          label: 'Due Today',          description: 'Callbacks scheduled for today — work these first.' },
+  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (30+ days) that have never been worked.' },
+  { id: 'no_answer',          label: 'No Answer',          description: 'Previously called but no response yet.' },
+  { id: 'interested',         label: 'Interested',         description: 'Customer showed interest — needs follow-up.' },
+  { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
+  { id: 'abandoned_checkout', label: 'Abandoned Checkout', description: 'Started an order/cart but did not pay.' },
+  { id: 'not_interested',     label: 'Not Interested',     description: 'Kept for record — not active.' },
+  { id: 'all_leads',          label: 'All Leads',          description: 'Full recontact database, oldest first.' },
 ];
 
 const OUTCOMES = [
-  { value: 'revived', label: 'Revived' },
-  { value: 'still_trying', label: 'Still trying' },
-  { value: 'no_answer', label: 'No answer' },
-  { value: 'mark_lost', label: 'Mark lost' },
-  { value: 'not_interested', label: 'Not interested' },
+  { value: 'no_answer',         label: 'No answer' },
+  { value: 'left_voicemail',    label: 'Left voicemail' },
+  { value: 'wrong_number',      label: 'Wrong number' },
+  { value: 'interested',        label: 'Interested' },
+  { value: 'needs_callback',    label: 'Needs callback' },
+  { value: 'quote_sent',        label: 'Quote sent' },
+  { value: 'converted',         label: 'Converted' },
+  { value: 'not_interested',    label: 'Not interested' },
+  { value: 'bought_elsewhere',  label: 'Bought elsewhere' },
+  { value: 'vehicle_sold',      label: 'Vehicle sold' },
+  { value: 'do_not_contact',    label: 'Do not contact' },
 ];
 
 const PAGE_SIZE = 100;
