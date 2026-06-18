@@ -107,7 +107,7 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'retention',
-    label: 'Retention',
+    label: 'Renewals',
     icon: Repeat,
     description: 'Renewals + upsells for active customers'
   },
