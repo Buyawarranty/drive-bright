@@ -1187,61 +1187,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
-          {/* Team filter chips — only visible to managers; defaults to All so the live view is unchanged. */}
-          {(isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
-            <div className={cn(
-              "flex items-center justify-between gap-3 flex-wrap rounded-lg border px-3 py-2 transition-colors",
-              teamFilter
-                ? {
-                    red: 'border-red-200 bg-red-50/60',
-                    blue: 'border-blue-200 bg-blue-50/60',
-                    green: 'border-emerald-200 bg-emerald-50/60',
-                    slate: 'border-slate-200 bg-slate-50/60',
-                  }[allTeams.find(t => t.id === teamFilter)?.color || 'slate']
-                : "border-border bg-muted/30"
-            )}>
-              <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
-              <div className="flex items-center gap-2">
-                {teamFilter && (
-                  <span className={cn(
-                    "text-[11px] font-medium",
-                    TEAM_COLOR_CLASSES[allTeams.find(t => t.id === teamFilter)?.color || 'slate'].text
-                  )}>
-                    Scoped to <span className="font-bold">{allTeams.find(t => t.id === teamFilter)?.name}</span> — leads, reassign, exports, and the Agents panel only show this team.
-                  </span>
-                )}
-                {isSuperAdmin && (
-                  <Button
-                    type="button"
-                    variant={superAdminHideSource ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={toggleSuperAdminHideSource}
-                    title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
-                    className="h-7 px-2 text-[11px] font-semibold gap-1.5"
-                  >
-                    {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    H
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-          {/* H button fallback when no teams exist */}
-          {isSuperAdmin && allTeams.length === 0 && (
-            <div className="flex items-center justify-end">
-              <Button
-                type="button"
-                variant={superAdminHideSource ? 'default' : 'outline'}
-                size="sm"
-                onClick={toggleSuperAdminHideSource}
-                title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
-                className="h-7 px-2 text-[11px] font-semibold gap-1.5"
-              >
-                {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                H
-              </Button>
-            </div>
-          )}
+          {/* Team filter chips moved inline to the header above */}
+
           {/* Sales Executive Header removed - agents focus on leads only */}
           {/* Failed-payment / struggling-checkout claimable leads */}
           <PaymentFailedLeadsPanel userRole={userRole} />
