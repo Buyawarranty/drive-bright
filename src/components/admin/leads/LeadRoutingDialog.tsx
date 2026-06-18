@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, Users, Settings2, X } from 'lucide-react';
+import { Plus, Trash2, Users, Settings2, X, Pencil, Check, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -101,16 +101,20 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
   const [teamDist, setTeamDist] = useState<TeamDistSettings | null>(null);
   const [globalDist, setGlobalDist] = useState<TeamDistSettings | null>(null);
   const [distLoading, setDistLoading] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [routingEnabled, setRoutingEnabled] = useState(false);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, r, m, a, gd] = await Promise.all([
+      const [t, r, m, a, gd, ks] = await Promise.all([
         supabase.from('lead_teams').select('*').order('sort_order'),
         supabase.from('lead_team_source_rules').select('*'),
         supabase.from('lead_team_members').select('*'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
         supabase.from('lead_distribution_settings').select('*').is('team_id', null).maybeSingle(),
+        supabase.from('lead_settings').select('setting_value').eq('setting_key', 'team_routing_enabled').maybeSingle(),
       ]);
       if (t.error) throw t.error;
       if (r.error) throw r.error;
@@ -121,6 +125,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       setMembers(m.data || []);
       setAdmins(a.data || []);
       setGlobalDist((gd.data as TeamDistSettings) || null);
+      setRoutingEnabled(Boolean((ks.data?.setting_value as any) === true || (ks.data?.setting_value as any)?.enabled === true));
       if (!activeTeamId && (t.data || []).length) setActiveTeamId(t.data![0].id);
     } catch (e: any) {
       toast({ title: 'Failed to load routing data', description: e.message, variant: 'destructive' });
@@ -185,6 +190,46 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     setRules(rules.filter(r => r.team_id !== id));
     setMembers(members.filter(m => m.team_id !== id));
     if (activeTeamId === id) setActiveTeamId(teams[0]?.id ?? null);
+  };
+
+  const renameTeam = async (id: string, newName: string) => {
+    const name = newName.trim();
+    if (!name) { setRenamingId(null); return; }
+    const current = teams.find(t => t.id === id);
+    if (!current || current.name === name) { setRenamingId(null); return; }
+    const { data, error } = await supabase
+      .from('lead_teams')
+      .update({ name })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'Rename failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTeams(teams.map(t => (t.id === id ? (data as Team) : t)));
+    setRenamingId(null);
+    toast({ title: 'Team renamed', description: name });
+  };
+
+  const toggleRoutingEnabled = async (enabled: boolean) => {
+    const { error } = await supabase
+      .from('lead_settings')
+      .upsert(
+        { setting_key: 'team_routing_enabled', setting_value: enabled, description: 'Master switch: when ON, the routing engine consults lead_team_source_rules. When OFF, all leads follow the existing global flow (Team Red / live).' },
+        { onConflict: 'setting_key' }
+      );
+    if (error) {
+      toast({ title: 'Could not update master switch', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRoutingEnabled(enabled);
+    toast({
+      title: enabled ? 'Team routing armed' : 'Team routing disabled',
+      description: enabled
+        ? 'New leads will follow team source rules once the live trigger is wired. Until then, behaviour is unchanged.'
+        : 'All leads follow the existing global flow. No change to current live behaviour.',
+    });
   };
 
   const upsertRule = async (teamId: string, source: string, patch: Partial<SourceRule>) => {
@@ -292,6 +337,34 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
           </DialogDescription>
         </DialogHeader>
 
+        {/* Master kill-switch */}
+        <div
+          className={`flex items-start gap-3 rounded-lg border-2 p-3 ${
+            routingEnabled
+              ? 'border-emerald-300 bg-emerald-50'
+              : 'border-amber-300 bg-amber-50'
+          }`}
+        >
+          <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-emerald-600' : 'text-amber-600'}`} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-semibold text-sm">
+                Team routing master switch — {routingEnabled ? 'ARMED' : 'OFF (live flow protected)'}
+              </span>
+              <Switch
+                checked={routingEnabled}
+                disabled={!canEdit}
+                onCheckedChange={toggleRoutingEnabled}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              {routingEnabled
+                ? 'When the live trigger is wired, new leads will follow the team source rules below. Turn this OFF at any time to instantly revert every lead back to the current global (Team Red / live) flow.'
+                : 'All new leads currently go through the existing global flow — the live sales team is untouched. Configuring teams and switches here changes nothing until you arm this switch AND the live trigger is wired.'}
+            </p>
+          </div>
+        </div>
+
         {/* Add team bar */}
         {canEdit && (
           <div className="flex flex-wrap items-end gap-2 border rounded-lg p-3 bg-muted/30">
@@ -328,24 +401,64 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
           </div>
         )}
 
-        {/* Teams as pills */}
-        <div className="flex flex-wrap gap-2">
-          {teams.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTeamId(t.id)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition ${
-                activeTeamId === t.id ? 'ring-2 ring-offset-1 ring-foreground' : ''
-              }`}
-              style={{
-                backgroundColor: t.color,
-                color: '#fff',
-                borderColor: t.color,
-              }}
-            >
-              <span className="mr-1">{t.emoji}</span>{t.name}
-            </button>
-          ))}
+        {/* Teams as pills (with inline rename) */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {teams.map(t => {
+            const isRenaming = renamingId === t.id;
+            const isActive = activeTeamId === t.id;
+            if (isRenaming) {
+              return (
+                <div key={t.id} className="flex items-center gap-1 rounded-full border-2 pl-2 pr-1 py-0.5" style={{ borderColor: t.color, backgroundColor: t.color }}>
+                  <span className="text-sm">{t.emoji}</span>
+                  <Input
+                    autoFocus
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') renameTeam(t.id, renameValue);
+                      if (e.key === 'Escape') setRenamingId(null);
+                    }}
+                    onBlur={() => renameTeam(t.id, renameValue)}
+                    className="h-7 w-36 text-sm bg-white/90 border-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => renameTeam(t.id, renameValue)}
+                    className="p-1 text-white hover:bg-white/20 rounded-full"
+                    title="Save"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <div
+                key={t.id}
+                className={`group flex items-center rounded-full text-sm font-medium border-2 transition ${
+                  isActive ? 'ring-2 ring-offset-1 ring-foreground' : ''
+                }`}
+                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
+              >
+                <button
+                  onClick={() => setActiveTeamId(t.id)}
+                  className="pl-3 pr-2 py-1.5"
+                >
+                  <span className="mr-1">{t.emoji}</span>{t.name}
+                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameValue(t.name); }}
+                    className="pr-2 py-1.5 opacity-70 hover:opacity-100"
+                    title="Rename team"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {!teams.length && !loading && (
             <p className="text-sm text-muted-foreground">No teams yet — add your first team above.</p>
           )}
@@ -372,9 +485,18 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                 {teamRules(activeTeam.id).map(({ source, rule }) => (
                   <Card key={source.value} className={!rule?.allowed ? 'opacity-60' : ''}>
                     <CardContent className="flex flex-wrap items-center gap-4 p-3">
-                      <div className="flex items-center gap-2 min-w-[170px]">
+                      <div className="flex items-center gap-2 min-w-[200px]">
                         <span className="text-lg">{source.icon}</span>
                         <span className="font-medium">{source.label}</span>
+                        {rule ? (
+                          <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5" title="This rule is saved in the database">
+                            Saved
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-slate-100 text-slate-500 px-1.5 py-0.5" title="No rule saved yet — toggle the switch to save">
+                            Not saved
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch
