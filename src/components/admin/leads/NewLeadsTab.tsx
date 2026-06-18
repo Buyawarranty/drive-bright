@@ -567,6 +567,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return freshLeads.filter(l => l.assigned_to && agentTeamMap.get(l.assigned_to)?.id === teamFilter);
   }, [freshLeads, teamFilter, agentTeamMap]);
 
+  // Scope sales agents to the selected team so Reassign, agent filter, and the Agents view
+  // only act on that team. When no team is selected, behaviour is unchanged.
+  const teamScopedSalesUsers = useMemo(() => {
+    if (!teamFilter) return salesUsers;
+    return salesUsers.filter(u => agentTeamMap.get(u.id)?.id === teamFilter);
+  }, [salesUsers, teamFilter, agentTeamMap]);
+
   // Pagination for leads table (fresh only)
   const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
 
@@ -1028,7 +1035,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
           {isAdminOrSuperAdmin && (
-            <BulkReassignDialog salesUsers={salesUsers} onComplete={fetchLeads} />
+            <BulkReassignDialog salesUsers={teamScopedSalesUsers} onComplete={fetchLeads} />
           )}
 
           {/* Archive Button */}
@@ -1116,11 +1123,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="space-y-3">
           {/* Team filter chips — only visible to managers; defaults to All so the live view is unchanged. */}
           {(isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
               <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
               {teamFilter && (
                 <span className="text-[11px] text-muted-foreground">
-                  Showing leads assigned to {allTeams.find(t => t.id === teamFilter)?.name} agents only
+                  Scoped to {allTeams.find(t => t.id === teamFilter)?.name} — leads, reassign, exports, and the Agents panel only show this team.
                 </span>
               )}
             </div>
@@ -1162,7 +1169,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             assignmentCounts={assignmentCounts}
             sortOption={sortOption}
             onSortChange={setSortOption}
-            salesUsers={salesUsers}
+            salesUsers={teamScopedSalesUsers}
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
@@ -1194,7 +1201,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     totalVisible={pagination.paginatedData.length}
                     allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
                     onSelectAll={handleSelectAll}
-                    salesUsers={canAssignLeads ? salesUsers : []}
+                    salesUsers={canAssignLeads ? teamScopedSalesUsers : []}
                     onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
@@ -1217,7 +1224,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   <LeadsTable
                     leads={pagination.paginatedData}
                     tags={tags}
-                    salesUsers={salesUsers}
+                    salesUsers={teamScopedSalesUsers}
                     canAssignLeads={canAssignLeads}
                     selectedLeads={selectedLeads}
                     onSelectLead={handleSelectLead}
@@ -1274,7 +1281,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <LeadsTable
                   leads={unworkedPagination.paginatedData}
                   tags={tags}
-                  salesUsers={salesUsers}
+                  salesUsers={teamScopedSalesUsers}
                   canAssignLeads={canAssignLeads}
                   selectedLeads={selectedLeads}
                   onSelectLead={handleSelectLead}
@@ -1327,7 +1334,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <SalespersonDashboard 
           leads={leads}
           tags={tags}
-          salesUsers={salesUsers}
+          salesUsers={teamScopedSalesUsers}
           handlers={leadHandlers}
         />
       )}
@@ -1340,7 +1347,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
         <AgentsLeadsView 
           leads={leads}
-          salesUsers={salesUsers}
+          salesUsers={teamScopedSalesUsers}
           viewerRole={userRole}
         />
       )}
