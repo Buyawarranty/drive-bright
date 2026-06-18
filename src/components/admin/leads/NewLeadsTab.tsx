@@ -1116,6 +1116,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
+          {/* Team filter chips — only visible to managers; defaults to All so the live view is unchanged. */}
+          {(isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
+            <div className="flex items-center justify-between px-1">
+              <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+              {teamFilter && (
+                <span className="text-[11px] text-muted-foreground">
+                  Showing leads assigned to {allTeams.find(t => t.id === teamFilter)?.name} agents only
+                </span>
+              )}
+            </div>
+          )}
           {/* Sales Executive Header removed - agents focus on leads only */}
           {isSuperAdmin && (
             <div className="flex items-center justify-end">
