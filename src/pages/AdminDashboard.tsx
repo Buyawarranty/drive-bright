@@ -488,6 +488,8 @@ const AdminDashboard = () => {
         );
       case 'lead-recovery':
         return <LeadRecoveryTab />;
+      case 'retention':
+        return <RetentionTab />;
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':
