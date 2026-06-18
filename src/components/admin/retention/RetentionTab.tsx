@@ -321,8 +321,12 @@ export const RetentionTab: React.FC = () => {
             Renewals
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Renewals and upsells for active customers. Excludes cancelled, refunded, and deleted policies.
+            Renewals and upsells for active customers. Automated cadence runs daily at 09:00 — emails at 90/60/30/14/7/0 days before expiry and 7/30 days after, with discount codes up to 25%. Call milestones (30/14/7d) auto-assign to a sales agent.
           </p>
+          <Button size="sm" variant="outline" className="mt-2 gap-1" disabled={runningCron} onClick={triggerCron}>
+            {runningCron ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+            Run renewal cron now
+          </Button>
         </div>
         <div className="flex flex-wrap gap-3">
           <Card className="border-primary/30">
