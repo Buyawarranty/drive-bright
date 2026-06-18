@@ -461,6 +461,33 @@ export const RetentionTab: React.FC = () => {
                               </div>
                             )}
                           </td>
+                          <td className="p-3 text-xs">
+                            {(() => {
+                              const list = touches[r.id] || [];
+                              if (list.length === 0) return <span className="text-muted-foreground">No touches yet</span>;
+                              return (
+                                <div className="flex flex-wrap gap-1">
+                                  {list.slice(0, 4).map((t) => {
+                                    const label = t.milestone_days >= 0 ? `${t.milestone_days}d` : `+${Math.abs(t.milestone_days)}d`;
+                                    return (
+                                      <Badge
+                                        key={`${t.milestone_days}`}
+                                        variant="outline"
+                                        title={`${t.template_key} • ${t.status}${t.discount_code ? ` • ${t.discount_code}` : ''}`}
+                                        className="text-[10px] gap-1"
+                                      >
+                                        {label}
+                                        {t.sent_at && <Send className="h-2.5 w-2.5 text-blue-600" />}
+                                        {t.opened_at && <Eye className="h-2.5 w-2.5 text-emerald-600" />}
+                                        {t.clicked_at && <MousePointerClick className="h-2.5 w-2.5 text-purple-600" />}
+                                        {t.assigned_agent_id && <UserCheck className="h-2.5 w-2.5 text-amber-600" />}
+                                      </Badge>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+                          </td>
                           <td className="p-3 text-xs text-muted-foreground">
                             {r.retention_worked_at
                               ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
