@@ -485,6 +485,7 @@ const AdminDashboard = () => {
           />
         );
       case 'golden-leads':
+      case 'goldmine-leads':
         return <GoldenLeadsTab />;
       case 'retention':
         return <RetentionTab />;
