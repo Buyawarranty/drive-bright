@@ -80,9 +80,10 @@ export const LeadRecoveryTab: React.FC = () => {
 
     const q = (supabase.from('sales_leads') as any).select(select);
 
-    // Exclude terminal statuses, paid leads, and cancelled/refunded customers globally
+    // Exclude terminal lead statuses + anyone who has paid (covers cancelled/refunded/completed orders,
+    // which live on the customer record, not as lead_status enum values).
     return q
-      .not('status', 'in', '(lost,converted,fake_lead,cancelled,refunded,paid,completed)')
+      .not('status', 'in', '(lost,converted,fake_lead,archived)')
       .or('is_paid.is.null,is_paid.eq.false');
   }, []);
 
