@@ -7062,6 +7062,128 @@ export type Database = {
           },
         ]
       }
+      renewal_campaign_log: {
+        Row: {
+          assigned_agent_id: string | null
+          clicked_at: string | null
+          created_at: string
+          customer_id: string | null
+          discount_code: string | null
+          discount_code_id: string | null
+          discount_percent: number | null
+          email_log_id: string | null
+          id: string
+          metadata: Json | null
+          milestone_days: number
+          opened_at: string | null
+          policy_id: string
+          recipient_email: string | null
+          scheduled_at: string | null
+          scheduled_email_id: string | null
+          sent_at: string | null
+          skip_reason: string | null
+          status: string
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_agent_id?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          discount_code?: string | null
+          discount_code_id?: string | null
+          discount_percent?: number | null
+          email_log_id?: string | null
+          id?: string
+          metadata?: Json | null
+          milestone_days: number
+          opened_at?: string | null
+          policy_id: string
+          recipient_email?: string | null
+          scheduled_at?: string | null
+          scheduled_email_id?: string | null
+          sent_at?: string | null
+          skip_reason?: string | null
+          status?: string
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_agent_id?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          discount_code?: string | null
+          discount_code_id?: string | null
+          discount_percent?: number | null
+          email_log_id?: string | null
+          id?: string
+          metadata?: Json | null
+          milestone_days?: number
+          opened_at?: string | null
+          policy_id?: string
+          recipient_email?: string | null
+          scheduled_at?: string | null
+          scheduled_email_id?: string | null
+          sent_at?: string | null
+          skip_reason?: string | null
+          status?: string
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_campaign_log_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "customer_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      renewal_offers: {
+        Row: {
+          active: boolean
+          auto_assign_agent: boolean
+          created_at: string
+          discount_percent: number
+          id: string
+          label: string
+          milestone_days: number
+          send_sms: boolean
+          sort_order: number
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          auto_assign_agent?: boolean
+          created_at?: string
+          discount_percent?: number
+          id?: string
+          label: string
+          milestone_days: number
+          send_sms?: boolean
+          sort_order?: number
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          auto_assign_agent?: boolean
+          created_at?: string
+          discount_percent?: number
+          id?: string
+          label?: string
+          milestone_days?: number
+          send_sms?: boolean
+          sort_order?: number
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       round_robin_state: {
         Row: {
           id: string
