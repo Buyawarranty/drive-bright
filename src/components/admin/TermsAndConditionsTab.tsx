@@ -83,6 +83,15 @@ const UploadCard: React.FC<{
   const [notify, setNotify] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const lastNotifyKey = `tcs-last-notify-${planKey}`;
+  const [lastNotify, setLastNotify] = useState<{ count: number; at: string } | null>(() => {
+    try {
+      const raw = localStorage.getItem(lastNotifyKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const handleFile = (f: File | null | undefined) => {
     if (!f) return;
