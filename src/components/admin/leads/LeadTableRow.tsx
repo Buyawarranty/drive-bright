@@ -39,6 +39,7 @@ import { MarkFakeReasonDialog, FakeReasonValue } from './MarkFakeReasonDialog';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { TeamBadge } from './TeamBadge';
 
 interface LeadTableRowProps {
   lead: Lead;
@@ -444,15 +445,16 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     const displayName = assignedUser 
                       ? `${assignedUser.first_name || ''}`.trim() || assignedUser.email?.split('@')[0] || 'Assigned'
                       : 'Assigned';
-                    return (
-                      <>
-                        <div className={`h-5 w-5 rounded-full ${agentColor} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
-                          {initial}
-                        </div>
-                        <span className="truncate">{displayName}</span>
-                      </>
-                    );
-                  })()
+                     return (
+                       <>
+                         <div className={`h-5 w-5 rounded-full ${agentColor} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
+                           {initial}
+                         </div>
+                         <span className="truncate">{displayName}</span>
+                         <TeamBadge userId={lead.assigned_to} className="flex-shrink-0" />
+                       </>
+                     );
+                   })()
                 ) : (
                   <>
                     <Globe className="h-3.5 w-3.5 flex-shrink-0" />

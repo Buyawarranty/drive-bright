@@ -30,6 +30,8 @@ import { BulkReassignDialog } from './BulkReassignDialog';
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { LeadRoutingDialog } from './LeadRoutingDialog';
+import { TeamFilterChips } from './TeamFilterChips';
+import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -107,6 +109,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
+
+  // Team filter (Red / Blue / Green) — only managers see the chips; default null = no filter.
+  const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+
   
   
   // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
@@ -556,8 +563,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return filteredLeads.filter(lead => isRecoveredLead(lead));
   }, [filteredLeads, isRecoveredLead, filter]);
 
+  // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
+  const teamFilteredFreshLeads = useMemo(() => {
+    if (!teamFilter) return freshLeads;
+    return freshLeads.filter(l => l.assigned_to && agentTeamMap.get(l.assigned_to)?.id === teamFilter);
+  }, [freshLeads, teamFilter, agentTeamMap]);
+
   // Pagination for leads table (fresh only)
-  const pagination = usePagination(freshLeads, { initialPageSize: 50 });
+  const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
 
   // Separate pagination for unworked leads
   const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
@@ -1103,6 +1116,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
+          {/* Team filter chips — only visible to managers; defaults to All so the live view is unchanged. */}
+          {(isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
+            <div className="flex items-center justify-between px-1">
+              <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+              {teamFilter && (
+                <span className="text-[11px] text-muted-foreground">
+                  Showing leads assigned to {allTeams.find(t => t.id === teamFilter)?.name} agents only
+                </span>
+              )}
+            </div>
+          )}
           {/* Sales Executive Header removed - agents focus on leads only */}
           {isSuperAdmin && (
             <div className="flex items-center justify-end">
