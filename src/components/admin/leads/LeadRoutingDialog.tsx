@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Users, Settings2, X, Pencil, Check, ShieldAlert } from 'lucide-react';
 import { RoutingTester } from './RoutingTester';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,11 +61,17 @@ export const LEAD_SOURCES: { value: string; label: string; icon: string }[] = [
   { value: 'tiktok',    label: 'TikTok',      icon: '⚫' },
   { value: 'youtube',   label: 'YouTube',     icon: '🔺' },
   { value: 'organic',   label: 'Organic',     icon: '🌱' },
-  { value: 'direct',    label: 'Direct',      icon: '⭐' },
+  { value: 'direct',    label: 'Direct (web)',icon: '⭐' },
   { value: 'referral',  label: 'Referral',    icon: '🔗' },
   { value: 'email',     label: 'Email',       icon: '✉️' },
   { value: 'sms',       label: 'SMS',         icon: '💬' },
   { value: 'other',     label: 'Other',       icon: '❔' },
+];
+
+const LEAD_SOURCE_GROUPS = [
+  { title: 'Paid ads', values: ['google', 'facebook', 'instagram', 'tiktok', 'youtube'] },
+  { title: 'Organic and web', values: ['organic', 'direct', 'referral'] },
+  { title: 'Messages and other', values: ['email', 'sms', 'other'] },
 ];
 
 const PRESET_COLORS = [
