@@ -472,7 +472,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = filterRestricted(getVisibleTabs());
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_agent' || userRole === 'claims_manager') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_agent' || userRole === 'claims_manager') {
       setTabs(visibleTabs);
       return;
     }
