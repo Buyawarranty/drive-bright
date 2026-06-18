@@ -272,21 +272,35 @@ export const RetentionTab: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <Repeat className="h-6 w-6 text-primary" />
-            Retention
+            Renewals
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Renewals and upsells for active customers. Excludes cancelled, refunded, and deleted policies.
           </p>
         </div>
-        <Card className="border-primary/30">
-          <CardContent className="py-3 px-4 flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <div>
-              <div className="text-xs text-muted-foreground">Worked today</div>
-              <div className="text-xl font-semibold">{workedToday}</div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap gap-3">
+          <Card className="border-primary/30">
+            <CardContent className="py-3 px-4">
+              <div className="text-xs text-muted-foreground">Active policies</div>
+              <div className="text-xl font-semibold">{totalActive ?? '…'}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/30">
+            <CardContent className="py-3 px-4">
+              <div className="text-xs text-muted-foreground">Renewals next 12 months</div>
+              <div className="text-xl font-semibold">{renewals12mo ?? '…'}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/30">
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div>
+                <div className="text-xs text-muted-foreground">Worked today</div>
+                <div className="text-xl font-semibold">{workedToday}</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
