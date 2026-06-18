@@ -16,6 +16,10 @@ import { Phone, Mail, Gem, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircl
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
+import { CallCountCell } from './CallCountCell';
+import { InlineQuickNote } from './InlineQuickNote';
+import { RemindMePopover } from './RemindMePopover';
+import type { LeadStatus } from '@/hooks/useLeads';
 
 type SegmentId =
   | 'never_contacted'
