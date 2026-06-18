@@ -10,9 +10,22 @@ import {
 } from '@/components/ui/select';
 import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
+  Send, Eye, MousePointerClick, UserCheck, Play,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+
+interface CampaignTouch {
+  policy_id: string;
+  milestone_days: number;
+  template_key: string;
+  status: string;
+  sent_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  discount_code: string | null;
+  assigned_agent_id: string | null;
+}
 
 type SegmentId = 'due_soon' | 'renewal_window' | 'upsell' | 'lapsed';
 
