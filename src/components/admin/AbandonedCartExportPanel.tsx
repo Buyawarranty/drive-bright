@@ -275,18 +275,26 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
   }, [candidateCarts, from, to, excludePrevious, previousIds, sourceFilter]);
 
 
-  // Deduplicate by email within the export
+  // Deduplicate within the export. For Google Offline Conversions we dedupe by gclid
+  // (and require one to exist); for other formats we dedupe by email.
   const uniqueByEmail = useMemo(() => {
     const seen = new Set<string>();
     const out: AbandonedCart[] = [];
     for (const c of filtered) {
+      if (platform === 'google_offline') {
+        const gclid = c.cart_metadata?.gclid ? String(c.cart_metadata.gclid).trim() : '';
+        if (!gclid || seen.has(gclid)) continue;
+        seen.add(gclid);
+        out.push(c);
+        continue;
+      }
       const key = (c.email || '').trim().toLowerCase();
       if (!key || seen.has(key)) continue;
       seen.add(key);
       out.push(c);
     }
     return out;
-  }, [filtered]);
+  }, [filtered, platform]);
 
   const handleExport = async () => {
     if (uniqueByEmail.length === 0) {
