@@ -80,8 +80,10 @@ export const LeadRecoveryTab: React.FC = () => {
 
     const q = (supabase.from('sales_leads') as any).select(select);
 
-    // Exclude terminal statuses globally
-    return q.not('status', 'in', '(lost,converted,fake_lead)');
+    // Exclude terminal statuses, paid leads, and cancelled/refunded customers globally
+    return q
+      .not('status', 'in', '(lost,converted,fake_lead,cancelled,refunded,paid,completed)')
+      .or('is_paid.is.null,is_paid.eq.false');
   }, []);
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
@@ -135,7 +137,8 @@ export const LeadRecoveryTab: React.FC = () => {
         try {
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
-            .not('status', 'in', '(lost,converted,fake_lead)');
+            .not('status', 'in', '(lost,converted,fake_lead,cancelled,refunded,paid,completed)')
+            .or('is_paid.is.null,is_paid.eq.false');
           q = applySegment(q, s.id);
           const { count } = await q;
           return [s.id, count || 0] as const;
