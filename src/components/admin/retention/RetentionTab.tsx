@@ -199,9 +199,29 @@ export const RetentionTab: React.FC = () => {
     setWorkedToday(count || 0);
   }, [currentUserId]);
 
+  const fetchTotals = useCallback(async () => {
+    try {
+      const nowIso = new Date().toISOString();
+      const in12mo = new Date(Date.now() + 365 * 86400000).toISOString();
+      const baseFilter = (q: any) => q
+        .not('status', 'in', EXCLUDED_STATUSES)
+        .or('is_deleted.is.null,is_deleted.eq.false');
+      const totalQ = baseFilter((supabase.from('customer_policies') as any).select('id', { count: 'exact', head: true }));
+      const renewQ = baseFilter((supabase.from('customer_policies') as any).select('id', { count: 'exact', head: true }))
+        .gte('policy_end_date', nowIso)
+        .lte('policy_end_date', in12mo);
+      const [{ count: total }, { count: renew12 }] = await Promise.all([totalQ, renewQ]);
+      setTotalActive(total || 0);
+      setRenewals12mo(renew12 || 0);
+    } catch {
+      // non-fatal
+    }
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
+  useEffect(() => { fetchTotals(); }, [fetchTotals]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
