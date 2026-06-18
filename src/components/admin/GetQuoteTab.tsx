@@ -1916,7 +1916,7 @@ Questions? Call 0330 229 5040`;
       setCompletionStatus({
         policyCreated: true,
         emailSent: sendWelcomeEmail ? emailSentSuccess : null,
-        w2000Sent: sendToW2k ? w2000SentSuccess : null,
+        w2000Sent: null,
         warrantyReference: finalWarrantyReference,
         isFutureStart: isFutureStartDate
       });
@@ -4350,29 +4350,7 @@ Questions? Call 0330 229 5040`;
                       </div>
                     )}
 
-                    {/* Warranty Registration Status - Note: Only shown as info, detailed status in dashboard */}
-                    {sendToW2k && (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Info className="w-5 h-5 text-blue-600" />
-                          <div>
-                            <span className="font-medium text-blue-800">Warranty Registered</span>
-                            <p className="text-xs text-blue-600">
-                              {completionStatus.isFutureStart 
-                                ? 'Scheduled - will be registered on warranty start date' 
-                                : completionStatus.w2000Sent === true 
-                                  ? 'Successfully registered' 
-                                  : completionStatus.w2000Sent === false 
-                                    ? 'Registration failed - check customer dashboard for details'
-                                    : 'Processing registration...'}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2 pl-8">
-                          Full warranty registration status available in the Customer Dashboard
-                        </p>
-                      </div>
-                    )}
+                    {/* Warranties Register integration removed — internal handling only. */}
                   </div>
 
                   {/* Professional Note */}
