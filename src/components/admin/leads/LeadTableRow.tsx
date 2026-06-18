@@ -39,6 +39,7 @@ import { MarkFakeReasonDialog, FakeReasonValue } from './MarkFakeReasonDialog';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { TeamBadge } from './TeamBadge';
 
 interface LeadTableRowProps {
   lead: Lead;
