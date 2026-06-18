@@ -411,37 +411,42 @@ export const LeadRecoveryTab: React.FC = () => {
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
+  const dueTodayCount = counts['due_today'] ?? 0;
+  const totalCount = counts['all_leads'] ?? 0;
+  const conversionRate = myStats.worked > 0 ? Math.round((myStats.converted / myStats.worked) * 100) : 0;
+
+  const STAT_CARDS = [
+    { label: 'Worked today',         value: myStats.worked,       icon: CheckCircle2, tint: 'text-green-600' },
+    { label: 'Follow-ups due today', value: dueTodayCount,        icon: CalendarClock, tint: 'text-blue-600' },
+    { label: 'Converted today',      value: myStats.converted,    icon: Trophy,        tint: 'text-amber-500' },
+    { label: 'My conversion rate',   value: `${conversionRate}%`, icon: TrendingUp,    tint: 'text-primary' },
+    { label: 'Total recontact leads',value: totalCount.toLocaleString(), icon: Database, tint: 'text-muted-foreground' },
+  ];
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Gem className="h-6 w-6 text-primary" />
-            Goldmine Leads
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            High-value aged leads — auto-assigned via round-robin from the live pipeline. Whole team can see them so the leaderboard stays honest.
-          </p>
-        </div>
-        <Card className="border-primary/30">
-          <CardContent className="py-3 px-4 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <RefreshCw className="h-6 w-6 text-primary" />
+          Recontact Leads
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-3xl">
+          Past warranty enquiries who requested a price but did not purchase. Contact them again, record outcomes, and convert interested customers into quotes or orders.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {STAT_CARDS.map((s) => (
+          <Card key={s.label}>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <s.icon className={`h-5 w-5 ${s.tint}`} />
               <div>
-                <div className="text-xs text-muted-foreground">Worked today</div>
-                <div className="text-xl font-semibold">{myStats.worked}</div>
+                <div className="text-xs text-muted-foreground">{s.label}</div>
+                <div className="text-xl font-semibold">{s.value}</div>
               </div>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
-              <div>
-                <div className="text-xs text-muted-foreground">Converted today</div>
-                <div className="text-xl font-semibold">{myStats.converted}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Team leaderboard strip */}
