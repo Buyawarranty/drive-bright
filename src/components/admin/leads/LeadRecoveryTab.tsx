@@ -487,7 +487,7 @@ export const LeadRecoveryTab: React.FC = () => {
                         <tr key={lead.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setSelected(lead)}>
                           <td className="p-3">
                             <div className="font-medium">
-                              {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || lead.full_name || '—'}
+                              {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—'}
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {lead.status} · {lead.call_count || 0} calls
