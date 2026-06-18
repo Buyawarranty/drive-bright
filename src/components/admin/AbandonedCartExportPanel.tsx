@@ -362,7 +362,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
           Remarketing Export (Google / Facebook)
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Export abandoned carts as a CSV ready to upload to Google Customer Match or Facebook Custom Audience.
+          Export abandoned carts as a CSV ready to upload to Google Customer Match, Google Ads Offline Conversions, or Facebook Custom Audience.
           Customers who have already purchased are automatically excluded.
         </p>
       </CardHeader>
