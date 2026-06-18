@@ -5657,6 +5657,7 @@ export type Database = {
           overflow_recipient_id: string | null
           solo_agent_id: string | null
           solo_mode_enabled: boolean | null
+          team_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -5667,6 +5668,7 @@ export type Database = {
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
           solo_mode_enabled?: boolean | null
+          team_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -5677,6 +5679,7 @@ export type Database = {
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
           solo_mode_enabled?: boolean | null
+          team_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -5692,6 +5695,13 @@ export type Database = {
             columns: ["solo_agent_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_distribution_settings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
             referencedColumns: ["id"]
           },
         ]
@@ -6514,16 +6524,19 @@ export type Database = {
         Row: {
           id: string
           last_assigned_overflow_id: string | null
+          team_id: string | null
           updated_at: string
         }
         Insert: {
           id?: string
           last_assigned_overflow_id?: string | null
+          team_id?: string | null
           updated_at?: string
         }
         Update: {
           id?: string
           last_assigned_overflow_id?: string | null
+          team_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -6532,6 +6545,13 @@ export type Database = {
             columns: ["last_assigned_overflow_id"]
             isOneToOne: false
             referencedRelation: "overflow_recipients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overflow_round_robin_state_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
             referencedColumns: ["id"]
           },
         ]
@@ -7040,16 +7060,19 @@ export type Database = {
         Row: {
           id: string
           last_assigned_user_id: string | null
+          team_id: string | null
           updated_at: string
         }
         Insert: {
           id?: string
           last_assigned_user_id?: string | null
+          team_id?: string | null
           updated_at?: string
         }
         Update: {
           id?: string
           last_assigned_user_id?: string | null
+          team_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -7058,6 +7081,13 @@ export type Database = {
             columns: ["last_assigned_user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "round_robin_state_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
             referencedColumns: ["id"]
           },
         ]
@@ -9211,6 +9241,7 @@ export type Database = {
         | "claims_agent"
         | "claims_manager"
         | "performance_manager"
+        | "sales_manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -9423,6 +9454,7 @@ export const Constants = {
         "claims_agent",
         "claims_manager",
         "performance_manager",
+        "sales_manager",
       ],
     },
   },
