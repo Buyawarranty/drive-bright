@@ -373,7 +373,8 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
             <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="google">Google Customer Match</SelectItem>
+                <SelectItem value="google">Google Customer Match (audience)</SelectItem>
+                <SelectItem value="google_offline">Google Offline Conversions (gclid)</SelectItem>
                 <SelectItem value="facebook">Facebook Custom Audience</SelectItem>
               </SelectContent>
             </Select>
