@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface CustomerData {
   id: string;
@@ -53,12 +54,12 @@ interface PolicyData {
 }
 
 const claimLimitOptions = [
-  500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000, 5000
+  750, 2000, 3000, 5000
 ];
 
-const excessOptions = [0, 50, 100, 150, 200];
+const excessOptions = [0, 50, 100, 150, 250, 500];
 
-const labourRateOptions = [50, 70, 100, 150, 200];
+const labourRateOptions = [50, 70, 100, 200];
 
 const CustomerPolicyUpdateTab = () => {
   const { toast } = useToast();
@@ -75,7 +76,7 @@ const CustomerPolicyUpdateTab = () => {
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>('');
   
   // Editable warranty fields
-  const [editClaimLimit, setEditClaimLimit] = useState<number>(1250);
+  const [editClaimLimit, setEditClaimLimit] = useState<number>(2000);
   const [editVoluntaryExcess, setEditVoluntaryExcess] = useState<number>(100);
   const [editLabourRate, setEditLabourRate] = useState<number>(70);
   const [editAdditionalNotes, setEditAdditionalNotes] = useState('');
@@ -184,7 +185,7 @@ const CustomerPolicyUpdateTab = () => {
   };
 
   const loadPolicyData = (policy: PolicyData) => {
-    setEditClaimLimit(policy.claim_limit || 1250);
+    setEditClaimLimit(policy.claim_limit || 2000);
     setEditVoluntaryExcess(policy.voluntary_excess || 100);
     setEditAdditionalNotes(policy.additional_notes || '');
     setEditBreakdownRecovery(policy.breakdown_recovery || false);
@@ -462,7 +463,7 @@ const CustomerPolicyUpdateTab = () => {
                         <SelectContent>
                           {claimLimitOptions.map((limit) => (
                             <SelectItem key={limit} value={limit.toString()}>
-                              £{limit.toLocaleString()}
+                              £{getDisplayClaimLimitValue(limit).toLocaleString()}
                             </SelectItem>
                           ))}
                         </SelectContent>
