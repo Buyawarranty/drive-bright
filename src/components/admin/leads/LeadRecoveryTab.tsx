@@ -500,14 +500,18 @@ export const LeadRecoveryTab: React.FC = () => {
                       <th className="text-left p-3">Lead</th>
                       <th className="text-left p-3">Contact</th>
                       <th className="text-left p-3">Vehicle</th>
-                      <th className="text-left p-3">Assigned</th>
+                      <th className="text-left p-3">Cart / Quote</th>
                       <th className="text-left p-3">Source</th>
                       <th className="text-left p-3">Age</th>
                       <th className="text-left p-3">Last touched</th>
+                      <th className="text-left p-3">Calls</th>
+                      <th className="text-left p-3 min-w-[200px]">Quick note</th>
+                      <th className="text-left p-3">Assigned</th>
                       <th className="text-left p-3">Last worked</th>
-                      <th className="text-right p-3">Actions</th>
+                      <th className="text-right p-3 min-w-[260px]">Actions</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {filteredLeads.map((lead) => {
                       const ageDays = daysSince(lead.created_at);
