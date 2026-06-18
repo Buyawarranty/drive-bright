@@ -298,9 +298,9 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         .sort((a, b) => b.count - a.count);
 
       // Tag distribution
-      const { data: tagAssignments } = await supabase
-        .from('lead_tag_assignments')
-        .select('tag_id, lead_tags(name, color)');
+      const { data: tagAssignments } = await fetchAllRows<any>(() =>
+        supabase.from('lead_tag_assignments').select('tag_id, lead_tags(name, color)')
+      );
 
       const tagMap = new Map<string, { count: number; color: string }>();
       (tagAssignments || []).forEach((t: any) => {
