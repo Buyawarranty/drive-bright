@@ -189,6 +189,13 @@ const UploadCard: React.FC<{
       if (notify) {
         try {
           notifiedCount = await notifyAllCustomers();
+          const record = { count: notifiedCount, at: new Date().toISOString() };
+          setLastNotify(record);
+          try {
+            localStorage.setItem(lastNotifyKey, JSON.stringify(record));
+          } catch {
+            // ignore quota errors
+          }
         } catch (e: any) {
           console.error('Notification fan-out failed:', e);
           toast({
