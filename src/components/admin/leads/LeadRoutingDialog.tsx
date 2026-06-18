@@ -602,7 +602,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                       />
                     </CardContent>
                   </Card>
-                ))}
+                );})}
                 <p className="text-xs text-muted-foreground pt-2">
                   Teams only receive a source when its switch is on. If a min conversion % is set, the routing engine will only assign that source while the team's conversion rate meets or exceeds the threshold.
                 </p>
