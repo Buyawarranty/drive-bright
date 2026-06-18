@@ -88,7 +88,7 @@ function agentLabel(a: Agent | undefined): string {
 }
 
 export const LeadRecoveryTab: React.FC = () => {
-  const [segment, setSegment] = useState<SegmentId>('never_contacted');
+  const [segment, setSegment] = useState<SegmentId>('due_today');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
