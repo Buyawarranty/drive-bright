@@ -38,6 +38,8 @@ type VariantStats = {
   submissionsWithPhone: number;
   submissionsNoPhone: number;
   conversions: number;
+  conversionsWithPhone: number;
+  conversionsNoPhone: number;
 };
 
 const emptyStats = (): VariantStats => ({
@@ -46,6 +48,8 @@ const emptyStats = (): VariantStats => ({
   submissionsWithPhone: 0,
   submissionsNoPhone: 0,
   conversions: 0,
+  conversionsWithPhone: 0,
+  conversionsNoPhone: 0,
 });
 
 const pct = (numer: number, denom: number): string =>
