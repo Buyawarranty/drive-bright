@@ -121,6 +121,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onRefresh,
   onMigrate,
   onExport,
+  onManageRouting,
+  canManageRouting,
   leadCounts,
   dateRange,
   onDateRangeChange,
