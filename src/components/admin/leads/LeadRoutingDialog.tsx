@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Users, Settings2, X, Pencil, Check, ShieldAlert } from 'lucide-react';
 import { RoutingTester } from './RoutingTester';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,11 +61,17 @@ export const LEAD_SOURCES: { value: string; label: string; icon: string }[] = [
   { value: 'tiktok',    label: 'TikTok',      icon: '⚫' },
   { value: 'youtube',   label: 'YouTube',     icon: '🔺' },
   { value: 'organic',   label: 'Organic',     icon: '🌱' },
-  { value: 'direct',    label: 'Direct',      icon: '⭐' },
+  { value: 'direct',    label: 'Direct (web)',icon: '⭐' },
   { value: 'referral',  label: 'Referral',    icon: '🔗' },
   { value: 'email',     label: 'Email',       icon: '✉️' },
   { value: 'sms',       label: 'SMS',         icon: '💬' },
   { value: 'other',     label: 'Other',       icon: '❔' },
+];
+
+const LEAD_SOURCE_GROUPS = [
+  { title: 'Paid ads', values: ['google', 'facebook', 'instagram', 'tiktok', 'youtube'] },
+  { title: 'Organic and web', values: ['organic', 'direct', 'referral'] },
+  { title: 'Messages and other', values: ['email', 'sms', 'other'] },
 ];
 
 const PRESET_COLORS = [
@@ -512,7 +517,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
 
         {/* Active team config */}
         {activeTeam && (
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6 pb-2">
             <Tabs defaultValue="sources" className="w-full">
               <div className="flex items-center justify-between">
                 <TabsList>
@@ -543,66 +548,76 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                     </div>
                   </div>
                 )}
-                {teamRules(activeTeam.id).map(({ source, rule }) => {
-                  const isOn = rule?.allowed === true;
+                {LEAD_SOURCE_GROUPS.map(group => {
+                  const groupRules = teamRules(activeTeam.id).filter(({ source }) => group.values.includes(source.value));
                   return (
-                  <Card key={source.value}>
-                    <CardContent className="flex flex-wrap items-center gap-4 p-3">
-                      <div className="flex items-center gap-2 min-w-[200px]">
-                        <span className="text-lg">{source.icon}</span>
-                        <span className="font-medium">{source.label}</span>
+                    <div key={group.title} className="rounded-md border bg-background p-3 space-y-2">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-normal">{group.title}</h4>
+                      <div className="grid gap-2 lg:grid-cols-2">
+                        {groupRules.map(({ source, rule }) => {
+                          const isOn = rule?.allowed === true;
+                          return (
+                            <div key={source.value} className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/20 p-3">
+                              <div className="flex items-center gap-2 min-w-[150px] flex-1">
+                                <span className="text-lg">{source.icon}</span>
+                                <span className="font-medium">{source.label}</span>
+                                {isOn && <Check className="h-4 w-4 text-emerald-700" />}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={isOn}
+                                  disabled={!canEdit}
+                                  onCheckedChange={(v) => upsertRule(activeTeam.id, source.value, { allowed: v })}
+                                />
+                                <span className={`text-xs font-semibold ${isOn ? 'text-emerald-700' : 'text-muted-foreground'}`}>
+                                  {isOn ? 'Allowed' : 'Off'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Label className="text-xs">Min conv %</Label>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="100"
+                                  className="w-20 h-8"
+                                  disabled={!canEdit || !isOn}
+                                  value={rule?.conversion_threshold_pct ?? ''}
+                                  placeholder="—"
+                                  onChange={(e) => {
+                                    const v = e.target.value === '' ? null : parseFloat(e.target.value);
+                                    upsertRule(activeTeam.id, source.value, { conversion_threshold_pct: v });
+                                  }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Label className="text-xs">Priority</Label>
+                                <Input
+                                  type="number"
+                                  className="w-16 h-8"
+                                  disabled={!canEdit || !isOn}
+                                  value={rule?.priority ?? 0}
+                                  onChange={(e) => upsertRule(activeTeam.id, source.value, { priority: parseInt(e.target.value || '0') })}
+                                />
+                              </div>
+                              <Input
+                                className="w-full h-8"
+                                placeholder="Notes (optional)"
+                                disabled={!canEdit}
+                                defaultValue={rule?.notes ?? ''}
+                                onBlur={(e) => {
+                                  if ((rule?.notes ?? '') !== e.target.value) {
+                                    upsertRule(activeTeam.id, source.value, { notes: e.target.value || null });
+                                  }
+                                }}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={isOn}
-                          disabled={!canEdit}
-                          onCheckedChange={(v) => upsertRule(activeTeam.id, source.value, { allowed: v })}
-                        />
-                        <span className={`text-xs font-semibold ${isOn ? 'text-emerald-700' : 'text-muted-foreground'}`}>
-                          {isOn ? 'On' : 'Off'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs">Min conv %</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="100"
-                          className="w-20 h-8"
-                          disabled={!canEdit || !(rule?.allowed ?? true)}
-                          value={rule?.conversion_threshold_pct ?? ''}
-                          placeholder="—"
-                          onChange={(e) => {
-                            const v = e.target.value === '' ? null : parseFloat(e.target.value);
-                            upsertRule(activeTeam.id, source.value, { conversion_threshold_pct: v });
-                          }}
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs">Priority</Label>
-                        <Input
-                          type="number"
-                          className="w-16 h-8"
-                          disabled={!canEdit || !(rule?.allowed ?? true)}
-                          value={rule?.priority ?? 0}
-                          onChange={(e) => upsertRule(activeTeam.id, source.value, { priority: parseInt(e.target.value || '0') })}
-                        />
-                      </div>
-                      <Input
-                        className="flex-1 min-w-[180px] h-8"
-                        placeholder="Notes (optional)"
-                        disabled={!canEdit}
-                        defaultValue={rule?.notes ?? ''}
-                        onBlur={(e) => {
-                          if ((rule?.notes ?? '') !== e.target.value) {
-                            upsertRule(activeTeam.id, source.value, { notes: e.target.value || null });
-                          }
-                        }}
-                      />
-                    </CardContent>
-                  </Card>
-                );})}
+                    </div>
+                  );
+                })}
                 <p className="text-xs text-muted-foreground pt-2">
                   Teams only receive a source when its switch is on. If a min conversion % is set, the routing engine will only assign that source while the team's conversion rate meets or exceeds the threshold.
                 </p>
@@ -803,7 +818,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                 </Card>
               </TabsContent>
             </Tabs>
-          </ScrollArea>
+          </div>
         )}
       </DialogContent>
     </Dialog>
