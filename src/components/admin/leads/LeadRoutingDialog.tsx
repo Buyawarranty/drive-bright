@@ -192,6 +192,46 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     if (activeTeamId === id) setActiveTeamId(teams[0]?.id ?? null);
   };
 
+  const renameTeam = async (id: string, newName: string) => {
+    const name = newName.trim();
+    if (!name) { setRenamingId(null); return; }
+    const current = teams.find(t => t.id === id);
+    if (!current || current.name === name) { setRenamingId(null); return; }
+    const { data, error } = await supabase
+      .from('lead_teams')
+      .update({ name })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'Rename failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTeams(teams.map(t => (t.id === id ? (data as Team) : t)));
+    setRenamingId(null);
+    toast({ title: 'Team renamed', description: name });
+  };
+
+  const toggleRoutingEnabled = async (enabled: boolean) => {
+    const { error } = await supabase
+      .from('lead_settings')
+      .upsert(
+        { setting_key: 'team_routing_enabled', setting_value: enabled, description: 'Master switch: when ON, the routing engine consults lead_team_source_rules. When OFF, all leads follow the existing global flow (Team Red / live).' },
+        { onConflict: 'setting_key' }
+      );
+    if (error) {
+      toast({ title: 'Could not update master switch', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRoutingEnabled(enabled);
+    toast({
+      title: enabled ? 'Team routing armed' : 'Team routing disabled',
+      description: enabled
+        ? 'New leads will follow team source rules once the live trigger is wired. Until then, behaviour is unchanged.'
+        : 'All leads follow the existing global flow. No change to current live behaviour.',
+    });
+  };
+
   const upsertRule = async (teamId: string, source: string, patch: Partial<SourceRule>) => {
     const existing = rules.find(r => r.team_id === teamId && r.source === source);
     const payload = {
