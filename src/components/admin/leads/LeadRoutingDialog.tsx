@@ -101,6 +101,9 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
   const [teamDist, setTeamDist] = useState<TeamDistSettings | null>(null);
   const [globalDist, setGlobalDist] = useState<TeamDistSettings | null>(null);
   const [distLoading, setDistLoading] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [routingEnabled, setRoutingEnabled] = useState(false);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
