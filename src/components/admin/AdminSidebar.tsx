@@ -384,6 +384,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
+    if (userRole === 'sales_manager') {
+      // Sales Managers get sales_lead tabs plus user-permissions, and can be granted more via permissions.
+      const baseIds = new Set(['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'user-permissions', 'account']);
+      if (userPermissions && Object.keys(userPermissions).length > 0) {
+        defaultTabs.forEach(tab => {
+          const permKey = `tab_${tab.id}`;
+          if (userPermissions[permKey] === true) baseIds.add(tab.id);
+          if (userPermissions[permKey] === false) baseIds.delete(tab.id);
+        });
+      }
+      return defaultTabs.filter(tab => baseIds.has(tab.id));
+    }
+
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
       const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
