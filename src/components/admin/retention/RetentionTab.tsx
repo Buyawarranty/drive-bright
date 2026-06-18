@@ -105,6 +105,8 @@ export const RetentionTab: React.FC = () => {
   const [search, setSearch] = useState('');
   const [workedToday, setWorkedToday] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [totalActive, setTotalActive] = useState<number | null>(null);
+  const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
