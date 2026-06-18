@@ -506,7 +506,6 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                   </CardContent>
                 </Card>
               </TabsContent>
-              </TabsContent>
 
               <TabsContent value="distribution" className="space-y-3 mt-3">
                 <Card>
