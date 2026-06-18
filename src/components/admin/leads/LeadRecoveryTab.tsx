@@ -198,7 +198,7 @@ export const LeadRecoveryTab: React.FC = () => {
       if (error) throw error;
       setLeads((data as any) || []);
     } catch (e: any) {
-      toast.error('Failed to load Goldmine leads', { description: e.message });
+      toast.error('Failed to load recontact leads', { description: e.message });
     } finally {
       setLoading(false);
     }
@@ -364,17 +364,17 @@ export const LeadRecoveryTab: React.FC = () => {
         await logActivity(
           lead.id,
           'recovery_attempt',
-          outcome ? `Goldmine attempt — outcome: ${outcome}` : 'Goldmine attempt logged'
+          outcome ? `Recontact attempt — outcome: ${outcome}` : 'Recontact attempt logged'
         );
 
         if (outcome === 'mark_lost' || outcome === 'not_interested') {
-          const reason = outcome === 'mark_lost' ? 'Goldmine: unable to revive' : 'Goldmine: not interested';
+          const reason = outcome === 'mark_lost' ? 'Recontact: unable to revive' : 'Recontact: not interested';
           await (supabase.from('sales_leads') as any)
             .update({ status: 'lost', lost_at: new Date().toISOString(), lost_reason: reason })
             .eq('id', lead.id);
         }
 
-        toast.success('Worked', { description: outcome ? `Outcome: ${outcome}` : 'Logged Goldmine attempt' });
+        toast.success('Worked', { description: outcome ? `Outcome: ${outcome}` : 'Logged recontact attempt' });
         fetchLeaderboard();
         setLeads((prev) =>
           outcome === 'mark_lost' || outcome === 'not_interested'
@@ -509,13 +509,13 @@ export const LeadRecoveryTab: React.FC = () => {
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading Goldmine leads…
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading recontact leads…
             </div>
           ) : filteredLeads.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No leads in this segment right now.
+                No recontact leads in this segment. Try another tab, clear your filters, or switch off &quot;My leads only&quot;.
               </CardContent>
             </Card>
           ) : (
