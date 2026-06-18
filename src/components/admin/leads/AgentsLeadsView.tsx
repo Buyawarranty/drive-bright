@@ -27,6 +27,7 @@ import {
 import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { DateRange } from 'react-day-picker';
+import { TeamBadge } from './TeamBadge';
 
 interface AgentsLeadsViewProps {
   leads: Lead[];
