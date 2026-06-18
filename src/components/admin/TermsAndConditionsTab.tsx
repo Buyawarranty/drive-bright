@@ -331,6 +331,19 @@ const UploadCard: React.FC<{
           )}
         </Button>
 
+        {/* Last notification confirmation */}
+        {lastNotify && (
+          <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 flex items-start gap-2">
+            <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <span className="font-semibold">
+                Dashboard notification sent to {lastNotify.count.toLocaleString()} customer{lastNotify.count === 1 ? '' : 's'}
+              </span>{' '}
+              <span className="text-blue-800/80">on {formatDate(lastNotify.at)}.</span>
+            </div>
+          </div>
+        )}
+
         {/* Current document */}
         <div className="border-t pt-4">
           <h4 className="font-medium text-gray-900 mb-3">Current document</h4>
