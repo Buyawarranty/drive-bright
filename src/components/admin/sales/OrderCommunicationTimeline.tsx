@@ -59,16 +59,6 @@ export const OrderCommunicationTimeline: React.FC<OrderCommunicationTimelineProp
       color: order.payment_verified ? 'text-green-500' : 'text-yellow-500'
     },
     {
-      id: 'registration',
-      label: 'Registration Completed',
-      date: order.warranties_2000_sent_at,
-      status: order.warranties_2000_status === 'sent' ? 'complete' :
-              order.warranties_2000_status === 'failed' ? 'failed' : 'pending',
-      icon: CheckCircle,
-      color: order.warranties_2000_status === 'sent' ? 'text-green-500' :
-             order.warranties_2000_status === 'failed' ? 'text-red-500' : 'text-yellow-500'
-    },
-    {
       id: 'documents',
       label: 'Documents Downloaded',
       date: null, // Track this separately if needed

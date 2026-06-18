@@ -52,7 +52,7 @@ import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
 import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
-import { W2KAuditLog } from './W2KAuditLog';
+
 import { WarrantyUpgradeDialog } from './WarrantyUpgradeDialog';
 import { InlineWarrantyUpgrade } from './InlineWarrantyUpgrade';
 import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
@@ -2912,35 +2912,7 @@ export const CustomersTab = ({
     }
   };
 
-  const handleSendToWarranties2000 = async (policyId: string, customerId: string, force = false) => {
-    setEmailSendingLoading(prev => ({ 
-      ...prev, 
-      [customerId]: { ...prev[customerId], warranties2000: true } 
-    }));
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-to-warranties-2000', {
-        body: { 
-          policyId: policyId,
-          customerId: customerId,
-          force: force // Allow resending even if already sent
-        }
-      });
-
-      if (error) throw error;
-      
-      toast.success('Successfully sent to Warranties Register!');
-      fetchCustomers(); // Refresh to update status
-    } catch (error: any) {
-      console.error('Error sending to Warranties Register:', error);
-      toast.error(`Failed to send to Warranties Register: ${error.message}`);
-    } finally {
-      setEmailSendingLoading(prev => ({ 
-        ...prev, 
-        [customerId]: { ...prev[customerId], warranties2000: false } 
-      }));
-    }
-  };
+  // Warranties Register integration removed — internal handling only.
 
   const refreshVehicleDataFromDVLA = async (customerId: string, registrationPlate: string) => {
     if (!registrationPlate) {
@@ -4825,10 +4797,6 @@ Please log in and change your password after first login.`;
                                         </Card>
                                       ))}
                                       
-                                      {/* Warranties Register Submission History */}
-                                      {editingCustomer.customer_policies[0]?.id && (
-                                        <W2KAuditLog policyId={editingCustomer.customer_policies[0].id} />
-                                      )}
                                     </div>
                                   ) : (
                                     <div className="text-center text-gray-500 py-8">
@@ -4888,7 +4856,7 @@ Please log in and change your password after first login.`;
                                       policyId={selectedCustomer.customer_policies?.[0]?.id}
                                       warrantyNumber={selectedCustomer.customer_policies?.[0]?.warranty_number}
                                       emailStatus={selectedCustomer.customer_policies?.[0]?.email_sent_status}
-                                      warranties2000Status={selectedCustomer.customer_policies?.[0]?.warranties_2000_status}
+                                      
                                       onActionComplete={fetchCustomers}
                                     />
                                   )}

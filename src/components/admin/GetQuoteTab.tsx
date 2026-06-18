@@ -1756,9 +1756,7 @@ Questions? Call 0330 229 5040`;
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
         is_manual_entry: true,
         payment_verified: true,
-        // W2000 scheduling for future start dates
-        warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
-        warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
+        // Warranties Register integration removed — internal handling only.
         // Include additional notes and bonus months from quote
         additional_notes: additionalNotes || null,
         seasonal_bonus_months: freeExtendedCover === '6months' ? 6 : freeExtendedCover === '3months' ? 3 : 0,
@@ -1862,30 +1860,9 @@ Questions? Call 0330 229 5040`;
 
       // Initialize completion status - policy is created at this point
       let emailSentSuccess: boolean | null = null;
-      let w2000SentSuccess: boolean | null = null;
 
-      // 10. Send to Warranties 2000 if checked AND not a future start date
-      // Future start dates will be processed by the scheduled edge function
-      if (sendToW2k && !isFutureStartDate) {
-        try {
-          const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
-            body: { 
-              policyId: policyId,
-              customerId: customerId,
-              force: true,
-              additionalNotes: additionalNotes ? `External payment via ${paymentSource}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}`.trim()
-            }
-          });
-          w2000SentSuccess = !w2kError;
-          if (w2kError) console.error('W2K error:', w2kError);
-        } catch (w2kError) {
-          console.error('W2K error:', w2kError);
-          w2000SentSuccess = false;
-        }
-      } else if (sendToW2k && isFutureStartDate) {
-        console.log('W2000 submission scheduled for future start date:', format(startDate, 'yyyy-MM-dd'));
-        w2000SentSuccess = null; // Scheduled, not sent yet
-      }
+      // Warranties Register integration removed — internal handling only.
+
 
       // 11. Send welcome email with warranty number and dashboard login
       if (sendWelcomeEmail) {
@@ -4194,16 +4171,6 @@ Questions? Call 0330 229 5040`;
                   <div className="space-y-2 pt-2 border-t">
                     <div className="flex items-center space-x-2">
                       <Checkbox 
-                        id="confirm-send-w2k" 
-                        checked={sendToW2k}
-                        onCheckedChange={(checked) => setSendToW2k(checked === true)}
-                      />
-                      <Label htmlFor="confirm-send-w2k" className="text-sm cursor-pointer">
-                        Send to Warranties Register
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
                         id="confirm-send-welcome" 
                         checked={sendWelcomeEmail}
                         onCheckedChange={(checked) => setSendWelcomeEmail(checked === true)}
@@ -4225,7 +4192,7 @@ Questions? Call 0330 229 5040`;
                         <Alert className="bg-amber-50 border-amber-200">
                           <Eye className="h-4 w-4 text-amber-600" />
                           <AlertDescription className="text-amber-800">
-                            Please review all information carefully before confirming. This data will be saved to your Customer Dashboard{sendToW2k ? ' and Warranties Register' : ''}.
+                            Please review all information carefully before confirming. This data will be saved to your Customer Dashboard.
                           </AlertDescription>
                         </Alert>
 
@@ -4285,29 +4252,7 @@ Questions? Call 0330 229 5040`;
                           )}
                         </div>
 
-                        {/* Warranties Register Confirmation - Simplified */}
-                        {sendToW2k && (
-                          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Send className="w-4 h-4 text-blue-600" />
-                              <h4 className="font-semibold text-blue-900">Confirm on Warranties Register</h4>
-                            </div>
-                            <p className="text-sm text-blue-800">
-                              The same customer and vehicle details shown above will be registered with Warranties Register for claims processing.
-                            </p>
-                            {preview.integrations.w2kNotes && (
-                              <div className="p-2 bg-white/50 rounded text-sm">
-                                <span className="font-medium text-blue-900">Notes:</span>
-                                <p className="text-blue-700 mt-1">{preview.integrations.w2kNotes}</p>
-                              </div>
-                            )}
-                            {preview.policy.isFutureStart && (
-                              <div className="p-2 bg-amber-100 border border-amber-200 rounded text-sm text-amber-800">
-                                <span className="font-medium">⏰ Scheduled:</span> Registration will be processed on {preview.policy.startDate}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        {/* Warranties Register integration removed — internal handling only. */}
 
                         {/* Welcome Email */}
                         {sendWelcomeEmail && (

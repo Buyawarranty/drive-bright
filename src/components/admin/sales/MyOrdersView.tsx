@@ -176,19 +176,8 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
     return <Badge variant="secondary">Pending</Badge>;
   };
 
-  const getRegistrationStatus = (order: Order) => {
-    switch (order.warranties_2000_status) {
-      case 'sent':
-        return { label: 'Registered', variant: 'default' as const, icon: CheckCircle };
-      case 'scheduled':
-        return { label: 'Scheduled', variant: 'secondary' as const, icon: Clock };
-      case 'pending':
-        return { label: 'Pending', variant: 'outline' as const, icon: Clock };
-      case 'failed':
-        return { label: 'Failed', variant: 'destructive' as const, icon: AlertCircle };
-      default:
-        return { label: 'Not Sent', variant: 'outline' as const, icon: AlertCircle };
-    }
+  const getRegistrationStatus = (_order: Order) => {
+    return { label: 'Active', variant: 'default' as const, icon: CheckCircle };
   };
 
   if (loading) {

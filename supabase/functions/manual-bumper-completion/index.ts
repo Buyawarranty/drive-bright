@@ -80,24 +80,7 @@ serve(async (req) => {
       planType: policy.plan_type 
     });
 
-    // Check if already sent to Warranties 2000
-    if (policy.warranties_2000_status === 'sent') {
-      logStep("DUPLICATE PREVENTED: Policy already sent to Warranties 2000", {
-        policyNumber: policy.policy_number,
-        status: policy.warranties_2000_status,
-        sentAt: policy.warranties_2000_sent_at
-      });
-      return new Response(JSON.stringify({
-        success: false,
-        error: "This policy has already been sent to Warranties 2000",
-        customerName: customer.name,
-        policyNumber: policy.policy_number,
-        previouslySentAt: policy.warranties_2000_sent_at
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
-    }
+    // Warranties Register integration permanently removed — internal handling only.
 
     // Generate warranty reference
     let warrantyRef = null;

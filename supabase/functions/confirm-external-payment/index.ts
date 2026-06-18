@@ -397,8 +397,7 @@ serve(async (req) => {
       }
     }
 
-    // Warranties Register (Warranties 2000) integration permanently removed.
-    const w2kSent = false;
+    // Warranties Register integration permanently removed.
 
 
     // Always send welcome email and create dashboard login for external payments
@@ -439,7 +438,7 @@ serve(async (req) => {
       customerCreated,
       policyCreated,
       policyUpdated: !!existingPolicy,
-      w2kSent,
+      
       emailSent,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

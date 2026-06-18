@@ -55,9 +55,7 @@ export function InlineFutureActivationEdit({
         const { error: policyError } = await supabase
           .from('customer_policies')
           .update({
-            policy_start_date: newDateStr,
-            warranties_2000_scheduled_for: newDateStr,
-            warranties_2000_status: 'scheduled'
+            policy_start_date: newDateStr
           })
           .eq('id', policyId);
 

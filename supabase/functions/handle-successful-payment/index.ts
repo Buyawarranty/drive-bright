@@ -831,9 +831,7 @@ serve(async (req) => {
         // CRITICAL: Use final_amount from customerData (which now contains actual Stripe amount)
         // This ensures the actual payment amount shows in dashboards, not the pre-discount price
         payment_amount: customerData?.final_amount || parseFloat(metadata?.final_amount) || null,
-        // W2000 scheduling: if start date is in future, schedule for that date
-        warranties_2000_status: isStartDateInFuture ? 'scheduled' : 'not_sent',
-        warranties_2000_scheduled_for: isStartDateInFuture ? policyStartDate.toISOString() : null,
+        // Warranties Register integration removed — internal handling only.
         // Payment verification flags
         is_manual_entry: false, // Automated payment flow
         payment_verified: isPaymentVerified,

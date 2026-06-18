@@ -16,8 +16,6 @@ import CreateTestAdmin from '@/components/admin/CreateTestAdmin';
 import ResetAdminPassword from '@/components/admin/ResetAdminPassword';
 import { ResetCustomerPassword } from '@/components/admin/ResetCustomerPassword';
 import SetAdminPassword from '@/components/admin/SetAdminPassword';
-import TestWarranties2000 from '@/components/TestWarranties2000';
-import TestWarranties2000AddOns from '@/components/TestWarranties2000AddOns';
 import TestBumper from '@/components/TestBumper';
 
 // Error Boundary for Testing Tab
@@ -133,10 +131,6 @@ export const TestingTabContent = () => {
               </div>
             </CardContent>
           </Card>
-          
-          <TestWarranties2000 />
-          
-          <TestWarranties2000AddOns />
           
           <TestBumper />
         </div>
