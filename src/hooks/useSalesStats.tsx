@@ -193,31 +193,33 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       setSalesUsers(users || []);
       const userIds = (users || []).map(u => u.id);
 
-      // Fetch customers data (same source as scoreboard for revenue/deals)
-      let customersQuery = supabase
-        .from('customers')
-        .select('id, assigned_to, final_amount, created_at, status')
-        .eq('is_deleted', false)
-        .ilike('status', 'active')
-        .in('assigned_to', userIds);
+      // Fetch customers data (same source as scoreboard for revenue/deals) — paginated
+      const buildCustomersQuery = () => {
+        let q = supabase
+          .from('customers')
+          .select('id, assigned_to, final_amount, created_at, status')
+          .eq('is_deleted', false)
+          .ilike('status', 'active')
+          .in('assigned_to', userIds);
+        if (filters?.dateFrom) {
+          const fromISO = new Date(filters.dateFrom);
+          fromISO.setHours(0, 0, 0, 0);
+          q = q.gte('created_at', fromISO.toISOString());
+        }
+        if (filters?.dateTo) {
+          const toISO = new Date(filters.dateTo);
+          toISO.setHours(23, 59, 59, 999);
+          q = q.lte('created_at', toISO.toISOString());
+        }
+        if (filters?.agentId && filters.agentId !== 'all' && filters.agentId !== 'unassigned') {
+          q = q.eq('assigned_to', filters.agentId);
+        }
+        return q;
+      };
 
-      // Apply date filter to customers
-      if (filters?.dateFrom) {
-        const fromISO = new Date(filters.dateFrom);
-        fromISO.setHours(0, 0, 0, 0);
-        customersQuery = customersQuery.gte('created_at', fromISO.toISOString());
-      }
-      if (filters?.dateTo) {
-        const toISO = new Date(filters.dateTo);
-        toISO.setHours(23, 59, 59, 999);
-        customersQuery = customersQuery.lte('created_at', toISO.toISOString());
-      }
-      // Apply agent filter to customers
-      if (filters?.agentId && filters.agentId !== 'all' && filters.agentId !== 'unassigned') {
-        customersQuery = customersQuery.eq('assigned_to', filters.agentId);
-      }
-
-      const { data: customers } = await customersQuery;
+      const { data: customers } = userIds.length > 0
+        ? await fetchAllRows<any>(buildCustomersQuery)
+        : { data: [] as any[] };
       const customersData = (filters?.agentId === 'unassigned') ? [] : (customers || []);
 
       // Calculate leaderboard using customers for revenue/deals (matches scoreboard)
