@@ -541,6 +541,35 @@ export const LeadRecoveryTab: React.FC = () => {
                             <div>{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
                             <div className="text-muted-foreground">{lead.vehicle_reg || ''} {lead.vehicle_year ? `· ${lead.vehicle_year}` : ''}</div>
                           </td>
+                          <td className="p-3 text-xs">
+                            {lead.cart_value != null && (
+                              <div className="font-medium">£{Number(lead.cart_value).toFixed(0)}</div>
+                            )}
+                            {lead.quote_amount != null && (
+                              <div className="text-muted-foreground">Quote £{Number(lead.quote_amount).toFixed(0)}</div>
+                            )}
+                            {lead.plan_interest && (
+                              <Badge variant="outline" className="text-[10px] mt-1">{lead.plan_interest}</Badge>
+                            )}
+                            {!lead.cart_value && !lead.quote_amount && !lead.plan_interest && (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="p-3 text-xs">{lead.lead_source || '—'}</td>
+                          <td className="p-3">{ageBadge(ageDays)}</td>
+                          <td className="p-3">{ageBadge(lastTouchedDays)}</td>
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                            <CallCountCell
+                              lead={lead}
+                              onUpdateCallCount={(inc) => updateCallCount(lead.id, inc)}
+                              onUpdateStatus={(s) => updateLeadStatus(lead.id, s)}
+                              onScheduleFollowUp={(t, d) => scheduleFollowUp(lead.id, t, d)}
+                              onLogActivity={(t, d) => logActivity(lead.id, t, d)}
+                            />
+                          </td>
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                            <InlineQuickNote leadId={lead.id} />
+                          </td>
                           <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             {mayReassign ? (
                               <Select
@@ -568,14 +597,15 @@ export const LeadRecoveryTab: React.FC = () => {
                               </div>
                             )}
                           </td>
-                          <td className="p-3 text-xs">{lead.lead_source || '—'}</td>
-                          <td className="p-3">{ageBadge(ageDays)}</td>
-                          <td className="p-3">{ageBadge(lastTouchedDays)}</td>
                           <td className="p-3 text-xs text-muted-foreground">
                             {lastWorked ? formatDistanceToNow(new Date(lastWorked), { addSuffix: true }) : 'Never'}
+                            {(lead as any).recovery_outcome && (
+                              <div className="text-[10px] capitalize">{((lead as any).recovery_outcome as string).replace(/_/g, ' ')}</div>
+                            )}
                           </td>
                           <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-2">
+                              <RemindMePopover leadId={lead.id} compact />
                               <Select onValueChange={(v) => markWorked(lead, v)}>
                                 <SelectTrigger className="h-8 w-[140px]">
                                   <SelectValue placeholder="Outcome…" />
@@ -592,6 +622,7 @@ export const LeadRecoveryTab: React.FC = () => {
                             </div>
                           </td>
                         </tr>
+
                       );
                     })}
                   </tbody>
