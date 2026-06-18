@@ -10,9 +10,22 @@ import {
 } from '@/components/ui/select';
 import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
+  Send, Eye, MousePointerClick, UserCheck, Play,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+
+interface CampaignTouch {
+  policy_id: string;
+  milestone_days: number;
+  template_key: string;
+  status: string;
+  sent_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  discount_code: string | null;
+  assigned_agent_id: string | null;
+}
 
 type SegmentId = 'due_soon' | 'renewal_window' | 'upsell' | 'lapsed';
 
@@ -107,6 +120,8 @@ export const RetentionTab: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [totalActive, setTotalActive] = useState<number | null>(null);
   const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
+  const [touches, setTouches] = useState<Record<string, CampaignTouch[]>>({});
+  const [runningCron, setRunningCron] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
@@ -218,10 +233,41 @@ export const RetentionTab: React.FC = () => {
     }
   }, []);
 
+  const fetchTouches = useCallback(async (policyIds: string[]) => {
+    if (policyIds.length === 0) { setTouches({}); return; }
+    const { data } = await (supabase.from('renewal_campaign_log') as any)
+      .select('policy_id, milestone_days, template_key, status, sent_at, opened_at, clicked_at, discount_code, assigned_agent_id')
+      .in('policy_id', policyIds)
+      .order('milestone_days', { ascending: false });
+    const map: Record<string, CampaignTouch[]> = {};
+    ((data as CampaignTouch[]) || []).forEach((t) => {
+      (map[t.policy_id] ||= []).push(t);
+    });
+    setTouches(map);
+  }, []);
+
+  const triggerCron = useCallback(async () => {
+    try {
+      setRunningCron(true);
+      const { data, error } = await supabase.functions.invoke('process-renewal-campaigns', { body: {} });
+      if (error) throw error;
+      const queued = (data as any)?.totalQueued ?? 0;
+      const skipped = (data as any)?.totalSkipped ?? 0;
+      toast.success('Renewal cron complete', { description: `${queued} queued, ${skipped} skipped` });
+      fetchRows();
+    } catch (e: any) {
+      toast.error('Cron failed', { description: e.message });
+    } finally {
+      setRunningCron(false);
+    }
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
   useEffect(() => { fetchTotals(); }, [fetchTotals]);
+  useEffect(() => { fetchTouches(rows.map((r) => r.id)); }, [rows, fetchTouches]);
+
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
@@ -275,8 +321,12 @@ export const RetentionTab: React.FC = () => {
             Renewals
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Renewals and upsells for active customers. Excludes cancelled, refunded, and deleted policies.
+            Renewals and upsells for active customers. Automated cadence runs daily at 09:00 — emails at 90/60/30/14/7/0 days before expiry and 7/30 days after, with discount codes up to 25%. Call milestones (30/14/7d) auto-assign to a sales agent.
           </p>
+          <Button size="sm" variant="outline" className="mt-2 gap-1" disabled={runningCron} onClick={triggerCron}>
+            {runningCron ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+            Run renewal cron now
+          </Button>
         </div>
         <div className="flex flex-wrap gap-3">
           <Card className="border-primary/30">
@@ -347,6 +397,7 @@ export const RetentionTab: React.FC = () => {
                       <th className="text-left p-3">Plan</th>
                       <th className="text-left p-3">Expiry</th>
                       <th className="text-left p-3">Upsell ideas</th>
+                      <th className="text-left p-3">Campaign</th>
                       <th className="text-left p-3">Last worked</th>
                       <th className="text-right p-3">Actions</th>
                     </tr>
@@ -409,6 +460,33 @@ export const RetentionTab: React.FC = () => {
                                 )}
                               </div>
                             )}
+                          </td>
+                          <td className="p-3 text-xs">
+                            {(() => {
+                              const list = touches[r.id] || [];
+                              if (list.length === 0) return <span className="text-muted-foreground">No touches yet</span>;
+                              return (
+                                <div className="flex flex-wrap gap-1">
+                                  {list.slice(0, 4).map((t) => {
+                                    const label = t.milestone_days >= 0 ? `${t.milestone_days}d` : `+${Math.abs(t.milestone_days)}d`;
+                                    return (
+                                      <Badge
+                                        key={`${t.milestone_days}`}
+                                        variant="outline"
+                                        title={`${t.template_key} • ${t.status}${t.discount_code ? ` • ${t.discount_code}` : ''}`}
+                                        className="text-[10px] gap-1"
+                                      >
+                                        {label}
+                                        {t.sent_at && <Send className="h-2.5 w-2.5 text-blue-600" />}
+                                        {t.opened_at && <Eye className="h-2.5 w-2.5 text-emerald-600" />}
+                                        {t.clicked_at && <MousePointerClick className="h-2.5 w-2.5 text-purple-600" />}
+                                        {t.assigned_agent_id && <UserCheck className="h-2.5 w-2.5 text-amber-600" />}
+                                      </Badge>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td className="p-3 text-xs text-muted-foreground">
                             {r.retention_worked_at
