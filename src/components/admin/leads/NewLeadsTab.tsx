@@ -925,72 +925,78 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       <MissedCallAlertBar userRole={userRole} />
-      {/* Header — compact, action-dense */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold tracking-tight">Leads</h1>
-          <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              toast.loading('Refreshing leads...', { id: 'refresh-leads' });
-              try {
-                await fetchLeads();
-                toast.success('Leads refreshed', { id: 'refresh-leads' });
-              } catch (e: any) {
-                toast.error(`Refresh failed: ${e.message}`, { id: 'refresh-leads' });
-              }
-            }}
-            disabled={loading}
-            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-blue-400 bg-blue-50 text-blue-800 hover:bg-blue-100 hover:border-blue-500"
-          >
-            <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            {loading ? 'Refreshing...' : 'Refresh Page'}
-          </Button>
-          {userRole === 'super_admin' && (
-          <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRestoreAllLeads}
-            disabled={isRestoring}
-            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-amber-400 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:border-amber-500"
-          >
-            <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
-            {isRestoring ? 'Restoring...' : 'Restore All Leads'}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              try {
-                toast.loading('Recovering missing lead data...', { id: 'recover-leads' });
-                const { data, error } = await supabase.rpc('recover_leads_from_step2', { p_lookback_hours: 48 });
-                if (error) throw error;
-                const result = data as any;
-                const parts = [];
-                if (result.updated_leads) parts.push(`${result.updated_leads} leads fixed`);
-                if (result.created_new) parts.push(`${result.created_new} new leads created`);
-                if (result.duplicates_merged) parts.push(`${result.duplicates_merged} duplicates merged`);
-                if (result.updated_carts) parts.push(`${result.updated_carts} carts updated`);
-                toast.success(
-                  `Recovery complete: ${parts.length ? parts.join(', ') : 'no changes needed'}`,
-                  { id: 'recover-leads', duration: 8000 }
-                );
-                fetchLeads();
-              } catch (err: any) {
-                toast.error(`Recovery failed: ${err.message}`, { id: 'recover-leads' });
-              }
-            }}
-            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-emerald-400 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-500"
-          >
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Recover Missing Data
-          </Button>
-          </>
-          )}
+      {/* Header — compact, action-dense, grouped card */}
+      <div className="rounded-xl border border-border bg-card shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold tracking-tight">Leads</h1>
+            <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
+          </div>
+          <div className="h-6 w-px bg-border" aria-hidden />
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                toast.loading('Refreshing leads...', { id: 'refresh-leads' });
+                try {
+                  await fetchLeads();
+                  toast.success('Leads refreshed', { id: 'refresh-leads' });
+                } catch (e: any) {
+                  toast.error(`Refresh failed: ${e.message}`, { id: 'refresh-leads' });
+                }
+              }}
+              disabled={loading}
+              className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
+            >
+              <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+              {loading ? 'Refreshing...' : 'Refresh Page'}
+            </Button>
+            {userRole === 'super_admin' && (
+            <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRestoreAllLeads}
+              disabled={isRestoring}
+              className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:border-amber-300"
+            >
+              <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
+              {isRestoring ? 'Restoring...' : 'Restore All Leads'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  toast.loading('Recovering missing lead data...', { id: 'recover-leads' });
+                  const { data, error } = await supabase.rpc('recover_leads_from_step2', { p_lookback_hours: 48 });
+                  if (error) throw error;
+                  const result = data as any;
+                  const parts = [];
+                  if (result.updated_leads) parts.push(`${result.updated_leads} leads fixed`);
+                  if (result.created_new) parts.push(`${result.created_new} new leads created`);
+                  if (result.duplicates_merged) parts.push(`${result.duplicates_merged} duplicates merged`);
+                  if (result.updated_carts) parts.push(`${result.updated_carts} carts updated`);
+                  toast.success(
+                    `Recovery complete: ${parts.length ? parts.join(', ') : 'no changes needed'}`,
+                    { id: 'recover-leads', duration: 8000 }
+                  );
+                  fetchLeads();
+                } catch (err: any) {
+                  toast.error(`Recovery failed: ${err.message}`, { id: 'recover-leads' });
+                }
+              }}
+              className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Recover Missing Data
+            </Button>
+            </>
+            )}
+          </div>
         </div>
+
         
         <div className="flex items-center gap-2">
           {/* Notification Bell — sales roles only see lead-related notifications */}
