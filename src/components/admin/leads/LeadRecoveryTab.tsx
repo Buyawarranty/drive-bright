@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, Gem, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2 } from 'lucide-react';
+import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -22,26 +22,38 @@ import { RemindMePopover } from './RemindMePopover';
 import type { LeadStatus } from '@/hooks/useLeads';
 
 type SegmentId =
-  | 'never_contacted'
-  | 'quote_cold'
-  | 'stalled'
-  | 'abandoned_cart'
-  | 'all_aged';
+  | 'due_today'
+  | 'new_to_recontact'
+  | 'no_answer'
+  | 'interested'
+  | 'quote_sent'
+  | 'abandoned_checkout'
+  | 'not_interested'
+  | 'all_leads';
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
-  { id: 'never_contacted', label: 'Never Contacted', description: 'Created >30 days ago, 0 calls, 0 notes' },
-  { id: 'quote_cold', label: 'Quote Sent, Cold', description: 'Quote sent but no reply in 14+ days' },
-  { id: 'stalled', label: 'Contacted, Stalled', description: 'Last contact >30 days, status still active' },
-  { id: 'abandoned_cart', label: 'Abandoned Cart', description: 'Cart >7 days old, no order' },
-  { id: 'all_aged', label: 'All Aged', description: 'Master list, oldest first' },
+  { id: 'due_today',          label: 'Due Today',          description: 'Callbacks scheduled for today — work these first.' },
+  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (30+ days) that have never been worked.' },
+  { id: 'no_answer',          label: 'No Answer',          description: 'Previously called but no response yet.' },
+  { id: 'interested',         label: 'Interested',         description: 'Customer showed interest — needs follow-up.' },
+  { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
+  { id: 'abandoned_checkout', label: 'Abandoned Checkout', description: 'Started an order/cart but did not pay.' },
+  { id: 'not_interested',     label: 'Not Interested',     description: 'Kept for record — not active.' },
+  { id: 'all_leads',          label: 'All Leads',          description: 'Full recontact database, oldest first.' },
 ];
 
 const OUTCOMES = [
-  { value: 'revived', label: 'Revived' },
-  { value: 'still_trying', label: 'Still trying' },
-  { value: 'no_answer', label: 'No answer' },
-  { value: 'mark_lost', label: 'Mark lost' },
-  { value: 'not_interested', label: 'Not interested' },
+  { value: 'no_answer',         label: 'No answer' },
+  { value: 'left_voicemail',    label: 'Left voicemail' },
+  { value: 'wrong_number',      label: 'Wrong number' },
+  { value: 'interested',        label: 'Interested' },
+  { value: 'needs_callback',    label: 'Needs callback' },
+  { value: 'quote_sent',        label: 'Quote sent' },
+  { value: 'converted',         label: 'Converted' },
+  { value: 'not_interested',    label: 'Not interested' },
+  { value: 'bought_elsewhere',  label: 'Bought elsewhere' },
+  { value: 'vehicle_sold',      label: 'Vehicle sold' },
+  { value: 'do_not_contact',    label: 'Do not contact' },
 ];
 
 const PAGE_SIZE = 100;
@@ -76,7 +88,7 @@ function agentLabel(a: Agent | undefined): string {
 }
 
 export const LeadRecoveryTab: React.FC = () => {
-  const [segment, setSegment] = useState<SegmentId>('never_contacted');
+  const [segment, setSegment] = useState<SegmentId>('due_today');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
@@ -147,18 +159,28 @@ export const LeadRecoveryTab: React.FC = () => {
     const d30 = new Date(now - 30 * 86400000).toISOString();
     const d14 = new Date(now - 14 * 86400000).toISOString();
     const d7 = new Date(now - 7 * 86400000).toISOString();
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
 
     switch (id) {
-      case 'never_contacted':
+      case 'due_today':
+        return q
+          .gte('next_action_date', startOfToday.toISOString())
+          .lte('next_action_date', endOfToday.toISOString());
+      case 'new_to_recontact':
         return q.lt('created_at', d30).is('last_contacted_at', null);
-      case 'quote_cold':
+      case 'no_answer':
+        return q.eq('recovery_outcome', 'no_answer');
+      case 'interested':
+        return q.in('recovery_outcome', ['interested', 'needs_callback']);
+      case 'quote_sent':
         return q.not('quote_amount', 'is', null)
           .or(`last_contacted_at.is.null,last_contacted_at.lt.${d14}`);
-      case 'stalled':
-        return q.lt('last_contacted_at', d30);
-      case 'abandoned_cart':
+      case 'abandoned_checkout':
         return q.not('abandoned_cart_id', 'is', null).lt('created_at', d7);
-      case 'all_aged':
+      case 'not_interested':
+        return q.in('recovery_outcome', ['not_interested', 'bought_elsewhere', 'vehicle_sold']);
+      case 'all_leads':
       default:
         return q.lt('created_at', d30);
     }
@@ -176,7 +198,7 @@ export const LeadRecoveryTab: React.FC = () => {
       if (error) throw error;
       setLeads((data as any) || []);
     } catch (e: any) {
-      toast.error('Failed to load Goldmine leads', { description: e.message });
+      toast.error('Failed to load recontact leads', { description: e.message });
     } finally {
       setLoading(false);
     }
@@ -342,17 +364,17 @@ export const LeadRecoveryTab: React.FC = () => {
         await logActivity(
           lead.id,
           'recovery_attempt',
-          outcome ? `Goldmine attempt — outcome: ${outcome}` : 'Goldmine attempt logged'
+          outcome ? `Recontact attempt — outcome: ${outcome}` : 'Recontact attempt logged'
         );
 
         if (outcome === 'mark_lost' || outcome === 'not_interested') {
-          const reason = outcome === 'mark_lost' ? 'Goldmine: unable to revive' : 'Goldmine: not interested';
+          const reason = outcome === 'mark_lost' ? 'Recontact: unable to revive' : 'Recontact: not interested';
           await (supabase.from('sales_leads') as any)
             .update({ status: 'lost', lost_at: new Date().toISOString(), lost_reason: reason })
             .eq('id', lead.id);
         }
 
-        toast.success('Worked', { description: outcome ? `Outcome: ${outcome}` : 'Logged Goldmine attempt' });
+        toast.success('Worked', { description: outcome ? `Outcome: ${outcome}` : 'Logged recontact attempt' });
         fetchLeaderboard();
         setLeads((prev) =>
           outcome === 'mark_lost' || outcome === 'not_interested'
@@ -389,37 +411,42 @@ export const LeadRecoveryTab: React.FC = () => {
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
+  const dueTodayCount = counts['due_today'] ?? 0;
+  const totalCount = counts['all_leads'] ?? 0;
+  const conversionRate = myStats.worked > 0 ? Math.round((myStats.converted / myStats.worked) * 100) : 0;
+
+  const STAT_CARDS = [
+    { label: 'Worked today',         value: myStats.worked,       icon: CheckCircle2, tint: 'text-green-600' },
+    { label: 'Follow-ups due today', value: dueTodayCount,        icon: CalendarClock, tint: 'text-blue-600' },
+    { label: 'Converted today',      value: myStats.converted,    icon: Trophy,        tint: 'text-amber-500' },
+    { label: 'My conversion rate',   value: `${conversionRate}%`, icon: TrendingUp,    tint: 'text-primary' },
+    { label: 'Total recontact leads',value: totalCount.toLocaleString(), icon: Database, tint: 'text-muted-foreground' },
+  ];
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Gem className="h-6 w-6 text-primary" />
-            Goldmine Leads
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            High-value aged leads — auto-assigned via round-robin from the live pipeline. Whole team can see them so the leaderboard stays honest.
-          </p>
-        </div>
-        <Card className="border-primary/30">
-          <CardContent className="py-3 px-4 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <RefreshCw className="h-6 w-6 text-primary" />
+          Recontact Leads
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-3xl">
+          Past warranty enquiries who requested a price but did not purchase. Contact them again, record outcomes, and convert interested customers into quotes or orders.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {STAT_CARDS.map((s) => (
+          <Card key={s.label}>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <s.icon className={`h-5 w-5 ${s.tint}`} />
               <div>
-                <div className="text-xs text-muted-foreground">Worked today</div>
-                <div className="text-xl font-semibold">{myStats.worked}</div>
+                <div className="text-xs text-muted-foreground">{s.label}</div>
+                <div className="text-xl font-semibold">{s.value}</div>
               </div>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
-              <div>
-                <div className="text-xs text-muted-foreground">Converted today</div>
-                <div className="text-xl font-semibold">{myStats.converted}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Team leaderboard strip */}
@@ -482,13 +509,13 @@ export const LeadRecoveryTab: React.FC = () => {
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading Goldmine leads…
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading recontact leads…
             </div>
           ) : filteredLeads.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No leads in this segment right now.
+                No recontact leads in this segment. Try another tab, clear your filters, or switch off &quot;My leads only&quot;.
               </CardContent>
             </Card>
           ) : (

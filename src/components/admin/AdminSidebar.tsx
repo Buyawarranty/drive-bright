@@ -101,9 +101,9 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'golden-leads',
-    label: 'Goldmine Leads',
+    label: 'Recontact Leads',
     icon: Gem,
-    description: 'High-value aged leads — auto-assigned with team leaderboard'
+    description: 'Past enquiries ready for follow-up'
   },
   {
     id: 'retention',
