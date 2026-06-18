@@ -80,9 +80,10 @@ export const LeadRecoveryTab: React.FC = () => {
 
     const q = (supabase.from('sales_leads') as any).select(select);
 
-    // Exclude terminal statuses, paid leads, and cancelled/refunded customers globally
+    // Exclude terminal lead statuses + anyone who has paid (covers cancelled/refunded/completed orders,
+    // which live on the customer record, not as lead_status enum values).
     return q
-      .not('status', 'in', '(lost,converted,fake_lead,cancelled,refunded,paid,completed)')
+      .not('status', 'in', '(lost,converted,fake_lead,archived)')
       .or('is_paid.is.null,is_paid.eq.false');
   }, []);
 
@@ -96,8 +97,7 @@ export const LeadRecoveryTab: React.FC = () => {
       case 'never_contacted':
         return q
           .lt('created_at', d30)
-          .or('last_contacted_at.is.null,last_contacted_at.eq.')
-          .eq('call_count', 0);
+          .is('last_contacted_at', null);
       case 'quote_cold':
         return q
           .not('quote_amount', 'is', null)
@@ -105,7 +105,7 @@ export const LeadRecoveryTab: React.FC = () => {
       case 'stalled':
         return q.lt('last_contacted_at', d30);
       case 'abandoned_cart':
-        return q.eq('is_from_abandoned_cart', true).lt('created_at', d7).eq('is_paid', false);
+        return q.not('abandoned_cart_id', 'is', null).lt('created_at', d7);
       case 'all_aged':
       default:
         return q.lt('created_at', d30);
@@ -137,7 +137,7 @@ export const LeadRecoveryTab: React.FC = () => {
         try {
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
-            .not('status', 'in', '(lost,converted,fake_lead,cancelled,refunded,paid,completed)')
+            .not('status', 'in', '(lost,converted,fake_lead,archived)')
             .or('is_paid.is.null,is_paid.eq.false');
           q = applySegment(q, s.id);
           const { count } = await q;
