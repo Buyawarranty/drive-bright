@@ -108,12 +108,13 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, r, m, a, gd] = await Promise.all([
+      const [t, r, m, a, gd, ks] = await Promise.all([
         supabase.from('lead_teams').select('*').order('sort_order'),
         supabase.from('lead_team_source_rules').select('*'),
         supabase.from('lead_team_members').select('*'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
         supabase.from('lead_distribution_settings').select('*').is('team_id', null).maybeSingle(),
+        supabase.from('lead_settings').select('setting_value').eq('setting_key', 'team_routing_enabled').maybeSingle(),
       ]);
       if (t.error) throw t.error;
       if (r.error) throw r.error;
@@ -124,6 +125,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       setMembers(m.data || []);
       setAdmins(a.data || []);
       setGlobalDist((gd.data as TeamDistSettings) || null);
+      setRoutingEnabled(Boolean((ks.data?.setting_value as any) === true || (ks.data?.setting_value as any)?.enabled === true));
       if (!activeTeamId && (t.data || []).length) setActiveTeamId(t.data![0].id);
     } catch (e: any) {
       toast({ title: 'Failed to load routing data', description: e.message, variant: 'destructive' });
