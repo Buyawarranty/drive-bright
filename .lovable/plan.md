@@ -1,48 +1,60 @@
-## Goal
+# Per-Team Lead Routing — Safe, Additive Build
 
-Add a parallel "B" variant of the customer journey reachable via `?step=2b`, `?step=3b`, `?step=4b`. Behaviour, APIs, Stripe, emails, lead capture — everything stays identical. The only functional difference: **on step 2b, phone number is optional** (field shown, no asterisk, form submits without it).
+## Safety guarantee (what stays untouched)
+Everything sales agents use today keeps working identically:
+- Their leads list, filters, search, callbacks, claim/assign buttons — no changes.
+- The global round-robin / percentage / solo distribution keeps running exactly as it does today.
+- If no team rules exist for a lead's source, the trigger falls through to the **current** global logic. Day 1 after deploy = zero behavioural change, because no source is locked to a team yet until the Sales Manager opts in.
+- New UI is gated to `sales_manager`, `admin`, `super_admin` only. Sales/sales_lead roles see no new buttons.
 
-## How the variant is detected & carried
+## What gets built
 
-1. **Parse step param** — accept values like `2`, `2b`, `3b`, `4b`. Extract:
-   - `currentStep` = numeric portion (existing behaviour)
-   - `abVariant` = `'b'` if suffix present, otherwise `null`
-2. **Persist** `abVariant` in `sessionStorage` (`baw_ab_variant`) the first time it's seen, so reloads, deep-links from emails, and Stripe return URLs keep the user in B.
-3. **Rewrite every `set('step', …)`** call in `src/pages/Index.tsx` (and `StickyNavigation`, `useMobileBackNavigation`, `ThankYou`) through a small helper `formatStepParam(n)` that appends `b` when `abVariant === 'b'`. This guarantees Back/Next/redirects all stay on the B track.
-4. **Stripe success/cancel URLs** built in the checkout flow get the `b` suffix when the variant is active, so users returning from payment land on `?step=4b` (or thank-you with variant preserved).
+### 1. New role: `sales_manager`
+- Add `sales_manager` to the allowed admin role set.
+- Permission key: `tab_lead_routing` (visible to super_admin/admin by default, grantable to sales_manager via UserPermissionsTab). Sales agents never see it.
+- The existing "Lead Routing & Teams" dialog gets opened from a new button visible only to those three roles. The button currently shown to sales_lead/admin in the leads toolbar stays as-is for admins; for sales_lead it's hidden (matches the earlier "hide team from sales_lead" change).
 
-## Phone-optional change (only difference)
+### 2. Schema (additive only — no column drops, no defaults that change current rows)
+- `lead_distribution_settings` → add nullable `team_id uuid`. Existing single row stays `team_id = NULL` = the global default. New rows can be created per team.
+- `round_robin_state` → add nullable `team_id uuid`. Existing row stays `team_id = NULL` for the global cycle. Per-team rows added on demand.
+- `overflow_round_robin_state` → same pattern (nullable `team_id`).
+- Unique indexes: `(team_id)` partial unique on each settings/state table so there's exactly one row per team and one global row.
+- `lead_teams.is_active` already exists; we honour it.
 
-In `ContactDetailsStep.tsx` (the step-2 form):
-- Read variant from sessionStorage / URL.
-- When `abVariant === 'b'`:
-  - Remove `required` from the phone input.
-  - Drop "Phone Number" asterisk styling; label stays the same (no negative wording).
-  - `isFormValid` no longer requires `phone`.
-  - `onNext` still passes `phone` (empty string allowed) — downstream code already tolerates missing phone (abandoned-cart logic uses email as primary key).
+### 3. Trigger change (`auto_assign_lead_round_robin`)
+Wrap the existing body in a "try team first, else fall through" shell:
+1. Look up `lead_team_source_rules` where `source = NEW.lead_source` AND `allowed = true` AND team `is_active`, ordered by `priority`.
+2. For each matching team in priority order: try to assign using that team's settings row (or the global settings if the team has no override) restricted to `lead_team_members` of that team, applying the same solo/percentage/round-robin rules with the team's own `round_robin_state` row.
+3. If a team assignment succeeds → done. If no team matches or no team member is eligible → **call the existing global logic unchanged**.
 
-No backend schema change required — `sales_leads.phone` and `customers.phone` are already nullable.
+Result: current global flow is the fallback, so the trigger behaves identically until a Sales Manager configures a team rule.
 
-## Files to edit
+### 4. UI (LeadRoutingDialog rework — same dialog, additive)
+- Add a team picker chip row at the top: "Editing: [Global default ▾] [Red] [Blue] [+ New team]". Default selection = Global (today's behaviour).
+- All existing controls (distribution mode, round-robin order, percentages, solo mode, overflow recipients, source rules, members) are rebound to write to the selected team's row (or the global row when "Global default" is selected).
+- For Global, the dialog reads/writes the exact same rows it does today → existing admins editing global settings see no functional change.
+- Per-team source rules editor on the same tab so the Manager can tick "Red Team receives Facebook leads".
 
-- `src/pages/Index.tsx` — parser + `formatStepParam` helper, used everywhere `set('step', …)` is called today (lines ~588, 678, 688, 759, 766, 803, 897, 966, 1057).
-- `src/components/ContactDetailsStep.tsx` — conditional `required` and validation for B.
-- `src/components/StickyNavigation.tsx`, `src/hooks/useMobileBackNavigation.tsx`, `src/pages/ThankYou.tsx` — route through the same helper.
-- `src/components/checkout/StreamlinedCheckout.tsx` — append `b` to Stripe `success_url` / `cancel_url` when variant active (postcode error message added previously stays).
-- New tiny util `src/utils/abVariant.ts` exporting `getAbVariant()`, `setAbVariant()`, `formatStepParam(step)`, `parseStepParam(raw)`.
+### 5. Permissions / access
+- `can_manage_lead_routing()` SQL function extended to also return true for `sales_manager`.
+- RLS on `lead_distribution_settings`, `round_robin_state`, `lead_teams`, `lead_team_members`, `lead_team_source_rules` updated to allow `sales_manager` the same management rights admins already have. No new access for sales agents.
 
-## What is intentionally NOT changed
+## Rollout plan (zero-disruption)
+1. Migration 1: add nullable columns + indexes + role/permission. Trigger unchanged. → Deploy. Verified: live distribution unchanged.
+2. Migration 2: replace trigger with the "try team first → fallback to existing global block" version. The global block is a verbatim copy of today's logic. → Deploy. Verified: with no source rules set, every lead still flows through the global path.
+3. UI ships gated to the three roles. Sales agents see nothing new.
+4. Sales Manager turns on Red/Blue source routing when ready. Until they do, behaviour = today.
 
-- No new lead/customer columns, no admin badges, no analytics dimension (per your scope answer).
-- All APIs (quote, cart, Stripe, webhooks, Warranties 2000, emails) unchanged.
-- The default `?step=2` (A) flow is untouched.
+## Files to touch
+- `supabase/migrations/...` (two migrations as above)
+- `src/components/admin/leads/LeadRoutingDialog.tsx` (team picker + per-team binding)
+- `src/components/admin/UserPermissionsTab.tsx` + `src/lib/permissions/types.ts` (new `tab_lead_routing` permission, `sales_manager` role)
+- `src/pages/AdminDashboard.tsx` + `src/components/admin/AdminSidebar.tsx` (recognise `sales_manager`)
+- `src/components/admin/leads/NewLeadsTab.tsx` (show "Lead Routing & Teams" button to `sales_manager` too)
 
-## QA checklist after build
+## Technical notes
+- Trigger rewrite uses `SECURITY DEFINER` (unchanged). Per-team `round_robin_state` rows created lazily inside the trigger via `INSERT … ON CONFLICT DO NOTHING`.
+- All new columns nullable, no `NOT NULL` backfills → safe on a live table.
+- No data migration of existing settings; the current row becomes the Global default automatically because `team_id` defaults to NULL.
 
-1. Visit `/?step=2b` → URL stays `2b` after submitting step 2 with **no phone** → lands on `?step=3b`.
-2. Pick a plan → `?step=4b` → complete Stripe → return URL keeps `b` → thank-you renders.
-3. `/?step=2` still requires phone exactly as today.
-4. Reload mid-journey on `?step=3b` → stays on B.
-5. Lead row appears in admin New Leads with empty phone column, no errors.
-
-Ready to switch to build mode when you approve.
+Approve and I'll ship migration 1, wait for it to apply, then migration 2, then the UI.
