@@ -258,6 +258,33 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     });
   };
 
+  const bulkSetAllAllowed = async (teamId: string, allowed: boolean) => {
+    const payload = LEAD_SOURCES.map(s => {
+      const existing = rules.find(r => r.team_id === teamId && r.source === s.value);
+      return {
+        team_id: teamId,
+        source: s.value,
+        allowed,
+        conversion_threshold_pct: existing?.conversion_threshold_pct ?? null,
+        priority: existing?.priority ?? 0,
+        notes: existing?.notes ?? null,
+      };
+    });
+    const { data, error } = await supabase
+      .from('lead_team_source_rules')
+      .upsert(payload, { onConflict: 'team_id,source' })
+      .select();
+    if (error) {
+      toast({ title: 'Bulk update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRules(prev => {
+      const others = prev.filter(r => r.team_id !== teamId);
+      return [...others, ...((data || []) as SourceRule[])];
+    });
+    toast({ title: allowed ? 'All sources allowed' : 'All sources blocked' });
+  };
+
   const addMember = async (teamId: string, adminUserId: string) => {
     const { data, error } = await supabase
       .from('lead_team_members')
@@ -501,30 +528,38 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
               </div>
 
               <TabsContent value="sources" className="space-y-2 mt-3">
-                {teamRules(activeTeam.id).map(({ source, rule }) => (
-                  <Card key={source.value} className={!rule?.allowed ? 'opacity-60' : ''}>
+                {canEdit && (
+                  <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>On</strong> = leads from this source go to this team. <strong>Off</strong> = ignored (falls back to the live flow).
+                    </p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => bulkSetAllAllowed(activeTeam.id, true)}>
+                        <Check className="h-3.5 w-3.5 mr-1" /> Turn all On
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => bulkSetAllAllowed(activeTeam.id, false)}>
+                        <X className="h-3.5 w-3.5 mr-1" /> Turn all Off
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {teamRules(activeTeam.id).map(({ source, rule }) => {
+                  const isOn = rule?.allowed === true;
+                  return (
+                  <Card key={source.value}>
                     <CardContent className="flex flex-wrap items-center gap-4 p-3">
                       <div className="flex items-center gap-2 min-w-[200px]">
                         <span className="text-lg">{source.icon}</span>
                         <span className="font-medium">{source.label}</span>
-                        {rule ? (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5" title="This rule is saved in the database">
-                            Saved
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-slate-100 text-slate-500 px-1.5 py-0.5" title="No rule saved yet — toggle the switch to save">
-                            Not saved
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={rule?.allowed ?? true}
+                          checked={isOn}
                           disabled={!canEdit}
                           onCheckedChange={(v) => upsertRule(activeTeam.id, source.value, { allowed: v })}
                         />
-                        <span className="text-xs text-muted-foreground">
-                          {rule?.allowed ?? true ? 'Allowed' : 'Blocked'}
+                        <span className={`text-xs font-semibold ${isOn ? 'text-emerald-700' : 'text-muted-foreground'}`}>
+                          {isOn ? 'On' : 'Off'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -567,7 +602,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                       />
                     </CardContent>
                   </Card>
-                ))}
+                );})}
                 <p className="text-xs text-muted-foreground pt-2">
                   Teams only receive a source when its switch is on. If a min conversion % is set, the routing engine will only assign that source while the team's conversion rate meets or exceeds the threshold.
                 </p>
