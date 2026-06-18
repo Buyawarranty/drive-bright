@@ -42,6 +42,7 @@ const ClickFraudTab = lazy(() => import('@/components/admin/ClickFraudTab').then
 const PendingW2000Tab = lazy(() => import('@/components/admin/PendingW2000Tab').then(m => ({ default: m.PendingW2000Tab })));
 const TestingTabContent = lazy(() => import('@/components/admin/TestingTabContent').then(m => ({ default: m.TestingTabContent })));
 const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
+const LeadRecoveryTab = lazy(() => import('@/components/admin/leads/LeadRecoveryTab').then(m => ({ default: m.LeadRecoveryTab })));
 const SellingTipsSection = lazy(() => import('@/components/admin/SellingTipsSection').then(m => ({ default: m.SellingTipsSection })));
 const TimesheetsTab = lazy(() => import('@/components/admin/timesheets/TimesheetsTab').then(m => ({ default: m.TimesheetsTab })));
 const StaffHubTab = lazy(() => import('@/components/admin/StaffHubTab').then(m => ({ default: m.StaffHubTab })));
