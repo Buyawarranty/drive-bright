@@ -2277,6 +2277,8 @@ export type Database = {
           policy_number: string
           policy_start_date: string
           quote_sent_by: string | null
+          retention_outcome: string | null
+          retention_worked_at: string | null
           seasonal_bonus_months: number | null
           status: string
           stripe_session_id: string | null
@@ -2335,6 +2337,8 @@ export type Database = {
           policy_number: string
           policy_start_date?: string
           quote_sent_by?: string | null
+          retention_outcome?: string | null
+          retention_worked_at?: string | null
           seasonal_bonus_months?: number | null
           status?: string
           stripe_session_id?: string | null
@@ -2393,6 +2397,8 @@ export type Database = {
           policy_number?: string
           policy_start_date?: string
           quote_sent_by?: string | null
+          retention_outcome?: string | null
+          retention_worked_at?: string | null
           seasonal_bonus_months?: number | null
           status?: string
           stripe_session_id?: string | null
