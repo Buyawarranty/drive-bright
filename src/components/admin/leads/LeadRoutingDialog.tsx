@@ -359,6 +359,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                 <TabsList>
                   <TabsTrigger value="sources">Lead Sources</TabsTrigger>
                   <TabsTrigger value="members">Members</TabsTrigger>
+                  <TabsTrigger value="distribution">Distribution</TabsTrigger>
                 </TabsList>
                 {canEdit && (
                   <Button variant="ghost" size="sm" onClick={() => deleteTeam(activeTeam.id)}>
