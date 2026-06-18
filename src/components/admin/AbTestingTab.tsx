@@ -142,14 +142,15 @@ const AbTestingTab: React.FC = () => {
         });
 
         // Carts (submissions). Only carts with an explicit experiment tag are counted.
-        const cartsByEmailReg = new Map<string, 'a' | 'b'>();
+        const cartsByEmailReg = new Map<string, { variant: 'a' | 'b'; hasPhone: boolean }>();
         (carts || []).forEach((c: any) => {
           const tag = c.cart_metadata?.ab_variant;
           if (tag !== 'a' && tag !== 'b') return; // safety net for client-side
           const variant: 'a' | 'b' = tag;
           const target = variant === 'b' ? b : a;
+          const hasPhone = !!(c.phone && String(c.phone).trim());
           target.submissions++;
-          if (c.phone && String(c.phone).trim()) target.submissionsWithPhone++;
+          if (hasPhone) target.submissionsWithPhone++;
           else target.submissionsNoPhone++;
 
           const day = format(new Date(c.created_at), 'yyyy-MM-dd');
@@ -158,9 +159,9 @@ const AbTestingTab: React.FC = () => {
           else row.aSubs++;
 
           const key = `${normalizeEmail(c.email)}|${normalizeReg(c.vehicle_reg)}`;
-          cartsByEmailReg.set(key, variant);
+          cartsByEmailReg.set(key, { variant, hasPhone });
           const emailKey = `${normalizeEmail(c.email)}|`;
-          if (!cartsByEmailReg.has(emailKey)) cartsByEmailReg.set(emailKey, variant);
+          if (!cartsByEmailReg.has(emailKey)) cartsByEmailReg.set(emailKey, { variant, hasPhone });
         });
 
         // Conversions
@@ -172,12 +173,14 @@ const AbTestingTab: React.FC = () => {
             return;
           const email = normalizeEmail(cust.email);
           const reg = normalizeReg(cust.registration_plate);
-          const variant =
+          const match =
             cartsByEmailReg.get(`${email}|${reg}`) ??
             cartsByEmailReg.get(`${email}|`);
-          if (!variant) return;
-          if (variant === 'b') b.conversions++;
-          else a.conversions++;
+          if (!match) return;
+          const target = match.variant === 'b' ? b : a;
+          target.conversions++;
+          if (match.hasPhone) target.conversionsWithPhone++;
+          else target.conversionsNoPhone++;
         });
 
         setStats({ a, b });
