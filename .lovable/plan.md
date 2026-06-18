@@ -1,80 +1,50 @@
-# Lead Recovery — New Admin Section
 
-A dedicated workspace for an agent to chase aged/unworked leads, with the **full toolkit** of the New Leads section (calls, notes, reminders, quotes, statuses) but a different queue order and filters. Live Team Red flow is not touched.
+# Goldmine Leads — assignment + UX
 
-## Order of work (oldest leads worked first)
+## 1. Rename
+- Sidebar label: **Goldmine Leads** (icon: Gem)
+- Tab ID stays `golden-leads` internally to avoid breaking saved bookmarks; URL `?tab=goldmine-leads` added as an alias.
+- Update all visible copy ("Lead Recovery" / "Golden Leads" → "Goldmine Leads").
 
-The queue defaults to **oldest `created_at` first** within each segment, so nothing rots at the bottom. Agent works top-down.
-
-### Segment tabs (left → right, in priority order)
+## 2. Structure — one sidebar entry, two sub-tabs
+Best when multiple salespeople work the list together: keeps the sidebar tidy and lets agents flip between the two pipelines without losing context.
 
 ```
-1. Never Contacted   → created >30 days ago, 0 call logs, 0 notes
-2. Quote Sent, Cold  → quote sent, no reply in 14+ days
-3. Contacted, Stalled → last_contacted >30 days, status still active
-4. Abandoned Cart    → cart >7 days old, no order
-5. All Aged          → master view, filterable
+Goldmine Leads
+ ├─ Goldmine        (abandoned-cart / recovery customers)
+ └─ Renewals        (policies approaching expiry)
 ```
 
-Each tab shows: count badge, oldest-first list, "Worked today" counter.
+Each sub-tab is its own list with the same toolbar (search, filter, assign).
 
-## Functionality embedded (identical to New Leads)
+## 3. Agent assignment — round-robin + override
+- New column **Assigned Agent** on each row, with an inline dropdown (sales agents only).
+- On new Goldmine / Renewal record creation, an `assign_goldmine_lead` trigger picks the next active sales agent from `agent_distribution_caps` using the existing round-robin pattern (same logic as Live Leads).
+- Manager / Admin / Super Admin can reassign any row at any time. Agents can only see, not reassign.
+- Bulk action: select rows → **Assign to…** (manager/admin only).
+- Every assignment change writes to `lead_assignment_audit` so the trail is preserved.
 
-Re-uses the **same components and hooks** — no duplication:
+## 4. Visibility — built for motivation, not silos
+Goldmine is high-value, so we want healthy competition rather than hidden queues:
 
-- Lead detail drawer (notes, history, quotes, call logs, reminders, tags)
-- Click-to-dial (Zoiper extension injection)
-- Quick notes + structured notes
-- Reminder creation (callback scheduling)
-- Quote generation + resend
-- Status changes (with terminal-status guard: Lost/Converted/Fake Lead removed from queue immediately)
-- Tag assignment
-- Lead version history / changelog
-- Send quote email / SMS
-- Mark as Revived → flows back into normal pipeline
-- Suspicious lead flag
+- Everyone on the sales team sees **the full list**.
+- Each row badges the assigned agent (color from the existing agent identity map).
+- Top of page: **leaderboard strip** — per-agent count of "Worked today / Converted today / Conversion %" for the active sub-tab. Refreshes every 30s.
+- Toggle **"My leads only"** for focused-work mode (off by default).
+- Agents can still only *edit / call / note* their own assigned rows; viewing others is read-only. Manager+ can edit any.
 
-## Recovery-specific additions
+## 5. Sales process — recommended workflow
+1. Lead lands in Goldmine or Renewals → auto-assigned via round-robin → toast + sidebar badge for that agent.
+2. Agent opens the row → sees customer history, last quote, abandoned cart contents, previous notes.
+3. Standard status flow: `new → contacted → quoted → converted | lost`. Reusing the Live Leads status enum keeps reporting consistent.
+4. Conversion writes back to `customers` (Goldmine) or extends `customer_policies` (Renewals); row drops out of the active list and into the leaderboard's "Converted" count.
 
-- **"Last touched" column** — days since last call/note/status change (red >60, amber 30–60)
-- **"Worked" button** — single click to log "Recovery attempt" activity + auto-advance to next lead
-- **Outcome dropdown** on each lead: *Revived · Still trying · No answer · Mark lost · Not interested*
-- **Daily target counter** at top: "X of Y worked today"
-- **Filter chips**: by previous agent, by source, by quote value, by vehicle age
-- **Bulk archive** for clearly-dead leads (with confirm + audit log)
+## Technical notes
+- Frontend: rename in `AdminSidebar.tsx`, `AdminDashboard.tsx`; rebuild `GoldenLeadsTab` as `GoldmineLeadsTab` wrapping two child tabs (`GoldmineList`, `RenewalsList`) that share a `GoldmineLeadsTable` component (columns, assignment dropdown, leaderboard strip).
+- Backend: add `assigned_agent_id` columns where missing on the source views, plus a postgres function `assign_next_goldmine_agent()` mirroring the live-leads round-robin. RLS: sales role → SELECT all, UPDATE only `WHERE assigned_agent_id = auth.uid()`; manager+ → full.
+- Leaderboard powered by a lightweight `goldmine_agent_stats` view aggregating today's activity per agent.
 
-## Permissions
-
-- New role permission: `tab_lead_recovery_view` / `_edit` / `_export`
-- Recovery agent gets ONLY this tab + the shared lead detail drawer
-- They do NOT see the live New Leads queue (protects Team Red)
-- Sales Manager + Admin see it by default
-
-## Data — no new tables
-
-Reads `sales_leads` with filters. Writes use the existing tables agents already touch:
-`lead_call_logs`, `lead_quick_notes`, `lead_reminders`, `lead_activities`,
-`sales_leads_changelog`, `lead_tag_assignments`.
-
-One small addition: a `recovery_worked_at` timestamp column on `sales_leads` so the "Worked today" counter and oldest-first-not-recently-touched ordering work cleanly. (Nullable, no impact on existing flow.)
-
-## Routing & navigation
-
-- New sidebar item **"Lead Recovery"** under the Sales group, below New Leads
-- Route: `?tab=lead-recovery`
-- Icon: `RotateCcw` (re-engagement metaphor)
-
-## Build order
-
-1. **Migration** — add `recovery_worked_at` column + permission keys
-2. **Page shell** — `LeadRecoveryTab.tsx` with 5 segment tabs, oldest-first queries
-3. **Re-use** existing `LeadDetailDrawer` and all hooks (`useLeadCallTracking`, `useLeadReminders`, `useLeadQuotes`, etc.) — zero copy-paste
-4. **Recovery toolbar** — Worked button, outcome dropdown, daily counter
-5. **Sidebar entry** + permission gating in `AdminSidebar.tsx` and `AdminDashboard.tsx`
-6. **Seed first agent** — you assign them the role in User Permissions; no team membership needed (Lead Recovery is separate from Red/Blue lead distribution)
-
-## Guarantees
-
-- Zero changes to `NewLeadsTab`, Team Red routing, distribution settings, or live triggers
-- New column is nullable with default null — existing inserts unaffected
-- Permission key is opt-in — existing agents see nothing new until granted
+## Out of scope (ask if you want it)
+- SMS/email cadence automation specific to Goldmine
+- Separate commission rates for Goldmine vs Live Leads
+- Self-claim ("grab next lead") button instead of round-robin
