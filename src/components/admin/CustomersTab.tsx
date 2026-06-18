@@ -4638,48 +4638,7 @@ Please log in and change your password after first login.`;
                                     <div className="space-y-4">
                                       {/* Last Sent Info & Action Buttons */}
                                       <div className="space-y-3">
-                                        {editingCustomer.customer_policies[0]?.warranties_2000_sent_at && (
-                                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                            <div className="flex items-center gap-2 text-sm">
-                                              <Clock className="h-4 w-4 text-blue-600" />
-                                              <span className="font-medium text-blue-900">Last sent to Warranties Register:</span>
-                                              <span className="text-blue-700">
-                                                {new Date(editingCustomer.customer_policies[0].warranties_2000_sent_at).toLocaleString('en-GB', {
-                                                  day: '2-digit',
-                                                  month: 'short',
-                                                  year: 'numeric',
-                                                  hour: '2-digit',
-                                                  minute: '2-digit'
-                                                })}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        )}
-                                        
-                                        <div className="flex justify-between items-center gap-2">
-                                          <Button 
-                                            onClick={() => {
-                                              if (editingCustomer.customer_policies[0]?.id) {
-                                                if (confirm('⚠️ WARNING: Warranties Register should only receive ONE submission per warranty.\n\nOnly resend if you have updated critical information that must be corrected in their system.\n\nContinue with manual resend?')) {
-                                                  handleSendToWarranties2000(
-                                                    editingCustomer.customer_policies[0].id,
-                                                    editingCustomer.id,
-                                                    true // Force resend - overrides duplicate check
-                                                  );
-                                                }
-                                              }
-                                            }}
-                                            variant="outline"
-                                            className="flex items-center gap-2 border-orange-300 hover:bg-orange-50 hover:border-orange-400"
-                                            disabled={emailSendingLoading[editingCustomer.id]?.warranties2000}
-                                          >
-                                            {emailSendingLoading[editingCustomer.id]?.warranties2000 ? (
-                                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
-                                            ) : (
-                                              <Send className="h-4 w-4 text-orange-600" />
-                                            )}
-                                            <span className="text-orange-600">Manual Resend to Warranties Register</span>
-                                          </Button>
+                                        <div className="flex justify-end items-center gap-2">
                                           <EditOrderButton 
                                             customer={editingCustomer}
                                             policy={editingCustomer.customer_policies[0]}

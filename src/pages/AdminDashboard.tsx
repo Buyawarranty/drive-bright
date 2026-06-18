@@ -39,7 +39,7 @@ const BulkPricingTab = lazy(() => import('@/components/admin/BulkPricingTab').th
 const BlogWritingTab = lazy(() => import('@/components/admin/BlogWritingTab').then(m => ({ default: m.BlogWritingTab })));
 const LandingPageBuilder = lazy(() => import('@/components/admin/LandingPageBuilder').then(m => ({ default: m.LandingPageBuilder })));
 const ClickFraudTab = lazy(() => import('@/components/admin/ClickFraudTab').then(m => ({ default: m.ClickFraudTab })));
-const PendingW2000Tab = lazy(() => import('@/components/admin/PendingW2000Tab').then(m => ({ default: m.PendingW2000Tab })));
+
 const TestingTabContent = lazy(() => import('@/components/admin/TestingTabContent').then(m => ({ default: m.TestingTabContent })));
 const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
 const LeadRecoveryTab = lazy(() => import('@/components/admin/leads/LeadRecoveryTab').then(m => ({ default: m.LeadRecoveryTab })));
@@ -445,8 +445,6 @@ const AdminDashboard = () => {
         return <ComplaintsTab />;
       case 'abandoned-carts':
         return <AbandonedCartsTab />;
-      case 'pending-w2000':
-        return <PendingW2000Tab />;
       case 'marketing-audience':
         return <MarketingAudienceTab />;
       case 'emails':

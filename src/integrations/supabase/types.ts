@@ -9044,6 +9044,13 @@ export type Database = {
         Returns: Json
       }
       current_dealer_id: { Args: never; Returns: string }
+      current_policy_pdf_urls: {
+        Args: never
+        Returns: {
+          platinum_url: string
+          terms_url: string
+        }[]
+      }
       delete_admin_user_cascade: {
         Args: { p_admin_user_id: string }
         Returns: undefined
