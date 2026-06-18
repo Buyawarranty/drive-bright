@@ -337,6 +337,34 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
           </DialogDescription>
         </DialogHeader>
 
+        {/* Master kill-switch */}
+        <div
+          className={`flex items-start gap-3 rounded-lg border-2 p-3 ${
+            routingEnabled
+              ? 'border-emerald-300 bg-emerald-50'
+              : 'border-amber-300 bg-amber-50'
+          }`}
+        >
+          <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-emerald-600' : 'text-amber-600'}`} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-semibold text-sm">
+                Team routing master switch — {routingEnabled ? 'ARMED' : 'OFF (live flow protected)'}
+              </span>
+              <Switch
+                checked={routingEnabled}
+                disabled={!canEdit}
+                onCheckedChange={toggleRoutingEnabled}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              {routingEnabled
+                ? 'When the live trigger is wired, new leads will follow the team source rules below. Turn this OFF at any time to instantly revert every lead back to the current global (Team Red / live) flow.'
+                : 'All new leads currently go through the existing global flow — the live sales team is untouched. Configuring teams and switches here changes nothing until you arm this switch AND the live trigger is wired.'}
+            </p>
+          </div>
+        </div>
+
         {/* Add team bar */}
         {canEdit && (
           <div className="flex flex-wrap items-end gap-2 border rounded-lg p-3 bg-muted/30">
