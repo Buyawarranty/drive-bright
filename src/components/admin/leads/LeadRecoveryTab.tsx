@@ -10,7 +10,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Phone, Mail, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Phone, Mail, Gem, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -38,8 +40,18 @@ const OUTCOMES = [
   { value: 'not_interested', label: 'Not interested' },
 ];
 
-const TERMINAL_STATUSES = new Set(['lost', 'converted', 'fake_lead']);
 const PAGE_SIZE = 100;
+const UNASSIGNED = '__unassigned__';
+
+type Agent = {
+  id: string;
+  user_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  role: string | null;
+  is_active: boolean | null;
+};
 
 function daysSince(iso: string | null | undefined): number | null {
   if (!iso) return null;
@@ -53,6 +65,12 @@ function ageBadge(days: number | null) {
   return <Badge variant="outline">{days}d</Badge>;
 }
 
+function agentLabel(a: Agent | undefined): string {
+  if (!a) return 'Unassigned';
+  const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
+  return name || a.email || 'Agent';
+}
+
 export const LeadRecoveryTab: React.FC = () => {
   const [segment, setSegment] = useState<SegmentId>('never_contacted');
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -60,15 +78,50 @@ export const LeadRecoveryTab: React.FC = () => {
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
   const [selected, setSelected] = useState<Lead | null>(null);
   const [search, setSearch] = useState('');
-  const [workedToday, setWorkedToday] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [myOnly, setMyOnly] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; converted: number }>>({});
 
+  // Auth bootstrap
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id ?? null;
+      setCurrentUserId(uid);
+      if (uid) {
+        const { data: au } = await (supabase.from('admin_users') as any)
+          .select('role')
+          .eq('user_id', uid)
+          .maybeSingle();
+        setCurrentRole(au?.role ?? null);
+      }
+    })();
   }, []);
 
+  // Agent list — sales-side roles + admin/super_admin so managers can be picked too
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.from('admin_users') as any)
+        .select('id, user_id, first_name, last_name, email, role, is_active')
+        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+        .eq('is_active', true)
+        .order('first_name');
+      setAgents((data as Agent[]) || []);
+    })();
+  }, []);
+
+  // Map admin_users.id <-> user_id (auth) for assignment writes / leaderboard reads
+  const agentByAuthId = useMemo(() => {
+    const m = new Map<string, Agent>();
+    for (const a of agents) if (a.user_id) m.set(a.user_id, a);
+    return m;
+  }, [agents]);
+
+  const canReassignAny = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead';
+
   const buildBaseQuery = useCallback(() => {
-    // Reuses the same select shape as useLeads → maps cleanly to Lead type
     const select =
       'id, first_name, last_name, full_name, email, phone, lead_source, status, priority, priority_score, ' +
       'plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, ' +
@@ -80,8 +133,6 @@ export const LeadRecoveryTab: React.FC = () => {
 
     const q = (supabase.from('sales_leads') as any).select(select);
 
-    // Exclude terminal lead statuses + anyone who has paid (covers cancelled/refunded/completed orders,
-    // which live on the customer record, not as lead_status enum values).
     return q
       .not('status', 'in', '(lost,converted,fake_lead,archived)')
       .or('is_paid.is.null,is_paid.eq.false');
@@ -95,12 +146,9 @@ export const LeadRecoveryTab: React.FC = () => {
 
     switch (id) {
       case 'never_contacted':
-        return q
-          .lt('created_at', d30)
-          .is('last_contacted_at', null);
+        return q.lt('created_at', d30).is('last_contacted_at', null);
       case 'quote_cold':
-        return q
-          .not('quote_amount', 'is', null)
+        return q.not('quote_amount', 'is', null)
           .or(`last_contacted_at.is.null,last_contacted_at.lt.${d14}`);
       case 'stalled':
         return q.lt('last_contacted_at', d30);
@@ -117,15 +165,14 @@ export const LeadRecoveryTab: React.FC = () => {
     try {
       let q = buildBaseQuery();
       q = applySegment(q, segment);
-      // Oldest first, but de-prioritise leads we've recently worked
       q = q.order('recovery_worked_at', { ascending: true, nullsFirst: true })
-           .order('created_at', { ascending: true })
-           .limit(PAGE_SIZE);
+        .order('created_at', { ascending: true })
+        .limit(PAGE_SIZE);
       const { data, error } = await q;
       if (error) throw error;
       setLeads((data as any) || []);
     } catch (e: any) {
-      toast.error('Failed to load recovery leads', { description: e.message });
+      toast.error('Failed to load Goldmine leads', { description: e.message });
     } finally {
       setLoading(false);
     }
@@ -150,30 +197,60 @@ export const LeadRecoveryTab: React.FC = () => {
     setCounts(Object.fromEntries(results) as any);
   }, [applySegment]);
 
-  const fetchWorkedToday = useCallback(async () => {
-    if (!currentUserId) return;
+  // Leaderboard — today's recovery_attempts + converted leads per agent
+  const fetchLeaderboard = useCallback(async () => {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    const { count } = await (supabase.from('lead_activities') as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('performed_by', currentUserId)
-      .eq('activity_type', 'recovery_attempt')
-      .gte('created_at', startOfDay.toISOString());
-    setWorkedToday(count || 0);
-  }, [currentUserId]);
+
+    const [acts, conv] = await Promise.all([
+      (supabase.from('lead_activities') as any)
+        .select('performed_by')
+        .eq('activity_type', 'recovery_attempt')
+        .gte('created_at', startOfDay.toISOString())
+        .limit(2000),
+      (supabase.from('sales_leads') as any)
+        .select('assigned_to, converted_at')
+        .eq('status', 'converted')
+        .gte('converted_at', startOfDay.toISOString())
+        .limit(2000),
+    ]);
+
+    const board: Record<string, { worked: number; converted: number }> = {};
+    for (const a of (acts.data as Array<{ performed_by: string | null }> | null) || []) {
+      const k = a.performed_by ?? 'unknown';
+      board[k] = board[k] || { worked: 0, converted: 0 };
+      board[k].worked += 1;
+    }
+    for (const c of (conv.data as Array<{ assigned_to: string | null }> | null) || []) {
+      const k = c.assigned_to ?? 'unknown';
+      board[k] = board[k] || { worked: 0, converted: 0 };
+      board[k].converted += 1;
+    }
+    setLeaderboard(board);
+  }, []);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
-  useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
+  useEffect(() => {
+    fetchLeaderboard();
+    const t = setInterval(fetchLeaderboard, 30000);
+    return () => clearInterval(t);
+  }, [fetchLeaderboard]);
 
   const filteredLeads = useMemo(() => {
-    if (!search.trim()) return leads;
-    const s = search.toLowerCase();
-    return leads.filter((l) =>
-      [l.first_name, l.last_name, l.email, l.phone, l.vehicle_reg, l.vehicle_make, l.vehicle_model]
-        .some((v) => (v || '').toString().toLowerCase().includes(s))
-    );
-  }, [leads, search]);
+    let list = leads;
+    if (myOnly && currentUserId) {
+      list = list.filter((l) => l.assigned_to === currentUserId);
+    }
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      list = list.filter((l) =>
+        [l.first_name, l.last_name, l.email, l.phone, l.vehicle_reg, l.vehicle_make, l.vehicle_model]
+          .some((v) => (v || '').toString().toLowerCase().includes(s))
+      );
+    }
+    return list;
+  }, [leads, search, myOnly, currentUserId]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
@@ -183,6 +260,39 @@ export const LeadRecoveryTab: React.FC = () => {
         description,
         performed_by: currentUserId,
       });
+    },
+    [currentUserId]
+  );
+
+  const canReassign = useCallback(
+    (lead: Lead) => canReassignAny || lead.assigned_to === currentUserId || !lead.assigned_to,
+    [canReassignAny, currentUserId]
+  );
+
+  const reassign = useCallback(
+    async (lead: Lead, newAuthId: string | null) => {
+      try {
+        const previous = lead.assigned_to ?? null;
+        const { error } = await (supabase.from('sales_leads') as any)
+          .update({ assigned_to: newAuthId, assigned_at: newAuthId ? new Date().toISOString() : null })
+          .eq('id', lead.id);
+        if (error) throw error;
+
+        await (supabase.from('lead_assignment_audit') as any).insert({
+          lead_id: lead.id,
+          previous_assigned_to: previous,
+          new_assigned_to: newAuthId,
+          changed_by: currentUserId,
+          source: 'goldmine_manual',
+        }).then(() => {}, () => {});
+
+        setLeads((prev) =>
+          prev.map((l) => (l.id === lead.id ? { ...l, assigned_to: newAuthId } as any : l))
+        );
+        toast.success(newAuthId ? 'Reassigned' : 'Unassigned');
+      } catch (e: any) {
+        toast.error('Could not reassign', { description: e.message });
+      }
     },
     [currentUserId]
   );
@@ -200,22 +310,18 @@ export const LeadRecoveryTab: React.FC = () => {
         await logActivity(
           lead.id,
           'recovery_attempt',
-          outcome ? `Recovery attempt — outcome: ${outcome}` : 'Recovery attempt logged'
+          outcome ? `Goldmine attempt — outcome: ${outcome}` : 'Goldmine attempt logged'
         );
 
-        if (outcome === 'mark_lost') {
+        if (outcome === 'mark_lost' || outcome === 'not_interested') {
+          const reason = outcome === 'mark_lost' ? 'Goldmine: unable to revive' : 'Goldmine: not interested';
           await (supabase.from('sales_leads') as any)
-            .update({ status: 'lost', lost_at: new Date().toISOString(), lost_reason: 'Recovery: unable to revive' })
-            .eq('id', lead.id);
-        } else if (outcome === 'not_interested') {
-          await (supabase.from('sales_leads') as any)
-            .update({ status: 'lost', lost_at: new Date().toISOString(), lost_reason: 'Recovery: not interested' })
+            .update({ status: 'lost', lost_at: new Date().toISOString(), lost_reason: reason })
             .eq('id', lead.id);
         }
 
-        toast.success('Worked', { description: outcome ? `Outcome: ${outcome}` : 'Logged recovery attempt' });
-        setWorkedToday((n) => n + 1);
-        // Optimistic remove if terminal, otherwise just bump in-place
+        toast.success('Worked', { description: outcome ? `Outcome: ${outcome}` : 'Logged Goldmine attempt' });
+        fetchLeaderboard();
         setLeads((prev) =>
           outcome === 'mark_lost' || outcome === 'not_interested'
             ? prev.filter((l) => l.id !== lead.id)
@@ -225,8 +331,29 @@ export const LeadRecoveryTab: React.FC = () => {
         toast.error('Could not mark as worked', { description: e.message });
       }
     },
-    [logActivity]
+    [logActivity, fetchLeaderboard]
   );
+
+  // Sorted leaderboard rows
+  const leaderboardRows = useMemo(() => {
+    return agents
+      .map((a) => {
+        const stats = a.user_id ? leaderboard[a.user_id] : undefined;
+        return {
+          agent: a,
+          worked: stats?.worked || 0,
+          converted: stats?.converted || 0,
+        };
+      })
+      .filter((r) => r.worked > 0 || r.converted > 0)
+      .sort((a, b) => b.converted - a.converted || b.worked - a.worked)
+      .slice(0, 8);
+  }, [agents, leaderboard]);
+
+  const myStats = useMemo(() => {
+    if (!currentUserId) return { worked: 0, converted: 0 };
+    return leaderboard[currentUserId] || { worked: 0, converted: 0 };
+  }, [leaderboard, currentUserId]);
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
@@ -235,23 +362,64 @@ export const LeadRecoveryTab: React.FC = () => {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <RotateCcw className="h-6 w-6 text-primary" />
-            Lead Recovery
+            <Gem className="h-6 w-6 text-primary" />
+            Goldmine Leads
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Chase aged leads no one has worked. Oldest leads appear first within each segment.
+            High-value aged leads — auto-assigned via round-robin from the live pipeline. Whole team can see them so the leaderboard stays honest.
           </p>
         </div>
         <Card className="border-primary/30">
-          <CardContent className="py-3 px-4 flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <div>
-              <div className="text-xs text-muted-foreground">Worked today</div>
-              <div className="text-xl font-semibold">{workedToday}</div>
+          <CardContent className="py-3 px-4 flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div>
+                <div className="text-xs text-muted-foreground">Worked today</div>
+                <div className="text-xl font-semibold">{myStats.worked}</div>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              <div>
+                <div className="text-xs text-muted-foreground">Converted today</div>
+                <div className="text-xl font-semibold">{myStats.converted}</div>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Team leaderboard strip */}
+      {leaderboardRows.length > 0 && (
+        <Card>
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="h-4 w-4 text-amber-500" />
+              <span className="text-sm font-medium">Team scoreboard — today</span>
+              <span className="text-xs text-muted-foreground">refreshes every 30s</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {leaderboardRows.map((r, idx) => {
+                const isMe = r.agent.user_id === currentUserId;
+                return (
+                  <div
+                    key={r.agent.id}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs ${
+                      isMe ? 'border-primary bg-primary/10 font-medium' : 'bg-muted/40'
+                    }`}
+                  >
+                    {idx === 0 && <Trophy className="h-3 w-3 text-amber-500" />}
+                    <span>{agentLabel(r.agent)}</span>
+                    <Badge variant="secondary" className="h-5">{r.converted} won</Badge>
+                    <Badge variant="outline" className="h-5">{r.worked} worked</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
         <TabsList className="w-full justify-start flex-wrap h-auto">
@@ -264,19 +432,25 @@ export const LeadRecoveryTab: React.FC = () => {
         </TabsList>
 
         <TabsContent value={segment} className="mt-4 space-y-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
-            <Input
-              placeholder="Search name, email, phone, reg…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
-            />
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
+                <Label htmlFor="my-only" className="text-sm cursor-pointer">My leads only</Label>
+              </div>
+              <Input
+                placeholder="Search name, email, phone, reg…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-xs"
+              />
+            </div>
           </div>
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading aged leads…
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading Goldmine leads…
             </div>
           ) : filteredLeads.length === 0 ? (
             <Card>
@@ -294,6 +468,7 @@ export const LeadRecoveryTab: React.FC = () => {
                       <th className="text-left p-3">Lead</th>
                       <th className="text-left p-3">Contact</th>
                       <th className="text-left p-3">Vehicle</th>
+                      <th className="text-left p-3">Assigned</th>
                       <th className="text-left p-3">Source</th>
                       <th className="text-left p-3">Age</th>
                       <th className="text-left p-3">Last touched</th>
@@ -306,6 +481,8 @@ export const LeadRecoveryTab: React.FC = () => {
                       const ageDays = daysSince(lead.created_at);
                       const lastTouchedDays = daysSince(lead.last_contacted_at);
                       const lastWorked = (lead as any).recovery_worked_at as string | null;
+                      const assignedAgent = lead.assigned_to ? agentByAuthId.get(lead.assigned_to) : undefined;
+                      const mayReassign = canReassign(lead);
                       return (
                         <tr key={lead.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setSelected(lead)}>
                           <td className="p-3">
@@ -327,6 +504,33 @@ export const LeadRecoveryTab: React.FC = () => {
                           <td className="p-3 text-xs">
                             <div>{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
                             <div className="text-muted-foreground">{lead.vehicle_reg || ''} {lead.vehicle_year ? `· ${lead.vehicle_year}` : ''}</div>
+                          </td>
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                            {mayReassign ? (
+                              <Select
+                                value={lead.assigned_to ?? UNASSIGNED}
+                                onValueChange={(v) => reassign(lead, v === UNASSIGNED ? null : v)}
+                              >
+                                <SelectTrigger className="h-8 w-[160px]">
+                                  <SelectValue placeholder="Assign…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                                  {agents.map((a) => (
+                                    a.user_id ? (
+                                      <SelectItem key={a.id} value={a.user_id}>
+                                        {agentLabel(a)}
+                                      </SelectItem>
+                                    ) : null
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="flex items-center gap-1 text-xs">
+                                <UserCircle2 className="h-3 w-3 text-muted-foreground" />
+                                {agentLabel(assignedAgent)}
+                              </div>
+                            )}
                           </td>
                           <td className="p-3 text-xs">{lead.lead_source || '—'}</td>
                           <td className="p-3">{ageBadge(ageDays)}</td>
@@ -380,7 +584,7 @@ export const LeadRecoveryTab: React.FC = () => {
             <LeadDetailsPanel
               lead={selected}
               onLogActivity={logActivity}
-              onRefresh={() => { fetchLeads(); fetchCounts(); }}
+              onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
             />
           )}
         </DialogContent>
