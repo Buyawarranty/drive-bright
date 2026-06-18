@@ -4285,47 +4285,44 @@ Please log in and change your password after first login.`;
                                           onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, voluntary_excess: parseInt(value) })}
                                           className="justify-start flex-wrap gap-2"
                                         >
-                                          <ToggleGroupItem value="0" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£0</ToggleGroupItem>
-                                          <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50</ToggleGroupItem>
-                                          <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100</ToggleGroupItem>
-                                          <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150</ToggleGroupItem>
-                                          <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-
-                                      <div>
-                                        <Label className="mb-2 block">Claim Limit</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.claim_limit?.toString() || '1250'} 
-                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, claim_limit: parseInt(value) })}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="750" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="1250" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,250</ToggleGroupItem>
-                                          <ToggleGroupItem value="2000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="2500" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,500</ToggleGroupItem>
-                                          <ToggleGroupItem value="3000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£3,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="4000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£4,000</ToggleGroupItem>
-                                          <ToggleGroupItem value="5000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£5,000</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
-
-                                      <div>
-                                        <Label className="mb-2 block">Labour Rate</Label>
-                                        <ToggleGroup 
-                                          type="single" 
-                                          value={editingCustomer.labour_rate?.toString() || '70'} 
-                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, labour_rate: parseInt(value) })}
-                                          className="justify-start flex-wrap gap-2"
-                                        >
-                                          <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="70" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£70/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150/hr</ToggleGroupItem>
-                                          <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200/hr</ToggleGroupItem>
-                                        </ToggleGroup>
-                                      </div>
+                                         <ToggleGroupItem value="0" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£0</ToggleGroupItem>
+                                           <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50</ToggleGroupItem>
+                                           <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100</ToggleGroupItem>
+                                           <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150</ToggleGroupItem>
+                                           <ToggleGroupItem value="250" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£250</ToggleGroupItem>
+                                           <ToggleGroupItem value="500" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£500</ToggleGroupItem>
+                                         </ToggleGroup>
+                                       </div>
+ 
+                                       <div>
+                                         <Label className="mb-2 block">Claim Limit</Label>
+                                         <ToggleGroup 
+                                           type="single" 
+                                           value={editingCustomer.claim_limit?.toString() || '2000'} 
+                                           onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, claim_limit: parseInt(value) })}
+                                           className="justify-start flex-wrap gap-2"
+                                         >
+                                           <ToggleGroupItem value="750" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,000</ToggleGroupItem>
+                                           <ToggleGroupItem value="2000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,000</ToggleGroupItem>
+                                           <ToggleGroupItem value="3000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£3,000</ToggleGroupItem>
+                                           <ToggleGroupItem value="5000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£5,000</ToggleGroupItem>
+                                         </ToggleGroup>
+                                       </div>
+ 
+                                       <div>
+                                         <Label className="mb-2 block">Labour Rate</Label>
+                                         <ToggleGroup 
+                                           type="single" 
+                                           value={editingCustomer.labour_rate?.toString() || '70'} 
+                                           onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, labour_rate: parseInt(value) })}
+                                           className="justify-start flex-wrap gap-2"
+                                         >
+                                           <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50/hr</ToggleGroupItem>
+                                           <ToggleGroupItem value="70" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£70/hr</ToggleGroupItem>
+                                           <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
+                                           <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200/hr</ToggleGroupItem>
+                                         </ToggleGroup>
+                                       </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 pt-4">
