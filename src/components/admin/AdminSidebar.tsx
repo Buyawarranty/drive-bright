@@ -100,6 +100,12 @@ const defaultTabs: Tab[] = [
     description: 'Manage sales pipeline and lead assignments'
   },
   {
+    id: 'lead-recovery',
+    label: 'Lead Recovery',
+    icon: RotateCcw,
+    description: 'Chase aged leads — oldest first, full toolkit'
+  },
+  {
     id: 'get-quote',
     label: 'Quotes & Orders',
     icon: Calculator,
