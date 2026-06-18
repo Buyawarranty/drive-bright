@@ -651,18 +651,6 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
                   </div>
                 </div>
 
-                {/* W2K Notes */}
-                <div>
-                  <Label htmlFor="additionalNotes">Additional Notes for Warranties Register</Label>
-                  <Textarea
-                    id="additionalNotes"
-                    value={additionalNotes}
-                    onChange={(e) => setAdditionalNotes(e.target.value)}
-                    placeholder="Special instructions for W2K..."
-                    rows={2}
-                    className="mt-1"
-                  />
-                </div>
               </TabsContent>
 
               <TabsContent value="addons" className="space-y-3 mt-3">
@@ -700,10 +688,6 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
             {/* Options */}
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Checkbox id="sendToW2k" checked={sendToW2k} onCheckedChange={(c) => setSendToW2k(!!c)} />
-                <Label htmlFor="sendToW2k" className="cursor-pointer">Send to Warranties Register</Label>
-              </div>
-              <div className="flex items-center space-x-2">
                 <Checkbox id="sendWelcomeEmail" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(!!c)} />
                 <Label htmlFor="sendWelcomeEmail" className="cursor-pointer">Send welcome email with portal login</Label>
               </div>
@@ -712,7 +696,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
             <Alert>
               <CheckCircle2 className="h-4 w-4" />
               <AlertDescription>
-                This creates a customer record, policy, marks all cart entries as converted, and sends to W2K.
+                This creates a customer record, policy, and marks all cart entries as converted.
               </AlertDescription>
             </Alert>
           </div>

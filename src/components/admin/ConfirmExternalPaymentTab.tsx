@@ -1147,10 +1147,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               {/* Options */}
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
-                  <Checkbox id="w2k" checked={sendToW2k} onCheckedChange={(c) => setSendToW2k(c === true)} />
-                  <Label htmlFor="w2k" className="cursor-pointer">Send to register</Label>
-                </div>
-                <div className="flex items-center gap-2">
                   <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
                   <Label htmlFor="welcome" className="cursor-pointer">Send Welcome Email</Label>
                 </div>
@@ -1242,15 +1238,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   <CheckCircle2 className={cn("w-4 h-4", completionStatus.policy ? "text-primary" : "text-muted-foreground")} />
                   <span>Policy Created</span>
                 </div>
-                {sendToW2k && (
-                  <div className={cn(
-                    "p-3 rounded-lg border flex items-center gap-2",
-                    completionStatus.w2k ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
-                  )}>
-                    <CheckCircle2 className={cn("w-4 h-4", completionStatus.w2k ? "text-primary" : "text-muted-foreground")} />
-                    <span>Sent to Register</span>
-                  </div>
-                )}
                 {sendWelcomeEmail && (
                   <div className={cn(
                     "p-3 rounded-lg border flex items-center gap-2",

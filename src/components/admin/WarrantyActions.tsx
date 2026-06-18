@@ -219,10 +219,6 @@ export const WarrantyActions: React.FC<WarrantyActionsProps> = ({
           <span className="text-sm font-medium">Email:</span>
           {getStatusBadge(emailStatus, 'email')}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Warranties Register:</span>
-          {getStatusBadge(warranties2000Status, 'warranties2000')}
-        </div>
       </div>
 
       {/* Action Buttons */}
@@ -238,16 +234,6 @@ export const WarrantyActions: React.FC<WarrantyActionsProps> = ({
           {isLoading.email ? 'Sending...' : 'Send Welcome Email'}
         </Button>
 
-        <Button
-          onClick={handleSendToWarranties2000}
-          disabled={isLoading.warranties2000}
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <ExternalLink className="w-4 h-4" />
-          {isLoading.warranties2000 ? 'Sending...' : 'Send to Warranties Register'}
-        </Button>
 
         <Dialog open={showAuditLogs} onOpenChange={setShowAuditLogs}>
           <DialogTrigger asChild>

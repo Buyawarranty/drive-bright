@@ -190,12 +190,6 @@ const defaultTabs: Tab[] = [
     description: 'Track and follow up with incomplete purchases'
   },
   {
-    id: 'pending-w2000',
-    label: 'Pending Register',
-    icon: Clock,
-    description: 'Scheduled warranty submissions to register'
-  },
-  {
     id: 'marketing-audience',
     label: 'Marketing Contacts',
     icon: Megaphone,

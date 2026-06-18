@@ -1619,21 +1619,6 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
               />
             </div>
 
-            <div className="flex items-center space-x-2 pt-4 border-t">
-              <Checkbox
-                id="sendToW2k"
-                checked={orderData.sendToWarranties2000}
-                onCheckedChange={(checked) => 
-                  updateOrderData('sendToWarranties2000', !!checked)
-                }
-              />
-              <Label
-                htmlFor="sendToW2k"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Send to Warranties Register
-              </Label>
-            </div>
           </div>
 
           {/* Customer Dashboard Credentials Section */}
