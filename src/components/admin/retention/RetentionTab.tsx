@@ -233,10 +233,41 @@ export const RetentionTab: React.FC = () => {
     }
   }, []);
 
+  const fetchTouches = useCallback(async (policyIds: string[]) => {
+    if (policyIds.length === 0) { setTouches({}); return; }
+    const { data } = await (supabase.from('renewal_campaign_log') as any)
+      .select('policy_id, milestone_days, template_key, status, sent_at, opened_at, clicked_at, discount_code, assigned_agent_id')
+      .in('policy_id', policyIds)
+      .order('milestone_days', { ascending: false });
+    const map: Record<string, CampaignTouch[]> = {};
+    ((data as CampaignTouch[]) || []).forEach((t) => {
+      (map[t.policy_id] ||= []).push(t);
+    });
+    setTouches(map);
+  }, []);
+
+  const triggerCron = useCallback(async () => {
+    try {
+      setRunningCron(true);
+      const { data, error } = await supabase.functions.invoke('process-renewal-campaigns', { body: {} });
+      if (error) throw error;
+      const queued = (data as any)?.totalQueued ?? 0;
+      const skipped = (data as any)?.totalSkipped ?? 0;
+      toast.success('Renewal cron complete', { description: `${queued} queued, ${skipped} skipped` });
+      fetchRows();
+    } catch (e: any) {
+      toast.error('Cron failed', { description: e.message });
+    } finally {
+      setRunningCron(false);
+    }
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
   useEffect(() => { fetchTotals(); }, [fetchTotals]);
+  useEffect(() => { fetchTouches(rows.map((r) => r.id)); }, [rows, fetchTouches]);
+
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
