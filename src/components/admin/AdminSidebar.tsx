@@ -355,17 +355,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs;
     }
     
-    // Administrators: full access except tabs explicitly denied in permissions
+    // Tabs that are super_admin / dev_tester only by default.
+    // Even Admin role must be explicitly granted via tab_<id> = true.
+    const SUPER_ADMIN_ONLY_TABS = new Set<string>(['plans']);
+
+    // Administrators: full access except tabs explicitly denied in permissions,
+    // and excluding super-admin-only tabs unless explicitly granted.
     if (userRole === 'admin') {
-      if (userPermissions && Object.keys(userPermissions).length > 0) {
-        return defaultTabs.filter(tab => {
-          const permKey = `tab_${tab.id}`;
-          // If explicitly set to false, hide it
-          if (permKey in userPermissions && userPermissions[permKey] === false) return false;
-          return true;
-        });
-      }
-      return defaultTabs;
+      return defaultTabs.filter(tab => {
+        const permKey = `tab_${tab.id}`;
+        if (SUPER_ADMIN_ONLY_TABS.has(tab.id)) {
+          return userPermissions?.[permKey] === true;
+        }
+        if (userPermissions && permKey in userPermissions && userPermissions[permKey] === false) {
+          return false;
+        }
+        return true;
+      });
     }
     
     if (userRole === 'blog_writer') {
