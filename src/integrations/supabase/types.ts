@@ -7169,6 +7169,8 @@ export type Database = {
           priority: Database["public"]["Enums"]["lead_priority"] | null
           priority_score: number | null
           quote_amount: number | null
+          recovery_outcome: string | null
+          recovery_worked_at: string | null
           resubmission_count: number | null
           status: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at: string | null
@@ -7224,6 +7226,8 @@ export type Database = {
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           quote_amount?: number | null
+          recovery_outcome?: string | null
+          recovery_worked_at?: string | null
           resubmission_count?: number | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
@@ -7279,6 +7283,8 @@ export type Database = {
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           quote_amount?: number | null
+          recovery_outcome?: string | null
+          recovery_worked_at?: string | null
           resubmission_count?: number | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
