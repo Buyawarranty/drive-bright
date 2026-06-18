@@ -234,6 +234,42 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     setMembers(members.filter(m => m.id !== memberId));
   };
 
+  const upsertTeamDist = async (patch: Partial<TeamDistSettings>) => {
+    if (!activeTeamId) return;
+    const base = teamDist || {
+      team_id: activeTeamId,
+      distribution_mode: globalDist?.distribution_mode || 'round_robin',
+      solo_mode_enabled: false,
+      solo_agent_id: null,
+      active_only_distribution: globalDist?.active_only_distribution ?? true,
+      overflow_recipient_id: null,
+    };
+    const payload = { ...base, ...patch, team_id: activeTeamId };
+    const { data, error } = await supabase
+      .from('lead_distribution_settings')
+      .upsert(payload as any, { onConflict: 'team_id' })
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'Could not save team distribution', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTeamDist(data as TeamDistSettings);
+    toast({ title: 'Team distribution updated' });
+  };
+
+  const clearTeamDist = async () => {
+    if (!activeTeamId || !teamDist) return;
+    if (!confirm('Remove this team\u2019s override and inherit the global distribution settings?')) return;
+    const { error } = await supabase.from('lead_distribution_settings').delete().eq('team_id', activeTeamId);
+    if (error) {
+      toast({ title: 'Could not clear override', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTeamDist(null);
+    toast({ title: 'Team now inherits global distribution' });
+  };
+
   const activeTeam = teams.find(t => t.id === activeTeamId) || null;
   const teamRules = (tid: string) =>
     LEAD_SOURCES.map(s => {
