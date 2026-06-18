@@ -112,22 +112,22 @@ export const RetentionTab: React.FC = () => {
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = new Date();
-    const in30 = new Date(now.getTime() + 30 * 86400000).toISOString();
     const in60 = new Date(now.getTime() + 60 * 86400000).toISOString();
-    const in31 = new Date(now.getTime() + 31 * 86400000).toISOString();
-    const ago90 = new Date(now.getTime() - 90 * 86400000).toISOString();
+    const in61 = new Date(now.getTime() + 61 * 86400000).toISOString();
+    const in180 = new Date(now.getTime() + 180 * 86400000).toISOString();
+    const ago180 = new Date(now.getTime() - 180 * 86400000).toISOString();
     const nowIso = now.toISOString();
 
     switch (id) {
       case 'due_soon':
-        return q.gte('policy_end_date', nowIso).lte('policy_end_date', in30);
+        return q.gte('policy_end_date', nowIso).lte('policy_end_date', in60);
       case 'renewal_window':
-        return q.gte('policy_end_date', in31).lte('policy_end_date', in60);
+        return q.gte('policy_end_date', in61).lte('policy_end_date', in180);
       case 'upsell':
         // Active policies still well within their term, with claim limit under top tier
-        return q.gt('policy_end_date', in60).lt('claim_limit', 2000);
+        return q.gt('policy_end_date', in180).lt('claim_limit', 2000);
       case 'lapsed':
-        return q.gte('policy_end_date', ago90).lt('policy_end_date', nowIso);
+        return q.gte('policy_end_date', ago180).lt('policy_end_date', nowIso);
       default:
         return q;
     }
