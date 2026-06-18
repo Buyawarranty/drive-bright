@@ -193,6 +193,7 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [customFrom, setCustomFrom] = useState(format(startOfDay(subDays(new Date(), 7)), 'yyyy-MM-dd'));
   const [customTo, setCustomTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [conversionName, setConversionName] = useState('Abandoned Cart');
 
   const [excludePrevious, setExcludePrevious] = useState(true);
   const [exporting, setExporting] = useState(false);
