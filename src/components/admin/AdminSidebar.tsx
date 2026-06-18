@@ -100,8 +100,8 @@ const defaultTabs: Tab[] = [
     description: 'Manage sales pipeline and lead assignments'
   },
   {
-    id: 'lead-recovery',
-    label: 'Lead Recovery',
+    id: 'golden-leads',
+    label: 'Golden Leads',
     icon: RotateCcw,
     description: 'Chase aged leads — oldest first, full toolkit'
   },
@@ -386,13 +386,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales_lead') {
-      const salesLeadTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+      const salesLeadTabIds = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
     if (userRole === 'sales_manager') {
       // Sales Managers get sales_lead tabs plus user-permissions, and can be granted more via permissions.
-      const baseIds = new Set(['new-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'user-permissions', 'account']);
+      const baseIds = new Set(['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'user-permissions', 'account']);
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         defaultTabs.forEach(tab => {
           const permKey = `tab_${tab.id}`;
@@ -430,7 +430,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'sales') {
       // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
-      const defaultSalesTabIds = ['new-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+      const defaultSalesTabIds = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         const allowedIds = new Set(defaultSalesTabIds);
