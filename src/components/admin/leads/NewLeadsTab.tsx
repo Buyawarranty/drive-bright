@@ -1035,7 +1035,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
           {isAdminOrSuperAdmin && (
-            <BulkReassignDialog salesUsers={salesUsers} onComplete={fetchLeads} />
+            <BulkReassignDialog salesUsers={teamScopedSalesUsers} onComplete={fetchLeads} />
           )}
 
           {/* Archive Button */}
@@ -1169,7 +1169,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             assignmentCounts={assignmentCounts}
             sortOption={sortOption}
             onSortChange={setSortOption}
-            salesUsers={salesUsers}
+            salesUsers={teamScopedSalesUsers}
             agentFilter={agentFilter}
             onAgentFilterChange={setAgentFilter}
             agentLeadCounts={agentLeadCounts}
@@ -1201,7 +1201,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     totalVisible={pagination.paginatedData.length}
                     allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
                     onSelectAll={handleSelectAll}
-                    salesUsers={canAssignLeads ? salesUsers : []}
+                    salesUsers={canAssignLeads ? teamScopedSalesUsers : []}
                     onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
@@ -1224,7 +1224,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   <LeadsTable
                     leads={pagination.paginatedData}
                     tags={tags}
-                    salesUsers={salesUsers}
+                    salesUsers={teamScopedSalesUsers}
                     canAssignLeads={canAssignLeads}
                     selectedLeads={selectedLeads}
                     onSelectLead={handleSelectLead}
@@ -1281,7 +1281,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <LeadsTable
                   leads={unworkedPagination.paginatedData}
                   tags={tags}
-                  salesUsers={salesUsers}
+                  salesUsers={teamScopedSalesUsers}
                   canAssignLeads={canAssignLeads}
                   selectedLeads={selectedLeads}
                   onSelectLead={handleSelectLead}
@@ -1334,7 +1334,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <SalespersonDashboard 
           leads={leads}
           tags={tags}
-          salesUsers={salesUsers}
+          salesUsers={teamScopedSalesUsers}
           handlers={leadHandlers}
         />
       )}
@@ -1347,7 +1347,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
         <AgentsLeadsView 
           leads={leads}
-          salesUsers={salesUsers}
+          salesUsers={teamScopedSalesUsers}
           viewerRole={userRole}
         />
       )}
