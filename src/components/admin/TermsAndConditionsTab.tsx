@@ -83,6 +83,15 @@ const UploadCard: React.FC<{
   const [notify, setNotify] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const lastNotifyKey = `tcs-last-notify-${planKey}`;
+  const [lastNotify, setLastNotify] = useState<{ count: number; at: string } | null>(() => {
+    try {
+      const raw = localStorage.getItem(lastNotifyKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const handleFile = (f: File | null | undefined) => {
     if (!f) return;
@@ -180,6 +189,13 @@ const UploadCard: React.FC<{
       if (notify) {
         try {
           notifiedCount = await notifyAllCustomers();
+          const record = { count: notifiedCount, at: new Date().toISOString() };
+          setLastNotify(record);
+          try {
+            localStorage.setItem(lastNotifyKey, JSON.stringify(record));
+          } catch {
+            // ignore quota errors
+          }
         } catch (e: any) {
           console.error('Notification fan-out failed:', e);
           toast({
@@ -314,6 +330,19 @@ const UploadCard: React.FC<{
             </>
           )}
         </Button>
+
+        {/* Last notification confirmation */}
+        {lastNotify && (
+          <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 flex items-start gap-2">
+            <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <span className="font-semibold">
+                Dashboard notification sent to {lastNotify.count.toLocaleString()} customer{lastNotify.count === 1 ? '' : 's'}
+              </span>{' '}
+              <span className="text-blue-800/80">on {formatDate(lastNotify.at)}.</span>
+            </div>
+          </div>
+        )}
 
         {/* Current document */}
         <div className="border-t pt-4">
