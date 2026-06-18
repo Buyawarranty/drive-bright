@@ -109,6 +109,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
+
+  // Team filter (Red / Blue / Green) — only managers see the chips; default null = no filter.
+  const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+
   
   
   // Delete permission - explicit granular permission ONLY (no role auto-grants delete)
