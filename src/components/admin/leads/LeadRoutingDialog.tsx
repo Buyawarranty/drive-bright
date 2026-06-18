@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Users, Settings2, X, Pencil, Check, ShieldAlert } from 'lucide-react';
+import { RoutingTester } from './RoutingTester';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -348,8 +349,16 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
           <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-emerald-600' : 'text-amber-600'}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-semibold text-sm">
-                Team routing master switch — {routingEnabled ? 'ARMED' : 'OFF (live flow protected)'}
+              <span className="font-semibold text-sm">Team routing enabled</span>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  routingEnabled
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-amber-500 text-white'
+                }`}
+              >
+                <span className={`h-2 w-2 rounded-full ${routingEnabled ? 'bg-white animate-pulse' : 'bg-white'}`} />
+                {routingEnabled ? 'ARMED — rules are LIVE' : 'OFF — live flow protected'}
               </span>
               <Switch
                 checked={routingEnabled}
@@ -357,13 +366,23 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                 onCheckedChange={toggleRoutingEnabled}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              {routingEnabled
-                ? 'When the live trigger is wired, new leads will follow the team source rules below. Turn this OFF at any time to instantly revert every lead back to the current global (Team Red / live) flow.'
-                : 'All new leads currently go through the existing global flow — the live sales team is untouched. Configuring teams and switches here changes nothing until you arm this switch AND the live trigger is wired.'}
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+              {routingEnabled ? (
+                <>
+                  <strong className="text-emerald-700">Live:</strong> incoming leads are being routed by the team source rules below. Any source set to <em>Allowed</em> on a team with members will divert there. Turn this OFF to instantly revert every new lead back to the existing global flow (Team Red / live).
+                </>
+              ) : (
+                <>
+                  <strong className="text-amber-700">Safe:</strong> all new leads follow the existing global flow — the live sales team is untouched. Editing teams and switches here changes nothing until you flip this switch ON. When you do, only sources marked <em>Allowed</em> on teams with members will divert; everything else still falls back to the live flow.
+                </>
+              )}
             </p>
           </div>
         </div>
+
+        {/* Routing tester */}
+        <RoutingTester />
+
 
         {/* Add team bar */}
         {canEdit && (
