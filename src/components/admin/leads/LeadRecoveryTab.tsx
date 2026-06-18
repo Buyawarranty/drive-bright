@@ -159,18 +159,28 @@ export const LeadRecoveryTab: React.FC = () => {
     const d30 = new Date(now - 30 * 86400000).toISOString();
     const d14 = new Date(now - 14 * 86400000).toISOString();
     const d7 = new Date(now - 7 * 86400000).toISOString();
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
 
     switch (id) {
-      case 'never_contacted':
+      case 'due_today':
+        return q
+          .gte('next_action_date', startOfToday.toISOString())
+          .lte('next_action_date', endOfToday.toISOString());
+      case 'new_to_recontact':
         return q.lt('created_at', d30).is('last_contacted_at', null);
-      case 'quote_cold':
+      case 'no_answer':
+        return q.eq('recovery_outcome', 'no_answer');
+      case 'interested':
+        return q.in('recovery_outcome', ['interested', 'needs_callback']);
+      case 'quote_sent':
         return q.not('quote_amount', 'is', null)
           .or(`last_contacted_at.is.null,last_contacted_at.lt.${d14}`);
-      case 'stalled':
-        return q.lt('last_contacted_at', d30);
-      case 'abandoned_cart':
+      case 'abandoned_checkout':
         return q.not('abandoned_cart_id', 'is', null).lt('created_at', d7);
-      case 'all_aged':
+      case 'not_interested':
+        return q.in('recovery_outcome', ['not_interested', 'bought_elsewhere', 'vehicle_sold']);
+      case 'all_leads':
       default:
         return q.lt('created_at', d30);
     }
