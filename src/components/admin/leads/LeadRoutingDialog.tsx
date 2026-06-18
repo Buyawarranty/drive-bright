@@ -79,6 +79,16 @@ const PRESET_COLORS = [
   { name: 'White',  hex: '#f5f5f5', emoji: '⚪' },
 ];
 
+interface TeamDistSettings {
+  id: string;
+  team_id: string | null;
+  distribution_mode: string;
+  solo_mode_enabled: boolean;
+  solo_agent_id: string | null;
+  active_only_distribution: boolean;
+  overflow_recipient_id: string | null;
+}
+
 export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDialogProps) => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [rules, setRules] = useState<SourceRule[]>([]);
@@ -88,15 +98,19 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
   const [loading, setLoading] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamColor, setNewTeamColor] = useState(PRESET_COLORS[3]);
+  const [teamDist, setTeamDist] = useState<TeamDistSettings | null>(null);
+  const [globalDist, setGlobalDist] = useState<TeamDistSettings | null>(null);
+  const [distLoading, setDistLoading] = useState(false);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, r, m, a] = await Promise.all([
+      const [t, r, m, a, gd] = await Promise.all([
         supabase.from('lead_teams').select('*').order('sort_order'),
         supabase.from('lead_team_source_rules').select('*'),
         supabase.from('lead_team_members').select('*'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
+        supabase.from('lead_distribution_settings').select('*').is('team_id', null).maybeSingle(),
       ]);
       if (t.error) throw t.error;
       if (r.error) throw r.error;
@@ -106,6 +120,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       setRules(r.data || []);
       setMembers(m.data || []);
       setAdmins(a.data || []);
+      setGlobalDist((gd.data as TeamDistSettings) || null);
       if (!activeTeamId && (t.data || []).length) setActiveTeamId(t.data![0].id);
     } catch (e: any) {
       toast({ title: 'Failed to load routing data', description: e.message, variant: 'destructive' });
@@ -113,6 +128,25 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       setLoading(false);
     }
   }, [activeTeamId]);
+
+  // Load per-team distribution settings whenever the active team changes
+  useEffect(() => {
+    if (!activeTeamId || !open) return;
+    let cancel = false;
+    (async () => {
+      setDistLoading(true);
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('*')
+        .eq('team_id', activeTeamId)
+        .maybeSingle();
+      if (!cancel) {
+        setTeamDist((data as TeamDistSettings) || null);
+        setDistLoading(false);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [activeTeamId, open]);
 
   useEffect(() => {
     if (open) loadAll();
@@ -198,6 +232,42 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       return;
     }
     setMembers(members.filter(m => m.id !== memberId));
+  };
+
+  const upsertTeamDist = async (patch: Partial<TeamDistSettings>) => {
+    if (!activeTeamId) return;
+    const base = teamDist || {
+      team_id: activeTeamId,
+      distribution_mode: globalDist?.distribution_mode || 'round_robin',
+      solo_mode_enabled: false,
+      solo_agent_id: null,
+      active_only_distribution: globalDist?.active_only_distribution ?? true,
+      overflow_recipient_id: null,
+    };
+    const payload = { ...base, ...patch, team_id: activeTeamId };
+    const { data, error } = await supabase
+      .from('lead_distribution_settings')
+      .upsert(payload as any, { onConflict: 'team_id' })
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'Could not save team distribution', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTeamDist(data as TeamDistSettings);
+    toast({ title: 'Team distribution updated' });
+  };
+
+  const clearTeamDist = async () => {
+    if (!activeTeamId || !teamDist) return;
+    if (!confirm('Remove this team\u2019s override and inherit the global distribution settings?')) return;
+    const { error } = await supabase.from('lead_distribution_settings').delete().eq('team_id', activeTeamId);
+    if (error) {
+      toast({ title: 'Could not clear override', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTeamDist(null);
+    toast({ title: 'Team now inherits global distribution' });
   };
 
   const activeTeam = teams.find(t => t.id === activeTeamId) || null;
@@ -289,6 +359,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                 <TabsList>
                   <TabsTrigger value="sources">Lead Sources</TabsTrigger>
                   <TabsTrigger value="members">Members</TabsTrigger>
+                  <TabsTrigger value="distribution">Distribution</TabsTrigger>
                 </TabsList>
                 {canEdit && (
                   <Button variant="ghost" size="sm" onClick={() => deleteTeam(activeTeam.id)}>
@@ -432,6 +503,126 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                         </div>
                       );
                     })}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="distribution" className="space-y-3 mt-3">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Settings2 className="h-4 w-4" /> Distribution for {activeTeam.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {distLoading ? (
+                      <p className="text-sm text-muted-foreground">Loading…</p>
+                    ) : (
+                      <>
+                        <div className="flex items-start justify-between gap-4 p-3 rounded-md border bg-muted/30">
+                          <div>
+                            <div className="font-medium text-sm">Override global distribution</div>
+                            <div className="text-xs text-muted-foreground">
+                              {teamDist
+                                ? `This team uses its own distribution rules. Global is currently set to ${globalDist?.distribution_mode ?? 'round_robin'}.`
+                                : `This team inherits the global ${globalDist?.distribution_mode ?? 'round_robin'} flow. Turn on to override just for ${activeTeam.name}.`}
+                            </div>
+                          </div>
+                          <Switch
+                            checked={!!teamDist}
+                            disabled={!canEdit}
+                            onCheckedChange={(v) => {
+                              if (v) {
+                                upsertTeamDist({});
+                              } else {
+                                clearTeamDist();
+                              }
+                            }}
+                          />
+                        </div>
+
+                        {teamDist && (
+                          <>
+                            <div className="flex items-center justify-between gap-4">
+                              <div>
+                                <Label className="text-sm">Distribution mode</Label>
+                                <p className="text-xs text-muted-foreground">How leads cycle inside this team.</p>
+                              </div>
+                              <Select
+                                value={teamDist.distribution_mode}
+                                onValueChange={(v) => upsertTeamDist({ distribution_mode: v })}
+                                disabled={!canEdit}
+                              >
+                                <SelectTrigger className="w-[200px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="round_robin">Round Robin</SelectItem>
+                                  <SelectItem value="percentage">Percentage (per agent)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-4 pt-2 border-t">
+                              <div>
+                                <Label className="text-sm">Solo mode</Label>
+                                <p className="text-xs text-muted-foreground">
+                                  Send every lead in this team to a single agent. Overrides the mode above while on.
+                                </p>
+                              </div>
+                              <Switch
+                                checked={teamDist.solo_mode_enabled}
+                                disabled={!canEdit}
+                                onCheckedChange={(v) => upsertTeamDist({ solo_mode_enabled: v, solo_agent_id: v ? teamDist.solo_agent_id : null })}
+                              />
+                            </div>
+
+                            {teamDist.solo_mode_enabled && (
+                              <div>
+                                <Label className="text-xs">Solo agent (must be a member of {activeTeam.name})</Label>
+                                <Select
+                                  value={teamDist.solo_agent_id ?? ''}
+                                  onValueChange={(v) => upsertTeamDist({ solo_agent_id: v })}
+                                  disabled={!canEdit}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pick an agent…" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {teamMembers(activeTeam.id).map(m => {
+                                      const u = admins.find(a => a.id === m.admin_user_id);
+                                      if (!u) return null;
+                                      return (
+                                        <SelectItem key={u.id} value={u.id}>
+                                          {(`${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email)}
+                                        </SelectItem>
+                                      );
+                                    })}
+                                    {teamMembers(activeTeam.id).length === 0 && (
+                                      <div className="px-3 py-2 text-xs text-muted-foreground">
+                                        Add members to this team first.
+                                      </div>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+
+                            {canEdit && (
+                              <div className="pt-3 border-t">
+                                <Button variant="outline" size="sm" onClick={clearTeamDist}>
+                                  Remove override (inherit global)
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        <p className="text-xs text-muted-foreground pt-2 border-t">
+                          The global round-robin / percentage / solo / overflow flow is unchanged. When a lead's source is allowed by this team, the engine uses these rules first; otherwise it falls back to the existing global flow.
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

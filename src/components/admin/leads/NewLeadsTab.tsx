@@ -164,6 +164,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     userRole === 'super_admin' ||
     userRole === 'admin' ||
     userRole === 'performance_manager' ||
+    userRole === 'sales_manager' ||
     hasGranularPermission('new-leads', 'lead-routing') === true;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
