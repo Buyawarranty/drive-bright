@@ -10,14 +10,11 @@ import { toast } from 'sonner';
 interface ApiTestResult {
   timestamp: string;
   bumper: { status: string; details: any };
-  warranties2000: { status: string; details: any };
   stripe: { status: string; details: any };
   environment: {
     hasStripKey: boolean;
     hasBumperKey: boolean;
     hasBumperSecret: boolean;
-    hasWarrantiesUser: boolean;
-    hasWarrantiesPass: boolean;
   };
 }
 
@@ -85,7 +82,7 @@ export const ApiConnectivityTest = () => {
             API Connectivity Test
           </CardTitle>
           <CardDescription>
-            Test connectivity to all external APIs: Bumper, Warranties Register, and Stripe.
+            Test connectivity to external APIs: Bumper and Stripe.
             This will help diagnose go-live issues.
           </CardDescription>
         </CardHeader>
@@ -139,22 +136,6 @@ export const ApiConnectivityTest = () => {
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Warranties User</span>
-                {testResults.environment.hasWarrantiesUser ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Warranties Pass</span>
-                {testResults.environment.hasWarrantiesPass ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
             </CardContent>
           </Card>
 
@@ -178,25 +159,7 @@ export const ApiConnectivityTest = () => {
             </CardContent>
           </Card>
 
-          {/* Warranties Register API */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-sm">
-                Warranties Register API
-                {getStatusIcon(testResults.warranties2000.status)}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {getStatusBadge(testResults.warranties2000.status)}
-              {testResults.warranties2000.details && (
-                <div className="text-xs text-muted-foreground">
-                  <pre className="whitespace-pre-wrap">
-                    {JSON.stringify(testResults.warranties2000.details, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Stripe API moved next */}
 
           {/* Stripe API */}
           <Card>

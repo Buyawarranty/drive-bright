@@ -503,22 +503,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     }
   };
 
-  const handleSendToWarrantiesRegister = async (policyId: string, customerId: string) => {
-    setEmailSendingLoading(prev => ({ ...prev, [customerId]: { ...prev[customerId], warranties2000: true } }));
-    try {
-      const { data, error } = await supabase.functions.invoke('send-to-warranties-2000', {
-        body: { policyId, customerId, force: true }
-      });
-      if (error) throw error;
-      toast.success('Successfully sent to Warranty Register!');
-      fetchCustomers();
-    } catch (error: any) {
-      console.error('Error sending to Warranty Register:', error);
-      toast.error(`Failed to send to Warranty Register: ${error.message}`);
-    } finally {
-      setEmailSendingLoading(prev => ({ ...prev, [customerId]: { ...prev[customerId], warranties2000: false } }));
-    }
-  };
+  // Warranties Register integration removed — internal handling only.
 
   if (loading) {
     return (

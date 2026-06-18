@@ -73,7 +73,7 @@ export const ADMIN_TAB_DEFINITIONS = [
   { id: 'claims', key: 'claims', label: 'Claims', description: 'Manage customer claim submissions', category: 'Support' },
   { id: 'contact', key: 'contact', label: 'Contact Submissions', description: 'Manage customer contact form submissions', category: 'Support' },
   { id: 'abandoned-carts', key: 'abandoned_carts', label: 'Abandoned Carts', description: 'Track and follow up with incomplete purchases', category: 'Sales' },
-  { id: 'pending-w2000', key: 'pending_w2000', label: 'Pending Register', description: 'Scheduled warranty submissions to register', category: 'Operations' },
+  
   { id: 'emails', key: 'emails', label: 'Email Hub', description: 'Unified email management', category: 'Marketing' },
   { id: 'analytics', key: 'analytics', label: 'Analytics', description: 'View reports and analytics', category: 'Reports' },
   { id: 'user-permissions', key: 'user_permissions', label: 'User Permissions', description: 'Manage admin user access and permissions', category: 'Settings' },

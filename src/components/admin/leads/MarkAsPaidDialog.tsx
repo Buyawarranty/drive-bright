@@ -337,7 +337,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
             status: 'converted' as const,
             converted_at: now,
             last_activity_date: now,
-            notes: `PAID via Stripe - £${amount.toFixed(2)} - Marked by admin${additionalNotes ? `\n\nW2K Notes: ${additionalNotes}` : ''}`
+            notes: `PAID via Stripe - £${amount.toFixed(2)} - Marked by admin${additionalNotes ? `\n\nNotes: ${additionalNotes}` : ''}`
           })
           .eq('id', lead.id);
       }
@@ -360,38 +360,13 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
           .from('admin_notes')
           .insert({
             customer_id: customerId,
-            note: `Manual Stripe Payment - W2K Notes: ${additionalNotes}`,
+            note: `Manual Stripe Payment - Notes: ${additionalNotes}`,
             created_by: user?.id
           });
       }
 
-      // 5. Send to Warranties Register
-      if (sendToW2k) {
-        console.log('🔄 Sending to Warranties Register...');
-        try {
-          const { error: w2kError } = await supabase.functions.invoke(
-            'send-to-warranties-2000',
-            {
-              body: {
-                customerId: customerId,
-                policyId: policyData.id,
-                force: true,
-                additionalNotes: additionalNotes || undefined
-              }
-            }
-          );
+      // Warranties Register integration removed — internal handling only.
 
-          if (w2kError) {
-            console.error('W2K Error:', w2kError);
-            toast.warning('Order created but failed to send to Warranties Register');
-          } else {
-            console.log('✅ Sent to Warranties Register');
-          }
-        } catch (w2kErr) {
-          console.error('W2K Exception:', w2kErr);
-          toast.warning('Order created but Warranties Register submission failed');
-        }
-      }
 
       // 6. Send welcome email
       if (sendWelcomeEmail) {

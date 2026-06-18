@@ -574,9 +574,8 @@ const handler = async (req: Request): Promise<Response> => {
       return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
     };
 
-    // Determine if this is a future activation
-    const isFutureActivation = policy.warranties_2000_status === 'scheduled' && 
-      new Date(policy.policy_start_date) > new Date();
+    // Determine if this is a future activation (start date is in the future)
+    const isFutureActivation = new Date(policy.policy_start_date) > new Date();
     
     const emailSubject = isFutureActivation 
       ? `Your Buy A Warranty Policy – Future Activation Confirmed 🚗`

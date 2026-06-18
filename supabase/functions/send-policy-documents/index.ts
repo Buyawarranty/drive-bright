@@ -339,17 +339,17 @@ serve(async (req) => {
       return 'Online Payment';
     };
 
-    // Fetch policy record for start date and W2000 status
+    // Fetch policy record for start date
     const { data: fullPolicyRecord } = policyNumber ? await supabaseClient
       .from('customer_policies')
-      .select('policy_start_date, policy_end_date, warranties_2000_status')
+      .select('policy_start_date, policy_end_date')
       .eq('policy_number', policyNumber)
       .maybeSingle() : { data: null };
 
     const startDate = fullPolicyRecord?.policy_start_date ? new Date(fullPolicyRecord.policy_start_date) : new Date();
     const periodInMonths = getWarrantyDurationInMonths(paymentType || 'yearly');
     const expiryDate = fullPolicyRecord?.policy_end_date ? new Date(fullPolicyRecord.policy_end_date) : calculateExpiryDate(startDate, paymentType || 'yearly');
-    const isFutureActivation = fullPolicyRecord?.warranties_2000_status === 'scheduled' && startDate > new Date();
+    const isFutureActivation = startDate > new Date();
 
     // Normalize plan type for consistent display
     const getDisplayPlanType = (planType: string): string => {

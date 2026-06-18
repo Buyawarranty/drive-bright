@@ -824,59 +824,11 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         }
       }
 
-      // Only send to Warranties Register if checkbox is checked
-      if (orderData.sendToWarranties2000) {
-        try {
-          console.log('Sending to Warranties Register API via manual-bumper-completion...');
-          
-          const { data: w2kResponse, error: w2kError } = await supabase.functions.invoke(
-            'manual-bumper-completion',
-            {
-              body: { 
-                email: orderData.email.toLowerCase(),
-                notes: orderData.notes?.trim() || '' 
-              }
-            }
-          );
+      toast.success(isEditMode 
+        ? `Warranty order updated successfully! Reference: ${warrantyReference}`
+        : `Manual warranty order created successfully! Reference: ${warrantyReference}`
+      );
 
-          if (w2kError) {
-            console.error('Warranties Register API error:', w2kError);
-            await supabase
-              .from('admin_notes')
-              .insert({
-                customer_id: customerData.id,
-                note: `Failed to send to Warranties Register API: ${w2kError.message}`,
-                created_by: (await supabase.auth.getUser()).data.user?.id
-              });
-            toast.error('Order created but failed to send to Warranties Register');
-          } else {
-            console.log('Warranties Register API response:', w2kResponse);
-            await supabase
-              .from('admin_notes')
-              .insert({
-                customer_id: customerData.id,
-                note: `Successfully sent to Warranties Register API`,
-                created_by: (await supabase.auth.getUser()).data.user?.id
-              });
-            toast.success('Order created and sent to Warranties Register!');
-          }
-        } catch (w2kError) {
-          console.error('Failed to send to Warranties Register:', w2kError);
-          await supabase
-            .from('admin_notes')
-            .insert({
-              customer_id: customerData.id,
-              note: `Exception sending to Warranties Register API: ${w2kError instanceof Error ? w2kError.message : String(w2kError)}`,
-              created_by: (await supabase.auth.getUser()).data.user?.id
-            });
-          toast.error('Order created but failed to send to Warranties Register');
-        }
-      } else {
-        toast.success(isEditMode 
-          ? `Warranty order updated successfully! Reference: ${warrantyReference}`
-          : `Manual warranty order created successfully! Reference: ${warrantyReference}`
-        );
-      }
 
       console.log(isEditMode ? '🎉 Manual order updated successfully!' : '🎉 Manual order created successfully!');
 

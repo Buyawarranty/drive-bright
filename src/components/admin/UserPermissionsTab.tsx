@@ -50,7 +50,7 @@ const ADMIN_TABS = [
   { id: 'reviews', label: 'Reviews', description: 'Monitor Trustpilot and Google reviews' },
   { id: 'contact', label: 'Contact Submissions', description: 'Manage customer contact form submissions' },
   { id: 'abandoned-carts', label: 'Abandoned Carts', description: 'Track and follow up with incomplete purchases' },
-  { id: 'pending-w2000', label: 'Pending Register', description: 'Scheduled warranty submissions to register' },
+  
   { id: 'marketing-audience', label: 'Marketing Contacts', description: 'Unified mailing list for remarketing' },
   { id: 'emails', label: 'Email Hub', description: 'Unified email management' },
   { id: 'analytics', label: 'Analytics', description: 'View reports and analytics' },
