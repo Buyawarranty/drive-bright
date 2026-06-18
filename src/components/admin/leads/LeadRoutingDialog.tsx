@@ -79,6 +79,16 @@ const PRESET_COLORS = [
   { name: 'White',  hex: '#f5f5f5', emoji: '⚪' },
 ];
 
+interface TeamDistSettings {
+  id: string;
+  team_id: string | null;
+  distribution_mode: string;
+  solo_mode_enabled: boolean;
+  solo_agent_id: string | null;
+  active_only_distribution: boolean;
+  overflow_recipient_id: string | null;
+}
+
 export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDialogProps) => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [rules, setRules] = useState<SourceRule[]>([]);
@@ -88,15 +98,19 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
   const [loading, setLoading] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamColor, setNewTeamColor] = useState(PRESET_COLORS[3]);
+  const [teamDist, setTeamDist] = useState<TeamDistSettings | null>(null);
+  const [globalDist, setGlobalDist] = useState<TeamDistSettings | null>(null);
+  const [distLoading, setDistLoading] = useState(false);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, r, m, a] = await Promise.all([
+      const [t, r, m, a, gd] = await Promise.all([
         supabase.from('lead_teams').select('*').order('sort_order'),
         supabase.from('lead_team_source_rules').select('*'),
         supabase.from('lead_team_members').select('*'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
+        supabase.from('lead_distribution_settings').select('*').is('team_id', null).maybeSingle(),
       ]);
       if (t.error) throw t.error;
       if (r.error) throw r.error;
@@ -106,6 +120,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       setRules(r.data || []);
       setMembers(m.data || []);
       setAdmins(a.data || []);
+      setGlobalDist((gd.data as TeamDistSettings) || null);
       if (!activeTeamId && (t.data || []).length) setActiveTeamId(t.data![0].id);
     } catch (e: any) {
       toast({ title: 'Failed to load routing data', description: e.message, variant: 'destructive' });
@@ -113,6 +128,25 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
       setLoading(false);
     }
   }, [activeTeamId]);
+
+  // Load per-team distribution settings whenever the active team changes
+  useEffect(() => {
+    if (!activeTeamId || !open) return;
+    let cancel = false;
+    (async () => {
+      setDistLoading(true);
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('*')
+        .eq('team_id', activeTeamId)
+        .maybeSingle();
+      if (!cancel) {
+        setTeamDist((data as TeamDistSettings) || null);
+        setDistLoading(false);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [activeTeamId, open]);
 
   useEffect(() => {
     if (open) loadAll();
