@@ -17,10 +17,10 @@ import { formatDistanceToNow, format } from 'date-fns';
 type SegmentId = 'due_soon' | 'renewal_window' | 'upsell' | 'lapsed';
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
-  { id: 'due_soon', label: 'Renewal Due Soon', description: 'Policy expires in the next 0–30 days' },
-  { id: 'renewal_window', label: 'Renewal Window', description: 'Expires in 31–60 days — warm-up calls' },
+  { id: 'due_soon', label: 'Renewal Due Soon', description: 'Policy expires in the next 0–60 days — priority calls' },
+  { id: 'renewal_window', label: 'Renewal Window', description: 'Expires in 61–180 days — warm-up calls' },
   { id: 'upsell', label: 'Upsell Opportunities', description: 'Active policy with room to upgrade claim limit or add-ons' },
-  { id: 'lapsed', label: 'Lapsed (Win-Back)', description: 'Expired 0–90 days ago, not yet renewed' },
+  { id: 'lapsed', label: 'Lapsed (Win-Back)', description: 'Expired 0–180 days ago, not yet renewed' },
 ];
 
 const OUTCOMES = [
@@ -105,6 +105,8 @@ export const RetentionTab: React.FC = () => {
   const [search, setSearch] = useState('');
   const [workedToday, setWorkedToday] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [totalActive, setTotalActive] = useState<number | null>(null);
+  const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
@@ -112,22 +114,22 @@ export const RetentionTab: React.FC = () => {
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = new Date();
-    const in30 = new Date(now.getTime() + 30 * 86400000).toISOString();
     const in60 = new Date(now.getTime() + 60 * 86400000).toISOString();
-    const in31 = new Date(now.getTime() + 31 * 86400000).toISOString();
-    const ago90 = new Date(now.getTime() - 90 * 86400000).toISOString();
+    const in61 = new Date(now.getTime() + 61 * 86400000).toISOString();
+    const in180 = new Date(now.getTime() + 180 * 86400000).toISOString();
+    const ago180 = new Date(now.getTime() - 180 * 86400000).toISOString();
     const nowIso = now.toISOString();
 
     switch (id) {
       case 'due_soon':
-        return q.gte('policy_end_date', nowIso).lte('policy_end_date', in30);
+        return q.gte('policy_end_date', nowIso).lte('policy_end_date', in60);
       case 'renewal_window':
-        return q.gte('policy_end_date', in31).lte('policy_end_date', in60);
+        return q.gte('policy_end_date', in61).lte('policy_end_date', in180);
       case 'upsell':
         // Active policies still well within their term, with claim limit under top tier
-        return q.gt('policy_end_date', in60).lt('claim_limit', 2000);
+        return q.gt('policy_end_date', in180).lt('claim_limit', 2000);
       case 'lapsed':
-        return q.gte('policy_end_date', ago90).lt('policy_end_date', nowIso);
+        return q.gte('policy_end_date', ago180).lt('policy_end_date', nowIso);
       default:
         return q;
     }
@@ -197,9 +199,29 @@ export const RetentionTab: React.FC = () => {
     setWorkedToday(count || 0);
   }, [currentUserId]);
 
+  const fetchTotals = useCallback(async () => {
+    try {
+      const nowIso = new Date().toISOString();
+      const in12mo = new Date(Date.now() + 365 * 86400000).toISOString();
+      const baseFilter = (q: any) => q
+        .not('status', 'in', EXCLUDED_STATUSES)
+        .or('is_deleted.is.null,is_deleted.eq.false');
+      const totalQ = baseFilter((supabase.from('customer_policies') as any).select('id', { count: 'exact', head: true }));
+      const renewQ = baseFilter((supabase.from('customer_policies') as any).select('id', { count: 'exact', head: true }))
+        .gte('policy_end_date', nowIso)
+        .lte('policy_end_date', in12mo);
+      const [{ count: total }, { count: renew12 }] = await Promise.all([totalQ, renewQ]);
+      setTotalActive(total || 0);
+      setRenewals12mo(renew12 || 0);
+    } catch {
+      // non-fatal
+    }
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
+  useEffect(() => { fetchTotals(); }, [fetchTotals]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
@@ -250,21 +272,35 @@ export const RetentionTab: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <Repeat className="h-6 w-6 text-primary" />
-            Retention
+            Renewals
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Renewals and upsells for active customers. Excludes cancelled, refunded, and deleted policies.
           </p>
         </div>
-        <Card className="border-primary/30">
-          <CardContent className="py-3 px-4 flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <div>
-              <div className="text-xs text-muted-foreground">Worked today</div>
-              <div className="text-xl font-semibold">{workedToday}</div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap gap-3">
+          <Card className="border-primary/30">
+            <CardContent className="py-3 px-4">
+              <div className="text-xs text-muted-foreground">Active policies</div>
+              <div className="text-xl font-semibold">{totalActive ?? '…'}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/30">
+            <CardContent className="py-3 px-4">
+              <div className="text-xs text-muted-foreground">Renewals next 12 months</div>
+              <div className="text-xl font-semibold">{renewals12mo ?? '…'}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/30">
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div>
+                <div className="text-xs text-muted-foreground">Worked today</div>
+                <div className="text-xl font-semibold">{workedToday}</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>

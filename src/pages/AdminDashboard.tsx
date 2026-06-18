@@ -488,6 +488,7 @@ const AdminDashboard = () => {
       case 'goldmine-leads':
         return <GoldenLeadsTab />;
       case 'retention':
+      case 'renewals':
         return <RetentionTab />;
       case 'selling-tips':
         return <SellingTipsSection />;
