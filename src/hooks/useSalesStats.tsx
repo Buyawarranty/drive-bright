@@ -72,11 +72,10 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
 
       if (!userData) return null;
 
-      // Get leads assigned to this user
-      const { data: leads } = await supabase
-        .from('sales_leads')
-        .select('*')
-        .eq('assigned_to', adminUserId);
+      // Get leads assigned to this user (paginated)
+      const { data: leads } = await fetchAllRows<any>(() =>
+        supabase.from('sales_leads').select('*').eq('assigned_to', adminUserId)
+      );
 
       const leadsData = leads || [];
       
@@ -85,11 +84,13 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       const lostLeads = leadsData.filter(l => l.status === 'lost').length;
 
       // Use customers table for real deal/revenue data (source of truth)
-      const { data: customerDeals } = await supabase
-        .from('customers')
-        .select('id, final_amount, status')
-        .eq('assigned_to', adminUserId)
-        .eq('is_deleted', false);
+      const { data: customerDeals } = await fetchAllRows<any>(() =>
+        supabase
+          .from('customers')
+          .select('id, final_amount, status')
+          .eq('assigned_to', adminUserId)
+          .eq('is_deleted', false)
+      );
 
       const activeDeals = (customerDeals || []).filter(c => 
         !['cancelled', 'refunded'].includes((c.status || '').toLowerCase())
