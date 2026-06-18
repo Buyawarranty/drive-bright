@@ -41,7 +41,7 @@ const ADMIN_TABS = [
   { id: 'get-quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders' },
   { id: 'selling-tips', label: 'Sales Script', description: 'Sales script, tips and customer feedback' },
   { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', hasGranular: true },
-  { id: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans' },
+  { id: 'plans', label: 'Terms & Conditions', description: 'Upload Terms & Conditions and Platinum Plan PDFs (super admin by default)' },
   { id: 'bulk-pricing', label: 'Bulk Pricing', description: 'Update pricing using CSV files' },
   { id: 'special-plans', label: 'Special Vehicle Plans', description: 'Manage EV, PHEV, and Motorbike plans' },
   { id: 'discount-codes', label: 'Discount Codes', description: 'Manage discount codes and promotions' },
