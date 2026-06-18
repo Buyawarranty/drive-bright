@@ -24,7 +24,7 @@ import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, Network } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
@@ -170,9 +170,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canManageRouting =
     userRole === 'super_admin' ||
     userRole === 'admin' ||
-    userRole === 'performance_manager' ||
-    userRole === 'sales_manager' ||
-    hasGranularPermission('new-leads', 'lead-routing') === true;
+    userRole === 'sales_manager';
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
     () => Array.from(reminderLeadIds).filter(id => !id.startsWith('customer_') && !id.startsWith('cart_') && !id.startsWith('claim_')),
@@ -1154,6 +1152,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onRefresh={fetchLeads}
             onMigrate={migrateFromAbandonedCarts}
             onExport={handleExport}
+            onManageRouting={() => setShowRoutingDialog(true)}
+            canManageRouting={canManageRouting}
             leadCounts={leadCounts}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
@@ -1172,14 +1172,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
           />
-          {/* Lead Routing & Distribution — visible to super_admin, admin, performance_manager, or anyone with the granular permission */}
-          {canManageRouting && (
-            <div className="flex justify-end">
-              <Button variant="outline" size="sm" onClick={() => setShowRoutingDialog(true)}>
-                <Network className="h-4 w-4 mr-1" /> Lead Routing &amp; Teams
-              </Button>
-            </div>
-          )}
           <LeadRoutingDialog
             open={showRoutingDialog}
             onOpenChange={setShowRoutingDialog}
