@@ -1111,44 +1111,58 @@ const FAQ = () => {
                   </div>
                   
                   <div className="space-y-4">
-                    {category.questions.map((faq) => (
-                      <article key={faq.id} id={faq.id} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-lg overflow-hidden" itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-                        <button
-                          onClick={() => toggleItem(faq.id)}
-                          className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-orange-600/20 transition-colors"
+                    {category.questions.map((faq) => {
+                      const open = !!openItems[faq.id];
+                      return (
+                        <article
+                          key={faq.id}
+                          id={faq.id}
+                          className={`bg-white rounded-[14px] overflow-hidden border border-[#DCE3EC] border-l-4 border-l-[#FFB580] shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition-all ${
+                            open
+                              ? 'bg-[#FFF9F4] border-[#FFB278] shadow-[0_8px_22px_rgba(15,23,42,0.07)]'
+                              : 'hover:bg-[#FFF9F4] hover:border-[#FFB278] hover:shadow-[0_8px_22px_rgba(15,23,42,0.07)]'
+                          }`}
+                          itemScope
+                          itemProp="mainEntity"
+                          itemType="https://schema.org/Question"
                         >
-                          <div className="flex items-center">
-                            <h3 className="font-semibold text-lg text-white pr-4" itemProp="name">
-                              {faq.question}
-                            </h3>
-                            {faq.popular && (
-                              <span className="bg-white text-orange-600 text-xs px-2 py-1 rounded-full font-medium">
-                                Popular
-                              </span>
-                            )}
-                          </div>
-                          <ChevronDown 
-                            className={`w-6 h-6 flex-shrink-0 text-white transition-transform duration-300 ${
-                              openItems[faq.id] ? 'rotate-180' : ''
-                            }`}
-                          />
-                        </button>
-                        
-                        <div className={`overflow-hidden transition-all duration-200 ease-out ${
-                          openItems[faq.id] 
-                            ? 'max-h-screen opacity-100 animate-accordion-down' 
-                            : 'max-h-0 opacity-0'
-                        }`}>
-                          <div className="px-6 pb-5 bg-white border-t border-orange-200" itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
-                            <div className="pt-4 transform translate-y-0">
-                              <div className="text-brand-dark-text leading-relaxed whitespace-pre-line" itemProp="text">
-                                {renderAnswerWithLinks(faq.answer)}
+                          <button
+                            onClick={() => toggleItem(faq.id)}
+                            className="group w-full px-6 md:px-[30px] py-6 text-left flex items-center justify-between gap-3"
+                          >
+                            <div className="flex items-center gap-2 pr-2">
+                              <h3 className="font-semibold text-base md:text-lg text-gray-900" itemProp="name">
+                                {faq.question}
+                              </h3>
+                              {faq.popular && (
+                                <span className="bg-[#FFE8D6] text-[#F97316] text-xs px-2 py-1 rounded-full font-medium">
+                                  Popular
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors flex-shrink-0 ${
+                                open ? 'bg-[#FFE8D6]' : 'bg-transparent group-hover:bg-[#FFE8D6]'
+                              }`}
+                            >
+                              <ChevronDown
+                                className={`w-4 h-4 text-[#F97316] transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+                              />
+                            </span>
+                          </button>
+
+                          <div className={`overflow-hidden transition-all duration-200 ease-out ${open ? 'max-h-screen opacity-100 animate-accordion-down' : 'max-h-0 opacity-0'}`}>
+                            <div className="px-6 md:px-[30px] pb-6" itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                              <div className="pt-2 border-t border-[#DCE3EC]">
+                                <div className="text-base leading-relaxed pt-4 whitespace-pre-line text-gray-700" itemProp="text">
+                                  {renderAnswerWithLinks(faq.answer)}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </article>
-                    ))}
+                        </article>
+                      );
+                    })}
                   </div>
                 </section>
               ))}
