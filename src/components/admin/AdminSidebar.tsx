@@ -119,9 +119,9 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'plans',
-    label: 'Standard Plans',
+    label: 'Terms & Conditions',
     icon: FileText,
-    description: 'Manage Basic, Gold, and Platinum plans'
+    description: 'Upload Terms & Conditions and Platinum Plan PDFs'
   },
   {
     id: 'bulk-pricing',

@@ -23,7 +23,7 @@ const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
 const GetQuoteTab = lazy(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
 const CustomersTab = lazy(() => import('@/components/admin/CustomersTab').then(m => ({ default: m.CustomersTab })));
-const PlansTab = lazy(() => import('@/components/admin/PlansTab').then(m => ({ default: m.PlansTab })));
+const TermsAndConditionsTab = lazy(() => import('@/components/admin/TermsAndConditionsTab'));
 const SpecialVehiclePlansTab = lazy(() => import('@/components/admin/SpecialVehiclePlansTab'));
 const DiscountCodesTab = lazy(() => import('@/components/admin/DiscountCodesTab').then(m => ({ default: m.DiscountCodesTab })));
 const ReferralsTab = lazy(() => import('@/components/admin/ReferralsTab').then(m => ({ default: m.ReferralsTab })));
@@ -390,7 +390,7 @@ const AdminDashboard = () => {
           />
         );
       case 'plans':
-        return <PlansTab />;
+        return <TermsAndConditionsTab />;
       case 'bulk-pricing':
         return <BulkPricingTab />;
       case 'special-plans':
