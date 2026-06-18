@@ -97,8 +97,7 @@ export const LeadRecoveryTab: React.FC = () => {
       case 'never_contacted':
         return q
           .lt('created_at', d30)
-          .or('last_contacted_at.is.null,last_contacted_at.eq.')
-          .eq('call_count', 0);
+          .is('last_contacted_at', null);
       case 'quote_cold':
         return q
           .not('quote_amount', 'is', null)
@@ -106,7 +105,7 @@ export const LeadRecoveryTab: React.FC = () => {
       case 'stalled':
         return q.lt('last_contacted_at', d30);
       case 'abandoned_cart':
-        return q.eq('is_from_abandoned_cart', true).lt('created_at', d7).eq('is_paid', false);
+        return q.not('abandoned_cart_id', 'is', null).lt('created_at', d7);
       case 'all_aged':
       default:
         return q.lt('created_at', d30);
