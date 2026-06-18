@@ -485,6 +485,8 @@ const AdminDashboard = () => {
             userRole={effectiveUserRole}
           />
         );
+      case 'lead-recovery':
+        return <LeadRecoveryTab />;
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':
