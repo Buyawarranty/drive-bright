@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 
 export interface SalespersonStats {
   userId: string;
@@ -71,11 +72,10 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
 
       if (!userData) return null;
 
-      // Get leads assigned to this user
-      const { data: leads } = await supabase
-        .from('sales_leads')
-        .select('*')
-        .eq('assigned_to', adminUserId);
+      // Get leads assigned to this user (paginated)
+      const { data: leads } = await fetchAllRows<any>(() =>
+        supabase.from('sales_leads').select('*').eq('assigned_to', adminUserId)
+      );
 
       const leadsData = leads || [];
       
@@ -84,11 +84,13 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       const lostLeads = leadsData.filter(l => l.status === 'lost').length;
 
       // Use customers table for real deal/revenue data (source of truth)
-      const { data: customerDeals } = await supabase
-        .from('customers')
-        .select('id, final_amount, status')
-        .eq('assigned_to', adminUserId)
-        .eq('is_deleted', false);
+      const { data: customerDeals } = await fetchAllRows<any>(() =>
+        supabase
+          .from('customers')
+          .select('id, final_amount, status')
+          .eq('assigned_to', adminUserId)
+          .eq('is_deleted', false)
+      );
 
       const activeDeals = (customerDeals || []).filter(c => 
         !['cancelled', 'refunded'].includes((c.status || '').toLowerCase())
@@ -156,30 +158,30 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
 
   const fetchTeamStats = useCallback(async (filters?: TeamFilters) => {
     try {
-      // Get all leads (for lead counts, status breakdowns, tags)
-      let leadsQuery = supabase.from('sales_leads').select('id, status, assigned_to, call_count, last_contacted_at, created_at, priority, lead_source, converted_at, lost_at, lost_reason').limit(10000);
-      
-      // Apply date filter to leads
-      if (filters?.dateFrom) {
-        const fromISO = new Date(filters.dateFrom);
-        fromISO.setHours(0, 0, 0, 0);
-        leadsQuery = leadsQuery.gte('created_at', fromISO.toISOString());
-      }
-      if (filters?.dateTo) {
-        const toISO = new Date(filters.dateTo);
-        toISO.setHours(23, 59, 59, 999);
-        leadsQuery = leadsQuery.lte('created_at', toISO.toISOString());
-      }
-      // Apply agent filter to leads
-      if (filters?.agentId && filters.agentId !== 'all') {
-        if (filters.agentId === 'unassigned') {
-          leadsQuery = leadsQuery.is('assigned_to', null);
-        } else {
-          leadsQuery = leadsQuery.eq('assigned_to', filters.agentId);
+      // Get all leads (for lead counts, status breakdowns, tags) — paginated to bypass 1000-row default
+      const buildLeadsQuery = () => {
+        let q = supabase.from('sales_leads').select('id, status, assigned_to, call_count, last_contacted_at, created_at, priority, lead_source, converted_at, lost_at, lost_reason');
+        if (filters?.dateFrom) {
+          const fromISO = new Date(filters.dateFrom);
+          fromISO.setHours(0, 0, 0, 0);
+          q = q.gte('created_at', fromISO.toISOString());
         }
-      }
+        if (filters?.dateTo) {
+          const toISO = new Date(filters.dateTo);
+          toISO.setHours(23, 59, 59, 999);
+          q = q.lte('created_at', toISO.toISOString());
+        }
+        if (filters?.agentId && filters.agentId !== 'all') {
+          if (filters.agentId === 'unassigned') {
+            q = q.is('assigned_to', null);
+          } else {
+            q = q.eq('assigned_to', filters.agentId);
+          }
+        }
+        return q;
+      };
 
-      const { data: leads } = await leadsQuery;
+      const { data: leads } = await fetchAllRows<any>(buildLeadsQuery);
       const leadsData = leads || [];
 
       // Get only sales-role users (sales agents and sales leads) — same as scoreboard
@@ -192,31 +194,33 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       setSalesUsers(users || []);
       const userIds = (users || []).map(u => u.id);
 
-      // Fetch customers data (same source as scoreboard for revenue/deals)
-      let customersQuery = supabase
-        .from('customers')
-        .select('id, assigned_to, final_amount, created_at, status')
-        .eq('is_deleted', false)
-        .ilike('status', 'active')
-        .in('assigned_to', userIds);
+      // Fetch customers data (same source as scoreboard for revenue/deals) — paginated
+      const buildCustomersQuery = () => {
+        let q = supabase
+          .from('customers')
+          .select('id, assigned_to, final_amount, created_at, status')
+          .eq('is_deleted', false)
+          .ilike('status', 'active')
+          .in('assigned_to', userIds);
+        if (filters?.dateFrom) {
+          const fromISO = new Date(filters.dateFrom);
+          fromISO.setHours(0, 0, 0, 0);
+          q = q.gte('created_at', fromISO.toISOString());
+        }
+        if (filters?.dateTo) {
+          const toISO = new Date(filters.dateTo);
+          toISO.setHours(23, 59, 59, 999);
+          q = q.lte('created_at', toISO.toISOString());
+        }
+        if (filters?.agentId && filters.agentId !== 'all' && filters.agentId !== 'unassigned') {
+          q = q.eq('assigned_to', filters.agentId);
+        }
+        return q;
+      };
 
-      // Apply date filter to customers
-      if (filters?.dateFrom) {
-        const fromISO = new Date(filters.dateFrom);
-        fromISO.setHours(0, 0, 0, 0);
-        customersQuery = customersQuery.gte('created_at', fromISO.toISOString());
-      }
-      if (filters?.dateTo) {
-        const toISO = new Date(filters.dateTo);
-        toISO.setHours(23, 59, 59, 999);
-        customersQuery = customersQuery.lte('created_at', toISO.toISOString());
-      }
-      // Apply agent filter to customers
-      if (filters?.agentId && filters.agentId !== 'all' && filters.agentId !== 'unassigned') {
-        customersQuery = customersQuery.eq('assigned_to', filters.agentId);
-      }
-
-      const { data: customers } = await customersQuery;
+      const { data: customers } = userIds.length > 0
+        ? await fetchAllRows<any>(buildCustomersQuery)
+        : { data: [] as any[] };
       const customersData = (filters?.agentId === 'unassigned') ? [] : (customers || []);
 
       // Calculate leaderboard using customers for revenue/deals (matches scoreboard)
@@ -294,9 +298,9 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         .sort((a, b) => b.count - a.count);
 
       // Tag distribution
-      const { data: tagAssignments } = await supabase
-        .from('lead_tag_assignments')
-        .select('tag_id, lead_tags(name, color)');
+      const { data: tagAssignments } = await fetchAllRows<any>(() =>
+        supabase.from('lead_tag_assignments').select('tag_id, lead_tags(name, color)')
+      );
 
       const tagMap = new Map<string, { count: number; color: string }>();
       (tagAssignments || []).forEach((t: any) => {
