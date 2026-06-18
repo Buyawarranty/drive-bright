@@ -1683,6 +1683,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                             <div>
                               <div className="font-medium text-sm flex items-center gap-2">
                                 {getAgentName(agent)}
+                                <TeamBadge userId={cap.admin_user_id} variant="pill" />
                                 {status === 'active' && !cap.paused && (
                                   <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-green-600 hover:bg-green-600">
                                     <Zap className="h-2.5 w-2.5 mr-0.5" />
