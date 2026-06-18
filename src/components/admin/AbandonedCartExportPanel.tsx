@@ -99,7 +99,40 @@ function csvText(v: string): string {
 }
 
 
-export function buildAbandonedCartCsv(carts: AbandonedCart[], platform: Platform): string {
+export function buildAbandonedCartCsv(
+  carts: AbandonedCart[],
+  platform: Platform,
+  options?: { conversionName?: string; defaultValue?: number; timeZone?: string }
+): string {
+  if (platform === 'google_offline') {
+    // Google Ads Offline Conversion Import (gclid-based)
+    // https://support.google.com/google-ads/answer/7014069
+    const tz = options?.timeZone || 'Europe/London';
+    const conversionName = options?.conversionName || 'Abandoned Cart';
+    const defaultValue = options?.defaultValue ?? 1;
+    const lines: string[] = [];
+    lines.push(`Parameters:TimeZone=${tz}`);
+    lines.push(['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency', 'Ad User Data', 'Ad Personalization'].join(','));
+    for (const c of carts) {
+      const gclid = c.cart_metadata?.gclid ? String(c.cart_metadata.gclid).trim() : '';
+      if (!gclid) continue;
+      const d = new Date(c.created_at);
+      // Format: YYYY-MM-DD HH:MM:SS+HH:MM (use +00:00; TimeZone parameter handles offset)
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const convTime = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}+00:00`;
+      const value = Number(c.cart_metadata?.total_price) || defaultValue;
+      lines.push([
+        csvEscape(gclid),
+        csvEscape(conversionName),
+        csvEscape(convTime),
+        csvEscape(String(value)),
+        csvEscape('GBP'),
+        csvEscape('GRANTED'),
+        csvEscape('GRANTED'),
+      ].join(','));
+    }
+    return lines.join('\n');
+  }
   if (platform === 'google') {
     // Google Customer Match CSV format
     const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Country', 'Zip'];
