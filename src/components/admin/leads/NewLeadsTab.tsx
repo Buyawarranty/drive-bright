@@ -563,8 +563,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return filteredLeads.filter(lead => isRecoveredLead(lead));
   }, [filteredLeads, isRecoveredLead, filter]);
 
+  // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
+  const teamFilteredFreshLeads = useMemo(() => {
+    if (!teamFilter) return freshLeads;
+    return freshLeads.filter(l => l.assigned_to && agentTeamMap.get(l.assigned_to)?.id === teamFilter);
+  }, [freshLeads, teamFilter, agentTeamMap]);
+
   // Pagination for leads table (fresh only)
-  const pagination = usePagination(freshLeads, { initialPageSize: 50 });
+  const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
 
   // Separate pagination for unworked leads
   const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
