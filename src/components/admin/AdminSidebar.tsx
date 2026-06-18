@@ -106,6 +106,12 @@ const defaultTabs: Tab[] = [
     description: 'Chase aged leads — oldest first, full toolkit'
   },
   {
+    id: 'retention',
+    label: 'Retention',
+    icon: Repeat,
+    description: 'Renewals + upsells for active customers'
+  },
+  {
     id: 'get-quote',
     label: 'Quotes & Orders',
     icon: Calculator,
