@@ -390,7 +390,7 @@ const AdminDashboard = () => {
           />
         );
       case 'plans':
-        return <PlansTab />;
+        return <TermsAndConditionsTab />;
       case 'bulk-pricing':
         return <BulkPricingTab />;
       case 'special-plans':
