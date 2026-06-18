@@ -170,9 +170,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canManageRouting =
     userRole === 'super_admin' ||
     userRole === 'admin' ||
-    userRole === 'performance_manager' ||
-    userRole === 'sales_manager' ||
-    hasGranularPermission('new-leads', 'lead-routing') === true;
+    userRole === 'sales_manager';
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const reminderLeadIdsForFetch = useMemo(
     () => Array.from(reminderLeadIds).filter(id => !id.startsWith('customer_') && !id.startsWith('cart_') && !id.startsWith('claim_')),
