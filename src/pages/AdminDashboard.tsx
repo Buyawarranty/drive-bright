@@ -87,10 +87,17 @@ const getFirstPermittedTab = (role: string | null, permissions?: Record<string, 
   return 'customers';
 };
 
+// Tabs that are restricted to super_admin / dev_tester by default.
+// Other roles only see them when explicitly granted via tab_<id> = true in permissions.
+const SUPER_ADMIN_ONLY_TABS = new Set<string>(['plans']);
+
 const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
+  if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
+    return permissions?.[permKey] === true;
+  }
   if (role === 'admin') return permissions?.[permKey] !== false;
   if (role === 'claims_agent') return permissions ? permissions[permKey] === true : CLAIMS_AGENT_TABS.includes(tab);
   if (role === 'claims_manager') return permissions?.[permKey] === true || CLAIMS_MANAGER_TABS.includes(tab);
