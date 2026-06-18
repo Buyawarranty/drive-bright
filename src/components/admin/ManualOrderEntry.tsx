@@ -105,7 +105,7 @@ const initialOrderData: ManualOrderData = {
   startDate: new Date().toISOString().split('T')[0],
   expiryDate: '',
   voluntaryExcess: 0,
-  claimLimit: 1250,
+  claimLimit: 2000,
   totalAmount: '',
   wearTearCover: false,
   vehicleRecovery: false, // Auto-included for 2-year and 3-year only
@@ -165,9 +165,9 @@ Bumper
 Duration
 1 Year
 Voluntary Excess
-£100
+£0
 Claim Limit
-£1,250
+£2,000
 Total Amount
 [Enter amount]
 Wear & Tear Cover
@@ -266,7 +266,7 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         startDate: startDate,
         expiryDate: expiryDate,
         voluntaryExcess: policyToEdit.voluntary_excess || 0,
-        claimLimit: policyToEdit.claim_limit || 1250,
+        claimLimit: policyToEdit.claim_limit || 2000,
         totalAmount: policyToEdit.payment_amount?.toString() || '',
         wearTearCover: policyToEdit.wear_tear || false,
         vehicleRecovery: policyToEdit.breakdown_recovery || false,
@@ -1371,7 +1371,8 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
                   <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50</ToggleGroupItem>
                   <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100</ToggleGroupItem>
                   <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150</ToggleGroupItem>
-                  <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200</ToggleGroupItem>
+                  <ToggleGroupItem value="250" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£250</ToggleGroupItem>
+                  <ToggleGroupItem value="500" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£500</ToggleGroupItem>
                 </ToggleGroup>
               </div>
 
@@ -1384,11 +1385,8 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
                   className="justify-start flex-wrap gap-2"
                 >
                   <ToggleGroupItem value="750" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,000</ToggleGroupItem>
-                  <ToggleGroupItem value="1250" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£1,250</ToggleGroupItem>
                   <ToggleGroupItem value="2000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,000</ToggleGroupItem>
-                  <ToggleGroupItem value="2500" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£2,500</ToggleGroupItem>
                   <ToggleGroupItem value="3000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£3,000</ToggleGroupItem>
-                  <ToggleGroupItem value="4000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£4,000</ToggleGroupItem>
                   <ToggleGroupItem value="5000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£5,000</ToggleGroupItem>
                 </ToggleGroup>
               </div>
