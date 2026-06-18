@@ -157,30 +157,30 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
 
   const fetchTeamStats = useCallback(async (filters?: TeamFilters) => {
     try {
-      // Get all leads (for lead counts, status breakdowns, tags)
-      let leadsQuery = supabase.from('sales_leads').select('id, status, assigned_to, call_count, last_contacted_at, created_at, priority, lead_source, converted_at, lost_at, lost_reason').limit(10000);
-      
-      // Apply date filter to leads
-      if (filters?.dateFrom) {
-        const fromISO = new Date(filters.dateFrom);
-        fromISO.setHours(0, 0, 0, 0);
-        leadsQuery = leadsQuery.gte('created_at', fromISO.toISOString());
-      }
-      if (filters?.dateTo) {
-        const toISO = new Date(filters.dateTo);
-        toISO.setHours(23, 59, 59, 999);
-        leadsQuery = leadsQuery.lte('created_at', toISO.toISOString());
-      }
-      // Apply agent filter to leads
-      if (filters?.agentId && filters.agentId !== 'all') {
-        if (filters.agentId === 'unassigned') {
-          leadsQuery = leadsQuery.is('assigned_to', null);
-        } else {
-          leadsQuery = leadsQuery.eq('assigned_to', filters.agentId);
+      // Get all leads (for lead counts, status breakdowns, tags) — paginated to bypass 1000-row default
+      const buildLeadsQuery = () => {
+        let q = supabase.from('sales_leads').select('id, status, assigned_to, call_count, last_contacted_at, created_at, priority, lead_source, converted_at, lost_at, lost_reason');
+        if (filters?.dateFrom) {
+          const fromISO = new Date(filters.dateFrom);
+          fromISO.setHours(0, 0, 0, 0);
+          q = q.gte('created_at', fromISO.toISOString());
         }
-      }
+        if (filters?.dateTo) {
+          const toISO = new Date(filters.dateTo);
+          toISO.setHours(23, 59, 59, 999);
+          q = q.lte('created_at', toISO.toISOString());
+        }
+        if (filters?.agentId && filters.agentId !== 'all') {
+          if (filters.agentId === 'unassigned') {
+            q = q.is('assigned_to', null);
+          } else {
+            q = q.eq('assigned_to', filters.agentId);
+          }
+        }
+        return q;
+      };
 
-      const { data: leads } = await leadsQuery;
+      const { data: leads } = await fetchAllRows<any>(buildLeadsQuery);
       const leadsData = leads || [];
 
       // Get only sales-role users (sales agents and sales leads) — same as scoreboard
