@@ -438,6 +438,24 @@ export const AbandonedCartExportPanel: React.FC<Props> = ({ candidateCarts }) =>
           </div>
         )}
 
+        {platform === 'google_offline' && (
+          <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+            <div>
+              <Label className="text-xs">Conversion Name (must match a conversion action in Google Ads)</Label>
+              <Input
+                value={conversionName}
+                onChange={(e) => setConversionName(e.target.value)}
+                placeholder="Abandoned Cart"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Only carts that arrived via a Google ad click (have a stored <code>gclid</code>) will be included.
+              Conversion value uses each cart's total price when available, otherwise £1. Time zone: Europe/London.
+              Upload at: Google Ads → Tools → Conversions → Uploads.
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-muted-foreground" />
