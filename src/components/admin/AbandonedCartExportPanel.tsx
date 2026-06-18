@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Download, FileSpreadsheet, History, Calendar } from 'lucide-react';
 import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
-type Platform = 'google' | 'facebook';
+type Platform = 'google' | 'google_offline' | 'facebook';
 type DatePreset = 'today' | 'yesterday' | 'last7' | 'last30' | 'this_week' | 'this_month' | 'last_month' | 'last90' | 'custom';
 type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'organic';
 
