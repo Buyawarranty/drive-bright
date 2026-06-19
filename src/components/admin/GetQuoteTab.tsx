@@ -2878,21 +2878,20 @@ Questions? Call 0330 229 5040`;
                     <div className="space-y-1">
                       <Label className="text-base font-semibold">Custom Pricing</Label>
                       <p className="text-sm text-muted-foreground">
-                        {isPriceOverridden 
-                          ? "Using custom price — edit fields or reset to calculated" 
+                        {isPriceOverridden
+                          ? "Using custom price — edit fields or reset to calculated"
                           : "Auto-calculated based on selections — edit to override"}
                       </p>
                     </div>
-                    {isPriceOverridden && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={resetToCalculatedPrice}
-                        className="text-xs"
-                      >
-                        Reset to Calculated
-                      </Button>
-                    )}
+                    <Button
+                      variant={isPriceOverridden ? "default" : "outline"}
+                      size="sm"
+                      onClick={resetToCalculatedPrice}
+                      className="text-xs font-semibold gap-1.5"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Reset Price
+                    </Button>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
