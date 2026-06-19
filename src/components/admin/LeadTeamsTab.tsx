@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { useViewAs } from '@/contexts/ViewAsContext';
-import { Users, ChevronDown, ChevronRight, Settings2 } from 'lucide-react';
+import { Users, ChevronDown, ChevronRight, Settings2, ArrowLeft } from 'lucide-react';
 
-export const LeadTeamsTab = () => {
+interface LeadTeamsTabProps {
+  onNavigateToTab?: (tab: string) => void;
+}
+
+export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
   const canEdit =
     effectiveRole === 'super_admin' ||
@@ -32,10 +36,24 @@ export const LeadTeamsTab = () => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="border-b-2 border-foreground pb-3">
-        <h1 className="text-2xl font-bold tracking-tight uppercase">Master Allocation</h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
-          One list. Set each agent's team tag, turn lead receiving on/off, and weight their share. New leads round-robin across whoever is on.
-        </p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight uppercase">Master Allocation</h1>
+            <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
+              One list. Set each agent's team tag, turn lead receiving on/off, and weight their share. New leads round-robin across whoever is on.
+            </p>
+          </div>
+          {onNavigateToTab && (
+            <button
+              type="button"
+              onClick={() => onNavigateToTab('new-leads')}
+              className="inline-flex items-center gap-2 px-3 py-2 border-2 border-foreground bg-background text-sm font-bold uppercase tracking-wide hover:bg-muted transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Leads
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Single primary section */}
