@@ -246,6 +246,10 @@ interface UseLeadsOptions {
 
 export const useLeads = (options?: UseLeadsOptions) => {
   const { user, loading: authLoading } = useAuth();
+  const { isImpersonating, effectiveAdminUserId, effectiveRole, effectivePermissions } = useViewAs();
+  // Refs so fetchLeads can read the latest impersonation state without being recreated
+  const impersonationRef = useRef({ isImpersonating, effectiveAdminUserId, effectiveRole, effectivePermissions });
+  impersonationRef.current = { isImpersonating, effectiveAdminUserId, effectiveRole, effectivePermissions };
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
