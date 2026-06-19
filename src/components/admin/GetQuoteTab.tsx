@@ -2145,6 +2145,50 @@ Questions? Call 0330 229 5040`;
 
                 <div className="space-y-2">
                   <Label>Mileage</Label>
+
+                  {/* MOT-based quick prefill (mirrors customer journey UX) */}
+                  {autoPreview.data?.motMileage ? (
+                    <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const m = Number(autoPreview.data!.motMileage);
+                          setMileage(m.toLocaleString());
+                          setSliderMileage(Math.min(m, 150000));
+                        }}
+                        className="text-sm font-medium text-blue-700 hover:underline"
+                      >
+                        Last recorded MOT: <span className="font-bold">{Number(autoPreview.data.motMileage).toLocaleString()} miles</span>
+                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Or roughly how many miles since MOT?</span>
+                        {[
+                          { label: 'Same as MOT', add: 0 },
+                          { label: '+2,500', add: 2500 },
+                          { label: '+5,000', add: 5000 },
+                          { label: '+10,000', add: 10000 },
+                        ].map(({ label, add }) => {
+                          const target = Number(autoPreview.data!.motMileage) + add;
+                          return (
+                            <Button
+                              key={label}
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                              onClick={() => {
+                                setMileage(target.toLocaleString());
+                                setSliderMileage(Math.min(target, 150000));
+                              }}
+                            >
+                              {label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="flex gap-2">
                     <Input
                       type="text"
@@ -2181,6 +2225,7 @@ Questions? Call 0330 229 5040`;
                     min={0}
                     max={150000}
                   />
+                  <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
                 </div>
 
                 {/* Age Override Option */}
