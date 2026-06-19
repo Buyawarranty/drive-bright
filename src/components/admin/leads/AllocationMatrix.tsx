@@ -290,29 +290,10 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
                     {teamMembers.length === 1 ? '' : 's'}
                   </span>
                 </CardTitle>
-                {canEdit && (
-                  <div className="flex items-center gap-1 flex-wrap">
-                    <span className="text-[11px] text-muted-foreground mr-1">Bulk:</span>
-                    {WORKSTREAMS.map(w => (
-                      <div key={w.key} className="inline-flex items-center gap-0.5 border rounded text-[11px] overflow-hidden">
-                        <span className="px-1.5 py-0.5 bg-muted">{w.short}</span>
-                        <button
-                          onClick={() => bulkSetTeamWorkstream(team.id, w.key, true)}
-                          className="px-1.5 py-0.5 hover:bg-emerald-100"
-                          title={`Enable ${w.label} for all`}
-                        >On</button>
-                        <button
-                          onClick={() => bulkSetTeamWorkstream(team.id, w.key, false)}
-                          className="px-1.5 py-0.5 hover:bg-red-100 border-l"
-                          title={`Disable ${w.label} for all`}
-                        >Off</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </CardHeader>
             <CardContent className="p-0">
+              {/* per-agent toggles below — bulk controls removed so allocation is strictly per individual agent */}
               {teamMembers.length === 0 ? (
                 <div className="px-4 py-6 text-center text-sm text-muted-foreground">
                   {filter === 'all' ? 'No members yet.' : `No-one on ${WORKSTREAMS.find(w => w.key === filter)?.label} in this team.`}
