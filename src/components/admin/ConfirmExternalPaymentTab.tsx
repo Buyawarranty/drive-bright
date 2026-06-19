@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+// Dialog removed — page now renders inline as a full workflow (no modal)
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -55,8 +55,8 @@ const termOptions = [
 
 const excessOptions = [0, 50, 100, 150, 250, 500];
 
+// Note: AutoCare Basic (£1,000 / internal 750) removed — no longer offered
 const claimLimitOptions = [
-  { value: 750, label: '£1,000', description: 'AutoCare Basic' },
   { value: 2000, label: '£2,000', description: 'AutoCare Essential' },
   { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
@@ -513,752 +513,604 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     return name || admin.email.split('@')[0];
   };
 
+  // ============================================================
+  // INLINE PAGE FLOW (no modal): 'form' → 'details' → 'preview' → 'complete'
+  // The state machine `externalPaymentStep` + `showConfirmDialog` is preserved
+  // so all handlers and API calls work exactly as before.
+  // ============================================================
+  const inPaymentFlow = showConfirmDialog;
+
   return (
     <>
-    <DuplicateWarrantyDialog
-      isOpen={duplicateWarning.show}
-      onClose={() => setDuplicateWarning({ show: false })}
-      record={duplicateWarning.record}
-    />
-    <div className="space-y-6">
-      {/* Step 1: Vehicle & Customer Lookup */}
-      <Card className="border-border">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
+      <DuplicateWarrantyDialog
+        isOpen={duplicateWarning.show}
+        onClose={() => setDuplicateWarning({ show: false })}
+        record={duplicateWarning.record}
+      />
+
+      <div className="min-h-screen bg-slate-50/60 -m-4 md:-m-6 lg:-m-8 p-4 md:p-8 lg:p-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Page header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <CreditCard className="h-5 w-5 text-primary" />
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                <CreditCard className="h-6 w-6 text-primary" />
                 Confirm External Payment
-              </CardTitle>
-              <CardDescription>
-                Look up vehicle and customer to confirm payment received elsewhere
-              </CardDescription>
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                {inPaymentFlow
+                  ? externalPaymentStep === 'details'
+                    ? 'Step 2: Verify details and enter payment information'
+                    : externalPaymentStep === 'preview'
+                      ? 'Step 3: Review all data before creating the policy'
+                      : 'Done — policy created'
+                  : 'Step 1: Find the vehicle and configure the policy'}
+              </p>
             </div>
-            <LeadSearchPopover onSelectLead={handleLeadSelect} />
+            {!inPaymentFlow && (
+              <div className="flex items-center gap-2">
+                {selectedLeadId && (
+                  <Badge variant="secondary" className="gap-1">
+                    <UserCheck className="h-3 w-3" />
+                    Lead imported
+                  </Badge>
+                )}
+                <LeadSearchPopover onSelectLead={handleLeadSelect} />
+              </div>
+            )}
+            {inPaymentFlow && externalPaymentStep !== 'complete' && (
+              <Button
+                variant="outline"
+                onClick={() => { setShowConfirmDialog(false); setExternalPaymentStep('details'); }}
+              >
+                ← Back to edit
+              </Button>
+            )}
           </div>
-          {selectedLeadId && (
-            <Badge variant="secondary" className="gap-1 w-fit mt-2">
-              <UserCheck className="h-3 w-3" />
-              Lead imported
-            </Badge>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Registration Lookup */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Registration Number</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={regNumber}
-                  onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
-                  placeholder="e.g. AB12 CDE"
-                  className="uppercase text-xl font-bold py-5 flex-1"
-                  maxLength={8}
-                />
-                <Button 
-                  onClick={() => handleVehicleLookup()}
-                  disabled={isLookingUp}
-                  className="gap-2"
-                >
-                  {isLookingUp ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Search className="w-4 h-4" />
+
+          {/* ============================================================
+              STEP 1 — Form (vehicle + customer + policy)
+              ============================================================ */}
+          {!inPaymentFlow && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              <div className="lg:col-span-2 space-y-6">
+                {/* Yellow reg-plate hero */}
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                  <Label className="block text-sm font-semibold text-slate-700 mb-3">
+                    Vehicle Registration
+                  </Label>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <div className="relative w-full sm:w-auto">
+                      <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-3 h-[70%] bg-[#003399] rounded-[2px] pointer-events-none z-10" />
+                      <Input
+                        value={regNumber}
+                        onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
+                        placeholder="AB12 CDE"
+                        maxLength={8}
+                        className="bg-[#FFD307] border-2 border-slate-900 rounded-md py-4 pl-8 pr-6 text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-widest placeholder:text-slate-900/30 text-center w-full sm:w-[260px] shadow-[3px_3px_0px_0px_rgba(0,0,0,0.15)] focus-visible:ring-2 focus-visible:ring-[#FFD307] focus-visible:ring-offset-2"
+                        style={{ fontFamily: '"UKNumberPlate", "Arial Narrow", sans-serif' }}
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 flex-1 w-full">
+                      <Button
+                        onClick={() => handleVehicleLookup()}
+                        disabled={isLookingUp || !regNumber.trim()}
+                        size="lg"
+                        className="gap-2"
+                      >
+                        {isLookingUp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                        Look up vehicle
+                      </Button>
+                      <p className="text-xs text-slate-500 self-center">
+                        Or use <span className="font-medium text-slate-700">Import existing lead</span> above to pre-fill everything.
+                      </p>
+                    </div>
+                  </div>
+
+                  {vehicleData && (
+                    <div className="mt-4 p-4 bg-emerald-50/60 border border-emerald-200/70 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Car className="h-4 w-4 text-emerald-700" />
+                        <span className="font-semibold text-emerald-900 text-sm">Vehicle found</span>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-slate-700">
+                        <div><span className="text-slate-500">Make:</span> <span className="font-medium">{vehicleData.make}</span></div>
+                        <div><span className="text-slate-500">Model:</span> <span className="font-medium">{vehicleData.model}</span></div>
+                        <div><span className="text-slate-500">Year:</span> <span className="font-medium">{vehicleData.year}</span></div>
+                        <div><span className="text-slate-500">Fuel:</span> <span className="font-medium">{vehicleData.fuelType}</span></div>
+                      </div>
+                    </div>
                   )}
-                  Lookup
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Mileage</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={mileage}
-                  onChange={handleMileageChange}
-                  placeholder="e.g. 45000"
-                  className="flex-1"
-                />
-                <Select
-                  value={sliderMileage.toString()}
-                  onValueChange={(value) => {
-                    const numValue = parseInt(value, 10);
-                    setSliderMileage(numValue);
-                    setMileage(numValue.toLocaleString());
-                  }}
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Quick" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {mileageDropdownOptions.map((miles) => (
-                      <SelectItem key={miles} value={miles.toString()}>
-                        {miles.toLocaleString()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+                </section>
 
-          {/* Vehicle Details Display */}
-          {vehicleData && (
-            <div className="p-4 bg-muted/50 border border-border rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Car className="h-4 w-4 text-primary" />
-                <span className="font-semibold text-foreground">Vehicle Found</span>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                <div><span className="text-muted-foreground">Make:</span> {vehicleData.make}</div>
-                <div><span className="text-muted-foreground">Model:</span> {vehicleData.model}</div>
-                <div><span className="text-muted-foreground">Year:</span> {vehicleData.year}</div>
-                <div><span className="text-muted-foreground">Fuel:</span> {vehicleData.fuelType}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Customer Details - Split first/last name */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>First Name *</Label>
-              <Input
-                value={customerFirstName}
-                onChange={(e) => setCustomerFirstName(e.target.value)}
-                placeholder="John"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Last Name *</Label>
-              <Input
-                value={customerLastName}
-                onChange={(e) => setCustomerLastName(e.target.value)}
-                placeholder="Smith"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="john@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone</Label>
-              <Input
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="07xxx xxxxxx"
-              />
-            </div>
-          </div>
-
-          {/* Assignee Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <UserPlus className="w-4 h-4" />
-              Assign To
-            </Label>
-            <Select value={assigneeId} onValueChange={setAssigneeId}>
-              <SelectTrigger className="w-full md:w-[300px]">
-                <SelectValue placeholder="Select assignee..." />
-              </SelectTrigger>
-              <SelectContent>
-                {adminUsers.map((admin) => (
-                  <SelectItem key={admin.id} value={admin.id}>
-                    {getAdminDisplayName(admin)}
-                    {admin.id === currentAdminUserId && ' (You)'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Policy Configuration */}
-          {vehicleData && (
-            <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold flex items-center gap-2 text-foreground">
-                  <Zap className="h-4 w-4 text-primary" />
-                  Policy Configuration
-                </h4>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsEditingPolicyConfig(!isEditingPolicyConfig)}
-                  className="gap-1 text-primary hover:text-primary/80"
-                >
-                  <Edit className="w-3 h-3" />
-                  {isEditingPolicyConfig ? 'Done' : 'Edit'}
-                </Button>
-              </div>
-              
-              {isEditingPolicyConfig ? (
-                <>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Duration */}
-                    <div className="space-y-2">
-                      <Label>Duration</Label>
-                      <Select value={paymentType} onValueChange={(v) => setPaymentType(v as PaymentPeriod)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                {/* Customer details */}
+                <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-3 bg-slate-50 border-b border-slate-200">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Customer details</h2>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">First Name *</Label>
+                      <Input value={customerFirstName} onChange={(e) => setCustomerFirstName(e.target.value)} placeholder="John" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Last Name *</Label>
+                      <Input value={customerLastName} onChange={(e) => setCustomerLastName(e.target.value)} placeholder="Smith" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Email *</Label>
+                      <Input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="john@example.com" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Phone</Label>
+                      <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="07xxx xxxxxx" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Mileage</Label>
+                      <div className="flex gap-2">
+                        <Input type="text" inputMode="numeric" value={mileage} onChange={handleMileageChange} placeholder="e.g. 45000" className="flex-1" />
+                        <Select
+                          value={sliderMileage.toString()}
+                          onValueChange={(value) => {
+                            const numValue = parseInt(value, 10);
+                            setSliderMileage(numValue);
+                            setMileage(numValue.toLocaleString());
+                          }}
+                        >
+                          <SelectTrigger className="w-[110px]"><SelectValue placeholder="Quick" /></SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {mileageDropdownOptions.map((miles) => (
+                              <SelectItem key={miles} value={miles.toString()}>{miles.toLocaleString()}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                        <UserPlus className="w-3.5 h-3.5" /> Assign to sales agent
+                      </Label>
+                      <Select value={assigneeId} onValueChange={setAssigneeId}>
+                        <SelectTrigger><SelectValue placeholder="Select agent..." /></SelectTrigger>
                         <SelectContent>
-                          {termOptions.map((opt) => (
-                            <SelectItem key={opt.id} value={opt.id}>
-                              {opt.label}
+                          {adminUsers.map((admin) => (
+                            <SelectItem key={admin.id} value={admin.id}>
+                              {getAdminDisplayName(admin)}{admin.id === currentAdminUserId && ' (You)'}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    
-                    {/* Excess */}
-                    <div className="space-y-2">
-                      <Label>Excess</Label>
-                      <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {excessOptions.map((opt) => (
-                            <SelectItem key={opt} value={opt.toString()}>
-                              £{opt}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  </div>
+                </section>
+
+                {/* Policy configuration */}
+                {vehicleData && (
+                  <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <Zap className="h-3.5 w-3.5 text-primary" /> Policy configuration
+                      </h2>
                     </div>
-                    
-                    {/* Claim Limit */}
-                    <div className="space-y-2">
-                      <Label>Claim Limit</Label>
-                      <Select value={claimLimit.toString()} onValueChange={(v) => setClaimLimit(parseInt(v))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getVisibleClaimLimits(vehicleData?.make).map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value.toString()}>
-                              {opt.label} - {opt.description}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {(paymentType === '24months' || paymentType === '36months') && (
-                        <p className="text-xs text-green-600 font-medium">✨ Free upgrade to £2,000 on multi-year plans!</p>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Plan</Label>
+                        <Input value="Platinum" readOnly className="bg-slate-100 text-slate-600 cursor-not-allowed" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Duration</Label>
+                        <Select value={paymentType} onValueChange={(v) => setPaymentType(v as PaymentPeriod)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {termOptions.map((opt) => (<SelectItem key={opt.id} value={opt.id}>{opt.label}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Excess</Label>
+                        <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {excessOptions.map((opt) => (<SelectItem key={opt} value={opt.toString()}>£{opt}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Claim Limit</Label>
+                        <Select value={claimLimit.toString()} onValueChange={(v) => setClaimLimit(parseInt(v))}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {getVisibleClaimLimits(vehicleData?.make).map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label} — {opt.description}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {(paymentType === '24months' || paymentType === '36months') && (
+                          <p className="text-xs text-emerald-600 font-medium">✨ Free upgrade to £2,000 on multi-year plans</p>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Labour Rate</Label>
+                        <Select value={labourRate.toString()} onValueChange={(v) => setLabourRate(parseInt(v))}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {labourRateOptions.map((opt) => (<SelectItem key={opt.rate} value={opt.rate.toString()}>{opt.label}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Free Extended Cover</Label>
+                        <Select value={freeExtendedCover} onValueChange={(v: any) => setFreeExtendedCover(v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="3months">+3 Months FREE</SelectItem>
+                            <SelectItem value="6months">+6 Months FREE</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-center gap-3">
+                          <Info className="w-4 h-4 text-indigo-500" />
+                          <span className="text-sm text-indigo-700 font-medium">
+                            Included Add-ons:{' '}
+                            {getAutoIncludedAddOns(paymentType).length > 0
+                              ? getAutoIncludedAddOns(paymentType).map(a => a.charAt(0).toUpperCase() + a.slice(1)).join(', ')
+                              : 'None'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              {/* Sticky summary */}
+              <aside className="lg:sticky lg:top-6 space-y-4">
+                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl">
+                  <h3 className="text-base font-bold mb-5">Policy Summary</h3>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex justify-between items-start">
+                      <span className="text-slate-400 text-sm">Vehicle</span>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm">{vehicleData ? `${vehicleData.make} ${vehicleData.model}` : '—'}</p>
+                        {vehicleData && <p className="text-xs text-slate-500 uppercase">{vehicleData.regNumber}</p>}
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Plan</span>
+                      <span className="font-semibold">Platinum ({termOptions.find(t => t.id === paymentType)?.label.replace(' Cover','')})</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Claim Limit</span>
+                      <span className="font-semibold text-emerald-400">£{claimLimit.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Excess</span>
+                      <span className="font-semibold">£{excessAmount}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Labour</span>
+                      <span className="font-semibold">£{labourRate}/hr</span>
+                    </div>
+                    <div className="pt-4 border-t border-slate-800">
+                      <div className="flex justify-between items-end">
+                        <span className="text-slate-400 text-sm">Total Due</span>
+                        <span className="text-3xl font-bold">£{currentPrice.totalPrice}</span>
+                      </div>
+                      {currentPrice.monthlyPrice > 0 && (
+                        <p className="text-xs text-slate-500 text-right mt-1">£{currentPrice.monthlyPrice}/month equivalent</p>
                       )}
                     </div>
-                    
-                    {/* Labour Rate */}
-                    <div className="space-y-2">
-                      <Label>Labour Rate</Label>
-                      <Select value={labourRate.toString()} onValueChange={(v) => setLabourRate(parseInt(v))}>
-                        <SelectTrigger>
-                          <SelectValue />
+                  </div>
+                  <Button
+                    onClick={handleOpenConfirmDialog}
+                    disabled={!vehicleData || !customerFirstName || !customerLastName || !customerEmail}
+                    className="w-full py-6 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg"
+                  >
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Confirm External Payment
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <p className="text-center text-slate-500 text-xs mt-3">
+                    Activates the policy and emails the customer.
+                  </p>
+                </div>
+              </aside>
+            </div>
+          )}
+
+          {/* ============================================================
+              STEP 2 — Details (the former dialog "details" step)
+              ============================================================ */}
+          {inPaymentFlow && externalPaymentStep === 'details' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              <div className="lg:col-span-2 space-y-6">
+                {existingPolicyWarning && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{existingPolicyWarning}</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Customer & vehicle */}
+                <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-3 bg-slate-50 border-b border-slate-200">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                      <UserCheck className="w-3.5 h-3.5 text-primary" /> Customer & Vehicle
+                    </h2>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">First Name *</Label>
+                      <Input value={editableFirstName} onChange={(e) => setEditableFirstName(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Last Name *</Label>
+                      <Input value={editableLastName} onChange={(e) => setEditableLastName(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Email *</Label>
+                      <Input value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Phone</Label>
+                      <Input value={editableCustomerPhone} onChange={(e) => setEditableCustomerPhone(e.target.value)} placeholder="07xxx xxxxxx" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Registration *</Label>
+                      <Input value={editableRegNumber} onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())} className="font-mono uppercase" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Mileage</Label>
+                      <Input value={editableMileage} onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))} />
+                    </div>
+                    <div className="md:col-span-2 space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Vehicle</Label>
+                      <Input value={`${vehicleData?.make ?? ''} ${vehicleData?.model ?? ''} (${vehicleData?.year ?? ''})`} readOnly className="bg-slate-100 text-slate-600" />
+                    </div>
+                  </div>
+                </section>
+
+                {/* Address */}
+                <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Customer Address</h2>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        id="skip-address"
+                        checked={skipAddressDetails}
+                        onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
+                      />
+                      <span className="text-xs font-medium text-slate-600">Customer will complete in dashboard</span>
+                    </label>
+                  </div>
+                  <div className="p-6">
+                    {!skipAddressDetails ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
+                          <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-500">Street</Label>
+                          <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
+                          <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-500">County</Label>
+                          <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
+                          <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                        </div>
+                      </div>
+                    ) : (
+                      <Alert className="bg-slate-50 border-slate-200">
+                        <Info className="h-4 w-4 text-slate-500" />
+                        <AlertDescription className="text-slate-600 text-sm">
+                          The customer will be prompted to complete their address in their dashboard.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                </section>
+
+                {/* Payment */}
+                <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-3 bg-slate-50 border-b border-slate-200">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                      <CreditCard className="w-3.5 h-3.5 text-primary" /> Payment details
+                    </h2>
+                  </div>
+                  <div className="p-6 space-y-5">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500">Payment Source *</Label>
+                      <select
+                        value={paymentSource}
+                        onChange={(e) => setPaymentSource(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900"
+                      >
+                        <option value="">Select payment source...</option>
+                        <option value="stripe_dashboard">Stripe Dashboard</option>
+                        <option value="bumper_portal">Bumper Portal</option>
+                        <option value="payment_assist">Payment Assist</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="phone_card">Phone Card Payment</option>
+                        <option value="dealer_portal">Dealer Portal</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500">Amount Received (£) *</Label>
+                        <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder={currentPrice.totalPrice.toString()} />
+                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                          <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                          <CalendarIcon className="w-3.5 h-3.5" /> Warranty Start Date *
+                        </Label>
+                        <Popover open={isStartDateCalendarOpen} onOpenChange={setIsStartDateCalendarOpen}>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start font-normal">
+                              {format(warrantyStartDate, 'd MMM yyyy')}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <CalendarComponent
+                              mode="single"
+                              selected={warrantyStartDate}
+                              onSelect={(date) => {
+                                if (date) setWarrantyStartDate(date);
+                                setIsStartDateCalendarOpen(false);
+                              }}
+                              disabled={(date) => date < new Date()}
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                        <UserPlus className="w-3.5 h-3.5" /> Assign to Sales Agent *
+                      </Label>
+                      <Select value={assigneeId} onValueChange={setAssigneeId}>
+                        <SelectTrigger className={!assigneeId ? 'border-destructive' : ''}>
+                          <SelectValue placeholder="Select sales agent (required)..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {labourRateOptions.map((opt) => (
-                            <SelectItem key={opt.rate} value={opt.rate.toString()}>
-                              {opt.label}
-                            </SelectItem>
+                          {adminUsers.map((admin) => (
+                            <SelectItem key={admin.id} value={admin.id}>{getAdminDisplayName(admin)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {!assigneeId && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Sales agent is required for commission tracking
+                        </p>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-4 pt-2">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="boost"
-                        checked={boostAddon}
-                        onCheckedChange={(c) => setBoostAddon(c === true)}
-                      />
-                      <Label htmlFor="boost" className="cursor-pointer">+£1,000 Boost (+£50)</Label>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <Label>Free Extended Cover:</Label>
-                      <Select value={freeExtendedCover} onValueChange={(v: any) => setFreeExtendedCover(v)}>
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="3months">+3 Months</SelectItem>
-                          <SelectItem value="6months">+6 Months</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex items-center gap-2 pt-2">
+                      <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
+                      <Label htmlFor="welcome" className="cursor-pointer text-sm">Send Welcome Email</Label>
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Plan:</span> <span className="font-medium">Platinum</span></div>
-                  <div>
-                    <span className="text-muted-foreground">Duration:</span>{' '}
-                    <span className="font-medium">{termOptions.find(t => t.id === paymentType)?.label}</span>
-                    {freeExtendedCover !== 'none' && (
-                      <span className="ml-1 text-primary text-xs">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
-                    )}
+                </section>
+
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
+                  <Button onClick={handleProceedToPreview} size="lg">Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                </div>
+              </div>
+
+              {/* Sticky summary (mirrors form view) */}
+              <aside className="lg:sticky lg:top-6">
+                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl">
+                  <h3 className="text-base font-bold mb-5">Policy Summary</h3>
+                  <div className="space-y-3 mb-2">
+                    <div className="flex justify-between text-sm"><span className="text-slate-400">Vehicle</span><span className="font-semibold">{vehicleData?.make} {vehicleData?.model}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-slate-400">Reg</span><span className="font-semibold uppercase">{editableRegNumber}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-slate-400">Plan</span><span className="font-semibold">Platinum</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-slate-400">Duration</span><span className="font-semibold">{termOptions.find(t => t.id === paymentType)?.label}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-slate-400">Claim Limit</span><span className="font-semibold text-emerald-400">£{claimLimit.toLocaleString()}</span></div>
+                    <div className="pt-4 border-t border-slate-800 flex justify-between items-end">
+                      <span className="text-slate-400 text-sm">Total Due</span>
+                      <span className="text-3xl font-bold">£{currentPrice.totalPrice}</span>
+                    </div>
                   </div>
-                  <div><span className="text-muted-foreground">Excess:</span> <span className="font-medium">£{excessAmount}</span></div>
-                  <div><span className="text-muted-foreground">Claim Limit:</span> <span className="font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</span></div>
-                  <div><span className="text-muted-foreground">Labour Rate:</span> <span className="font-medium">£{labourRate}/hr</span></div>
-                  <div><span className="text-muted-foreground">Price:</span> <span className="font-bold text-foreground">£{currentPrice.totalPrice}</span></div>
                 </div>
-              )}
-              
-              {isEditingPolicyConfig && (
-                <div className="pt-2 border-t border-border">
-                  <p className="text-lg font-semibold text-foreground">
-                    Total: £{currentPrice.totalPrice} 
-                    <span className="text-sm text-muted-foreground ml-2">
-                      (£{currentPrice.monthlyPrice}/month)
-                    </span>
-                  </p>
-                </div>
-              )}
+              </aside>
             </div>
           )}
 
-          {/* Confirm Button */}
-          <Button 
-            onClick={handleOpenConfirmDialog}
-            disabled={!vehicleData || !customerFirstName || !customerLastName || !customerEmail}
-            className="w-full gap-2"
-            size="lg"
-          >
-            <CheckCircle2 className="w-5 h-5" />
-            Confirm External Payment
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={(open) => {
-        setShowConfirmDialog(open);
-        if (!open) setExternalPaymentStep('details');
-      }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <CheckCircle2 className="w-5 h-5 text-primary" />
-              {externalPaymentStep === 'details' 
-                ? 'Confirm External Payment' 
-                : externalPaymentStep === 'preview' 
-                  ? 'Review Before Submission'
-                  : 'Order Complete'}
-            </DialogTitle>
-            <DialogDescription>
-              {externalPaymentStep === 'details' 
-                ? 'Step 1: Verify details and enter payment information' 
-                : externalPaymentStep === 'preview'
-                  ? 'Step 2: Review all data before creating the policy'
-                  : 'Step 3: Confirmation status'}
-            </DialogDescription>
-          </DialogHeader>
-
-          {existingPolicyWarning && externalPaymentStep !== 'complete' && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{existingPolicyWarning}</AlertDescription>
-            </Alert>
-          )}
-
-          {externalPaymentStep === 'details' && (
-            <div className="space-y-4">
-              {/* Customer & Vehicle Details */}
-              <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3">
-                <h4 className="font-semibold text-foreground flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-primary" />
-                  Customer & Vehicle Details
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">First Name *</Label>
-                    <Input
-                      value={editableFirstName}
-                      onChange={(e) => setEditableFirstName(e.target.value)}
-                      className="bg-background"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Last Name *</Label>
-                    <Input
-                      value={editableLastName}
-                      onChange={(e) => setEditableLastName(e.target.value)}
-                      className="bg-background"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Email *</Label>
-                    <Input
-                      value={editableCustomerEmail}
-                      onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                      className="bg-background"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Phone</Label>
-                    <Input
-                      value={editableCustomerPhone}
-                      onChange={(e) => setEditableCustomerPhone(e.target.value)}
-                      placeholder="07xxx xxxxxx"
-                      className="bg-background"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Registration *</Label>
-                    <Input
-                      value={editableRegNumber}
-                      onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
-                      className="bg-background font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Vehicle</Label>
-                    <p className="text-sm text-foreground py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Mileage</Label>
-                    <Input
-                      value={editableMileage}
-                      onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
-                      className="bg-background"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Assigned To</Label>
-                    <p className="text-sm text-foreground py-2">
-                      {adminUsers.find(a => a.id === assigneeId) ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!) : 'Unassigned'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address Section */}
-              <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-foreground">📍 Customer Address</h4>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="skip-address"
-                      checked={skipAddressDetails}
-                      onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
-                    />
-                    <Label htmlFor="skip-address" className="text-xs text-muted-foreground cursor-pointer">
-                      Customer will complete in dashboard
-                    </Label>
-                  </div>
-                </div>
-                
-                {!skipAddressDetails && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">House/Building Number</Label>
-                      <Input
-                        value={customerBuildingNumber}
-                        onChange={(e) => setCustomerBuildingNumber(e.target.value)}
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Street</Label>
-                      <Input
-                        value={customerStreet}
-                        onChange={(e) => setCustomerStreet(e.target.value)}
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Town/City</Label>
-                      <Input
-                        value={customerTown}
-                        onChange={(e) => setCustomerTown(e.target.value)}
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">County</Label>
-                      <Input
-                        value={customerCounty}
-                        onChange={(e) => setCustomerCounty(e.target.value)}
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-1 col-span-2">
-                      <Label className="text-xs text-muted-foreground">Postcode *</Label>
-                      <Input
-                        value={customerPostcode}
-                        onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
-                        className="bg-background w-1/2"
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {skipAddressDetails && (
-                  <Alert className="bg-muted/50 border-border">
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                    <AlertDescription className="text-muted-foreground text-sm">
-                      The customer will be prompted to complete their address in their dashboard.
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-
-              {/* Policy Summary */}
-              <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-foreground flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-primary" />
-                    Policy Configuration
-                  </h4>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary hover:text-primary/80 h-7 px-2"
-                    onClick={() => setShowConfirmDialog(false)}
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Plan:</span> <span className="font-medium">Platinum</span></div>
-                  <div>
-                    <span className="text-muted-foreground">Duration:</span>{' '}
-                    <span className="font-medium">{termOptions.find(t => t.id === paymentType)?.label}</span>
-                    {freeExtendedCover !== 'none' && (
-                      <span className="ml-1 text-primary text-xs">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
-                    )}
-                  </div>
-                  <div><span className="text-muted-foreground">Excess:</span> <span className="font-medium">£{excessAmount}</span></div>
-                  <div><span className="text-muted-foreground">Claim Limit:</span> <span className="font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</span></div>
-                  <div><span className="text-muted-foreground">Labour Rate:</span> <span className="font-medium">£{labourRate}/hr</span></div>
-                  <div><span className="text-muted-foreground">Price:</span> <span className="font-bold">£{currentPrice.totalPrice}</span></div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <span>Included Add-ons: </span>
-                  <span className="font-medium text-foreground">
-                    {getAutoIncludedAddOns(paymentType).length > 0 
-                      ? getAutoIncludedAddOns(paymentType).map(a => a.charAt(0).toUpperCase() + a.slice(1)).join(', ')
-                      : 'None'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Payment Details */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Payment Source *</Label>
-                  <select
-                    value={paymentSource}
-                    onChange={(e) => setPaymentSource(e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  >
-                    <option value="">Select payment source...</option>
-                    <option value="stripe_dashboard">Stripe Dashboard</option>
-                    <option value="bumper_portal">Bumper Portal</option>
-                    <option value="payment_assist">Payment Assist</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="phone_card">Phone Card Payment</option>
-                    <option value="dealer_portal">Dealer Portal</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Amount Received (£) *</Label>
-                    <Input
-                      type="number"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      placeholder={currentPrice.totalPrice.toString()}
-                    />
-                    {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
-                      <p className="text-xs text-destructive">
-                        ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      Warranty Start Date *
-                    </Label>
-                    <Popover open={isStartDateCalendarOpen} onOpenChange={setIsStartDateCalendarOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
-                          {format(warrantyStartDate, 'd MMM yyyy')}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <CalendarComponent
-                          mode="single"
-                          selected={warrantyStartDate}
-                          onSelect={(date) => {
-                            if (date) setWarrantyStartDate(date);
-                            setIsStartDateCalendarOpen(false);
-                          }}
-                          disabled={(date) => date < new Date()}
-                        className="p-3 pointer-events-auto"
-                       />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                {/* Sales Agent Assignment - COMPULSORY */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    <UserPlus className="w-4 h-4" />
-                    Assign to Sales Agent *
-                  </Label>
-                  <Select value={assigneeId} onValueChange={setAssigneeId}>
-                    <SelectTrigger className={!assigneeId ? 'border-destructive' : ''}>
-                      <SelectValue placeholder="Select sales agent (required)..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {adminUsers.map((admin) => (
-                        <SelectItem key={admin.id} value={admin.id}>
-                          {getAdminDisplayName(admin)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {!assigneeId && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      Sales agent is required for commission tracking
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Options */}
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
-                  <Label htmlFor="welcome" className="cursor-pointer">Send Welcome Email</Label>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleProceedToPreview}>
-                  Review & Confirm
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-
-          {externalPaymentStep === 'preview' && (
-            <div className="space-y-4">
-              <Alert className="bg-muted/30 border-border">
-                <Info className="h-4 w-4 text-primary" />
-                <AlertDescription className="text-foreground">
+          {/* ============================================================
+              STEP 3 — Preview
+              ============================================================ */}
+          {inPaymentFlow && externalPaymentStep === 'preview' && (
+            <div className="max-w-3xl mx-auto space-y-5">
+              <Alert className="bg-indigo-50 border-indigo-200">
+                <Info className="h-4 w-4 text-indigo-600" />
+                <AlertDescription className="text-slate-700">
                   Please review all details before confirming. This will create a policy and customer record.
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded border border-border">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><strong>Customer:</strong> {editableFirstName} {editableLastName}</div>
                   <div><strong>Email:</strong> {editableCustomerEmail}</div>
                   <div><strong>Vehicle:</strong> {editableRegNumber}</div>
-                  <div><strong>Mileage:</strong> {parseInt(editableMileage).toLocaleString()}</div>
+                  <div><strong>Mileage:</strong> {editableMileage ? parseInt(editableMileage).toLocaleString() : '—'}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded border border-border">
+                <div className="grid grid-cols-2 gap-3 text-sm pt-3 border-t border-slate-100">
                   <div><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}</div>
-                  <div><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</div>
+                  <div><strong>Claim Limit:</strong> £{claimLimit.toLocaleString()}</div>
                   <div><strong>Start Date:</strong> {format(warrantyStartDate, 'd MMM yyyy')}</div>
                   <div><strong>Amount:</strong> £{paymentAmount}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded border border-border">
+                <div className="grid grid-cols-2 gap-3 text-sm pt-3 border-t border-slate-100">
                   <div><strong>Payment Source:</strong> {paymentSource}</div>
                   <div><strong>Assigned To:</strong> {adminUsers.find(a => a.id === assigneeId) ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!) : 'Unassigned'}</div>
                 </div>
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>
-                  Back
-                </Button>
-                <Button 
-                  onClick={handleConfirmPayment}
-                  disabled={isConfirming}
-                >
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
+                <Button onClick={handleConfirmPayment} disabled={isConfirming} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
                   {isConfirming ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating Policy...
-                    </>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Policy...</>
                   ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Confirm Payment
-                    </>
+                    <><CheckCircle2 className="w-4 h-4 mr-2" />Confirm Payment</>
                   )}
                 </Button>
-              </DialogFooter>
+              </div>
             </div>
           )}
 
-          {externalPaymentStep === 'complete' && (
-            <div className="space-y-4">
-              <div className="text-center py-4">
-                <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground">Payment Confirmed!</h3>
-                <p className="text-muted-foreground">Policy has been created successfully</p>
-              </div>
+          {/* ============================================================
+              STEP 4 — Complete
+              ============================================================ */}
+          {inPaymentFlow && externalPaymentStep === 'complete' && (
+            <div className="max-w-2xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
+              <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-slate-900">Payment Confirmed!</h3>
+              <p className="text-slate-500 mt-1">Policy has been created successfully</p>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className={cn(
-                  "p-3 rounded-lg border flex items-center gap-2",
-                  completionStatus.customer ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
-                )}>
-                  <CheckCircle2 className={cn("w-4 h-4", completionStatus.customer ? "text-primary" : "text-muted-foreground")} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mt-8 text-left">
+                <div className={cn("p-3 rounded-lg border flex items-center gap-2", completionStatus.customer ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200")}>
+                  <CheckCircle2 className={cn("w-4 h-4", completionStatus.customer ? "text-emerald-600" : "text-slate-400")} />
                   <span>Customer Record</span>
                 </div>
-                <div className={cn(
-                  "p-3 rounded-lg border flex items-center gap-2",
-                  completionStatus.policy ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
-                )}>
-                  <CheckCircle2 className={cn("w-4 h-4", completionStatus.policy ? "text-primary" : "text-muted-foreground")} />
+                <div className={cn("p-3 rounded-lg border flex items-center gap-2", completionStatus.policy ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200")}>
+                  <CheckCircle2 className={cn("w-4 h-4", completionStatus.policy ? "text-emerald-600" : "text-slate-400")} />
                   <span>Policy Created</span>
                 </div>
                 {sendWelcomeEmail && (
-                  <div className={cn(
-                    "p-3 rounded-lg border flex items-center gap-2",
-                    completionStatus.email ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
-                  )}>
-                    <CheckCircle2 className={cn("w-4 h-4", completionStatus.email ? "text-primary" : "text-muted-foreground")} />
+                  <div className={cn("p-3 rounded-lg border flex items-center gap-2", completionStatus.email ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200")}>
+                    <CheckCircle2 className={cn("w-4 h-4", completionStatus.email ? "text-emerald-600" : "text-slate-400")} />
                     <span>Welcome Email</span>
                   </div>
                 )}
               </div>
 
-              <DialogFooter>
-                <Button onClick={resetForm}>
-                  Create Another
-                </Button>
-              </DialogFooter>
+              <Button onClick={resetForm} size="lg" className="mt-8">Create Another</Button>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-    </div>
+        </div>
+      </div>
     </>
   );
 };
+
