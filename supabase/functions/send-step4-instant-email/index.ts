@@ -169,15 +169,16 @@ const handler = async (req: Request): Promise<Response> => {
         <p style="color: #1A1A1A; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
           Complete your purchase now and save £50!
         </p>
-        <p style="color: #1A1A1A; font-size: 14px; margin: 0 0 12px 0;">
+        <p style="color: #1A1A1A; font-size: 14px; margin: 0 0 16px 0;">
           Use this code at checkout – <strong>valid for 24 hours only</strong>:
         </p>
-        <a href="https://buyawarranty.co.uk?promo=SAVE50NOW" style="background-color: #1A1A1A; color: #fff; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px; text-decoration: none; cursor: pointer;">
-          SAVE50NOW
+        <a href="https://buyawarranty.co.uk?promo=SAVE50NOW" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; font-size: 18px; font-weight: bold; padding: 16px 36px; border-radius: 8px; display: inline-block; letter-spacing: 1px; text-decoration: none; box-shadow: 0 4px 14px rgba(234,88,12,0.4); mso-padding-alt: 0;">
+          <span style="display: inline-block; padding: 0;">Apply code SAVE50NOW &rarr;</span>
         </a>
-        <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">Minimum order £350</p>
+        <p style="color: #666666; font-size: 12px; margin: 12px 0 0 0;">Minimum order £350</p>
       </div>
     ` : '';
+
 
     // Generate email HTML
     const htmlContent = `
@@ -216,46 +217,42 @@ const handler = async (req: Request): Promise<Response> => {
 
       ${promoCodeSection}
 
-      <!-- Vehicle Summary -->
+      <!-- Selected Plan + What's Included (merged) -->
       <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <p style="color: #0369a1; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">Your Selected Plan:</p>
+        <p style="color: #0369a1; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Your Selected Plan</p>
         <p style="color: #1a1a1a; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">${emailRequest.planName || 'Warranty Plan'}</p>
-        <p style="color: #484848; font-size: 14px; margin: 0;">
+        <p style="color: #484848; font-size: 14px; margin: 0 0 16px 0;">
           Vehicle: ${vehicleInfo} (${vehicleReg})<br/>
           Payment: ${emailRequest.paymentType === 'monthly' ? 'Monthly instalments' : 'Pay in full'}
         </p>
-      </div>
 
-      <!-- Benefits -->
-      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <p style="color: #166534; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="16" height="16" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
-          What's Included:
+        <hr style="border: none; border-top: 1px solid #bae6fd; margin: 16px 0;" />
+
+        <p style="color: #166534; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">What's Included</p>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
+          Comprehensive mechanical &amp; electrical cover
         </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
-          Comprehensive mechanical & electrical cover
-        </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
           UK-based customer support
         </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
           Easy claims, fast payouts
         </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
           14-day money back guarantee
         </p>
       </div>
 
-      <!-- Trust Signals -->
+      <!-- Trust Signals (text-based, no external images) -->
       <div style="text-align: center; margin: 24px 0;">
-        <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/trustpilot-5-star-rating.png" width="150" alt="Trustpilot 5 Stars" style="margin: 0 auto;" />
+        <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none; color: inherit;">
+          <div style="font-size: 22px; letter-spacing: 2px; color: #00b67a;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p style="color: #666; font-size: 13px; margin: 6px 0 0 0;">Rated Excellent on Trustpilot</p>
         </a>
-        <p style="color: #666; font-size: 13px; margin: 8px 0 0 0;">Rated Excellent on Trustpilot</p>
       </div>
 
       <!-- CTA Button -->
@@ -266,9 +263,10 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
 
       <p style="color: #666; font-size: 13px; text-align: center; margin: 16px 0;">
-        <img src="https://buyawarranty.co.uk/lovable-uploads/lock-icon.png" width="12" height="12" style="vertical-align: middle; margin-right: 4px;" alt="🔒"/>
-        Secure & Encrypted | No hidden fees | FCA compliant
+        <span style="margin-right: 4px;">&#128274;</span>
+        Secure &amp; Encrypted | No hidden fees
       </p>
+
 
       <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 32px 0;" />
 
