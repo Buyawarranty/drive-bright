@@ -33,6 +33,7 @@ interface SourceRule {
   team_id: string;
   source: string;
   allowed: boolean;
+  percentage?: number | null;
   conversion_threshold_pct: number | null;
   priority: number;
   notes: string | null;
@@ -239,14 +240,27 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
   const upsertRule = async (teamId: string, source: string, patch: Partial<SourceRule>) => {
     const existing = rules.find(r => r.team_id === teamId && r.source === source);
-    const payload = {
+    const nextPercentage =
+      patch.percentage !== undefined
+        ? Math.max(0, Math.min(100, Math.round(patch.percentage ?? 0)))
+        : existing?.percentage ?? (existing?.allowed ? 100 : 0);
+    const payload: any = {
       team_id: teamId,
       source,
-      allowed: patch.allowed ?? existing?.allowed ?? true,
+      percentage: nextPercentage,
+      allowed: nextPercentage > 0,
       conversion_threshold_pct: patch.conversion_threshold_pct ?? existing?.conversion_threshold_pct ?? null,
       priority: patch.priority ?? existing?.priority ?? 0,
       notes: patch.notes ?? existing?.notes ?? null,
     };
+    // Optimistic update so the % input feels instant
+    setRules(prev => {
+      const filtered = prev.filter(r => !(r.team_id === teamId && r.source === source));
+      return [
+        ...filtered,
+        { ...(existing ?? { id: 'tmp', team_id: teamId, source }), ...payload } as SourceRule,
+      ];
+    });
     const { data, error } = await supabase
       .from('lead_team_source_rules')
       .upsert(payload, { onConflict: 'team_id,source' })
@@ -452,8 +466,9 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
           rules={rules}
           canEdit={canEdit}
           routingEnabled={routingEnabled}
-          onToggle={(teamId, source, allowed) => upsertRule(teamId, source, { allowed })}
+          onSetPercentage={(teamId, source, percentage) => upsertRule(teamId, source, { percentage })}
         />
+
 
 
 

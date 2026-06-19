@@ -5957,6 +5957,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          percentage: number
           priority: number
           source: string
           team_id: string
@@ -5968,6 +5969,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          percentage?: number
           priority?: number
           source: string
           team_id: string
@@ -5979,6 +5981,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          percentage?: number
           priority?: number
           source?: string
           team_id?: string

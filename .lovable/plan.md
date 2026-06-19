@@ -1,80 +1,43 @@
-## Goal
-One place — the **Lead Teams** page — where managers and admins allocate agents across **New Leads**, **Recontact Leads** and **Renewals**, with an agent able to work multiple workstreams at the same time (e.g. New Leads + Renewals).
+# Master Allocation — unified page
 
-## Concept
+Replace the two-tab "Allocation" / "Lead Routing" UI with **one** page called **Master Allocation**, visible only to `admin`, `super_admin`, `sales_manager`. Everything needed to control where leads go and who works them lives in one scroll.
 
-Today: `lead_team_members` ties an agent to one team. That team feeds the New Leads queue only.
+## Page layout (top → bottom)
 
-New model — add a **workstream** dimension on top of team membership:
+1. **Master switch bar** — `Team routing` ON/OFF (same safety toggle as today). When OFF, banner says "Legacy global flow active — team rules below are previewed only."
+2. **Routing tester** — unchanged dry-run tool.
+3. **Source → Team split matrix** (the new bit, replaces the on/off lever grid)
+   - Rows = sources (Google Ads, Facebook Ads, Instagram, TikTok, YouTube, Organic, Direct, Referral, Email, SMS, Other).
+   - Columns = each team (Red, Blue, Green, …).
+   - Each cell holds a **percentage number input (0–100)** instead of a toggle. 0 = team doesn't receive that source. The row shows a live total badge: green when = 100, amber when < 100 (remainder falls back to legacy flow), red when > 100 (blocked from saving).
+   - "Even split" button per row to auto-distribute across teams with members.
+   - "Copy from…" per row to clone another source's split.
+   - Saved into `lead_team_source_rules` (extend with `percentage int`, keep `allowed` for back-compat — `allowed = percentage > 0`).
+4. **Team allocation panels** — one card per team (Red / Blue / Green), same agent table you have today (NEW / RECONTACT / RENEWALS toggles, Move to…, Remove). Pending sales agents card stays at the top of this section.
+5. **Per-team agent weighting (inside each team card)** — small "Share %" column next to each agent so a team lead can weight who gets more of that team's leads. Defaults to even. Stored in `agent_distribution_caps.percentage` (already exists).
 
-```
-Workstreams: new_leads | recontact | renewals
-```
+## Routing decision (server side)
+For each new lead:
+1. If master switch OFF → legacy flow.
+2. Pick source. Look up rows in `lead_team_source_rules` where `percentage > 0` and team has ≥1 active member.
+3. Weighted random by team percentage. If chosen team's percentage total < 100, the remaining % falls through to legacy flow.
+4. Inside the team, weighted round-robin across active agents using `agent_distribution_caps.percentage` (skip paused).
 
-Each agent's membership row is augmented with which workstreams they're active on. Teams stay as the colour grouping (Red/Blue/Green). Workstreams say what work the agent picks up.
+## Files to change
+- `src/components/admin/leads/AgentsLeadsView.tsx` — collapse two tabs into one stacked layout.
+- `src/components/admin/leads/LeadRoutingMatrix.tsx` (or current routing component) — swap toggle cells for % inputs + row totals + Even/Copy buttons.
+- Allocation card component — add per-agent "Share %" input.
+- Edge function / RPC that assigns leads — switch from boolean `allowed` to weighted pick using `percentage`.
 
-```
-              New Leads  Recontact  Renewals
-Team Red
-  James R.       ✓          ✓          ·
-  Thomas         ✓          ·          ·
-Team Blue
-  Kevin          ✓          ✓          ✓
-  Ash            ·          ·          ✓
-```
+## Migration
+- `ALTER TABLE lead_team_source_rules ADD COLUMN percentage int NOT NULL DEFAULT 0;`
+- Backfill: existing rows with `allowed = true` → `percentage = 100 / (# allowed teams for that source)` (even split of current ON teams).
+- Keep `allowed` as a generated/maintained mirror (`allowed = percentage > 0`) so nothing else breaks.
 
-A manager can toggle any cell in one click. Agents not yet in a team show in the existing "Pending" card and get placed into a team + workstreams in the same step.
+## What this fixes
+- One page, no tab hunting.
+- Explicit % control answers "how much of Facebook goes to Red vs Blue".
+- Per-agent share inside a team answers "Kevin should get 70% of Blue's leads while we ramp him".
+- Role-gated to manager/admin/super_admin so sales agents still see only their own queue.
 
-## Lead Teams page — UI
-
-A single tab strip at the top of the page switches the **filter** view (All / New Leads / Recontact / Renewals). The default "All" view shows the matrix above. Each workstream view shows just that column expanded with extra context (queue size, today's allocations, agents online).
-
-Per-agent row controls:
-- Three subtle toggle chips: **New** / **Recontact** / **Renewals** — coloured when on, faded when off
-- "Move to…" dropdown (existing) for team switching
-- Remove button (existing)
-
-Bulk actions (per team):
-- "Enable all on New Leads", "Enable all on Renewals" etc. — for fast setup
-- "Copy from Team Red" — to mirror another team's workstream layout
-
-Anywhere an agent's workstream changes, the existing `team_changed_at` notice mechanism extends so the agent gets a polite one-time popup on next login: *"You've been added to Renewals. Please contact your performance manager for more details."*
-
-## Where the workstream selection is enforced
-
-- **New Leads** distribution: only assigns to agents where `new_leads = true`
-- **Recontact Leads** (`LeadRecoveryTab`): the agent filter and any auto-allocation only consider agents where `recontact = true`
-- **Renewals** (`RetentionTab`): same, gated by `renewals = true`
-
-Default for backwards compatibility: every existing `lead_team_members` row is migrated with `new_leads = true`, others `false`. Nothing changes for current users until a manager flips a switch.
-
-## Access
-
-Same gating as today: super_admin, admin, sales_manager can edit. sales_lead view-only on their own team. Everyone else can't see the page.
-
----
-
-## Technical detail
-
-**Schema (migration)**
-
-```sql
-ALTER TABLE public.lead_team_members
-  ADD COLUMN workstream_new_leads boolean NOT NULL DEFAULT true,
-  ADD COLUMN workstream_recontact boolean NOT NULL DEFAULT false,
-  ADD COLUMN workstream_renewals  boolean NOT NULL DEFAULT false;
-```
-
-Backfill existing members so behaviour is unchanged on day one. Existing RLS already covers the table.
-
-**Files**
-
-- `src/components/admin/leads/LeadRoutingDialog.tsx` (now `LeadRoutingPanel`): add the workstream toggles on each member row, a workstream column in the cross-team glance, and bulk actions per team.
-- `src/components/admin/LeadTeamsTab.tsx`: add the All / New / Recontact / Renewals tab strip.
-- `src/hooks/useAgentTeams.ts`: also expose `workstreams` per agent so other tabs can filter by them.
-- `src/components/admin/leads/LeadRecoveryTab.tsx` and `src/components/admin/retention/RetentionTab.tsx`: filter their agent dropdowns / auto-assign helpers to agents where the relevant workstream flag is true.
-- `src/components/admin/leads/TeamChangeNoticeDialog.tsx`: extend message to mention workstream additions (uses same `team_changed_at` / `notice_seen_at` already in place).
-
-**Out of scope for this change**
-- Reworking the actual round-robin distribution engine. The workstream flags simply restrict the agent pool that each engine already uses; we don't change the algorithm.
-- Per-source rules per workstream (the existing `lead_team_source_rules` stay scoped to New Leads routing).
+Confirm and I'll build it (migration + UI + assignment logic).
