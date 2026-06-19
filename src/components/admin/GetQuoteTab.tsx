@@ -2407,7 +2407,7 @@ Questions? Call 0330 229 5040`;
                 {/* Customer Info */}
                 <div ref={customerInfoRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
                   <div className="space-y-2">
-                    <Label>Customer Name <span className="text-red-500">*</span></Label>
+                    <Label>First Name <span className="text-red-500">*</span></Label>
                     <Input
                       ref={customerNameInputRef}
                       value={customerName}
@@ -2415,7 +2415,7 @@ Questions? Call 0330 229 5040`;
                         setCustomerName(e.target.value);
                         if (showNameError && e.target.value.trim()) setShowNameError(false);
                       }}
-                      placeholder="e.g. John Smith"
+                      placeholder="e.g. John"
                       className={cn(
                         "bg-blue-50 border-blue-200 focus:border-blue-400",
                         showNameError && "border-red-500 bg-red-50"
@@ -3780,7 +3780,7 @@ Questions? Call 0330 229 5040`;
                       <div className="px-4 pb-4 pt-0 border-t border-gray-100">
                         <div className="grid grid-cols-2 gap-4 pt-4">
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-600">Customer Name *</Label>
+                            <Label className="text-xs font-medium text-gray-600">First Name *</Label>
                             <Input
                               value={editableCustomerName}
                               onChange={(e) => setEditableCustomerName(e.target.value)}
