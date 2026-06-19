@@ -217,46 +217,42 @@ const handler = async (req: Request): Promise<Response> => {
 
       ${promoCodeSection}
 
-      <!-- Vehicle Summary -->
+      <!-- Selected Plan + What's Included (merged) -->
       <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <p style="color: #0369a1; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">Your Selected Plan:</p>
+        <p style="color: #0369a1; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Your Selected Plan</p>
         <p style="color: #1a1a1a; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">${emailRequest.planName || 'Warranty Plan'}</p>
-        <p style="color: #484848; font-size: 14px; margin: 0;">
+        <p style="color: #484848; font-size: 14px; margin: 0 0 16px 0;">
           Vehicle: ${vehicleInfo} (${vehicleReg})<br/>
           Payment: ${emailRequest.paymentType === 'monthly' ? 'Monthly instalments' : 'Pay in full'}
         </p>
-      </div>
 
-      <!-- Benefits -->
-      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <p style="color: #166534; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="16" height="16" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
-          What's Included:
+        <hr style="border: none; border-top: 1px solid #bae6fd; margin: 16px 0;" />
+
+        <p style="color: #166534; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">What's Included</p>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
+          Comprehensive mechanical &amp; electrical cover
         </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
-          Comprehensive mechanical & electrical cover
-        </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
           UK-based customer support
         </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
           Easy claims, fast payouts
         </p>
-        <p style="color: #166534; font-size: 15px; line-height: 28px; margin: 4px 0;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/tick.png" width="14" height="14" style="vertical-align: middle; margin-right: 8px;" alt="✓"/>
+        <p style="color: #166534; font-size: 15px; line-height: 24px; margin: 4px 0;">
+          <span style="color: #16a34a; font-weight: bold; margin-right: 8px;">&#10004;</span>
           14-day money back guarantee
         </p>
       </div>
 
-      <!-- Trust Signals -->
+      <!-- Trust Signals (text-based, no external images) -->
       <div style="text-align: center; margin: 24px 0;">
-        <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none;">
-          <img src="https://buyawarranty.co.uk/lovable-uploads/trustpilot-5-star-rating.png" width="150" alt="Trustpilot 5 Stars" style="margin: 0 auto;" />
+        <a href="https://www.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none; color: inherit;">
+          <div style="font-size: 22px; letter-spacing: 2px; color: #00b67a;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p style="color: #666; font-size: 13px; margin: 6px 0 0 0;">Rated Excellent on Trustpilot</p>
         </a>
-        <p style="color: #666; font-size: 13px; margin: 8px 0 0 0;">Rated Excellent on Trustpilot</p>
       </div>
 
       <!-- CTA Button -->
@@ -267,9 +263,10 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
 
       <p style="color: #666; font-size: 13px; text-align: center; margin: 16px 0;">
-        <img src="https://buyawarranty.co.uk/lovable-uploads/lock-icon.png" width="12" height="12" style="vertical-align: middle; margin-right: 4px;" alt="🔒"/>
-        Secure & Encrypted | No hidden fees | FCA compliant
+        <span style="margin-right: 4px;">&#128274;</span>
+        Secure &amp; Encrypted | No hidden fees
       </p>
+
 
       <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 32px 0;" />
 
