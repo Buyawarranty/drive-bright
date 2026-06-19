@@ -76,6 +76,7 @@ import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useViewAs } from '@/contexts/ViewAsContext';
+import { CustomersMobileCards } from './customers/CustomersMobileCards';
 
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
@@ -3766,8 +3767,15 @@ export const CustomersTab = ({
             </div>
           )}
 
-      {/* Results Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden mt-2">
+      {/* Mobile-only card view for managers spot-checking on phones. Desktop table is unchanged. */}
+      <CustomersMobileCards
+        className="md:hidden mt-2"
+        customers={customersPagination.paginatedData}
+        onOpen={openCustomerDialog}
+      />
+
+      {/* Results Table (desktop) */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden mt-2">
 
         <div className="overflow-x-auto">
           <Table className="min-w-[1800px]">
