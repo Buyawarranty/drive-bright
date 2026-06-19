@@ -1814,8 +1814,8 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                           </Tooltip>
                         </TableCell>
 
-                        {/* Delete - Opens reassignment dialog (Admin only) */}
-                        {isFullAdmin && (
+                        {/* Delete - Opens reassignment dialog (Admin + Sales Lead when access granted) */}
+                        {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && (
                           <TableCell className="text-center">
                             <Button 
                               variant="ghost" 
