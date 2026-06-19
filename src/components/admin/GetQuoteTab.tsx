@@ -3736,24 +3736,32 @@ Questions? Call 0330 229 5040`;
             setShowConfirmPaymentDialog(open);
             if (!open) setExternalPaymentStep('details');
           }}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white" largeCloseButton>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-lg">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <DialogContent className="max-w-[1120px] max-h-[92vh] overflow-hidden bg-muted p-0 gap-0 shadow-2xl" largeCloseButton>
+              <DialogHeader className="sticky top-0 z-10 border-b border-border bg-background px-6 py-5 pr-16">
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100">
+                    <CheckCircle2 className="w-5 h-5 text-green-700" />
+                  </span>
                   {externalPaymentStep === 'details' 
                     ? 'Confirm External Payment' 
                     : externalPaymentStep === 'preview' 
                       ? 'Review Before Submission'
                       : 'Order Complete'}
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground">
-                  {externalPaymentStep === 'details' 
+                <DialogDescription className="flex flex-wrap items-center gap-3 text-muted-foreground">
+                  <span>{externalPaymentStep === 'details' 
                     ? 'Step 2: Verify details and enter payment information' 
                     : externalPaymentStep === 'preview'
                       ? 'Step 3: Review all data before creating the policy'
-                      : 'Step 4: Confirmation status'}
+                      : 'Step 4: Confirmation status'}</span>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground">
+                    <CreditCard className="h-3.5 w-3.5" />
+                    External order workflow
+                  </span>
                 </DialogDescription>
               </DialogHeader>
+
+              <div className="max-h-[calc(92vh-156px)] overflow-y-auto px-6 py-5">
 
               {existingPolicyWarning && externalPaymentStep !== 'complete' && (
                 <Alert variant="destructive">
@@ -3763,7 +3771,8 @@ Questions? Call 0330 229 5040`;
               )}
 
               {externalPaymentStep === 'details' ? (
-                <div className="space-y-3">
+                <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+                  <div className="space-y-3">
                   {/* Customer & Vehicle Details - Collapsible */}
                   <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <button
