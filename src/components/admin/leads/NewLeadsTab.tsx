@@ -113,6 +113,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Team filter (Red / Blue / Green) — only managers see the chips; default null = no filter.
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+  // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
+  const myTeam = currentAdminId ? agentTeamMap.get(currentAdminId) || null : null;
+  const isLockedToOwnTeam = userRole === 'sales_lead' && !!myTeam;
+  useEffect(() => {
+    if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
+      setTeamFilter(myTeam.id);
+    }
+  }, [isLockedToOwnTeam, myTeam, teamFilter]);
 
   
   
