@@ -68,9 +68,9 @@ const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'sales_manager', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
-const SALES_TABS = ['new-leads', 'golden-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_LEAD_TABS = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
+const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
@@ -174,8 +174,21 @@ interface LeadForQuote {
 const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   // Initialize with URL tab param if present, otherwise default to 'customers'
-  const urlTab = searchParams.get('tab');
+  const rawUrlTab = searchParams.get('tab');
+  // Legacy URL aliases — keep old links working after rename
+  const TAB_ALIASES: Record<string, string> = {
+    'golden-leads': 'recontact-leads',
+    'goldmine-leads': 'recontact-leads',
+  };
+  const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
+  // Rewrite legacy tab in URL once on mount
+  useEffect(() => {
+    if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
+      setSearchParams({ tab: TAB_ALIASES[rawUrlTab] }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const accessCheckTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -499,7 +512,7 @@ const AdminDashboard = () => {
             userRole={effectiveUserRole}
           />
         );
-      case 'golden-leads':
+      case 'recontact-leads':
       case 'goldmine-leads':
         return <GoldenLeadsTab />;
       case 'retention':
