@@ -376,6 +376,12 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     });
   const teamMembers = (tid: string) => members.filter(m => m.team_id === tid);
 
+  // Sales agents / leads who have been granted permissions but not yet placed in a team.
+  const pendingAgents = useMemo(
+    () => admins.filter(a => (a.role === 'sales' || a.role === 'sales_lead') && !members.some(m => m.admin_user_id === a.id)),
+    [admins, members]
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
