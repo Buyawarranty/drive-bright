@@ -1923,8 +1923,8 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                         )}
                       </TableRow>
                     );
-                  })
-                )}
+                  });
+                })()}
                 {/* Total percentage indicator row (only in percentage mode) */}
                 {displayMode === 'percentage' && agentCaps.length > 0 && !loading && (
                   <TableRow className="bg-muted/50 border-t-2">
