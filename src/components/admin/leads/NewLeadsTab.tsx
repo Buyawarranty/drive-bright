@@ -119,7 +119,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (!currentAdminId) return null;
     return agentTeamMap.get(currentAdminId) || null;
   }, [currentAdminId, agentTeamMap]);
-  const isLockedToOwnTeam = userRole === 'sales_lead' && !!myTeam;
+  const isLockedToOwnTeam = (userRole === 'sales_lead' || userRole === 'sales') && !!myTeam;
   useEffect(() => {
     if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
       setTeamFilter(myTeam.id);
@@ -1020,8 +1020,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </DropdownMenu>
             )}
           </div>
-          {/* Team filter chips — inline in header to save a row. Managers only, leads view only. */}
-          {activeView === 'leads' && (isAdminOrSuperAdmin || userRole === 'sales_lead') && allTeams.length > 0 && (
+          {/* Team filter chips — inline in header to save a row.
+              Admin / super_admin / sales_manager: full chips (All + every team).
+              Sales / sales_lead: locked to their own team (single coloured badge, no switching). */}
+          {activeView === 'leads' && (isAdminOrSuperAdmin || userRole === 'sales_manager' || userRole === 'sales_lead' || userRole === 'sales') && allTeams.length > 0 && (
             <>
               <div className="h-6 w-px bg-border" aria-hidden />
               <div className={cn(
@@ -1036,7 +1038,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   : "border-border bg-muted/30"
               )}>
                 {isLockedToOwnTeam && myTeam ? (
-                  // Sales leads with a team see a locked badge — no switching.
+                  // Sales agents / leads with a team see a locked badge — no switching.
                   <span
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
@@ -1048,8 +1050,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     {myTeam.name.replace(/^Formula\s+/i, '')}
                     <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Your team</span>
                   </span>
-                ) : userRole === 'sales_lead' && !myTeam ? (
-                  // Unassigned sales leads see a pending badge until a manager places them.
+                ) : (userRole === 'sales_lead' || userRole === 'sales') && !myTeam ? (
+                  // Unassigned sales agents see a pending badge until a manager places them.
                   <span
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
