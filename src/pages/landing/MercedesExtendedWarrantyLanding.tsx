@@ -44,7 +44,7 @@ const WHATSAPP_URL = 'https://wa.me/443302295040';
 
 const faqs = [
   { q: 'How much does Mercedes-Benz extended warranty cover cost?', a: 'Prices start from £19/month. Your exact price depends on your Mercedes-Benz model, age, mileage and the level of cover you choose.' },
-  { q: 'What Mercedes-Benz models can you cover?', a: 'We can provide cover for many Mercedes-Benz models, subject to age, mileage, vehicle condition and eligibility checks. Vehicles up to 15 years old and 150,000 miles are typically eligible.' },
+  { q: 'What Mercedes-Benz models can you cover?', a: 'We can provide cover for many Mercedes-Benz models including cars and vans, subject to age, mileage, vehicle condition and eligibility checks. Vehicles up to 15 years old and 150,000 miles are typically eligible.' },
   { q: 'Can I use my own garage?', a: 'Yes, repairs can usually be carried out by a VAT-registered garage of your choice, subject to claim approval and policy terms.' },
   { q: 'What is not covered?', a: 'Like all warranty products, exclusions apply. Wear and tear, pre-existing faults, routine servicing and maintenance items may not be covered unless included in your chosen plan.' },
   { q: 'How do I make a claim?', a: 'Contact our claims team before any repair work starts. We will explain the next steps and tell your garage what information we need to assess the claim.' },
@@ -100,7 +100,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
       <SEOHead
         title="Mercedes-Benz Extended Warranty Cover from £19/month | Quote"
         description="Protect your Mercedes-Benz from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds."
-        keywords="Mercedes extended warranty, Mercedes-Benz warranty quote, Mercedes warranty UK, used Mercedes warranty, Mercedes repair cover, Mercedes-Benz warranty cost"
+        keywords="Mercedes extended warranty, Mercedes-Benz warranty quote, Mercedes warranty UK, used Mercedes warranty, Mercedes repair cover, Mercedes-Benz warranty cost, Mercedes van warranty, Mercedes Sprinter warranty, Mercedes Vito warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/"
         ogImage={`https://buyawarranty.co.uk${mercHero}`}
         ogImageAlt="Mercedes-Benz Extended Warranty Cover from £19/month"
@@ -407,7 +407,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-8">
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Mercedes-Benz models we cover</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most Mercedes-Benz models and engine types, subject to eligibility.</p>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most Mercedes-Benz cars and vans — including Vito, Sprinter and Citan — and all engine types, subject to eligibility.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {mercedesModels.map(m => (
