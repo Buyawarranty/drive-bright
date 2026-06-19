@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import citroenHeroAsset from '@/assets/citroen-panda-hero.png.asset.json';
+import citroenHeroAsset from '@/assets/citroen-hero-panda-cars.png.asset.json';
 const citroenHero = citroenHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
