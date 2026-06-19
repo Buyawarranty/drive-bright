@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select';
 import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
-  Send, Eye, MousePointerClick, UserCheck, Play,
+  Send, Eye, MousePointerClick, UserCheck, Play, Network,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
