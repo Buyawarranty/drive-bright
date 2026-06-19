@@ -57,66 +57,67 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
   };
 
   return (
-    <Card className="border-2">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">
+    <div className="border-2 border-foreground bg-background">
+      <div className="px-4 py-2.5 border-b-2 border-foreground bg-muted flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
           <LayoutGrid className="h-4 w-4" />
-          Source → Team split (%)
+          <span className="text-xs font-bold uppercase tracking-wide">Source → Team Split</span>
           {!routingEnabled && (
-            <Badge variant="outline" className="text-[10px] border-amber-400 text-amber-700">
-              Preview — master switch is OFF
-            </Badge>
+            <span className="ml-1 px-2 py-0.5 text-[10px] font-bold uppercase border-2 border-amber-600 text-amber-800 bg-amber-50">
+              Preview · Master OFF
+            </span>
           )}
-        </CardTitle>
-        <p className="text-xs text-muted-foreground mt-1">
-          Set what percentage of each source goes to each team. Row must total <strong>100%</strong> for the source to route fully via teams; any shortfall falls back to the live flow. Use <em>Even split</em> to divide equally.
+        </div>
+        <p className="text-[11px] text-muted-foreground hidden md:block">
+          Rows must total <strong>100%</strong> to route fully via teams.
         </p>
-      </CardHeader>
-      <CardContent className="overflow-x-auto">
+      </div>
+      <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr>
-              <th className="text-left font-medium text-xs text-muted-foreground px-2 py-2 sticky left-0 bg-background">
+            <tr className="bg-muted/50 border-b-2 border-foreground/20">
+              <th className="text-left text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 py-2 sticky left-0 bg-muted/50">
                 Source
               </th>
               {teams.map(t => (
                 <th key={t.id} className="px-2 py-2 text-center">
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold uppercase text-white border-2 border-foreground"
                     style={{ backgroundColor: t.color }}
                   >
                     {t.emoji} {t.name}
                   </span>
                 </th>
               ))}
-              <th className="px-2 py-2 text-center text-xs text-muted-foreground">Total</th>
-              <th className="px-2 py-2 text-right text-xs text-muted-foreground">Quick</th>
+              <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total</th>
+              <th className="px-2 py-2 text-right text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Quick</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y-2 divide-foreground/10">
             {LEAD_SOURCES.map(s => {
               const total = rowTotal(s.value);
               const totalClass =
                 total === 0
-                  ? 'bg-muted text-muted-foreground'
+                  ? 'bg-muted text-muted-foreground border-muted-foreground/30'
                   : total === 100
-                  ? 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-emerald-600 text-white border-emerald-700'
                   : total < 100
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-red-100 text-red-700';
+                  ? 'bg-amber-500 text-white border-amber-600'
+                  : 'bg-red-600 text-white border-red-700';
               return (
-                <tr key={s.value} className="border-t">
-                  <td className="px-2 py-2 sticky left-0 bg-background">
+                <tr key={s.value} className="hover:bg-muted/30">
+                  <td className="px-3 py-2 sticky left-0 bg-background">
                     <span className="inline-flex items-center gap-2">
                       <span className="text-base">{s.icon}</span>
-                      <span className="font-medium">{s.label}</span>
+                      <span className="font-semibold text-sm">{s.label}</span>
                     </span>
                   </td>
                   {teams.map(t => {
                     const v = pctOf(t.id, s.value);
+                    const isActive = v > 0;
                     return (
                       <td key={t.id} className="px-2 py-2 text-center">
-                        <div className="inline-flex items-center gap-1">
+                        <div className="inline-flex items-center">
                           <Input
                             type="number"
                             min={0}
@@ -128,23 +129,37 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
                               const next = Math.max(0, Math.min(100, parseInt(e.target.value || '0', 10) || 0));
                               onSetPercentage(t.id, s.value, next);
                             }}
-                            className="w-16 h-8 text-center"
+                            className={`w-16 h-9 text-center rounded-none border-2 font-bold tabular-nums focus-visible:ring-0 focus-visible:border-foreground ${
+                              isActive ? 'border-foreground bg-background' : 'border-muted-foreground/30 text-muted-foreground'
+                            }`}
                           />
-                          <span className="text-xs text-muted-foreground">%</span>
+                          <span className="ml-1 text-xs text-muted-foreground font-semibold">%</span>
                         </div>
                       </td>
                     );
                   })}
                   <td className="px-2 py-2 text-center">
-                    <span className={`inline-flex items-center justify-center min-w-[3rem] px-2 py-0.5 rounded-full text-xs font-semibold ${totalClass}`}>
+                    <span className={`inline-flex items-center justify-center min-w-[3.25rem] px-2 py-1 text-[11px] font-bold border-2 tabular-nums ${totalClass}`}>
                       {total}%
                     </span>
                   </td>
                   <td className="px-2 py-2 text-right whitespace-nowrap">
-                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs mr-1" disabled={!canEdit} onClick={() => evenSplit(s.value)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-[10px] font-bold uppercase rounded-none border-2 border-foreground mr-1"
+                      disabled={!canEdit}
+                      onClick={() => evenSplit(s.value)}
+                    >
                       <Wand2 className="h-3 w-3 mr-1" /> Even
                     </Button>
-                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" disabled={!canEdit || total === 0} onClick={() => clearRow(s.value)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-[10px] font-bold uppercase rounded-none"
+                      disabled={!canEdit || total === 0}
+                      onClick={() => clearRow(s.value)}
+                    >
                       Clear
                     </Button>
                   </td>
@@ -153,7 +168,7 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
             })}
           </tbody>
         </table>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
