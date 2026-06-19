@@ -3780,7 +3780,7 @@ Questions? Call 0330 229 5040`;
                       <div className="px-4 pb-4 pt-0 border-t border-gray-100">
                         <div className="grid grid-cols-2 gap-4 pt-4">
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-600">Customer Name *</Label>
+                            <Label className="text-xs font-medium text-gray-600">First Name *</Label>
                             <Input
                               value={editableCustomerName}
                               onChange={(e) => setEditableCustomerName(e.target.value)}
