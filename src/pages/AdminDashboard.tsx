@@ -491,7 +491,7 @@ const AdminDashboard = () => {
             </div>
           );
         }
-        return <LeadTeamsTab />;
+        return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
       case 'document-mapping':
         return <DocumentMappingTab />;
       case 'policy-documents':
