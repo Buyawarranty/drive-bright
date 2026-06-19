@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -376,6 +376,12 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     });
   const teamMembers = (tid: string) => members.filter(m => m.team_id === tid);
 
+  // Sales agents / leads who have been granted permissions but not yet placed in a team.
+  const pendingAgents = useMemo(
+    () => admins.filter(a => (a.role === 'sales' || a.role === 'sales_lead') && !members.some(m => m.admin_user_id === a.id)),
+    [admins, members]
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -435,6 +441,45 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
         {/* Routing tester */}
         <RoutingTester />
 
+        {/* Pending sales agents — shown at the top so managers allocate before they hit the live flow */}
+        {canEdit && pendingAgents.length > 0 && (
+          <Card className="border-amber-200 bg-amber-50/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Users className="h-4 w-4 text-amber-600" />
+                Pending sales agents
+                <Badge variant="outline" className="text-[10px]">{pendingAgents.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <p className="text-xs text-muted-foreground mb-2">
+                These agents have sales permissions but are not in any team yet. A manager must place them before they show in a team filter.
+              </p>
+              {pendingAgents.map(a => (
+                <div key={a.id} className="flex items-center justify-between gap-2 border rounded px-3 py-1.5 bg-background">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{a.email} · {a.role}</div>
+                  </div>
+                  <Select onValueChange={(v) => addMember(v, a.id)} value="">
+                    <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
+                      <SelectValue placeholder="Add to…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map(t => (
+                        <SelectItem key={t.id} value={t.id} className="text-xs">
+                          {t.emoji} {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Add team bar */}
         {canEdit && (
@@ -689,21 +734,19 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                         </div>
                       );
                     })}
-                    {canEdit && (
+                    {canEdit && pendingAgents.length > 0 && (
                       <div className="pt-2 border-t">
                         <Label className="text-xs">Add agent</Label>
                         <Select onValueChange={(v) => addMember(activeTeam.id, v)} value="">
                           <SelectTrigger>
-                            <SelectValue placeholder="Pick an agent…" />
+                            <SelectValue placeholder="Pick a pending agent…" />
                           </SelectTrigger>
                           <SelectContent>
-                            {admins
-                              .filter(a => !teamMembers(activeTeam.id).some(m => m.admin_user_id === a.id))
-                              .map(a => (
-                                <SelectItem key={a.id} value={a.id}>
-                                  {(`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email)} — {a.role}
-                                </SelectItem>
-                              ))}
+                            {pendingAgents.map(a => (
+                              <SelectItem key={a.id} value={a.id}>
+                                {(`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email)} — {a.role}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -711,52 +754,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                   </CardContent>
                 </Card>
 
-                {/* Unassigned sales agents — quick placement into a team */}
-                {canEdit && (() => {
-                  const unassigned = admins.filter(a =>
-                    (a.role === 'sales' || a.role === 'sales_lead') &&
-                    !members.some(m => m.admin_user_id === a.id)
-                  );
-                  if (unassigned.length === 0) return null;
-                  return (
-                    <Card className="border-amber-200 bg-amber-50/40">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <Users className="h-4 w-4 text-amber-600" />
-                          Unassigned sales agents
-                          <Badge variant="outline" className="text-[10px]">{unassigned.length}</Badge>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-1.5">
-                        <p className="text-xs text-muted-foreground mb-2">
-                          These agents aren't in any team yet — they fall back to the default (Red) flow until placed.
-                        </p>
-                        {unassigned.map(a => (
-                          <div key={a.id} className="flex items-center justify-between gap-2 border rounded px-3 py-1.5 bg-background">
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">
-                                {`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email}
-                              </div>
-                              <div className="text-xs text-muted-foreground truncate">{a.email} · {a.role}</div>
-                            </div>
-                            <Select onValueChange={(v) => addMember(v, a.id)} value="">
-                              <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
-                                <SelectValue placeholder="Add to…" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {teams.map(t => (
-                                  <SelectItem key={t.id} value={t.id} className="text-xs">
-                                    {t.emoji} {t.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  );
-                })()}
+                {/* Pending agents are managed at the top of the dialog. */}
 
                 {/* Cross-team membership glance */}
                 <Card>

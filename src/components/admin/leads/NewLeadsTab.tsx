@@ -114,13 +114,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
-  // If they aren't explicitly in lead_team_members, fall back to Red (the default live flow).
+  // Unassigned sales leads are not auto-placed into any team — they remain pending.
   const myTeam = useMemo(() => {
     if (!currentAdminId) return null;
-    const explicit = agentTeamMap.get(currentAdminId);
-    if (explicit) return explicit;
-    return allTeams.find(t => t.color === 'red') || null;
-  }, [currentAdminId, agentTeamMap, allTeams]);
+    return agentTeamMap.get(currentAdminId) || null;
+  }, [currentAdminId, agentTeamMap]);
   const isLockedToOwnTeam = userRole === 'sales_lead' && !!myTeam;
   useEffect(() => {
     if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
@@ -575,17 +573,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return filteredLeads.filter(lead => isRecoveredLead(lead));
   }, [filteredLeads, isRecoveredLead, filter]);
 
-  // Red is the implicit default team: any agent not explicitly placed in another
-  // team is treated as a member of the Red team. This keeps the live flow visible
-  // until managers explicitly populate Blue / Green via lead_team_members.
-  const redTeamId = useMemo(() => allTeams.find(t => t.color === 'red')?.id || null, [allTeams]);
+  // Team membership is explicit only. Unassigned agents do not fall back to any team.
   const agentBelongsToTeam = useCallback((agentId: string | null | undefined, teamId: string) => {
     if (!agentId) return false;
     const explicit = agentTeamMap.get(agentId);
-    if (explicit) return explicit.id === teamId;
-    // No explicit team membership → fall back to Red.
-    return teamId === redTeamId;
-  }, [agentTeamMap, redTeamId]);
+    return explicit?.id === teamId;
+  }, [agentTeamMap]);
 
   // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
   const teamFilteredFreshLeads = useMemo(() => {
@@ -1043,7 +1036,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   : "border-border bg-muted/30"
               )}>
                 {isLockedToOwnTeam && myTeam ? (
-                  // Sales leads see a locked badge for their own team — no switching.
+                  // Sales leads with a team see a locked badge — no switching.
                   <span
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
@@ -1054,6 +1047,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     <span className={cn('h-1.5 w-1.5 rounded-full', TEAM_COLOR_CLASSES[myTeam.color].dot)} />
                     {myTeam.name.replace(/^Formula\s+/i, '')}
                     <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Your team</span>
+                  </span>
+                ) : userRole === 'sales_lead' && !myTeam ? (
+                  // Unassigned sales leads see a pending badge until a manager places them.
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
+                      'bg-amber-100 text-amber-800 border-amber-300'
+                    )}
+                    title="Awaiting team allocation by a manager"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    Pending
+                    <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Awaiting team</span>
                   </span>
                 ) : (
                   <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
