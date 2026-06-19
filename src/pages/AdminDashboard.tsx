@@ -179,6 +179,7 @@ const AdminDashboard = () => {
   const TAB_ALIASES: Record<string, string> = {
     'golden-leads': 'recontact-leads',
     'goldmine-leads': 'recontact-leads',
+    'retention': 'renewals',
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
