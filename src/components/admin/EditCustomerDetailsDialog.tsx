@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, Save, Mail, Phone, User } from 'lucide-react';
 import { z } from 'zod';
+import { CustomerLoginActivity } from './CustomerLoginActivity';
+import { logLoginAttempt } from '@/lib/loginActivityLogger';
 
 const customerDetailsSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -123,6 +125,24 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
         // Don't fail the whole operation for policy update
       }
 
+      // Log this admin edit into the login-activity timeline
+      const changes: Record<string, { from: string; to: string }> = {};
+      if (currentEmail !== email.toLowerCase().trim())
+        changes.email = { from: currentEmail, to: email.toLowerCase().trim() };
+      if ((currentPhone || '') !== phone.trim())
+        changes.phone = { from: currentPhone || '', to: phone.trim() };
+      const oldFull = `${currentFirstName || ''} ${currentLastName || ''}`.trim() || (currentName || '');
+      if (oldFull !== fullName) changes.name = { from: oldFull, to: fullName };
+      if (Object.keys(changes).length > 0) {
+        logLoginAttempt({
+          email: email.toLowerCase().trim(),
+          event_type: 'admin_details_edited',
+          success: true,
+          customer_id: customerId,
+          metadata: { changes },
+        });
+      }
+
       toast.success('Customer details updated successfully');
       onSaved?.();
       onOpenChange(false);
@@ -136,7 +156,7 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
