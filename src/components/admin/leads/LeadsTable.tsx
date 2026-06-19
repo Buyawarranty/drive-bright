@@ -200,6 +200,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
         </Table>
       </TooltipProvider>
     </div>
+    </>
   );
 });
 
