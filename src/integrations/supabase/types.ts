@@ -9221,6 +9221,21 @@ export type Database = {
         Returns: string
       }
       generate_warranty_number: { Args: never; Returns: string }
+      get_claim_update_request_by_token: {
+        Args: { _token: string }
+        Returns: {
+          claim_id: string
+          claim_reason: string
+          customer_name: string
+          expires_at: string
+          id: string
+          is_responded: boolean
+          recipient_email: string
+          sent_at: string
+          token: string
+          vehicle_registration: string
+        }[]
+      }
       get_column_mask: {
         Args: { p_column: string; p_user_id: string }
         Returns: string
@@ -9306,6 +9321,16 @@ export type Database = {
       restore_lead_to_snapshot: {
         Args: { p_changelog_id: string; p_restored_by?: string }
         Returns: Json
+      }
+      restore_quote_data: {
+        Args: { _email: string; _quote_id: string }
+        Returns: {
+          customer_email: string
+          expires_at: string
+          plan_data: Json
+          quote_id: string
+          vehicle_data: Json
+        }[]
       }
       set_user_offline: { Args: never; Returns: undefined }
       simulate_lead_routing: { Args: { p_source: string }; Returns: Json }

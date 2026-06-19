@@ -38,12 +38,9 @@ export const useQuoteRestoration = () => {
     try {
       console.log('🔍 Attempting quote restoration:', { quoteId, email });
       
-      const { data, error } = await supabase
-        .from('quote_data')
-        .select('*')
-        .eq('quote_id', quoteId)
-        .eq('customer_email', email)
-        .maybeSingle();
+      const { data: rows, error } = await supabase
+        .rpc('restore_quote_data', { _quote_id: quoteId, _email: email });
+      const data = rows && rows.length > 0 ? rows[0] : null;
 
       if (error || !data) {
         console.error('Quote restoration failed:', error);
@@ -105,12 +102,9 @@ export const useQuoteRestoration = () => {
     try {
       console.log('🔍 Attempting full quote restoration:', { quoteId, email });
       
-      const { data, error } = await supabase
-        .from('quote_data')
-        .select('*')
-        .eq('quote_id', quoteId)
-        .eq('customer_email', email)
-        .maybeSingle();
+      const { data: rows, error } = await supabase
+        .rpc('restore_quote_data', { _quote_id: quoteId, _email: email });
+      const data = rows && rows.length > 0 ? rows[0] : null;
 
       if (error || !data) {
         console.error('Full quote restoration failed:', error);
