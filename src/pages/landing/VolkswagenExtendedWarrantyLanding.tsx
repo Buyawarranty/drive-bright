@@ -408,7 +408,7 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-8">
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Volkswagen models we cover</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most VW models and engine types, subject to eligibility.</p>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most VW cars and vans — including Transporter, Caddy Van and Crafter — and all engine types, subject to eligibility.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {vwModels.map(m => (
