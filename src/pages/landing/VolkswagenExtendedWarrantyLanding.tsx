@@ -113,7 +113,53 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Volkswagen Extended Warranty" description="Volkswagen extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <ProductSchema name="Volkswagen Extended Warranty" description="Flexible Volkswagen warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
-      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Volkswagen Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/volkswagen/' }]} />
+      <ServiceSchema
+        name="Volkswagen Extended Warranty"
+        description="Extended warranty cover for Volkswagen cars and vans in the UK — Golf, Polo, Passat, Tiguan, T-Roc, Touareg, Transporter, Caddy, Crafter and ID. electric range. Cover from £19/month."
+        serviceType="Volkswagen Extended Warranty"
+        url="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/"
+        priceRange="££"
+      />
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Car Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/' }, { name: 'Volkswagen Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/volkswagen/' }]} />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Volkswagen Extended Warranty UK",
+          "url": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/",
+          "inLanguage": "en-GB",
+          "about": {
+            "@type": "Brand",
+            "name": "Volkswagen",
+            "alternateName": ["VW", "Volkswagen AG"],
+            "sameAs": [
+              "https://en.wikipedia.org/wiki/Volkswagen",
+              "https://www.wikidata.org/wiki/Q246",
+              "https://www.volkswagen.co.uk/"
+            ]
+          },
+          "mentions": [
+            { "@type": "Car", "name": "Volkswagen Golf", "brand": "Volkswagen" },
+            { "@type": "Car", "name": "Volkswagen Polo", "brand": "Volkswagen" },
+            { "@type": "Car", "name": "Volkswagen Passat", "brand": "Volkswagen" },
+            { "@type": "Car", "name": "Volkswagen Tiguan", "brand": "Volkswagen" },
+            { "@type": "Car", "name": "Volkswagen T-Roc", "brand": "Volkswagen" },
+            { "@type": "Car", "name": "Volkswagen Touareg", "brand": "Volkswagen" },
+            { "@type": "Vehicle", "name": "Volkswagen Transporter", "brand": "Volkswagen", "vehicleConfiguration": "Van" },
+            { "@type": "Vehicle", "name": "Volkswagen Caddy", "brand": "Volkswagen", "vehicleConfiguration": "Van" },
+            { "@type": "Vehicle", "name": "Volkswagen Crafter", "brand": "Volkswagen", "vehicleConfiguration": "Van" },
+            { "@type": "Car", "name": "Volkswagen ID.3", "brand": "Volkswagen", "fuelType": "Electric" },
+            { "@type": "Car", "name": "Volkswagen ID.4", "brand": "Volkswagen", "fuelType": "Electric" },
+            { "@type": "Car", "name": "Volkswagen ID. Buzz", "brand": "Volkswagen", "fuelType": "Electric" }
+          ],
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": ["h1", "h2", ".faq-question", ".faq-answer"]
+          },
+          "primaryImageOfPage": `https://buyawarranty.co.uk${vwHero}`,
+          "publisher": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk/" }
+        })}</script>
+      </Helmet>
 
       <div className="min-h-screen bg-white text-slate-900 pb-24 md:pb-0 font-sans">
         {/* PPC Header */}
