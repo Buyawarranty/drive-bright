@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,11 +12,10 @@ import { RoutingTester } from './RoutingTester';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-interface LeadRoutingDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface LeadRoutingPanelProps {
   canEdit: boolean;
 }
+
 
 interface Team {
   id: string;
