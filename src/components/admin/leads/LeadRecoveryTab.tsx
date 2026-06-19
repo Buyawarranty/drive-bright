@@ -516,6 +516,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {canExportCsv && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportCsv}
+                className="shrink-0"
+                title="Download the current segment as a CSV file"
+              >
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
+            )}
             {onNavigateToTab && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
               <Button
                 variant="default"
