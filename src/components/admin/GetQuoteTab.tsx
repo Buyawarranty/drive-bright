@@ -2218,7 +2218,7 @@ Questions? Call 0330 229 5040`;
                       value={mileage}
                       onChange={handleMileageChange}
                       placeholder="e.g. 45000"
-                      className="text-lg py-4 flex-1"
+                      className="text-lg py-4 flex-1 bg-yellow-50"
                     />
                     <Select
                       value={sliderMileage.toString()}
@@ -2228,7 +2228,7 @@ Questions? Call 0330 229 5040`;
                         setMileage(numValue.toLocaleString());
                       }}
                     >
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[180px] bg-yellow-50">
                         <SelectValue placeholder="Quick select" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
