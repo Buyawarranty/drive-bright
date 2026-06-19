@@ -1248,7 +1248,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onRefresh={fetchLeads}
             onMigrate={migrateFromAbandonedCarts}
             onExport={handleExport}
-            onManageRouting={() => setShowRoutingDialog(true)}
+            onManageRouting={() => onNavigateToTab?.('lead-teams')}
             canManageRouting={canManageRouting}
             leadCounts={leadCounts}
             dateRange={dateRange}
@@ -1268,11 +1268,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
           />
-          <LeadRoutingDialog
-            open={showRoutingDialog}
-            onOpenChange={setShowRoutingDialog}
-            canEdit={canManageRouting}
-          />
+          {currentAdminId && <TeamChangeNoticeDialog adminUserId={currentAdminId} />}
+
           {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
           {activeFilter === 'fake' && showFakeAudit && (
             userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('new-leads', 'fake-audit') === true
