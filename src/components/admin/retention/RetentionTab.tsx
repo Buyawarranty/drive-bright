@@ -155,7 +155,7 @@ export const RetentionTab: React.FC = () => {
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
-    'customers!customer_policies_customer_id_fkey ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status )';
+    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status )';
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
