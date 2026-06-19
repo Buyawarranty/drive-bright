@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,11 +12,10 @@ import { RoutingTester } from './RoutingTester';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-interface LeadRoutingDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface LeadRoutingPanelProps {
   canEdit: boolean;
 }
+
 
 interface Team {
   id: string;
@@ -95,7 +93,7 @@ interface TeamDistSettings {
   overflow_recipient_id: string | null;
 }
 
-export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDialogProps) => {
+export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [rules, setRules] = useState<SourceRule[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -319,7 +317,12 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     if (!current || current.team_id === newTeamId) return;
     const { data, error } = await supabase
       .from('lead_team_members')
-      .update({ team_id: newTeamId })
+      .update({
+        team_id: newTeamId,
+        previous_team_id: current.team_id,
+        team_changed_at: new Date().toISOString(),
+        notice_seen_at: null,
+      })
       .eq('id', memberId)
       .select()
       .single();
@@ -329,8 +332,9 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     }
     setMembers(members.map(m => (m.id === memberId ? (data as Member) : m)));
     const toName = teams.find(t => t.id === newTeamId)?.name ?? 'team';
-    toast({ title: 'Agent moved', description: `Switched to ${toName}` });
+    toast({ title: 'Agent moved', description: `Switched to ${toName}. They'll see a notice on next login.` });
   };
+
 
   const upsertTeamDist = async (patch: Partial<TeamDistSettings>) => {
     if (!activeTeamId) return;
@@ -383,18 +387,18 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings2 className="h-5 w-5" />
-            Lead Routing &amp; Distribution
-          </DialogTitle>
-          <DialogDescription>
-            Configure which teams receive which lead sources. Set performance thresholds so teams unlock premium leads when they hit conversion targets.
-            {!canEdit && <span className="block mt-1 text-amber-600">Read-only — you do not have edit permission.</span>}
-          </DialogDescription>
-        </DialogHeader>
+    <div className="space-y-4">
+      <div className="border-b pb-3">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Settings2 className="h-5 w-5" />
+          Lead Routing &amp; Teams
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Configure which teams receive which lead sources. Set performance thresholds so teams unlock premium leads when they hit conversion targets.
+          {!canEdit && <span className="block mt-1 text-amber-600">Read-only — you do not have edit permission.</span>}
+        </p>
+      </div>
+
 
         {/* Master kill-switch */}
         <div
@@ -902,7 +906,7 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
             </Tabs>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 };
+

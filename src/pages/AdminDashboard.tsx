@@ -34,6 +34,7 @@ const AttributionSettingsTab = lazy(() => import('@/components/admin/Attribution
 const FeatureFlagsTab = lazy(() => import('@/components/admin/FeatureFlagsTab'));
 const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
 const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
+const LeadTeamsTab = lazy(() => import('@/components/admin/LeadTeamsTab').then(m => ({ default: m.LeadTeamsTab })));
 const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
 const BulkPricingTab = lazy(() => import('@/components/admin/BulkPricingTab').then(m => ({ default: m.BulkPricingTab })));
 const BlogWritingTab = lazy(() => import('@/components/admin/BlogWritingTab').then(m => ({ default: m.BlogWritingTab })));
@@ -69,7 +70,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
 const SALES_TABS = ['new-leads', 'golden-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 const SALES_LEAD_TABS = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'golden-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
@@ -463,6 +464,20 @@ const AdminDashboard = () => {
         return <ClickFraudTab />;
       case 'user-permissions':
         return <UserPermissionsTab />;
+      case 'lead-teams':
+        if (
+          effectiveUserRole !== 'super_admin' &&
+          effectiveUserRole !== 'admin' &&
+          effectiveUserRole !== 'sales_manager'
+        ) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Lead Teams is restricted to managers and admins.</p>
+            </div>
+          );
+        }
+        return <LeadTeamsTab />;
       case 'document-mapping':
         return <DocumentMappingTab />;
       case 'policy-documents':
