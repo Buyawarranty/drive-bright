@@ -303,7 +303,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not set");
     }
 
-    const subject = `${vehicleReg} - Complete your warranty purchase`;
+    const subject = isReminderEmail
+      ? `${vehicleReg} – don't forget your warranty (save £50 today)`
+      : `${vehicleReg} - Complete your warranty purchase`;
 
     console.log("📤 Sending step 4 instant email via Resend...");
     
