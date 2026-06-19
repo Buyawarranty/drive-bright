@@ -194,62 +194,61 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Agent Allocation
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            One place to assign every agent to a team and choose which queues they work — New Leads, Recontact and Renewals.
-            Toggle any cell to update instantly. Agents are notified on their next login.
-          </p>
+      <div className="flex items-center justify-end gap-2 flex-wrap">
+        <div className="inline-flex border-2 border-foreground bg-background">
+          {(['all', 'new_leads', 'recontact', 'renewals'] as WorkstreamFilter[]).map((f, i) => {
+            const label = f === 'all' ? 'All' : WORKSTREAMS.find(w => w.key === f)!.short;
+            const active = filter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                  i > 0 ? 'border-l-2 border-foreground' : ''
+                } ${active ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-md border bg-background p-0.5">
-            {(['all', 'new_leads', 'recontact', 'renewals'] as WorkstreamFilter[]).map(f => {
-              const label = f === 'all' ? 'All' : WORKSTREAMS.find(w => w.key === f)!.short;
-              const active = filter === f;
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-3 py-1 text-xs rounded ${active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          <Button size="sm" variant="outline" onClick={loadAll} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={loadAll}
+          disabled={loading}
+          className="h-8 rounded-none border-2 border-foreground font-semibold uppercase text-xs"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </Button>
       </div>
 
       {/* Pending agents */}
       {canEdit && pendingAgents.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50/40">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Plus className="h-4 w-4 text-amber-600" /> Pending sales agents
-              <Badge variant="outline" className="text-[10px]">{pendingAgents.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              These agents have sales permissions but no team yet. Place them in a team — they'll start on New Leads by default and you can enable Recontact or Renewals below.
+        <div className="border-2 border-amber-500 bg-amber-50">
+          <div className="px-4 py-2 border-b-2 border-amber-500 bg-amber-100 flex items-center gap-2">
+            <Plus className="h-4 w-4 text-amber-800" />
+            <span className="text-xs font-bold uppercase tracking-wide text-amber-900">
+              Pending sales agents
+            </span>
+            <span className="ml-1 inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 bg-amber-600 text-white text-[11px] font-bold">
+              {pendingAgents.length}
+            </span>
+          </div>
+          <div className="p-3 space-y-2">
+            <p className="text-xs text-amber-900/80">
+              These agents have sales permissions but no team. Place them in a team — they'll start on New Leads by default.
             </p>
             {pendingAgents.map(a => (
-              <div key={a.id} className="flex items-center justify-between gap-2 border rounded px-3 py-1.5 bg-background">
+              <div key={a.id} className="flex items-center justify-between gap-2 border-2 border-foreground/80 px-3 py-2 bg-background">
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">
+                  <div className="text-sm font-semibold truncate">
                     {`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">{a.email} · {a.role}</div>
                 </div>
                 <Select onValueChange={(v) => addMemberToTeam(a.id, v)} value="">
-                  <SelectTrigger className="h-8 w-[160px] text-xs shrink-0">
+                  <SelectTrigger className="h-8 w-[170px] text-xs shrink-0 rounded-none border-2 border-foreground font-semibold">
                     <SelectValue placeholder="Add to team…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -262,61 +261,67 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
                 </Select>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      {/* Teams */}
+      {/* Teams — sharp rectangles, agents lead the visual hierarchy */}
       {teams.map(team => {
         const teamMembers = visibleMembers(team.id);
         const totalForTeam = members.filter(m => m.team_id === team.id).length;
         const otherTeams = teams.filter(t => t.id !== team.id);
         return (
-          <Card key={team.id} className="overflow-hidden">
-            <CardHeader
-              className="py-3"
-              style={{ backgroundColor: `${team.color}15`, borderBottom: `2px solid ${team.color}` }}
+          <div key={team.id} className="border-2 border-foreground bg-background">
+            {/* Solid team header strip */}
+            <div
+              className="flex items-center justify-between gap-3 px-4 py-2.5 border-b-2 border-foreground text-white"
+              style={{ backgroundColor: team.color }}
             >
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-xs font-semibold"
-                    style={{ backgroundColor: team.color }}
-                  >
-                    {team.emoji} {team.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground font-normal">
-                    {teamMembers.length} of {totalForTeam} {filter === 'all' ? 'member' : 'on ' + WORKSTREAMS.find(w => w.key === filter)?.short}
-                    {teamMembers.length === 1 ? '' : 's'}
-                  </span>
-                </CardTitle>
+              <div className="flex items-center gap-2.5">
+                <span className="text-base font-bold uppercase tracking-wide">
+                  {team.emoji} {team.name}
+                </span>
+                <span className="text-[11px] font-medium opacity-90 uppercase tracking-wider">
+                  {teamMembers.length} / {totalForTeam} {filter === 'all' ? 'agents' : 'on ' + WORKSTREAMS.find(w => w.key === filter)?.short}
+                </span>
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {/* per-agent toggles below — bulk controls removed so allocation is strictly per individual agent */}
-              {teamMembers.length === 0 ? (
-                <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-                  {filter === 'all' ? 'No members yet.' : `No-one on ${WORKSTREAMS.find(w => w.key === filter)?.label} in this team.`}
+            </div>
+
+            {teamMembers.length === 0 ? (
+              <div className="px-4 py-8 m-2 text-center text-sm text-muted-foreground border-2 border-dashed border-muted">
+                {filter === 'all' ? 'No agents in this team yet.' : `No-one on ${WORKSTREAMS.find(w => w.key === filter)?.label}.`}
+              </div>
+            ) : (
+              <div>
+                {/* Column header strip */}
+                <div className="hidden md:grid grid-cols-[1fr_repeat(3,100px)_180px] gap-2 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border-b-2 border-foreground/20">
+                  <div>Agent</div>
+                  {WORKSTREAMS.map(w => (
+                    <div key={w.key} className="text-center">{w.short}</div>
+                  ))}
+                  <div className="text-right">Actions</div>
                 </div>
-              ) : (
-                <div className="divide-y">
-                  {/* Header row */}
-                  <div className="hidden md:grid grid-cols-[1fr_repeat(3,90px)_auto] gap-2 px-4 py-2 text-[11px] uppercase tracking-wide text-muted-foreground bg-muted/30">
-                    <div>Agent</div>
-                    {WORKSTREAMS.map(w => (
-                      <div key={w.key} className="text-center">{w.short}</div>
-                    ))}
-                    <div className="text-right">Actions</div>
-                  </div>
+                <div className="divide-y-2 divide-foreground/10">
                   {teamMembers.map(m => {
                     const u = admins.find(a => a.id === m.admin_user_id);
+                    const initials = u
+                      ? (`${u.first_name?.[0] ?? ''}${u.last_name?.[0] ?? ''}`.toUpperCase() || u.email[0].toUpperCase())
+                      : '?';
                     return (
-                      <div key={m.id} className="grid grid-cols-1 md:grid-cols-[1fr_repeat(3,90px)_auto] gap-2 px-4 py-2 items-center">
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">
-                            {u ? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email : 'Unknown user'}
+                      <div key={m.id} className="grid grid-cols-1 md:grid-cols-[1fr_repeat(3,100px)_180px] gap-2 px-4 py-2.5 items-center hover:bg-muted/40">
+                        <div className="min-w-0 flex items-center gap-2.5">
+                          <div
+                            className="h-9 w-9 shrink-0 flex items-center justify-center text-white text-xs font-bold border-2 border-foreground"
+                            style={{ backgroundColor: team.color }}
+                          >
+                            {initials}
                           </div>
-                          {u && <div className="text-xs text-muted-foreground truncate">{u.email} · {u.role}</div>}
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold truncate">
+                              {u ? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email : 'Unknown user'}
+                            </div>
+                            {u && <div className="text-[11px] text-muted-foreground truncate">{u.email}</div>}
+                          </div>
                         </div>
                         {WORKSTREAMS.map(w => {
                           const on = (m as any)[w.col] === true;
@@ -325,24 +330,23 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
                               <button
                                 disabled={!canEdit}
                                 onClick={() => toggleWorkstream(m, w.key)}
-                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition ${
+                                className={`inline-flex items-center justify-center gap-1.5 min-w-[72px] px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide border-2 transition-colors ${
                                   on
-                                    ? 'bg-primary/10 border-primary/40 text-primary'
-                                    : 'bg-muted/40 border-transparent text-muted-foreground hover:bg-muted'
-                                } ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}
+                                    ? 'bg-foreground text-background border-foreground'
+                                    : 'bg-background text-muted-foreground border-muted hover:border-foreground/40'
+                                } ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
                                 title={`${on ? 'Remove from' : 'Add to'} ${w.label}`}
                               >
-                                <w.icon className={`h-3 w-3 ${on ? w.tint : ''}`} />
-                                <span className="md:hidden">{w.short}</span>
-                                <span className="hidden md:inline">{on ? 'On' : 'Off'}</span>
+                                <w.icon className="h-3 w-3" />
+                                {on ? 'On' : 'Off'}
                               </button>
                             </div>
                           );
                         })}
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
                           {canEdit && otherTeams.length > 0 && (
                             <Select onValueChange={(v) => moveMember(m.id, v)} value="">
-                              <SelectTrigger className="h-7 w-[120px] text-xs">
+                              <SelectTrigger className="h-8 w-[130px] text-xs rounded-none border-2 border-foreground/70 font-semibold">
                                 <SelectValue placeholder="Move to…" />
                               </SelectTrigger>
                               <SelectContent>
@@ -355,27 +359,29 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
                             </Select>
                           )}
                           {canEdit && (
-                            <Button variant="ghost" size="sm" onClick={() => removeMember(m.id)} title="Remove from team">
-                              <X className="h-4 w-4" />
-                            </Button>
+                            <button
+                              onClick={() => removeMember(m.id)}
+                              title="Remove from team"
+                              className="h-8 w-8 flex items-center justify-center border-2 border-foreground/70 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
                           )}
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
+          </div>
         );
       })}
 
       {!teams.length && !loading && (
-        <Card>
-          <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            No teams yet — add a team in the Lead Routing tab to get started.
-          </CardContent>
-        </Card>
+        <div className="border-2 border-dashed border-muted-foreground/40 py-8 text-center text-sm text-muted-foreground">
+          No teams yet — add a team in the routing section below to get started.
+        </div>
       )}
     </div>
   );
