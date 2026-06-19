@@ -5,6 +5,7 @@ import { addSystemNote } from '@/utils/leadSystemNotes';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 const LEAD_TAG_BATCH_SIZE = 75;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
