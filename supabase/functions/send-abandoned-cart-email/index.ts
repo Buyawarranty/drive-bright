@@ -313,6 +313,22 @@ const handler = async (req: Request): Promise<Response> => {
     const emailRequest: SendEmailRequest = await req.json();
     console.log('Sending abandoned cart email:', emailRequest);
 
+    // Hard stop: never email an unsubscribed recipient
+    const normalizedEmail = (emailRequest.email || '').trim().toLowerCase();
+    const { data: unsub } = await supabase
+      .from('email_unsubscribes')
+      .select('email')
+      .eq('email', normalizedEmail)
+      .limit(1);
+    if (unsub && unsub.length > 0) {
+      console.log(`Skipping email - recipient ${normalizedEmail} is unsubscribed`);
+      return new Response(JSON.stringify({ success: true, message: "Recipient is unsubscribed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+
     // Check if we've already sent this type of email for this specific cart
     const { data: recentEmails, error: checkError } = await supabase
       .from('triggered_emails_log')
