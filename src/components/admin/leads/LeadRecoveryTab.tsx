@@ -432,6 +432,45 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
+  const exportCsv = useCallback(() => {
+    if (!filteredLeads.length) {
+      toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
+      return;
+    }
+    const headers = [
+      'First name','Last name','Email','Phone','Status','Source','Plan interest',
+      'Vehicle reg','Vehicle make','Vehicle model','Vehicle year','Mileage',
+      'Cart value','Quote amount','Calls','Last contacted','Last worked','Recovery outcome',
+      'Assigned to','Assigned at','Created at',
+    ];
+    const esc = (v: any) => {
+      if (v == null) return '';
+      const s = String(v).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? `"${s}"` : s;
+    };
+    const rows = filteredLeads.map((l: any) => {
+      const a = l.assigned_to ? agentByAuthId.get(l.assigned_to) : undefined;
+      return [
+        l.first_name, l.last_name, l.email, l.phone, l.status, l.lead_source, l.plan_interest,
+        l.vehicle_reg, l.vehicle_make, l.vehicle_model, l.vehicle_year, l.mileage,
+        l.cart_value, l.quote_amount, l.call_count || 0,
+        l.last_contacted_at, l.recovery_worked_at, l.recovery_outcome,
+        a ? agentLabel(a) : (l.assigned_to ? 'Unknown' : 'Unassigned'),
+        l.assigned_at, l.created_at,
+      ].map(esc).join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `recontact-leads_${segment}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} leads`);
+  }, [filteredLeads, agentByAuthId, segment]);
+
+
   const dueTodayCount = counts['due_today'] ?? 0;
   const totalCount = counts['all_leads'] ?? 0;
   const conversionRate = myStats.worked > 0 ? Math.round((myStats.converted / myStats.worked) * 100) : 0;
