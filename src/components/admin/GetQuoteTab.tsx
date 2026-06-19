@@ -4298,6 +4298,37 @@ Questions? Call 0330 229 5040`;
                       </Label>
                     </div>
                   </div>
+                  </div>
+
+                  <aside className="lg:sticky lg:top-0 h-fit space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                    <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                      <p className="text-xs font-medium text-green-700">Amount to record</p>
+                      <p className="mt-1 text-3xl font-bold text-green-900">£{paymentAmount || currentPrice.totalPrice}</p>
+                      <p className="mt-1 text-xs text-green-700">Quoted price £{currentPrice.totalPrice}</p>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Customer</span>
+                        <span className="text-right font-medium">{editableCustomerName || customerName || 'Not entered'}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Vehicle</span>
+                        <span className="text-right font-medium">{editableRegNumber || regNumber || 'No reg'}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Mileage</span>
+                        <span className="text-right font-medium">{editableMileage || mileage || 'Not entered'}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Duration</span>
+                        <span className="text-right font-medium">{termOptions.find(t => t.id === paymentType)?.label}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-muted-foreground">Start date</span>
+                        <span className="text-right font-medium">{format(warrantyStartDate, 'd MMM yyyy')}</span>
+                      </div>
+                    </div>
+                  </aside>
                 </div>
               ) : externalPaymentStep === 'preview' ? (
                 /* Preview Step */
