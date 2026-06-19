@@ -2101,7 +2101,7 @@ Questions? Call 0330 229 5040`;
 
                 {/* Auto Vehicle Identification Preview */}
                 {(autoPreview.loading || autoPreview.data || autoPreview.error) && (
-                  <div className="rounded-lg border p-3 bg-slate-50 text-sm">
+                  <div className="border-2 border-black p-3 bg-white text-sm">
                     {autoPreview.loading && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -2109,7 +2109,7 @@ Questions? Call 0330 229 5040`;
                       </div>
                     )}
                     {!autoPreview.loading && autoPreview.error && (
-                      <div className="text-amber-700">{autoPreview.error} — you can still continue and enter details manually.</div>
+                      <div className="text-muted-foreground">{autoPreview.error} — you can still continue and enter details manually.</div>
                     )}
                     {!autoPreview.loading && autoPreview.data && (() => {
                       const d = autoPreview.data!;
@@ -2124,22 +2124,22 @@ Questions? Call 0330 229 5040`;
                               {d.make} {d.model} {d.year ? `(${d.year})` : ''}
                               {d.fuelType ? <span className="text-muted-foreground font-normal"> · {d.fuelType}</span> : null}
                             </div>
-                            <Badge variant={eligible ? 'default' : 'destructive'} className={eligible ? 'bg-green-600' : ''}>
+                            <Badge variant={eligible ? 'default' : 'destructive'} className={eligible ? 'bg-black' : ''}>
                               {eligible ? 'Eligible' : 'Not eligible'}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className={`rounded px-2 py-1 ${ageOver && !ageOverrideEnabled ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            <div className={`border-2 border-black px-2 py-1 ${ageOver && !ageOverrideEnabled ? 'border-red-600 text-red-600' : ''}`}>
                               Age: {typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : 'unknown'} {ageOver ? (ageOverrideEnabled ? '(override on)' : '— over 15-year limit') : ''}
                             </div>
-                            <div className={`rounded px-2 py-1 ${mileageOver ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            <div className={`border-2 border-black px-2 py-1 ${mileageOver ? 'border-red-600 text-red-600' : ''}`}>
                               Mileage: {!isNaN(numericMileage) ? numericMileage.toLocaleString() : '—'} {mileageOver ? '— over 150,000 limit' : ''}
                             </div>
                           </div>
                           {d.motMileage ? (
                             <button
                               type="button"
-                              className="text-xs text-blue-600 hover:underline"
+                              className="text-xs font-medium underline"
                               onClick={() => {
                                 setMileage(String(d.motMileage));
                                 setSliderMileage(Number(d.motMileage));
@@ -2149,7 +2149,7 @@ Questions? Call 0330 229 5040`;
                             </button>
                           ) : null}
                           {d.blocked && (
-                            <div className="text-xs text-red-700 font-medium">{d.blockReason || 'This make/model is on the excluded list.'}</div>
+                            <div className="text-xs text-red-600 font-medium">{d.blockReason || 'This make/model is on the excluded list.'}</div>
                           )}
                         </div>
                       );
@@ -2163,12 +2163,12 @@ Questions? Call 0330 229 5040`;
                   <Label>Mileage</Label>
 
                   {step1MotLoading && !step1MotMileageResolved ? (
-                    <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-xs text-muted-foreground flex items-center gap-2">
+                    <div className="border-2 border-black p-3 text-xs text-muted-foreground flex items-center gap-2">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking MOT history…
                     </div>
                   ) : null}
                   {step1MotMileageResolved ? (
-                    <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 space-y-2">
+                    <div className="border-2 border-black p-3 space-y-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -2176,7 +2176,7 @@ Questions? Call 0330 229 5040`;
                           setMileage(m.toLocaleString());
                           setSliderMileage(Math.min(m, 150000));
                         }}
-                        className="text-sm font-medium text-blue-700 hover:underline"
+                        className="text-sm font-medium underline"
                       >
                         Last recorded MOT: <span className="font-bold">{Number(step1MotMileageResolved).toLocaleString()} miles</span>
                         {step1MotDate ? <span className="text-xs text-muted-foreground font-normal"> ({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
@@ -2196,7 +2196,7 @@ Questions? Call 0330 229 5040`;
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-8 text-black"
+                              className="h-8 text-black border-2 border-black"
                               onClick={() => {
                                 setMileage(target.toLocaleString());
                                 setSliderMileage(Math.min(target, 150000));
@@ -2218,7 +2218,7 @@ Questions? Call 0330 229 5040`;
                       value={mileage}
                       onChange={handleMileageChange}
                       placeholder="e.g. 45000"
-                      className="text-lg py-4 flex-1 bg-yellow-50"
+                      className="text-lg py-4 flex-1 border-2 border-black"
                     />
                     <Select
                       value={sliderMileage.toString()}
@@ -2228,7 +2228,7 @@ Questions? Call 0330 229 5040`;
                         setMileage(numValue.toLocaleString());
                       }}
                     >
-                      <SelectTrigger className="w-[180px] bg-yellow-50">
+                      <SelectTrigger className="w-[180px] border-2 border-black">
                         <SelectValue placeholder="Quick select" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
@@ -2262,14 +2262,14 @@ Questions? Call 0330 229 5040`;
                       }
                     }}
                   />
-                  <Label htmlFor="ageOverride" className="text-sm font-medium text-orange-700 cursor-pointer">
+                  <Label htmlFor="ageOverride" className="text-sm font-medium cursor-pointer">
                     Override 15-year age limit (authorised personnel only)
                   </Label>
                 </div>
                 {ageOverrideEnabled && (
-                  <Alert className="border-orange-300 bg-orange-50">
-                    <AlertCircle className="h-4 w-4 text-orange-600" />
-                    <AlertDescription className="text-orange-800 text-sm">
+                  <Alert className="border-2 border-black bg-white rounded-none">
+                    <AlertCircle className="h-4 w-4 text-black" />
+                    <AlertDescription className="text-sm">
                       Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
                     </AlertDescription>
                   </Alert>
@@ -2281,7 +2281,7 @@ Questions? Call 0330 229 5040`;
                     onClick={handleVehicleLookup}
                     disabled={isLookingUp || isQuickConfirming}
                     size="lg"
-                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                    className="gap-2 bg-black hover:bg-gray-800"
                   >
                     {isLookingUp ? (
                       <>
@@ -2301,7 +2301,8 @@ Questions? Call 0330 229 5040`;
                     onClick={handleQuickConfirmOrder}
                     disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
                     size="lg"
-                    className="gap-2 bg-green-600 hover:bg-green-700"
+                    variant="outline"
+                    className="gap-2 border-2 border-black text-black hover:bg-gray-100"
                   >
                     {isQuickConfirming ? (
                       <>
@@ -2320,8 +2321,8 @@ Questions? Call 0330 229 5040`;
                 
                 {/* Help text */}
                 <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground text-center">
-                  <p><span className="text-blue-600 font-medium">Send Quote</span> — Configure & email a quote link</p>
-                  <p><span className="text-green-600 font-medium">Confirm Payment</span> — Already paid elsewhere</p>
+                  <p><span className="font-medium text-black">Send Quote</span> — Configure & email a quote link</p>
+                  <p><span className="font-medium text-black">Confirm Payment</span> — Already paid elsewhere</p>
                 </div>
               </CardContent>
             </Card>
