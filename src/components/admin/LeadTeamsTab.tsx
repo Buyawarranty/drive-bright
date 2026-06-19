@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { useViewAs } from '@/contexts/ViewAsContext';
-import { Users, GitBranch } from 'lucide-react';
+import { Users, ChevronDown, ChevronRight, Settings2 } from 'lucide-react';
 
 export const LeadTeamsTab = () => {
   const { effectiveRole } = useViewAs();
@@ -10,6 +11,8 @@ export const LeadTeamsTab = () => {
     effectiveRole === 'admin' ||
     effectiveRole === 'sales_manager' ||
     effectiveRole === 'sales_lead';
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   if (
     effectiveRole !== 'super_admin' &&
@@ -28,40 +31,45 @@ export const LeadTeamsTab = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-      {/* Page title — sharp, no rounded box */}
       <div className="border-b-2 border-foreground pb-3">
         <h1 className="text-2xl font-bold tracking-tight uppercase">Master Allocation</h1>
         <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
-          Decide who works which queue, then decide which lead sources flow to which team. Top section is the day-to-day. Bottom section is set once and rarely touched.
+          One list. Set each agent's team tag, turn lead receiving on/off, and weight their share. New leads round-robin across whoever is on.
         </p>
       </div>
 
-      {/* 1. AGENTS — the day-to-day, comes first */}
+      {/* Single primary section */}
       <section>
-        <div className="flex items-center gap-3 mb-3">
-          <span className="inline-flex items-center justify-center h-8 w-8 bg-foreground text-background text-sm font-bold">1</span>
-          <div>
-            <h2 className="text-base font-bold uppercase tracking-wide flex items-center gap-2">
-              <Users className="h-4 w-4" /> Agents &amp; Teams
-            </h2>
-            <p className="text-xs text-muted-foreground">Who's on which team, and which queues they work.</p>
-          </div>
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="h-4 w-4" />
+          <h2 className="text-base font-bold uppercase tracking-wide">Agents</h2>
         </div>
         <AllocationMatrix canEdit={canEdit} />
       </section>
 
-      {/* 2. SOURCE ROUTING — set once */}
-      <section>
-        <div className="flex items-center gap-3 mb-3">
-          <span className="inline-flex items-center justify-center h-8 w-8 bg-foreground text-background text-sm font-bold">2</span>
-          <div>
-            <h2 className="text-base font-bold uppercase tracking-wide flex items-center gap-2">
-              <GitBranch className="h-4 w-4" /> Source Routing
-            </h2>
-            <p className="text-xs text-muted-foreground">What percentage of each lead source goes to each team.</p>
+      {/* Collapsible advanced — source overrides */}
+      <section className="border-2 border-foreground/30">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(s => !s)}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-muted hover:bg-muted/80 transition-colors"
+        >
+          <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide">
+            <Settings2 className="h-4 w-4" />
+            Advanced: source overrides
+          </span>
+          {showAdvanced ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
+        {showAdvanced && (
+          <div className="p-4 border-t-2 border-foreground/30 space-y-3">
+            <div className="border-l-4 border-amber-500 bg-amber-50 px-3 py-2">
+              <p className="text-xs text-amber-900">
+                <strong>Most teams don't need this.</strong> Leave the matrix empty and leads round-robin across all receiving agents above. Only fill it in when a specific source (e.g. Google Ads) needs to bias toward a specific team.
+              </p>
+            </div>
+            <LeadRoutingPanel canEdit={canEdit} />
           </div>
-        </div>
-        <LeadRoutingPanel canEdit={canEdit} />
+        )}
       </section>
     </div>
   );
