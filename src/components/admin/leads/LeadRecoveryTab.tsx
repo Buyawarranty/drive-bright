@@ -476,6 +476,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {onNavigateToTab && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onNavigateToTab('lead-teams')}
+                className="shrink-0 font-semibold"
+                title="Assign agents to teams and pick the queues they work — New Leads, Recontact, Renewals"
+              >
+                <Network className="h-4 w-4 mr-1" /> Allocate Agents
+              </Button>
+            )}
           </div>
         </div>
       </div>
