@@ -34,10 +34,23 @@ const ForgotPassword: React.FC = () => {
         throw error;
       }
 
+      // Fire-and-forget login activity log
+      import('@/lib/loginActivityLogger').then(m => m.logLoginAttempt({
+        email,
+        event_type: 'credentials_resent',
+        success: true,
+      }));
+
       setSent(true);
       toast.success('Login credentials have been sent to your email address');
     } catch (error: any) {
       console.error('Error resending credentials:', error);
+      import('@/lib/loginActivityLogger').then(m => m.logLoginAttempt({
+        email,
+        event_type: 'credentials_resent',
+        success: false,
+        failure_reason: error.message,
+      }));
       toast.error(error.message || 'Failed to resend login credentials. Please contact support.');
     } finally {
       setLoading(false);
