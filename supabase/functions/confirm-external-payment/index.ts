@@ -40,11 +40,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAdmin(req, { allowedRoles: ["admin", "super_admin", "sales_manager", "sales_lead", "sales"] });
+  if (!auth.ok) return auth.response;
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
   );
+
 
   try {
     logStep("Function started");
