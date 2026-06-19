@@ -949,7 +949,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       <div className="rounded-xl border border-border bg-card shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold tracking-tight">Leads</h1>
+            <button
+              type="button"
+              onClick={() => {
+                setTeamFilter(null);
+                handleViewChange('leads');
+              }}
+              title="Show all leads across every team"
+              className="text-lg font-bold tracking-tight hover:text-primary transition-colors cursor-pointer"
+            >
+              Leads
+            </button>
             <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
           </div>
           <div className="h-6 w-px bg-border" aria-hidden />
@@ -1083,10 +1093,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </div>
               {teamFilter && !isLockedToOwnTeam && (
                 <span className={cn(
-                  "text-[11px] font-medium",
+                  "inline-flex items-center gap-1 text-[11px] font-medium",
                   TEAM_COLOR_CLASSES[allTeams.find(t => t.id === teamFilter)?.color || 'slate'].text
                 )}>
                   Scoped to <span className="font-bold">{allTeams.find(t => t.id === teamFilter)?.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setTeamFilter(null)}
+                    title="Clear team filter — show all teams"
+                    className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full bg-background border border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors"
+                  >
+                    <XCircle className="h-3 w-3" />
+                  </button>
                 </span>
               )}
             </>
