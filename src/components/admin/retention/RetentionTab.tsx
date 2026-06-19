@@ -314,75 +314,106 @@ export const RetentionTab: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Repeat className="h-6 w-6 text-primary" />
-            Renewals
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Renewals and upsells for active customers. Automated cadence runs daily at 09:00 — emails at 90/60/30/14/7/0 days before expiry and 7/30 days after, with discount codes up to 25%. Call milestones (30/14/7d) auto-assign to a sales agent.
-          </p>
-          <Button size="sm" variant="outline" className="mt-2 gap-1" disabled={runningCron} onClick={triggerCron}>
-            {runningCron ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
-            Run renewal cron now
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Card className="border-primary/30">
-            <CardContent className="py-3 px-4">
-              <div className="text-xs text-muted-foreground">Active policies</div>
-              <div className="text-xl font-semibold">{totalActive ?? '…'}</div>
-            </CardContent>
-          </Card>
-          <Card className="border-primary/30">
-            <CardContent className="py-3 px-4">
-              <div className="text-xs text-muted-foreground">Renewals next 12 months</div>
-              <div className="text-xl font-semibold">{renewals12mo ?? '…'}</div>
-            </CardContent>
-          </Card>
-          <Card className="border-primary/30">
-            <CardContent className="py-3 px-4 flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <div>
-                <div className="text-xs text-muted-foreground">Worked today</div>
-                <div className="text-xl font-semibold">{workedToday}</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
-        <TabsList className="w-full justify-start flex-wrap h-auto">
-          {SEGMENTS.map((s) => (
-            <TabsTrigger key={s.id} value={s.id} className="gap-2">
-              {s.label}
-              <Badge variant="secondary" className="ml-1">{counts[s.id] ?? '…'}</Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value={segment} className="mt-4 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
+      {/* Sticky header — title, search, refresh, cron stay in view while scrolling the table */}
+      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 px-4 md:px-6 py-3 bg-background/95 backdrop-blur border-b">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-0.5 min-w-0">
+            <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
+              <Repeat className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              Renewals
+            </h1>
+            <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
+              Active customers up for renewal or upsell. Auto-cadence emails run daily; call milestones (30/14/7d) auto-assign.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
             <Input
               placeholder="Search name, email, phone, reg, policy…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
+              className="h-9 w-[220px] md:w-[280px]"
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { fetchRows(); fetchCounts(); fetchWorkedToday(); fetchTotals(); }}
+              className="shrink-0"
+            >
+              <Loader2 className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : 'hidden'}`} />
+              Refresh
+            </Button>
+            <Button size="sm" variant="default" className="gap-1" disabled={runningCron} onClick={triggerCron}>
+              {runningCron ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+              Run cron
+            </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Stat strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="py-3 px-4 flex items-center gap-3">
+            <UserCheck className="h-5 w-5 text-primary" />
+            <div>
+              <div className="text-xs text-muted-foreground">Active policies</div>
+              <div className="text-xl font-semibold">{totalActive ?? '…'}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-3 px-4 flex items-center gap-3">
+            <TrendingUp className="h-5 w-5 text-blue-600" />
+            <div>
+              <div className="text-xs text-muted-foreground">Renewals next 12 mo</div>
+              <div className="text-xl font-semibold">{renewals12mo ?? '…'}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-3 px-4 flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <div>
+              <div className="text-xs text-muted-foreground">Worked today</div>
+              <div className="text-xl font-semibold">{workedToday}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-3 px-4 flex items-center gap-3">
+            <Send className="h-5 w-5 text-amber-500" />
+            <div>
+              <div className="text-xs text-muted-foreground">Due in next 60 days</div>
+              <div className="text-xl font-semibold">{counts['due_soon'] ?? '…'}</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
+        <div className="sticky top-[68px] z-10 -mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background/95 backdrop-blur border-b">
+          <TabsList className="w-full justify-start flex-wrap h-auto">
+            {SEGMENTS.map((s) => (
+              <TabsTrigger key={s.id} value={s.id} className="gap-2">
+                {s.label}
+                <Badge variant="secondary" className="ml-1">{counts[s.id] ?? '…'}</Badge>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+
+        <TabsContent value={segment} className="mt-4 space-y-3">
+          <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading retention list…
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading renewals…
             </div>
           ) : filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No customers in this segment right now.
+                No customers in this segment right now. Try another tab or clear your search.
               </CardContent>
             </Card>
           ) : (
