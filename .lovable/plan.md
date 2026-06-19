@@ -1,77 +1,70 @@
 ## Goal
-Collapse the 3-layer routing (Source % → Team % → Agent) into a single-layer round-robin, and merge "Master Allocation", "By Team", and "Live Leads" into one Leads page with filter chips. Keep all existing APIs, edge functions, and DB writes intact — only the UI and the *picker* logic change.
+Give admins a clear log of every login-related event for a customer, shown directly inside the **Edit Customer Details** dialog (admin → Customers tab → Edit). Combines our own captured events with Supabase auth events.
 
-## Non-negotiables (no functionality breakage)
-- Do NOT delete tables, columns, edge functions, or RPCs. Everything stays so any in-flight cron/webhook keeps working.
-- Do NOT change `sales_leads`, `lead_team_members`, `lead_team_source_rules`, `agent_distribution_caps` schemas.
-- Do NOT touch lead capture, abandoned cart, Stripe, Google Ads, ClickSend, or any integration code.
-- The current routing edge function keeps running unchanged. We just stop *requiring* the source matrix and start honouring a simpler weight.
+## What gets logged
 
-## What changes (UI only, phase 1)
+Captured by our own code (customer-facing flows + admin actions):
+- **login_success** – customer signed in
+- **login_failed** – wrong password / unknown email (with reason)
+- **password_reset_requested** – customer used Forgot Password
+- **credentials_resent** – Forgot Password "resend credentials" used
+- **admin_password_reset** – admin triggered a password reset for the customer
+- **admin_impersonate** – admin used "View as customer" / impersonation
+- **admin_magic_link** – admin sent a magic / login link
+- **admin_details_edited** – admin edited the customer's email/phone/name
 
-### 1. New simplified Master Allocation page
-Replace the current page body with one table:
+Each row stores: email, customer_id (if known), event type, success flag, failure reason, IP address, user agent, who triggered it (admin id if admin-initiated), free-form metadata, timestamp.
 
+Also merged into the timeline view: recent Supabase `auth.audit_log_entries` matching the customer's email (signups, password updates, token refreshes, email changes) — fetched server-side with the service role.
+
+## UI placement
+
+Inside `EditCustomerDetailsDialog`:
+- Widen the dialog (`sm:max-w-2xl`).
+- Keep existing form fields at the top.
+- Add a new section beneath them: **"Recent login activity"** — collapsible, default open, scrollable list (last 50 events), newest first.
+- Each row shows: icon + event label, timestamp ("2 mins ago" + full date on hover), email used, IP, device summary, and a coloured success / failure badge. Failure rows show the reason.
+- A small "Refresh" button and an "Export CSV" button in the section header.
+
+```text
+┌─ Edit Customer Details ────────────────────────────┐
+│ First name │ Surname │ Email │ Phone               │
+│ [Save changes]                                     │
+│                                                    │
+│ ▼ Recent login activity        [Refresh] [Export]  │
+│ ─────────────────────────────────────────────────  │
+│ ✓ Login success   2m ago   1.2.3.4   Chrome/Mac   │
+│ ✗ Login failed    5m ago   1.2.3.4   wrong pw     │
+│ ✉ Password reset requested  1h ago                 │
+│ 👤 Admin sent magic link    Yesterday  by Jane    │
+│ … (scroll for more)                                │
+└────────────────────────────────────────────────────┘
 ```
-Agent              Team tag   Receiving?   Share %   Workstreams
-─────────────────  ─────────  ───────────  ────────  ──────────────────
-James Smith        [Red ▾]    [ON ]        [ 25 ]    [New][Recontact][Renewals]
-Kevin Jones        [Blue ▾]   [ON ]        [ 15 ]    [New]
-Thomas Brown       [Red ▾]    [OFF]        [  0 ]    [New]
-...
-                                           ─────
-                                           Total: 100% ✓
-```
 
-- Team column is just a colour tag (dropdown, used for filtering & reporting only).
-- "Receiving?" toggle = the only routing on/off.
-- Share % = single weight used by the round-robin.
-- Workstream chips reuse existing `workstream_new_leads / recontact / renewals` columns.
-- Row total badge: green at 100, amber otherwise (informational — does not block save).
+## Technical details
 
-### 2. Source Routing — demoted, not deleted
-Move the matrix behind an "Advanced: source overrides" collapsible at the bottom, default closed, with a banner:
-> "Most teams don't need this. Leave empty and leads round-robin across all receiving agents."
+**Migration – new table `customer_login_attempts`**
+- Columns: `id uuid pk`, `email text not null`, `customer_id uuid null`, `event_type text not null`, `success boolean not null default false`, `failure_reason text`, `ip_address text`, `user_agent text`, `triggered_by_admin_id uuid`, `metadata jsonb default '{}'`, `created_at timestamptz default now()`.
+- Indexes on `lower(email)` and `customer_id`, plus `created_at desc`.
+- GRANTs: `INSERT` to `anon` + `authenticated` (so login pages can write); `SELECT` to `authenticated`; `ALL` to `service_role`.
+- RLS:
+  - `INSERT` allowed to everyone (login page writes before auth completes).
+  - `SELECT` only for admins/sales roles via existing `has_role` helper.
 
-The existing `SourceRulesMatrix` component stays as-is inside the collapsible. No code removed.
+**Edge functions** (CORS, zod validation, `verify_jwt = false` for the public logger):
+- `log-login-attempt` – public; accepts `{ email, event_type, success, failure_reason?, metadata? }`, captures IP + user-agent server-side, writes row. Rate-limited per IP (per existing pattern).
+- `get-customer-login-history` – admin-only (verifies caller has admin/sales role via JWT); returns merged list of (a) `customer_login_attempts` rows for that email/customer_id and (b) recent `auth.audit_log_entries` rows joined to `auth.users.email`.
 
-### 3. Unified Leads page (filter chips)
-Add a single chip bar above the existing leads table:
+**Client wiring** (only the call sites — no UX change for customers):
+- `src/pages/Auth.tsx` – after each `signInWithPassword`, fire `log-login-attempt` with success or failure reason.
+- `src/pages/ForgotPassword.tsx` – on submit, log `credentials_resent`.
+- Any existing admin "send password reset" / "impersonate" buttons in customer management – log `admin_password_reset` / `admin_impersonate`. (Will grep and wire each.)
+- `EditCustomerDetailsDialog.tsx` – after a successful save, log `admin_details_edited` with a metadata diff of changed fields.
 
-`[ All ] [ My leads ] [ 🔴 Red ] [ 🔵 Blue ] [ 🟢 Green ] [ Unassigned ] | [ New ] [ Recontact ] [ Renewals ] | [ Callbacks ] [ Reminders due ]`
+**New component**
+- `src/components/admin/CustomerLoginActivity.tsx` – fetches via `get-customer-login-history`, renders the timeline, handles refresh + CSV export. Embedded inside `EditCustomerDetailsDialog`.
 
-- Chips drive existing filter state in `NewLeadsTab`. No new data fetch logic.
-- The separate "By Team" view button collapses into the team chips.
-- "Leads" heading already resets filters (kept from last change).
-
-## What changes (logic, phase 2 — minimal)
-
-The current routing edge function already supports team % rules. We add a single safe fallback:
-
-> If no `lead_team_source_rules` row matches the incoming source (or all rules sum to 0), pick the next agent by weighted round-robin across `lead_team_members` where the member is on the relevant workstream AND `agent_distribution_caps.percentage > 0`, ignoring team entirely.
-
-This is purely additive — existing source rules still win when present. If the third-party APIs are currently down, this changes nothing about external calls.
-
-## Files touched
-
-UI only:
-- `src/components/admin/LeadTeamsTab.tsx` — restructure to single table + collapsible advanced section.
-- `src/components/admin/leads/AllocationMatrix.tsx` — add Team tag dropdown column, Receiving toggle, Share % input. Keep all existing handlers.
-- `src/components/admin/leads/NewLeadsTab.tsx` — add chip bar; remove the separate "By Team" view button (component stays on disk).
-- Keep `TeamsOverview.tsx`, `SourceRulesMatrix.tsx`, `LeadRoutingDialog.tsx` files in place — referenced from the advanced section / unused but not deleted.
-
-Edge function (phase 2, optional — flagged for separate approval):
-- `supabase/functions/<assign-lead>/index.ts` — add fallback branch only. No schema change, no new secrets.
-
-## What is explicitly NOT in this change
-- No table drops, no column drops, no RLS changes, no migration.
-- No edits to lead capture, Stripe, email, SMS, claims, or any integration.
-- No change to permissions/roles.
-- No change to the customer-facing site.
-
-## Rollback
-Every change is in 3 component files. Reverting those files restores today's UI. The edge function fallback (phase 2) is an `if (noRulesMatched)` branch — remove the branch to revert.
-
-## Proposed order
-1. Phase 1 UI consolidation (this approval).
-2. Use it for a few days. If the source matrix really is unused, in a later session we add the edge-function fallback and hide the matrix entirely.
+## Out of scope
+- No changes to customer-facing UI or copy.
+- No analytics dashboards / charts — just the per-customer timeline.
+- No retention policy yet (rows kept indefinitely; can add a cron later if needed).

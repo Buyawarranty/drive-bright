@@ -15,6 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import AdminLoginDebug from '@/components/admin/AdminLoginDebug';
 import CustomerLoginDebugTool from '@/components/admin/CustomerLoginDebugTool';
 import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
+import { logLoginAttempt } from '@/lib/loginActivityLogger';
 
 const Auth = () => {
   // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
@@ -214,6 +215,12 @@ const Auth = () => {
 
       if (error) {
         console.error("Sign in error:", error.message, error);
+        logLoginAttempt({
+          email,
+          event_type: 'login_failed',
+          success: false,
+          failure_reason: error.message,
+        });
         toast({
           title: "Sign In Failed",
           description: error.message || "Authentication failed. Please check your credentials.",
@@ -224,6 +231,12 @@ const Auth = () => {
 
       console.log("Sign in successful:", data.user?.email);
       console.log("Session:", data.session);
+      logLoginAttempt({
+        email,
+        event_type: 'login_success',
+        success: true,
+        customer_id: null,
+      });
       
     } catch (error: any) {
       console.error("Sign in failed:", error);
@@ -304,11 +317,23 @@ const Auth = () => {
       
       if (error) throw error;
 
+      logLoginAttempt({
+        email,
+        event_type: 'password_reset_requested',
+        success: true,
+      });
+
       toast({
         title: "Reset Email Sent",
         description: "Check your email for the password reset link.",
       });
     } catch (error: any) {
+      logLoginAttempt({
+        email,
+        event_type: 'password_reset_requested',
+        success: false,
+        failure_reason: error.message,
+      });
       toast({
         title: "Reset Failed",
         description: error.message,

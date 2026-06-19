@@ -29,6 +29,12 @@ verify_jwt = false
 [functions.send-claim-info-email]
 verify_jwt = false
 
+[functions.log-login-attempt]
+verify_jwt = false
+
+[functions.get-customer-login-history]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
