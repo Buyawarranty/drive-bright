@@ -441,6 +441,45 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
         {/* Routing tester */}
         <RoutingTester />
 
+        {/* Pending sales agents — shown at the top so managers allocate before they hit the live flow */}
+        {canEdit && pendingAgents.length > 0 && (
+          <Card className="border-amber-200 bg-amber-50/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Users className="h-4 w-4 text-amber-600" />
+                Pending sales agents
+                <Badge variant="outline" className="text-[10px]">{pendingAgents.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <p className="text-xs text-muted-foreground mb-2">
+                These agents have sales permissions but are not in any team yet. A manager must place them before they show in a team filter.
+              </p>
+              {pendingAgents.map(a => (
+                <div key={a.id} className="flex items-center justify-between gap-2 border rounded px-3 py-1.5 bg-background">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{a.email} · {a.role}</div>
+                  </div>
+                  <Select onValueChange={(v) => addMember(v, a.id)} value="">
+                    <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
+                      <SelectValue placeholder="Add to…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map(t => (
+                        <SelectItem key={t.id} value={t.id} className="text-xs">
+                          {t.emoji} {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Add team bar */}
         {canEdit && (
