@@ -381,18 +381,18 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings2 className="h-5 w-5" />
-            Lead Routing &amp; Distribution
-          </DialogTitle>
-          <DialogDescription>
-            Configure which teams receive which lead sources. Set performance thresholds so teams unlock premium leads when they hit conversion targets.
-            {!canEdit && <span className="block mt-1 text-amber-600">Read-only — you do not have edit permission.</span>}
-          </DialogDescription>
-        </DialogHeader>
+    <div className="space-y-4">
+      <div className="border-b pb-3">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Settings2 className="h-5 w-5" />
+          Lead Routing &amp; Teams
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Configure which teams receive which lead sources. Set performance thresholds so teams unlock premium leads when they hit conversion targets.
+          {!canEdit && <span className="block mt-1 text-amber-600">Read-only — you do not have edit permission.</span>}
+        </p>
+      </div>
+
 
         {/* Master kill-switch */}
         <div
