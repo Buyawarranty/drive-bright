@@ -312,6 +312,26 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     setMembers(members.filter(m => m.id !== memberId));
   };
 
+  // One-click team switch: update the existing membership row's team_id rather
+  // than the old remove-then-add flow. Keeps the same row id and audit trail.
+  const moveMember = async (memberId: string, newTeamId: string) => {
+    const current = members.find(m => m.id === memberId);
+    if (!current || current.team_id === newTeamId) return;
+    const { data, error } = await supabase
+      .from('lead_team_members')
+      .update({ team_id: newTeamId })
+      .eq('id', memberId)
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'Move failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setMembers(members.map(m => (m.id === memberId ? (data as Member) : m)));
+    const toName = teams.find(t => t.id === newTeamId)?.name ?? 'team';
+    toast({ title: 'Agent moved', description: `Switched to ${toName}` });
+  };
+
   const upsertTeamDist = async (patch: Partial<TeamDistSettings>) => {
     if (!activeTeamId) return;
     const base = teamDist || {
@@ -636,18 +656,35 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                     )}
                     {teamMembers(activeTeam.id).map(m => {
                       const u = admins.find(a => a.id === m.admin_user_id);
+                      const otherTeams = teams.filter(t => t.id !== activeTeam.id);
                       return (
-                        <div key={m.id} className="flex items-center justify-between border rounded px-3 py-2">
-                          <div>
-                            <div className="font-medium text-sm">
+                        <div key={m.id} className="flex items-center justify-between gap-2 border rounded px-3 py-2">
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm truncate">
                               {u ? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email : 'Unknown user'}
                             </div>
-                            {u && <div className="text-xs text-muted-foreground">{u.email} · {u.role}</div>}
+                            {u && <div className="text-xs text-muted-foreground truncate">{u.email} · {u.role}</div>}
                           </div>
                           {canEdit && (
-                            <Button variant="ghost" size="sm" onClick={() => removeMember(m.id)}>
-                              <X className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {otherTeams.length > 0 && (
+                                <Select onValueChange={(v) => moveMember(m.id, v)} value="">
+                                  <SelectTrigger className="h-8 w-[150px] text-xs">
+                                    <SelectValue placeholder="Move to…" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {otherTeams.map(t => (
+                                      <SelectItem key={t.id} value={t.id} className="text-xs">
+                                        {t.emoji} {t.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                              <Button variant="ghost" size="sm" onClick={() => removeMember(m.id)} title="Remove from team">
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           )}
                         </div>
                       );
@@ -673,6 +710,53 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Unassigned sales agents — quick placement into a team */}
+                {canEdit && (() => {
+                  const unassigned = admins.filter(a =>
+                    (a.role === 'sales' || a.role === 'sales_lead') &&
+                    !members.some(m => m.admin_user_id === a.id)
+                  );
+                  if (unassigned.length === 0) return null;
+                  return (
+                    <Card className="border-amber-200 bg-amber-50/40">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Users className="h-4 w-4 text-amber-600" />
+                          Unassigned sales agents
+                          <Badge variant="outline" className="text-[10px]">{unassigned.length}</Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-1.5">
+                        <p className="text-xs text-muted-foreground mb-2">
+                          These agents aren't in any team yet — they fall back to the default (Red) flow until placed.
+                        </p>
+                        {unassigned.map(a => (
+                          <div key={a.id} className="flex items-center justify-between gap-2 border rounded px-3 py-1.5 bg-background">
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">
+                                {`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email}
+                              </div>
+                              <div className="text-xs text-muted-foreground truncate">{a.email} · {a.role}</div>
+                            </div>
+                            <Select onValueChange={(v) => addMember(v, a.id)} value="">
+                              <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
+                                <SelectValue placeholder="Add to…" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {teams.map(t => (
+                                  <SelectItem key={t.id} value={t.id} className="text-xs">
+                                    {t.emoji} {t.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
 
                 {/* Cross-team membership glance */}
                 <Card>
