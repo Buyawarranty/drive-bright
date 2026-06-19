@@ -1036,7 +1036,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   : "border-border bg-muted/30"
               )}>
                 {isLockedToOwnTeam && myTeam ? (
-                  // Sales leads see a locked badge for their own team — no switching.
+                  // Sales leads with a team see a locked badge — no switching.
                   <span
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
@@ -1047,6 +1047,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     <span className={cn('h-1.5 w-1.5 rounded-full', TEAM_COLOR_CLASSES[myTeam.color].dot)} />
                     {myTeam.name.replace(/^Formula\s+/i, '')}
                     <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Your team</span>
+                  </span>
+                ) : userRole === 'sales_lead' && !myTeam ? (
+                  // Unassigned sales leads see a pending badge until a manager places them.
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
+                      'bg-amber-100 text-amber-800 border-amber-300'
+                    )}
+                    title="Awaiting team allocation by a manager"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    Pending
+                    <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Awaiting team</span>
                   </span>
                 ) : (
                   <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
