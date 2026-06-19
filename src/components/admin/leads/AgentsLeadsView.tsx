@@ -1638,19 +1638,19 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   <TableHead className="w-[140px]">Daily Cap</TableHead>
                   <TableHead className="w-[100px]">Today</TableHead>
                   <TableHead className="w-[120px]">ON/OFF</TableHead>
-                  {isFullAdmin && <TableHead className="w-[80px] text-center">Delete</TableHead>}
+                  {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && <TableHead className="w-[80px] text-center">Delete</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={isFullAdmin ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
                       <p>Loading agent distribution settings...</p>
                     </TableCell>
                   </TableRow>
                 ) : agentCaps.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isFullAdmin ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
                       <p className="mb-2">No agents configured for lead distribution.</p>
                       {salesUsers.length > 0 ? (
                         <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
