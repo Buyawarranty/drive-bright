@@ -1,43 +1,77 @@
-# Master Allocation — unified page
+## Goal
+Collapse the 3-layer routing (Source % → Team % → Agent) into a single-layer round-robin, and merge "Master Allocation", "By Team", and "Live Leads" into one Leads page with filter chips. Keep all existing APIs, edge functions, and DB writes intact — only the UI and the *picker* logic change.
 
-Replace the two-tab "Allocation" / "Lead Routing" UI with **one** page called **Master Allocation**, visible only to `admin`, `super_admin`, `sales_manager`. Everything needed to control where leads go and who works them lives in one scroll.
+## Non-negotiables (no functionality breakage)
+- Do NOT delete tables, columns, edge functions, or RPCs. Everything stays so any in-flight cron/webhook keeps working.
+- Do NOT change `sales_leads`, `lead_team_members`, `lead_team_source_rules`, `agent_distribution_caps` schemas.
+- Do NOT touch lead capture, abandoned cart, Stripe, Google Ads, ClickSend, or any integration code.
+- The current routing edge function keeps running unchanged. We just stop *requiring* the source matrix and start honouring a simpler weight.
 
-## Page layout (top → bottom)
+## What changes (UI only, phase 1)
 
-1. **Master switch bar** — `Team routing` ON/OFF (same safety toggle as today). When OFF, banner says "Legacy global flow active — team rules below are previewed only."
-2. **Routing tester** — unchanged dry-run tool.
-3. **Source → Team split matrix** (the new bit, replaces the on/off lever grid)
-   - Rows = sources (Google Ads, Facebook Ads, Instagram, TikTok, YouTube, Organic, Direct, Referral, Email, SMS, Other).
-   - Columns = each team (Red, Blue, Green, …).
-   - Each cell holds a **percentage number input (0–100)** instead of a toggle. 0 = team doesn't receive that source. The row shows a live total badge: green when = 100, amber when < 100 (remainder falls back to legacy flow), red when > 100 (blocked from saving).
-   - "Even split" button per row to auto-distribute across teams with members.
-   - "Copy from…" per row to clone another source's split.
-   - Saved into `lead_team_source_rules` (extend with `percentage int`, keep `allowed` for back-compat — `allowed = percentage > 0`).
-4. **Team allocation panels** — one card per team (Red / Blue / Green), same agent table you have today (NEW / RECONTACT / RENEWALS toggles, Move to…, Remove). Pending sales agents card stays at the top of this section.
-5. **Per-team agent weighting (inside each team card)** — small "Share %" column next to each agent so a team lead can weight who gets more of that team's leads. Defaults to even. Stored in `agent_distribution_caps.percentage` (already exists).
+### 1. New simplified Master Allocation page
+Replace the current page body with one table:
 
-## Routing decision (server side)
-For each new lead:
-1. If master switch OFF → legacy flow.
-2. Pick source. Look up rows in `lead_team_source_rules` where `percentage > 0` and team has ≥1 active member.
-3. Weighted random by team percentage. If chosen team's percentage total < 100, the remaining % falls through to legacy flow.
-4. Inside the team, weighted round-robin across active agents using `agent_distribution_caps.percentage` (skip paused).
+```
+Agent              Team tag   Receiving?   Share %   Workstreams
+─────────────────  ─────────  ───────────  ────────  ──────────────────
+James Smith        [Red ▾]    [ON ]        [ 25 ]    [New][Recontact][Renewals]
+Kevin Jones        [Blue ▾]   [ON ]        [ 15 ]    [New]
+Thomas Brown       [Red ▾]    [OFF]        [  0 ]    [New]
+...
+                                           ─────
+                                           Total: 100% ✓
+```
 
-## Files to change
-- `src/components/admin/leads/AgentsLeadsView.tsx` — collapse two tabs into one stacked layout.
-- `src/components/admin/leads/LeadRoutingMatrix.tsx` (or current routing component) — swap toggle cells for % inputs + row totals + Even/Copy buttons.
-- Allocation card component — add per-agent "Share %" input.
-- Edge function / RPC that assigns leads — switch from boolean `allowed` to weighted pick using `percentage`.
+- Team column is just a colour tag (dropdown, used for filtering & reporting only).
+- "Receiving?" toggle = the only routing on/off.
+- Share % = single weight used by the round-robin.
+- Workstream chips reuse existing `workstream_new_leads / recontact / renewals` columns.
+- Row total badge: green at 100, amber otherwise (informational — does not block save).
 
-## Migration
-- `ALTER TABLE lead_team_source_rules ADD COLUMN percentage int NOT NULL DEFAULT 0;`
-- Backfill: existing rows with `allowed = true` → `percentage = 100 / (# allowed teams for that source)` (even split of current ON teams).
-- Keep `allowed` as a generated/maintained mirror (`allowed = percentage > 0`) so nothing else breaks.
+### 2. Source Routing — demoted, not deleted
+Move the matrix behind an "Advanced: source overrides" collapsible at the bottom, default closed, with a banner:
+> "Most teams don't need this. Leave empty and leads round-robin across all receiving agents."
 
-## What this fixes
-- One page, no tab hunting.
-- Explicit % control answers "how much of Facebook goes to Red vs Blue".
-- Per-agent share inside a team answers "Kevin should get 70% of Blue's leads while we ramp him".
-- Role-gated to manager/admin/super_admin so sales agents still see only their own queue.
+The existing `SourceRulesMatrix` component stays as-is inside the collapsible. No code removed.
 
-Confirm and I'll build it (migration + UI + assignment logic).
+### 3. Unified Leads page (filter chips)
+Add a single chip bar above the existing leads table:
+
+`[ All ] [ My leads ] [ 🔴 Red ] [ 🔵 Blue ] [ 🟢 Green ] [ Unassigned ] | [ New ] [ Recontact ] [ Renewals ] | [ Callbacks ] [ Reminders due ]`
+
+- Chips drive existing filter state in `NewLeadsTab`. No new data fetch logic.
+- The separate "By Team" view button collapses into the team chips.
+- "Leads" heading already resets filters (kept from last change).
+
+## What changes (logic, phase 2 — minimal)
+
+The current routing edge function already supports team % rules. We add a single safe fallback:
+
+> If no `lead_team_source_rules` row matches the incoming source (or all rules sum to 0), pick the next agent by weighted round-robin across `lead_team_members` where the member is on the relevant workstream AND `agent_distribution_caps.percentage > 0`, ignoring team entirely.
+
+This is purely additive — existing source rules still win when present. If the third-party APIs are currently down, this changes nothing about external calls.
+
+## Files touched
+
+UI only:
+- `src/components/admin/LeadTeamsTab.tsx` — restructure to single table + collapsible advanced section.
+- `src/components/admin/leads/AllocationMatrix.tsx` — add Team tag dropdown column, Receiving toggle, Share % input. Keep all existing handlers.
+- `src/components/admin/leads/NewLeadsTab.tsx` — add chip bar; remove the separate "By Team" view button (component stays on disk).
+- Keep `TeamsOverview.tsx`, `SourceRulesMatrix.tsx`, `LeadRoutingDialog.tsx` files in place — referenced from the advanced section / unused but not deleted.
+
+Edge function (phase 2, optional — flagged for separate approval):
+- `supabase/functions/<assign-lead>/index.ts` — add fallback branch only. No schema change, no new secrets.
+
+## What is explicitly NOT in this change
+- No table drops, no column drops, no RLS changes, no migration.
+- No edits to lead capture, Stripe, email, SMS, claims, or any integration.
+- No change to permissions/roles.
+- No change to the customer-facing site.
+
+## Rollback
+Every change is in 3 component files. Reverting those files restores today's UI. The edge function fallback (phase 2) is an `if (noRulesMatched)` branch — remove the branch to revert.
+
+## Proposed order
+1. Phase 1 UI consolidation (this approval).
+2. Use it for a few days. If the source matrix really is unused, in a later session we add the edge-function fallback and hide the matrix entirely.
