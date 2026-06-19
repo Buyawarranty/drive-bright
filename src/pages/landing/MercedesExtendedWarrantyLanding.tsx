@@ -34,7 +34,7 @@ const mercedesModels = [
   { label: 'A-Class', examples: 'A180, A200, A220d', img: mercA, alt: 'Mercedes-Benz A-Class extended warranty cover — A180, A200 hatchback' },
   { label: 'C-Class', examples: 'C200, C220d, C300', img: mercC, alt: 'Mercedes-Benz C-Class extended warranty cover — C200, C220d saloon and estate' },
   { label: 'E-Class', examples: 'E220d, E300, E350', img: mercE, alt: 'Mercedes-Benz E-Class extended warranty cover — E220d, E300 executive saloon' },
-  { label: 'GLA / GLC / GLE', examples: 'SUV petrol & diesel', img: mercGLC, alt: 'Mercedes-Benz GLA, GLC and GLE SUV extended warranty cover' },
+  { label: 'Vito / Van', examples: 'Vito, Sprinter, Citan van models', img: mercGLC, alt: 'Mercedes-Benz Vito, Sprinter and Citan van extended warranty cover' },
   { label: 'S-Class', examples: 'S350d, S400d, S500', img: mercS, alt: 'Mercedes-Benz S-Class luxury saloon extended warranty cover' },
   { label: 'EQ Series (EV)', examples: 'EQA, EQB, EQC, EQE, EQS', img: mercEQ, alt: 'Mercedes-Benz EQ electric vehicle extended warranty cover' },
 ];
