@@ -312,6 +312,26 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
     setMembers(members.filter(m => m.id !== memberId));
   };
 
+  // One-click team switch: update the existing membership row's team_id rather
+  // than the old remove-then-add flow. Keeps the same row id and audit trail.
+  const moveMember = async (memberId: string, newTeamId: string) => {
+    const current = members.find(m => m.id === memberId);
+    if (!current || current.team_id === newTeamId) return;
+    const { data, error } = await supabase
+      .from('lead_team_members')
+      .update({ team_id: newTeamId })
+      .eq('id', memberId)
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'Move failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setMembers(members.map(m => (m.id === memberId ? (data as Member) : m)));
+    const toName = teams.find(t => t.id === newTeamId)?.name ?? 'team';
+    toast({ title: 'Agent moved', description: `Switched to ${toName}` });
+  };
+
   const upsertTeamDist = async (patch: Partial<TeamDistSettings>) => {
     if (!activeTeamId) return;
     const base = teamDist || {
