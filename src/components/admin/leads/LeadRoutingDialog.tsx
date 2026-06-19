@@ -446,6 +446,17 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
         {/* Routing tester */}
         <RoutingTester />
 
+        {/* Flat per-team × per-source matrix — all levers visible at a glance */}
+        <SourceRulesMatrix
+          teams={teams}
+          rules={rules}
+          canEdit={canEdit}
+          routingEnabled={routingEnabled}
+          onToggle={(teamId, source, allowed) => upsertRule(teamId, source, { allowed })}
+        />
+
+
+
         {/* Pending sales agents — shown at the top so managers allocate before they hit the live flow */}
         {canEdit && pendingAgents.length > 0 && (
           <Card className="border-amber-200 bg-amber-50/40">
