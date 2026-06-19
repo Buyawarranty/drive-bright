@@ -5898,24 +5898,40 @@ export type Database = {
           admin_user_id: string
           created_at: string
           id: string
+          notice_seen_at: string | null
+          previous_team_id: string | null
           role_in_team: string
+          team_changed_at: string | null
           team_id: string
         }
         Insert: {
           admin_user_id: string
           created_at?: string
           id?: string
+          notice_seen_at?: string | null
+          previous_team_id?: string | null
           role_in_team?: string
+          team_changed_at?: string | null
           team_id: string
         }
         Update: {
           admin_user_id?: string
           created_at?: string
           id?: string
+          notice_seen_at?: string | null
+          previous_team_id?: string | null
           role_in_team?: string
+          team_changed_at?: string | null
           team_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lead_team_members_previous_team_id_fkey"
+            columns: ["previous_team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lead_team_members_team_id_fkey"
             columns: ["team_id"]
