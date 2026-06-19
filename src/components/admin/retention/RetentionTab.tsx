@@ -342,10 +342,21 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
               <Loader2 className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : 'hidden'}`} />
               Refresh
             </Button>
-            <Button size="sm" variant="default" className="gap-1" disabled={runningCron} onClick={triggerCron}>
+            <Button size="sm" variant="outline" className="gap-1" disabled={runningCron} onClick={triggerCron}>
               {runningCron ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
               Run cron
             </Button>
+            {onNavigateToTab && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onNavigateToTab('lead-teams')}
+                className="shrink-0 font-semibold gap-1"
+                title="Assign agents to teams and pick the queues they work — New Leads, Recontact, Renewals"
+              >
+                <Network className="h-4 w-4" /> Allocate Agents
+              </Button>
+            )}
           </div>
         </div>
       </div>
