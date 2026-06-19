@@ -156,6 +156,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   }, [agents]);
 
   const canReassignAny = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead';
+  const canExportCsv = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager';
 
   const buildBaseQuery = useCallback(() => {
     const select =
