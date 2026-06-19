@@ -32,7 +32,11 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAdmin(req, { allowedRoles: ["admin", "super_admin"] });
+  if (!auth.ok) return auth.response;
+
   try {
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
