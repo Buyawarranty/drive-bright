@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { TableCell } from '@/components/ui/table';
+import { LeadsMobileCards } from './LeadsMobileCards';
 
 interface LeadsTableProps {
   leads: Lead[];
