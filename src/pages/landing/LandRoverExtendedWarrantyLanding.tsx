@@ -239,7 +239,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
                     <div className="md:hidden mt-5 flex justify-center">
                       <img
                         src={lrHero}
-                        alt="Friendly panda mascot with a Range Rover — extended warranty cover"
+                        alt="Range Rover and Defender with BuyaWarranty panda mascot — UK extended warranty cover"
                         className="w-full max-w-[360px] h-auto"
                         loading="lazy"
                       />
@@ -255,7 +255,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
 
             <div className="hidden md:block lg:order-last">
               <div className="relative">
-                <img src={lrHero} alt="Friendly panda mascot with a Range Rover — extended warranty cover" className="w-full h-auto rounded-2xl" loading="eager" />
+                <img src={lrHero} alt="Range Rover and Defender with BuyaWarranty panda mascot — UK extended warranty cover" className="w-full h-auto rounded-2xl" loading="eager" />
               </div>
               <div className="mt-5 flex flex-col items-center gap-3">
                 <div className="flex items-center justify-center gap-5 md:gap-7 flex-wrap">
