@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import lrHeroAsset from '@/assets/landrover-panda-hero.png.asset.json';
+import lrHeroAsset from '@/assets/land-rover-range-rover-warranty-uk.png.asset.json';
 const lrHero = lrHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
