@@ -119,6 +119,29 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const [bulkReassigning, setBulkReassigning] = useState(false);
   const [bulkCalendarOpen, setBulkCalendarOpen] = useState(false);
 
+  // Team filter tabs (split distribution view per team for managers)
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string; emoji: string | null }>>([]);
+  const [teamMembers, setTeamMembers] = useState<Array<{ admin_user_id: string; team_id: string }>>([]);
+  const [activeTeamTab, setActiveTeamTab] = useState<string>('all'); // 'all' | team.id | 'unassigned'
+
+  useEffect(() => {
+    (async () => {
+      const [teamsRes, membersRes] = await Promise.all([
+        supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
+        supabase.from('lead_team_members').select('admin_user_id, team_id'),
+      ]);
+      if (teamsRes.data) setTeams(teamsRes.data as any);
+      if (membersRes.data) setTeamMembers(membersRes.data as any);
+    })();
+  }, []);
+
+  const memberTeamMap = useMemo(() => {
+    const m = new Map<string, string>();
+    teamMembers.forEach(tm => m.set(tm.admin_user_id, tm.team_id));
+    return m;
+  }, [teamMembers]);
+
+
   // Lead distribution hook for agent caps
   const {
     settings,
