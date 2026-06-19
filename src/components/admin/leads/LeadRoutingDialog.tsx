@@ -317,7 +317,12 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
     if (!current || current.team_id === newTeamId) return;
     const { data, error } = await supabase
       .from('lead_team_members')
-      .update({ team_id: newTeamId })
+      .update({
+        team_id: newTeamId,
+        previous_team_id: current.team_id,
+        team_changed_at: new Date().toISOString(),
+        notice_seen_at: null,
+      })
       .eq('id', memberId)
       .select()
       .single();
@@ -327,8 +332,9 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
     }
     setMembers(members.map(m => (m.id === memberId ? (data as Member) : m)));
     const toName = teams.find(t => t.id === newTeamId)?.name ?? 'team';
-    toast({ title: 'Agent moved', description: `Switched to ${toName}` });
+    toast({ title: 'Agent moved', description: `Switched to ${toName}. They'll see a notice on next login.` });
   };
+
 
   const upsertTeamDist = async (patch: Partial<TeamDistSettings>) => {
     if (!activeTeamId) return;
