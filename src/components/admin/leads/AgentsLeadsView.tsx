@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -118,6 +118,29 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const [bulkDateRange, setBulkDateRange] = useState<DateRange | undefined>(undefined);
   const [bulkReassigning, setBulkReassigning] = useState(false);
   const [bulkCalendarOpen, setBulkCalendarOpen] = useState(false);
+
+  // Team filter tabs (split distribution view per team for managers)
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string; emoji: string | null }>>([]);
+  const [teamMembers, setTeamMembers] = useState<Array<{ admin_user_id: string; team_id: string }>>([]);
+  const [activeTeamTab, setActiveTeamTab] = useState<string>('all'); // 'all' | team.id | 'unassigned'
+
+  useEffect(() => {
+    (async () => {
+      const [teamsRes, membersRes] = await Promise.all([
+        supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
+        supabase.from('lead_team_members').select('admin_user_id, team_id'),
+      ]);
+      if (teamsRes.data) setTeams(teamsRes.data as any);
+      if (membersRes.data) setTeamMembers(membersRes.data as any);
+    })();
+  }, []);
+
+  const memberTeamMap = useMemo(() => {
+    const m = new Map<string, string>();
+    teamMembers.forEach(tm => m.set(tm.admin_user_id, tm.team_id));
+    return m;
+  }, [teamMembers]);
+
 
   // Lead distribution hook for agent caps
   const {
@@ -1625,6 +1648,59 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             )}
           </div>
 
+          {/* Team Tabs — split distribution view per team for managers */}
+          {teams.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-3 mt-1">
+              <span className="text-xs font-semibold text-muted-foreground mr-1">View team:</span>
+              <button
+                type="button"
+                onClick={() => setActiveTeamTab('all')}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+                  activeTeamTab === 'all'
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'bg-background text-foreground border-border hover:bg-muted'
+                }`}
+              >
+                All ({agentCaps.length})
+              </button>
+              {teams.map(t => {
+                const count = agentCaps.filter(c => memberTeamMap.get(c.admin_user_id) === t.id).length;
+                const isActive = activeTeamTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveTeamTab(t.id)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-full border transition"
+                    style={
+                      isActive
+                        ? { backgroundColor: t.color, color: '#fff', borderColor: t.color }
+                        : { backgroundColor: `${t.color}15`, color: t.color, borderColor: `${t.color}55` }
+                    }
+                  >
+                    {t.emoji ? `${t.emoji} ` : ''}{t.name} ({count})
+                  </button>
+                );
+              })}
+              {(() => {
+                const unassignedCount = agentCaps.filter(c => !memberTeamMap.has(c.admin_user_id)).length;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTeamTab('unassigned')}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+                      activeTeamTab === 'unassigned'
+                        ? 'bg-muted-foreground text-background border-muted-foreground'
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                    }`}
+                  >
+                    No team ({unassignedCount})
+                  </button>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Agent Controls Table */}
           <div className="border-2 border-border rounded-lg overflow-hidden">
             <Table>
@@ -1642,27 +1718,44 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
-                      <p>Loading agent distribution settings...</p>
-                    </TableCell>
-                  </TableRow>
-                ) : agentCaps.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
-                      <p className="mb-2">No agents configured for lead distribution.</p>
-                      {salesUsers.length > 0 ? (
-                        <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
-                          Add {salesUsers.length} Agent(s) to Distribution
-                        </Button>
-                      ) : (
-                        <p className="text-sm">No sales agents available.</p>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  agentCaps.map(cap => {
+                {(() => {
+                  const filteredCaps = agentCaps.filter(c => {
+                    if (activeTeamTab === 'all') return true;
+                    if (activeTeamTab === 'unassigned') return !memberTeamMap.has(c.admin_user_id);
+                    return memberTeamMap.get(c.admin_user_id) === activeTeamTab;
+                  });
+                  if (loading) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                          <p>Loading agent distribution settings...</p>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  if (filteredCaps.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                          {agentCaps.length === 0 ? (
+                            <>
+                              <p className="mb-2">No agents configured for lead distribution.</p>
+                              {salesUsers.length > 0 ? (
+                                <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
+                                  Add {salesUsers.length} Agent(s) to Distribution
+                                </Button>
+                              ) : (
+                                <p className="text-sm">No sales agents available.</p>
+                              )}
+                            </>
+                          ) : (
+                            <p>No agents in this team yet.</p>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return filteredCaps.map(cap => {
                     const agent = salesUsers.find(u => u.id === cap.admin_user_id);
                     const status = getAgentPresenceStatus(cap.admin_user_id);
                     const presence = getPresence(cap.admin_user_id);
@@ -1830,8 +1923,8 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                         )}
                       </TableRow>
                     );
-                  })
-                )}
+                  });
+                })()}
                 {/* Total percentage indicator row (only in percentage mode) */}
                 {displayMode === 'percentage' && agentCaps.length > 0 && !loading && (
                   <TableRow className="bg-muted/50 border-t-2">
