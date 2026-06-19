@@ -144,7 +144,7 @@ export const LeadRecoveryTab: React.FC = () => {
       'vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status, ' +
       'last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id, ' +
       'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
-      'plan_name, payment_type, step_abandoned, contact_status, is_from_abandoned_cart, call_count, is_callback, ' +
+      'payment_type, step_abandoned, contact_status, is_from_abandoned_cart, call_count, is_callback, ' +
       'cart_metadata, application_count, resubmission_count, last_resubmitted_at, recovery_worked_at, recovery_outcome';
 
     const q = (supabase.from('sales_leads') as any).select(select);
