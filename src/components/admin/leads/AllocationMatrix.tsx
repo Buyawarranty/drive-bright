@@ -194,37 +194,33 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Agent Allocation
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            One place to assign every agent to a team and choose which queues they work — New Leads, Recontact and Renewals.
-            Toggle any cell to update instantly. Agents are notified on their next login.
-          </p>
+      <div className="flex items-center justify-end gap-2 flex-wrap">
+        <div className="inline-flex border-2 border-foreground bg-background">
+          {(['all', 'new_leads', 'recontact', 'renewals'] as WorkstreamFilter[]).map((f, i) => {
+            const label = f === 'all' ? 'All' : WORKSTREAMS.find(w => w.key === f)!.short;
+            const active = filter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                  i > 0 ? 'border-l-2 border-foreground' : ''
+                } ${active ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-md border bg-background p-0.5">
-            {(['all', 'new_leads', 'recontact', 'renewals'] as WorkstreamFilter[]).map(f => {
-              const label = f === 'all' ? 'All' : WORKSTREAMS.find(w => w.key === f)!.short;
-              const active = filter === f;
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-3 py-1 text-xs rounded ${active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          <Button size="sm" variant="outline" onClick={loadAll} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={loadAll}
+          disabled={loading}
+          className="h-8 rounded-none border-2 border-foreground font-semibold uppercase text-xs"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </Button>
       </div>
 
       {/* Pending agents */}
