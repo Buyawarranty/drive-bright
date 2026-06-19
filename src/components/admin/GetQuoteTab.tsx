@@ -2871,31 +2871,6 @@ Questions? Call 0330 229 5040`;
                   )}
                 </div>
 
-                {/* Additional Notes */}
-                <div className="space-y-2">
-                  <Label className="text-base font-semibold">Additional Notes for Warranties Register</Label>
-                  <Textarea
-                    value={additionalNotes}
-                    onChange={(e) => setAdditionalNotes(e.target.value)}
-                    placeholder="Any special notes for this warranty (e.g., specific conditions, customer requests)..."
-                    rows={3}
-                  />
-                  <p className="text-xs text-muted-foreground">These notes will be sent to Warranties Register when the customer completes their purchase</p>
-                  
-                  {/* Warning if admin types about free months without selecting the toggle */}
-                  {freeExtendedCover === 'none' && 
-                   additionalNotes && 
-                   /\b(free|extra|bonus|additional)\b.*\b(month|months)\b/i.test(additionalNotes) && 
-                   !/FREE EXTENDED COVER:/i.test(additionalNotes) && (
-                    <Alert className="mt-2 border-amber-400 bg-amber-50">
-                      <AlertCircle className="h-4 w-4 text-amber-600" />
-                      <AlertDescription className="text-amber-800">
-                        <strong>Did you mean to add free months?</strong> It looks like you're writing about extra cover. 
-                        Click the <strong>+3 Months</strong> or <strong>+6 Months</strong> button above to add this to the customer's quote page and email.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
 
                 {/* Custom Pricing Override */}
                 <div className="border-t pt-4 space-y-4">
