@@ -710,6 +710,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           year: '',
           vehicleType: '',
         });
+        setEditableCustomerName(customerName);
+        setEditableCustomerEmail(customerEmail);
+        setEditableCustomerPhone(customerPhone);
+        setEditableRegNumber(regNumber.toUpperCase());
+        setEditableMileage(effectiveMileage === '0' ? '' : effectiveMileage);
+        setMileagePrefilledFromMot(false);
         setPaymentSource('');
         setPaymentAmount('');
         setPaymentDate(new Date().toISOString().split('T')[0]);
@@ -762,6 +768,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
       });
+      setEditableCustomerName(customerName);
+      setEditableCustomerEmail(customerEmail);
+      setEditableCustomerPhone(customerPhone);
+      setEditableRegNumber(regNumber.toUpperCase());
+      setEditableMileage(effectiveMileage === '0' ? '' : effectiveMileage);
+      setMileagePrefilledFromMot(false);
       
       // Reset payment dialog state for fresh entry
       setPaymentSource('');
@@ -3724,24 +3736,32 @@ Questions? Call 0330 229 5040`;
             setShowConfirmPaymentDialog(open);
             if (!open) setExternalPaymentStep('details');
           }}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white" largeCloseButton>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-lg">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <DialogContent className="max-w-[1120px] max-h-[92vh] overflow-hidden bg-muted p-0 gap-0 shadow-2xl" largeCloseButton>
+              <DialogHeader className="sticky top-0 z-10 border-b border-border bg-background px-6 py-5 pr-16">
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100">
+                    <CheckCircle2 className="w-5 h-5 text-green-700" />
+                  </span>
                   {externalPaymentStep === 'details' 
                     ? 'Confirm External Payment' 
                     : externalPaymentStep === 'preview' 
                       ? 'Review Before Submission'
                       : 'Order Complete'}
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground">
-                  {externalPaymentStep === 'details' 
+                <DialogDescription className="flex flex-wrap items-center gap-3 text-muted-foreground">
+                  <span>{externalPaymentStep === 'details' 
                     ? 'Step 2: Verify details and enter payment information' 
                     : externalPaymentStep === 'preview'
                       ? 'Step 3: Review all data before creating the policy'
-                      : 'Step 4: Confirmation status'}
+                      : 'Step 4: Confirmation status'}</span>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground">
+                    <CreditCard className="h-3.5 w-3.5" />
+                    External order workflow
+                  </span>
                 </DialogDescription>
               </DialogHeader>
+
+              <div className="max-h-[calc(92vh-156px)] overflow-y-auto px-6 py-5">
 
               {existingPolicyWarning && externalPaymentStep !== 'complete' && (
                 <Alert variant="destructive">
@@ -3751,7 +3771,8 @@ Questions? Call 0330 229 5040`;
               )}
 
               {externalPaymentStep === 'details' ? (
-                <div className="space-y-3">
+                <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+                  <div className="space-y-3">
                   {/* Customer & Vehicle Details - Collapsible */}
                   <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <button
@@ -4277,6 +4298,37 @@ Questions? Call 0330 229 5040`;
                       </Label>
                     </div>
                   </div>
+                  </div>
+
+                  <aside className="lg:sticky lg:top-0 h-fit space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                    <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                      <p className="text-xs font-medium text-green-700">Amount to record</p>
+                      <p className="mt-1 text-3xl font-bold text-green-900">£{paymentAmount || currentPrice.totalPrice}</p>
+                      <p className="mt-1 text-xs text-green-700">Quoted price £{currentPrice.totalPrice}</p>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Customer</span>
+                        <span className="text-right font-medium">{editableCustomerName || customerName || 'Not entered'}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Vehicle</span>
+                        <span className="text-right font-medium">{editableRegNumber || regNumber || 'No reg'}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Mileage</span>
+                        <span className="text-right font-medium">{editableMileage || mileage || 'Not entered'}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                        <span className="text-muted-foreground">Duration</span>
+                        <span className="text-right font-medium">{termOptions.find(t => t.id === paymentType)?.label}</span>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-muted-foreground">Start date</span>
+                        <span className="text-right font-medium">{format(warrantyStartDate, 'd MMM yyyy')}</span>
+                      </div>
+                    </div>
+                  </aside>
                 </div>
               ) : externalPaymentStep === 'preview' ? (
                 /* Preview Step */
@@ -4469,8 +4521,9 @@ Questions? Call 0330 229 5040`;
                   </Alert>
                 </div>
               )}
+              </div>
 
-              <DialogFooter className="flex flex-col gap-2">
+              <DialogFooter className="border-t border-border bg-background px-6 py-4 flex flex-col gap-2">
                 {externalPaymentStep === 'details' ? (
                   <>
                     {/* Validation helper - show what's missing */}
