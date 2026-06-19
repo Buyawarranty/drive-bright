@@ -232,6 +232,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
   // MOT mileage lookup for external payment dialog
   const { motMileage, motDate, isLoading: motMileageLoading } = useMotMileage(editableRegNumber);
+
+  // MOT mileage lookup for Step 1 registration input (mirrors customer journey)
+  const { motMileage: step1MotMileage, motDate: step1MotDate, isLoading: step1MotLoading } = useMotMileage(regNumber);
+  const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? step1MotMileage ?? null;
   
   // Auto-prefill mileage from MOT when available
   useEffect(() => {
@@ -2146,19 +2150,24 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-2">
                   <Label>Mileage</Label>
 
-                  {/* MOT-based quick prefill (mirrors customer journey UX) */}
-                  {autoPreview.data?.motMileage ? (
+                  {step1MotLoading && !step1MotMileageResolved ? (
+                    <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-xs text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking MOT history…
+                    </div>
+                  ) : null}
+                  {step1MotMileageResolved ? (
                     <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 space-y-2">
                       <button
                         type="button"
                         onClick={() => {
-                          const m = Number(autoPreview.data!.motMileage);
+                          const m = Number(step1MotMileageResolved);
                           setMileage(m.toLocaleString());
                           setSliderMileage(Math.min(m, 150000));
                         }}
                         className="text-sm font-medium text-blue-700 hover:underline"
                       >
-                        Last recorded MOT: <span className="font-bold">{Number(autoPreview.data.motMileage).toLocaleString()} miles</span>
+                        Last recorded MOT: <span className="font-bold">{Number(step1MotMileageResolved).toLocaleString()} miles</span>
+                        {step1MotDate ? <span className="text-xs text-muted-foreground font-normal"> ({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
                       </button>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs text-muted-foreground">Or roughly how many miles since MOT?</span>
@@ -2168,7 +2177,7 @@ Questions? Call 0330 229 5040`;
                           { label: '+5,000', add: 5000 },
                           { label: '+10,000', add: 10000 },
                         ].map(({ label, add }) => {
-                          const target = Number(autoPreview.data!.motMileage) + add;
+                          const target = Number(step1MotMileageResolved) + add;
                           return (
                             <Button
                               key={label}
