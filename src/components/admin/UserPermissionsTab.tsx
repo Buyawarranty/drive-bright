@@ -38,6 +38,8 @@ interface Permission {
 // Define all admin tabs that can be granted as permissions
 const ADMIN_TABS = [
   { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', hasGranular: true },
+  { id: 'recontact-leads', label: 'Recontact Leads', description: 'Past enquiries ready for follow-up' },
+  { id: 'renewals', label: 'Renewals', description: 'Renewals and upsells for active customers' },
   { id: 'get-quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders' },
   { id: 'selling-tips', label: 'Sales Script', description: 'Sales script, tips and customer feedback' },
   { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', hasGranular: true },
