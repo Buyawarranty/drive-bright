@@ -106,7 +106,7 @@ const defaultTabs: Tab[] = [
     description: 'Past enquiries ready for follow-up'
   },
   {
-    id: 'retention',
+    id: 'renewals',
     label: 'Renewals',
     icon: Repeat,
     description: 'Renewals + upsells for active customers'
