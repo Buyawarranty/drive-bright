@@ -354,13 +354,9 @@ const handler = async (req: Request): Promise<Response> => {
     let continueUrl = baseUrl;
 
     if (emailRequest.vehicleReg) {
-      // Determine target step based on trigger type
-      // All quote/pricing emails resume at Step 3 (plans) so users can view & complete their saved quote
-      // Checkout abandoned goes straight to Step 4 (checkout)
-      let targetStep = 3;
-      if (emailRequest.triggerType === 'checkout_abandoned') {
-        targetStep = 4;
-      }
+      // Resume at the step the customer abandoned: step 3 → plans, step 4+ → checkout (Stripe)
+      const targetStep = (emailRequest.stepAbandoned && emailRequest.stepAbandoned >= 4) ? 4 : 3;
+
       
       const stateParam = btoa(JSON.stringify({
         regNumber: emailRequest.vehicleReg,
