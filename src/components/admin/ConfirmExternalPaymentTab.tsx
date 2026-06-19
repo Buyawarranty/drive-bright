@@ -55,8 +55,8 @@ const termOptions = [
 
 const excessOptions = [0, 50, 100, 150, 250, 500];
 
+// Note: AutoCare Basic (£1,000 / internal 750) removed — no longer offered
 const claimLimitOptions = [
-  { value: 1250, label: '£1,250', description: 'AutoCare Standard' },
   { value: 2000, label: '£2,000', description: 'AutoCare Essential' },
   { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
