@@ -598,7 +598,13 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     const groups: AgentLeadGroup[] = [];
     
     // Awaiting Contact first (previously unassigned)
-    const awaitingContactLeads = groupMap.get(null) || [];
+    // Exclude already-converted/paid, lost and fake leads — no one needs to "contact" them.
+    const awaitingContactLeads = (groupMap.get(null) || []).filter(l =>
+      l.status !== 'converted' &&
+      l.status !== 'lost' &&
+      l.status !== 'fake_lead' &&
+      !l.is_paid
+    );
     groups.push({
       agent: null,
       agentId: null,
@@ -606,8 +612,8 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       leads: awaitingContactLeads,
       newCount: awaitingContactLeads.filter(l => l.status === 'new').length,
       contactedCount: awaitingContactLeads.filter(l => l.status === 'contacted').length,
-      convertedCount: awaitingContactLeads.filter(l => l.status === 'converted' || l.is_paid).length,
-      lostCount: awaitingContactLeads.filter(l => l.status === 'lost').length,
+      convertedCount: 0,
+      lostCount: 0,
     });
 
     // Then agents sorted by lead count
