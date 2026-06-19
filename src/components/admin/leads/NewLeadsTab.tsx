@@ -1236,9 +1236,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="space-y-3">
           {/* Team filter chips moved inline to the header above */}
 
+          {/* Subtle "you're in" team badge for sales agents/leads */}
+          {(userRole === 'sales' || userRole === 'sales_lead') && myTeam && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>You're in</span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${TEAM_COLOR_CLASSES[myTeam.color].pill}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${TEAM_COLOR_CLASSES[myTeam.color].dot}`} />
+                {myTeam.name}
+              </span>
+            </div>
+          )}
+
           {/* Sales Executive Header removed - agents focus on leads only */}
           {/* Failed-payment / struggling-checkout claimable leads */}
           <PaymentFailedLeadsPanel userRole={userRole} />
+
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
             filter={activeFilter}
