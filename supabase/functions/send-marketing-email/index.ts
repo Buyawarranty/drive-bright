@@ -24,7 +24,11 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return auth.response;
+
   try {
+
     console.log("Marketing email request received");
     
     const supabaseClient = createClient(
