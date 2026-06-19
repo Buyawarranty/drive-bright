@@ -515,10 +515,9 @@ const AdminDashboard = () => {
         );
       case 'recontact-leads':
       case 'goldmine-leads':
-        return <GoldenLeadsTab />;
-      case 'retention':
+        return <GoldenLeadsTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'renewals':
-        return <RetentionTab />;
+        return <RetentionTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':

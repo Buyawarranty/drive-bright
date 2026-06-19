@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database } from 'lucide-react';
+import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database, Network } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -87,7 +87,7 @@ function agentLabel(a: Agent | undefined): string {
   return name || a.email || 'Agent';
 }
 
-export const LeadRecoveryTab: React.FC = () => {
+export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
   const [segment, setSegment] = useState<SegmentId>('due_today');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
@@ -476,6 +476,17 @@ export const LeadRecoveryTab: React.FC = () => {
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {onNavigateToTab && (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onNavigateToTab('lead-teams')}
+                className="shrink-0 font-semibold"
+                title="Assign agents to teams and pick the queues they work — New Leads, Recontact, Renewals"
+              >
+                <Network className="h-4 w-4 mr-1" /> Allocate Agents
+              </Button>
+            )}
           </div>
         </div>
       </div>
