@@ -62,6 +62,13 @@ const getStatusBadgeVariant = (status: string) => {
 
 type DistributionMode = 'round_robin' | 'percentage';
 
+// Module-level cache so team tabs load instantly on re-mount / tab switches
+const _teamCache: {
+  teams: Array<{ id: string; name: string; color: string; emoji: string | null }>;
+  members: Array<{ admin_user_id: string; team_id: string }>;
+  promise: Promise<any> | null;
+} = { teams: [], members: [], promise: null };
+
 export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   leads,
   salesUsers,
@@ -120,20 +127,31 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const [bulkCalendarOpen, setBulkCalendarOpen] = useState(false);
 
   // Team filter tabs (split distribution view per team for managers)
-  const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string; emoji: string | null }>>([]);
-  const [teamMembers, setTeamMembers] = useState<Array<{ admin_user_id: string; team_id: string }>>([]);
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string; emoji: string | null }>>(() => _teamCache.teams);
+  const [teamMembers, setTeamMembers] = useState<Array<{ admin_user_id: string; team_id: string }>>(() => _teamCache.members);
   const [activeTeamTab, setActiveTeamTab] = useState<string>('all'); // 'all' | team.id | 'unassigned'
 
   useEffect(() => {
-    (async () => {
-      const [teamsRes, membersRes] = await Promise.all([
+    // Use a module-level promise so multiple mounts share one network round-trip
+    if (!_teamCache.promise) {
+      _teamCache.promise = Promise.all([
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('admin_user_id, team_id'),
-      ]);
-      if (teamsRes.data) setTeams(teamsRes.data as any);
-      if (membersRes.data) setTeamMembers(membersRes.data as any);
-    })();
+      ]).then(([teamsRes, membersRes]) => {
+        _teamCache.teams = (teamsRes.data as any) || [];
+        _teamCache.members = (membersRes.data as any) || [];
+        return _teamCache;
+      });
+    }
+    let cancelled = false;
+    _teamCache.promise.then(c => {
+      if (cancelled) return;
+      setTeams(c.teams);
+      setTeamMembers(c.members);
+    });
+    return () => { cancelled = true; };
   }, []);
+
 
   const memberTeamMap = useMemo(() => {
     const m = new Map<string, string>();
