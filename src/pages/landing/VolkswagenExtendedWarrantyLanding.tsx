@@ -101,7 +101,7 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
       <SEOHead
         title="Volkswagen Extended Warranty Cover from £19/month | Instant Quote"
         description="Protect your Volkswagen from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online VW quote in under 60 seconds."
-        keywords="Volkswagen extended warranty, VW warranty quote, Volkswagen warranty UK, used VW warranty, VW Golf warranty, VW Tiguan warranty, VW Transporter warranty, VW ID warranty"
+        keywords="Volkswagen extended warranty, VW warranty quote, Volkswagen warranty UK, used VW warranty, VW Golf warranty, VW Tiguan warranty, VW Transporter warranty, VW van warranty, VW Caddy van warranty, VW Crafter van warranty, VW ID warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/"
         ogImage={`https://buyawarranty.co.uk${vwHero}`}
         ogImageAlt="Volkswagen Extended Warranty Cover from £19/month"
