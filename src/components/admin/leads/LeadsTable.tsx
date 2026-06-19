@@ -93,7 +93,18 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, []);
 
   return (
-    <div className="rounded-md border-2 border-border overflow-x-auto">
+    <>
+      {/* Mobile-only card view (managers spot-check on phones). Desktop is unchanged. */}
+      <LeadsMobileCards
+        className="md:hidden"
+        leads={leads}
+        quotesByEmail={quotesByEmail}
+        onLogActivity={onLogActivity}
+        onUpdateNotes={onUpdateNotes}
+        onRefresh={onRefresh}
+        onSendQuote={onSendQuote}
+      />
+      <div className="hidden md:block rounded-md border-2 border-border overflow-x-auto">
       <TooltipProvider>
         <Table>
           <TableHeader>
