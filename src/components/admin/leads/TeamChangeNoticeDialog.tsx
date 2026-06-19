@@ -81,20 +81,21 @@ export const TeamChangeNoticeDialog = ({ adminUserId }: Props) => {
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            You've been moved to a new team
+            Your team allocation has been updated
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <span className="block">
-              {fromName && toName
+              {fromName && toName && fromName !== toName
                 ? <>You've been moved from <strong>{fromName}</strong> to <strong>{toName}</strong>.</>
                 : toName
-                  ? <>You've been placed in <strong>{toName}</strong>.</>
-                  : <>Your team assignment has been updated.</>}
+                  ? <>Your allocation in <strong>{toName}</strong> has been updated — you may now have different queues (New Leads, Recontact or Renewals) assigned to you.</>
+                  : <>Your queue allocation has been updated.</>}
             </span>
             <span className="block">
               Please contact your performance manager for more details.
             </span>
           </AlertDialogDescription>
+
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction onClick={acknowledge}>Got it</AlertDialogAction>
