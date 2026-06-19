@@ -238,6 +238,12 @@ const defaultTabs: Tab[] = [
     description: 'Backup all contacts, export & sync to marketing'
   },
   {
+    id: 'lead-teams',
+    label: 'Lead Teams',
+    icon: Users,
+    description: 'Assign agents to teams (red, blue, green) and manage lead routing'
+  },
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,
