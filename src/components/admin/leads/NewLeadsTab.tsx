@@ -119,7 +119,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (!currentAdminId) return null;
     return agentTeamMap.get(currentAdminId) || null;
   }, [currentAdminId, agentTeamMap]);
-  const isLockedToOwnTeam = userRole === 'sales_lead' && !!myTeam;
+  const isLockedToOwnTeam = (userRole === 'sales_lead' || userRole === 'sales') && !!myTeam;
   useEffect(() => {
     if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
       setTeamFilter(myTeam.id);
