@@ -573,17 +573,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return filteredLeads.filter(lead => isRecoveredLead(lead));
   }, [filteredLeads, isRecoveredLead, filter]);
 
-  // Red is the implicit default team: any agent not explicitly placed in another
-  // team is treated as a member of the Red team. This keeps the live flow visible
-  // until managers explicitly populate Blue / Green via lead_team_members.
-  const redTeamId = useMemo(() => allTeams.find(t => t.color === 'red')?.id || null, [allTeams]);
+  // Team membership is explicit only. Unassigned agents do not fall back to any team.
   const agentBelongsToTeam = useCallback((agentId: string | null | undefined, teamId: string) => {
     if (!agentId) return false;
     const explicit = agentTeamMap.get(agentId);
-    if (explicit) return explicit.id === teamId;
-    // No explicit team membership → fall back to Red.
-    return teamId === redTeamId;
-  }, [agentTeamMap, redTeamId]);
+    return explicit?.id === teamId;
+  }, [agentTeamMap]);
 
   // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
   const teamFilteredFreshLeads = useMemo(() => {
