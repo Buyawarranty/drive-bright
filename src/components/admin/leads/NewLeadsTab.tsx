@@ -113,6 +113,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Team filter (Red / Blue / Green) — only managers see the chips; default null = no filter.
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+  // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
+  const myTeam = currentAdminId ? agentTeamMap.get(currentAdminId) || null : null;
+  const isLockedToOwnTeam = userRole === 'sales_lead' && !!myTeam;
+  useEffect(() => {
+    if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
+      setTeamFilter(myTeam.id);
+    }
+  }, [isLockedToOwnTeam, myTeam, teamFilter]);
 
   
   
@@ -1016,7 +1024,22 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     }[allTeams.find(t => t.id === teamFilter)?.color || 'slate']
                   : "border-border bg-muted/30"
               )}>
-                <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+                {isLockedToOwnTeam && myTeam ? (
+                  // Sales leads see a locked badge for their own team — no switching.
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full border',
+                      TEAM_COLOR_CLASSES[myTeam.color].pill
+                    )}
+                    title="You can only view your own team's leads"
+                  >
+                    <span className={cn('h-1.5 w-1.5 rounded-full', TEAM_COLOR_CLASSES[myTeam.color].dot)} />
+                    {myTeam.name.replace(/^Formula\s+/i, '')}
+                    <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Your team</span>
+                  </span>
+                ) : (
+                  <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+                )}
                 {isSuperAdmin && (
                   <Button
                     type="button"
@@ -1031,7 +1054,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   </Button>
                 )}
               </div>
-              {teamFilter && (
+              {teamFilter && !isLockedToOwnTeam && (
                 <span className={cn(
                   "text-[11px] font-medium",
                   TEAM_COLOR_CLASSES[allTeams.find(t => t.id === teamFilter)?.color || 'slate'].text
