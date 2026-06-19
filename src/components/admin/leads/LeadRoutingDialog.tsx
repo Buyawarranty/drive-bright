@@ -734,21 +734,19 @@ export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDi
                         </div>
                       );
                     })}
-                    {canEdit && (
+                    {canEdit && pendingAgents.length > 0 && (
                       <div className="pt-2 border-t">
                         <Label className="text-xs">Add agent</Label>
                         <Select onValueChange={(v) => addMember(activeTeam.id, v)} value="">
                           <SelectTrigger>
-                            <SelectValue placeholder="Pick an agent…" />
+                            <SelectValue placeholder="Pick a pending agent…" />
                           </SelectTrigger>
                           <SelectContent>
-                            {admins
-                              .filter(a => !teamMembers(activeTeam.id).some(m => m.admin_user_id === a.id))
-                              .map(a => (
-                                <SelectItem key={a.id} value={a.id}>
-                                  {(`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email)} — {a.role}
-                                </SelectItem>
-                              ))}
+                            {pendingAgents.map(a => (
+                              <SelectItem key={a.id} value={a.id}>
+                                {(`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email)} — {a.role}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
