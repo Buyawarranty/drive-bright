@@ -294,9 +294,6 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
             </CardHeader>
             <CardContent className="p-0">
               {/* per-agent toggles below — bulk controls removed so allocation is strictly per individual agent */}
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
               {teamMembers.length === 0 ? (
                 <div className="px-4 py-6 text-center text-sm text-muted-foreground">
                   {filter === 'all' ? 'No members yet.' : `No-one on ${WORKSTREAMS.find(w => w.key === filter)?.label} in this team.`}
