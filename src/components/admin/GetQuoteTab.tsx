@@ -710,6 +710,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           year: '',
           vehicleType: '',
         });
+        setEditableCustomerName(customerName);
+        setEditableCustomerEmail(customerEmail);
+        setEditableCustomerPhone(customerPhone);
+        setEditableRegNumber(regNumber.toUpperCase());
+        setEditableMileage(effectiveMileage === '0' ? '' : effectiveMileage);
+        setMileagePrefilledFromMot(false);
         setPaymentSource('');
         setPaymentAmount('');
         setPaymentDate(new Date().toISOString().split('T')[0]);
@@ -762,6 +768,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
       });
+      setEditableCustomerName(customerName);
+      setEditableCustomerEmail(customerEmail);
+      setEditableCustomerPhone(customerPhone);
+      setEditableRegNumber(regNumber.toUpperCase());
+      setEditableMileage(effectiveMileage === '0' ? '' : effectiveMileage);
+      setMileagePrefilledFromMot(false);
       
       // Reset payment dialog state for fresh entry
       setPaymentSource('');
