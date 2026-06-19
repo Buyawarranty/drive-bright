@@ -4521,8 +4521,9 @@ Questions? Call 0330 229 5040`;
                   </Alert>
                 </div>
               )}
+              </div>
 
-              <DialogFooter className="flex flex-col gap-2">
+              <DialogFooter className="border-t border-border bg-background px-6 py-4 flex flex-col gap-2">
                 {externalPaymentStep === 'details' ? (
                   <>
                     {/* Validation helper - show what's missing */}
