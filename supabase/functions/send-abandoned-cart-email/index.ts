@@ -64,9 +64,21 @@ interface SendEmailRequest {
   mileage?: string;
   fuelType?: string;
   transmission?: string;
-  triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | 'checkout_abandoned';
+  triggerType:
+    | 'pricing_page_view'
+    | 'plan_selected'
+    | 'pricing_page_view_24h'
+    | 'pricing_page_view_72h'
+    | 'checkout_abandoned'
+    | 'reminder_1h'
+    | 'reminder_2d'
+    | 'reminder_7d'
+    | 'reminder_14d'
+    | 'reminder_18d'
+    | 'reminder_21d';
   planName?: string;
   paymentType?: string;
+  stepAbandoned?: number;
   // Step 3 pricing selections for restoration
   voluntaryExcess?: number;
   claimLimit?: number;
@@ -104,25 +116,93 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   let promoText = '';
   let ctaText = 'View My Quote';
   
-  if (request.triggerType === 'checkout_abandoned') {
-    subject = `${vehicleReg} - Complete your warranty purchase`;
-    heading = `You're Almost There!`;
-    intro = `You were just a step away from protecting your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
-    body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
-    ctaText = 'Complete My Purchase';
-    showPromo = true;
-    promoCode = 'SAVE25GO';
-    promoText = 'Complete your purchase now and save £25 with code';
-  } else if (request.triggerType === 'pricing_page_view_24h') {
-    showPromo = true;
-    promoCode = 'SAVE25GO';
-    promoText = 'Special offer: Save £25 with code';
-  } else if (request.triggerType === 'pricing_page_view_72h') {
-    showPromo = true;
-    promoCode = 'SAVE25GO';
-    promoText = 'Last chance: your £25 discount expires tonight — use code';
-    intro = `Quick reminder about your warranty quote for ${vehicleReg}.`;
-    body = "Your saved quote is still here, but your £25 discount expires tonight. Tap below to pick up exactly where you left off.";
+  const stepAbandoned = request.stepAbandoned ?? 3;
+  const isCheckoutStep = stepAbandoned >= 4;
+
+  // Per-trigger copy (6-step Confused-style cadence + legacy fallbacks)
+  switch (request.triggerType) {
+    case 'reminder_1h':
+      subject = `${vehicleReg} – your warranty quote is saved`;
+      heading = isCheckoutStep ? `You're one step from cover` : `Your Warranty Quote for ${vehicleInfo}`;
+      intro = `Thanks for getting a quote for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+      body = isCheckoutStep
+        ? "Your warranty is ready at checkout. Pick up exactly where you left off — it only takes a minute."
+        : "We've saved your quote so you can pick up exactly where you left off whenever you're ready.";
+      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      break;
+    case 'reminder_2d':
+      subject = `${vehicleReg} – still thinking? Here's £25 off`;
+      heading = `Still thinking it over?`;
+      intro = `Your warranty quote for ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''} is still saved.`;
+      body = "To help you decide, here's £25 off when you complete your purchase.";
+      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Save £25 with code';
+      break;
+    case 'reminder_7d':
+      subject = `${vehicleReg} – don't lose your saved quote`;
+      heading = `Your quote is still here`;
+      intro = `It's been a week since you looked at warranty cover for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+      body = "Your quote and £25 discount are both still valid. Tap below to carry on where you left off.";
+      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Save £25 with code';
+      break;
+    case 'reminder_14d':
+      subject = `${vehicleReg} – prices may change, your £25 off won't`;
+      heading = `Lock in your warranty price`;
+      intro = `Repair costs keep rising, but your saved quote for ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''} is held at today's price.`;
+      body = "Secure your cover now and save £25 — your quote may not be available much longer.";
+      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Save £25 with code';
+      break;
+    case 'reminder_18d':
+      subject = `${vehicleReg} – your £25 discount is about to expire`;
+      heading = `Almost gone`;
+      intro = `Your saved quote and £25 voucher for ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''} expire in a few days.`;
+      body = "Don't miss out — pick up exactly where you left off and apply your discount automatically.";
+      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Save £25 with code';
+      break;
+    case 'reminder_21d':
+      subject = `${vehicleReg} – last chance, your quote expires tonight`;
+      heading = `Last chance`;
+      intro = `Final reminder for your saved warranty quote on ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+      body = "Your £25 discount and your saved quote both expire tonight. Tap below to finish in under a minute.";
+      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Last chance: Save £25 with code';
+      break;
+    // Legacy fallbacks (kept for completeness)
+    case 'checkout_abandoned':
+      subject = `${vehicleReg} - Complete your warranty purchase`;
+      heading = `You're Almost There!`;
+      intro = `You were just a step away from protecting your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+      body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
+      ctaText = 'Complete My Purchase';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Complete your purchase now and save £25 with code';
+      break;
+    case 'pricing_page_view_24h':
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Special offer: Save £25 with code';
+      break;
+    case 'pricing_page_view_72h':
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Last chance: your £25 discount expires tonight — use code';
+      intro = `Quick reminder about your warranty quote for ${vehicleReg}.`;
+      body = "Your saved quote is still here, but your £25 discount expires tonight. Tap below to pick up exactly where you left off.";
+      break;
   }
   
   // Build a promo link that ALSO restores the saved cart so users land back on their selections
@@ -233,6 +313,22 @@ const handler = async (req: Request): Promise<Response> => {
     const emailRequest: SendEmailRequest = await req.json();
     console.log('Sending abandoned cart email:', emailRequest);
 
+    // Hard stop: never email an unsubscribed recipient
+    const normalizedEmail = (emailRequest.email || '').trim().toLowerCase();
+    const { data: unsub } = await supabase
+      .from('email_unsubscribes')
+      .select('email')
+      .eq('email', normalizedEmail)
+      .limit(1);
+    if (unsub && unsub.length > 0) {
+      console.log(`Skipping email - recipient ${normalizedEmail} is unsubscribed`);
+      return new Response(JSON.stringify({ success: true, message: "Recipient is unsubscribed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+
     // Check if we've already sent this type of email for this specific cart
     const { data: recentEmails, error: checkError } = await supabase
       .from('triggered_emails_log')
@@ -274,13 +370,9 @@ const handler = async (req: Request): Promise<Response> => {
     let continueUrl = baseUrl;
 
     if (emailRequest.vehicleReg) {
-      // Determine target step based on trigger type
-      // All quote/pricing emails resume at Step 3 (plans) so users can view & complete their saved quote
-      // Checkout abandoned goes straight to Step 4 (checkout)
-      let targetStep = 3;
-      if (emailRequest.triggerType === 'checkout_abandoned') {
-        targetStep = 4;
-      }
+      // Resume at the step the customer abandoned: step 3 → plans, step 4+ → checkout (Stripe)
+      const targetStep = (emailRequest.stepAbandoned && emailRequest.stepAbandoned >= 4) ? 4 : 3;
+
       
       const stateParam = btoa(JSON.stringify({
         regNumber: emailRequest.vehicleReg,

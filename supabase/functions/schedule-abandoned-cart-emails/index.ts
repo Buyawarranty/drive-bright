@@ -6,8 +6,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// 6-step Confused.com-style cadence. Each cart can receive every reminder
+// whose delay has elapsed (so missed cycles still send on the next cron tick).
+const REMINDER_TRIGGERS = [
+  'reminder_1h',
+  'reminder_2d',
+  'reminder_7d',
+  'reminder_14d',
+  'reminder_18d',
+  'reminder_21d',
+] as const;
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -15,176 +25,145 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false }
     });
 
-    console.log('Processing abandoned cart emails...');
+    console.log('Processing abandoned cart reminder cadence (6-step)...');
 
-    // Get abandoned carts that need emails sent (exclude converted carts)
-    const { data: abandonedCarts, error: cartsError } = await supabase
-      .from('abandoned_carts')
-      .select('*')
-      .eq('is_converted', false) // Only get unconverted carts
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
-      .order('created_at', { ascending: false });
+    // Load active reminder templates (delay map)
+    const { data: templates, error: tplErr } = await supabase
+      .from('abandoned_cart_email_templates')
+      .select('trigger_type, send_delay_minutes')
+      .in('trigger_type', REMINDER_TRIGGERS as unknown as string[])
+      .eq('is_active', true);
 
-    if (cartsError) {
-      console.error('Error fetching abandoned carts:', cartsError);
-      throw cartsError;
-    }
+    if (tplErr) throw tplErr;
+    const delayByTrigger = new Map<string, number>();
+    (templates || []).forEach(t => delayByTrigger.set(t.trigger_type, t.send_delay_minutes));
 
-    if (!abandonedCarts || abandonedCarts.length === 0) {
-      console.log('No abandoned carts found');
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: "No abandoned carts to process" 
-      }), {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+    if (delayByTrigger.size === 0) {
+      console.log('No active reminder templates configured');
+      return new Response(JSON.stringify({ success: true, message: "No active templates" }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    console.log(`Found ${abandonedCarts.length} abandoned carts to process`);
+    // Pull unconverted carts within the cadence window (22 days covers 21-day final email)
+    const windowStart = new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: abandonedCarts, error: cartsError } = await supabase
+      .from('abandoned_carts')
+      .select('*')
+      .eq('is_converted', false)
+      .gte('created_at', windowStart)
+      .order('created_at', { ascending: false });
+
+    if (cartsError) throw cartsError;
+    if (!abandonedCarts || abandonedCarts.length === 0) {
+      return new Response(JSON.stringify({ success: true, message: "No abandoned carts to process" }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    console.log(`Found ${abandonedCarts.length} candidate carts`);
+
+    // Bulk-load unsubscribed emails for this batch
+    const emails = Array.from(new Set(
+      abandonedCarts.map(c => (c.email || '').trim().toLowerCase()).filter(e => e.includes('@'))
+    ));
+    const { data: unsubRows } = await supabase
+      .from('email_unsubscribes')
+      .select('email')
+      .in('email', emails);
+    const unsubSet = new Set((unsubRows || []).map((r: any) => r.email));
 
     let emailsSent = 0;
     let errorsCount = 0;
+    const now = Date.now();
 
-    // Process each abandoned cart
     for (const cart of abandonedCarts) {
       try {
-        // Skip if email is not valid (might be a vehicle reg used as identifier)
-        if (!cart.email || !cart.email.includes('@')) {
-          console.log(`Skipping cart ${cart.id} - invalid email format:`, cart.email);
-          continue;
-        }
-        
-        // Check if ANY email has already been sent for this cart
-        const { data: anyExistingEmails, error: checkAnyError } = await supabase
+        if (!cart.email || !cart.email.includes('@')) continue;
+        if (unsubSet.has(cart.email.trim().toLowerCase())) continue;
+        // Only carts that actually reached pricing or checkout
+        if (cart.step_abandoned !== 3 && cart.step_abandoned !== 4) continue;
+
+        // Fetch all reminder emails already sent for this cart
+        const { data: alreadySent } = await supabase
           .from('triggered_emails_log')
-          .select('*')
+          .select('trigger_type')
           .eq('cart_id', cart.id)
-          .limit(1);
+          .in('trigger_type', REMINDER_TRIGGERS as unknown as string[]);
+        const sentSet = new Set((alreadySent || []).map((r: any) => r.trigger_type));
 
-        if (checkAnyError) {
-          console.error('Error checking existing emails:', checkAnyError);
-          continue;
-        }
+        const cartTime = new Date(cart.created_at).getTime();
+        const metadata = cart.cart_metadata || {};
 
-        if (anyExistingEmails && anyExistingEmails.length > 0) {
-          console.log(`Email already sent for cart ${cart.id}, skipping all triggers for this cart`);
-          continue;
-        }
+        for (const trigger of REMINDER_TRIGGERS) {
+          if (sentSet.has(trigger)) continue;
+          const delayMinutes = delayByTrigger.get(trigger);
+          if (delayMinutes === undefined) continue;
+          if (now < cartTime + delayMinutes * 60 * 1000) continue; // not yet due
 
-        // Determine trigger type based on step - send only ONE email per cart
-        let triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | 'checkout_abandoned' | null = null;
-        
-        if (cart.step_abandoned === 3) {
-          triggerType = 'pricing_page_view';
-        } else if (cart.step_abandoned === 4) {
-          triggerType = 'checkout_abandoned';
-        } else {
-          continue; // Skip if not a step we want to send emails for
-        }
+          const emailPayload = {
+            cartId: cart.id,
+            email: cart.email,
+            firstName: cart.full_name?.split(' ')[0] || 'there',
+            lastName: cart.full_name?.split(' ').slice(1).join(' ') || '',
+            phone: cart.phone || '',
+            vehicleReg: cart.vehicle_reg,
+            vehicleMake: cart.vehicle_make,
+            vehicleModel: cart.vehicle_model,
+            vehicleYear: cart.vehicle_year || '',
+            vehicleType: cart.vehicle_type,
+            mileage: cart.mileage || '0',
+            fuelType: '',
+            transmission: '',
+            triggerType: trigger,
+            planName: cart.plan_name,
+            paymentType: cart.payment_type,
+            stepAbandoned: cart.step_abandoned, // ← step 3 → step 3, step 4 → checkout
+            voluntaryExcess: metadata.voluntary_excess ?? metadata.excess,
+            claimLimit: metadata.claim_limit ?? metadata.claimLimit,
+            labourRate: metadata.labourRate ?? metadata.labour_rate,
+            boostAddon: metadata.boostAddon ?? metadata.boost_addon,
+            protectionAddons: metadata.protection_addons,
+          };
 
-        // Process only the single trigger type for this cart
-        try {
-          // Get the template to check delay time
-          const { data: template, error: templateError } = await supabase
-            .from('abandoned_cart_email_templates')
-            .select('send_delay_minutes')
-            .eq('trigger_type', triggerType)
-            .eq('is_active', true)
-            .single();
-
-          if (templateError || !template) {
-            console.log(`No template found for trigger type: ${triggerType}`);
-            continue;
-          }
-
-          // Check if enough time has passed since cart was abandoned
-          const cartTime = new Date(cart.created_at).getTime();
-          const delayMs = template.send_delay_minutes * 60 * 1000;
-          const shouldSendAt = cartTime + delayMs;
-          
-          if (Date.now() < shouldSendAt) {
-            console.log(`Not yet time to send ${triggerType} email for cart ${cart.id}`);
-            continue;
-          }
-
-            // Extract pricing metadata from cart_metadata if available
-            const metadata = cart.cart_metadata || {};
-            
-            // Send the email with pricing settings for restoration
-            const emailPayload = {
-              cartId: cart.id, // Include cart ID to track individual carts
-              email: cart.email,
-              firstName: cart.full_name?.split(' ')[0] || 'there',
-              lastName: cart.full_name?.split(' ').slice(1).join(' ') || '', // Get last name from full name
-              phone: cart.phone || '',
-              vehicleReg: cart.vehicle_reg,
-              vehicleMake: cart.vehicle_make,
-              vehicleModel: cart.vehicle_model,
-              vehicleYear: cart.vehicle_year || '',
-              vehicleType: cart.vehicle_type, // Include vehicle type for special vehicles
-              mileage: cart.mileage || '0',
-              fuelType: '', // Not stored in abandoned carts, will be empty
-              transmission: '', // Not stored in abandoned carts, will be empty
-              triggerType,
-              planName: cart.plan_name,
-              paymentType: cart.payment_type,
-              // Step 3 pricing selections from cart_metadata for email restoration
-              voluntaryExcess: metadata.voluntary_excess ?? metadata.excess,
-              claimLimit: metadata.claim_limit ?? metadata.claimLimit,
-              labourRate: metadata.labourRate ?? metadata.labour_rate,
-              boostAddon: metadata.boostAddon ?? metadata.boost_addon,
-              protectionAddons: metadata.protection_addons
-            };
-
-            console.log('Sending abandoned cart email for:', emailPayload);
-
-            const emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
-              body: emailPayload
-            });
+          console.log(`Sending ${trigger} for cart ${cart.id} (step ${cart.step_abandoned})`);
+          const emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
+            body: emailPayload,
+          });
 
           if (emailResponse.error) {
-            console.error('Error sending email:', emailResponse.error);
+            console.error(`Error sending ${trigger} for cart ${cart.id}:`, emailResponse.error);
             errorsCount++;
           } else {
-            console.log('Email sent successfully for cart:', cart.id);
             emailsSent++;
           }
-        } catch (innerError) {
-          console.error('Error processing cart:', cart.id, innerError);
-          errorsCount++;
         }
-
-      } catch (error) {
-        console.error('Error processing cart:', cart.id, error);
+      } catch (cartErr) {
+        console.error('Error processing cart:', cart.id, cartErr);
         errorsCount++;
       }
     }
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Processed ${abandonedCarts.length} abandoned carts`,
+      message: `Processed ${abandonedCarts.length} carts`,
       emailsSent,
-      errors: errorsCount
+      errors: errorsCount,
     }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
 
   } catch (error: any) {
-    console.error("Error in schedule-abandoned-cart-emails function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    console.error("Error in schedule-abandoned-cart-emails:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
