@@ -969,6 +969,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }
   }, [dateFilterKey, authLoading, user?.id]);
 
+  // Re-fetch when the super_admin starts/stops impersonating another agent so the
+  // scoped query (assigned-to-that-agent) runs instead of the global recent-750 window.
+  const impersonationKey = `${isImpersonating ? '1' : '0'}_${effectiveAdminUserId || ''}_${effectiveRole || ''}`;
+  const impersonationKeyRef = useRef(impersonationKey);
+  useEffect(() => {
+    if (impersonationKeyRef.current === impersonationKey) return;
+    impersonationKeyRef.current = impersonationKey;
+    if (!authLoading && user?.id) {
+      fetchLeadsRef.current();
+    }
+  }, [impersonationKey, authLoading, user?.id]);
+
   useEffect(() => {
     if (authLoading || !user?.id) return;
 
