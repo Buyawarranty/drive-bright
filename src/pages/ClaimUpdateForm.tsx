@@ -32,11 +32,9 @@ const ClaimUpdateForm = () => {
     const fetchRequest = async () => {
       if (!token) { setError('Invalid link'); setLoading(false); return; }
 
-      const { data, error: fetchError } = await supabase
-        .from('claim_update_requests')
-        .select('*')
-        .eq('token', token)
-        .single();
+      const { data: rows, error: fetchError } = await supabase
+        .rpc('get_claim_update_request_by_token', { _token: token });
+      const data = rows && rows.length > 0 ? rows[0] : null;
 
       if (fetchError || !data) {
         setError('This link is invalid or has expired.');
