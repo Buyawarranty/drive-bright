@@ -76,6 +76,7 @@ import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useViewAs } from '@/contexts/ViewAsContext';
+import { CustomersMobileCards } from './customers/CustomersMobileCards';
 
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
