@@ -21,6 +21,7 @@ import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
+import { TeamsOverview } from './TeamsOverview';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
@@ -162,7 +163,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return 'leads';
   };
   
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>(getDefaultView());
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview'>(getDefaultView());
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
@@ -1229,6 +1230,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Agents</span>
               </Button>
             )}
+            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || canSeeTeamView) && (
+              <Button
+                variant={activeView === 'teams-overview' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('teams-overview' as any)}
+                className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
+              >
+                <Users className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">By Team</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -1445,6 +1457,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <ManagerDashboard />
       )}
       
+      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || canSeeTeamView) && activeView === 'teams-overview' && (
+        <TeamsOverview
+          leads={leads}
+          salesUsers={teamScopedSalesUsers}
+        />
+      )}
+
       {/* Agents View - Sales Lead, Admin, Super Admin & users with team-view permission */}
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
         <AgentsLeadsView 
