@@ -48,6 +48,22 @@ serve(async (req: Request) => {
       });
     }
 
+    // Verify caller is an admin
+    const { data: callerAdmin, error: callerAdminError } = await supabase
+      .from('admin_users')
+      .select('role, is_active')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (callerAdminError || !callerAdmin || !['admin', 'super_admin'].includes(callerAdmin.role)) {
+      return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+
     // Try to create user in auth.users
     let userId: string;
     let isExistingUser = false;
