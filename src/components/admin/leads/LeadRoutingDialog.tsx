@@ -900,7 +900,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             </Tabs>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 };
+
