@@ -41,6 +41,7 @@ const ConditionalStickyNavigation = () => {
   if (location.pathname.startsWith('/car-extended-warranty/mercedes-benz')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/volkswagen')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/citroen')) return null;
+  if (location.pathname.startsWith('/car-extended-warranty/land-rover')) return null;
   return <StickyNavigation />;
 };
 
@@ -59,7 +60,8 @@ const ConditionalFooter = () => {
     || location.pathname.startsWith('/car-extended-warranty/bmw')
     || location.pathname.startsWith('/car-extended-warranty/mercedes-benz')
     || location.pathname.startsWith('/car-extended-warranty/volkswagen')
-    || location.pathname.startsWith('/car-extended-warranty/citroen');
+    || location.pathname.startsWith('/car-extended-warranty/citroen')
+    || location.pathname.startsWith('/car-extended-warranty/land-rover');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
@@ -297,6 +299,11 @@ const App = () => {
                     <Route path="/car-extended-warranty/ford/" element={<FordWarranty />} />
         <Route path="/car-extended-warranty/nissan/" element={<NissanWarranty />} />
         <Route path="/car-extended-warranty/land-rover/" element={<LandRoverWarranty />} />
+        <Route path="/car-extended-warranty/land-rover" element={<LandRoverWarranty />} />
+        <Route path="/car-extended-warranty/land-rover/range-rover-warranty" element={<LandRoverWarranty />} />
+        <Route path="/car-extended-warranty/land-rover/range-rover-warranty/" element={<LandRoverWarranty />} />
+        <Route path="/car-extended-warranty/range-rover/" element={<LandRoverWarranty />} />
+        <Route path="/car-extended-warranty/range-rover" element={<LandRoverWarranty />} />
         <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/car-extended-warranty/bmw/" element={<BMWWarranty />} />
