@@ -110,7 +110,7 @@ function upsellPotential(p: PolicyRow): string[] {
   return opts;
 }
 
-export const RetentionTab: React.FC = () => {
+export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
   const [segment, setSegment] = useState<SegmentId>('due_soon');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
