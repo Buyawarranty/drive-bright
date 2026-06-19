@@ -55,33 +55,61 @@ serve(async (req: Request) => {
       }
     }
 
-    // Check for customer record to get more details
-    const { data: customer } = await supabase
-      .from("customers")
-      .select("*, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model")
-      .ilike("email", lead.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Find the customer record. The agent may convert the lead before (or
+    // shortly after) the payment webhook lands, and the customer email on
+    // file may differ from the lead email. So look up by email first, then
+    // fall back to registration plate and phone.
+    const normalisedReg = (lead.vehicle_reg || "").replace(/\s/g, "").toUpperCase();
+    const normalisedPhone = (lead.phone || "").replace(/\D/g, "");
+    const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email";
 
-    // Check for policy to get warranty number
-    const { data: policy } = await supabase
-      .from("customer_policies")
-      .select("warranty_number, plan_type, payment_amount, payment_type")
-      .eq("email", lead.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    let customer: any = null;
+    if (lead.email) {
+      const { data } = await supabase
+        .from("customers").select(customerSelect)
+        .ilike("email", lead.email)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      customer = data;
+    }
+    if (!customer && normalisedReg) {
+      const { data } = await supabase
+        .from("customers").select(customerSelect)
+        .ilike("registration_plate", `%${normalisedReg}%`)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      customer = data;
+    }
+    if (!customer && normalisedPhone.length >= 10) {
+      const { data } = await supabase
+        .from("customers").select(customerSelect)
+        .ilike("phone", `%${normalisedPhone.slice(-10)}%`)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      customer = data;
+    }
+
+    let policy: any = null;
+    if (lead.email) {
+      const { data } = await supabase
+        .from("customer_policies")
+        .select("warranty_number, plan_type, payment_amount, payment_type, email")
+        .ilike("email", lead.email)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      policy = data;
+    }
+
+    const leadFullName = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim();
+    const customerFullName = customer
+      ? (customer.name || [customer.first_name, customer.last_name].filter(Boolean).join(" ") || "").trim()
+      : "";
 
     const regPlate = lead.vehicle_reg || customer?.registration_plate || "Unknown";
-    const planName = lead.plan_name || customer?.plan_type || policy?.plan_type || "Unknown";
+    const planName = lead.plan_interest || customer?.plan_type || policy?.plan_type || "Pending review";
     const saleValue = customer?.final_amount || policy?.payment_amount || lead.cart_value || lead.quote_amount;
-    const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : "N/A";
-    const paymentType = lead.payment_type || customer?.payment_type || policy?.payment_type || "Unknown";
+    const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : "Pending payment confirmation";
+    const paymentType = customer?.payment_type || policy?.payment_type || "Pending payment confirmation";
     const warrantyNumber = policy?.warranty_number || "Pending";
-    const customerName = lead.full_name || customer?.name || "Unknown";
-    const customerEmail = lead.email;
-    const customerPhone = lead.phone || customer?.phone || "N/A";
+    const customerName = leadFullName || customerFullName || "Not provided";
+    const customerEmail = lead.email || customer?.email || "Not provided";
+    const customerPhone = lead.phone || customer?.phone || "Not provided";
 
     // Get timing info
     const leadCreatedAt = lead.created_at 
@@ -154,7 +182,9 @@ serve(async (req: Request) => {
     await resend.emails.send({
       from: "BuyaWarranty Team <notifications@buyawarranty.co.uk>",
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
-      subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentType}`,
+      subject: saleValue
+        ? `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentType}`
+        : `New Sale ${sourcePrefix}: ${regPlate} - ${customerName} (payment pending)`,
       html: emailHtml,
     });
 
