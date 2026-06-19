@@ -174,8 +174,21 @@ interface LeadForQuote {
 const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   // Initialize with URL tab param if present, otherwise default to 'customers'
-  const urlTab = searchParams.get('tab');
+  const rawUrlTab = searchParams.get('tab');
+  // Legacy URL aliases — keep old links working after rename
+  const TAB_ALIASES: Record<string, string> = {
+    'golden-leads': 'recontact-leads',
+    'goldmine-leads': 'recontact-leads',
+  };
+  const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
+  // Rewrite legacy tab in URL once on mount
+  useEffect(() => {
+    if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
+      setSearchParams({ tab: TAB_ALIASES[rawUrlTab] }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const accessCheckTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
