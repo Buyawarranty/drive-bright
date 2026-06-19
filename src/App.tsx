@@ -40,6 +40,7 @@ const ConditionalStickyNavigation = () => {
   if (location.pathname.startsWith('/car-extended-warranty/bmw')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/mercedes-benz')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/volkswagen')) return null;
+  if (location.pathname.startsWith('/car-extended-warranty/citroen')) return null;
   return <StickyNavigation />;
 };
 
@@ -57,7 +58,8 @@ const ConditionalFooter = () => {
     || location.pathname.startsWith('/bmw-extended-warranty')
     || location.pathname.startsWith('/car-extended-warranty/bmw')
     || location.pathname.startsWith('/car-extended-warranty/mercedes-benz')
-    || location.pathname.startsWith('/car-extended-warranty/volkswagen');
+    || location.pathname.startsWith('/car-extended-warranty/volkswagen')
+    || location.pathname.startsWith('/car-extended-warranty/citroen');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
@@ -155,6 +157,7 @@ const LandRoverWarranty = lazy(() => import("./pages/LandRoverWarranty"));
 const JaguarWarranty = lazy(() => import("./pages/JaguarWarranty"));
 const SkodaWarranty = lazy(() => import("./pages/SkodaWarranty"));
 const BMWWarranty = lazy(() => import("./pages/BMWWarranty"));
+const CitroenWarranty = lazy(() => import("./pages/CitroenWarranty"));
 const BMWExtendedWarrantyLanding = lazy(() => import("./pages/landing/BMWExtendedWarrantyLanding"));
 const UsedCarWarrantyUK = lazy(() => import("./pages/UsedCarWarrantyUK"));
 const DynamicLandingPage = lazy(() => import("./pages/DynamicLandingPage"));
@@ -297,6 +300,8 @@ const App = () => {
         <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/car-extended-warranty/bmw/" element={<BMWWarranty />} />
+                    <Route path="/car-extended-warranty/citroen/" element={<CitroenWarranty />} />
+                    <Route path="/car-extended-warranty/citroen" element={<CitroenWarranty />} />
                     <Route path="/bmw-extended-warranty" element={<BMWExtendedWarrantyLanding />} />
                     <Route path="/bmw-extended-warranty/" element={<BMWExtendedWarrantyLanding />} />
                     <Route path="/warranty-types/bmw" element={<BMWExtendedWarrantyLanding />} />
