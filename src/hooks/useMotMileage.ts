@@ -29,8 +29,15 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
         return;
       }
 
-      // Normalize the registration (remove spaces, uppercase)
+      // Normalize the registration (remove spaces, uppercase) and also search the
+      // stored UK plate format, e.g. KY14MYA can be stored as KY14 MYA.
       const normalizedReg = registrationNumber.replace(/\s+/g, '').toUpperCase();
+      const spacedReg = normalizedReg.length > 3
+        ? `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`
+        : normalizedReg;
+      const flexibleRegPattern = normalizedReg.length > 3
+        ? `${normalizedReg.slice(0, -3)}%${normalizedReg.slice(-3)}`
+        : `%${normalizedReg}%`;
       
       setIsLoading(true);
       setError(null);
@@ -40,7 +47,13 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
         const { data, error: fetchError } = await supabase
           .from('mot_history')
           .select('mot_tests')
-          .or(`registration.eq.${normalizedReg},registration.ilike.%${normalizedReg}%`)
+          .or([
+            `registration.eq.${normalizedReg}`,
+            `registration.eq.${spacedReg}`,
+            `registration.ilike.${normalizedReg}`,
+            `registration.ilike.${spacedReg}`,
+            `registration.ilike.${flexibleRegPattern}`,
+          ].join(','))
           .limit(1)
           .maybeSingle();
 
