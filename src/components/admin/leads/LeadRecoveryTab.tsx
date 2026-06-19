@@ -117,8 +117,9 @@ export const LeadRecoveryTab: React.FC = () => {
   }, []);
 
   // Agent list — sales-side roles + admin/super_admin so managers can be picked too.
-  // Filtered by the "Recontact" workstream flag set on Lead Teams page (admins/super_admins
-  // pass through so they always show in dropdowns).
+  // Prefer agents flagged with the "Recontact" workstream on the Lead Teams page.
+  // Fallback: if no agents have been opted into the workstream yet, show all
+  // sales/sales_lead agents so the page stays usable (admins/super_admins always pass).
   useEffect(() => {
     (async () => {
       const [{ data: au }, { data: ws }] = await Promise.all([
@@ -135,8 +136,11 @@ export const LeadRecoveryTab: React.FC = () => {
           .filter((r: any) => r.workstream_recontact === true)
           .map((r: any) => r.admin_user_id)
       );
-      const filtered = ((au as Agent[]) || []).filter(a => {
+      const all = (au as Agent[]) || [];
+      const hasAnyFlagged = recontactSet.size > 0;
+      const filtered = all.filter(a => {
         if (a.role === 'admin' || a.role === 'super_admin') return true;
+        if (!hasAnyFlagged) return true; // fallback while workstreams are unconfigured
         return recontactSet.has(a.id);
       });
       setAgents(filtered);
