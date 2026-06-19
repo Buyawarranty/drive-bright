@@ -569,18 +569,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return filteredLeads.filter(lead => isRecoveredLead(lead));
   }, [filteredLeads, isRecoveredLead, filter]);
 
+  // Red is the implicit default team: any agent not explicitly placed in another
+  // team is treated as a member of the Red team. This keeps the live flow visible
+  // until managers explicitly populate Blue / Green via lead_team_members.
+  const redTeamId = useMemo(() => allTeams.find(t => t.color === 'red')?.id || null, [allTeams]);
+  const agentBelongsToTeam = useCallback((agentId: string | null | undefined, teamId: string) => {
+    if (!agentId) return false;
+    const explicit = agentTeamMap.get(agentId);
+    if (explicit) return explicit.id === teamId;
+    // No explicit team membership → fall back to Red.
+    return teamId === redTeamId;
+  }, [agentTeamMap, redTeamId]);
+
   // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
   const teamFilteredFreshLeads = useMemo(() => {
     if (!teamFilter) return freshLeads;
-    return freshLeads.filter(l => l.assigned_to && agentTeamMap.get(l.assigned_to)?.id === teamFilter);
-  }, [freshLeads, teamFilter, agentTeamMap]);
+    return freshLeads.filter(l => agentBelongsToTeam(l.assigned_to, teamFilter));
+  }, [freshLeads, teamFilter, agentBelongsToTeam]);
 
   // Scope sales agents to the selected team so Reassign, agent filter, and the Agents view
   // only act on that team. When no team is selected, behaviour is unchanged.
   const teamScopedSalesUsers = useMemo(() => {
     if (!teamFilter) return salesUsers;
-    return salesUsers.filter(u => agentTeamMap.get(u.id)?.id === teamFilter);
-  }, [salesUsers, teamFilter, agentTeamMap]);
+    return salesUsers.filter(u => agentBelongsToTeam(u.id, teamFilter));
+  }, [salesUsers, teamFilter, agentBelongsToTeam]);
 
   // Pagination for leads table (fresh only)
   const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
