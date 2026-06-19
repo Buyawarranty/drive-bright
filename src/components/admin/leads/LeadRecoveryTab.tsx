@@ -116,17 +116,33 @@ export const LeadRecoveryTab: React.FC = () => {
     })();
   }, []);
 
-  // Agent list — sales-side roles + admin/super_admin so managers can be picked too
+  // Agent list — sales-side roles + admin/super_admin so managers can be picked too.
+  // Filtered by the "Recontact" workstream flag set on Lead Teams page (admins/super_admins
+  // pass through so they always show in dropdowns).
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase.from('admin_users') as any)
-        .select('id, user_id, first_name, last_name, email, role, is_active')
-        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
-        .eq('is_active', true)
-        .order('first_name');
-      setAgents((data as Agent[]) || []);
+      const [{ data: au }, { data: ws }] = await Promise.all([
+        (supabase.from('admin_users') as any)
+          .select('id, user_id, first_name, last_name, email, role, is_active')
+          .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+          .eq('is_active', true)
+          .order('first_name'),
+        (supabase.from('lead_team_members') as any)
+          .select('admin_user_id, workstream_recontact'),
+      ]);
+      const recontactSet = new Set<string>(
+        ((ws as any[]) || [])
+          .filter((r: any) => r.workstream_recontact === true)
+          .map((r: any) => r.admin_user_id)
+      );
+      const filtered = ((au as Agent[]) || []).filter(a => {
+        if (a.role === 'admin' || a.role === 'super_admin') return true;
+        return recontactSet.has(a.id);
+      });
+      setAgents(filtered);
     })();
   }, []);
+
 
   // Map admin_users.id <-> user_id (auth) for assignment writes / leaderboard reads
   const agentByAuthId = useMemo(() => {
