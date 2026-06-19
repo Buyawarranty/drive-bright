@@ -2936,12 +2936,12 @@ Questions? Call 0330 229 5040`;
                   </div>
 
                   {/* Quick Discount Buttons */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Quick discounts</Label>
+                      <Label className="text-sm font-semibold">Quick discounts</Label>
                       <p className="text-xs text-muted-foreground">Applied to calculated total</p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-3 gap-2.5">
                       {[
                         { label: '£25 off', type: 'fixed' as const, value: 25 },
                         { label: '£50 off', type: 'fixed' as const, value: 50 },
@@ -2960,13 +2960,12 @@ Questions? Call 0330 229 5040`;
                           <Button
                             key={d.label}
                             type="button"
-                            size="sm"
                             variant={isActive ? 'default' : 'outline'}
                             disabled={disabled}
                             onClick={() => handleCustomFullChange(newTotal.toString())}
                             className={cn(
-                              "h-8 px-3 text-xs font-semibold",
-                              isActive && "bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
+                              "h-auto px-3 py-3 text-sm font-semibold rounded-lg w-full justify-center",
+                              isActive && "shadow-sm"
                             )}
                           >
                             {d.label}
