@@ -9,6 +9,12 @@ export interface AgentTeam {
   color: TeamColor;
 }
 
+export interface AgentWorkstreams {
+  new_leads: boolean;
+  recontact: boolean;
+  renewals: boolean;
+}
+
 const colorFromName = (name: string): TeamColor => {
   const n = name.toLowerCase();
   if (n.includes('red')) return 'red';
@@ -25,14 +31,14 @@ export const TEAM_COLOR_CLASSES: Record<TeamColor, { dot: string; pill: string; 
 };
 
 /**
- * Reads lead_teams + lead_team_members and returns two maps:
+ * Reads lead_teams + lead_team_members and returns:
  *  - byAgent: admin_user_id -> team (badge lookup)
+ *  - workstreamsByAgent: admin_user_id -> which queues the agent works
  *  - allTeams: full list, for filter chips
- *
- * Pure read; no mutation. Safe to call anywhere.
  */
 export function useAgentTeams() {
   const [byAgent, setByAgent] = useState<Map<string, AgentTeam>>(new Map());
+  const [workstreamsByAgent, setWorkstreamsByAgent] = useState<Map<string, AgentWorkstreams>>(new Map());
   const [allTeams, setAllTeams] = useState<AgentTeam[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,24 +47,35 @@ export function useAgentTeams() {
     const load = async () => {
       const [{ data: teams }, { data: members }] = await Promise.all([
         supabase.from('lead_teams').select('id, name, is_active').eq('is_active', true),
-        supabase.from('lead_team_members').select('team_id, admin_user_id'),
+        supabase
+          .from('lead_team_members')
+          .select('team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
       ]);
       if (cancelled) return;
       const teamList: AgentTeam[] = (teams || []).map(t => ({
         id: t.id, name: t.name, color: colorFromName(t.name),
       }));
       const map = new Map<string, AgentTeam>();
-      for (const m of members || []) {
+      const wsMap = new Map<string, AgentWorkstreams>();
+      for (const m of (members || []) as any[]) {
         const team = teamList.find(t => t.id === m.team_id);
-        if (team && m.admin_user_id) map.set(m.admin_user_id, team);
+        if (team && m.admin_user_id) {
+          map.set(m.admin_user_id, team);
+          wsMap.set(m.admin_user_id, {
+            new_leads: m.workstream_new_leads !== false,
+            recontact: m.workstream_recontact === true,
+            renewals: m.workstream_renewals === true,
+          });
+        }
       }
       setAllTeams(teamList);
       setByAgent(map);
+      setWorkstreamsByAgent(wsMap);
       setLoading(false);
     };
     load();
     return () => { cancelled = true; };
   }, []);
 
-  return { byAgent, allTeams, loading };
+  return { byAgent, workstreamsByAgent, allTeams, loading };
 }
