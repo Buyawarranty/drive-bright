@@ -445,24 +445,39 @@ export const LeadRecoveryTab: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <RefreshCw className="h-6 w-6 text-primary" />
-            Recontact Leads
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-3xl">
-            Past warranty enquiries who requested a price but did not purchase. Contact them again, record outcomes, and convert interested customers into quotes or orders.
-          </p>
+      {/* Sticky header — page title, refresh, my-leads + search stay in view while scrolling */}
+      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 px-4 md:px-6 py-3 bg-background/95 backdrop-blur border-b">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-0.5 min-w-0">
+            <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              Recontact Leads
+            </h1>
+            <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
+              Past enquiries that didn't purchase. Pick a segment, call the lead, log the outcome.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="hidden md:flex items-center gap-2 pr-2 border-r">
+              <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
+              <Label htmlFor="my-only" className="text-sm cursor-pointer whitespace-nowrap">My leads only</Label>
+            </div>
+            <Input
+              placeholder="Search name, email, phone, reg…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 w-[220px] md:w-[280px]"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
+              className="shrink-0"
+            >
+              <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
-          className="shrink-0"
-        >
-          <RefreshCw className="h-4 w-4 mr-1" /> Refresh
-        </Button>
       </div>
 
 
@@ -512,29 +527,23 @@ export const LeadRecoveryTab: React.FC = () => {
       )}
 
       <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
-        <TabsList className="w-full justify-start flex-wrap h-auto">
-          {SEGMENTS.map((s) => (
-            <TabsTrigger key={s.id} value={s.id} className="gap-2">
-              {s.label}
-              <Badge variant="secondary" className="ml-1">{counts[s.id] ?? '…'}</Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="sticky top-[68px] z-10 -mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background/95 backdrop-blur border-b">
+          <TabsList className="w-full justify-start flex-wrap h-auto">
+            {SEGMENTS.map((s) => (
+              <TabsTrigger key={s.id} value={s.id} className="gap-2">
+                {s.label}
+                <Badge variant="secondary" className="ml-1">{counts[s.id] ?? '…'}</Badge>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <TabsContent value={segment} className="mt-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
-                <Label htmlFor="my-only" className="text-sm cursor-pointer">My leads only</Label>
-              </div>
-              <Input
-                placeholder="Search name, email, phone, reg…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="max-w-xs"
-              />
+            <div className="flex md:hidden items-center gap-2">
+              <Switch id="my-only-m" checked={myOnly} onCheckedChange={setMyOnly} />
+              <Label htmlFor="my-only-m" className="text-sm cursor-pointer">My leads only</Label>
             </div>
           </div>
 
