@@ -87,7 +87,7 @@ function agentLabel(a: Agent | undefined): string {
   return name || a.email || 'Agent';
 }
 
-export const LeadRecoveryTab: React.FC = () => {
+export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
   const [segment, setSegment] = useState<SegmentId>('due_today');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
