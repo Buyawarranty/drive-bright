@@ -1322,7 +1322,7 @@ Questions? Call 0330 229 5040`;
         body: {
           customerName,
           customerEmail,
-          customerPhone: '',
+          customerPhone: customerPhone || '',
           vehicleData: {
             regNumber: vehicleData.regNumber,
             make: vehicleData.make,
