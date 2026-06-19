@@ -2140,6 +2140,48 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_login_attempts: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          email: string
+          event_type: string
+          failure_reason: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json
+          success: boolean
+          triggered_by_admin_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          event_type: string
+          failure_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          success?: boolean
+          triggered_by_admin_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          event_type?: string
+          failure_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          success?: boolean
+          triggered_by_admin_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       customer_note_tags: {
         Row: {
           created_at: string
