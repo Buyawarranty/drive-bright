@@ -3766,8 +3766,15 @@ export const CustomersTab = ({
             </div>
           )}
 
-      {/* Results Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden mt-2">
+      {/* Mobile-only card view for managers spot-checking on phones. Desktop table is unchanged. */}
+      <CustomersMobileCards
+        className="md:hidden mt-2"
+        customers={customersPagination.paginatedData}
+        onOpen={openCustomerDialog}
+      />
+
+      {/* Results Table (desktop) */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden mt-2">
 
         <div className="overflow-x-auto">
           <Table className="min-w-[1800px]">
