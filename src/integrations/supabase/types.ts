@@ -5903,6 +5903,9 @@ export type Database = {
           role_in_team: string
           team_changed_at: string | null
           team_id: string
+          workstream_new_leads: boolean
+          workstream_recontact: boolean
+          workstream_renewals: boolean
         }
         Insert: {
           admin_user_id: string
@@ -5913,6 +5916,9 @@ export type Database = {
           role_in_team?: string
           team_changed_at?: string | null
           team_id: string
+          workstream_new_leads?: boolean
+          workstream_recontact?: boolean
+          workstream_renewals?: boolean
         }
         Update: {
           admin_user_id?: string
@@ -5923,6 +5929,9 @@ export type Database = {
           role_in_team?: string
           team_changed_at?: string | null
           team_id?: string
+          workstream_new_leads?: boolean
+          workstream_recontact?: boolean
+          workstream_renewals?: boolean
         }
         Relationships: [
           {
