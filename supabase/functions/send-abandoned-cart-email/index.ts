@@ -64,9 +64,21 @@ interface SendEmailRequest {
   mileage?: string;
   fuelType?: string;
   transmission?: string;
-  triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | 'checkout_abandoned';
+  triggerType:
+    | 'pricing_page_view'
+    | 'plan_selected'
+    | 'pricing_page_view_24h'
+    | 'pricing_page_view_72h'
+    | 'checkout_abandoned'
+    | 'reminder_1h'
+    | 'reminder_2d'
+    | 'reminder_7d'
+    | 'reminder_14d'
+    | 'reminder_18d'
+    | 'reminder_21d';
   planName?: string;
   paymentType?: string;
+  stepAbandoned?: number;
   // Step 3 pricing selections for restoration
   voluntaryExcess?: number;
   claimLimit?: number;
