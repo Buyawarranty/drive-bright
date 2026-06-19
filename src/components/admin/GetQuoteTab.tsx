@@ -232,6 +232,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
   // MOT mileage lookup for external payment dialog
   const { motMileage, motDate, isLoading: motMileageLoading } = useMotMileage(editableRegNumber);
+
+  // MOT mileage lookup for Step 1 registration input (mirrors customer journey)
+  const { motMileage: step1MotMileage, motDate: step1MotDate, isLoading: step1MotLoading } = useMotMileage(regNumber);
+  const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? step1MotMileage ?? null;
   
   // Auto-prefill mileage from MOT when available
   useEffect(() => {
