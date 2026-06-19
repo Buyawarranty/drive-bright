@@ -62,6 +62,13 @@ const getStatusBadgeVariant = (status: string) => {
 
 type DistributionMode = 'round_robin' | 'percentage';
 
+// Module-level cache so team tabs load instantly on re-mount / tab switches
+const _teamCache: {
+  teams: Array<{ id: string; name: string; color: string; emoji: string | null }>;
+  members: Array<{ admin_user_id: string; team_id: string }>;
+  promise: Promise<any> | null;
+} = { teams: [], members: [], promise: null };
+
 export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   leads,
   salesUsers,
