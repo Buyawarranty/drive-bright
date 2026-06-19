@@ -2894,6 +2894,49 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
 
+                  {/* Quick Discount Buttons */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Quick discounts</Label>
+                      <p className="text-xs text-muted-foreground">Applied to calculated total</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: '£25 off', type: 'fixed' as const, value: 25 },
+                        { label: '£50 off', type: 'fixed' as const, value: 50 },
+                        { label: '5% off', type: 'pct' as const, value: 0.05 },
+                        { label: '10% off', type: 'pct' as const, value: 0.10 },
+                        { label: '15% off', type: 'pct' as const, value: 0.15 },
+                        { label: '20% off', type: 'pct' as const, value: 0.20 },
+                      ].map((d) => {
+                        const base = basePrice.totalPrice;
+                        const discountAmount = d.type === 'fixed' ? d.value : Math.round(base * d.value);
+                        const newTotal = Math.max(0, base - discountAmount);
+                        const currentTotalNum = parseFloat(customFullPrice);
+                        const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
+                        const disabled = base <= 0 || newTotal <= 0;
+                        return (
+                          <Button
+                            key={d.label}
+                            type="button"
+                            size="sm"
+                            variant={isActive ? 'default' : 'outline'}
+                            disabled={disabled}
+                            onClick={() => handleCustomFullChange(newTotal.toString())}
+                            className={cn(
+                              "h-8 px-3 text-xs font-semibold",
+                              isActive && "bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
+                            )}
+                          >
+                            {d.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+
+
                   {/* 20% Discount Floor Warning */}
                   {(() => {
                     const monthlyVal = parseFloat(customMonthlyPrice);
