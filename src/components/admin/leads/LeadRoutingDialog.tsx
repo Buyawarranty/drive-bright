@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Users, Settings2, X, Pencil, Check, ShieldAlert } from 'lucide-react';
 import { RoutingTester } from './RoutingTester';
+import { SourceRulesMatrix } from './SourceRulesMatrix';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -444,6 +445,17 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
         {/* Routing tester */}
         <RoutingTester />
+
+        {/* Flat per-team × per-source matrix — all levers visible at a glance */}
+        <SourceRulesMatrix
+          teams={teams}
+          rules={rules}
+          canEdit={canEdit}
+          routingEnabled={routingEnabled}
+          onToggle={(teamId, source, allowed) => upsertRule(teamId, source, { allowed })}
+        />
+
+
 
         {/* Pending sales agents — shown at the top so managers allocate before they hit the live flow */}
         {canEdit && pendingAgents.length > 0 && (
