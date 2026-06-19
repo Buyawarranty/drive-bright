@@ -425,15 +425,26 @@ export const LeadRecoveryTab: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <RefreshCw className="h-6 w-6 text-primary" />
-          Recontact Leads
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-3xl">
-          Past warranty enquiries who requested a price but did not purchase. Contact them again, record outcomes, and convert interested customers into quotes or orders.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            <RefreshCw className="h-6 w-6 text-primary" />
+            Recontact Leads
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-3xl">
+            Past warranty enquiries who requested a price but did not purchase. Contact them again, record outcomes, and convert interested customers into quotes or orders.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
+          className="shrink-0"
+        >
+          <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+        </Button>
       </div>
+
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {STAT_CARDS.map((s) => (
