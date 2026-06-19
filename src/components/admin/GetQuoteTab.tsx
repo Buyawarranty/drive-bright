@@ -2182,7 +2182,7 @@ Questions? Call 0330 229 5040`;
                         {step1MotDate ? <span className="text-xs text-muted-foreground font-normal"> ({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
                       </button>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Or roughly how many miles since MOT?</span>
+                        <span className="text-xs text-black">How many miles since MOT?</span>
                         {[
                           { label: 'Same as MOT', add: 0 },
                           { label: '+2,500', add: 2500 },
@@ -2196,7 +2196,7 @@ Questions? Call 0330 229 5040`;
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-8"
+                              className="h-8 text-black"
                               onClick={() => {
                                 setMileage(target.toLocaleString());
                                 setSliderMileage(Math.min(target, 150000));
