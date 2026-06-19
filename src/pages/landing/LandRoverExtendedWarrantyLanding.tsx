@@ -98,16 +98,16 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Land Rover & Range Rover Extended Warranty from £19/month"
+        title="Land Rover Extended Warranty from £19/month"
         description="Protect your Land Rover or Range Rover from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds."
         keywords="Land Rover extended warranty, Range Rover warranty, Range Rover Sport warranty, Defender warranty, Discovery warranty, Velar warranty, Evoque warranty, used Land Rover warranty UK"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/land-rover/"
         ogImage={`https://buyawarranty.co.uk${lrHero}`}
-        ogImageAlt="Land Rover & Range Rover Extended Warranty Cover from £19/month"
+        ogImageAlt="Land Rover Extended Warranty Cover from £19/month"
         geoRegion="GB" geoPlacename="United Kingdom"
       />
       <OrganizationSchema />
-      <WebPageSchema name="Land Rover & Range Rover Extended Warranty" description="Land Rover and Range Rover extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/land-rover/" />
+      <WebPageSchema name="Land Rover Extended Warranty" description="Land Rover and Range Rover extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/land-rover/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <ProductSchema name="Land Rover Extended Warranty" description="Flexible Land Rover and Range Rover warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Land Rover Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/land-rover/' }]} />
@@ -153,7 +153,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_1fr] gap-6 lg:gap-10 items-start">
             <div>
               <h1 className="text-[28px] sm:text-4xl md:text-5xl lg:text-[52px] font-black text-[#0F172A] leading-[1.05] tracking-tight">
-                Land Rover &amp; Range Rover Extended Warranty<br className="hidden sm:block"/>{' '}
+                Land Rover Extended Warranty<br className="hidden sm:block"/>{' '}
                 <span className="text-slate-900">from </span><span className="text-[#F97316]">£19/month</span>
               </h1>
               <p className="mt-3 md:mt-4 text-slate-700 text-[15px] md:text-base leading-snug">
