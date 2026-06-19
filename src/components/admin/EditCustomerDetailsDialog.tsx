@@ -238,6 +238,10 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
             />
             {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
           </div>
+
+          <div className="pt-2">
+            <CustomerLoginActivity email={currentEmail} customerId={customerId} />
+          </div>
         </div>
 
         <DialogFooter>
