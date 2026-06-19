@@ -5,6 +5,7 @@ import { addSystemNote } from '@/utils/leadSystemNotes';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 const LEAD_TAG_BATCH_SIZE = 75;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
@@ -245,6 +246,10 @@ interface UseLeadsOptions {
 
 export const useLeads = (options?: UseLeadsOptions) => {
   const { user, loading: authLoading } = useAuth();
+  const { isImpersonating, effectiveAdminUserId, effectiveRole, effectivePermissions } = useViewAs();
+  // Refs so fetchLeads can read the latest impersonation state without being recreated
+  const impersonationRef = useRef({ isImpersonating, effectiveAdminUserId, effectiveRole, effectivePermissions });
+  impersonationRef.current = { isImpersonating, effectiveAdminUserId, effectiveRole, effectivePermissions };
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
@@ -426,7 +431,19 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // For 'sales' role agents: fetch ALL leads assigned to them (no 750 cap),
       // plus the most recent unassigned leads so they can still claim new ones.
       // For admin / sales_lead / super_admin: keep the global recent-750 window.
-      const currentAdmin = await getCachedAdminUser();
+      let currentAdmin = await getCachedAdminUser();
+      // When a super_admin impersonates another agent via "View As", scope the lead
+      // fetch as if it were that agent — otherwise we'd return the global recent-750
+      // window and miss older leads assigned to the impersonated sales agent.
+      const imp = impersonationRef.current;
+      if (imp.isImpersonating && imp.effectiveAdminUserId && currentAdmin) {
+        currentAdmin = {
+          ...currentAdmin,
+          id: imp.effectiveAdminUserId,
+          role: imp.effectiveRole || currentAdmin.role,
+          permissions: (imp.effectivePermissions as Record<string, boolean>) || {},
+        };
+      }
       // Sales agents are normally restricted to assigned + unassigned leads.
       // Granting `tab_new-leads_all-leads` lifts that restriction (manager-style global view).
       const hasAllLeadsPerm = currentAdmin?.permissions?.['tab_new-leads_all-leads'] === true;
@@ -951,6 +968,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
       fetchLeadsRef.current();
     }
   }, [dateFilterKey, authLoading, user?.id]);
+
+  // Re-fetch when the super_admin starts/stops impersonating another agent so the
+  // scoped query (assigned-to-that-agent) runs instead of the global recent-750 window.
+  const impersonationKey = `${isImpersonating ? '1' : '0'}_${effectiveAdminUserId || ''}_${effectiveRole || ''}`;
+  const impersonationKeyRef = useRef(impersonationKey);
+  useEffect(() => {
+    if (impersonationKeyRef.current === impersonationKey) return;
+    impersonationKeyRef.current = impersonationKey;
+    if (!authLoading && user?.id) {
+      fetchLeadsRef.current();
+    }
+  }, [impersonationKey, authLoading, user?.id]);
 
   useEffect(() => {
     if (authLoading || !user?.id) return;
