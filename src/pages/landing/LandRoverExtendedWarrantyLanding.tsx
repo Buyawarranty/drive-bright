@@ -409,7 +409,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
               {landRoverModels.map(m => (
                 <div key={m.label} className="flex flex-col items-center text-center">
                   <div className="w-full aspect-[4/3] bg-white rounded-xl border border-slate-100 flex items-center justify-center overflow-hidden p-3">
-                    <img src={m.img} alt={m.alt} title={m.alt} width={768} height={576} className="w-full h-full object-contain" loading="lazy" />
+                    <img src={m.img} alt={m.alt} title={m.alt} width={768} height={576} className="w-full h-full object-contain [transform:scaleX(-1)]" loading="lazy" />
                   </div>
                   <p className="mt-2 text-sm font-bold text-[#0F172A]">{m.label}</p>
                   <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{m.examples}</p>
