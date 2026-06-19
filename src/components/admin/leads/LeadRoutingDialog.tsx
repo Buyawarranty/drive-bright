@@ -93,7 +93,7 @@ interface TeamDistSettings {
   overflow_recipient_id: string | null;
 }
 
-export const LeadRoutingDialog = ({ open, onOpenChange, canEdit }: LeadRoutingDialogProps) => {
+export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [rules, setRules] = useState<SourceRule[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
