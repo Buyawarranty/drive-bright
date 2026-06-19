@@ -36,7 +36,7 @@ const vwModels = [
   { label: 'Polo', examples: 'Polo, Polo GTI', img: vwPolo, alt: 'Volkswagen Polo extended warranty cover — Polo and Polo GTI supermini' },
   { label: 'Passat', examples: 'Passat, Arteon', img: vwPassat, alt: 'Volkswagen Passat extended warranty cover — Passat saloon and estate, Arteon' },
   { label: 'Tiguan / T-Roc', examples: 'Tiguan, T-Roc, Touareg', img: vwTiguan, alt: 'Volkswagen Tiguan, T-Roc and Touareg SUV extended warranty cover' },
-  { label: 'Transporter', examples: 'T6.1, Caddy, Caravelle', img: vwTransporter, alt: 'Volkswagen Transporter T6.1, Caddy and Caravelle van extended warranty cover' },
+  { label: 'Transporter / Van', examples: 'Transporter T6.1, Caddy Van, Crafter, Caravelle', img: vwTransporter, alt: 'Volkswagen Transporter, Caddy, Crafter and Caravelle van extended warranty cover' },
   { label: 'ID. Series (EV)', examples: 'ID.3, ID.4, ID.5, ID. Buzz', img: vwIdSeries, alt: 'Volkswagen ID. Series electric vehicle extended warranty — ID.3, ID.4, ID.5, ID. Buzz' },
 ];
 
@@ -101,7 +101,7 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
       <SEOHead
         title="Volkswagen Extended Warranty Cover from £19/month | Instant Quote"
         description="Protect your Volkswagen from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online VW quote in under 60 seconds."
-        keywords="Volkswagen extended warranty, VW warranty quote, Volkswagen warranty UK, used VW warranty, VW Golf warranty, VW Tiguan warranty, VW Transporter warranty, VW ID warranty"
+        keywords="Volkswagen extended warranty, VW warranty quote, Volkswagen warranty UK, used VW warranty, VW Golf warranty, VW Tiguan warranty, VW Transporter warranty, VW van warranty, VW Caddy van warranty, VW Crafter van warranty, VW ID warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/"
         ogImage={`https://buyawarranty.co.uk${vwHero}`}
         ogImageAlt="Volkswagen Extended Warranty Cover from £19/month"
@@ -408,7 +408,7 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-8">
               <h2 className="text-3xl md:text-4xl font-black text-[#0F172A]">Volkswagen models we cover</h2>
-              <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most VW models and engine types, subject to eligibility.</p>
+              <p className="mt-2 text-slate-600 text-sm md:text-base">Cover available for most VW cars and vans — including Transporter, Caddy Van and Crafter — and all engine types, subject to eligibility.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {vwModels.map(m => (
