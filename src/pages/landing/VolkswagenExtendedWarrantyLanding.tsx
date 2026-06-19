@@ -7,12 +7,14 @@ import {
   Fuel, User, Globe, LifeBuoy, Home, ClipboardCheck, Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Helmet } from 'react-helmet-async';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { WebPageSchema } from '@/components/schema/WebPageSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { ProductSchema } from '@/components/schema/ProductSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
+import { ServiceSchema } from '@/components/schema/ServiceSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
