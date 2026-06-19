@@ -114,7 +114,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
-  const myTeam = currentAdminId ? agentTeamMap.get(currentAdminId) || null : null;
+  // If they aren't explicitly in lead_team_members, fall back to Red (the default live flow).
+  const myTeam = useMemo(() => {
+    if (!currentAdminId) return null;
+    const explicit = agentTeamMap.get(currentAdminId);
+    if (explicit) return explicit;
+    return allTeams.find(t => t.color === 'red') || null;
+  }, [currentAdminId, agentTeamMap, allTeams]);
   const isLockedToOwnTeam = userRole === 'sales_lead' && !!myTeam;
   useEffect(() => {
     if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
