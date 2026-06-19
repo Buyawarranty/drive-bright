@@ -133,9 +133,18 @@ export function buildAbandonedCartCsv(
     }
     return lines.join('\n');
   }
+  // Helper: UK-formatted date + time (e.g. "19/06/2026 20:34")
+  const formatAbandonedAt = (iso: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   if (platform === 'google') {
-    // Google Customer Match CSV format
-    const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Country', 'Zip'];
+    // Google Customer Match CSV format (+ trailing Abandoned At column for admin reference)
+    const header = ['Email', 'Phone', 'First Name', 'Last Name', 'Country', 'Zip', 'Abandoned At'];
     const rows = carts.map(c => {
       const { first, last } = splitName(c.full_name);
       const zip = c.cart_metadata?.address?.postcode || '';
@@ -147,12 +156,13 @@ export function buildAbandonedCartCsv(
         csvEscape(last),
         csvEscape('GB'),
         csvEscape(zip),
+        csvEscape(formatAbandonedAt(c.created_at)),
       ].join(',');
     });
     return [header.join(','), ...rows].join('\n');
   }
-  // Facebook Custom Audience CSV format
-  const header = ['email', 'phone', 'fn', 'ln', 'country', 'zip'];
+  // Facebook Custom Audience CSV format (+ trailing abandoned_at column for admin reference)
+  const header = ['email', 'phone', 'fn', 'ln', 'country', 'zip', 'abandoned_at'];
   const rows = carts.map(c => {
     const { first, last } = splitName(c.full_name);
     const zip = c.cart_metadata?.address?.postcode || '';
@@ -164,6 +174,7 @@ export function buildAbandonedCartCsv(
       csvEscape(last.toLowerCase()),
       csvEscape('gb'),
       csvEscape(zip.toLowerCase().replace(/\s+/g, '')),
+      csvEscape(formatAbandonedAt(c.created_at)),
     ].join(',');
   });
   return [header.join(','), ...rows].join('\n');
