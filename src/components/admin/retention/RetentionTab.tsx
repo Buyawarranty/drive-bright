@@ -576,7 +576,7 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
                   <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left p-2 w-[140px]">Agent</th>
-                      <th className="text-left p-2 w-[70px]">Src</th>
+                      {canSeeSource && <th className="text-left p-2 w-[70px]">Src</th>}
                       <th className="text-left p-2 w-[120px]">Status</th>
                       <th className="text-center p-2 w-[44px]">CB</th>
                       <th className="text-center p-2 w-[60px]">Calls</th>
