@@ -44,7 +44,6 @@ const ClickFraudTab = lazy(() => import('@/components/admin/ClickFraudTab').then
 
 const TestingTabContent = lazy(() => import('@/components/admin/TestingTabContent').then(m => ({ default: m.TestingTabContent })));
 const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
-const LeadsPerAgentTab = lazy(() => import('@/components/admin/leads/LeadsPerAgentTab').then(m => ({ default: m.LeadsPerAgentTab })));
 const GoldenLeadsTab = lazy(() => import('@/components/admin/leads/LeadRecoveryTab').then(m => ({ default: m.LeadRecoveryTab })));
 const RetentionTab = lazy(() => import('@/components/admin/retention/RetentionTab').then(m => ({ default: m.RetentionTab })));
 const SellingTipsSection = lazy(() => import('@/components/admin/SellingTipsSection').then(m => ({ default: m.SellingTipsSection })));
@@ -70,9 +69,9 @@ const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'sales_manager', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
-const SALES_TABS = ['new-leads', 'recontact-leads', 'leads-per-agent', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'leads-per-agent', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'leads-per-agent', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
+const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
@@ -182,6 +181,7 @@ const AdminDashboard = () => {
     'golden-leads': 'recontact-leads',
     'goldmine-leads': 'recontact-leads',
     'retention': 'renewals',
+    'leads-per-agent': 'new-leads',
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
@@ -513,8 +513,6 @@ const AdminDashboard = () => {
       case 'recontact-leads':
       case 'goldmine-leads':
         return <GoldenLeadsTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
-      case 'leads-per-agent':
-        return <LeadsPerAgentTab userRole={effectiveUserRole} currentUserId={session?.user?.id ?? null} />;
       case 'renewals':
         return <RetentionTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'selling-tips':

@@ -24,8 +24,9 @@ import { AgentsLeadsView } from './AgentsLeadsView';
 import { TeamsOverview } from './TeamsOverview';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
+import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3 } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
@@ -33,8 +34,6 @@ import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { TeamChangeNoticeDialog } from './TeamChangeNoticeDialog';
 import { TeamFilterChips } from './TeamFilterChips';
 import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
-import { useSearchParams } from 'react-router-dom';
-import { BarChart3 } from 'lucide-react';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -116,7 +115,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
-  const [, setSearchParams] = useSearchParams();
   const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager';
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
@@ -168,7 +166,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return 'leads';
   };
   
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview'>(getDefaultView());
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent'>(getDefaultView());
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
@@ -722,7 +720,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [freshLeads]);
 
   // Memoize tab change handler for instant switching
-  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view') => {
+  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent') => {
     setActiveView(view);
   }, []);
 
@@ -1082,19 +1080,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 ) : (
                   <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
                 )}
-                {canSeeLeadsPerAgent && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSearchParams({ tab: 'leads-per-agent' }, { replace: false })}
-                    title="Open the Leads per Agent dashboard (respects the selected team)"
-                    className="h-6 px-2 text-[10px] font-semibold gap-1 border-2"
-                  >
-                    <BarChart3 className="h-3 w-3" />
-                    Leads per Agent
-                  </Button>
-                )}
                 {isSuperAdmin && (
                   <Button
                     type="button"
@@ -1270,11 +1255,22 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <Button
                 variant={activeView === 'teams-overview' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => handleViewChange('teams-overview' as any)}
+                onClick={() => handleViewChange('teams-overview')}
                 className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
                 <Users className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">By Team</span>
+              </Button>
+            )}
+            {canSeeLeadsPerAgent && (
+              <Button
+                variant={activeView === 'leads-per-agent' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('leads-per-agent')}
+                className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Per Agent</span>
               </Button>
             )}
           </div>
@@ -1507,6 +1503,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           salesUsers={teamScopedSalesUsers}
           viewerRole={userRole}
         />
+      )}
+
+      {/* Leads per Agent — daily locked activity stats for management and sales managers */}
+      {canSeeLeadsPerAgent && activeView === 'leads-per-agent' && (
+        <LeadsPerAgentTab userRole={userRole} currentUserId={currentAdminId} />
       )}
     </div>
   );
