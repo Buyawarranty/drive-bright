@@ -784,9 +784,24 @@ const Index = () => {
       console.log('💳 Payment redirect return detected:', redirectStatus);
       
       if (redirectStatus === 'succeeded') {
-        // Payment successful! Redirect to thank-you
+        // Payment successful! Redirect to thank-you with vehicle + cover details
         console.log('✅ Redirect payment succeeded, navigating to thank-you');
-        navigate('/thank-you?source=stripe', { replace: true });
+        const tyParams = new URLSearchParams({ source: 'stripe' });
+        const pi = searchParams.get('payment_intent');
+        if (pi) tyParams.set('payment_intent', pi);
+        if (selectedPlan?.planName) tyParams.set('plan', selectedPlan.planName);
+        if (selectedPlan?.paymentType) {
+          tyParams.set('payment', selectedPlan.paymentType);
+          tyParams.set('duration', selectedPlan.paymentType);
+        }
+        if (vehicleData?.regNumber) tyParams.set('vehicle_reg', vehicleData.regNumber);
+        const vehStr = `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim();
+        if (vehStr) tyParams.set('vehicle', vehStr);
+        if (vehicleData?.mileage) tyParams.set('mileage', String(vehicleData.mileage));
+        if (selectedPlan?.claimLimit) tyParams.set('claim_limit', String(selectedPlan.claimLimit));
+        if (selectedPlan?.labourRate) tyParams.set('labour_rate', String(selectedPlan.labourRate));
+        if (selectedPlan?.voluntaryExcess !== undefined) tyParams.set('excess', String(selectedPlan.voluntaryExcess));
+        navigate(`/thank-you?${tyParams.toString()}`, { replace: true });
         return;
       } else if (redirectStatus === 'failed') {
         // Payment failed - show error and let them retry
