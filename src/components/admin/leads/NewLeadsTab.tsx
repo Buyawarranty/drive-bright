@@ -1321,8 +1321,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onRefresh={fetchLeads}
             onMigrate={migrateFromAbandonedCarts}
             onExport={handleExport}
-            onManageRouting={() => onNavigateToTab?.('lead-teams')}
-            canManageRouting={canManageRouting}
             leadCounts={leadCounts}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
