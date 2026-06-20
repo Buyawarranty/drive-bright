@@ -390,6 +390,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       // Blog writers see blog-writing and landing-pages tabs + Staff Hub
       return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages' || tab.id === 'staff-hub' || tab.id === 'account');
     }
+
+    if (userRole === 'lead_gen') {
+      const leadGenTabIds = new Set([
+        'new-leads', 'recontact-leads', 'get-quote', 'customers',
+        'abandoned-carts', 'marketing-audience', 'emails',
+        'analytics', 'page-analytics', 'google-ads',
+        'selling-tips', 'discount-codes', 'staff-hub', 'account'
+      ]);
+      if (userPermissions && Object.keys(userPermissions).length > 0) {
+        defaultTabs.forEach(tab => {
+          const permKey = `tab_${tab.id}`;
+          if (userPermissions[permKey] === true) leadGenTabIds.add(tab.id);
+          if (userPermissions[permKey] === false) leadGenTabIds.delete(tab.id);
+        });
+      }
+      return defaultTabs.filter(tab => leadGenTabIds.has(tab.id));
+    }
     
     if (userRole === 'sales_lead') {
       const salesLeadTabIds = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
