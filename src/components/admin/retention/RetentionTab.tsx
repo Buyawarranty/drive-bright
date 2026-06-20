@@ -410,18 +410,19 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     toast.success(newAuthId ? 'Reassigned' : 'Unassigned');
   }, []);
 
-  // Log an attempted call against the customer's email so the count tallies with the New Leads tab.
+  // Log an attempted call as a pinned customer note + bump the local Calls counter
+  // so the agent sees their action reflected immediately.
   const logCustomerCall = useCallback(async (row: PolicyRow) => {
     const email = (row.customers?.email || row.email || '').toLowerCase();
-    if (!email) { toast.error('No email on this customer — cannot log call'); return; }
-    const { error } = await (supabase.from('lead_call_logs') as any).insert({
-      called_email: email,
-      called_phone: row.customers?.phone || null,
-      called_by: currentUserId,
-      call_outcome: 'attempted',
+    if (!row.customer_id) { toast.error('No linked customer record'); return; }
+    const stamp = format(new Date(), 'd MMM yyyy HH:mm');
+    const { error } = await (supabase.from('customer_notes') as any).insert({
+      customer_id: row.customer_id,
+      note_text: `Renewal call attempt logged at ${stamp}`,
+      created_by: currentUserId,
     });
     if (error) { toast.error('Could not log call', { description: error.message }); return; }
-    setCallCountsByEmail((prev) => ({ ...prev, [email]: (prev[email] || 0) + 1 }));
+    if (email) setCallCountsByEmail((prev) => ({ ...prev, [email]: (prev[email] || 0) + 1 }));
   }, [currentUserId]);
 
   const saveCustomerNote = useCallback(async (row: PolicyRow) => {
@@ -430,13 +431,14 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     if (!row.customer_id) { toast.error('No linked customer record'); return; }
     const { error } = await (supabase.from('customer_notes') as any).insert({
       customer_id: row.customer_id,
-      note: text,
+      note_text: text,
       created_by: currentUserId,
     });
     if (error) { toast.error('Could not save note', { description: error.message }); return; }
     setNoteDraft((prev) => ({ ...prev, [row.id]: '' }));
     toast.success('Note saved');
   }, [noteDraft, currentUserId]);
+
 
   const srcBadge = (id: SegmentId) => {
     switch (id) {
