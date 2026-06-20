@@ -351,6 +351,50 @@ export const StaffHubTab: React.FC = () => {
                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls"
                   onChange={e => setFile(e.target.files?.[0] || null)} />
               </div>
+
+              {isSuperAdmin && (
+                <div className="space-y-3 rounded-md border-2 border-dashed border-muted-foreground/30 p-3">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold">Who can see this document?</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground -mt-1">
+                    Leave everything unticked to share with all admin staff. Super admins always have access.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Staff roles</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ASSIGNABLE_ROLES.map(r => (
+                        <label key={r.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={uploadRoles.includes(r.id)}
+                            onCheckedChange={() => setUploadRoles(arr => toggleInArray(arr, r.id))}
+                          />
+                          {r.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {teams.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Teams</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {teams.map(t => (
+                          <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <Checkbox
+                              checked={uploadTeamIds.includes(t.id)}
+                              onCheckedChange={() => setUploadTeamIds(arr => toggleInArray(arr, t.id))}
+                            />
+                            <span>{t.emoji} {t.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setUploadOpen(false)} disabled={uploading}>Cancel</Button>
