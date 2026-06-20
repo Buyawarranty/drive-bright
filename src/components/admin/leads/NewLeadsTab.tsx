@@ -1254,11 +1254,22 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <Button
                 variant={activeView === 'teams-overview' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => handleViewChange('teams-overview' as any)}
+                onClick={() => handleViewChange('teams-overview')}
                 className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
                 <Users className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">By Team</span>
+              </Button>
+            )}
+            {canSeeLeadsPerAgent && (
+              <Button
+                variant={activeView === 'leads-per-agent' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('leads-per-agent')}
+                className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Per Agent</span>
               </Button>
             )}
           </div>
