@@ -13,6 +13,9 @@ import { Lock, Radio, CalendarRange, RefreshCcw, Download, Users, Target, AlertT
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays, isToday } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
+import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
+import { cn } from '@/lib/utils';
 
 const MANAGEMENT_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
 
@@ -64,6 +67,14 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   const [rebuilding, setRebuilding] = useState(false);
   const [sortKey, setSortKey] = useState<keyof StatsRow>('leads_assigned');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  // Global team filter (shared with sidebar switcher + New Leads chips)
+  const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
+  const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+  const isInTeam = useCallback((agentId: string) => {
+    if (!teamFilter) return true;
+    return agentTeamMap.get(agentId)?.id === teamFilter;
+  }, [teamFilter, agentTeamMap]);
 
   // Date range derived from preset
   const { fromDate, toDate } = useMemo(() => {
@@ -177,7 +188,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   // Aggregate per agent across the range
   const perAgent = useMemo(() => {
     const grouped = new Map<string, StatsRow & { days: number; locked: boolean }>();
-    rows.forEach(r => {
+    rows.filter(r => isInTeam(r.agent_id)).forEach(r => {
       const existing = grouped.get(r.agent_id);
       if (!existing) {
         grouped.set(r.agent_id, { ...r, days: 1, locked: !!r.locked_at });
@@ -205,7 +216,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       return sortDir === 'desc' ? (vb as number) - (va as number) : (va as number) - (vb as number);
     });
     return list;
-  }, [rows, sortKey, sortDir]);
+  }, [rows, sortKey, sortDir, isInTeam]);
 
   const totals = useMemo(() => {
     return perAgent.reduce((acc, r) => ({
@@ -234,7 +245,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     const weekStartStr = fmtYMD(startOfWeek(today, { weekStartsOn: 1 }));
     const monthStartStr = fmtYMD(startOfMonth(today));
     const map = new Map<string, { day: number; week: number; month: number }>();
-    mtdRows.forEach(r => {
+    mtdRows.filter(r => isInTeam(r.agent_id)).forEach(r => {
       const cur = map.get(r.agent_id) || { day: 0, week: 0, month: 0 };
       const c = r.marked_converted || 0;
       if (r.stat_date >= monthStartStr) cur.month += c;
@@ -247,7 +258,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       { day: 0, week: 0, month: 0 }
     );
     return { map, totals };
-  }, [mtdRows]);
+  }, [mtdRows, isInTeam]);
 
   const getConv = (agentId: string) => convRollup.map.get(agentId) || { day: 0, week: 0, month: 0 };
 
@@ -345,6 +356,45 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
             )}
           </div>
         </div>
+
+        {/* Team colour filter (Red / Blue / Green) — management only */}
+        {isManagement && allTeams.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">
+              Team
+            </span>
+            <button
+              type="button"
+              onClick={() => setTeamFilter(null)}
+              className={cn(
+                'px-2.5 py-1 text-xs font-medium rounded-full border transition-colors',
+                teamFilter === null
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              All teams
+            </button>
+            {allTeams.map((t) => {
+              const c = TEAM_COLOR_CLASSES[t.color];
+              const active = teamFilter === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTeamFilter(active ? null : t.id)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border transition-colors',
+                    active ? c.pill : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                  )}
+                >
+                  <span className={cn('h-1.5 w-1.5 rounded-full', c.dot)} />
+                  {t.name.replace(/^Formula\s+/i, '')}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Range selector */}
         <Card className="border-2">

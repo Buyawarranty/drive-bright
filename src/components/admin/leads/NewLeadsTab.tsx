@@ -33,6 +33,8 @@ import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { TeamChangeNoticeDialog } from './TeamChangeNoticeDialog';
 import { TeamFilterChips } from './TeamFilterChips';
 import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
+import { useSearchParams } from 'react-router-dom';
+import { BarChart3 } from 'lucide-react';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -114,6 +116,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
+  const [, setSearchParams] = useSearchParams();
+  const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager';
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
   // Unassigned sales leads are not auto-placed into any team — they remain pending.
@@ -1077,6 +1081,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   </span>
                 ) : (
                   <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+                )}
+                {canSeeLeadsPerAgent && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearchParams({ tab: 'leads-per-agent' }, { replace: false })}
+                    title="Open the Leads per Agent dashboard (respects the selected team)"
+                    className="h-6 px-2 text-[10px] font-semibold gap-1 border-2"
+                  >
+                    <BarChart3 className="h-3 w-3" />
+                    Leads per Agent
+                  </Button>
                 )}
                 {isSuperAdmin && (
                   <Button
