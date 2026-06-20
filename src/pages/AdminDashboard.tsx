@@ -181,6 +181,7 @@ const AdminDashboard = () => {
     'golden-leads': 'recontact-leads',
     'goldmine-leads': 'recontact-leads',
     'retention': 'renewals',
+    'leads-per-agent': 'new-leads',
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
