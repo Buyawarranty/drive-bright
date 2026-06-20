@@ -383,9 +383,21 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
                   <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                 </span>
               </div>
-              <p className="text-2xl sm:text-[28px] font-extrabold text-gray-900 tracking-wide leading-tight">
+              <p className="text-2xl sm:text-[28px] font-extrabold text-gray-900 tracking-wide leading-tight select-all">
                 {CODE}
               </p>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F5D3A] hover:text-[#16492d] transition-colors focus:outline-none"
+              >
+                {copied ? (
+                  <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" strokeWidth={2} />
+                )}
+                {copied ? 'Copied!' : 'Copy code'}
+              </button>
             </div>
             <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#E6F4EC] flex items-center justify-center">
               <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1F5D3A]" strokeWidth={2} />
