@@ -330,6 +330,17 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResult = await emailResponse.json();
     console.log("✅ Step 4 instant email sent successfully:", emailResult);
 
+    await logCustomerEmail({
+      recipient_email: emailRequest.email,
+      recipient_name: emailRequest.firstName,
+      subject: subject,
+      template_name: 'step4_instant',
+      source_function: 'send-step4-instant-email',
+      status: 'sent',
+      registration_plate: emailRequest.vehicleReg,
+      metadata: { email_id: emailResult.id, is_reminder: isReminderEmail, plan_name: emailRequest.planName }
+    });
+
     // Log the sent email to prevent duplicates
     const { error: logError } = await supabase
       .from('triggered_emails_log')

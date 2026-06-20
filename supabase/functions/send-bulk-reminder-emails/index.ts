@@ -152,6 +152,18 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         console.log(`✅ Email sent successfully to ${customer.email}`);
+
+        await logCustomerEmail({
+          recipient_email: customer.email,
+          recipient_name: customer.full_name,
+          subject: "Your car's warranty is almost ready – just one more step!",
+          template_name: 'bulk_reminder',
+          source_function: 'send-bulk-reminder-emails',
+          status: 'sent',
+          registration_plate: customer.vehicle_reg,
+          metadata: { step_abandoned: customer.step_abandoned }
+        });
+
         return { success: true, email: customer.email, data };
       } catch (error) {
         console.error(`❌ Exception sending email to ${customer.email}:`, error);

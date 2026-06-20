@@ -65,6 +65,15 @@ serve(async (req: Request) => {
     const emailResult = await emailResponse.json();
     console.log("Email send result:", emailResult);
 
+    await logCustomerEmail({
+      recipient_email: to,
+      subject: subject,
+      template_name: 'claim_communication',
+      source_function: 'send-claim-email',
+      status: 'sent',
+      metadata: { claim_id: claimId, message_id: emailResult.id }
+    });
+
     if (!emailResponse.ok) {
       throw new Error(`Failed to send email: ${emailResult.message || 'Unknown error'}`);
     }

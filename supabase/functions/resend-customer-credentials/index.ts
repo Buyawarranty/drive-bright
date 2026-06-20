@@ -198,6 +198,19 @@ serve(async (req) => {
     const emailResult = await emailResponse.json();
     logStep("Login credentials email sent successfully", { emailId: emailResult.id });
 
+    await logCustomerEmail({
+      recipient_email: email,
+      recipient_name: customer.first_name || customer.name,
+      subject: 'Your Customer Dashboard Login Details',
+      template_name: 'customer_credentials_resend',
+      source_function: 'resend-customer-credentials',
+      status: 'sent',
+      customer_id: customer.id,
+      registration_plate: customer.registration_plate,
+      policy_number: policy?.warranty_number,
+      metadata: { email_id: emailResult.id }
+    });
+
     return new Response(
       JSON.stringify({
         success: true,

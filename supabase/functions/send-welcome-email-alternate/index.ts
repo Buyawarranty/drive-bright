@@ -251,7 +251,20 @@ serve(async (req) => {
     const emailResult = await emailResponse.json();
     logStep("Email sent successfully", { emailId: emailResult.id, to: alternateEmail });
 
-    return new Response(JSON.stringify({ 
+    await logCustomerEmail({
+      recipient_email: alternateEmail,
+      recipient_name: displayName,
+      subject: `Your Warranty Confirmation - ${policy.policy_number}`,
+      template_name: 'welcome_alternate',
+      source_function: 'send-welcome-email-alternate',
+      status: 'sent',
+      customer_id: customer?.id,
+      policy_number: policy.policy_number,
+      registration_plate: customer?.registration_plate,
+      metadata: { email_id: emailResult.id, original_email: customer?.email }
+    });
+
+    return new Response(JSON.stringify({
       success: true, 
       emailId: emailResult.id,
       sentTo: alternateEmail 

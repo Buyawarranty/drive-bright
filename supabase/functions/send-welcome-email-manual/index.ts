@@ -853,6 +853,20 @@ const handler = async (req: Request): Promise<Response> => {
       })
       .eq('id', policy.id);
 
+    // Log in unified customer email log
+    await logCustomerEmail({
+      recipient_email: customer.email,
+      recipient_name: customerName,
+      subject: emailPayload.subject,
+      template_name: 'welcome_manual',
+      source_function: 'send-welcome-email-manual',
+      status: 'sent',
+      customer_id: customer.id,
+      policy_number: policy.warranty_number,
+      registration_plate: customer.registration_plate || customerDetails?.registration_plate,
+      metadata: { resend_id: responseData.id, attachments_count: attachments.length, rid }
+    });
+
     // Log the event
     await supabase.rpc('log_warranty_event', {
       p_policy_id: policy.id,

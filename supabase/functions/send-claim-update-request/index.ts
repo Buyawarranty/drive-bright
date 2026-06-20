@@ -163,8 +163,28 @@ serve(async (req: Request) => {
 
     if (!emailResponse.ok) {
       console.error("Email failed:", emailResult);
+      await logCustomerEmail({
+        recipient_email: recipientEmail,
+        subject: `Urgent claims update: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
+        template_name: 'claim_update_request',
+        source_function: 'send-claim-update-request',
+        status: 'failed',
+        error_message: emailResult.message,
+        registration_plate: firstRegPlate,
+        metadata: { claim_ids: claimIds, request_count: insertedRequests.length }
+      });
       throw new Error(`Email failed: ${emailResult.message}`);
     }
+
+    await logCustomerEmail({
+      recipient_email: recipientEmail,
+      subject: `Urgent claims update: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
+      template_name: 'claim_update_request',
+      source_function: 'send-claim-update-request',
+      status: 'sent',
+      registration_plate: firstRegPlate,
+      metadata: { claim_ids: claimIds, request_count: insertedRequests.length, message_id: emailResult.id }
+    });
 
     return new Response(
       JSON.stringify({ success: true, requestCount: insertedRequests!.length }),
