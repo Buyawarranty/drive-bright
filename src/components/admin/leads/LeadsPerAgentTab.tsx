@@ -227,7 +227,30 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     });
   }, [perAgent]);
 
-  const rebuildDay = async (dateStr: string) => {
+  // Converted Today / Week / Month rollup (independent of selected date range)
+  const convRollup = useMemo(() => {
+    const today = new Date();
+    const todayStr = fmtYMD(today);
+    const weekStartStr = fmtYMD(startOfWeek(today, { weekStartsOn: 1 }));
+    const monthStartStr = fmtYMD(startOfMonth(today));
+    const map = new Map<string, { day: number; week: number; month: number }>();
+    mtdRows.forEach(r => {
+      const cur = map.get(r.agent_id) || { day: 0, week: 0, month: 0 };
+      const c = r.marked_converted || 0;
+      if (r.stat_date >= monthStartStr) cur.month += c;
+      if (r.stat_date >= weekStartStr) cur.week += c;
+      if (r.stat_date === todayStr) cur.day += c;
+      map.set(r.agent_id, cur);
+    });
+    const totals = Array.from(map.values()).reduce(
+      (a, v) => ({ day: a.day + v.day, week: a.week + v.week, month: a.month + v.month }),
+      { day: 0, week: 0, month: 0 }
+    );
+    return { map, totals };
+  }, [mtdRows]);
+
+  const getConv = (agentId: string) => convRollup.map.get(agentId) || { day: 0, week: 0, month: 0 };
+
     if (!isManagement) return;
     setRebuilding(true);
     try {
