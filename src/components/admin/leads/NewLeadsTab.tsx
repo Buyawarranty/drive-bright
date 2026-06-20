@@ -165,7 +165,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return 'leads';
   };
   
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview'>(getDefaultView());
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent'>(getDefaultView());
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
