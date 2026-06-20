@@ -10,10 +10,13 @@ import {
 } from '@/components/ui/select';
 import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
-  Send, Eye, MousePointerClick, UserCheck, Play, Network,
+  Send, UserCheck, Play, Network, StickyNote, UserCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+
 
 interface CampaignTouch {
   policy_id: string;
