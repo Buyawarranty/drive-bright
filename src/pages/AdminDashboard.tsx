@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import { useAdminBackNavigation } from '@/hooks/useAdminBackNavigation';
 import { useUserPresence } from '@/hooks/useUserPresence';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
