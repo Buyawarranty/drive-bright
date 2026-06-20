@@ -2499,11 +2499,12 @@ export const CustomersTab = ({
     }
   };
 
-  const sendCredentialsEmail = async (customerEmail: string) => {
+  const sendCredentialsEmail = async (customerEmail: string, mode: 'normal' | 'apology' = 'normal') => {
     try {
-      setSendingCredentials(true);
+      setSendingCredentials(mode === 'normal');
+      setSendingApology(mode === 'apology');
       const { data, error } = await supabase.functions.invoke('resend-customer-credentials', {
-        body: { email: customerEmail }
+        body: { email: customerEmail, mode }
       });
       
       if (error) {
@@ -2511,12 +2512,21 @@ export const CustomersTab = ({
         return;
       }
       
-      toast.success('Login credentials sent successfully to ' + customerEmail);
-    } catch (error) {
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to send credentials');
+      }
+      
+      if (mode === 'apology') {
+        toast.success('Apology login details sent successfully to ' + customerEmail);
+      } else {
+        toast.success('Login credentials sent successfully to ' + customerEmail);
+      }
+    } catch (error: any) {
       console.error('Error sending credentials:', error);
-      toast.error('Failed to send credentials email');
+      toast.error(error.message || 'Failed to send credentials email');
     } finally {
       setSendingCredentials(false);
+      setSendingApology(false);
     }
   };
 
