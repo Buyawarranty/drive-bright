@@ -94,6 +94,15 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     logStep('Email sent successfully', emailResponse);
+    await logCustomerEmail({
+      recipient_email: email,
+      subject: `Your £${discountAmount} Discount Code - ${discountCode}`,
+      template_name: 'discount_code',
+      source_function: 'send-discount-email',
+      status: (emailResponse as any)?.error ? 'failed' : 'sent',
+      error_message: (emailResponse as any)?.error ? String((emailResponse as any).error?.message || (emailResponse as any).error) : null,
+      metadata: { discount_code: discountCode, discount_amount: discountAmount, resend_message_id: (emailResponse as any)?.data?.id },
+    });
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
