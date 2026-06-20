@@ -60,6 +60,7 @@ interface PolicyRow {
   policy_number: string | null;
   warranty_number: string | null;
   plan_type: string | null;
+  payment_type: string | null;
   status: string | null;
   policy_start_date: string | null;
   policy_end_date: string | null;
@@ -85,8 +86,27 @@ interface PolicyRow {
     vehicle_make: string | null;
     vehicle_model: string | null;
     status: string | null;
+    assigned_to: string | null;
   } | null;
 }
+
+type Agent = {
+  id: string;
+  user_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  role: string | null;
+};
+
+const UNASSIGNED = '__unassigned__';
+
+function agentLabel(a: Agent | undefined): string {
+  if (!a) return 'Unassigned';
+  const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
+  return name || a.email || 'Agent';
+}
+
 
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
