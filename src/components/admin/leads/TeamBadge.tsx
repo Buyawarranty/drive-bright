@@ -36,7 +36,7 @@ export function TeamBadge({ userId, variant = 'dot', className }: TeamBadgeProps
   }
   return (
     <span
-      className={cn('inline-block h-2 w-2 rounded-full ring-2 ring-offset-1', c.dot, c.ring, className)}
+      className={cn('inline-block h-2 w-2 rounded-full opacity-50', c.dot, className)}
       title={`Team: ${team.name}`}
       aria-label={`Team ${team.name}`}
     />
