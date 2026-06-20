@@ -242,15 +242,27 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
   const upsertRule = async (teamId: string, source: string, patch: Partial<SourceRule>) => {
     const existing = rules.find(r => r.team_id === teamId && r.source === source);
-    const nextPercentage =
+    // Determine the new allowed state: explicit patch wins, otherwise keep existing.
+    const nextAllowed =
+      patch.allowed !== undefined
+        ? patch.allowed
+        : patch.percentage !== undefined
+          ? (patch.percentage ?? 0) > 0
+          : existing?.allowed ?? false;
+    // Determine the new percentage: explicit patch wins; otherwise keep existing,
+    // defaulting to 100 the first time a source is switched on.
+    const rawPct =
       patch.percentage !== undefined
-        ? Math.max(0, Math.min(100, Math.round(patch.percentage ?? 0)))
-        : existing?.percentage ?? (existing?.allowed ? 100 : 0);
+        ? patch.percentage ?? 0
+        : nextAllowed
+          ? (existing?.percentage && existing.percentage > 0 ? existing.percentage : 100)
+          : existing?.percentage ?? 0;
+    const nextPercentage = Math.max(0, Math.min(100, Math.round(rawPct)));
     const payload: any = {
       team_id: teamId,
       source,
       percentage: nextPercentage,
-      allowed: nextPercentage > 0,
+      allowed: nextAllowed,
       conversion_threshold_pct: patch.conversion_threshold_pct ?? existing?.conversion_threshold_pct ?? null,
       priority: patch.priority ?? existing?.priority ?? 0,
       notes: patch.notes ?? existing?.notes ?? null,
