@@ -114,7 +114,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
-  const [, setSearchParams] = useSearchParams();
   const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager';
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
