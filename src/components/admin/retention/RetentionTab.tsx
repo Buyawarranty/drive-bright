@@ -134,6 +134,7 @@ function upsellPotential(p: PolicyRow): string[] {
 }
 
 export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
+  const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
   const [segment, setSegment] = useState<SegmentId>('due_soon');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
