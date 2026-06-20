@@ -300,7 +300,12 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
       const others = prev.filter(r => r.team_id !== teamId);
       return [...others, ...((data || []) as SourceRule[])];
     });
-    toast({ title: allowed ? 'All sources allowed' : 'All sources blocked' });
+    toast({
+      title: allowed ? 'Every lead source turned ON for this team' : 'Every lead source turned OFF for this team',
+      description: allowed
+        ? 'Google Ads, Facebook, Instagram, TikTok, YouTube, Organic, Direct, Referral and Unknown will all feed this team (once the master switch above is ON).'
+        : 'No sources will feed this team. Leads fall back to the live Team Red flow.',
+    });
   };
 
   const addMember = async (teamId: string, adminUserId: string) => {
