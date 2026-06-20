@@ -625,88 +625,39 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <div className="border rounded-lg overflow-hidden bg-card">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+                  <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <tr>
-                      <th className="text-left p-3">Lead</th>
-                      <th className="text-left p-3">Contact</th>
-                      <th className="text-left p-3">Vehicle</th>
-                      <th className="text-left p-3">Cart / Quote</th>
-                      <th className="text-left p-3">Source</th>
-                      <th className="text-left p-3">Age</th>
-                      <th className="text-left p-3">Last touched</th>
-                      <th className="text-left p-3">Calls</th>
-                      <th className="text-left p-3 min-w-[200px]">Quick note</th>
-                      <th className="text-left p-3">Assigned</th>
-                      <th className="text-left p-3">Last worked</th>
-                      <th className="text-right p-3 min-w-[260px]">Actions</th>
+                      <th className="text-left p-2 w-[140px]">Agent</th>
+                      <th className="text-left p-2 w-[60px]">Src</th>
+                      <th className="text-left p-2 w-[110px]">Status</th>
+                      <th className="text-center p-2 w-[44px]">CB</th>
+                      <th className="text-center p-2 w-[80px]">Calls</th>
+                      <th className="text-left p-2 w-[260px]">Actions</th>
+                      <th className="text-left p-2 w-[140px]">Name</th>
+                      <th className="text-left p-2 w-[130px]">Phone</th>
+                      <th className="text-left p-2 w-[180px]">Email</th>
+                      <th className="text-left p-2 w-[90px]">Reg</th>
+                      <th className="text-left p-2 w-[100px]">Payment</th>
+                      <th className="text-left p-2 w-[110px]">Paid Date</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {filteredLeads.map((lead) => {
-                      const ageDays = daysSince(lead.created_at);
-                      const lastTouchedDays = daysSince(lead.last_contacted_at);
-                      const lastWorked = (lead as any).recovery_worked_at as string | null;
                       const assignedAgent = lead.assigned_to ? agentByAuthId.get(lead.assigned_to) : undefined;
                       const mayReassign = canReassign(lead);
+                      const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—';
+                      const paidDate = (lead as any).payment_date || (lead as any).step_two_completed_at;
                       return (
-                        <tr key={lead.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setSelected(lead)}>
-                          <td className="p-3">
-                            <div className="font-medium">
-                              {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—'}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {lead.status} · {lead.call_count || 0} calls
-                            </div>
-                          </td>
-                          <td className="p-3 text-xs">
-                            {lead.phone && (
-                              <div className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</div>
-                            )}
-                            {lead.email && (
-                              <div className="flex items-center gap-1 text-muted-foreground"><Mail className="h-3 w-3" />{lead.email}</div>
-                            )}
-                          </td>
-                          <td className="p-3 text-xs">
-                            <div>{[lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
-                            <div className="text-muted-foreground">{lead.vehicle_reg || ''} {lead.vehicle_year ? `· ${lead.vehicle_year}` : ''}</div>
-                          </td>
-                          <td className="p-3 text-xs">
-                            {lead.cart_value != null && (
-                              <div className="font-medium">£{Number(lead.cart_value).toFixed(0)}</div>
-                            )}
-                            {lead.quote_amount != null && (
-                              <div className="text-muted-foreground">Quote £{Number(lead.quote_amount).toFixed(0)}</div>
-                            )}
-                            {lead.plan_interest && (
-                              <Badge variant="outline" className="text-[10px] mt-1">{lead.plan_interest}</Badge>
-                            )}
-                            {!lead.cart_value && !lead.quote_amount && !lead.plan_interest && (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </td>
-                          <td className="p-3 text-xs">{lead.lead_source || '—'}</td>
-                          <td className="p-3">{ageBadge(ageDays)}</td>
-                          <td className="p-3">{ageBadge(lastTouchedDays)}</td>
-                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                            <CallCountCell
-                              lead={lead}
-                              onUpdateCallCount={(inc) => updateCallCount(lead.id, inc)}
-                              onUpdateStatus={(s) => updateLeadStatus(lead.id, s)}
-                              onScheduleFollowUp={(t, d) => scheduleFollowUp(lead.id, t, d)}
-                              onLogActivity={(t, d) => logActivity(lead.id, t, d)}
-                            />
-                          </td>
-                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                            <InlineQuickNote leadId={lead.id} />
-                          </td>
-                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        <tr key={lead.id} className="border-t hover:bg-muted/30 cursor-pointer align-top" onClick={() => setSelected(lead)}>
+                          {/* Agent */}
+                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
                             {mayReassign ? (
                               <Select
                                 value={lead.assigned_to ?? UNASSIGNED}
                                 onValueChange={(v) => reassign(lead, v === UNASSIGNED ? null : v)}
                               >
-                                <SelectTrigger className="h-8 w-[160px]">
+                                <SelectTrigger className="h-7 w-[130px] text-xs">
                                   <SelectValue placeholder="Assign…" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -727,17 +678,63 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                               </div>
                             )}
                           </td>
-                          <td className="p-3 text-xs text-muted-foreground">
-                            {lastWorked ? formatDistanceToNow(new Date(lastWorked), { addSuffix: true }) : 'Never'}
-                            {(lead as any).recovery_outcome && (
-                              <div className="text-[10px] capitalize">{((lead as any).recovery_outcome as string).replace(/_/g, ' ')}</div>
-                            )}
+
+                          {/* Src */}
+                          <td className="p-2">
+                            {lead.lead_source ? (
+                              <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
+                            ) : <span className="text-muted-foreground text-xs">—</span>}
                           </td>
-                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-2">
-                              <RemindMePopover leadId={lead.id} compact />
+
+                          {/* Status */}
+                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
+                            <Select
+                              value={lead.status ?? ''}
+                              onValueChange={(v) => updateLeadStatus(lead.id, v as LeadStatus)}
+                            >
+                              <SelectTrigger className="h-7 w-[100px] text-xs">
+                                <SelectValue placeholder="—" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {['new','contacted','interested','quote_sent','negotiating','follow_up','lost','converted'].map((s) => (
+                                  <SelectItem key={s} value={s}>{s.replace(/_/g,' ')}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </td>
+
+                          {/* CB (callback popover) */}
+                          <td className="p-2 text-center" onClick={(e) => e.stopPropagation()}>
+                            <RemindMePopover leadId={lead.id} compact />
+                          </td>
+
+                          {/* Calls */}
+                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
+                            <CallCountCell
+                              lead={lead}
+                              onUpdateCallCount={(inc) => updateCallCount(lead.id, inc)}
+                              onUpdateStatus={(s) => updateLeadStatus(lead.id, s)}
+                              onScheduleFollowUp={(t, d) => scheduleFollowUp(lead.id, t, d)}
+                              onLogActivity={(t, d) => logActivity(lead.id, t, d)}
+                            />
+                          </td>
+
+                          {/* Actions */}
+                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-1">
+                              {lead.phone && (
+                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Call">
+                                  <a href={`tel:${lead.phone}`}><Phone className="h-3 w-3" /></a>
+                                </Button>
+                              )}
+                              {lead.email && (
+                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Email">
+                                  <a href={`mailto:${lead.email}`}><Mail className="h-3 w-3" /></a>
+                                </Button>
+                              )}
+                              <InlineQuickNote leadId={lead.id} />
                               <Select onValueChange={(v) => markWorked(lead, v)}>
-                                <SelectTrigger className="h-8 w-[140px]">
+                                <SelectTrigger className="h-7 w-[110px] text-xs">
                                   <SelectValue placeholder="Outcome…" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -746,13 +743,40 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <Button size="sm" variant="outline" onClick={() => markWorked(lead)}>
-                                Worked
-                              </Button>
                             </div>
                           </td>
-                        </tr>
 
+                          {/* Name */}
+                          <td className="p-2">
+                            <div className="font-medium text-sm leading-tight">{fullName}</div>
+                            {(lead as any).recovery_outcome && (
+                              <div className="text-[10px] capitalize text-muted-foreground">{((lead as any).recovery_outcome as string).replace(/_/g, ' ')}</div>
+                            )}
+                          </td>
+
+                          {/* Phone */}
+                          <td className="p-2 text-xs">{lead.phone || '—'}</td>
+
+                          {/* Email */}
+                          <td className="p-2 text-xs truncate max-w-[180px]" title={lead.email || ''}>{lead.email || '—'}</td>
+
+                          {/* Reg */}
+                          <td className="p-2 text-xs uppercase">{lead.vehicle_reg || '—'}</td>
+
+                          {/* Payment */}
+                          <td className="p-2 text-xs">
+                            {(lead as any).payment_method ? (
+                              <Badge variant="outline" className="text-[10px]">{(lead as any).payment_method}</Badge>
+                            ) : lead.is_paid ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-200 text-[10px]">Paid</Badge>
+                            ) : <span className="text-muted-foreground">—</span>}
+                          </td>
+
+                          {/* Paid Date */}
+                          <td className="p-2 text-xs text-muted-foreground">
+                            {paidDate ? format(new Date(paidDate), 'd MMM yy') : '—'}
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
@@ -762,6 +786,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           )}
         </TabsContent>
       </Tabs>
+
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">

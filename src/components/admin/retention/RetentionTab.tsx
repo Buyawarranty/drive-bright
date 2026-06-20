@@ -10,10 +10,13 @@ import {
 } from '@/components/ui/select';
 import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
-  Send, Eye, MousePointerClick, UserCheck, Play, Network,
+  Send, UserCheck, Play, Network, StickyNote, UserCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+
 
 interface CampaignTouch {
   policy_id: string;
@@ -57,6 +60,7 @@ interface PolicyRow {
   policy_number: string | null;
   warranty_number: string | null;
   plan_type: string | null;
+  payment_type: string | null;
   status: string | null;
   policy_start_date: string | null;
   policy_end_date: string | null;
@@ -82,8 +86,27 @@ interface PolicyRow {
     vehicle_make: string | null;
     vehicle_model: string | null;
     status: string | null;
+    assigned_to: string | null;
   } | null;
 }
+
+type Agent = {
+  id: string;
+  user_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  role: string | null;
+};
+
+const UNASSIGNED = '__unassigned__';
+
+function agentLabel(a: Agent | undefined): string {
+  if (!a) return 'Unassigned';
+  const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
+  return name || a.email || 'Agent';
+}
+
 
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
@@ -122,10 +145,47 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
   const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
   const [touches, setTouches] = useState<Record<string, CampaignTouch[]>>({});
   const [runningCron, setRunningCron] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
+  const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
   }, []);
+
+  // Agents: prefer those flagged with the Renewals workstream; fallback to all sales-side roles.
+  useEffect(() => {
+    (async () => {
+      const [{ data: au }, { data: ws }] = await Promise.all([
+        (supabase.from('admin_users') as any)
+          .select('id, user_id, first_name, last_name, email, role, is_active')
+          .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+          .eq('is_active', true)
+          .order('first_name'),
+        (supabase.from('lead_team_members') as any)
+          .select('admin_user_id, workstream_renewals'),
+      ]);
+      const renewSet = new Set<string>(
+        ((ws as any[]) || [])
+          .filter((r: any) => r.workstream_renewals === true)
+          .map((r: any) => r.admin_user_id)
+      );
+      const all = (au as Agent[]) || [];
+      const hasAnyFlagged = renewSet.size > 0;
+      const filtered = all.filter(a => {
+        if (a.role === 'admin' || a.role === 'super_admin') return true;
+        if (!hasAnyFlagged) return true;
+        return renewSet.has(a.id);
+      });
+      setAgents(filtered);
+    })();
+  }, []);
+
+  const agentByAuthId = useMemo(() => {
+    const m = new Map<string, Agent>();
+    for (const a of agents) if (a.user_id) m.set(a.user_id, a);
+    return m;
+  }, [agents]);
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = new Date();
@@ -151,11 +211,12 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
   }, []);
 
   const baseSelect =
-    'id, customer_id, policy_number, warranty_number, plan_type, status, ' +
+    'id, customer_id, policy_number, warranty_number, plan_type, payment_type, status, ' +
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
-    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status )';
+    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to )';
+
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
@@ -262,12 +323,34 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     }
   }, []);
 
+  // Show how many call attempts have been made against this customer across all
+  // sales_leads that share their email — gives renewal agents the same call-count
+  // signal they see on the New Leads tab.
+  const fetchCallCounts = useCallback(async (emails: string[]) => {
+    const clean = Array.from(new Set(emails.filter(Boolean).map((e) => e.toLowerCase())));
+    if (clean.length === 0) { setCallCountsByEmail({}); return; }
+    const { data } = await (supabase.from('sales_leads') as any)
+      .select('email, call_count')
+      .in('email', clean)
+      .limit(5000);
+    const map: Record<string, number> = {};
+    ((data as any[]) || []).forEach((r) => {
+      const k = (r.email || '').toLowerCase();
+      if (!k) return;
+      map[k] = (map[k] || 0) + (Number(r.call_count) || 0);
+    });
+    setCallCountsByEmail(map);
+  }, []);
+
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
   useEffect(() => { fetchTotals(); }, [fetchTotals]);
   useEffect(() => { fetchTouches(rows.map((r) => r.id)); }, [rows, fetchTouches]);
-
+  useEffect(() => {
+    fetchCallCounts(rows.map((r) => (r.customers?.email || r.email || '')));
+  }, [rows, fetchCallCounts]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
@@ -309,6 +392,64 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     },
     []
   );
+
+  const reassignCustomer = useCallback(async (row: PolicyRow, newAuthId: string | null) => {
+    if (!row.customer_id) {
+      toast.error('No linked customer record to assign');
+      return;
+    }
+    const { error } = await (supabase.from('customers') as any)
+      .update({ assigned_to: newAuthId })
+      .eq('id', row.customer_id);
+    if (error) { toast.error('Could not reassign', { description: error.message }); return; }
+    setRows((prev) => prev.map((r) =>
+      r.id === row.id && r.customers
+        ? { ...r, customers: { ...r.customers, assigned_to: newAuthId } }
+        : r
+    ));
+    toast.success(newAuthId ? 'Reassigned' : 'Unassigned');
+  }, []);
+
+  // Log an attempted call as a pinned customer note + bump the local Calls counter
+  // so the agent sees their action reflected immediately.
+  const logCustomerCall = useCallback(async (row: PolicyRow) => {
+    const email = (row.customers?.email || row.email || '').toLowerCase();
+    if (!row.customer_id) { toast.error('No linked customer record'); return; }
+    const stamp = format(new Date(), 'd MMM yyyy HH:mm');
+    const { error } = await (supabase.from('customer_notes') as any).insert({
+      customer_id: row.customer_id,
+      note_text: `Renewal call attempt logged at ${stamp}`,
+      created_by: currentUserId,
+    });
+    if (error) { toast.error('Could not log call', { description: error.message }); return; }
+    if (email) setCallCountsByEmail((prev) => ({ ...prev, [email]: (prev[email] || 0) + 1 }));
+  }, [currentUserId]);
+
+  const saveCustomerNote = useCallback(async (row: PolicyRow) => {
+    const text = (noteDraft[row.id] || '').trim();
+    if (!text) return;
+    if (!row.customer_id) { toast.error('No linked customer record'); return; }
+    const { error } = await (supabase.from('customer_notes') as any).insert({
+      customer_id: row.customer_id,
+      note_text: text,
+      created_by: currentUserId,
+    });
+    if (error) { toast.error('Could not save note', { description: error.message }); return; }
+    setNoteDraft((prev) => ({ ...prev, [row.id]: '' }));
+    toast.success('Note saved');
+  }, [noteDraft, currentUserId]);
+
+
+  const srcBadge = (id: SegmentId) => {
+    switch (id) {
+      case 'due_soon':       return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]">Due</Badge>;
+      case 'renewal_window': return <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-[10px]">Renewal</Badge>;
+      case 'upsell':         return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Upsell</Badge>;
+      case 'lapsed':         return <Badge className="bg-red-100 text-red-800 border-red-200 text-[10px]">Lapsed</Badge>;
+      default:               return <Badge variant="outline" className="text-[10px]">—</Badge>;
+    }
+  };
+
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
@@ -431,129 +572,173 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
             <div className="border rounded-lg overflow-hidden bg-card">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+                  <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <tr>
-                      <th className="text-left p-3">Customer</th>
-                      <th className="text-left p-3">Contact</th>
-                      <th className="text-left p-3">Vehicle</th>
-                      <th className="text-left p-3">Plan</th>
-                      <th className="text-left p-3">Expiry</th>
-                      <th className="text-left p-3">Upsell ideas</th>
-                      <th className="text-left p-3">Campaign</th>
-                      <th className="text-left p-3">Last worked</th>
-                      <th className="text-right p-3">Actions</th>
+                      <th className="text-left p-2 w-[140px]">Agent</th>
+                      <th className="text-left p-2 w-[70px]">Src</th>
+                      <th className="text-left p-2 w-[120px]">Status</th>
+                      <th className="text-center p-2 w-[44px]">CB</th>
+                      <th className="text-center p-2 w-[60px]">Calls</th>
+                      <th className="text-left p-2 w-[260px]">Actions</th>
+                      <th className="text-left p-2 w-[140px]">Name</th>
+                      <th className="text-left p-2 w-[130px]">Phone</th>
+                      <th className="text-left p-2 w-[180px]">Email</th>
+                      <th className="text-left p-2 w-[90px]">Reg</th>
+                      <th className="text-left p-2 w-[100px]">Payment</th>
+                      <th className="text-left p-2 w-[110px]">Paid Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((r) => {
-                      const days = daysUntil(r.policy_end_date);
-                      const upsell = upsellPotential(r);
                       const name =
                         [r.customers?.first_name, r.customers?.last_name].filter(Boolean).join(' ') ||
                         r.customers?.name ||
                         r.customer_full_name ||
                         '—';
+                      const email = (r.customers?.email || r.email || '').toLowerCase();
+                      const phone = r.customers?.phone || '';
+                      const callCount = email ? (callCountsByEmail[email] || 0) : 0;
+                      const assignedAuthId = r.customers?.assigned_to ?? null;
+                      const assignedAgent = assignedAuthId ? agentByAuthId.get(assignedAuthId) : undefined;
+                      const paidDate = r.policy_start_date;
                       return (
-                        <tr key={r.id} className="border-t hover:bg-muted/30">
-                          <td className="p-3">
-                            <div className="font-medium">{name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {r.policy_number || r.warranty_number || '—'}
-                            </div>
-                          </td>
-                          <td className="p-3 text-xs">
-                            {r.customers?.phone && (
-                              <div className="flex items-center gap-1"><Phone className="h-3 w-3" />{r.customers.phone}</div>
-                            )}
-                            {(r.customers?.email || r.email) && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Mail className="h-3 w-3" />{r.customers?.email || r.email}
-                              </div>
-                            )}
-                          </td>
-                          <td className="p-3 text-xs">
-                            <div>{[r.customers?.vehicle_make, r.customers?.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
-                            <div className="text-muted-foreground">{r.customers?.registration_plate || ''}</div>
-                          </td>
-                          <td className="p-3 text-xs">
-                            <div>{r.plan_type || '—'}</div>
-                            <div className="text-muted-foreground">£{r.claim_limit ?? '—'} claim</div>
-                          </td>
-                          <td className="p-3">
-                            <div>{expiryBadge(days)}</div>
-                            {r.policy_end_date && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {format(new Date(r.policy_end_date), 'd MMM yyyy')}
-                              </div>
-                            )}
-                          </td>
-                          <td className="p-3 text-xs">
-                            {upsell.length === 0 ? (
-                              <span className="text-muted-foreground">Fully loaded</span>
-                            ) : (
-                              <div className="flex flex-wrap gap-1">
-                                {upsell.slice(0, 3).map((u) => (
-                                  <Badge key={u} variant="outline" className="text-[10px] gap-1">
-                                    <TrendingUp className="h-2.5 w-2.5" />{u}
-                                  </Badge>
+                        <tr key={r.id} className="border-t hover:bg-muted/30 align-top">
+                          {/* Agent */}
+                          <td className="p-2">
+                            <Select
+                              value={assignedAuthId ?? UNASSIGNED}
+                              onValueChange={(v) => reassignCustomer(r, v === UNASSIGNED ? null : v)}
+                            >
+                              <SelectTrigger className="h-7 w-[130px] text-xs">
+                                <SelectValue placeholder="Assign…">
+                                  {assignedAgent ? (
+                                    <span className="flex items-center gap-1">
+                                      <UserCircle2 className="h-3 w-3 text-muted-foreground" />
+                                      {agentLabel(assignedAgent)}
+                                    </span>
+                                  ) : 'Unassigned'}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                                {agents.map((a) => (
+                                  a.user_id ? (
+                                    <SelectItem key={a.id} value={a.user_id}>
+                                      {agentLabel(a)}
+                                    </SelectItem>
+                                  ) : null
                                 ))}
-                                {upsell.length > 3 && (
-                                  <Badge variant="outline" className="text-[10px]">+{upsell.length - 3}</Badge>
-                                )}
-                              </div>
-                            )}
+                              </SelectContent>
+                            </Select>
                           </td>
-                          <td className="p-3 text-xs">
-                            {(() => {
-                              const list = touches[r.id] || [];
-                              if (list.length === 0) return <span className="text-muted-foreground">No touches yet</span>;
-                              return (
-                                <div className="flex flex-wrap gap-1">
-                                  {list.slice(0, 4).map((t) => {
-                                    const label = t.milestone_days >= 0 ? `${t.milestone_days}d` : `+${Math.abs(t.milestone_days)}d`;
-                                    return (
-                                      <Badge
-                                        key={`${t.milestone_days}`}
-                                        variant="outline"
-                                        title={`${t.template_key} • ${t.status}${t.discount_code ? ` • ${t.discount_code}` : ''}`}
-                                        className="text-[10px] gap-1"
-                                      >
-                                        {label}
-                                        {t.sent_at && <Send className="h-2.5 w-2.5 text-blue-600" />}
-                                        {t.opened_at && <Eye className="h-2.5 w-2.5 text-emerald-600" />}
-                                        {t.clicked_at && <MousePointerClick className="h-2.5 w-2.5 text-purple-600" />}
-                                        {t.assigned_agent_id && <UserCheck className="h-2.5 w-2.5 text-amber-600" />}
-                                      </Badge>
-                                    );
-                                  })}
-                                </div>
-                              );
-                            })()}
+
+                          {/* Src */}
+                          <td className="p-2">{srcBadge(segment)}</td>
+
+                          {/* Status */}
+                          <td className="p-2">
+                            <Select
+                              value={r.retention_outcome ?? ''}
+                              onValueChange={(v) => markWorked(r, v)}
+                            >
+                              <SelectTrigger className="h-7 w-[110px] text-xs">
+                                <SelectValue placeholder="—" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {OUTCOMES.map((o) => (
+                                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </td>
-                          <td className="p-3 text-xs text-muted-foreground">
-                            {r.retention_worked_at
-                              ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
-                              : 'Never'}
-                            {r.retention_outcome && (
-                              <div className="text-[10px] capitalize">{r.retention_outcome.replace(/_/g, ' ')}</div>
-                            )}
+
+                          {/* CB — callbacks for renewals aren't wired to lead_reminders yet; show a static placeholder */}
+                          <td className="p-2 text-center text-muted-foreground text-xs">—</td>
+
+                          {/* Calls */}
+                          <td className="p-2 text-center">
+                            <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums">
+                              {callCount}
+                            </Badge>
                           </td>
-                          <td className="p-3">
-                            <div className="flex items-center justify-end gap-2">
-                              <Select onValueChange={(v) => markWorked(r, v)}>
-                                <SelectTrigger className="h-8 w-[170px]">
-                                  <SelectValue placeholder="Outcome…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {OUTCOMES.map((o) => (
-                                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button size="sm" variant="outline" onClick={() => markWorked(r)}>
+
+                          {/* Actions */}
+                          <td className="p-2">
+                            <div className="flex items-center gap-1">
+                              {phone && (
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-7 w-7"
+                                  title="Call"
+                                  onClick={() => logCustomerCall(r)}
+                                >
+                                  <a href={`tel:${phone}`}><Phone className="h-3 w-3" /></a>
+                                </Button>
+                              )}
+                              {email && (
+                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Email">
+                                  <a href={`mailto:${email}`}><Mail className="h-3 w-3" /></a>
+                                </Button>
+                              )}
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button size="icon" variant="outline" className="h-7 w-7" title="Add note">
+                                    <StickyNote className="h-3 w-3" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-72 p-3" align="start">
+                                  <div className="text-xs font-medium mb-2">Note for {name}</div>
+                                  <Textarea
+                                    rows={3}
+                                    placeholder="Quick note…"
+                                    value={noteDraft[r.id] || ''}
+                                    onChange={(e) => setNoteDraft((p) => ({ ...p, [r.id]: e.target.value }))}
+                                  />
+                                  <div className="flex justify-end mt-2">
+                                    <Button size="sm" onClick={() => saveCustomerNote(r)}>Save note</Button>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => markWorked(r)}>
                                 Worked
                               </Button>
                             </div>
+                          </td>
+
+                          {/* Name */}
+                          <td className="p-2">
+                            <div className="font-medium text-sm leading-tight">{name}</div>
+                            <div className="text-[10px] text-muted-foreground">
+                              {r.policy_number || r.warranty_number || ''}
+                            </div>
+                            {r.retention_worked_at && (
+                              <div className="text-[10px] text-muted-foreground">
+                                worked {formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })}
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Phone */}
+                          <td className="p-2 text-xs">{phone || '—'}</td>
+
+                          {/* Email */}
+                          <td className="p-2 text-xs truncate max-w-[180px]" title={email}>{email || '—'}</td>
+
+                          {/* Reg */}
+                          <td className="p-2 text-xs uppercase">{r.customers?.registration_plate || '—'}</td>
+
+                          {/* Payment */}
+                          <td className="p-2 text-xs">
+                            {r.payment_type ? (
+                              <Badge variant="outline" className="text-[10px]">{r.payment_type}</Badge>
+                            ) : <span className="text-muted-foreground">—</span>}
+                          </td>
+
+                          {/* Paid Date */}
+                          <td className="p-2 text-xs text-muted-foreground">
+                            {paidDate ? format(new Date(paidDate), 'd MMM yy') : '—'}
                           </td>
                         </tr>
                       );
@@ -565,6 +750,7 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
           )}
         </TabsContent>
       </Tabs>
+
     </div>
   );
 };
