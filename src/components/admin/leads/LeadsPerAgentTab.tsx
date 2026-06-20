@@ -1,0 +1,556 @@
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Lock, Radio, CalendarRange, RefreshCcw, Download, Users, Target, AlertTriangle, CheckCircle2, PhoneCall, StickyNote, BellRing, Activity, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays, isToday } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend } from 'recharts';
+
+const MANAGEMENT_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
+
+interface StatsRow {
+  agent_id: string;
+  stat_date: string;
+  leads_assigned: number;
+  self_assigned: number;
+  marked_fake: number;
+  marked_lost: number;
+  marked_converted: number;
+  notes_added: number;
+  callbacks_set: number;
+  callbacks_completed: number;
+  calls_logged: number;
+  status_changes: number;
+  active_leads_eod: number;
+  locked_at?: string | null;
+  team_id?: string | null;
+}
+
+interface AgentMeta {
+  user_id: string;
+  name: string;
+  email: string;
+  role: string;
+  team_name?: string | null;
+}
+
+type RangePreset = 'today' | 'yesterday' | 'week' | 'month' | 'custom';
+
+interface LeadsPerAgentTabProps {
+  userRole?: string | null;
+  currentUserId?: string | null;
+}
+
+const fmtYMD = (d: Date) => format(d, 'yyyy-MM-dd');
+
+export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, currentUserId }) => {
+  const isManagement = MANAGEMENT_ROLES.has((userRole || '').toLowerCase());
+
+  const [preset, setPreset] = useState<RangePreset>('today');
+  const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>({});
+  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<StatsRow[]>([]);
+  const [agents, setAgents] = useState<Record<string, AgentMeta>>({});
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [rebuilding, setRebuilding] = useState(false);
+  const [sortKey, setSortKey] = useState<keyof StatsRow>('leads_assigned');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  // Date range derived from preset
+  const { fromDate, toDate } = useMemo(() => {
+    const today = new Date();
+    switch (preset) {
+      case 'today': return { fromDate: today, toDate: today };
+      case 'yesterday': {
+        const y = subDays(today, 1);
+        return { fromDate: y, toDate: y };
+      }
+      case 'week': return { fromDate: startOfWeek(today, { weekStartsOn: 1 }), toDate: today };
+      case 'month': return { fromDate: startOfMonth(today), toDate: today };
+      case 'custom': return { fromDate: customRange.from ?? today, toDate: customRange.to ?? customRange.from ?? today };
+    }
+  }, [preset, customRange]);
+
+  const isLiveView = useMemo(() => isToday(toDate) && isToday(fromDate), [fromDate, toDate]);
+
+  // Load agents metadata
+  useEffect(() => {
+    (async () => {
+      const { data: au } = await supabase
+        .from('admin_users')
+        .select('user_id, email, first_name, last_name, role, is_active')
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'admin', 'super_admin']);
+      if (!au) return;
+      const map: Record<string, AgentMeta> = {};
+      au.forEach((a: any) => {
+        map[a.user_id] = {
+          user_id: a.user_id,
+          email: a.email,
+          role: a.role,
+          name: [a.first_name, a.last_name].filter(Boolean).join(' ') || a.email,
+        };
+      });
+      setAgents(map);
+    })();
+  }, []);
+
+  // Fetch stats: combine snapshot rows (past) + live RPC (today)
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const allDays = eachDayOfInterval({ start: fromDate, end: toDate });
+      const pastDays = allDays.filter(d => !isToday(d));
+      const liveToday = allDays.find(d => isToday(d));
+
+      let snapshotRows: StatsRow[] = [];
+      if (pastDays.length > 0) {
+        const { data, error } = await supabase
+          .from('agent_daily_lead_stats')
+          .select('*')
+          .gte('stat_date', fmtYMD(pastDays[0]))
+          .lte('stat_date', fmtYMD(pastDays[pastDays.length - 1]));
+        if (error) throw error;
+        snapshotRows = (data || []) as StatsRow[];
+        if (!isManagement && currentUserId) {
+          snapshotRows = snapshotRows.filter(r => r.agent_id === currentUserId);
+        }
+      }
+
+      let liveRows: StatsRow[] = [];
+      if (liveToday) {
+        const { data, error } = await supabase.rpc('get_agent_live_stats', { p_date: fmtYMD(liveToday) });
+        if (error) throw error;
+        liveRows = (data || []) as StatsRow[];
+      }
+
+      setRows([...snapshotRows, ...liveRows]);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to load stats');
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, toDate, isManagement, currentUserId]);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // Auto-refresh today every 60s
+  useEffect(() => {
+    if (!isLiveView) return;
+    const id = setInterval(fetchStats, 60_000);
+    return () => clearInterval(id);
+  }, [isLiveView, fetchStats]);
+
+  // Aggregate per agent across the range
+  const perAgent = useMemo(() => {
+    const grouped = new Map<string, StatsRow & { days: number; locked: boolean }>();
+    rows.forEach(r => {
+      const existing = grouped.get(r.agent_id);
+      if (!existing) {
+        grouped.set(r.agent_id, { ...r, days: 1, locked: !!r.locked_at });
+      } else {
+        existing.leads_assigned += r.leads_assigned;
+        existing.self_assigned += r.self_assigned;
+        existing.marked_fake += r.marked_fake;
+        existing.marked_lost += r.marked_lost;
+        existing.marked_converted += r.marked_converted;
+        existing.notes_added += r.notes_added;
+        existing.callbacks_set += r.callbacks_set;
+        existing.callbacks_completed += r.callbacks_completed;
+        existing.calls_logged += r.calls_logged;
+        existing.status_changes += r.status_changes;
+        // active_leads_eod: take the latest day
+        if (r.stat_date >= existing.stat_date) existing.active_leads_eod = r.active_leads_eod;
+        existing.days += 1;
+        if (!r.locked_at) existing.locked = false;
+      }
+    });
+    let list = Array.from(grouped.values());
+    list.sort((a, b) => {
+      const va = (a[sortKey] as any) ?? 0;
+      const vb = (b[sortKey] as any) ?? 0;
+      return sortDir === 'desc' ? (vb as number) - (va as number) : (va as number) - (vb as number);
+    });
+    return list;
+  }, [rows, sortKey, sortDir]);
+
+  const totals = useMemo(() => {
+    return perAgent.reduce((acc, r) => ({
+      leads_assigned: acc.leads_assigned + r.leads_assigned,
+      self_assigned: acc.self_assigned + r.self_assigned,
+      marked_fake: acc.marked_fake + r.marked_fake,
+      marked_lost: acc.marked_lost + r.marked_lost,
+      marked_converted: acc.marked_converted + r.marked_converted,
+      notes_added: acc.notes_added + r.notes_added,
+      callbacks_set: acc.callbacks_set + r.callbacks_set,
+      callbacks_completed: acc.callbacks_completed + r.callbacks_completed,
+      calls_logged: acc.calls_logged + r.calls_logged,
+      status_changes: acc.status_changes + r.status_changes,
+      active_leads_eod: acc.active_leads_eod + r.active_leads_eod,
+    }), {
+      leads_assigned: 0, self_assigned: 0, marked_fake: 0, marked_lost: 0, marked_converted: 0,
+      notes_added: 0, callbacks_set: 0, callbacks_completed: 0, calls_logged: 0,
+      status_changes: 0, active_leads_eod: 0,
+    });
+  }, [perAgent]);
+
+  const rebuildDay = async (dateStr: string) => {
+    if (!isManagement) return;
+    setRebuilding(true);
+    try {
+      const { error } = await supabase.functions.invoke('snapshot-agent-daily-stats', {
+        body: { date: dateStr },
+      });
+      if (error) throw error;
+      toast.success(`Rebuilt ${dateStr}`);
+      await fetchStats();
+    } catch (e: any) {
+      toast.error(e?.message || 'Rebuild failed');
+    } finally {
+      setRebuilding(false);
+    }
+  };
+
+  const exportCSV = () => {
+    if (!isManagement) return;
+    const header = ['Agent', 'Role', 'Leads assigned', 'Self-assigned', 'Notes', 'Callbacks set', 'Callbacks done', 'Calls', 'Marked fake', 'Marked lost', 'Marked converted', 'Status changes', 'Active EOD'];
+    const lines = [header.join(',')];
+    perAgent.forEach(r => {
+      const a = agents[r.agent_id];
+      lines.push([
+        `"${a?.name || r.agent_id}"`, a?.role || '',
+        r.leads_assigned, r.self_assigned, r.notes_added, r.callbacks_set, r.callbacks_completed,
+        r.calls_logged, r.marked_fake, r.marked_lost, r.marked_converted, r.status_changes, r.active_leads_eod,
+      ].join(','));
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `leads-per-agent-${fmtYMD(fromDate)}_to_${fmtYMD(toDate)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const headerSort = (key: keyof StatsRow) => () => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('desc'); }
+  };
+
+  const summaryCards = [
+    { label: 'Leads worked', value: totals.leads_assigned, icon: Target, accent: 'text-primary' },
+    { label: 'Notes added', value: totals.notes_added, icon: StickyNote, accent: 'text-foreground' },
+    { label: 'Calls logged', value: totals.calls_logged, icon: PhoneCall, accent: 'text-foreground' },
+    { label: 'Callbacks set', value: totals.callbacks_set, icon: BellRing, accent: 'text-foreground' },
+    { label: 'Marked fake', value: totals.marked_fake, icon: AlertTriangle, accent: 'text-destructive' },
+    { label: 'Converted', value: totals.marked_converted, icon: CheckCircle2, accent: 'text-emerald-600' },
+  ];
+
+  return (
+    <TooltipProvider>
+      <div className="space-y-6 p-4 md:p-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Leads per Agent</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isManagement
+                ? 'Per-agent activity, locked daily at 00:01 UK time. Live view auto-refreshes every minute.'
+                : 'Your activity, locked daily at 00:01 UK time. Live view auto-refreshes every minute.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {isLiveView ? (
+              <Badge variant="secondary" className="gap-1.5 border-2 border-emerald-200">
+                <Radio className="h-3 w-3 text-emerald-600 animate-pulse" /> Live
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="gap-1.5 border-2">
+                <Lock className="h-3 w-3" /> Locked
+              </Badge>
+            )}
+            <Button variant="outline" size="sm" onClick={fetchStats} disabled={loading} className="gap-2 border-2">
+              <RefreshCcw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            {isManagement && (
+              <>
+                <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 border-2">
+                  <Download className="h-3.5 w-3.5" /> Export CSV
+                </Button>
+                {!isLiveView && fromDate.toDateString() === toDate.toDateString() && (
+                  <Button variant="outline" size="sm" onClick={() => rebuildDay(fmtYMD(fromDate))} disabled={rebuilding} className="gap-2 border-2">
+                    <RefreshCcw className={`h-3.5 w-3.5 ${rebuilding ? 'animate-spin' : ''}`} />
+                    Rebuild day
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Range selector */}
+        <Card className="border-2">
+          <CardContent className="p-4 flex flex-wrap items-center gap-3">
+            <Tabs value={preset} onValueChange={(v) => setPreset(v as RangePreset)}>
+              <TabsList>
+                <TabsTrigger value="today">Today</TabsTrigger>
+                <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
+                <TabsTrigger value="week">This week</TabsTrigger>
+                <TabsTrigger value="month">This month</TabsTrigger>
+                <TabsTrigger value="custom">Custom</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            {preset === 'custom' && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 border-2">
+                    <CalendarRange className="h-3.5 w-3.5" />
+                    {customRange.from ? format(customRange.from, 'd MMM') : 'Start'} – {customRange.to ? format(customRange.to, 'd MMM') : 'End'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="p-0 w-auto">
+                  <Calendar
+                    mode="range"
+                    selected={{ from: customRange.from, to: customRange.to }}
+                    onSelect={(r: any) => setCustomRange({ from: r?.from, to: r?.to })}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+            <div className="ml-auto text-xs text-muted-foreground">
+              {format(fromDate, 'd MMM yyyy')} → {format(toDate, 'd MMM yyyy')} · UK time
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Summary cards (management only) */}
+        {isManagement && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {summaryCards.map(({ label, value, icon: Icon, accent }) => (
+              <Card key={label} className="border-2">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+                    <Icon className={`h-4 w-4 ${accent}`} />
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold">{loading ? <Skeleton className="h-7 w-12" /> : value.toLocaleString()}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Table */}
+        <Card className="border-2">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              {isManagement ? `${perAgent.length} agent${perAgent.length === 1 ? '' : 's'}` : 'My activity'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 border-y-2">
+                  <tr className="text-left">
+                    <th className="px-4 py-2.5 font-medium sticky left-0 bg-muted/50 z-10">Agent</th>
+                    <Th onClick={headerSort('leads_assigned')} active={sortKey==='leads_assigned'} dir={sortDir}>Assigned</Th>
+                    <Th onClick={headerSort('self_assigned')} active={sortKey==='self_assigned'} dir={sortDir}>Self</Th>
+                    <Th onClick={headerSort('notes_added')} active={sortKey==='notes_added'} dir={sortDir}>Notes</Th>
+                    <Th onClick={headerSort('callbacks_set')} active={sortKey==='callbacks_set'} dir={sortDir}>Callbacks set</Th>
+                    <Th onClick={headerSort('callbacks_completed')} active={sortKey==='callbacks_completed'} dir={sortDir}>CB done</Th>
+                    <Th onClick={headerSort('calls_logged')} active={sortKey==='calls_logged'} dir={sortDir}>Calls</Th>
+                    <Th onClick={headerSort('marked_fake')} active={sortKey==='marked_fake'} dir={sortDir}>Fake</Th>
+                    <Th onClick={headerSort('marked_lost')} active={sortKey==='marked_lost'} dir={sortDir}>Lost</Th>
+                    <Th onClick={headerSort('marked_converted')} active={sortKey==='marked_converted'} dir={sortDir}>Converted</Th>
+                    <Th onClick={headerSort('status_changes')} active={sortKey==='status_changes'} dir={sortDir}>Touches</Th>
+                    <Th onClick={headerSort('active_leads_eod')} active={sortKey==='active_leads_eod'} dir={sortDir}>Active EOD</Th>
+                    <th className="px-2 py-2.5"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading && Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b">
+                      {Array.from({ length: 13 }).map((__, j) => (
+                        <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-12" /></td>
+                      ))}
+                    </tr>
+                  ))}
+                  {!loading && perAgent.length === 0 && (
+                    <tr><td colSpan={13} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
+                  )}
+                  {!loading && perAgent.map(r => {
+                    const a = agents[r.agent_id];
+                    return (
+                      <tr key={r.agent_id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedAgent(r.agent_id)}>
+                        <td className="px-4 py-3 sticky left-0 bg-background z-10">
+                          <div className="font-medium">{a?.name || 'Unknown agent'}</div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-2">
+                            {a?.role || ''}
+                            {r.locked ? (
+                              <Tooltip><TooltipTrigger><Lock className="h-3 w-3" /></TooltipTrigger><TooltipContent>Locked snapshot</TooltipContent></Tooltip>
+                            ) : (
+                              <Tooltip><TooltipTrigger><Radio className="h-3 w-3 text-emerald-600" /></TooltipTrigger><TooltipContent>Live data (today)</TooltipContent></Tooltip>
+                            )}
+                          </div>
+                        </td>
+                        <Td>{r.leads_assigned}</Td>
+                        <Td>{r.self_assigned}</Td>
+                        <Td>{r.notes_added}</Td>
+                        <Td>{r.callbacks_set}</Td>
+                        <Td>{r.callbacks_completed}</Td>
+                        <Td>{r.calls_logged}</Td>
+                        <Td className={r.marked_fake ? 'text-destructive font-medium' : ''}>{r.marked_fake}</Td>
+                        <Td>{r.marked_lost}</Td>
+                        <Td className={r.marked_converted ? 'text-emerald-600 font-medium' : ''}>{r.marked_converted}</Td>
+                        <Td>{r.status_changes}</Td>
+                        <Td className="font-semibold">{r.active_leads_eod}</Td>
+                        <td className="px-2 py-3 text-muted-foreground"><ChevronRight className="h-4 w-4" /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                {isManagement && perAgent.length > 0 && (
+                  <tfoot className="bg-muted/40 border-t-2 font-medium">
+                    <tr>
+                      <td className="px-4 py-3 sticky left-0 bg-muted/40">Total</td>
+                      <Td>{totals.leads_assigned}</Td>
+                      <Td>{totals.self_assigned}</Td>
+                      <Td>{totals.notes_added}</Td>
+                      <Td>{totals.callbacks_set}</Td>
+                      <Td>{totals.callbacks_completed}</Td>
+                      <Td>{totals.calls_logged}</Td>
+                      <Td>{totals.marked_fake}</Td>
+                      <Td>{totals.marked_lost}</Td>
+                      <Td>{totals.marked_converted}</Td>
+                      <Td>{totals.status_changes}</Td>
+                      <Td>{totals.active_leads_eod}</Td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <AgentDetailSheet
+          agentId={selectedAgent}
+          agent={selectedAgent ? agents[selectedAgent] : undefined}
+          fromDate={fromDate}
+          toDate={toDate}
+          rows={rows.filter(r => r.agent_id === selectedAgent)}
+          onClose={() => setSelectedAgent(null)}
+        />
+      </div>
+    </TooltipProvider>
+  );
+};
+
+const Th: React.FC<React.PropsWithChildren<{ onClick: () => void; active: boolean; dir: 'asc' | 'desc' }>> = ({ children, onClick, active, dir }) => (
+  <th className="px-3 py-2.5 font-medium text-right select-none">
+    <button onClick={onClick} className={`inline-flex items-center gap-1 hover:text-foreground transition ${active ? 'text-foreground' : 'text-muted-foreground'}`}>
+      {children}{active ? (dir === 'desc' ? ' ↓' : ' ↑') : ''}
+    </button>
+  </th>
+);
+const Td: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children, className = '' }) => (
+  <td className={`px-3 py-3 text-right tabular-nums ${className}`}>{children}</td>
+);
+
+const AgentDetailSheet: React.FC<{
+  agentId: string | null;
+  agent?: AgentMeta;
+  fromDate: Date;
+  toDate: Date;
+  rows: StatsRow[];
+  onClose: () => void;
+}> = ({ agentId, agent, fromDate, toDate, rows, onClose }) => {
+  const chartData = useMemo(() => {
+    const days = eachDayOfInterval({ start: fromDate, end: toDate });
+    return days.map(d => {
+      const r = rows.find(x => x.stat_date === fmtYMD(d));
+      return {
+        date: format(d, 'EEE d'),
+        Assigned: r?.leads_assigned ?? 0,
+        Notes: r?.notes_added ?? 0,
+        Calls: r?.calls_logged ?? 0,
+        Callbacks: r?.callbacks_set ?? 0,
+        Converted: r?.marked_converted ?? 0,
+      };
+    });
+  }, [rows, fromDate, toDate]);
+
+  const tallies = useMemo(() => {
+    const total = rows.reduce((acc, r) => ({
+      assigned: acc.assigned + r.leads_assigned,
+      notes: acc.notes + r.notes_added,
+      calls: acc.calls + r.calls_logged,
+      callbacks: acc.callbacks + r.callbacks_set,
+      fake: acc.fake + r.marked_fake,
+      converted: acc.converted + r.marked_converted,
+    }), { assigned: 0, notes: 0, calls: 0, callbacks: 0, fake: 0, converted: 0 });
+    const days = rows.length || 1;
+    return { total, daily: {
+      assigned: (total.assigned / days).toFixed(1),
+      notes: (total.notes / days).toFixed(1),
+      calls: (total.calls / days).toFixed(1),
+    }};
+  }, [rows]);
+
+  return (
+    <Sheet open={!!agentId} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>{agent?.name || 'Agent'}</SheetTitle>
+          <p className="text-xs text-muted-foreground">{agent?.email} · {agent?.role}</p>
+        </SheetHeader>
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          {[
+            { l: 'Total assigned', v: tallies.total.assigned },
+            { l: 'Avg/day', v: tallies.daily.assigned },
+            { l: 'Notes', v: tallies.total.notes },
+            { l: 'Calls', v: tallies.total.calls },
+            { l: 'Callbacks', v: tallies.total.callbacks },
+            { l: 'Converted', v: tallies.total.converted },
+          ].map(c => (
+            <div key={c.l} className="border-2 rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{c.l}</div>
+              <div className="text-xl font-semibold mt-1">{c.v}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6">
+          <div className="text-sm font-medium mb-2 flex items-center gap-2"><Activity className="h-4 w-4" /> Daily breakdown</div>
+          <div className="h-72 border-2 rounded-lg p-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                <RTooltip />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="Assigned" fill="hsl(var(--primary))" />
+                <Bar dataKey="Notes" fill="hsl(var(--muted-foreground))" />
+                <Bar dataKey="Calls" fill="hsl(var(--accent-foreground))" />
+                <Bar dataKey="Converted" fill="hsl(142 71% 45%)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+export default LeadsPerAgentTab;
