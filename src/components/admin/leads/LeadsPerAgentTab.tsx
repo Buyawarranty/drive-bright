@@ -678,8 +678,111 @@ const AgentDetailSheet: React.FC<{
             </ResponsiveContainer>
           </div>
         </div>
+        <AgentAssignedLeads agentId={agentId} />
       </SheetContent>
     </Sheet>
+  );
+};
+
+const ACTIVE_STATUSES = ['new', 'contacted', 'follow_up', 'quote_sent', 'negotiating', 'urgent_callback'];
+
+const statusClass = (s: string) => {
+  switch (s) {
+    case 'new': return 'bg-blue-100 text-blue-800';
+    case 'contacted': return 'bg-yellow-100 text-yellow-800';
+    case 'follow_up': return 'bg-purple-100 text-purple-800';
+    case 'quote_sent': return 'bg-cyan-100 text-cyan-800';
+    case 'negotiating': return 'bg-orange-100 text-orange-800';
+    case 'urgent_callback': return 'bg-red-100 text-red-800';
+    default: return 'bg-gray-100 text-gray-700';
+  }
+};
+
+const AgentAssignedLeads: React.FC<{ agentId: string | null }> = ({ agentId }) => {
+  const [leads, setLeads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (!agentId) { setLeads([]); return; }
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      const { data, error } = await supabase
+        .from('sales_leads')
+        .select('id, first_name, last_name, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, status, last_activity_date, created_at')
+        .eq('assigned_to', agentId)
+        .in('status', ACTIVE_STATUSES)
+        .order('last_activity_date', { ascending: false, nullsFirst: false })
+        .limit(500);
+      if (cancelled) return;
+      if (error) toast.error(error.message); else setLeads(data || []);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [agentId]);
+
+  const visible = showAll ? leads : leads.slice(0, 25);
+
+  return (
+    <div className="mt-6">
+      <div className="text-sm font-medium mb-2 flex items-center gap-2">
+        <Inbox className="h-4 w-4" /> Currently assigned leads
+        <Badge variant="secondary" className="ml-1">{loading ? '…' : leads.length}</Badge>
+      </div>
+      <div className="border-2 rounded-lg bg-background">
+        {loading ? (
+          <div className="p-4 space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
+          </div>
+        ) : leads.length === 0 ? (
+          <div className="p-6 text-center text-xs text-muted-foreground">No active leads on this agent's plate.</div>
+        ) : (
+          <div className="divide-y">
+            {visible.map(l => (
+              <a
+                key={l.id}
+                href={`/admin-dashboard/?tab=leads&lead=${l.id}`}
+                className="px-3 py-2 text-xs flex items-center gap-3 flex-wrap hover:bg-muted/40 transition"
+              >
+                <Badge className={`${statusClass(l.status)} hover:${statusClass(l.status)} text-[10px] shrink-0`}>
+                  {l.status.replace('_', ' ')}
+                </Badge>
+                <span className="font-medium truncate max-w-[180px]">
+                  {l.full_name || `${l.first_name ?? ''} ${l.last_name ?? ''}`.trim() || '—'}
+                </span>
+                {l.email && (
+                  <span className="inline-flex items-center gap-1 text-muted-foreground truncate max-w-[200px]">
+                    <Mail className="h-3 w-3" />{l.email}
+                  </span>
+                )}
+                {l.phone && (
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    <Phone className="h-3 w-3" />{l.phone}
+                  </span>
+                )}
+                {l.vehicle_reg && (
+                  <span className="inline-flex items-center gap-1 font-mono uppercase">
+                    <Car className="h-3 w-3" />{l.vehicle_reg}
+                  </span>
+                )}
+                <span className="ml-auto text-muted-foreground">
+                  {format(new Date(l.last_activity_date || l.created_at), 'd MMM HH:mm')}
+                </span>
+              </a>
+            ))}
+            {leads.length > 25 && (
+              <button
+                onClick={() => setShowAll(v => !v)}
+                className="w-full px-3 py-2 text-[11px] text-center text-muted-foreground hover:bg-muted/40"
+              >
+                {showAll ? 'Show fewer' : `Show all ${leads.length}`}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
