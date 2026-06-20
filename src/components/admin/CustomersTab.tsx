@@ -2403,6 +2403,39 @@ export const CustomersTab = ({
     }
   };
 
+  // Google Ads Offline Conversion Import export.
+  // Format follows Google's required schema: Google Click ID, Conversion Name,
+  // Conversion Time, Conversion Value, Conversion Currency.
+  // Only includes customers that have a gclid recorded.
+  const handleExportGoogleConversions = () => {
+    const rows = filteredCustomers
+      .filter(c => !!(c.gclid && String(c.gclid).trim()))
+      .map(c => {
+        const ts = new Date(c.signup_date);
+        // Google requires: "yyyy-MM-dd HH:mm:ss+0000"
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const conversionTime = `${ts.getUTCFullYear()}-${pad(ts.getUTCMonth() + 1)}-${pad(ts.getUTCDate())} ${pad(ts.getUTCHours())}:${pad(ts.getUTCMinutes())}:${pad(ts.getUTCSeconds())}+0000`;
+        return {
+          'Google Click ID': c.gclid,
+          'Conversion Name': 'Warranty Purchase',
+          'Conversion Time': conversionTime,
+          'Conversion Value': Number(c.final_amount || 0).toFixed(2),
+          'Conversion Currency': 'GBP',
+          'Email': c.email || '',
+          'Phone': c.phone || '',
+          'Name': c.name || '',
+          'Registration Plate': c.registration_plate || '',
+        };
+      });
+    if (!rows.length) {
+      toast.error('No customers with a GCLID found in the current filter');
+      return;
+    }
+    exportDataToCSV(rows, { filename: `google-ads-conversions-${new Date().toISOString().slice(0, 10)}`, format: 'csv' });
+    toast.success(`Exported ${rows.length} Google Ads conversion(s)`);
+  };
+
+
   const handleExportPDF = () => {
     const exportData = getExportData();
     if (!exportData.length) {
