@@ -68,6 +68,14 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   const [sortKey, setSortKey] = useState<keyof StatsRow>('leads_assigned');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  // Global team filter (shared with sidebar switcher + New Leads chips)
+  const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
+  const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+  const isInTeam = useCallback((agentId: string) => {
+    if (!teamFilter) return true;
+    return agentTeamMap.get(agentId)?.id === teamFilter;
+  }, [teamFilter, agentTeamMap]);
+
   // Date range derived from preset
   const { fromDate, toDate } = useMemo(() => {
     const today = new Date();
