@@ -1,61 +1,63 @@
-# Unified Customer Email Log in Emails Tab
+## Leads per Agent — Daily Locked Tracking
 
-Right now `email_logs` is only written by ~10 of the 44 edge functions that actually send mail through Resend. The rest (welcome, policy docs, customer credentials, abandoned cart, Trustpilot, claims comms, contact replies, etc.) send silently with no central record. That's why the Emails tab can't show "all emails sent to customers".
+### Scope
+New tab on `/admin-dashboard/?tab=leads-per-agent` showing per-agent daily activity metrics. Visible to **everyone**, but agents only see their own row; **management** (admin, super_admin, sales_manager) sees all agents with totals.
 
-This plan unifies all customer-bound sends into a single log, surfaces them in the Emails tab with full filtering and export, and opens the tab to admins, super admins and lead_gen.
+### What gets tracked per agent per day (UK time, 00:00 → 23:59:59)
+For each calendar day, per agent:
+- **Leads assigned** — count where agent became the owner that day
+- **Self-assigned** — leads they pulled to themselves
+- **Marked Fake** — status changed to `fake_lead`
+- **Marked Lost** — status changed to `lost`
+- **Marked Converted** — status changed to `converted`
+- **Notes added** — entries in `lead_quick_notes` / `lead_activities` of type note
+- **Callbacks set** — entries in `lead_reminders` (callback type) created
+- **Callbacks completed** — reminders marked done
+- **Calls logged** — entries in `lead_call_logs`
+- **Status changes** — total touch count (any change)
+- **Active leads at end of day** — owned & not in terminal status
 
-## What gets built
+### Locking strategy (precise, immutable)
+- Live counters for **today** computed on read from source tables (always real-time).
+- At **00:01 UK time** a cron job snapshots the previous day into `agent_daily_lead_stats` (one row per agent per day) — those rows are immutable history.
+- Reads: any date < today → snapshot table; today → live aggregation. Guarantees "lock down at midnight, starts at 00:00:01" behavior.
 
-### 1. Central logging helper (one place, one shape)
-- New `supabase/functions/_shared/log-email.ts` exporting `logCustomerEmail({ recipient_email, subject, template_name, status, error_message, metadata, customer_id?, policy_number?, registration_plate?, source_function })`.
-- Writes to existing `email_logs` table (extending `metadata` JSONB with `source_function`, `registration_plate`, `policy_number`, `customer_name`).
-- Always writes, even on failure (status = `failed` + `error_message`), so admins can see attempted sends.
+### Database
+New table `agent_daily_lead_stats`:
+- `agent_id`, `stat_date`, `team_id`
+- `leads_assigned`, `self_assigned`, `marked_fake`, `marked_lost`, `marked_converted`
+- `notes_added`, `callbacks_set`, `callbacks_completed`, `calls_logged`
+- `status_changes`, `active_leads_eod`
+- `locked_at` (timestamptz) — set when snapshot written; presence = locked
+- Unique `(agent_id, stat_date)`
 
-### 2. Retrofit every customer-facing Resend send
-Wrap the Resend call in each of these to log via the helper. Internal admin-only mails (admin invites, credential change notices, password resets for staff) are excluded since the user asked for **customer** emails.
+RLS:
+- Agents → SELECT only rows where `agent_id = auth.uid()`
+- Management → SELECT all
+- Only `service_role` writes (cron + edge function)
 
-Customer-facing functions to instrument:
-- send-welcome-email, send-welcome-email-manual, send-welcome-email-alternate
-- send-policy-documents (already partial — normalize)
-- send-customer-credentials, resend-customer-credentials
-- send-quote-email, send-admin-quote, send-step4-instant-email
-- send-abandoned-cart-email, send-discount-email, send-return-discount-reminder
-- send-trustpilot-review-request, send-trustpilot-review-emails
-- send-invoice-email, send-warranty-upgrade-notification
-- send-referral-email, send-bulk-reminder-emails
-- send-claim-info-email, send-claim-email, send-claim-update-request, submit-claim, submit-claim-evidence, submit-claim-update
-- submit-contact, submit-complaint, submit-cancellation, flag-quote-details
-- handle-successful-payment, process-payment-assist-success (purchase confirmations)
-- forward-contact-email, forward-claim-email (when recipient is a customer)
-- send-sale-notification, send-agent-sale-notification — only if recipient is the customer
+Plus a SECURITY DEFINER function `get_agent_live_stats(p_date date)` that computes today's numbers from source tables on demand, with the same role filtering baked in.
 
-### 3. Emails tab — new "Customer Emails" view
-Add a dedicated sub-tab in `UnifiedEmailHub` (separate from the existing template/campaign logs) showing the unified feed:
-- **Columns**: Sent at, Recipient, Customer name, Reg plate, Template / source, Subject, Status badge, Error (if any), Actions.
-- **Filters**: date range (preset + custom), status (sent / failed / bounced / pending), template/source dropdown, free-text search on email / subject / reg plate / customer name.
-- **Stats strip**: total / sent / failed / bounced for the active filter.
-- **Pagination**: 50 per page, newest first.
-- **Row actions**: View full metadata (modal with raw JSON), Resend (for failed) where supported.
-- **CSV export**: exports the currently-filtered set with all columns including metadata fields (matching the pattern used for the new GCLID export).
+### Edge function + cron
+- `snapshot-agent-daily-stats` — aggregates yesterday from `sales_leads`, `sales_leads_changelog`, `lead_quick_notes`, `lead_reminders`, `lead_call_logs`, `lead_activities`; UPSERTs into `agent_daily_lead_stats` with `locked_at = now()`.
+- pg_cron at `01 00 * * *` Europe/London (run at 00:01 UK).
+- Manual "Rebuild day" button for management (calls same function with explicit date).
 
-### 4. Access control
-- RLS on `email_logs`: allow SELECT for `admin`, `super_admin`, `lead_gen` (via `has_role`). Keep INSERT restricted to service_role (edge functions already use it).
-- Route guard in `AdminDashboard.tsx` for `tab=emails`: allow `admin`, `super_admin`, `lead_gen`; show access-denied card otherwise.
-- Sidebar entry visible for the same three roles.
+### UI — `src/components/admin/LeadsPerAgentTab.tsx`
+Layout:
+1. **Header bar**: Date range tabs — `Today` · `Yesterday` · `This Week` · `This Month` · `Custom range`. Live indicator dot pulsing when viewing Today; lock icon + "Locked at HH:MM" badge for past days.
+2. **Summary cards (management only)**: Total leads worked · Total fake · Total converted · Total callbacks · Total calls — across selected range.
+3. **Main table** — sortable, sticky header, agent avatar + name + team chip, columns for each metric, "Active EOD" pinned right. Total row at bottom (management view).
+4. **Agent view (non-management)**: Same layout but single-row scoped to themselves; adds a "My streak" mini stat.
+5. **Per-agent expand**: clicking a row opens a drawer with daily breakdown chart for the selected range (recharts bar chart) + the same metrics tallied weekly / monthly.
+6. **Empty states + loading skeletons**, CSV export (management only, gated by existing export rules).
 
-### 5. Verification
-- Trigger one of each major email type from staging (welcome, policy docs, abandoned cart, contact reply) and confirm a row appears in the new view with correct metadata.
-- Confirm a lead_gen user can open the tab; confirm a sales agent cannot.
+Design tokens only (no hardcoded colours); follows existing admin dashboard table conventions; high-contrast borders per memory.
 
-## Technical notes
+### Wiring
+- Register tab in the admin dashboard tabs list with id `leads-per-agent`.
+- Role-aware fetch hook `useAgentDailyStats(range, agentId?)` — picks snapshot vs live per date; merges results.
 
-- No schema migration needed beyond the RLS policy update — `email_logs.metadata` is already JSONB so extra fields slot in.
-- Helper imports the service-role client; idempotent — safe to call after a failed Resend response.
-- Edge function changes are mechanical; each gets `try { await resend.emails.send(...); await logCustomerEmail({ status: 'sent', ... }) } catch (e) { await logCustomerEmail({ status: 'failed', error_message: e.message, ... }); throw }`.
-- Deduplication on `message_id` not used here (existing schema doesn't store it consistently); we treat each row as a distinct send attempt and surface `resend_count` for re-sends.
-
-## Out of scope
-
-- Marketing/bulk campaign analytics (already covered by existing Campaigns view).
-- Auth/staff-only emails (admin invites, password resets) — not customer-facing.
-- Migrating historical Resend sends from before this change — only new sends from rollout forward will appear.
+### Out of scope
+- Backfilling historical days before today (can be triggered manually via the rebuild button per date once shipped).
+- Editing/overriding snapshot numbers (immutable by design).

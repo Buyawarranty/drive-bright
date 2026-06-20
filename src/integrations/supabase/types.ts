@@ -652,6 +652,69 @@ export type Database = {
           },
         ]
       }
+      agent_daily_lead_stats: {
+        Row: {
+          active_leads_eod: number
+          agent_id: string
+          callbacks_completed: number
+          callbacks_set: number
+          calls_logged: number
+          created_at: string
+          id: string
+          leads_assigned: number
+          locked_at: string | null
+          marked_converted: number
+          marked_fake: number
+          marked_lost: number
+          notes_added: number
+          self_assigned: number
+          stat_date: string
+          status_changes: number
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active_leads_eod?: number
+          agent_id: string
+          callbacks_completed?: number
+          callbacks_set?: number
+          calls_logged?: number
+          created_at?: string
+          id?: string
+          leads_assigned?: number
+          locked_at?: string | null
+          marked_converted?: number
+          marked_fake?: number
+          marked_lost?: number
+          notes_added?: number
+          self_assigned?: number
+          stat_date: string
+          status_changes?: number
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active_leads_eod?: number
+          agent_id?: string
+          callbacks_completed?: number
+          callbacks_set?: number
+          calls_logged?: number
+          created_at?: string
+          id?: string
+          leads_assigned?: number
+          locked_at?: string | null
+          marked_converted?: number
+          marked_fake?: number
+          marked_lost?: number
+          notes_added?: number
+          self_assigned?: number
+          stat_date?: string
+          status_changes?: number
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agent_daily_targets: {
         Row: {
           actual_leads: number
@@ -9276,6 +9339,24 @@ export type Database = {
         Returns: string
       }
       generate_warranty_number: { Args: never; Returns: string }
+      get_agent_live_stats: {
+        Args: { p_date: string }
+        Returns: {
+          active_leads_eod: number
+          agent_id: string
+          callbacks_completed: number
+          callbacks_set: number
+          calls_logged: number
+          leads_assigned: number
+          marked_converted: number
+          marked_fake: number
+          marked_lost: number
+          notes_added: number
+          self_assigned: number
+          stat_date: string
+          status_changes: number
+        }[]
+      }
       get_claim_update_request_by_token: {
         Args: { _token: string }
         Returns: {
@@ -9326,6 +9407,7 @@ export type Database = {
       is_agent_on_duty: { Args: { p_admin_user_id: string }; Returns: boolean }
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
+      is_management: { Args: { _user_id: string }; Returns: boolean }
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
@@ -9389,6 +9471,7 @@ export type Database = {
       }
       set_user_offline: { Args: never; Returns: undefined }
       simulate_lead_routing: { Args: { p_source: string }; Returns: Json }
+      snapshot_agent_daily_stats: { Args: { p_date: string }; Returns: number }
       soft_delete_customer: {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
