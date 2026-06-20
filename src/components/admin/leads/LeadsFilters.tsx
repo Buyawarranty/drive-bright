@@ -581,17 +581,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <Download className="h-3 w-3" /> CSV
           </Button>
         )}
-        {canManageRouting && onManageRouting && (
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onManageRouting}
-            className="h-7 px-2.5 text-[11px] gap-1 rounded-md font-semibold shadow-sm"
-            title="Assign agents to teams (Red / Blue / Green) and pick the queues they work — New Leads, Recontact, Renewals"
-          >
-            <Network className="h-3 w-3" /> Allocate Agents
-          </Button>
-        )}
       </div>
     </div>
   );
