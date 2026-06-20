@@ -432,8 +432,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             } else if (period === 'custom') {
               onDateRangeChange({ from: customRange?.from, to: customRange?.to });
             } else {
-              // Preset → resolve via periodToRange helper exported from UnifiedDateFilter
-              const { periodToRange } = require('@/components/admin/UnifiedDateFilter');
               const r = periodToRange(period);
               onDateRangeChange({ from: r?.from, to: r?.to });
             }
