@@ -618,6 +618,99 @@ export const StaffHubTab: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Manage access (super admin only) */}
+      <Dialog
+        open={!!accessDoc}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAccessDoc(null);
+            setAccessRoles([]);
+            setAccessTeamIds([]);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              Manage access
+            </DialogTitle>
+            <DialogDescription className="truncate">
+              {accessDoc?.title}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-muted-foreground">
+              Choose which staff roles and teams can view this document. Leave both sections empty to share with every admin staff member. Super admins always have access.
+            </p>
+
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Staff roles</p>
+              <div className="grid grid-cols-2 gap-2">
+                {ASSIGNABLE_ROLES.map(r => (
+                  <label key={r.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={accessRoles.includes(r.id)}
+                      onCheckedChange={() => setAccessRoles(arr => toggleInArray(arr, r.id))}
+                    />
+                    {r.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {teams.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Teams</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {teams.map(t => (
+                    <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={accessTeamIds.includes(t.id)}
+                        onCheckedChange={() => setAccessTeamIds(arr => toggleInArray(arr, t.id))}
+                      />
+                      <span>{t.emoji} {t.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAccessDoc(null)} disabled={accessSaving}>Cancel</Button>
+            <Button
+              disabled={accessSaving || !accessDoc}
+              onClick={async () => {
+                if (!accessDoc) return;
+                setAccessSaving(true);
+                try {
+                  const { error } = await supabase
+                    .from('staff_hub_documents')
+                    .update({
+                      allowed_roles: accessRoles,
+                      allowed_team_ids: accessTeamIds,
+                    })
+                    .eq('id', accessDoc.id);
+                  if (error) throw error;
+                  toast({ title: 'Access updated', description: accessDoc.title });
+                  setAccessDoc(null);
+                  queryClient.invalidateQueries({ queryKey: ['staff-hub-documents'] });
+                } catch (e: any) {
+                  toast({ title: 'Could not save', description: e.message || String(e), variant: 'destructive' });
+                } finally {
+                  setAccessSaving(false);
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {accessSaving ? 'Saving…' : 'Save access'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
 
   );
