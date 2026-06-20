@@ -216,7 +216,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       return sortDir === 'desc' ? (vb as number) - (va as number) : (va as number) - (vb as number);
     });
     return list;
-  }, [rows, sortKey, sortDir]);
+  }, [rows, sortKey, sortDir, isInTeam]);
 
   const totals = useMemo(() => {
     return perAgent.reduce((acc, r) => ({
