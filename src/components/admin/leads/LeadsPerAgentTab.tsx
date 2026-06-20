@@ -58,6 +58,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>({});
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<StatsRow[]>([]);
+  const [mtdRows, setMtdRows] = useState<StatsRow[]>([]);
   const [agents, setAgents] = useState<Record<string, AgentMeta>>({});
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [rebuilding, setRebuilding] = useState(false);
@@ -142,12 +143,36 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
+  // Always-on month-to-date fetch for the converted Today/Week/Month rollup
+  const fetchMtd = useCallback(async () => {
+    try {
+      const today = new Date();
+      const monthStart = startOfMonth(today);
+      const { data: snap, error: snapErr } = await supabase
+        .from('agent_daily_lead_stats')
+        .select('agent_id, stat_date, marked_converted')
+        .gte('stat_date', fmtYMD(monthStart))
+        .lt('stat_date', fmtYMD(today));
+      if (snapErr) throw snapErr;
+      const { data: live, error: liveErr } = await supabase.rpc('get_agent_live_stats', { p_date: fmtYMD(today) });
+      if (liveErr) throw liveErr;
+      let combined = [...((snap || []) as any[]), ...((live || []) as any[])] as StatsRow[];
+      if (!isManagement && currentUserId) combined = combined.filter(r => r.agent_id === currentUserId);
+      setMtdRows(combined);
+    } catch (e: any) {
+      // silent — primary table still works
+      console.warn('MTD converted rollup failed', e?.message);
+    }
+  }, [isManagement, currentUserId]);
+
+  useEffect(() => { fetchMtd(); }, [fetchMtd]);
+
   // Auto-refresh today every 60s
   useEffect(() => {
     if (!isLiveView) return;
-    const id = setInterval(fetchStats, 60_000);
+    const id = setInterval(() => { fetchStats(); fetchMtd(); }, 60_000);
     return () => clearInterval(id);
-  }, [isLiveView, fetchStats]);
+  }, [isLiveView, fetchStats, fetchMtd]);
 
   // Aggregate per agent across the range
   const perAgent = useMemo(() => {
@@ -201,6 +226,30 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       status_changes: 0, active_leads_eod: 0,
     });
   }, [perAgent]);
+
+  // Converted Today / Week / Month rollup (independent of selected date range)
+  const convRollup = useMemo(() => {
+    const today = new Date();
+    const todayStr = fmtYMD(today);
+    const weekStartStr = fmtYMD(startOfWeek(today, { weekStartsOn: 1 }));
+    const monthStartStr = fmtYMD(startOfMonth(today));
+    const map = new Map<string, { day: number; week: number; month: number }>();
+    mtdRows.forEach(r => {
+      const cur = map.get(r.agent_id) || { day: 0, week: 0, month: 0 };
+      const c = r.marked_converted || 0;
+      if (r.stat_date >= monthStartStr) cur.month += c;
+      if (r.stat_date >= weekStartStr) cur.week += c;
+      if (r.stat_date === todayStr) cur.day += c;
+      map.set(r.agent_id, cur);
+    });
+    const totals = Array.from(map.values()).reduce(
+      (a, v) => ({ day: a.day + v.day, week: a.week + v.week, month: a.month + v.month }),
+      { day: 0, week: 0, month: 0 }
+    );
+    return { map, totals };
+  }, [mtdRows]);
+
+  const getConv = (agentId: string) => convRollup.map.get(agentId) || { day: 0, week: 0, month: 0 };
 
   const rebuildDay = async (dateStr: string) => {
     if (!isManagement) return;
@@ -333,6 +382,27 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
           </CardContent>
         </Card>
 
+        {/* Converted rollup (always visible — independent of selected range) */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Converted today', value: convRollup.totals.day },
+            { label: 'Converted this week', value: convRollup.totals.week },
+            { label: 'Converted this month', value: convRollup.totals.month },
+          ].map(({ label, value }) => (
+            <Card key={label} className="border-2 border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">
+                  {value.toLocaleString()}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         {/* Summary cards (management only) */}
         {isManagement && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -373,6 +443,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                     <Th onClick={headerSort('marked_fake')} active={sortKey==='marked_fake'} dir={sortDir}>Fake</Th>
                     <Th onClick={headerSort('marked_lost')} active={sortKey==='marked_lost'} dir={sortDir}>Lost</Th>
                     <Th onClick={headerSort('marked_converted')} active={sortKey==='marked_converted'} dir={sortDir}>Converted</Th>
+                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted today">Conv · D</th>
+                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted this week">Conv · W</th>
+                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted this month">Conv · M</th>
                     <Th onClick={headerSort('status_changes')} active={sortKey==='status_changes'} dir={sortDir}>Touches</Th>
                     <Th onClick={headerSort('active_leads_eod')} active={sortKey==='active_leads_eod'} dir={sortDir}>Active EOD</Th>
                     <th className="px-2 py-2.5"></th>
@@ -381,16 +454,17 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                 <tbody>
                   {loading && Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b">
-                      {Array.from({ length: 13 }).map((__, j) => (
+                      {Array.from({ length: 16 }).map((__, j) => (
                         <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-12" /></td>
                       ))}
                     </tr>
                   ))}
                   {!loading && perAgent.length === 0 && (
-                    <tr><td colSpan={13} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
+                    <tr><td colSpan={16} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
                   )}
                   {!loading && perAgent.map(r => {
                     const a = agents[r.agent_id];
+                    const cv = getConv(r.agent_id);
                     return (
                       <tr key={r.agent_id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedAgent(r.agent_id)}>
                         <td className="px-4 py-3 sticky left-0 bg-background z-10">
@@ -413,6 +487,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                         <Td className={r.marked_fake ? 'text-destructive font-medium' : ''}>{r.marked_fake}</Td>
                         <Td>{r.marked_lost}</Td>
                         <Td className={r.marked_converted ? 'text-emerald-600 font-medium' : ''}>{r.marked_converted}</Td>
+                        <Td className={cv.day ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.day}</Td>
+                        <Td className={cv.week ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.week}</Td>
+                        <Td className={cv.month ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.month}</Td>
                         <Td>{r.status_changes}</Td>
                         <Td className="font-semibold">{r.active_leads_eod}</Td>
                         <td className="px-2 py-3 text-muted-foreground"><ChevronRight className="h-4 w-4" /></td>
@@ -433,6 +510,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                       <Td>{totals.marked_fake}</Td>
                       <Td>{totals.marked_lost}</Td>
                       <Td>{totals.marked_converted}</Td>
+                      <Td className="text-emerald-700">{convRollup.totals.day}</Td>
+                      <Td className="text-emerald-700">{convRollup.totals.week}</Td>
+                      <Td className="text-emerald-700">{convRollup.totals.month}</Td>
                       <Td>{totals.status_changes}</Td>
                       <Td>{totals.active_leads_eod}</Td>
                       <td />
