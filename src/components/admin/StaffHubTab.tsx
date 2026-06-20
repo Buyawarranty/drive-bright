@@ -32,6 +32,8 @@ interface StaffHubDoc {
   uploaded_by: string | null;
   is_archived: boolean;
   created_at: string;
+  allowed_roles: string[];
+  allowed_team_ids: string[];
 }
 
 const CATEGORIES = [
@@ -45,7 +47,20 @@ const CATEGORIES = [
   { id: 'other', label: 'Other' },
 ];
 
+// Staff roles available for per-document access control.
+// Super admins always have access — they are not listed here.
+const ASSIGNABLE_ROLES: { id: string; label: string }[] = [
+  { id: 'admin', label: 'Admin' },
+  { id: 'sales_manager', label: 'Sales manager' },
+  { id: 'sales_lead', label: 'Sales lead' },
+  { id: 'sales', label: 'Sales agent' },
+  { id: 'lead_gen', label: 'Lead gen' },
+  { id: 'claims_agent', label: 'Claims agent' },
+  { id: 'accounts', label: 'Accounts' },
+];
+
 const categoryLabel = (id: string) => CATEGORIES.find(c => c.id === id)?.label || id;
+const roleLabel = (id: string) => ASSIGNABLE_ROLES.find(r => r.id === id)?.label || id;
 
 const formatBytes = (n: number | null) => {
   if (!n) return '—';
