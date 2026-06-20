@@ -487,6 +487,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                         <Td className={r.marked_fake ? 'text-destructive font-medium' : ''}>{r.marked_fake}</Td>
                         <Td>{r.marked_lost}</Td>
                         <Td className={r.marked_converted ? 'text-emerald-600 font-medium' : ''}>{r.marked_converted}</Td>
+                        <Td className={cv.day ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.day}</Td>
+                        <Td className={cv.week ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.week}</Td>
+                        <Td className={cv.month ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.month}</Td>
                         <Td>{r.status_changes}</Td>
                         <Td className="font-semibold">{r.active_leads_eod}</Td>
                         <td className="px-2 py-3 text-muted-foreground"><ChevronRight className="h-4 w-4" /></td>
