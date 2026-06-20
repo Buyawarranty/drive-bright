@@ -629,7 +629,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                   <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left p-2 w-[140px]">Agent</th>
-                      <th className="text-left p-2 w-[60px]">Src</th>
+                      {canSeeSource && <th className="text-left p-2 w-[60px]">Src</th>}
                       <th className="text-left p-2 w-[110px]">Status</th>
                       <th className="text-center p-2 w-[44px]">CB</th>
                       <th className="text-center p-2 w-[80px]">Calls</th>
