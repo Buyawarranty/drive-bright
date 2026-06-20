@@ -231,41 +231,28 @@ const AdminDashboard = () => {
     setSearchParams({ tab: newTab }, { replace: true });
   }, [setSearchParams]);
 
-  // Back navigation guard - prevent leaving admin dashboard
-  const tabHistoryRef = React.useRef<string[]>([]);
-  
+  // Back navigation within the dashboard
+  const handleBackToTab = useCallback((previousTab: string, updatedHistory: string[]) => {
+    setActiveTab(previousTab);
+    setTabHistory(updatedHistory);
+    setSearchParams({ tab: previousTab }, { replace: true });
+  }, [setSearchParams]);
+
+  // Ensure the current tab is always in the history stack
   useEffect(() => {
-    tabHistoryRef.current = tabHistory;
-  }, [tabHistory]);
+    if (tabHistory.length === 0) {
+      setTabHistory([activeTab]);
+    }
+  }, [activeTab, tabHistory.length]);
 
-  useEffect(() => {
-    // Push initial history state
-    window.history.pushState({ adminGuard: true }, '', window.location.href);
+  // Guard the back button so it can't return to the referrer
+  useAdminBackNavigation({
+    activeTab,
+    tabHistory,
+    onBackToTab: handleBackToTab,
+    enabled: hasAdminAccess && !isCheckingRole,
+  });
 
-    const handlePopState = (event: PopStateEvent) => {
-      // Always prevent leaving the admin dashboard
-      event.preventDefault();
-      
-      // If we have tab history, go back to previous tab
-      if (tabHistoryRef.current.length > 1) {
-        const newHistory = [...tabHistoryRef.current];
-        newHistory.pop(); // Remove current tab
-        const previousTab = newHistory[newHistory.length - 1];
-        setTabHistory(newHistory);
-        setActiveTab(previousTab);
-        setSearchParams({ tab: previousTab }, { replace: true });
-      }
-      
-      // Push state again to maintain the guard
-      window.history.pushState({ adminGuard: true }, '', window.location.href);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []); // Empty deps - register once
 
   // Track if we've already checked access to prevent multiple redirects
   const hasCheckedAccessRef = React.useRef(false);
