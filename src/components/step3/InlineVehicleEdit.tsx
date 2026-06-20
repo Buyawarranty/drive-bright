@@ -75,8 +75,9 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
       };
 
       if (dvlaError || !data || !data.make) {
-        onSave(baseVehicle);
-        toast.success('Quote updated');
+        console.error('DVLA lookup failed for', normalizedReg, dvlaError, data);
+        setError("We couldn't find that registration with the DVLA. Please double-check and try again.");
+        setLoading(false);
         return;
       }
 
@@ -106,17 +107,20 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
         return;
       }
 
+      // Overwrite ALL vehicle fields (use empty strings so stale values from the
+      // previous vehicle don't bleed through the parent's object spread merge).
       onSave({
         ...baseVehicle,
         make: data.make,
-        model: data.model,
-        fuelType: data.fuelType,
-        transmission: data.transmission,
-        year: data.yearOfManufacture || data.year,
-        vehicleType: data.vehicleType,
+        model: data.model ?? '',
+        fuelType: data.fuelType ?? '',
+        transmission: data.transmission ?? '',
+        year: data.yearOfManufacture || data.year || '',
+        manufactureDate: data.manufactureDate ?? '',
+        vehicleType: data.vehicleType ?? '',
         blocked: data.blocked || false,
         blockReason: data.blockReason || '',
-      });
+      } as EditableVehicleData);
       toast.success('Quote updated');
     } catch (e) {
       console.error('Edit vehicle error:', e);
