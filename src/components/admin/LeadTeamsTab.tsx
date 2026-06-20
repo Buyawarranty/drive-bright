@@ -16,7 +16,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
     effectiveRole === 'sales_manager' ||
     effectiveRole === 'sales_lead';
 
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   if (
     effectiveRole !== 'super_admin' &&
