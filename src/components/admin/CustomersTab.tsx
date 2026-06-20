@@ -316,13 +316,29 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 const getCustomerAcquisitionChannel = (
-  customer: Pick<Customer, 'acquisition_source' | 'gclid'> & { is_manual_entry?: boolean | null }
+  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'utm_source'> & { is_manual_entry?: boolean | null }
 ) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
+  const utm = (customer.utm_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
 
-  if (hasGclid || ['google_ads', 'google_ad', 'google', 'g'].includes(source)) return 'google_ads';
-  if (['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f'].includes(source)) return 'facebook_ads';
+  // Google: ANY Google signal counts as Google — gclid, normalised source, or utm_source
+  // referencing google/adwords. This ensures phone sales from Google ads are included
+  // in the "Google all" filter even when the agent closed the deal.
+  if (
+    hasGclid ||
+    source.includes('google') ||
+    source === 'adwords' || source === 'g' ||
+    utm.includes('google') || utm === 'adwords'
+  ) return 'google_ads';
+
+  if (
+    source.includes('facebook') || source.includes('meta') || source.includes('instagram') ||
+    ['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f', 'instagram', 'ig'].includes(source) ||
+    utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram') ||
+    utm === 'fb' || utm === 'ig'
+  ) return 'facebook_ads';
+
   if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
 
   // Manual back-office sale with no recoverable marketing source
