@@ -13,6 +13,9 @@ import { Lock, Radio, CalendarRange, RefreshCcw, Download, Users, Target, AlertT
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays, isToday } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
+import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
+import { cn } from '@/lib/utils';
 
 const MANAGEMENT_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
 
