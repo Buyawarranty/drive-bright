@@ -1082,6 +1082,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 ) : (
                   <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
                 )}
+                {canSeeLeadsPerAgent && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearchParams({ tab: 'leads-per-agent' }, { replace: false })}
+                    title="Open the Leads per Agent dashboard (respects the selected team)"
+                    className="h-6 px-2 text-[10px] font-semibold gap-1 border-2"
+                  >
+                    <BarChart3 className="h-3 w-3" />
+                    Leads per Agent
+                  </Button>
+                )}
                 {isSuperAdmin && (
                   <Button
                     type="button"
