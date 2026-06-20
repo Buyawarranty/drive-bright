@@ -190,6 +190,17 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       console.log('Confirmation email sent:', confirmationResponse);
+      await logCustomerEmail({
+        recipient_email: body.email,
+        recipient_name: body.name,
+        subject: "We've Received Your Enquiry – Buy a Warranty",
+        template_name: 'contact_confirmation',
+        source_function: 'submit-contact',
+        status: (confirmationResponse as any)?.error ? 'failed' : 'sent',
+        error_message: (confirmationResponse as any)?.error ? String((confirmationResponse as any).error?.message || (confirmationResponse as any).error) : null,
+        metadata: { submission_id: submission.id, resend_message_id: (confirmationResponse as any)?.data?.id },
+      });
+
 
     } catch (emailError) {
       console.error('Email sending error:', emailError);
