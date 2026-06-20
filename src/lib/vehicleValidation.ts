@@ -458,7 +458,7 @@ export function calculateVehiclePriceAdjustment(
   }
   
   // Age qualifies if strictly > 12 years (12.0001+) AND <= 15 years
-  const ageQualifies = vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
+  const ageQualifies = !isReliabilityExempt && vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
   
   console.log('🔍 Age Check (Precise):', { 
     'vehicleData.manufactureDate': vehicleData.manufactureDate,
