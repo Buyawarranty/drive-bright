@@ -64,30 +64,22 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         <AllocationMatrix canEdit={canEdit} />
       </section>
 
-      {/* Collapsible advanced — source overrides */}
+      {/* Advanced: source overrides — always open */}
       <section className="border-2 border-foreground/30">
-        <button
-          type="button"
-          onClick={() => setShowAdvanced(s => !s)}
-          className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-muted hover:bg-muted/80 transition-colors"
-        >
-          <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide">
-            <Settings2 className="h-4 w-4" />
-            Advanced: source overrides
-          </span>
-          {showAdvanced ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
-        {showAdvanced && (
-          <div className="p-4 border-t-2 border-foreground/30 space-y-3">
-            <div className="border-l-4 border-amber-500 bg-amber-50 px-3 py-2">
-              <p className="text-xs text-amber-900">
-                <strong>Most teams don't need this.</strong> Leave the matrix empty and leads round-robin across all receiving agents above. Only fill it in when a specific source (e.g. Google Ads) needs to bias toward a specific team.
-              </p>
-            </div>
-            <LeadRoutingPanel canEdit={canEdit} />
+        <div className="w-full flex items-center gap-2 px-4 py-3 bg-muted">
+          <Settings2 className="h-4 w-4" />
+          <span className="text-sm font-bold uppercase tracking-wide">Advanced: source overrides</span>
+        </div>
+        <div className="p-4 border-t-2 border-foreground/30 space-y-3">
+          <div className="border-l-4 border-amber-500 bg-amber-50 px-3 py-2">
+            <p className="text-xs text-amber-900">
+              <strong>Most teams don't need this.</strong> Leave the matrix empty and leads round-robin across all receiving agents above. Only fill it in when a specific source (e.g. Google Ads) needs to bias toward a specific team.
+            </p>
           </div>
-        )}
+          <LeadRoutingPanel canEdit={canEdit} />
+        </div>
       </section>
+
     </div>
   );
 };
