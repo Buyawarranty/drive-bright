@@ -107,12 +107,6 @@ const defaultTabs: Tab[] = [
     description: 'Past enquiries ready for follow-up'
   },
   {
-    id: 'leads-per-agent',
-    label: 'Leads per Agent',
-    icon: BarChart3,
-    description: 'Daily locked per-agent activity stats'
-  },
-  {
     id: 'renewals',
     label: 'Renewals',
     icon: Repeat,
