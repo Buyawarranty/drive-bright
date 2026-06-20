@@ -443,6 +443,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                     <Th onClick={headerSort('marked_fake')} active={sortKey==='marked_fake'} dir={sortDir}>Fake</Th>
                     <Th onClick={headerSort('marked_lost')} active={sortKey==='marked_lost'} dir={sortDir}>Lost</Th>
                     <Th onClick={headerSort('marked_converted')} active={sortKey==='marked_converted'} dir={sortDir}>Converted</Th>
+                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted today">Conv · D</th>
+                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted this week">Conv · W</th>
+                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted this month">Conv · M</th>
                     <Th onClick={headerSort('status_changes')} active={sortKey==='status_changes'} dir={sortDir}>Touches</Th>
                     <Th onClick={headerSort('active_leads_eod')} active={sortKey==='active_leads_eod'} dir={sortDir}>Active EOD</Th>
                     <th className="px-2 py-2.5"></th>
