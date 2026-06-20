@@ -178,6 +178,17 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
     });
   };
 
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(CODE);
+      setCopied(true);
+      toast.success('Code copied to clipboard', { duration: 2000 });
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy code');
+    }
+  };
+
   const handleApply = async () => {
     if (isApplying || isExpired) return;
     setIsApplying(true);
