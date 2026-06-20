@@ -357,6 +357,45 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
           </div>
         </div>
 
+        {/* Team colour filter (Red / Blue / Green) — management only */}
+        {isManagement && allTeams.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">
+              Team
+            </span>
+            <button
+              type="button"
+              onClick={() => setTeamFilter(null)}
+              className={cn(
+                'px-2.5 py-1 text-xs font-medium rounded-full border transition-colors',
+                teamFilter === null
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              All teams
+            </button>
+            {allTeams.map((t) => {
+              const c = TEAM_COLOR_CLASSES[t.color];
+              const active = teamFilter === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTeamFilter(active ? null : t.id)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border transition-colors',
+                    active ? c.pill : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                  )}
+                >
+                  <span className={cn('h-1.5 w-1.5 rounded-full', c.dot)} />
+                  {t.name.replace(/^Formula\s+/i, '')}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Range selector */}
         <Card className="border-2">
           <CardContent className="p-4 flex flex-wrap items-center gap-3">
