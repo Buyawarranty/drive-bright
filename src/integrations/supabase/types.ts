@@ -7977,6 +7977,8 @@ export type Database = {
       }
       staff_hub_documents: {
         Row: {
+          allowed_roles: string[]
+          allowed_team_ids: string[]
           category: string
           created_at: string
           description: string | null
@@ -7991,6 +7993,8 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          allowed_roles?: string[]
+          allowed_team_ids?: string[]
           category?: string
           created_at?: string
           description?: string | null
@@ -8005,6 +8009,8 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          allowed_roles?: string[]
+          allowed_team_ids?: string[]
           category?: string
           created_at?: string
           description?: string | null
@@ -9231,6 +9237,10 @@ export type Database = {
         Returns: string
       }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
+      can_view_staff_hub_doc: {
+        Args: { _allowed_roles: string[]; _allowed_team_ids: string[] }
+        Returns: boolean
+      }
       claim_lead_for_agent: {
         Args: { p_agent_id: string; p_lead_id: string }
         Returns: Json
