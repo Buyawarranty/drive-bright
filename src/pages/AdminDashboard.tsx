@@ -526,7 +526,7 @@ const AdminDashboard = () => {
       case 'goldmine-leads':
         return <GoldenLeadsTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'leads-per-agent':
-        return <LeadsPerAgentTab userRole={effectiveUserRole} currentUserId={user?.id ?? null} />;
+        return <LeadsPerAgentTab userRole={effectiveUserRole} currentUserId={session?.user?.id ?? null} />;
       case 'renewals':
         return <RetentionTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'selling-tips':
