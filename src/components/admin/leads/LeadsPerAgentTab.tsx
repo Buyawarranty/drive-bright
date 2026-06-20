@@ -382,6 +382,27 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
           </CardContent>
         </Card>
 
+        {/* Converted rollup (always visible — independent of selected range) */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Converted today', value: convRollup.totals.day },
+            { label: 'Converted this week', value: convRollup.totals.week },
+            { label: 'Converted this month', value: convRollup.totals.month },
+          ].map(({ label, value }) => (
+            <Card key={label} className="border-2 border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">
+                  {value.toLocaleString()}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         {/* Summary cards (management only) */}
         {isManagement && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
