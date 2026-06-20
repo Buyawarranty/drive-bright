@@ -33,6 +33,8 @@ import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { TeamChangeNoticeDialog } from './TeamChangeNoticeDialog';
 import { TeamFilterChips } from './TeamFilterChips';
 import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
+import { useSearchParams } from 'react-router-dom';
+import { BarChart3 } from 'lucide-react';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
