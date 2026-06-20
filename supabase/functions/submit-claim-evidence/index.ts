@@ -238,6 +238,17 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    await logCustomerEmail({
+      recipient_email: claim.email,
+      recipient_name: claim.name,
+      subject: `We've received your additional evidence — ${regDisplay}`,
+      template_name: 'claim_evidence_confirmation',
+      source_function: 'submit-claim-evidence',
+      status: 'sent',
+      registration_plate: regDisplay,
+      metadata: { claim_id: claim.id, evidence_type: evidenceLabel }
+    });
+
     return new Response(JSON.stringify({
       success: true,
       claimId: claim.id,

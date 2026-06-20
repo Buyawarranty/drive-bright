@@ -549,6 +549,17 @@ const handler = async (req: Request): Promise<Response> => {
       html: customerEmailHtml,
     });
 
+    await logCustomerEmail({
+      recipient_email: email,
+      recipient_name: name,
+      subject: `We've received your claim — ${customerRef}`,
+      template_name: 'claim_confirmation',
+      source_function: 'submit-claim',
+      status: 'sent',
+      registration_plate: regPlateDisplay,
+      metadata: { submission_id: submissionData.id, warranty_number: warrantyNumber }
+    });
+
     return new Response(
       JSON.stringify({ 
         success: true, 

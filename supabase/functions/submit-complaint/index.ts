@@ -183,10 +183,23 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
+    let customerErrText = '';
     if (!customerRes.ok) {
-      const errText = await customerRes.text();
-      console.error("Customer email failed:", errText);
+      customerErrText = await customerRes.text();
+      console.error("Customer email failed:", customerErrText);
     }
+
+    await logCustomerEmail({
+      recipient_email: email,
+      recipient_name: customerName,
+      subject: `We've received your complaint — ${reference}`,
+      template_name: 'complaint_confirmation',
+      source_function: 'submit-complaint',
+      status: customerRes.ok ? 'sent' : 'failed',
+      error_message: customerRes.ok ? null : customerErrText,
+      registration_plate: registrationPlate?.trim().toUpperCase() || null,
+      metadata: { reference, category, internal_email_ok: internalRes.ok }
+    });
 
     return new Response(
       JSON.stringify({ success: true, reference }),
