@@ -42,13 +42,16 @@ interface EmailTemplate {
 interface EmailLog {
   id: string;
   recipient_email: string;
+  recipient_name?: string | null;
   subject: string;
   status: string;
   sent_at: string | null;
   created_at: string;
   error_message: string | null;
+  failed_reason?: string | null;
   template_id: string | null;
   campaign_id: string | null;
+  customer_id?: string | null;
   delivery_status: string | null;
   resend_count: number;
   metadata: any;
