@@ -635,15 +635,26 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
               <TabsContent value="sources" className="space-y-2 mt-3">
                 {canEdit && (
-                  <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+                  <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 gap-3">
                     <p className="text-xs text-muted-foreground">
-                      <strong>On</strong> = leads from this source go to this team. <strong>Off</strong> = ignored (falls back to the live flow).
+                      <strong className="text-green-700">Turn all On</strong> = every lead source (Google, Facebook, Instagram, TikTok, YouTube, Organic, Direct, Referral, Unknown) flows to this team.{" "}
+                      <strong className="text-red-700">Turn all Off</strong> = no sources flow to this team. Then toggle individual sources below to pick exactly which ones you want.
                     </p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => bulkSetAllAllowed(activeTeam.id, true)}>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        onClick={() => bulkSetAllAllowed(activeTeam.id, true)}
+                        className="bg-green-600 hover:bg-green-700 text-white border border-green-700"
+                        title="Switch every source ON for this team"
+                      >
                         <Check className="h-3.5 w-3.5 mr-1" /> Turn all On
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => bulkSetAllAllowed(activeTeam.id, false)}>
+                      <Button
+                        size="sm"
+                        onClick={() => bulkSetAllAllowed(activeTeam.id, false)}
+                        className="bg-red-600 hover:bg-red-700 text-white border border-red-700"
+                        title="Switch every source OFF for this team"
+                      >
                         <X className="h-3.5 w-3.5 mr-1" /> Turn all Off
                       </Button>
                     </div>
