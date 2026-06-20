@@ -454,16 +454,17 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                 <tbody>
                   {loading && Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b">
-                      {Array.from({ length: 13 }).map((__, j) => (
+                      {Array.from({ length: 16 }).map((__, j) => (
                         <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-12" /></td>
                       ))}
                     </tr>
                   ))}
                   {!loading && perAgent.length === 0 && (
-                    <tr><td colSpan={13} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
+                    <tr><td colSpan={16} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
                   )}
                   {!loading && perAgent.map(r => {
                     const a = agents[r.agent_id];
+                    const cv = getConv(r.agent_id);
                     return (
                       <tr key={r.agent_id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedAgent(r.agent_id)}>
                         <td className="px-4 py-3 sticky left-0 bg-background z-10">
