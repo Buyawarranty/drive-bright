@@ -406,6 +406,7 @@ export const StaffHubTab: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Filters */}
