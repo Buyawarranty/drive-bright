@@ -18,8 +18,7 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const { email, password, customerName, mode = 'normal' } = await req.json();
-    const isApology = mode === 'apology';
+    const { email, password, customerName } = await req.json();
 
     if (!email || !password) {
       return new Response(
@@ -28,13 +27,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[SEND-CREDENTIALS] ${isApology ? 'Apology ' : ''}credentials to:`, email);
+    console.log('[SEND-CREDENTIALS] Sending credentials to:', email);
 
-    const subject = isApology
-      ? 'Sorry you had trouble logging in — here are your details'
-      : 'Your Buy A Warranty Dashboard Login Details';
-
-    const normalHtml = `
+    const emailHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -102,7 +97,7 @@ serve(async (req) => {
           <tr>
             <td style="padding: 24px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e9ecef;">
               <p style="margin: 0; color: #999999; font-size: 12px; text-align: center;">
-                Buy A Warranty Ltd | support@buyawarranty.co.uk | 0330 229 5040
+                Buy A Warranty Ltd | support@buyawarranty.co.uk | 0800 093 4456
               </p>
             </td>
           </tr>
@@ -113,109 +108,6 @@ serve(async (req) => {
 </body>
 </html>
     `;
-
-    const apologyHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sorry you had trouble logging in</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td align="center" style="padding: 40px 0;">
-        <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          <!-- Header -->
-          <tr>
-            <td style="padding: 30px 40px; background-color: #1a365d; border-radius: 8px 8px 0 0;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px;">Buy A Warranty</h1>
-            </td>
-          </tr>
-          
-          <!-- Content -->
-          <tr>
-            <td style="padding: 40px;">
-              <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 22px;">Sorry you had trouble logging in</h2>
-              
-              <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.5;">
-                Hi ${customerName || 'Customer'},
-              </p>
-              
-              <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.5;">
-                Sorry for the trouble logging in — let's get you sorted. Below are your dashboard details and a few quick tips that fix most login issues.
-              </p>
-              
-              <!-- Credentials Box -->
-              <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 24px; margin: 24px 0;">
-                <table role="presentation" style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 8px 0;">
-                      <strong style="color: #333;">Email:</strong>
-                      <span style="color: #1a365d; font-family: monospace; margin-left: 10px;">${email}</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0;">
-                      <strong style="color: #333;">Password:</strong>
-                      <span style="color: #1a365d; font-family: monospace; font-size: 18px; margin-left: 10px; background-color: #e8f4f8; padding: 4px 12px; border-radius: 4px;">${password}</span>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-              
-              <!-- Login Button -->
-              <div style="text-align: center; margin: 32px 0;">
-                <a href="https://buyawarranty.co.uk/customer-dashboard/" style="display: inline-block; background-color: #e07a3a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 16px; font-weight: bold;">
-                  Log In to Your Dashboard
-                </a>
-              </div>
-              
-              <!-- Help Tips -->
-              <div style="background-color: #fff8f0; border: 1px solid #f5d0a9; border-radius: 8px; padding: 20px; margin: 24px 0;">
-                <h3 style="margin: 0 0 14px 0; color: #333333; font-size: 16px;">Quick tips if logging in is still not working</h3>
-                <p style="margin: 0 0 10px 0; color: #555555; font-size: 14px; line-height: 1.6;">
-                  • Double-check the email address — it must match the one shown above exactly.
-                </p>
-                <p style="margin: 0 0 10px 0; color: #555555; font-size: 14px; line-height: 1.6;">
-                  • Copy and paste the password rather than typing it (it is case-sensitive).
-                </p>
-                <p style="margin: 0 0 10px 0; color: #555555; font-size: 14px; line-height: 1.6;">
-                  • Use the latest Chrome, Safari or Edge. If you have tried before, clear your browser cache or open a private window.
-                </p>
-                <p style="margin: 0; color: #555555; font-size: 14px; line-height: 1.6;">
-                  • Forgot or want to change the password? Use <strong>"Forgot password"</strong> on the login page.
-                </p>
-              </div>
-              
-              <p style="margin: 20px 0 0 0; color: #666666; font-size: 16px; line-height: 1.5;">
-                <strong>Still stuck?</strong> Reply to this email or call us on <a href="tel:03302295040" style="color: #e07a3a; text-decoration: none;">0330 229 5040</a> — we're happy to walk you through it.
-              </p>
-              
-              <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 1.5;">
-                If you didn't request this email or have any questions, please contact our support team.
-              </p>
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="padding: 24px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e9ecef;">
-              <p style="margin: 0; color: #999999; font-size: 12px; text-align: center;">
-                Buy A Warranty Ltd | support@buyawarranty.co.uk | 0330 229 5040
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-    `;
-
-    const emailHtml = isApology ? apologyHtml : normalHtml;
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -226,7 +118,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Buy A Warranty <noreply@buyawarranty.co.uk>',
         to: [email],
-        subject,
+        subject: 'Your Buy A Warranty Dashboard Login Details',
         html: emailHtml,
       }),
     });
@@ -238,8 +130,8 @@ serve(async (req) => {
       await logCustomerEmail({
         recipient_email: email,
         recipient_name: customerName,
-        subject,
-        template_name: isApology ? 'customer_credentials_apology' : 'customer_credentials',
+        subject: 'Your Buy A Warranty Dashboard Login Details',
+        template_name: 'customer_credentials',
         source_function: 'send-customer-credentials',
         status: 'failed',
         error_message: result?.message || `HTTP ${response.status}`,
@@ -247,21 +139,21 @@ serve(async (req) => {
       throw new Error(result.message || 'Failed to send email');
     }
 
-    console.log(`[SEND-CREDENTIALS] ${isApology ? 'Apology ' : ''}email sent successfully:`, result.id);
+    console.log('[SEND-CREDENTIALS] Email sent successfully:', result.id);
     await logCustomerEmail({
       recipient_email: email,
       recipient_name: customerName,
-      subject,
-      template_name: isApology ? 'customer_credentials_apology' : 'customer_credentials',
+      subject: 'Your Buy A Warranty Dashboard Login Details',
+      template_name: 'customer_credentials',
       source_function: 'send-customer-credentials',
       status: 'sent',
-      metadata: { resend_message_id: result?.id, mode },
+      metadata: { resend_message_id: result?.id },
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `${isApology ? 'Apology login details' : 'Credentials email'} sent successfully`,
+        message: 'Credentials email sent successfully',
         emailId: result.id
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
