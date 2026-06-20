@@ -22,6 +22,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
 interface Tab {
   id: string;
   label: string;
