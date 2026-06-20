@@ -128,22 +128,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`${reminderType} reminder sent successfully:`, emailResponse);
 
-    // Log the email in Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    await supabase.from('email_logs').insert({
+    // Log the email
+    const { logCustomerEmail } = await import('../_shared/log-email.ts');
+    await logCustomerEmail({
       recipient_email: email,
-      template_id: null,
       subject,
-      delivery_status: 'sent',
-      resend_id: emailResponse.data?.id,
+      template_name: `return_discount_reminder_${reminderType || 'unknown'}`,
+      source_function: 'send-return-discount-reminder',
+      status: 'sent',
       metadata: {
         reminderType,
         discountCode,
-        daysRemaining
-      }
+        daysRemaining,
+        resend_message_id: emailResponse.data?.id,
+      },
     });
 
     return new Response(
