@@ -73,6 +73,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
   const [isApplying, setIsApplying] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
+  const [copied, setCopied] = useState(false);
   const inactivityTimer = useRef<number | null>(null);
   const hasShownThisSession = useRef(false);
 
