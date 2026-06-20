@@ -291,13 +291,14 @@ export const StaffHubTab: React.FC = () => {
           </div>
         </div>
 
-        <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload document
-            </Button>
-          </DialogTrigger>
+        {isSuperAdmin && (
+          <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload document
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[520px]">
             <DialogHeader>
               <DialogTitle>Upload a staff document</DialogTitle>
