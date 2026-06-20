@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lock, Radio, CalendarRange, RefreshCcw, Download, Users, Target, AlertTriangle, CheckCircle2, PhoneCall, StickyNote, BellRing, Activity, ChevronRight } from 'lucide-react';
+import { Lock, Radio, CalendarRange, RefreshCcw, Download, Users, Target, AlertTriangle, CheckCircle2, PhoneCall, StickyNote, BellRing, Activity, ChevronRight, Mail, Phone, Car, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays, isToday } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend } from 'recharts';
