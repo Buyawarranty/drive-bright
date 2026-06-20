@@ -414,16 +414,20 @@ export function calculateVehiclePriceAdjustment(
   }
   
   // Mileage and age surcharges with tiered amounts (non-stacking)
-  
+  // EXCEPTION: Honda and Toyota (all models) are exempt from both age and mileage
+  // surcharges due to their exceptional reliability records.
+  const makeLC = (vehicleData.make || '').toLowerCase().trim();
+  const isReliabilityExempt = makeLC === 'honda' || makeLC === 'toyota';
+
   // Calculate mileage-based premium for vehicles between 120,001 and 150,000 miles
   // Boundary: 120,001 triggers, 120,000 does NOT. 150,000 triggers, 150,001 does NOT.
   const mileage = typeof vehicleData.mileage === 'string' 
     ? parseInt(vehicleData.mileage.replace(/[^0-9]/g, '')) 
     : vehicleData.mileage;
   
-  const mileageQualifies = mileage && mileage > 120000 && mileage <= 150000;
+  const mileageQualifies = !isReliabilityExempt && mileage && mileage > 120000 && mileage <= 150000;
   
-  console.log('🔍 Mileage Check:', { mileage, mileageQualifies, threshold: '120,001 - 150,000' });
+  console.log('🔍 Mileage Check:', { mileage, mileageQualifies, isReliabilityExempt, make: vehicleData.make, threshold: '120,001 - 150,000' });
   
   // Calculate age-based premium for vehicles strictly > 12 years old AND <= 15 years old
   // Uses precise age from manufactureDate if available, otherwise falls back to year calculation
@@ -454,7 +458,7 @@ export function calculateVehiclePriceAdjustment(
   }
   
   // Age qualifies if strictly > 12 years (12.0001+) AND <= 15 years
-  const ageQualifies = vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
+  const ageQualifies = !isReliabilityExempt && vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
   
   console.log('🔍 Age Check (Precise):', { 
     'vehicleData.manufactureDate': vehicleData.manufactureDate,
