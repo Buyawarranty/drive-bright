@@ -681,11 +681,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                           </td>
 
                           {/* Src */}
-                          <td className="p-2">
-                            {lead.lead_source ? (
-                              <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
-                            ) : <span className="text-muted-foreground text-xs">—</span>}
-                          </td>
+                          {canSeeSource && (
+                            <td className="p-2">
+                              {lead.lead_source ? (
+                                <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </td>
+                          )}
 
                           {/* Status */}
                           <td className="p-2" onClick={(e) => e.stopPropagation()}>
