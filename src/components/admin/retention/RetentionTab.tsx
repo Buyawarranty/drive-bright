@@ -323,23 +323,25 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     }
   }, []);
 
-  // Aggregate call attempts per customer email so the Calls column shows live activity
-  // pulled from the same lead_call_logs table the New Leads tab uses.
+  // Show how many call attempts have been made against this customer across all
+  // sales_leads that share their email — gives renewal agents the same call-count
+  // signal they see on the New Leads tab.
   const fetchCallCounts = useCallback(async (emails: string[]) => {
     const clean = Array.from(new Set(emails.filter(Boolean).map((e) => e.toLowerCase())));
     if (clean.length === 0) { setCallCountsByEmail({}); return; }
-    const { data } = await (supabase.from('lead_call_logs') as any)
-      .select('called_email')
-      .in('called_email', clean)
+    const { data } = await (supabase.from('sales_leads') as any)
+      .select('email, call_count')
+      .in('email', clean)
       .limit(5000);
     const map: Record<string, number> = {};
     ((data as any[]) || []).forEach((r) => {
-      const k = (r.called_email || '').toLowerCase();
+      const k = (r.email || '').toLowerCase();
       if (!k) return;
-      map[k] = (map[k] || 0) + 1;
+      map[k] = (map[k] || 0) + (Number(r.call_count) || 0);
     });
     setCallCountsByEmail(map);
   }, []);
+
 
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
