@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight, Globe, Network } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
@@ -33,8 +33,6 @@ interface LeadsFiltersProps {
   onRefresh: () => void;
   onMigrate: () => void;
   onExport: (format: 'csv' | 'xlsx') => void;
-  onManageRouting?: () => void;
-  canManageRouting?: boolean;
   leadCounts: {
     all_leads: number;
     all: number;
@@ -121,8 +119,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onRefresh,
   onMigrate,
   onExport,
-  onManageRouting,
-  canManageRouting,
   leadCounts,
   dateRange,
   onDateRangeChange,
@@ -579,17 +575,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {(userRole === 'super_admin' || userRole === 'admin') && (
           <Button variant="ghost" size="sm" onClick={() => onExport('csv')} className="h-7 px-2 text-[11px] gap-1 rounded-md">
             <Download className="h-3 w-3" /> CSV
-          </Button>
-        )}
-        {canManageRouting && onManageRouting && (
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onManageRouting}
-            className="h-7 px-2.5 text-[11px] gap-1 rounded-md font-semibold shadow-sm"
-            title="Assign agents to teams (Red / Blue / Green) and pick the queues they work — New Leads, Recontact, Renewals"
-          >
-            <Network className="h-3 w-3" /> Allocate Agents
           </Button>
         )}
       </div>
