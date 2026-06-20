@@ -210,10 +210,29 @@ serve(async (req) => {
     const result = await response.json();
     if (!response.ok) {
       logStep("Email send failed", { status: response.status, result });
+      await logCustomerEmail({
+        recipient_email: email,
+        recipient_name: firstName,
+        subject: payload.subject,
+        template_name: 'claim_info',
+        source_function: 'send-claim-info-email',
+        status: 'failed',
+        error_message: result?.message || `HTTP ${response.status}`,
+        policy_number: (await req.clone().json().catch(() => ({})))?.policyNumber,
+      });
       throw new Error(`Email send failed: ${result.message || 'unknown'}`);
     }
 
     logStep("Claim info email sent", { id: result.id, to: email });
+    await logCustomerEmail({
+      recipient_email: email,
+      recipient_name: firstName,
+      subject: payload.subject,
+      template_name: 'claim_info',
+      source_function: 'send-claim-info-email',
+      status: 'sent',
+      metadata: { resend_message_id: result.id },
+    });
     return new Response(JSON.stringify({ success: true, id: result.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
