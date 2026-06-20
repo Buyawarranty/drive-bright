@@ -111,6 +111,8 @@ export const useAdminBackNavigation = ({
     return () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
+      hasInitializedRef.current = false;
     };
   }, [enabled, handlePopState, pushGuardEntries]);
+
 };
