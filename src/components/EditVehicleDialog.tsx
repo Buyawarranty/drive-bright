@@ -14,6 +14,7 @@ export interface EditableVehicleData {
   fuelType?: string;
   transmission?: string;
   year?: string;
+  manufactureDate?: string;
   vehicleType?: string;
   blocked?: boolean;
   blockReason?: string;
