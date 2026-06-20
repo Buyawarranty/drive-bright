@@ -323,12 +323,32 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     }
   }, []);
 
+  // Aggregate call attempts per customer email so the Calls column shows live activity
+  // pulled from the same lead_call_logs table the New Leads tab uses.
+  const fetchCallCounts = useCallback(async (emails: string[]) => {
+    const clean = Array.from(new Set(emails.filter(Boolean).map((e) => e.toLowerCase())));
+    if (clean.length === 0) { setCallCountsByEmail({}); return; }
+    const { data } = await (supabase.from('lead_call_logs') as any)
+      .select('called_email')
+      .in('called_email', clean)
+      .limit(5000);
+    const map: Record<string, number> = {};
+    ((data as any[]) || []).forEach((r) => {
+      const k = (r.called_email || '').toLowerCase();
+      if (!k) return;
+      map[k] = (map[k] || 0) + 1;
+    });
+    setCallCountsByEmail(map);
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
   useEffect(() => { fetchTotals(); }, [fetchTotals]);
   useEffect(() => { fetchTouches(rows.map((r) => r.id)); }, [rows, fetchTouches]);
-
+  useEffect(() => {
+    fetchCallCounts(rows.map((r) => (r.customers?.email || r.email || '')));
+  }, [rows, fetchCallCounts]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
@@ -370,6 +390,62 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
     },
     []
   );
+
+  const reassignCustomer = useCallback(async (row: PolicyRow, newAuthId: string | null) => {
+    if (!row.customer_id) {
+      toast.error('No linked customer record to assign');
+      return;
+    }
+    const { error } = await (supabase.from('customers') as any)
+      .update({ assigned_to: newAuthId })
+      .eq('id', row.customer_id);
+    if (error) { toast.error('Could not reassign', { description: error.message }); return; }
+    setRows((prev) => prev.map((r) =>
+      r.id === row.id && r.customers
+        ? { ...r, customers: { ...r.customers, assigned_to: newAuthId } }
+        : r
+    ));
+    toast.success(newAuthId ? 'Reassigned' : 'Unassigned');
+  }, []);
+
+  // Log an attempted call against the customer's email so the count tallies with the New Leads tab.
+  const logCustomerCall = useCallback(async (row: PolicyRow) => {
+    const email = (row.customers?.email || row.email || '').toLowerCase();
+    if (!email) { toast.error('No email on this customer — cannot log call'); return; }
+    const { error } = await (supabase.from('lead_call_logs') as any).insert({
+      called_email: email,
+      called_phone: row.customers?.phone || null,
+      called_by: currentUserId,
+      call_outcome: 'attempted',
+    });
+    if (error) { toast.error('Could not log call', { description: error.message }); return; }
+    setCallCountsByEmail((prev) => ({ ...prev, [email]: (prev[email] || 0) + 1 }));
+  }, [currentUserId]);
+
+  const saveCustomerNote = useCallback(async (row: PolicyRow) => {
+    const text = (noteDraft[row.id] || '').trim();
+    if (!text) return;
+    if (!row.customer_id) { toast.error('No linked customer record'); return; }
+    const { error } = await (supabase.from('customer_notes') as any).insert({
+      customer_id: row.customer_id,
+      note: text,
+      created_by: currentUserId,
+    });
+    if (error) { toast.error('Could not save note', { description: error.message }); return; }
+    setNoteDraft((prev) => ({ ...prev, [row.id]: '' }));
+    toast.success('Note saved');
+  }, [noteDraft, currentUserId]);
+
+  const srcBadge = (id: SegmentId) => {
+    switch (id) {
+      case 'due_soon':       return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]">Due</Badge>;
+      case 'renewal_window': return <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-[10px]">Renewal</Badge>;
+      case 'upsell':         return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">Upsell</Badge>;
+      case 'lapsed':         return <Badge className="bg-red-100 text-red-800 border-red-200 text-[10px]">Lapsed</Badge>;
+      default:               return <Badge variant="outline" className="text-[10px]">—</Badge>;
+    }
+  };
+
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
