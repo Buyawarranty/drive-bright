@@ -88,6 +88,7 @@ function agentLabel(a: Agent | undefined): string {
 }
 
 export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
+  const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
   const [segment, setSegment] = useState<SegmentId>('due_today');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
@@ -628,7 +629,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                   <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left p-2 w-[140px]">Agent</th>
-                      <th className="text-left p-2 w-[60px]">Src</th>
+                      {canSeeSource && <th className="text-left p-2 w-[60px]">Src</th>}
                       <th className="text-left p-2 w-[110px]">Status</th>
                       <th className="text-center p-2 w-[44px]">CB</th>
                       <th className="text-center p-2 w-[80px]">Calls</th>
@@ -680,11 +681,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                           </td>
 
                           {/* Src */}
-                          <td className="p-2">
-                            {lead.lead_source ? (
-                              <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
-                            ) : <span className="text-muted-foreground text-xs">—</span>}
-                          </td>
+                          {canSeeSource && (
+                            <td className="p-2">
+                              {lead.lead_source ? (
+                                <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </td>
+                          )}
 
                           {/* Status */}
                           <td className="p-2" onClick={(e) => e.stopPropagation()}>

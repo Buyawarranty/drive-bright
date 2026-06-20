@@ -134,6 +134,7 @@ function upsellPotential(p: PolicyRow): string[] {
 }
 
 export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
+  const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
   const [segment, setSegment] = useState<SegmentId>('due_soon');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -575,7 +576,7 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
                   <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left p-2 w-[140px]">Agent</th>
-                      <th className="text-left p-2 w-[70px]">Src</th>
+                      {canSeeSource && <th className="text-left p-2 w-[70px]">Src</th>}
                       <th className="text-left p-2 w-[120px]">Status</th>
                       <th className="text-center p-2 w-[44px]">CB</th>
                       <th className="text-center p-2 w-[60px]">Calls</th>
@@ -633,7 +634,7 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
                           </td>
 
                           {/* Src */}
-                          <td className="p-2">{srcBadge(segment)}</td>
+                          {canSeeSource && <td className="p-2">{srcBadge(segment)}</td>}
 
                           {/* Status */}
                           <td className="p-2">
