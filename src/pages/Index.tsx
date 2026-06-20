@@ -789,7 +789,7 @@ const Index = () => {
         const tyParams = new URLSearchParams({ source: 'stripe' });
         const pi = searchParams.get('payment_intent');
         if (pi) tyParams.set('payment_intent', pi);
-        if (selectedPlan?.planName) tyParams.set('plan', selectedPlan.planName);
+        if (selectedPlan?.name) tyParams.set('plan', selectedPlan.name);
         if (selectedPlan?.paymentType) {
           tyParams.set('payment', selectedPlan.paymentType);
           tyParams.set('duration', selectedPlan.paymentType);
@@ -798,9 +798,9 @@ const Index = () => {
         const vehStr = `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim();
         if (vehStr) tyParams.set('vehicle', vehStr);
         if (vehicleData?.mileage) tyParams.set('mileage', String(vehicleData.mileage));
-        if (selectedPlan?.claimLimit) tyParams.set('claim_limit', String(selectedPlan.claimLimit));
-        if (selectedPlan?.labourRate) tyParams.set('labour_rate', String(selectedPlan.labourRate));
-        if (selectedPlan?.voluntaryExcess !== undefined) tyParams.set('excess', String(selectedPlan.voluntaryExcess));
+        if (selectedPlan?.pricingData?.claimLimit) tyParams.set('claim_limit', String(selectedPlan.pricingData.claimLimit));
+        if (selectedPlan?.pricingData?.labourRate) tyParams.set('labour_rate', String(selectedPlan.pricingData.labourRate));
+        if (selectedPlan?.pricingData?.voluntaryExcess !== undefined) tyParams.set('excess', String(selectedPlan.pricingData.voluntaryExcess));
         navigate(`/thank-you?${tyParams.toString()}`, { replace: true });
         return;
       } else if (redirectStatus === 'failed') {
