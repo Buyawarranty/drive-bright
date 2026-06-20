@@ -111,8 +111,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Admin-controlled global toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
 
-  // Team filter (Red / Blue / Green) — only managers see the chips; default null = no filter.
-  const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
+  const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
   // Unassigned sales leads are not auto-placed into any team — they remain pending.
@@ -125,7 +125,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
       setTeamFilter(myTeam.id);
     }
-  }, [isLockedToOwnTeam, myTeam, teamFilter]);
+  }, [isLockedToOwnTeam, myTeam, teamFilter, setTeamFilter]);
 
   
   
