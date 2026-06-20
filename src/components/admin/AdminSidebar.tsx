@@ -646,7 +646,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
               </Command>
             </PopoverContent>
           </Popover>
+          <SidebarTeamSwitcher userRole={userRole} />
         </div>
+
         
         <DndContext
           sensors={sensors}
