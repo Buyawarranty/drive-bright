@@ -14,9 +14,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Upload, Download, Trash2, Eye, FolderOpen, Search, Calendar } from 'lucide-react';
+import { FileText, Upload, Download, Trash2, Eye, FolderOpen, Search, Calendar, Lock, Users, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/hooks/useAuth';
 
 interface StaffHubDoc {
   id: string;
@@ -30,6 +32,8 @@ interface StaffHubDoc {
   uploaded_by: string | null;
   is_archived: boolean;
   created_at: string;
+  allowed_roles: string[];
+  allowed_team_ids: string[];
 }
 
 const CATEGORIES = [
@@ -43,7 +47,20 @@ const CATEGORIES = [
   { id: 'other', label: 'Other' },
 ];
 
+// Staff roles available for per-document access control.
+// Super admins always have access — they are not listed here.
+const ASSIGNABLE_ROLES: { id: string; label: string }[] = [
+  { id: 'admin', label: 'Admin' },
+  { id: 'sales_manager', label: 'Sales manager' },
+  { id: 'sales_lead', label: 'Sales lead' },
+  { id: 'sales', label: 'Sales agent' },
+  { id: 'lead_gen', label: 'Lead gen' },
+  { id: 'claims_agent', label: 'Claims agent' },
+  { id: 'accounts', label: 'Accounts' },
+];
+
 const categoryLabel = (id: string) => CATEGORIES.find(c => c.id === id)?.label || id;
+const roleLabel = (id: string) => ASSIGNABLE_ROLES.find(r => r.id === id)?.label || id;
 
 const formatBytes = (n: number | null) => {
   if (!n) return '—';
@@ -56,6 +73,7 @@ export const StaffHubTab: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const adminId = useCurrentAdminId();
+  const { user } = useAuth();
 
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -65,12 +83,50 @@ export const StaffHubTab: React.FC = () => {
   const [viewerUrl, setViewerUrl] = useState<string>('');
   const [viewerLoading, setViewerLoading] = useState(false);
 
+  // Access manager dialog (super admin only)
+  const [accessDoc, setAccessDoc] = useState<StaffHubDoc | null>(null);
+  const [accessRoles, setAccessRoles] = useState<string[]>([]);
+  const [accessTeamIds, setAccessTeamIds] = useState<string[]>([]);
+  const [accessSaving, setAccessSaving] = useState(false);
 
   // Upload form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('handbook');
   const [file, setFile] = useState<File | null>(null);
+  const [uploadRoles, setUploadRoles] = useState<string[]>([]);
+  const [uploadTeamIds, setUploadTeamIds] = useState<string[]>([]);
+
+  // Is the current viewer a super admin? Controls who can manage access / delete.
+  const { data: isSuperAdmin = false } = useQuery({
+    queryKey: ['staff-hub-is-super-admin', user?.id],
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', user!.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      return data?.role === 'super_admin';
+    },
+  });
+
+  // Lead teams for per-document access scoping.
+  const { data: teams = [] } = useQuery({
+    queryKey: ['staff-hub-lead-teams'],
+    enabled: isSuperAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lead_teams')
+        .select('id, name, emoji, color')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const { data: docs = [], isLoading } = useQuery({
     queryKey: ['staff-hub-documents'],
@@ -113,7 +169,12 @@ export const StaffHubTab: React.FC = () => {
     setDescription('');
     setCategory('handbook');
     setFile(null);
+    setUploadRoles([]);
+    setUploadTeamIds([]);
   };
+
+  const toggleInArray = (arr: string[], value: string) =>
+    arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value];
 
   const handleUpload = async () => {
     if (!file || !title.trim()) {
@@ -140,6 +201,8 @@ export const StaffHubTab: React.FC = () => {
         file_size: file.size,
         mime_type: file.type || null,
         uploaded_by: adminId || null,
+        allowed_roles: isSuperAdmin ? uploadRoles : [],
+        allowed_team_ids: isSuperAdmin ? uploadTeamIds : [],
       });
       if (insErr) {
         // Roll back storage on metadata insert failure
@@ -228,13 +291,14 @@ export const StaffHubTab: React.FC = () => {
           </div>
         </div>
 
-        <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload document
-            </Button>
-          </DialogTrigger>
+        {isSuperAdmin && (
+          <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload document
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[520px]">
             <DialogHeader>
               <DialogTitle>Upload a staff document</DialogTitle>
@@ -288,6 +352,50 @@ export const StaffHubTab: React.FC = () => {
                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls"
                   onChange={e => setFile(e.target.files?.[0] || null)} />
               </div>
+
+              {isSuperAdmin && (
+                <div className="space-y-3 rounded-md border-2 border-dashed border-muted-foreground/30 p-3">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold">Who can see this document?</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground -mt-1">
+                    Leave everything unticked to share with all admin staff. Super admins always have access.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Staff roles</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ASSIGNABLE_ROLES.map(r => (
+                        <label key={r.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={uploadRoles.includes(r.id)}
+                            onCheckedChange={() => setUploadRoles(arr => toggleInArray(arr, r.id))}
+                          />
+                          {r.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {teams.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Teams</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {teams.map(t => (
+                          <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <Checkbox
+                              checked={uploadTeamIds.includes(t.id)}
+                              onCheckedChange={() => setUploadTeamIds(arr => toggleInArray(arr, t.id))}
+                            />
+                            <span>{t.emoji} {t.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setUploadOpen(false)} disabled={uploading}>Cancel</Button>
@@ -298,6 +406,7 @@ export const StaffHubTab: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Filters */}
@@ -378,13 +487,26 @@ export const StaffHubTab: React.FC = () => {
                       {doc.description && (
                         <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{doc.description}</p>
                       )}
-                      <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground flex-wrap">
                         <span className="inline-flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {format(new Date(doc.created_at), 'd MMM yyyy')}
                         </span>
                         <span>{formatBytes(doc.file_size)}</span>
                         <span className="truncate">{doc.file_name}</span>
+                        {(doc.allowed_roles?.length > 0 || doc.allowed_team_ids?.length > 0) ? (
+                          <Badge variant="outline" className="text-[10px] gap-1">
+                            <Lock className="h-3 w-3" />
+                            Restricted
+                            {doc.allowed_roles?.length > 0 && ` · ${doc.allowed_roles.length} role${doc.allowed_roles.length === 1 ? '' : 's'}`}
+                            {doc.allowed_team_ids?.length > 0 && ` · ${doc.allowed_team_ids.length} team${doc.allowed_team_ids.length === 1 ? '' : 's'}`}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] gap-1">
+                            <Users className="h-3 w-3" />
+                            All staff
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -394,31 +516,48 @@ export const StaffHubTab: React.FC = () => {
                       <Button size="sm" variant="ghost" onClick={(e) => handleDownload(doc, e)} title="Download">
                         <Download className="h-4 w-4" />
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete" onClick={(e) => e.stopPropagation()}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
+                      {isSuperAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Manage access"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAccessDoc(doc);
+                            setAccessRoles(doc.allowed_roles || []);
+                            setAccessTeamIds(doc.allowed_team_ids || []);
+                          }}
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {isSuperAdmin && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete" onClick={(e) => e.stopPropagation()}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
 
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this document?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              "{doc.title}" will be permanently removed. This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteMutation.mutate(doc)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete this document?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                "{doc.title}" will be permanently removed. This cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(doc)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -475,6 +614,99 @@ export const StaffHubTab: React.FC = () => {
               }}
             >
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage access (super admin only) */}
+      <Dialog
+        open={!!accessDoc}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAccessDoc(null);
+            setAccessRoles([]);
+            setAccessTeamIds([]);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              Manage access
+            </DialogTitle>
+            <DialogDescription className="truncate">
+              {accessDoc?.title}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-muted-foreground">
+              Choose which staff roles and teams can view this document. Leave both sections empty to share with every admin staff member. Super admins always have access.
+            </p>
+
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Staff roles</p>
+              <div className="grid grid-cols-2 gap-2">
+                {ASSIGNABLE_ROLES.map(r => (
+                  <label key={r.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={accessRoles.includes(r.id)}
+                      onCheckedChange={() => setAccessRoles(arr => toggleInArray(arr, r.id))}
+                    />
+                    {r.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {teams.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Teams</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {teams.map(t => (
+                    <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={accessTeamIds.includes(t.id)}
+                        onCheckedChange={() => setAccessTeamIds(arr => toggleInArray(arr, t.id))}
+                      />
+                      <span>{t.emoji} {t.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAccessDoc(null)} disabled={accessSaving}>Cancel</Button>
+            <Button
+              disabled={accessSaving || !accessDoc}
+              onClick={async () => {
+                if (!accessDoc) return;
+                setAccessSaving(true);
+                try {
+                  const { error } = await supabase
+                    .from('staff_hub_documents')
+                    .update({
+                      allowed_roles: accessRoles,
+                      allowed_team_ids: accessTeamIds,
+                    })
+                    .eq('id', accessDoc.id);
+                  if (error) throw error;
+                  toast({ title: 'Access updated', description: accessDoc.title });
+                  setAccessDoc(null);
+                  queryClient.invalidateQueries({ queryKey: ['staff-hub-documents'] });
+                } catch (e: any) {
+                  toast({ title: 'Could not save', description: e.message || String(e), variant: 'destructive' });
+                } finally {
+                  setAccessSaving(false);
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {accessSaving ? 'Saving…' : 'Save access'}
             </Button>
           </DialogFooter>
         </DialogContent>
