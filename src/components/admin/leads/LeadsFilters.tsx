@@ -33,8 +33,6 @@ interface LeadsFiltersProps {
   onRefresh: () => void;
   onMigrate: () => void;
   onExport: (format: 'csv' | 'xlsx') => void;
-  onManageRouting?: () => void;
-  canManageRouting?: boolean;
   leadCounts: {
     all_leads: number;
     all: number;
@@ -121,8 +119,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onRefresh,
   onMigrate,
   onExport,
-  onManageRouting,
-  canManageRouting,
   leadCounts,
   dateRange,
   onDateRangeChange,
