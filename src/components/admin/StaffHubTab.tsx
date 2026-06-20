@@ -73,6 +73,7 @@ export const StaffHubTab: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const adminId = useCurrentAdminId();
+  const { user } = useAuth();
 
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -82,12 +83,50 @@ export const StaffHubTab: React.FC = () => {
   const [viewerUrl, setViewerUrl] = useState<string>('');
   const [viewerLoading, setViewerLoading] = useState(false);
 
+  // Access manager dialog (super admin only)
+  const [accessDoc, setAccessDoc] = useState<StaffHubDoc | null>(null);
+  const [accessRoles, setAccessRoles] = useState<string[]>([]);
+  const [accessTeamIds, setAccessTeamIds] = useState<string[]>([]);
+  const [accessSaving, setAccessSaving] = useState(false);
 
   // Upload form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('handbook');
   const [file, setFile] = useState<File | null>(null);
+  const [uploadRoles, setUploadRoles] = useState<string[]>([]);
+  const [uploadTeamIds, setUploadTeamIds] = useState<string[]>([]);
+
+  // Is the current viewer a super admin? Controls who can manage access / delete.
+  const { data: isSuperAdmin = false } = useQuery({
+    queryKey: ['staff-hub-is-super-admin', user?.id],
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', user!.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      return data?.role === 'super_admin';
+    },
+  });
+
+  // Lead teams for per-document access scoping.
+  const { data: teams = [] } = useQuery({
+    queryKey: ['staff-hub-lead-teams'],
+    enabled: isSuperAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lead_teams')
+        .select('id, name, emoji, color')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const { data: docs = [], isLoading } = useQuery({
     queryKey: ['staff-hub-documents'],
