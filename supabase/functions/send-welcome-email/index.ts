@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logCustomerEmail } from "../_shared/log-email.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -553,10 +555,33 @@ serve(async (req) => {
 
       if (!response.ok) {
         logStep("Email sending failed", { status: response.status, error: emailResult });
+        await logCustomerEmail({
+          recipient_email: email,
+          recipient_name: customerName,
+          subject: emailPayload.subject,
+          template_name: 'welcome_email',
+          source_function: 'send-welcome-email',
+          status: 'failed',
+          error_message: emailResult?.message || `HTTP ${response.status}`,
+          policy_number: policyNumber,
+          registration_plate: registrationPlate,
+          metadata: { plan_type: planType, payment_type: paymentType },
+        });
         throw new Error(`Email sending failed: ${emailResult.message || 'Unknown error'}`);
       }
 
       logStep("Welcome email sent successfully", emailResult);
+      await logCustomerEmail({
+        recipient_email: email,
+        recipient_name: customerName,
+        subject: emailPayload.subject,
+        template_name: 'welcome_email',
+        source_function: 'send-welcome-email',
+        status: 'sent',
+        policy_number: policyNumber,
+        registration_plate: registrationPlate,
+        metadata: { plan_type: planType, payment_type: paymentType, resend_message_id: emailResult?.id },
+      });
     } catch (emailError) {
       logStep("Error sending welcome email", emailError);
       const errorMessage = emailError instanceof Error ? emailError.message : String(emailError);

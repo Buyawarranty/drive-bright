@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -228,6 +229,18 @@ serve(async (req: Request) => {
     });
 
     logStep("Email sent successfully", emailResult);
+    await logCustomerEmail({
+      recipient_email: customerEmail,
+      recipient_name: customerFirstName,
+      subject,
+      template_name: 'trustpilot_review_request',
+      source_function: 'send-trustpilot-review-request',
+      status: (emailResult as any)?.error ? 'failed' : 'sent',
+      error_message: (emailResult as any)?.error ? String((emailResult as any).error?.message || (emailResult as any).error) : null,
+      customer_id: customerId || null,
+      metadata: { resend_message_id: (emailResult as any)?.data?.id },
+    });
+
 
     // Update customer record to track that review was requested
     if (customerId) {

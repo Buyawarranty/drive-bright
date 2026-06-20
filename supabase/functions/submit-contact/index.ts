@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -189,6 +190,17 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       console.log('Confirmation email sent:', confirmationResponse);
+      await logCustomerEmail({
+        recipient_email: body.email,
+        recipient_name: body.name,
+        subject: "We've Received Your Enquiry – Buy a Warranty",
+        template_name: 'contact_confirmation',
+        source_function: 'submit-contact',
+        status: (confirmationResponse as any)?.error ? 'failed' : 'sent',
+        error_message: (confirmationResponse as any)?.error ? String((confirmationResponse as any).error?.message || (confirmationResponse as any).error) : null,
+        metadata: { submission_id: submission.id, resend_message_id: (confirmationResponse as any)?.data?.id },
+      });
+
 
     } catch (emailError) {
       console.error('Email sending error:', emailError);

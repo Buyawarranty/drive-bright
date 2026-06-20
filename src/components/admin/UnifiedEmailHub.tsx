@@ -42,13 +42,16 @@ interface EmailTemplate {
 interface EmailLog {
   id: string;
   recipient_email: string;
+  recipient_name?: string | null;
   subject: string;
   status: string;
   sent_at: string | null;
   created_at: string;
   error_message: string | null;
+  failed_reason?: string | null;
   template_id: string | null;
   campaign_id: string | null;
+  customer_id?: string | null;
   delivery_status: string | null;
   resend_count: number;
   metadata: any;
@@ -161,7 +164,7 @@ const UnifiedEmailHub = () => {
       .from('email_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(200);
+      .limit(1000);
     
     if (!error && data) {
       setEmailLogs(data);
@@ -1321,22 +1324,46 @@ const UnifiedEmailHub = () => {
   // Email Logs View
   const LogsView = () => {
     const [templateFilter, setTemplateFilter] = useState('all');
-    
+    const [sourceFilter, setSourceFilter] = useState('all');
+    const [dateRange, setDateRange] = useState<'24h' | '7d' | '30d' | '90d' | 'all'>('30d');
+
+    const since = (() => {
+      const now = Date.now();
+      const map: Record<string, number> = {
+        '24h': 24 * 60 * 60 * 1000,
+        '7d': 7 * 24 * 60 * 60 * 1000,
+        '30d': 30 * 24 * 60 * 60 * 1000,
+        '90d': 90 * 24 * 60 * 60 * 1000,
+      };
+      return dateRange === 'all' ? 0 : now - map[dateRange];
+    })();
+
     const filteredLogs = emailLogs.filter(log => {
-      const matchesSearch = searchQuery === '' || 
-        log.recipient_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.subject.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || 
+      const meta = (log.metadata as any) || {};
+      const haystack = [
+        log.recipient_email,
+        log.subject,
+        log.recipient_name,
+        meta.registration_plate,
+        meta.policy_number,
+        meta.customer_name,
+        meta.source_function,
+      ].filter(Boolean).join(' ').toLowerCase();
+      const matchesSearch = searchQuery === '' || haystack.includes(searchQuery.toLowerCase());
+
+      const matchesStatus = statusFilter === 'all' ||
         (log.delivery_status || log.status || '').toLowerCase() === statusFilter.toLowerCase();
-      
-      const logTemplateId = (log.metadata as any)?.template_id || '';
-      const matchesTemplate = templateFilter === 'all' || logTemplateId === templateFilter;
-      
-      return matchesSearch && matchesStatus && matchesTemplate;
+
+      const logTemplate = meta.template_name || meta.template_id || '';
+      const matchesTemplate = templateFilter === 'all' || logTemplate === templateFilter;
+
+      const matchesSource = sourceFilter === 'all' || meta.source_function === sourceFilter;
+
+      const matchesDate = since === 0 || new Date(log.created_at).getTime() >= since;
+
+      return matchesSearch && matchesStatus && matchesTemplate && matchesSource && matchesDate;
     });
 
-    // Compute delivery stats
     const stats = {
       total: filteredLogs.length,
       sent: filteredLogs.filter(l => ['sent', 'delivered', 'opened', 'clicked'].includes((l.delivery_status || l.status || '').toLowerCase())).length,
@@ -1345,71 +1372,100 @@ const UnifiedEmailHub = () => {
       failed: filteredLogs.filter(l => ['failed', 'bounced'].includes((l.delivery_status || l.status || '').toLowerCase())).length,
     };
 
-    // Extract unique template types from logs
-    const templateTypes = Array.from(new Set(emailLogs.map(l => (l.metadata as any)?.template_id).filter(Boolean)));
+    const templateTypes = Array.from(new Set(emailLogs.map(l => {
+      const m = (l.metadata as any) || {};
+      return m.template_name || m.template_id;
+    }).filter(Boolean))) as string[];
+
+    const sourceTypes = Array.from(new Set(emailLogs.map(l => (l.metadata as any)?.source_function).filter(Boolean))) as string[];
+
+    const handleExportCsv = () => {
+      const headers = [
+        'Sent At', 'Status', 'Recipient Email', 'Recipient Name', 'Subject',
+        'Template', 'Source Function', 'Registration Plate', 'Policy Number',
+        'Customer ID', 'Error', 'Resent Count'
+      ];
+      const escape = (v: any) => {
+        const s = v == null ? '' : String(v);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const rows = filteredLogs.map(log => {
+        const meta = (log.metadata as any) || {};
+        return [
+          new Date(log.created_at).toISOString(),
+          log.delivery_status || log.status || '',
+          log.recipient_email,
+          log.recipient_name || '',
+          log.subject,
+          meta.template_name || meta.template_id || '',
+          meta.source_function || '',
+          meta.registration_plate || '',
+          meta.policy_number || '',
+          log.customer_id || '',
+          log.error_message || log.failed_reason || '',
+          log.resend_count || 0,
+        ].map(escape).join(',');
+      });
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `customer-emails-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filteredLogs.length} rows`);
+    };
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 className="text-2xl font-bold">Email Delivery Logs</h2>
-            <p className="text-muted-foreground">Complete history of all sent emails with delivery confirmation</p>
+            <h2 className="text-2xl font-bold">Customer Emails</h2>
+            <p className="text-muted-foreground">Every email sent to a customer — fully searchable, filterable, exportable.</p>
           </div>
-          <Button variant="outline" onClick={loadEmailLogs}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportCsv}>
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button variant="outline" onClick={loadEmailLogs}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
-        {/* Delivery Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Card>
-            <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-green-600">{stats.sent}</p>
-              <p className="text-xs text-muted-foreground">Sent</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-blue-600">{stats.delivered}</p>
-              <p className="text-xs text-muted-foreground">Delivered</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-purple-600">{stats.opened}</p>
-              <p className="text-xs text-muted-foreground">Opened</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-red-600">{stats.failed}</p>
-              <p className="text-xs text-muted-foreground">Failed</p>
-            </CardContent>
-          </Card>
+          <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold">{stats.total}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
+          <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-green-600">{stats.sent}</p><p className="text-xs text-muted-foreground">Sent</p></CardContent></Card>
+          <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-blue-600">{stats.delivered}</p><p className="text-xs text-muted-foreground">Delivered</p></CardContent></Card>
+          <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-purple-600">{stats.opened}</p><p className="text-xs text-muted-foreground">Opened</p></CardContent></Card>
+          <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-red-600">{stats.failed}</p><p className="text-xs text-muted-foreground">Failed</p></CardContent></Card>
         </div>
 
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-4 mb-6">
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex flex-wrap gap-3 mb-6">
+              <div className="flex-1 min-w-[220px]">
                 <Input
-                  placeholder="Search by email or subject..."
+                  placeholder="Search email, subject, reg plate, customer, policy…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full"
                 />
               </div>
+              <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
+                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Date" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="24h">Last 24h</SelectItem>
+                  <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="30d">Last 30 days</SelectItem>
+                  <SelectItem value="90d">Last 90 days</SelectItem>
+                  <SelectItem value="all">All time</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
+                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
@@ -1421,61 +1477,72 @@ const UnifiedEmailHub = () => {
                   <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger className="w-[200px]"><SelectValue placeholder="Source" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sources</SelectItem>
+                  {sourceTypes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <Select value={templateFilter} onValueChange={setTemplateFilter}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Template Type" />
-                </SelectTrigger>
+                <SelectTrigger className="w-[200px]"><SelectValue placeholder="Template" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Templates</SelectItem>
-                  {templateTypes.map(t => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
+                  {templateTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <ScrollArea className="h-[600px]">
               <div className="space-y-3">
-                {filteredLogs.map((log) => (
-                  <div key={log.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{log.subject}</p>
-                      <p className="text-sm text-muted-foreground">{log.recipient_email}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(log.created_at).toLocaleString()}
-                        </span>
-                        {(log.metadata as any)?.template_id && (
-                          <Badge variant="outline" className="text-xs">
-                            {(log.metadata as any).template_id}
-                          </Badge>
-                        )}
-                        {log.resend_count > 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            Resent {log.resend_count}x
-                          </Badge>
-                        )}
-                        {(log.metadata as any)?.resend_message_id && (
-                          <Badge variant="outline" className="text-xs font-mono">
-                            ID: {((log.metadata as any).resend_message_id as string).slice(0, 8)}…
-                          </Badge>
+                {filteredLogs.map((log) => {
+                  const meta = (log.metadata as any) || {};
+                  return (
+                    <div key={log.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{log.subject}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {log.recipient_name ? `${log.recipient_name} · ` : ''}{log.recipient_email}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(log.created_at).toLocaleString()}
+                          </span>
+                          {meta.source_function && (
+                            <Badge variant="secondary" className="text-xs">{meta.source_function}</Badge>
+                          )}
+                          {(meta.template_name || meta.template_id) && (
+                            <Badge variant="outline" className="text-xs">{meta.template_name || meta.template_id}</Badge>
+                          )}
+                          {meta.registration_plate && (
+                            <Badge variant="outline" className="text-xs font-mono">{meta.registration_plate}</Badge>
+                          )}
+                          {meta.policy_number && (
+                            <Badge variant="outline" className="text-xs font-mono">{meta.policy_number}</Badge>
+                          )}
+                          {log.resend_count > 0 && (
+                            <Badge variant="secondary" className="text-xs">Resent {log.resend_count}x</Badge>
+                          )}
+                        </div>
+                        {(log.error_message || log.failed_reason) && (
+                          <p className="text-xs text-red-600 mt-1 truncate">{log.error_message || log.failed_reason}</p>
                         )}
                       </div>
+                      <div className="flex items-center gap-3 ml-4">
+                        {getStatusBadge(log.delivery_status || log.status || 'pending')}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResendEmail(log)}
+                          disabled={isResending === log.id}
+                        >
+                          <RefreshCw className={`w-3 h-3 mr-1 ${isResending === log.id ? 'animate-spin' : ''}`} />
+                          Resend
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 ml-4">
-                      {getStatusBadge(log.delivery_status || log.status || 'pending')}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleResendEmail(log)}
-                        disabled={isResending === log.id}
-                      >
-                        <RefreshCw className={`w-3 h-3 mr-1 ${isResending === log.id ? 'animate-spin' : ''}`} />
-                        Resend
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {filteredLogs.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <Mail className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -1486,7 +1553,7 @@ const UnifiedEmailHub = () => {
             </ScrollArea>
 
             <div className="mt-4 text-sm text-muted-foreground">
-              Showing {filteredLogs.length} of {emailLogs.length} emails
+              Showing {filteredLogs.length} of {emailLogs.length} emails (max 1000 loaded)
             </div>
           </CardContent>
         </Card>

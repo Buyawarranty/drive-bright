@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -126,10 +127,28 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error('[SEND-CREDENTIALS] Resend API error:', result);
+      await logCustomerEmail({
+        recipient_email: email,
+        recipient_name: customerName,
+        subject: 'Your Buy A Warranty Dashboard Login Details',
+        template_name: 'customer_credentials',
+        source_function: 'send-customer-credentials',
+        status: 'failed',
+        error_message: result?.message || `HTTP ${response.status}`,
+      });
       throw new Error(result.message || 'Failed to send email');
     }
 
     console.log('[SEND-CREDENTIALS] Email sent successfully:', result.id);
+    await logCustomerEmail({
+      recipient_email: email,
+      recipient_name: customerName,
+      subject: 'Your Buy A Warranty Dashboard Login Details',
+      template_name: 'customer_credentials',
+      source_function: 'send-customer-credentials',
+      status: 'sent',
+      metadata: { resend_message_id: result?.id },
+    });
 
     return new Response(
       JSON.stringify({

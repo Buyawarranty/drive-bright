@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -93,6 +94,15 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     logStep('Email sent successfully', emailResponse);
+    await logCustomerEmail({
+      recipient_email: email,
+      subject: `Your £${discountAmount} Discount Code - ${discountCode}`,
+      template_name: 'discount_code',
+      source_function: 'send-discount-email',
+      status: (emailResponse as any)?.error ? 'failed' : 'sent',
+      error_message: (emailResponse as any)?.error ? String((emailResponse as any).error?.message || (emailResponse as any).error) : null,
+      metadata: { discount_code: discountCode, discount_amount: discountAmount, resend_message_id: (emailResponse as any)?.data?.id },
+    });
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

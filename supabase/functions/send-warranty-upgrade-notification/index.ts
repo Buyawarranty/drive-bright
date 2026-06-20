@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -175,10 +176,30 @@ serve(async (req) => {
 
     if (error) {
       console.error("Resend error:", error);
+      await logCustomerEmail({
+        recipient_email: customerEmail,
+        recipient_name: customerName,
+        subject: `✨ Your Warranty for ${registrationPlate} Has Been Upgraded`,
+        template_name: 'warranty_upgrade',
+        source_function: 'send-warranty-upgrade-notification',
+        status: 'failed',
+        error_message: String((error as any)?.message || error),
+        registration_plate: registrationPlate,
+      });
       throw error;
     }
 
     console.log("Upgrade notification sent successfully:", data);
+    await logCustomerEmail({
+      recipient_email: customerEmail,
+      recipient_name: customerName,
+      subject: `✨ Your Warranty for ${registrationPlate} Has Been Upgraded`,
+      template_name: 'warranty_upgrade',
+      source_function: 'send-warranty-upgrade-notification',
+      status: 'sent',
+      registration_plate: registrationPlate,
+      metadata: { resend_message_id: data?.id, changes },
+    });
 
     return new Response(JSON.stringify({ success: true, messageId: data?.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

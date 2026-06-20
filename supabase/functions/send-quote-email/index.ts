@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -340,6 +341,18 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     logStep('Email sent successfully', emailResponse);
+    await logCustomerEmail({
+      recipient_email: data.email,
+      recipient_name: customerName || data.firstName || null,
+      subject: emailSubject,
+      template_name: 'customer_quote',
+      source_function: 'send-quote-email',
+      status: emailResponse?.error ? 'failed' : 'sent',
+      error_message: emailResponse?.error ? String((emailResponse.error as any)?.message || emailResponse.error) : null,
+      registration_plate: data.vehicleData?.regNumber,
+      metadata: { quote_id: quoteId, vehicle: vehicleDisplay, resend_message_id: (emailResponse as any)?.data?.id },
+    });
+
 
     // Log the customer quote email to abandoned_cart_emails table
     try {

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 // Utility functions for retrying fetch requests
 const timedFetch = (url: string, options: RequestInit, timeout = 30000): Promise<Response> => {
@@ -433,11 +434,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
+      await logCustomerEmail({
+        recipient_email: emailRequest.email,
+        recipient_name: emailRequest.firstName,
+        subject,
+        template_name: `abandoned_cart_${emailRequest.triggerType || 'unknown'}`,
+        source_function: 'send-abandoned-cart-email',
+        status: 'failed',
+        error_message: `Resend ${emailResponse.status}: ${errorText.slice(0, 300)}`,
+        registration_plate: emailRequest.vehicleReg,
+        metadata: { cart_id: emailRequest.cartId, trigger_type: emailRequest.triggerType },
+      });
       throw new Error(`Resend API error: ${emailResponse.status} - ${errorText}`);
     }
 
     const emailResult = await emailResponse.json();
     console.log("Email sent successfully:", emailResult);
+    await logCustomerEmail({
+      recipient_email: emailRequest.email,
+      recipient_name: emailRequest.firstName,
+      subject,
+      template_name: `abandoned_cart_${emailRequest.triggerType || 'unknown'}`,
+      source_function: 'send-abandoned-cart-email',
+      status: 'sent',
+      registration_plate: emailRequest.vehicleReg,
+      metadata: { cart_id: emailRequest.cartId, trigger_type: emailRequest.triggerType, resend_message_id: emailResult?.id },
+    });
 
     // Log the sent email
     const { error: logError } = await supabase
