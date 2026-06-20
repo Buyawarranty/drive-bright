@@ -684,7 +684,7 @@ const AgentDetailSheet: React.FC<{
   );
 };
 
-const ACTIVE_STATUSES = ['new', 'contacted', 'follow_up', 'quote_sent', 'negotiating', 'urgent_callback'];
+const ACTIVE_STATUSES = ['new', 'contacted', 'follow_up', 'quote_sent', 'negotiating', 'urgent_callback'] as const;
 
 const statusClass = (s: string) => {
   switch (s) {
