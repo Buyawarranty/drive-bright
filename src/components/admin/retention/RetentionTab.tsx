@@ -145,10 +145,47 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
   const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
   const [touches, setTouches] = useState<Record<string, CampaignTouch[]>>({});
   const [runningCron, setRunningCron] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
+  const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
   }, []);
+
+  // Agents: prefer those flagged with the Renewals workstream; fallback to all sales-side roles.
+  useEffect(() => {
+    (async () => {
+      const [{ data: au }, { data: ws }] = await Promise.all([
+        (supabase.from('admin_users') as any)
+          .select('id, user_id, first_name, last_name, email, role, is_active')
+          .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+          .eq('is_active', true)
+          .order('first_name'),
+        (supabase.from('lead_team_members') as any)
+          .select('admin_user_id, workstream_renewals'),
+      ]);
+      const renewSet = new Set<string>(
+        ((ws as any[]) || [])
+          .filter((r: any) => r.workstream_renewals === true)
+          .map((r: any) => r.admin_user_id)
+      );
+      const all = (au as Agent[]) || [];
+      const hasAnyFlagged = renewSet.size > 0;
+      const filtered = all.filter(a => {
+        if (a.role === 'admin' || a.role === 'super_admin') return true;
+        if (!hasAnyFlagged) return true;
+        return renewSet.has(a.id);
+      });
+      setAgents(filtered);
+    })();
+  }, []);
+
+  const agentByAuthId = useMemo(() => {
+    const m = new Map<string, Agent>();
+    for (const a of agents) if (a.user_id) m.set(a.user_id, a);
+    return m;
+  }, [agents]);
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = new Date();
@@ -174,11 +211,12 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
   }, []);
 
   const baseSelect =
-    'id, customer_id, policy_number, warranty_number, plan_type, status, ' +
+    'id, customer_id, policy_number, warranty_number, plan_type, payment_type, status, ' +
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
-    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status )';
+    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to )';
+
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
