@@ -463,6 +463,14 @@ const AdminDashboard = () => {
       case 'marketing-audience':
         return <MarketingAudienceTab />;
       case 'emails':
+        if (!['admin', 'super_admin', 'lead_gen'].includes(effectiveUserRole)) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">The Emails tab is restricted to admins and lead generation users.</p>
+            </div>
+          );
+        }
         return <UnifiedEmailHub />;
       case 'analytics':
         return <AnalyticsTab userRole={effectiveUserRole} />;
