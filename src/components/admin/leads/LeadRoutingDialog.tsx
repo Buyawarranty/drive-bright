@@ -471,7 +471,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
           rules={rules}
           canEdit={canEdit}
           routingEnabled={routingEnabled}
-          onSetPercentage={(teamId, source, percentage) => upsertRule(teamId, source, { percentage })}
+          onSetAllowed={(teamId, source, allowed) => upsertRule(teamId, source, { allowed, percentage: allowed ? 100 : 0 })}
+          onSetPriority={(teamId, source, priority) => upsertRule(teamId, source, { priority })}
         />
 
 
