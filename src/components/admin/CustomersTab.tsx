@@ -3202,6 +3202,12 @@ export const CustomersTab = ({
                   <Printer className="h-4 w-4 mr-2" />
                   Save as PDF
                 </DropdownMenuItem>
+                {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'lead_gen') && (
+                  <DropdownMenuItem onClick={handleExportGoogleConversions}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Google Ads Conversions (GCLID)
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
