@@ -161,7 +161,7 @@ const UnifiedEmailHub = () => {
       .from('email_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(200);
+      .limit(1000);
     
     if (!error && data) {
       setEmailLogs(data);
