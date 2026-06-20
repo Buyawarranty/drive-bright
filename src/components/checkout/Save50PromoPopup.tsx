@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Car, Clock, Check, Tag, Lock, ArrowRight } from 'lucide-react';
+import { X, Clock, Check, Tag, Lock, ArrowRight, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
