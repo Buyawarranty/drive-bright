@@ -229,6 +229,18 @@ serve(async (req: Request) => {
     });
 
     logStep("Email sent successfully", emailResult);
+    await logCustomerEmail({
+      recipient_email: customerEmail,
+      recipient_name: customerFirstName,
+      subject,
+      template_name: 'trustpilot_review_request',
+      source_function: 'send-trustpilot-review-request',
+      status: (emailResult as any)?.error ? 'failed' : 'sent',
+      error_message: (emailResult as any)?.error ? String((emailResult as any).error?.message || (emailResult as any).error) : null,
+      customer_id: customerId || null,
+      metadata: { resend_message_id: (emailResult as any)?.data?.id },
+    });
+
 
     // Update customer record to track that review was requested
     if (customerId) {
