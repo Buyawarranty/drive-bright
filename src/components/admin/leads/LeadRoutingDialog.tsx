@@ -12,6 +12,8 @@ import { RoutingTester } from './RoutingTester';
 import { SourceRulesMatrix } from './SourceRulesMatrix';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
 
 interface LeadRoutingPanelProps {
   canEdit: boolean;
