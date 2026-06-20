@@ -128,6 +128,16 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Referral email sent successfully:", emailResponse);
 
+    await logCustomerEmail({
+      recipient_email: friendEmail,
+      recipient_name: 'Friend',
+      subject: "I Just Got My Vehicle Covered – Thought You Might Like This 🚗✨",
+      template_name: 'referral',
+      source_function: 'send-referral-email',
+      status: 'sent',
+      metadata: { referrer_email: referrerEmail, referrer_name: referrerName, discount_code: discountCode }
+    });
+
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
       headers: {
