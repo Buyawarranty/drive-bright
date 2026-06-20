@@ -169,7 +169,12 @@ export const StaffHubTab: React.FC = () => {
     setDescription('');
     setCategory('handbook');
     setFile(null);
+    setUploadRoles([]);
+    setUploadTeamIds([]);
   };
+
+  const toggleInArray = (arr: string[], value: string) =>
+    arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value];
 
   const handleUpload = async () => {
     if (!file || !title.trim()) {
@@ -196,6 +201,8 @@ export const StaffHubTab: React.FC = () => {
         file_size: file.size,
         mime_type: file.type || null,
         uploaded_by: adminId || null,
+        allowed_roles: isSuperAdmin ? uploadRoles : [],
+        allowed_team_ids: isSuperAdmin ? uploadTeamIds : [],
       });
       if (insErr) {
         // Roll back storage on metadata insert failure
