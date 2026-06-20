@@ -22,6 +22,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
 interface Tab {
   id: string;
   label: string;
@@ -646,7 +647,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
               </Command>
             </PopoverContent>
           </Popover>
+          <SidebarTeamSwitcher userRole={userRole} />
         </div>
+
         
         <DndContext
           sensors={sensors}
