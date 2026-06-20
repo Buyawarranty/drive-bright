@@ -12,6 +12,7 @@ import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subM
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { getLeadFeedDayRange, getTodayLeadFeedSelectionDate, isTodayLeadFeedRange, isYesterdayLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
@@ -168,6 +169,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     }
     return options;
   }, []);
+
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>(dateRange?.from ? 'custom' : 'all');
 
   const handleDateSelect = (range: DateRange | undefined) => {
     if (onDateRangeChange) {
@@ -415,111 +418,25 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Separator */}
         <div className="h-5 w-px bg-border" />
 
-        {/* Quick date buttons */}
-        <div className="flex items-center gap-0.5">
-          <Button
-            variant={isTodayLeadFeedRange(dateRange) ? "default" : "ghost"}
-            size="sm"
-            onClick={() => handleQuickFilter(0)}
-            className="h-7 px-2.5 text-[11px] font-medium rounded-md"
-          >
-            Today
-          </Button>
-          <Button
-            variant={isYesterdayLeadFeedRange(dateRange) ? "default" : "ghost"}
-            size="sm"
-            onClick={() => handleQuickFilter(1, true)}
-            className="h-7 px-2.5 text-[11px] font-medium rounded-md"
-          >
-            Yesterday
-          </Button>
-        </div>
-
-        {/* Date range with nav arrows */}
-        <div className="flex items-center gap-0">
-          <Button variant="ghost" size="sm" onClick={() => handleDayNav('prev')} className="h-7 w-7 p-0 rounded-md">
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </Button>
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button 
-                variant={hasDateFilter ? "default" : "outline"} 
-                size="sm" 
-                className="h-7 gap-1.5 text-[11px] font-medium rounded-md min-w-[100px]"
-              >
-                <CalendarIcon className="h-3 w-3" />
-                {getDateFilterLabel()}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <div className="p-3 border-b space-y-2">
-                <div className="text-sm font-medium">Quick filters</div>
-                <div className="flex flex-wrap gap-1">
-                  <Button variant="outline" size="sm" onClick={handleAllTime} className="bg-primary/10 hover:bg-primary/20">
-                    <History className="h-3 w-3 mr-1" />All Time
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(0)}>Today</Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(1, true)}>Yesterday</Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(7)}>Last 7 days</Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(30)}>Last 30 days</Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(90)}>Last 90 days</Button>
-                </div>
-              </div>
-              <div className="p-3 border-b space-y-3">
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-muted-foreground mb-1.5">By Month</div>
-                    <Select onValueChange={(v) => handleMonthSelect(parseInt(v.replace('month_', '')))}>
-                      <SelectTrigger className="w-full h-8 text-xs"><SelectValue placeholder="Select month" /></SelectTrigger>
-                      <SelectContent className="max-h-[200px]">
-                        {monthOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-muted-foreground mb-1.5">By Year</div>
-                    <Select onValueChange={(v) => handleYearSelect(parseInt(v.replace('year_', '')))}>
-                      <SelectTrigger className="w-full h-8 text-xs"><SelectValue placeholder="Select year" /></SelectTrigger>
-                      <SelectContent>
-                        {yearOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              <div className="p-3 border-b">
-                <div className="text-xs font-medium text-muted-foreground mb-2">Custom Range</div>
-                <Calendar
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={{ from: dateRange?.from, to: dateRange?.to }}
-                  onSelect={handleDateSelect}
-                  numberOfMonths={2}
-                  className="pointer-events-auto"
-                />
-              </div>
-              {hasDateFilter && (
-                <div className="p-2 border-t flex justify-end">
-                  <Button variant="ghost" size="sm" onClick={() => { clearDateRange(); setIsCalendarOpen(false); }} className="text-xs">
-                    <X className="h-3 w-3 mr-1" />Clear Filter
-                  </Button>
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
-          <Button
-            variant="ghost" size="sm"
-            onClick={() => handleDayNav('next')}
-            className="h-7 w-7 p-0 rounded-md"
-            disabled={dateRange?.from && dateRange.from >= getTodayLeadFeedSelectionDate()}
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        {/* Unified date filter (matches Customer Management dashboard) */}
+        <UnifiedDateFilter
+          scope="signup"
+          period={datePeriod}
+          customRange={dateRange?.from || dateRange?.to ? { from: dateRange?.from, to: dateRange?.to } : undefined}
+          availableScopes={['signup']}
+          onChange={({ period, customRange }) => {
+            setDatePeriod(period);
+            if (!onDateRangeChange) return;
+            if (period === 'all') {
+              onDateRangeChange({ from: undefined, to: undefined });
+            } else if (period === 'custom') {
+              onDateRangeChange({ from: customRange?.from, to: customRange?.to });
+            } else {
+              const r = periodToRange(period);
+              onDateRangeChange({ from: r?.from, to: r?.to });
+            }
+          }}
+        />
 
         {/* Separator */}
         <div className="h-5 w-px bg-border/60" />
