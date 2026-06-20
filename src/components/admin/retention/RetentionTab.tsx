@@ -634,7 +634,7 @@ export const RetentionTab: React.FC<{ userRole?: string | null; onNavigateToTab?
                           </td>
 
                           {/* Src */}
-                          <td className="p-2">{srcBadge(segment)}</td>
+                          {canSeeSource && <td className="p-2">{srcBadge(segment)}</td>}
 
                           {/* Status */}
                           <td className="p-2">
