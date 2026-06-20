@@ -670,11 +670,23 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                         {groupRules.map(({ source, rule }) => {
                           const isOn = rule?.allowed === true;
                           return (
-                            <div key={source.value} className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/20 p-3">
+                            <div
+                              key={source.value}
+                              className={cn(
+                                "relative flex flex-wrap items-center gap-3 rounded-md border p-3 transition-colors",
+                                isOn
+                                  ? "bg-emerald-600 text-white border-emerald-700"
+                                  : "bg-muted/50 text-foreground border-border"
+                              )}
+                            >
+                              {isOn && (
+                                <div className="absolute top-2 right-2 rounded-full bg-white/20 p-1">
+                                  <Check className="h-3.5 w-3.5 text-white" />
+                                </div>
+                              )}
                               <div className="flex items-center gap-2 min-w-[150px] flex-1">
                                 <span className="text-lg">{source.icon}</span>
                                 <span className="font-medium">{source.label}</span>
-                                {isOn && <Check className="h-4 w-4 text-emerald-700" />}
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
@@ -682,10 +694,11 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                                   disabled={!canEdit}
                                   onCheckedChange={(v) => upsertRule(activeTeam.id, source.value, { allowed: v })}
                                 />
-                                <span className={`text-xs font-semibold ${isOn ? 'text-emerald-700' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-semibold ${isOn ? 'text-white' : 'text-muted-foreground'}`}>
                                   {isOn ? 'Allowed' : 'Off'}
                                 </span>
                               </div>
+
                               <div className="flex items-center gap-2">
                                 <Label className="text-xs">Min conv %</Label>
                                 <Input
