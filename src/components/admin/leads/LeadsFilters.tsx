@@ -170,6 +170,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     return options;
   }, []);
 
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>(dateRange?.from ? 'custom' : 'all');
+
   const handleDateSelect = (range: DateRange | undefined) => {
     if (onDateRangeChange) {
       onDateRangeChange({ from: range?.from, to: range?.to });
