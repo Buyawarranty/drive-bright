@@ -162,6 +162,30 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         </h2>
         
         <div className="space-y-4">
+          {/* Vehicle Registration + Cover Duration - Prominent strip */}
+          {(vehicleReg || duration || paymentType) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {vehicleReg && (
+                <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-300 flex items-center gap-3">
+                  <Car className="w-6 h-6 text-yellow-700 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicle Registration</p>
+                    <p className="text-xl font-extrabold text-foreground font-mono uppercase tracking-wider">{vehicleReg}</p>
+                  </div>
+                </div>
+              )}
+              {(duration || paymentType) && (
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200 flex items-center gap-3">
+                  <Calendar className="w-6 h-6 text-green-700 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Cover Duration</p>
+                    <p className="text-xl font-extrabold text-foreground">{getDurationDisplay()}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Warranty Reference Number - Prominent Display */}
           {warrantyNumber && (
             <div className="bg-green-50 rounded-lg p-4 border border-green-200 text-center">
@@ -169,6 +193,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               <p className="text-xl font-bold text-foreground font-mono">{warrantyNumber}</p>
             </div>
           )}
+          
           
           {/* Plan Details Grid */}
           <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
