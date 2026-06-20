@@ -32,6 +32,7 @@ import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
 import { TeamChangeNoticeDialog } from './TeamChangeNoticeDialog';
 import { TeamFilterChips } from './TeamFilterChips';
+import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
