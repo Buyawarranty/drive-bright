@@ -2693,6 +2693,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     localStorage.removeItem('stripe_payment_data');
                     const thankYouParams = new URLSearchParams({ source: 'stripe' });
                     if (stripePaymentIntentId) thankYouParams.set('payment_intent', stripePaymentIntentId);
+                    // Enrich with vehicle + cover details so the Thank You order summary
+                    // always shows registration, duration, plan, etc. (independent of
+                    // the hosted-checkout success URL which carries these natively).
+                    thankYouParams.set('plan', planName || 'Platinum');
+                    thankYouParams.set('payment', paymentType || '');
+                    thankYouParams.set('duration', paymentType || '');
+                    thankYouParams.set('vehicle_reg', vehicleData?.regNumber || '');
+                    thankYouParams.set('vehicle', `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim());
+                    thankYouParams.set('mileage', String(vehicleData?.mileage || ''));
+                    if (pricingData?.claimLimit) thankYouParams.set('claim_limit', String(pricingData.claimLimit));
+                    if (pricingData?.labourRate) thankYouParams.set('labour_rate', String(pricingData.labourRate));
+                    if (pricingData?.voluntaryExcess !== undefined) thankYouParams.set('excess', String(pricingData.voluntaryExcess));
+                    thankYouParams.set('final_amount', String(discountedStripePrice));
+                    thankYouParams.set('total_price', String(discountedStripePrice));
                     navigate(`/thank-you?${thankYouParams.toString()}`);
                   }}
                   onError={(error) => {
