@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -265,6 +266,17 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Email sent successfully:", emailResponse);
+
+    await logCustomerEmail({
+      recipient_email: to,
+      recipient_name: customerName,
+      subject: subject,
+      template_name: 'admin_quote',
+      source_function: 'send-admin-quote',
+      status: 'sent',
+      registration_plate: vehicleData.regNumber,
+      metadata: { cc: ccRecipients, quote_link: quoteLink, plan: quoteDetails.plan }
+    });
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

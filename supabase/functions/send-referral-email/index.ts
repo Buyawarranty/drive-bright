@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -126,6 +127,16 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Referral email sent successfully:", emailResponse);
+
+    await logCustomerEmail({
+      recipient_email: friendEmail,
+      recipient_name: 'Friend',
+      subject: "I Just Got My Vehicle Covered – Thought You Might Like This 🚗✨",
+      template_name: 'referral',
+      source_function: 'send-referral-email',
+      status: 'sent',
+      metadata: { referrer_email: referrerEmail, referrer_name: referrerName, discount_code: discountCode }
+    });
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

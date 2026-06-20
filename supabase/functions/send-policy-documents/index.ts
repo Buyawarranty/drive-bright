@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -449,26 +450,35 @@ serve(async (req) => {
     });
 
     if (emailError) {
+      await logCustomerEmail({
+        recipient_email: recipientEmail,
+        recipient_name: customerName || emailVariables.customerName,
+        subject: template.subject,
+        template_name: 'policy_documents',
+        source_function: 'send-policy-documents',
+        status: 'failed',
+        error_message: emailError.message,
+        policy_number: policyNumber,
+        registration_plate: registrationPlate,
+        metadata: { plan_type: planType, attachments_count: attachments.length, template_id: template.id }
+      });
       throw new Error(`Failed to send policy documents email: ${emailError.message}`);
     }
 
     logStep("Policy documents email sent successfully", emailResult);
 
     // Log the email send
-    await supabaseClient
-      .from('email_logs')
-      .insert({
-        template_id: template.id,
-        recipient_email: recipientEmail,
-        subject: template.subject,
-        status: 'sent',
-        metadata: {
-          plan_type: planType,
-          policy_number: policyNumber,
-          registration_plate: registrationPlate,
-          attachments_count: attachments.length
-        }
-      });
+    await logCustomerEmail({
+      recipient_email: recipientEmail,
+      recipient_name: customerName || emailVariables.customerName,
+      subject: template.subject,
+      template_name: 'policy_documents',
+      source_function: 'send-policy-documents',
+      status: 'sent',
+      policy_number: policyNumber,
+      registration_plate: registrationPlate,
+      metadata: { plan_type: planType, attachments_count: attachments.length, template_id: template.id, email_result: emailResult }
+    });
 
     return new Response(JSON.stringify({ 
       success: true, 

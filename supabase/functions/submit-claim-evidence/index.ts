@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -235,6 +236,17 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="margin-top: 24px;">Best regards,<br/><strong>Buy a Warranty Claims Team</strong></p>
         </div>
       `,
+    });
+
+    await logCustomerEmail({
+      recipient_email: claim.email,
+      recipient_name: claim.name,
+      subject: `We've received your additional evidence — ${regDisplay}`,
+      template_name: 'claim_evidence_confirmation',
+      source_function: 'submit-claim-evidence',
+      status: 'sent',
+      registration_plate: regDisplay,
+      metadata: { claim_id: claim.id, evidence_type: evidenceLabel }
     });
 
     return new Response(JSON.stringify({
