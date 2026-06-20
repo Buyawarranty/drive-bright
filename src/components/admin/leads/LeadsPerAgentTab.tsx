@@ -251,6 +251,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   const getConv = (agentId: string) => convRollup.map.get(agentId) || { day: 0, week: 0, month: 0 };
 
+  const rebuildDay = async (dateStr: string) => {
     if (!isManagement) return;
     setRebuilding(true);
     try {
