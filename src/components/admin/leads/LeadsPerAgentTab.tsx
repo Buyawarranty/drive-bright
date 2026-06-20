@@ -188,7 +188,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   // Aggregate per agent across the range
   const perAgent = useMemo(() => {
     const grouped = new Map<string, StatsRow & { days: number; locked: boolean }>();
-    rows.forEach(r => {
+    rows.filter(r => isInTeam(r.agent_id)).forEach(r => {
       const existing = grouped.get(r.agent_id);
       if (!existing) {
         grouped.set(r.agent_id, { ...r, days: 1, locked: !!r.locked_at });
