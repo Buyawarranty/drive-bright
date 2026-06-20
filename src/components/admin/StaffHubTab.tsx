@@ -14,9 +14,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Upload, Download, Trash2, Eye, FolderOpen, Search, Calendar } from 'lucide-react';
+import { FileText, Upload, Download, Trash2, Eye, FolderOpen, Search, Calendar, Lock, Users, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/hooks/useAuth';
 
 interface StaffHubDoc {
   id: string;
