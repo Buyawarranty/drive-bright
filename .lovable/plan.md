@@ -1,63 +1,53 @@
-## Leads per Agent — Daily Locked Tracking
 
-### Scope
-New tab on `/admin-dashboard/?tab=leads-per-agent` showing per-agent daily activity metrics. Visible to **everyone**, but agents only see their own row; **management** (admin, super_admin, sales_manager) sees all agents with totals.
+# Agent workflow columns for Recontact Leads & Renewals
 
-### What gets tracked per agent per day (UK time, 00:00 → 23:59:59)
-For each calendar day, per agent:
-- **Leads assigned** — count where agent became the owner that day
-- **Self-assigned** — leads they pulled to themselves
-- **Marked Fake** — status changed to `fake_lead`
-- **Marked Lost** — status changed to `lost`
-- **Marked Converted** — status changed to `converted`
-- **Notes added** — entries in `lead_quick_notes` / `lead_activities` of type note
-- **Callbacks set** — entries in `lead_reminders` (callback type) created
-- **Callbacks completed** — reminders marked done
-- **Calls logged** — entries in `lead_call_logs`
-- **Status changes** — total touch count (any change)
-- **Active leads at end of day** — owned & not in terminal status
+Goal: let a sales agent work the **Recontact Leads** and **Renewals** tabs the same way they work **New Leads** — see who's assigned, status, callback, call count, take quick actions (call/note/quote), and view name/phone/email/reg/payment/paid date inline.
 
-### Locking strategy (precise, immutable)
-- Live counters for **today** computed on read from source tables (always real-time).
-- At **00:01 UK time** a cron job snapshots the previous day into `agent_daily_lead_stats` (one row per agent per day) — those rows are immutable history.
-- Reads: any date < today → snapshot table; today → live aggregation. Guarantees "lock down at midnight, starts at 00:00:01" behavior.
+Target columns (matching New Leads):
+`Agent · Src · Status · CB · Calls · Actions · Name · Phone · Email · Reg · Payment · Paid Date`
 
-### Database
-New table `agent_daily_lead_stats`:
-- `agent_id`, `stat_date`, `team_id`
-- `leads_assigned`, `self_assigned`, `marked_fake`, `marked_lost`, `marked_converted`
-- `notes_added`, `callbacks_set`, `callbacks_completed`, `calls_logged`
-- `status_changes`, `active_leads_eod`
-- `locked_at` (timestamptz) — set when snapshot written; presence = locked
-- Unique `(agent_id, stat_date)`
+---
 
-RLS:
-- Agents → SELECT only rows where `agent_id = auth.uid()`
-- Management → SELECT all
-- Only `service_role` writes (cron + edge function)
+## 1. Recontact Leads (`/admin-dashboard?tab=recontact-leads`)
 
-Plus a SECURITY DEFINER function `get_agent_live_stats(p_date date)` that computes today's numbers from source tables on demand, with the same role filtering baked in.
+The recontact tab (`LeadRecoveryTab.tsx`) already loads `Lead` objects from `sales_leads`, so it can reuse the existing `<LeadsTable />` directly.
 
-### Edge function + cron
-- `snapshot-agent-daily-stats` — aggregates yesterday from `sales_leads`, `sales_leads_changelog`, `lead_quick_notes`, `lead_reminders`, `lead_call_logs`, `lead_activities`; UPSERTs into `agent_daily_lead_stats` with `locked_at = now()`.
-- pg_cron at `01 00 * * *` Europe/London (run at 00:01 UK).
-- Manual "Rebuild day" button for management (calls same function with explicit date).
+- Replace its custom table rendering with `<LeadsTable />`.
+- Keep the existing segment chips (Due Today / New to Recontact / No Answer / Interested / Quote Sent / Abandoned Checkout / Not Interested / All).
+- Wire all the lead handlers already present elsewhere: `onUpdateStatus`, `onAssign`, `onUpdateCallCount`, `onScheduleFollowUp`, `onUpdateNotes`, `onLogActivity`, `onSendQuote`.
+- Force `showSourceColumn = true` and keep `Agent` column visible (no `hideAssignedColumn`) so sales managers can see allocation.
+- Preserve the "outcome" picker and "Mark worked" button on the expanded row via the existing `LeadDetailsPanel`.
 
-### UI — `src/components/admin/LeadsPerAgentTab.tsx`
-Layout:
-1. **Header bar**: Date range tabs — `Today` · `Yesterday` · `This Week` · `This Month` · `Custom range`. Live indicator dot pulsing when viewing Today; lock icon + "Locked at HH:MM" badge for past days.
-2. **Summary cards (management only)**: Total leads worked · Total fake · Total converted · Total callbacks · Total calls — across selected range.
-3. **Main table** — sortable, sticky header, agent avatar + name + team chip, columns for each metric, "Active EOD" pinned right. Total row at bottom (management view).
-4. **Agent view (non-management)**: Same layout but single-row scoped to themselves; adds a "My streak" mini stat.
-5. **Per-agent expand**: clicking a row opens a drawer with daily breakdown chart for the selected range (recharts bar chart) + the same metrics tallied weekly / monthly.
-6. **Empty states + loading skeletons**, CSV export (management only, gated by existing export rules).
+## 2. Renewals (`/admin-dashboard?tab=renewals`)
 
-Design tokens only (no hardcoded colours); follows existing admin dashboard table conventions; high-contrast borders per memory.
+Renewals are policies (`customer_policies` + `customers`), not `sales_leads`. To reuse the same table without forking it, add a thin **policy → Lead** adapter and a new table component that shares the same column layout.
 
-### Wiring
-- Register tab in the admin dashboard tabs list with id `leads-per-agent`.
-- Role-aware fetch hook `useAgentDailyStats(range, agentId?)` — picks snapshot vs live per date; merges results.
+- New component: `RenewalsTable.tsx` based on the same column set, rendering rows from `PolicyRow` so we don't fight the strict `Lead` typings.
+- Columns map as:
+  - **Agent** → `policy.assigned_agent_id` (selectable from sales/sales_lead users with the *Renewals* workstream).
+  - **Src** → small badge: 🔁 Renewal / ⬆️ Upsell / 💤 Lapsed based on segment.
+  - **Status** → policy retention outcome (`renewed`, `still_considering`, `no_answer`, etc. from `OUTCOMES`).
+  - **CB** → callback bell driven by `lead_reminders` keyed on the customer (reuses `RemindMePopover`).
+  - **Calls** → call attempt count from `lead_call_logs` keyed on customer email/phone (reuses `CallCountCell` style).
+  - **Actions** → call / email / quick note / send renewal quote.
+  - **Name / Phone / Email / Reg** → from `customers` (name, phone, registration_plate).
+  - **Payment** → last `payment_type` on the policy.
+  - **Paid Date** → `policy_start_date` (the date they last paid for this policy).
+- Persist agent notes against the customer (`customer_notes`) so they stay with the record across renewal cycles.
+- Persist call counts against `lead_call_logs` with the customer's email/phone so they tally across leads + renewals.
+- Keep the existing segment tabs (Due Soon / Renewal Window / Upsell / Lapsed).
 
-### Out of scope
-- Backfilling historical days before today (can be triggered manually via the rebuild button per date once shipped).
-- Editing/overriding snapshot numbers (immutable by design).
+## 3. Shared bits
+
+- Both tabs get the same compact `Actions` cell: 📞 call (`tel:`), ✉️ email (`mailto:`), 🗒️ inline note, 💷 send quote.
+- Both tabs respect role visibility: sales/sales_lead only see their own assigned rows; managers/admins see all.
+- No DB schema changes required — `lead_reminders`, `lead_call_logs`, `customer_notes`, `customer_policies.assigned_agent_id`, and `customer_policies.retention_outcome` already exist.
+
+---
+
+## Out of scope (ask if needed)
+- Bulk actions / CSV export on the Renewals tab.
+- Changing how renewal emails are scheduled — only the agent's working view is being added.
+- Mobile card view for Renewals (desktop table only for now; can mirror later).
+
+Shall I proceed?
