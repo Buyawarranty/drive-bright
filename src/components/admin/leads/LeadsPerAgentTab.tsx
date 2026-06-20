@@ -58,6 +58,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>({});
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<StatsRow[]>([]);
+  const [mtdRows, setMtdRows] = useState<StatsRow[]>([]);
   const [agents, setAgents] = useState<Record<string, AgentMeta>>({});
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [rebuilding, setRebuilding] = useState(false);
