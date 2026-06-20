@@ -182,10 +182,28 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!response.ok) {
       logStep("Resend API error", emailResponse);
+      await logCustomerEmail({
+        recipient_email: recipientEmail,
+        subject: subject || `Invoice from BuyaWarranty`,
+        template_name: 'invoice_email',
+        source_function: 'send-invoice-email',
+        status: 'failed',
+        error_message: emailResponse?.message || `HTTP ${response.status}`,
+        metadata: { invoice_count: invoices.length },
+      });
       throw new Error(emailResponse.message || "Failed to send email");
     }
 
     logStep("Email sent successfully", emailResponse);
+    await logCustomerEmail({
+      recipient_email: recipientEmail,
+      subject: subject || `Invoice from BuyaWarranty`,
+      template_name: 'invoice_email',
+      source_function: 'send-invoice-email',
+      status: 'sent',
+      metadata: { invoice_count: invoices.length, resend_message_id: emailResponse?.id },
+    });
+
 
     return new Response(
       JSON.stringify({ 
